@@ -88,6 +88,7 @@ public:
 
     void ResetViewMode();
     std::pair<u64, QString> GetSelectedGameInfo() const;
+    void RetranslateUI();
 
 public slots:
     void RefreshGameDirectory();
@@ -145,7 +146,6 @@ private:
     void AddPermDirPopup(QMenu& context_menu, QModelIndex selected);
     void AddFavoritesPopup(QMenu& context_menu);
 
-    void RetranslateUI();
 
     friend class GameListSearchField;
 

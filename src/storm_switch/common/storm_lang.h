@@ -39,7 +39,7 @@ inline QString StormLang11(const QString& ru, const QString& en,
                            const QString& es, const QString& it,
                            const QString& pt, const QString& zh,
                            const QString& ja, const QString& ko,
-                           const QString& ar) {
+                           const QString& ar, const QString& hi = QString()) {
     std::string lang = UISettings::values.language.GetValue();
     if (lang.empty()) {
         lang = QLocale::system().name().toStdString();
@@ -54,7 +54,43 @@ inline QString StormLang11(const QString& ru, const QString& en,
     if (lang.rfind("zh", 0) == 0 && !zh.isEmpty()) return zh;
     if (lang.rfind("ja", 0) == 0 && !ja.isEmpty()) return ja;
     if (lang.rfind("ko", 0) == 0 && !ko.isEmpty()) return ko;
+    if (lang.rfind("hi", 0) == 0 && !hi.isEmpty()) return hi;
     if (lang.rfind("ar", 0) == 0 && !ar.isEmpty()) return ar;
+
+    const QString ml = StormLookupMultiLang(en, lang);
+    if (!ml.isEmpty()) {
+        return ml;
+    }
+    return en;
+}
+
+// 11 Mandatory STORM Languages: ru, en, de, fr, zh, ko, ja, es, it, pt, hi
+inline QString StormLangStorm11(const QString& ru, const QString& en,
+                                const QString& de, const QString& fr,
+                                const QString& zh, const QString& ko,
+                                const QString& ja, const QString& es,
+                                const QString& it, const QString& pt,
+                                const QString& hi) {
+    std::string lang = UISettings::values.language.GetValue();
+    if (lang.empty()) {
+        lang = QLocale::system().name().toStdString();
+    }
+    if (lang.rfind("ru", 0) == 0) return ru;
+    if (lang.rfind("en", 0) == 0) return en;
+    if (lang.rfind("de", 0) == 0 && !de.isEmpty()) return de;
+    if (lang.rfind("fr", 0) == 0 && !fr.isEmpty()) return fr;
+    if (lang.rfind("zh", 0) == 0 && !zh.isEmpty()) return zh;
+    if (lang.rfind("ko", 0) == 0 && !ko.isEmpty()) return ko;
+    if (lang.rfind("ja", 0) == 0 && !ja.isEmpty()) return ja;
+    if (lang.rfind("es", 0) == 0 && !es.isEmpty()) return es;
+    if (lang.rfind("it", 0) == 0 && !it.isEmpty()) return it;
+    if (lang.rfind("pt", 0) == 0 && !pt.isEmpty()) return pt;
+    if (lang.rfind("hi", 0) == 0 && !hi.isEmpty()) return hi;
+
+    const QString ml = StormLookupMultiLang(en, lang);
+    if (!ml.isEmpty()) {
+        return ml;
+    }
     return en;
 }
 
@@ -74,6 +110,7 @@ inline QString StormCancelText() {
     if (lang.rfind("ja", 0) == 0) return QStringLiteral("キャンセル");
     if (lang.rfind("ko", 0) == 0) return QStringLiteral("취소");
     if (lang.rfind("pl", 0) == 0) return QStringLiteral("Anuluj");
+    if (lang.rfind("hi", 0) == 0) return QStringLiteral("रद्द करें");
     if (lang.rfind("ar", 0) == 0) return QStringLiteral("إلغاء");
     return QStringLiteral("Cancel");
 }

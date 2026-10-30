@@ -55,6 +55,7 @@ set(SHADER_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/present_bspline.frag
     ${CMAKE_CURRENT_SOURCE_DIR}/present_mitchell.frag
     ${CMAKE_CURRENT_SOURCE_DIR}/present_gaussian.frag
+    ${CMAKE_CURRENT_SOURCE_DIR}/present_crt_royale.frag
     ${CMAKE_CURRENT_SOURCE_DIR}/present_lanczos.frag
     ${CMAKE_CURRENT_SOURCE_DIR}/present_spline1.frag
     ${CMAKE_CURRENT_SOURCE_DIR}/present_mmpx.frag
@@ -71,6 +72,7 @@ set(SHADER_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/vulkan_color_clear.frag
     ${CMAKE_CURRENT_SOURCE_DIR}/vulkan_color_clear.vert
     ${CMAKE_CURRENT_SOURCE_DIR}/vulkan_depthstencil_clear.frag
+    ${CMAKE_CURRENT_SOURCE_DIR}/vulkan_fidelityfx_fsr2_temporal.frag
     ${CMAKE_CURRENT_SOURCE_DIR}/vulkan_fidelityfx_fsr.vert
     ${CMAKE_CURRENT_SOURCE_DIR}/vulkan_fidelityfx_fsr_easu_fp16.frag
     ${CMAKE_CURRENT_SOURCE_DIR}/vulkan_fidelityfx_fsr_easu_fp32.frag

@@ -117,8 +117,9 @@ class GameFixDialogFragment : DialogFragment() {
         GameIconUtils.loadGameIcon(currentGame, binding.imageGameFixIcon)
 
         if (profile != null) {
-            val isRu = Locale.getDefault().language == "ru"
-            val issues = if (isRu) profile.issuesRu else profile.issuesEn
+            val currentLang = resources.configuration.locales[0].language
+            val isRu = currentLang.equals("ru", ignoreCase = true) || currentLang.equals("uk", ignoreCase = true) || currentLang.equals("be", ignoreCase = true)
+            val issues = if (isRu && profile.issuesRu.isNotEmpty()) profile.issuesRu else profile.issuesEn
             val fixes = GameFixDatabase.getFormattedFixes(profile, isRu)
             val issuesClean = sanitizeText(issues)
             val fixesHtml = androidx.core.text.HtmlCompat.fromHtml(

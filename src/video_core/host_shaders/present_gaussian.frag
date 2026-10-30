@@ -5,7 +5,7 @@
 // - https://learnopengl.com/Advanced-Lighting/Bloom
 // - https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/
 
-#version 460 core
+#version 450
 
 layout(location = 0) in vec2 frag_tex_coord;
 

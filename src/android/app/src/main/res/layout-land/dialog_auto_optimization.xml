@@ -45,7 +45,7 @@
                     android:id="@+id/text_wizard_title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="АВТО-НАСТРОЙКА STORM FLUID"
+                    android:text="@string/auto_opt_dialog_title"
                     android:textColor="#F0F6FC"
                     android:textSize="18sp"
                     android:textStyle="bold"
@@ -55,7 +55,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="Интеллектуальное профилирование оборудования"
+                    android:text="@string/auto_opt_dialog_subtitle"
                     android:textColor="#8B949E"
                     android:textSize="12sp" />
             </LinearLayout>
@@ -105,7 +105,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="ТЕЛЕМЕТРИЯ ОБОРУДОВАНИЯ"
+                        android:text="@string/auto_opt_telemetry_title"
                         android:textColor="#00F2FE"
                         android:textSize="12sp"
                         android:textStyle="bold"
@@ -131,7 +131,7 @@
                     android:textColor="#F0F6FC"
                     android:textSize="13sp"
                     android:textStyle="bold"
-                    tools:text="SoC: Snapdragon 8 Elite • 8 ядер (Смартфон)" />
+                    tools:text="SoC: Snapdragon 8 Elite • 8 cores (Smartphone)" />
 
                 <TextView
                     android:id="@+id/text_hw_gpu"
@@ -149,7 +149,7 @@
                     android:layout_marginTop="4dp"
                     android:textColor="#94A3B8"
                     android:textSize="12.5sp"
-                    tools:text="ОЗУ: 16.0 ГБ (Доступно: 11.2 ГБ)" />
+                    tools:text="RAM: 16.0 GB (Available: 11.2 GB)" />
 
                 <View
                     android:layout_width="match_parent"
@@ -173,7 +173,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="ПРОФИЛИ В 1 КЛИК"
+            android:text="@string/auto_opt_profiles_title"
             android:textColor="#8B949E"
             android:textSize="11.5sp"
             android:textStyle="bold"
@@ -226,7 +226,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="МАКСИМУМ FPS (Киберспорт / 60 FPS)"
+                            android:text="@string/auto_opt_profile_fast_title"
                             android:textColor="#F0F6FC"
                             android:textSize="13.5sp"
                             android:textStyle="bold" />
@@ -234,7 +234,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="60 FPS"
+                            android:text="@string/auto_opt_badge_60fps"
                             android:textColor="#FF9100"
                             android:textSize="10sp"
                             android:textStyle="bold"
@@ -247,7 +247,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="3dp"
-                        android:text="Упор на минимальную задержку кадра, быстрый таймер ГПУ, NCE и агрессивную разгрузку потоков."
+                        android:text="@string/auto_opt_profile_fast_desc"
                         android:textColor="#8B949E"
                         android:textSize="11sp" />
 
@@ -303,7 +303,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="БАЛАНС (РЕКОМЕНДУЕТСЯ)"
+                            android:text="@string/auto_opt_profile_balance_title"
                             android:textColor="#F0F6FC"
                             android:textSize="13.5sp"
                             android:textStyle="bold" />
@@ -311,7 +311,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="РЕКОМЕНДУЕТСЯ"
+                            android:text="@string/auto_opt_badge_recommended"
                             android:textColor="#00F2FE"
                             android:textSize="10sp"
                             android:textStyle="bold"
@@ -324,7 +324,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="3dp"
-                        android:text="Идеальный баланс чёткости изображения, стабильных 30/60 FPS и защиты глифов/текстур."
+                        android:text="@string/auto_opt_profile_balance_desc"
                         android:textColor="#8B949E"
                         android:textSize="11sp" />
 
@@ -380,7 +380,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="УЛЬТРА КАЧЕСТВО (2K / FSR / Чёткость)"
+                            android:text="@string/auto_opt_profile_ultra_title"
                             android:textColor="#F0F6FC"
                             android:textSize="13.5sp"
                             android:textStyle="bold" />
@@ -388,7 +388,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="2K / FSR"
+                            android:text="@string/auto_opt_badge_2k_fsr"
                             android:textColor="#E040FB"
                             android:textSize="10sp"
                             android:textStyle="bold"
@@ -401,7 +401,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="3dp"
-                        android:text="Повышенное разрешение, сглаживание, максимальная фильтрация и точность шейдеров."
+                        android:text="@string/auto_opt_profile_ultra_desc"
                         android:textColor="#8B949E"
                         android:textSize="11sp" />
 
@@ -457,7 +457,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="ЭКО / ПОРТАТИВ (Без нагрева)"
+                            android:text="@string/auto_opt_profile_eco_title"
                             android:textColor="#F0F6FC"
                             android:textSize="13.5sp"
                             android:textStyle="bold" />
@@ -465,7 +465,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="ХОЛОД"
+                            android:text="@string/auto_opt_badge_cool"
                             android:textColor="#00E676"
                             android:textSize="10sp"
                             android:textStyle="bold"
@@ -478,7 +478,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="3dp"
-                        android:text="Снижение тепловыделения и расхода заряда батареи для долгих поездок."
+                        android:text="@string/auto_opt_profile_eco_desc"
                         android:textColor="#8B949E"
                         android:textSize="11sp" />
 

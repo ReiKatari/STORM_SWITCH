@@ -70,11 +70,12 @@ bool TranslatorVisitor::RET(Reg Rn) {
     return false;
 }
 
-bool TranslatorVisitor::RETA([[maybe_unused]] bool M) {
+bool TranslatorVisitor::RETA(bool M) {
     if (!options.enable_pauth_returns) {
         return UnallocatedEncoding();
     }
-    // With SCTLR.EnIA/EnIB clear, authentication leaves LR unchanged.
+    // Authenticate and strip PAC bits [54:48] / [63:bits] from R30 before return.
+    X(64, Reg::R30, AuthPointer(X(64, Reg::R30), SP(64), false, M));
     return RET(Reg::R30);
 }
 

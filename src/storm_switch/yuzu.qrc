@@ -1,13 +1,43 @@
 <!--
+
 SPDX-FileCopyrightText: 2021 yuzu Emulator Project
+
 SPDX-License-Identifier: GPL-2.0-or-later
+
 -->
 
+
+
 <RCC>
+
     <qresource prefix="/img">
+
         <file alias="eden.ico">../../dist/eden.ico</file>
+
     </qresource>
+
     <qresource prefix="/icons">
+
         <file alias="down_arrow.svg">../../dist/down_arrow.svg</file>
+
     </qresource>
+
+    <qresource prefix="/storm_warhammer40k">
+
+        <file alias="style.qss">../../dist/qt_themes/storm_warhammer40k/style.qss</file>
+
+    </qresource>
+
+    <qresource prefix="/storm_elemental">
+
+        <file alias="style.qss">../../dist/qt_themes/storm_elemental/style.qss</file>
+
+    </qresource>
+
+    <qresource prefix="/storm_flagship">
+
+        <file alias="style.qss">../../dist/qt_themes/storm_flagship/style.qss</file>
+
+    </qresource>
+
 </RCC>

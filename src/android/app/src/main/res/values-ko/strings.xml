@@ -312,7 +312,7 @@
     <string name="frame_limit_enable">속도 제한</string>
     <string name="frame_limit_enable_description">에뮬레이션 속도를 정상 속도의 지정된 비율로 제한합니다.</string>
     <string name="frame_limit_slider">속도 제한 비율</string>
-    <string name="frame_limit_slider_description">에뮬레이션 속도의 제한 비율을 지정합니다. 100%가 정상 속도입니다. 값이 높거나 낮으면 속도 제한이 증가하거나 감소합니다.</string>
+    <string name="frame_limit_slider_description" formatted="false">에뮬레이션 속도의 제한 비율을 지정합니다. 100%가 정상 속도입니다. 값이 높거나 낮으면 속도 제한이 증가하거나 감소합니다.</string>
     <string name="cpu_backend">CPU 백엔드</string>
     <string name="cpu_accuracy">CPU 정확도</string>
     <string name="value_with_units">%1$s%2$s</string>
@@ -752,7 +752,7 @@
     <string name="auto_optimization_apply">모드 적용</string>
     <string name="auto_optimization_mode_normal">⚖️ 보통 (권장)</string>
     <string name="downloading_cheats">치트 데이터베이스 다운로드 중…</string>
-    <string name="auto_optimization_mode_normal_desc">그래픽 품질, 부드러움 및 안정성의 완벽한 균형. 1X (720p/1080p), FSR 85%, FXAA, 균형 배리어.</string>
+    <string name="auto_optimization_mode_normal_desc" formatted="false">그래픽 품질, 부드러움 및 안정성의 완벽한 균형. 1X (720p/1080p), FSR 85%, FXAA, 균형 배리어.</string>
     <string name="auto_optimization_mode_accurate">💎 최고 화질 / 정확</string>
     <string name="auto_optimization_mode_accurate_desc">최고 그래픽 품질, 1.5X/1X 해상도, 안전한 DMA, 엄격한 GPU 배리어, SMAA, 16x 비등방성.</string>
     <string name="dma_accuracy_high">높음</string>
@@ -1010,10 +1010,10 @@
     <string name="gpu_fence_behavior">GPU Fence Behavior</string>
     <string name="gpu_fence_behavior_description">Controls the GPU fence synchronization behavior. Immediate is the fastest option, but can introduce some issues. Balanced offers better compatibility and may fix issues in some games. Accurate further improves compatibility at the cost of some performance. Strict is the slowest option, but can fix issues that require stricter synchronization. Default follows the GPU Accuracy setting.</string>
     <string name="astc_recompression">ASTC Texture Recompression</string>
-    <string name="astc_recompression_description">Recompresses ASTC textures to BC1, BC3, or BC5 formats on the fly to reduce RAM and VRAM usage by 50–80%.</string>
+    <string name="astc_recompression_description" formatted="false">Recompresses ASTC textures to BC1, BC3, or BC5 formats on the fly to reduce RAM and VRAM usage by 50–80%.</string>
     <string name="astc_recompression_uncompressed">Uncompressed (Highest Quality / Max RAM)</string>
     <string name="astc_recompression_bc1">BC1 (Low Quality / Max RAM Savings)</string>
-    <string name="astc_recompression_bc3">BC3 (Medium Quality / 50% RAM Savings)</string>
+    <string name="astc_recompression_bc3" formatted="false">BC3 (Medium Quality / 50% RAM Savings)</string>
     <string name="astc_recompression_bc5">BC5 (High Quality for Normals)</string>
     <string name="renderer_asynchronous_gpu_emulation">GPU async emulation</string>
     <string name="renderer_asynchronous_gpu_emulation_description">This hack can increase performance by running GPU emulation asynchronously at the cost of graphical issues and increased crash rates by timing-related operations.</string>
@@ -1408,11 +1408,11 @@
     <string name="profile_preset_fast_title">⚡ Fast (Maximum FPS and Low Temp)</string>
     <string name="profile_preset_fast_desc">0.75X resolution, fast JIT, async shaders, disabled reactive flushing, 6GB DRAM, cool SoC.</string>
     <string name="profile_preset_balanced_title">⚖️ Balanced (Recommended)</string>
-    <string name="profile_preset_balanced_desc">1.0X (720p/1080p), FSR 85%, fast JIT, async shaders, EDS1 dynamic state, 6GB DRAM.</string>
+    <string name="profile_preset_balanced_desc" formatted="false">1.0X (720p/1080p), FSR 85%, fast JIT, async shaders, EDS1 dynamic state, 6GB DRAM.</string>
     <string name="profile_preset_accurate_title">💎 High Quality (Accurate)</string>
     <string name="profile_preset_accurate_desc">1.0X-1.5X, high GPU accuracy, strict sync, FXAA/SMAA, 8GB DRAM.</string>
     <string name="profile_preset_saver_title">🔋 Battery Saver and Cool SoC</string>
-    <string name="profile_preset_saver_desc">0.75X resolution, 100% speed limit, battery-efficient VRAM, minimum thermal output.</string>
+    <string name="profile_preset_saver_desc" formatted="false">0.75X resolution, 100% speed limit, battery-efficient VRAM, minimum thermal output.</string>
     <string name="profile_btn_apply">Apply</string>
     <string name="profile_btn_share">Share</string>
     <string name="profile_btn_rename">Rename</string>
@@ -1738,7 +1738,7 @@
     <string name="cheat_desc_no_fog">Disable Fog &amp; Haze</string>
     <string name="cheat_desc_no_blur">Disable Blur &amp; Post-Processing</string>
     <string name="cheat_desc_fov">Camera &amp; FOV Adjustment</string>
-    <string name="cheat_desc_drop_rate">100% Rare Item Drop Rate</string>
+    <string name="cheat_desc_drop_rate" formatted="false">100% Rare Item Drop Rate</string>
     <string name="cheat_desc_unlock_all">Unlock All Content</string>
     <string name="cheat_desc_freeze_timer">Freeze Timer (Infinite Time)</string>
     <string name="cheat_desc_master_code">Master Code</string>
@@ -1846,7 +1846,7 @@
     <string name="translator_btn_test_voice">▶ Test voice</string>
     <string name="translator_sec_floating_btn">🔘 FLOATING TRANSLATE BUTTON</string>
     <string name="translator_lbl_floating_show">Show translate button on screen:</string>
-    <string name="translator_lbl_floating_opacity_default">Button opacity: 90%</string>
+    <string name="translator_lbl_floating_opacity_default" formatted="false">Button opacity: 90%</string>
     <string name="translator_lbl_floating_opacity_fmt">Button opacity: %1$d%%</string>
     <string name="translator_engine_google">Google Translate (Fast / Free)</string>
     <string name="translator_engine_yandex">Yandex Translate (High quality Russian)</string>
@@ -1867,7 +1867,7 @@
     <string name="translator_style_dark">Semi-transparent dark</string>
     <string name="translator_style_neon">Neon bubble</string>
     <string name="translator_style_outline">Outline only</string>
-    <string name="translator_roi_all">Full game screen (100%)</string>
+    <string name="translator_roi_all" formatted="false">Full game screen (100%)</string>
     <string name="translator_roi_bottom">Bottom third (Dialogue boxes)</string>
     <string name="translator_roi_center">Center area (Subtitles &amp; cutscenes)</string>
     <string name="translator_roi_top">Top third (Quests, HUD &amp; hints)</string>
@@ -1999,4 +1999,53 @@
     <string name="apply_driver_msg">드라이버가 성공적으로 설치되었습니다. 지금 활성화하시겠습니까?</string>
     <string name="apply_driver_positive">적용</string>
     <string name="apply_driver_negative">나중에</string>
+
+    <string name="theme_storm_elemental">STORM ELEMENTAL (원소의 불꽃)</string>
+    <string name="theme_storm_flagship">STORM (플래그십)</string>
+    <string name="auto_opt_dialog_title">STORM FLUID 자동 최적화</string>
+    <string name="auto_opt_dialog_subtitle">지능형 하드웨어 프로파일링</string>
+    <string name="auto_opt_telemetry_title">하드웨어 원격 측정</string>
+    <string name="auto_opt_profiles_title">원클릭 프로필</string>
+    <string name="auto_opt_profile_fast_title">최대 FPS (e스포츠 / 60 FPS)</string>
+    <string name="auto_opt_badge_60fps">60 FPS</string>
+    <string name="auto_opt_profile_fast_desc">최소 프레임 지연, 빠른 GPU 타이머, NCE 및 공격적인 스레드 분산에 집중합니다.</string>
+    <string name="auto_opt_profile_balance_title">밸런스 (권장)</string>
+    <string name="auto_opt_badge_recommended">권장</string>
+    <string name="auto_opt_profile_balance_desc">선명한 화질, 안정적인 30/60 FPS 및 글리프/텍스처 보호의 완벽한 균형.</string>
+    <string name="auto_opt_profile_ultra_title">울트라 품질 (2K / FSR / 선명도)</string>
+    <string name="auto_opt_badge_2k_fsr">2K / FSR</string>
+    <string name="auto_opt_profile_ultra_desc">높은 해상도, 안티앨리어싱, 최대 필터링 및 셰이더 정확도.</string>
+    <string name="auto_opt_profile_eco_title">절전 / 휴대용 (발열 억제)</string>
+    <string name="auto_opt_badge_cool">저발열</string>
+    <string name="auto_opt_profile_eco_desc">장거리 이동 시 발열과 배터리 소모를 대폭 줄입니다.</string>
+    <string name="auto_opt_mode_fast_short">최대 FPS</string>
+    <string name="auto_opt_mode_normal_short">밸런스</string>
+    <string name="auto_opt_mode_accurate_short">울트라 품질</string>
+    <string name="auto_opt_mode_battery_short">절전</string>
+    <string name="auto_opt_mode_default_short">기본값</string>
+    <string name="scaling_filter_nearest_neighbor">최근접 이웃 (Nearest Neighbor)</string>
+    <string name="scaling_filter_bilinear">바이리니어 (Bilinear)</string>
+    <string name="scaling_filter_bicubic">바이큐빅 (Bicubic)</string>
+    <string name="scaling_filter_gaussian">가우시안 (Gaussian)</string>
+    <string name="scaling_filter_scale_force">ScaleForce (윤곽선 강화 업스케일)</string>
+    <string name="scaling_filter_fsr">AMD FSR 2.0 (FidelityFX Super Resolution)</string>
+    <string name="scaling_filter_sgsr">Snapdragon GSR (Game Super Resolution)</string>
+    <string name="scaling_filter_sgsr_edge">Snapdragon GSR EdgeDir (엣지 방향 강조)</string>
+    <string name="scaling_filter_area">에어리어 (Area)</string>
+    <string name="scaling_filter_bspline">B-스플라인 (B-Spline)</string>
+    <string name="scaling_filter_mitchell">미첼 (Mitchell)</string>
+    <string name="scaling_filter_spline1">스플라인-1 (Spline-1)</string>
+    <string name="scaling_filter_zero_tangent">제로 탄젠트 (Zero-Tangent)</string>
+    <string name="scaling_filter_lanczos">란초스 3 (Lanczos 3)</string>
+    <string name="scaling_filter_mmpx">MMPX (픽셀 아트 선명화)</string>
+    <string name="scaling_filter_cas">AMD FidelityFX CAS (적응형 선명도)</string>
+    <string name="scaling_filter_omniscale">OmniScale HQ (고정밀 픽셀 재구성)</string>
+    <string name="fsr2_quality_mode">FSR 2.0 품질 모드</string>
+    <string name="fsr2_quality_mode_description">AMD FSR 2.0 시공간 업스케일링 품질 프리셋을 선택합니다</string>
+    <string name="fsr2_quality_quality">품질 (1.5x)</string>
+    <string name="fsr2_quality_balanced">밸런스 (1.7x)</string>
+    <string name="fsr2_quality_performance">성능 (2.0x)</string>
+    <string name="fsr2_quality_ultra_performance">울트라 성능 (3.0x)</string>
+    <string name="mali_driver_info">Mali/Immortalis/Xclipse GPU는 제조사 시스템 Vulkan 드라이버를 사용합니다. 업스트림 Mesa PanVK는 실험적이며 Switch Vulkan 확장을 아직 완벽히 지원하지 않습니다. 실험용 빌드를 위한 커스텀 .zip 드라이버 설치는 계속 지원되며, 충돌 방지를 위해 Adreno Turnip 드라이버는 제외됩니다.</string>
+    <string name="mali_turnip_incompatible_warning">경고: Adreno Turnip 드라이버는 Qualcomm Adreno GPU 전용으로 설계되었습니다. Mali 또는 비-Adreno GPU에 이 드라이버를 설치하면 그래픽 깨짐이나 앱 충돌이 발생할 수 있습니다. 계속하시겠습니까?</string>
 </resources>

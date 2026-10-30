@@ -124,7 +124,7 @@ object GameHelper {
         fun recordDiscoveredVersion(rawName: String, rawPath: String) {
             val (ver, intVer) = resolveVersionFromNames(listOf(rawName, rawPath), "1.0.0", "0")
             if (isBaseVersion(ver) && (intVer.toLongOrNull() ?: 0L) <= 0L) return
-            val idMatch = Regex("0100[0-9a-fA-F]{12}").find(rawName) ?: Regex("0100[0-9a-fA-F]{12}").find(rawPath)
+            val idMatch = Regex("(?:0100|0400)[0-9a-fA-F]{12}").find(rawName) ?: Regex("(?:0100|0400)[0-9a-fA-F]{12}").find(rawPath)
             if (idMatch != null) {
                 val parsed = idMatch.value.toULongOrNull(16)
                 if (parsed != null && parsed != 0uL) {
@@ -710,7 +710,7 @@ object GameHelper {
         // Any 16-hex Switch Title ID in the leaf filename whose last 3 hex digits are NOT 000
         // is an Update (800) or DLC (001..7FF), unless the filename explicitly marks a merged bundle (1G+)
         if (!leaf.contains("1g+")) {
-            val tidMatches = Regex("0100[0-9a-f]{12}").findAll(leaf).toList()
+            val tidMatches = Regex("""(?:0100|0400)[0-9a-fA-F]{12}""").findAll(leaf).toList()
             if (tidMatches.isNotEmpty() && tidMatches.none { it.value.endsWith("000") }) {
                 return true
             }
@@ -759,7 +759,7 @@ object GameHelper {
 
         // If the game's ID field is empty or zero, extract from filename or use filename without extension
         if (programId.isEmpty() || programId == "0000000000000000" || programId == "0") {
-            val idMatch = Regex("""0100[0-9a-fA-F]{12}""").find(filename)
+            val idMatch = Regex("""(?:0100|0400)[0-9a-fA-F]{12}""").find(filename)
             programId = if (idMatch != null) {
                 idMatch.value.uppercase(Locale.ROOT)
             } else if (filename.contains(".")) {

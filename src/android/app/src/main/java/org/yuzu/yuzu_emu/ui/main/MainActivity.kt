@@ -9,6 +9,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
+import android.view.KeyEvent
 import android.view.WindowManager
 import android.view.animation.PathInterpolator
 import android.widget.Toast
@@ -139,6 +140,11 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
             ThemeHelper.setTheme(this)
         } catch (t: Throwable) {
             CrashHandler.logError(this, "MainActivity.ThemeHelper", t)
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            window.attributes.layoutInDisplayCutoutMode =
+                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
         }
 
         super.onCreate(savedInstanceState)
@@ -468,21 +474,40 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
         CoroutineScope(Dispatchers.IO).launch {
             val packageId = applicationContext.packageName
             val flavor = org.yuzu.yuzu_emu.BuildConfig.FLAVOR.lowercase()
-            val asset = when {
+            val isOlderDevice = Build.VERSION.SDK_INT < 33
+            val asset: String? = when {
                 flavor.contains("legacy") -> {
                     release.assets.firstOrNull { it.contains("LEGACY", ignoreCase = true) && it.endsWith(".apk", ignoreCase = true) }
                 }
-                flavor.contains("sdk27") -> {
+                flavor.contains("sdk27") || (Build.VERSION.SDK_INT in 27..32 && !flavor.contains("legacy")) -> {
                     release.assets.firstOrNull { it.contains("SDK27", ignoreCase = true) && it.endsWith(".apk", ignoreCase = true) }
+                        ?: if (isOlderDevice) release.assets.firstOrNull { it.contains("LEGACY", ignoreCase = true) && it.endsWith(".apk", ignoreCase = true) } else null
                 }
                 else -> {
-                    release.assets.firstOrNull {
-                        !it.contains("LEGACY", ignoreCase = true) &&
-                            !it.contains("SDK27", ignoreCase = true) &&
-                            it.endsWith(".apk", ignoreCase = true)
+                    if (isOlderDevice) {
+                        null
+                    } else {
+                        release.assets.firstOrNull {
+                            !it.contains("LEGACY", ignoreCase = true) &&
+                                !it.contains("SDK27", ignoreCase = true) &&
+                                it.endsWith(".apk", ignoreCase = true)
+                        }
                     }
                 }
-            } ?: release.assets.firstOrNull { it.endsWith(".apk", ignoreCase = true) } ?: release.assets[0]
+            }
+
+            if (asset == null) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Compatible APK not found for this Android version/flavor. Opening release page...",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    openLink(release.url)
+                }
+                return@launch
+            }
+
             val artifact = asset.split("/").last().removeSuffix(".apk")
             val apkFile = File(cacheDir, "update-$artifact.apk")
 
@@ -865,4 +890,26 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
                 result = result
             )
         }
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (event.keyCode == KeyEvent.KEYCODE_ESCAPE && event.action == KeyEvent.ACTION_UP) {
+            val fragments = supportFragmentManager.fragments
+            for (fragment in fragments.reversed()) {
+                if (fragment is androidx.fragment.app.DialogFragment && fragment.dialog?.isShowing == true) {
+                    fragment.dismiss()
+                    return true
+                }
+                val childFragments = fragment.childFragmentManager.fragments
+                for (child in childFragments.reversed()) {
+                    if (child is androidx.fragment.app.DialogFragment && child.dialog?.isShowing == true) {
+                        child.dismiss()
+                        return true
+                    }
+                }
+            }
+            onBackPressedDispatcher.onBackPressed()
+            return true
+        }
+        return super.dispatchKeyEvent(event)
+    }
 }

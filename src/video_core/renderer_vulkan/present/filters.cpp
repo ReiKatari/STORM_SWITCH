@@ -15,6 +15,7 @@
 #include "video_core/host_shaders/present_bicubic_frag_spv.h"
 #include "video_core/host_shaders/present_gaussian_frag_spv.h"
 #include "video_core/host_shaders/present_lanczos_frag_spv.h"
+#include "video_core/host_shaders/present_crt_royale_frag_spv.h"
 #include "video_core/host_shaders/present_spline1_frag_spv.h"
 #include "video_core/host_shaders/present_mitchell_frag_spv.h"
 #include "video_core/host_shaders/present_bspline_frag_spv.h"
@@ -108,6 +109,11 @@ std::unique_ptr<WindowAdaptPass> MakeCas(const Device& device, VkFormat frame_fo
 std::unique_ptr<WindowAdaptPass> MakeOmniScale(const Device& device, VkFormat frame_format) {
     return std::make_unique<WindowAdaptPass>(device, frame_format, CreateBilinearSampler(device),
         BuildShader(device, PRESENT_OMNISCALE_FRAG_SPV));
+}
+
+std::unique_ptr<WindowAdaptPass> MakeCrtRoyale(const Device& device, VkFormat frame_format) {
+    return std::make_unique<WindowAdaptPass>(device, frame_format, CreateBilinearSampler(device),
+        BuildShader(device, PRESENT_CRT_ROYALE_FRAG_SPV));
 }
 
 } // namespace Vulkan

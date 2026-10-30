@@ -108,4 +108,19 @@ $zipPathWin10 = Join-Path $filesDir "STORM_SWITCH_${version}_Windows10.zip"
 Copy-Item $zipPathWin11 $zipPathWin10 -Force
 Unblock-File $zipPathWin10 -ErrorAction SilentlyContinue
 
+$installerDir = Join-Path $baseDir "installer"
+$payloadZip = Join-Path $installerDir "Payload\Payload.zip"
+if (Test-Path $installerDir) {
+    Write-Host "Updating installer Payload.zip and publishing StormInstaller.csproj..."
+    Copy-Item $zipPathWin11 $payloadZip -Force
+    & dotnet publish "$installerDir\StormInstaller.csproj" -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -o "$filesDir"
+    Remove-Item "$filesDir\*.pdb" -Force -ErrorAction SilentlyContinue
+}
+
+$setupExe = Join-Path $filesDir "STORM_SWITCH_${version}_Setup.exe"
+if (Test-Path $setupExe) {
+    Write-Host "Signing Installer Setup with unified STORM SERTIFICATE..."
+    & $signtool sign /sha1 $sha1 /fd SHA256 /d "STORM SWITCH" /tr http://timestamp.digicert.com /td SHA256 "$setupExe"
+}
+
 Write-Host "All Windows $version executables signed and packaged successfully into $filesDir!"

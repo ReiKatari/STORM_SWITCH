@@ -106,7 +106,7 @@ QMenuBar::item:selected {
 
 QMenuBar::item:pressed {
     background-color: #b388ff;
-    color: #000000;
+    color: #FFFFFF;
 }
 
 QMenu {
@@ -124,7 +124,7 @@ QMenu::item {
 
 QMenu::item:selected {
     background-color: #b388ff;
-    color: #000000;
+    color: #FFFFFF;
     font-weight: bold;
 }
 
@@ -159,7 +159,7 @@ QToolButton:hover {
 
 QToolButton:pressed {
     background-color: #b388ff;
-    color: #000000;
+    color: #FFFFFF;
 }
 
 /* Push Buttons */
@@ -180,7 +180,7 @@ QPushButton:hover {
 
 QPushButton:pressed {
     background-color: #b388ff;
-    color: #000000;
+    color: #FFFFFF;
 }
 
 QPushButton:disabled {
@@ -197,7 +197,7 @@ QLineEdit, QTextEdit, QPlainTextEdit, QSpinBox, QDoubleSpinBox {
     border-radius: 6px;
     padding: 6px 10px;
     selection-background-color: #b388ff;
-    selection-color: #000000;
+    selection-color: #FFFFFF;
 }
 
 QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus {
@@ -238,7 +238,7 @@ QComboBox QAbstractItemView {
     border: 1px solid #2e2454;
     border-radius: 6px;
     selection-background-color: #b388ff;
-    selection-color: #000000;
+    selection-color: #FFFFFF;
     padding: 4px;
 }
 
@@ -407,7 +407,7 @@ QPushButton#RefreshButton {
 
 QPushButton#RefreshButton:hover {
     background-color: #00e676;
-    color: #000000;
+    color: #FFFFFF;
 }
 
 /* Status Bar Labels Hover */
@@ -423,15 +423,16 @@ ClickableLabel:hover {
 /* Scrollbars */
 QScrollBar:vertical {
     border: none;
-    background-color: #0b0914;
-    width: 10px;
+    background-color: transparent;
+    width: 7px;
     margin: 0px;
 }
 
 QScrollBar::handle:vertical {
-    background-color: #231c40;
-    min-height: 20px;
-    border-radius: 5px;
+    background-color: #2a244d;
+    min-height: 24px;
+    border-radius: 4px;
+    margin: 1px;
 }
 
 QScrollBar::handle:vertical:hover {
@@ -440,15 +441,16 @@ QScrollBar::handle:vertical:hover {
 
 QScrollBar:horizontal {
     border: none;
-    background-color: #0b0914;
-    height: 10px;
+    background-color: transparent;
+    height: 7px;
     margin: 0px;
 }
 
 QScrollBar::handle:horizontal {
-    background-color: #231c40;
-    min-width: 20px;
-    border-radius: 5px;
+    background-color: #2a244d;
+    min-width: 24px;
+    border-radius: 4px;
+    margin: 1px;
 }
 
 QScrollBar::handle:horizontal:hover {
@@ -602,4 +604,3 @@ QSlider::handle:vertical:pressed {
     background: #b388ff;
     border: 2px solid #ffffff;
 }
-

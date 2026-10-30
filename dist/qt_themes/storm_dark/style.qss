@@ -405,15 +405,16 @@ ClickableLabel:hover {
 /* Scrollbars */
 QScrollBar:vertical {
     border: none;
-    background-color: #0B1120;
-    width: 10px;
+    background-color: transparent;
+    width: 7px;
     margin: 0px;
 }
 
 QScrollBar::handle:vertical {
-    background-color: #334155;
-    min-height: 20px;
-    border-radius: 5px;
+    background-color: #2a244d;
+    min-height: 24px;
+    border-radius: 4px;
+    margin: 1px;
 }
 
 QScrollBar::handle:vertical:hover {
@@ -422,15 +423,16 @@ QScrollBar::handle:vertical:hover {
 
 QScrollBar:horizontal {
     border: none;
-    background-color: #0B1120;
-    height: 10px;
+    background-color: transparent;
+    height: 7px;
     margin: 0px;
 }
 
 QScrollBar::handle:horizontal {
-    background-color: #334155;
-    min-width: 20px;
-    border-radius: 5px;
+    background-color: #2a244d;
+    min-width: 24px;
+    border-radius: 4px;
+    margin: 1px;
 }
 
 QScrollBar::handle:horizontal:hover {

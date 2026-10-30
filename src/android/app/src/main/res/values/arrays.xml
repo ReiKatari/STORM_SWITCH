@@ -557,6 +557,7 @@
         <item>@string/app_language_hebrew</item>
         <item>@string/app_language_serbian</item>
         <item>@string/app_language_thai</item>
+        <item>@string/app_language_hindi</item>
     </string-array>
     <integer-array name="appLanguageValues">
         <item>0</item>
@@ -609,6 +610,8 @@
         <item>@string/theme_storm_cyberpunk</item>
         <item>@string/theme_storm_fantasy</item>
         <item>@string/theme_storm_warhammer_40k</item>
+        <item>@string/theme_storm_elemental</item>
+        <item>@string/theme_storm_flagship</item>
     </string-array>
     <integer-array name="staticThemeValues">
         <item>0</item>
@@ -748,7 +751,7 @@
         <item>3</item>
         <item>4</item>
     </integer-array>
-    
+
     <string-array name="gpuSwizzleChunkEntries">
         <item>@string/gpu_swizzlechunk_verylow</item>
         <item>@string/gpu_swizzlechunk_low</item>

@@ -4,6 +4,7 @@
 #include "storm_switch/storm_games_world_dialog.h"
 #include "storm_switch/storm_catalog_cache.h"
 #include "common/scm_rev.h"
+#include "storm_switch/common/storm_lang.h"
 
 #include <QDesktopServices>
 #include <QDir>
@@ -210,21 +211,36 @@ static QString LocalizeSizeString(QString size_str) {
     if (lang.empty()) {
         lang = QLocale::system().name().toStdString();
     }
-    const bool is_ru = lang.rfind("ru", 0) == 0;
-    if (is_ru) {
-        static const QRegularExpression gb_rx(QStringLiteral(R"(\bGB\b)"), QRegularExpression::CaseInsensitiveOption);
-        static const QRegularExpression mb_rx(QStringLiteral(R"(\bMB\b)"), QRegularExpression::CaseInsensitiveOption);
-        static const QRegularExpression kb_rx(QStringLiteral(R"(\bKB\b)"), QRegularExpression::CaseInsensitiveOption);
-        static const QRegularExpression b_rx(QStringLiteral(R"(\bB\b)"), QRegularExpression::CaseInsensitiveOption);
-        size_str.replace(gb_rx, QStringLiteral("ГБ"));
-        size_str.replace(mb_rx, QStringLiteral("МБ"));
-        size_str.replace(kb_rx, QStringLiteral("КБ"));
-        size_str.replace(b_rx, QStringLiteral("Б"));
+    const QString gb_str = StormLang11(
+        QStringLiteral("ГБ"), QStringLiteral("GB"), QStringLiteral("GB"), QStringLiteral("Go"),
+        QStringLiteral("GB"), QStringLiteral("GB"), QStringLiteral("GB"), QStringLiteral("GB"),
+        QStringLiteral("GB"), QStringLiteral("GB"), QStringLiteral("GB"), QStringLiteral("जीबी"));
+    const QString mb_str = StormLang11(
+        QStringLiteral("МБ"), QStringLiteral("MB"), QStringLiteral("MB"), QStringLiteral("Mo"),
+        QStringLiteral("MB"), QStringLiteral("MB"), QStringLiteral("MB"), QStringLiteral("MB"),
+        QStringLiteral("MB"), QStringLiteral("MB"), QStringLiteral("MB"), QStringLiteral("एमबी"));
+    const QString kb_str = StormLang11(
+        QStringLiteral("КБ"), QStringLiteral("KB"), QStringLiteral("KB"), QStringLiteral("ko"),
+        QStringLiteral("KB"), QStringLiteral("KB"), QStringLiteral("KB"), QStringLiteral("KB"),
+        QStringLiteral("KB"), QStringLiteral("KB"), QStringLiteral("KB"), QStringLiteral("केबी"));
+    const QString b_str = StormLang11(
+        QStringLiteral("Б"), QStringLiteral("B"), QStringLiteral("B"), QStringLiteral("o"),
+        QStringLiteral("B"), QStringLiteral("B"), QStringLiteral("B"), QStringLiteral("B"),
+        QStringLiteral("B"), QStringLiteral("B"), QStringLiteral("B"), QStringLiteral("बी"));
+
+    static const QRegularExpression gb_rx(QStringLiteral(R"(\b(ГБ|GB|Go|जीबी)\b)"), QRegularExpression::CaseInsensitiveOption);
+    static const QRegularExpression mb_rx(QStringLiteral(R"(\b(МБ|MB|Mo|एमबी)\b)"), QRegularExpression::CaseInsensitiveOption);
+    static const QRegularExpression kb_rx(QStringLiteral(R"(\b(КБ|KB|ko|केबी)\b)"), QRegularExpression::CaseInsensitiveOption);
+    static const QRegularExpression b_rx(QStringLiteral(R"((?<=\s|^)(Б|B|o|बी)(?=\s|$))"), QRegularExpression::CaseInsensitiveOption);
+
+    size_str.replace(gb_rx, gb_str);
+    size_str.replace(mb_rx, mb_str);
+    size_str.replace(kb_rx, kb_str);
+    size_str.replace(b_rx, b_str);
+
+    if (lang.rfind("ru", 0) == 0 || lang.rfind("fr", 0) == 0) {
+        size_str.replace(QLatin1Char('.'), QLatin1Char(','));
     } else {
-        size_str.replace(QStringLiteral("ГБ"), QStringLiteral("GB"), Qt::CaseInsensitive);
-        size_str.replace(QStringLiteral("МБ"), QStringLiteral("MB"), Qt::CaseInsensitive);
-        size_str.replace(QStringLiteral("КБ"), QStringLiteral("KB"), Qt::CaseInsensitive);
-        size_str.replace(QStringLiteral(" Б"), QStringLiteral(" B"), Qt::CaseInsensitive);
         size_str.replace(QLatin1Char(','), QLatin1Char('.'));
     }
     return size_str;

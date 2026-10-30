@@ -32,6 +32,7 @@
 #include "storm_switch/configuration/configure_mouse_panning.h"
 #include "storm_switch/configuration/input_profiles.h"
 #include "storm_switch/util/limitable_input_dialog.h"
+#include "storm_switch/common/storm_lang.h"
 
 const std::array<std::string, ConfigureInputPlayer::ANALOG_SUB_BUTTONS_NUM>
     ConfigureInputPlayer::analog_sub_buttons{{
@@ -1415,19 +1416,33 @@ int ConfigureInputPlayer::GetIndexFromControllerType(Core::HID::NpadStyleIndex t
 void ConfigureInputPlayer::UpdateInputDevices() {
     input_devices = input_subsystem->GetInputDevices();
     ui->comboDevices->clear();
-    const std::string& lang = UISettings::values.language.GetValue();
-    const bool is_ru = lang.rfind("ru", 0) == 0;
     for (const auto& device : input_devices) {
         const auto raw_display = device.Get("display", "Unknown");
         QString display_str;
         if (raw_display == "Any") {
-            display_str = is_ru ? QStringLiteral("Любое") : tr("Any");
+            display_str = StormLang11(
+                QStringLiteral("Любое"), tr("Any"), QStringLiteral("Beliebig"),
+                QStringLiteral("Tous"), QStringLiteral("Cualquiera"), QStringLiteral("Qualsiasi"),
+                QStringLiteral("Qualquer"), QStringLiteral("任何"), QStringLiteral("すべて"),
+                QStringLiteral("모두"), QStringLiteral("أي"), QStringLiteral("कोई भी"));
         } else if (raw_display == "Keyboard Only") {
-            display_str = is_ru ? QStringLiteral("Только клавиатура") : tr("Keyboard Only");
+            display_str = StormLang11(
+                QStringLiteral("Только клавиатура"), tr("Keyboard Only"), QStringLiteral("Nur Tastatur"),
+                QStringLiteral("Clavier uniquement"), QStringLiteral("Solo teclado"), QStringLiteral("Solo tastiera"),
+                QStringLiteral("Apenas teclado"), QStringLiteral("仅键盘"), QStringLiteral("キーボードのみ"),
+                QStringLiteral("키보드 전용"), QStringLiteral("لوحة المفاتيح فقط"), QStringLiteral("केवल कीबोर्ड"));
         } else if (raw_display == "Keyboard/Mouse") {
-            display_str = is_ru ? QStringLiteral("Клавиатура/Мышь") : tr("Keyboard/Mouse");
+            display_str = StormLang11(
+                QStringLiteral("Клавиатура/Мышь"), tr("Keyboard/Mouse"), QStringLiteral("Tastatur/Maus"),
+                QStringLiteral("Clavier/Souris"), QStringLiteral("Teclado/Ratón"), QStringLiteral("Tastiera/Mouse"),
+                QStringLiteral("Teclado/Mouse"), QStringLiteral("键盘/鼠标"), QStringLiteral("キーボード/マウス"),
+                QStringLiteral("키보드/마우스"), QStringLiteral("لوحة المفاتيح/الفأرة"), QStringLiteral("कीबोर्ड/माउस"));
         } else if (raw_display == "Unknown") {
-            display_str = is_ru ? QStringLiteral("Неизвестно") : tr("Unknown");
+            display_str = StormLang11(
+                QStringLiteral("Неизвестно"), tr("Unknown"), QStringLiteral("Unbekannt"),
+                QStringLiteral("Inconnu"), QStringLiteral("Desconocido"), QStringLiteral("Sconosciuto"),
+                QStringLiteral("Desconhecido"), QStringLiteral("未知"), QStringLiteral("不明"),
+                QStringLiteral("알 수 없음"), QStringLiteral("غير معروف"), QStringLiteral("अज्ञात"));
         } else {
             display_str = QString::fromStdString(raw_display);
         }

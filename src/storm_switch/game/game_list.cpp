@@ -886,7 +886,18 @@ void GameList::changeEvent(QEvent* event) {
 }
 
 void GameList::RetranslateUI() {
-    item_model->RetranslateUI();
+    if (item_model) {
+        item_model->RetranslateUI();
+        for (int col = 0; col < item_model->columnCount(); ++col) {
+            auto* header_item = item_model->horizontalHeaderItem(col);
+            if (header_item) {
+                header_item->setText(item_model->headerData(col, Qt::Horizontal, Qt::DisplayRole).toString());
+            }
+        }
+    }
+    if (tree_view && tree_view->header()) {
+        tree_view->header()->update();
+    }
 }
 
 void GameList::SetupScrollAnimation() {

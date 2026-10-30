@@ -70,7 +70,7 @@ inline const std::vector<RetroArchShaderEntry>& GetRetroArchShaderCatalog() {
          "📺 1. CRT Monitors, Phosphor & Arcade Screens (CRT & Scanlines)",
          "CRT-Royale (Апертурная решётка Sony Trinitron + галация фосфора)",
          "CRT-Royale (Sony Trinitron Aperture Grille + Phosphor Halation)",
-         Settings::ScalingFilter::NearestNeighbor, 80},
+         Settings::ScalingFilter::Bilinear, 80},
         {"crt-guest-advanced", "CRT-Guest",
          "📺 1. ЭЛТ-мониторы, кинескопы и аркадные экраны (CRT & Scanlines)",
          "📺 1. CRT Monitors, Phosphor & Arcade Screens (CRT & Scanlines)",

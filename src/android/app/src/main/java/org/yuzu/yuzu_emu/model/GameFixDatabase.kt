@@ -4917,8 +4917,8 @@ object GameFixDatabase {
             "Sid Meier's Civilization VII",
             "• Зависание при попытке запуска Web-апплета y2k\n• Черный экран вместо меню",
             "• Hang attempting to launch y2k Web Applet\n• Black screen instead of main menu",
-            "",
-            "",
+            "✓ Режим «В самолете»: Включено (обход сетевого веб-апплета y2k)",
+            "✓ Airplane Mode: Enabled (Bypasses y2k web applet network hang)",
             mapOf(
                 "System\\airplane_mode" to "true"
             )
@@ -4928,8 +4928,8 @@ object GameFixDatabase {
             "Persona 5 Royal",
             "• Черный экран / зависание ГПУ на драйверах Qualcomm Adreno\n• Некорректный clamping семплеров текстур",
             "• Black screen / GPU hang on Qualcomm Adreno drivers\n• Incorrect texture sampler clamping behavior",
-            "",
-            "",
+            "✓ Точность ГПУ: Высокая\n✓ Сжатие ASTC: Отключено\n✓ Барьеры обратной связи: Включено\n✓ Конфигурация памяти: 6 ГБ DRAM",
+            "✓ GPU Accuracy: High\n✓ ASTC Recompression: Disabled\n✓ Barrier Feedback Loops: Enabled\n✓ Memory Layout: 6GB DRAM",
             mapOf(
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\astc_recompression" to "0",
@@ -6267,7 +6267,7 @@ object GameFixDatabase {
     fun parseProgramId(programIdStr: String): Long {
         val str = programIdStr.trim()
         if (str.isEmpty()) return 0L
-        
+
         // 1. If explicit Hex format (starts with 0x/0X or has A-F characters)
         if (str.startsWith("0x", ignoreCase = true)) {
             try {

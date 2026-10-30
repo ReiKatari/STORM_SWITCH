@@ -66,6 +66,9 @@ struct TranslatorVisitor final {
     IR::U32U64 ZeroExtend(IR::UAny value, size_t to_size);
     IR::U32U64 ShiftReg(size_t bitsize, Reg reg, Imm<2> shift, IR::U8 amount);
     IR::U32U64 ExtendReg(size_t bitsize, Reg reg, Imm<3> option, u8 shift);
+    IR::U64 StripPAC(IR::U64 pointer);
+    IR::U64 SignPointer(IR::U64 pointer, IR::U64 modifier, bool is_data, bool use_key_b);
+    IR::U64 AuthPointer(IR::U64 pointer, IR::U64 modifier, bool is_data, bool use_key_b);
 
     // Data processing - Immediate - PC relative addressing
     bool ADR(Imm<2> immlo, Imm<19> immhi, Reg Rd);

@@ -412,7 +412,7 @@ Wirklich fortfahren?</string>
     <string name="frame_limit_enable">Limitierte Geschwindigkeit</string>
     <string name="frame_limit_enable_description">Limitiert die Geschwindigkeit auf einen von dir festgelegten Prozentsatz.</string>
     <string name="frame_limit_slider">Geschwindkeitsbegrenzung in Prozent</string>
-    <string name="frame_limit_slider_description">Gibt die prozentuale Geschwindigkeit der Emulation an. 100% sind normal. Werte darüber oder drunter werden die Geschwindigkeit entsprechend verändern.</string>
+    <string name="frame_limit_slider_description" formatted="false">Gibt die prozentuale Geschwindigkeit der Emulation an. 100% sind normal. Werte darüber oder drunter werden die Geschwindigkeit entsprechend verändern.</string>
     <string name="turbo_speed_limit">Turbo Geschwindigkeit</string>
     <string name="slow_speed_limit">Langsame Geschwindigkeit</string>
     <string name="cpu_backend">CPU-Backend</string>
@@ -1062,7 +1062,7 @@ Wirklich fortfahren?</string>
     <string name="auto_optimization_mode_fast_desc">Maximale FPS, minimale Hitze und Batteriesparen. 0.75X Auflösung, sparsamer VRAM, schnelle GPU-Barrieren, NCE.</string>
     <string name="cheat_status_disabled">⚪ Deaktiviert</string>
     <string name="search_amiibo_hint">Nach Name, Charakter oder ID suchen...</string>
-    <string name="cheats_download_success">Cheat-Datenbank erfolgreich heruntergeladen! %1 Cheats gefunden.</string>
+    <string name="cheats_download_success">Cheat-Datenbank erfolgreich heruntergeladen! %1$d Cheats gefunden.</string>
     <string name="auto_optimization_wizard_description">Analysiert CPU, GPU und RAM und stellt automatisch die besten Einstellungen für Ihr Gerät ein</string>
     <string name="downloading_cheats">Cheat-Datenbank wird heruntergeladen…</string>
     <string name="deselect_all">Alle abwählen</string>
@@ -1080,7 +1080,7 @@ Wirklich fortfahren?</string>
     <string name="vram_garbage_collection_description">Gibt ungenutzten Texturspeicher frei, um Ruckler und Abstürze durch Android LMK zu verhindern.</string>
     <string name="translator_enable_floating_button">Schwebenden Button anzeigen</string>
     <string name="cheat_code">Atmosphere Cheat-Code</string>
-    <string name="auto_optimization_mode_normal_desc">Optimale Balance aus Grafikqualität, Flüssigkeit und Stabilität. 1X (720p/1080p), FSR 85%, FXAA, ausgewogene Barrieren.</string>
+    <string name="auto_optimization_mode_normal_desc" formatted="false">Optimale Balance aus Grafikqualität, Flüssigkeit und Stabilität. 1X (720p/1080p), FSR 85%, FXAA, ausgewogene Barrieren.</string>
     <string name="download_cheats">Online-Cheats herunterladen</string>
     <string name="auto_optimization_mode_accurate_desc">Höchste Grafikqualität, 1.5X/1X Auflösung, sicheres DMA, strikte GPU-Barrieren, SMAA, 16x Anisotropie.</string>
     <string name="auto_optimization_mode_normal">⚖️ Normal (Empfohlen)</string>
@@ -1219,10 +1219,10 @@ Wirklich fortfahren?</string>
     <string name="gpu_fence_behavior">GPU-Fence-Verhalten</string>
     <string name="gpu_fence_behavior_description">Steuert die GPU-Fence-Synchronisation.</string>
     <string name="astc_recompression">ASTC-Textur-Rekompression</string>
-    <string name="astc_recompression_description">Rekompression von ASTC-Texturen zu BC1, BC3 oder BC5 zur Reduzierung des RAM- und VRAM-Bedarfs um 50–80%.</string>
+    <string name="astc_recompression_description" formatted="false">Rekompression von ASTC-Texturen zu BC1, BC3 oder BC5 zur Reduzierung des RAM- und VRAM-Bedarfs um 50–80%.</string>
     <string name="astc_recompression_uncompressed">Unkomprimiert (Höchste Qualität / Maximaler RAM)</string>
     <string name="astc_recompression_bc1">BC1 (Niedrige Qualität / Maximale RAM-Einsparung)</string>
-    <string name="astc_recompression_bc3">BC3 (Mittlere Qualität / 50% RAM-Einsparung)</string>
+    <string name="astc_recompression_bc3" formatted="false">BC3 (Mittlere Qualität / 50% RAM-Einsparung)</string>
     <string name="astc_recompression_bc5">BC5 (Hohe Qualität für Normal-Maps)</string>
     <string name="renderer_asynchronous_gpu_emulation">Asynchrone GPU-Emulation</string>
     <string name="renderer_asynchronous_gpu_emulation_description">Führt die GPU-Emulation asynchron aus, um die Leistung zu steigern.</string>
@@ -1340,11 +1340,11 @@ Wirklich fortfahren?</string>
     <string name="profile_preset_fast_title">⚡ Schnell (Max. FPS und niedrige Temperatur)</string>
     <string name="profile_preset_fast_desc">0.75X Auflösung, schneller JIT, asynchrone Shader, 6 GB DRAM, kühler SoC.</string>
     <string name="profile_preset_balanced_title">⚖️ Ausgewogen (Empfohlen)</string>
-    <string name="profile_preset_balanced_desc">1.0X (720p/1080p), FSR 85%, schneller JIT, asynchrone Shader, 6 GB DRAM.</string>
+    <string name="profile_preset_balanced_desc" formatted="false">1.0X (720p/1080p), FSR 85%, schneller JIT, asynchrone Shader, 6 GB DRAM.</string>
     <string name="profile_preset_accurate_title">💎 Hohe Qualität (Präzise)</string>
     <string name="profile_preset_accurate_desc">1.0X-1.5X, hohe GPU-Genauigkeit, strikte Synchronisation, FXAA/SMAA, 8 GB DRAM.</string>
     <string name="profile_preset_saver_title">🔋 Energiesparmodus und kühler SoC</string>
-    <string name="profile_preset_saver_desc">0.75X Auflösung, 100% Geschwindigkeitslimit, sparsamer VRAM, minimaler Akkuverbrauch.</string>
+    <string name="profile_preset_saver_desc" formatted="false">0.75X Auflösung, 100% Geschwindigkeitslimit, sparsamer VRAM, minimaler Akkuverbrauch.</string>
     <string name="profile_btn_apply">Anwenden</string>
     <string name="profile_btn_share">Teilen</string>
     <string name="profile_btn_rename">Umbenennen</string>
@@ -1794,7 +1794,7 @@ Starte ein Spiel oder verbinde dich mit einem anderen Gerät.</string>
     <string name="cheat_desc_no_fog">Disable Fog &amp; Haze</string>
     <string name="cheat_desc_no_blur">Disable Blur &amp; Post-Processing</string>
     <string name="cheat_desc_fov">Camera &amp; FOV Adjustment</string>
-    <string name="cheat_desc_drop_rate">100% Rare Item Drop Rate</string>
+    <string name="cheat_desc_drop_rate" formatted="false">100% Rare Item Drop Rate</string>
     <string name="cheat_desc_unlock_all">Unlock All Content</string>
     <string name="cheat_desc_freeze_timer">Freeze Timer (Infinite Time)</string>
     <string name="cheat_desc_master_code">Master Code</string>
@@ -1902,7 +1902,7 @@ Starte ein Spiel oder verbinde dich mit einem anderen Gerät.</string>
     <string name="translator_btn_test_voice">▶ Test voice</string>
     <string name="translator_sec_floating_btn">🔘 FLOATING TRANSLATE BUTTON</string>
     <string name="translator_lbl_floating_show">Show translate button on screen:</string>
-    <string name="translator_lbl_floating_opacity_default">Button opacity: 90%</string>
+    <string name="translator_lbl_floating_opacity_default" formatted="false">Button opacity: 90%</string>
     <string name="translator_lbl_floating_opacity_fmt">Button opacity: %1$d%%</string>
     <string name="translator_engine_google">Google Translate (Fast / Free)</string>
     <string name="translator_engine_yandex">Yandex Translate (High quality Russian)</string>
@@ -1923,7 +1923,7 @@ Starte ein Spiel oder verbinde dich mit einem anderen Gerät.</string>
     <string name="translator_style_dark">Semi-transparent dark</string>
     <string name="translator_style_neon">Neon bubble</string>
     <string name="translator_style_outline">Outline only</string>
-    <string name="translator_roi_all">Full game screen (100%)</string>
+    <string name="translator_roi_all" formatted="false">Full game screen (100%)</string>
     <string name="translator_roi_bottom">Bottom third (Dialogue boxes)</string>
     <string name="translator_roi_center">Center area (Subtitles &amp; cutscenes)</string>
     <string name="translator_roi_top">Top third (Quests, HUD &amp; hints)</string>
@@ -2129,4 +2129,53 @@ Starte ein Spiel oder verbinde dich mit einem anderen Gerät.</string>
     <string name="apply_driver_msg">Der Treiber wurde erfolgreich installiert. Möchten Sie ihn jetzt aktivieren?</string>
     <string name="apply_driver_positive">Aktivieren</string>
     <string name="apply_driver_negative">Später</string>
+
+    <string name="theme_storm_elemental">STORM ELEMENTAL (Elementares Feuer)</string>
+    <string name="theme_storm_flagship">STORM (Flaggschiff)</string>
+    <string name="auto_opt_dialog_title">STORM FLUID AUTO-KONFIGURATION</string>
+    <string name="auto_opt_dialog_subtitle">Intelligente Hardware-Profilierung</string>
+    <string name="auto_opt_telemetry_title">HARDWARE-TELEMETRIE</string>
+    <string name="auto_opt_profiles_title">1-KLICK-PROFILE</string>
+    <string name="auto_opt_profile_fast_title">MAX FPS (E-Sport / 60 FPS)</string>
+    <string name="auto_opt_badge_60fps">60 FPS</string>
+    <string name="auto_opt_profile_fast_desc">Fokus auf minimale Frame-Latenz, schnellen GPU-Timer, NCE und aggressive Thread-Verteilung.</string>
+    <string name="auto_opt_profile_balance_title">AUSGEWOGEN (EMPFOHLEN)</string>
+    <string name="auto_opt_badge_recommended">EMPFOHLEN</string>
+    <string name="auto_opt_profile_balance_desc">Optimale Balance aus Bildschärfe, stabilen 30/60 FPS und Textur-/Glyphen-Schutz.</string>
+    <string name="auto_opt_profile_ultra_title">ULTRA-QUALITÄT (2K / FSR / Schärfe)</string>
+    <string name="auto_opt_badge_2k_fsr">2K / FSR</string>
+    <string name="auto_opt_profile_ultra_desc">Höhere Auflösung, Kantenglättung, maximale Filterung und Shader-Präzision.</string>
+    <string name="auto_opt_profile_eco_title">ÖKO / MOBIL (Geringe Hitze)</string>
+    <string name="auto_opt_badge_cool">KÜHL</string>
+    <string name="auto_opt_profile_eco_desc">Geringere Wärmeentwicklung und minimaler Akkuverbrauch für lange Reisen.</string>
+    <string name="auto_opt_mode_fast_short">MAX FPS</string>
+    <string name="auto_opt_mode_normal_short">AUSGEWOGEN</string>
+    <string name="auto_opt_mode_accurate_short">ULTRA-QUALITÄT</string>
+    <string name="auto_opt_mode_battery_short">ÖKO / MOBIL</string>
+    <string name="auto_opt_mode_default_short">STANDARD</string>
+    <string name="scaling_filter_nearest_neighbor">Nächster Nachbar (Nearest Neighbor)</string>
+    <string name="scaling_filter_bilinear">Bilinear</string>
+    <string name="scaling_filter_bicubic">Bikubisch</string>
+    <string name="scaling_filter_gaussian">Gaußsch</string>
+    <string name="scaling_filter_scale_force">ScaleForce (Kantenschärfung)</string>
+    <string name="scaling_filter_fsr">AMD FSR 2.0 (FidelityFX Super Resolution)</string>
+    <string name="scaling_filter_sgsr">Snapdragon GSR (Game Super Resolution)</string>
+    <string name="scaling_filter_sgsr_edge">Snapdragon GSR EdgeDir (Kantengerichtet)</string>
+    <string name="scaling_filter_area">Flächenfilter (Area)</string>
+    <string name="scaling_filter_bspline">B-Spline</string>
+    <string name="scaling_filter_mitchell">Mitchell-Netravali</string>
+    <string name="scaling_filter_spline1">Spline-1</string>
+    <string name="scaling_filter_zero_tangent">Null-Tangente (Zero-Tangent)</string>
+    <string name="scaling_filter_lanczos">Lanczos 3</string>
+    <string name="scaling_filter_mmpx">MMPX (Pixel-Art Filter)</string>
+    <string name="scaling_filter_cas">AMD FidelityFX CAS (Adaptive Schärfung)</string>
+    <string name="scaling_filter_omniscale">OmniScale HQ (Hochpräzise Rekonstruktion)</string>
+    <string name="fsr2_quality_mode">FSR 2.0 Qualitätsmodus</string>
+    <string name="fsr2_quality_mode_description">Wählt das Qualitätsprofil für das temporale Upscaling mit AMD FSR 2.0</string>
+    <string name="fsr2_quality_quality">Qualität (1.5x)</string>
+    <string name="fsr2_quality_balanced">Ausgewogen (1.7x)</string>
+    <string name="fsr2_quality_performance">Leistung (2.0x)</string>
+    <string name="fsr2_quality_ultra_performance">Ultra-Leistung (3.0x)</string>
+    <string name="mali_driver_info">Mali/Immortalis/Xclipse-GPUs verwenden den herstellereigenen System-Vulkan-Treiber. Das Upstream-Mesa-PanVK ist experimentell und unterstützt noch nicht alle Switch-Vulkan-Erweiterungen. Benutzerdefinierte .zip-Treiberinstallationen bleiben für Testbuilds verfügbar, während Adreno-Turnip-Treiber gefiltert werden.</string>
+    <string name="mali_turnip_incompatible_warning">Warnung: Adreno-Turnip-Treiber wurden speziell für Qualcomm-Adreno-GPUs entwickelt. Die Installation auf einer Mali- oder Nicht-Adreno-GPU kann zu Grafikfehlern oder Abstürzen führen. Möchten Sie fortfahren?</string>
 </resources>

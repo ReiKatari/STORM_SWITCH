@@ -34,10 +34,99 @@ enum class SystemRegisterEncoding : u32 {
 };
 
 bool TranslatorVisitor::HINT([[maybe_unused]] Imm<4> CRm, [[maybe_unused]] Imm<3> op2) {
-    if (options.enable_pauth_returns && CRm == 0 && op2 == 7) {
-        return XPAC_1(false, Reg::R30);
+    if (options.enable_pauth_returns) {
+        if (CRm == 0 && op2 == 7) {
+            return XPAC_1(false, Reg::R30);
+        }
+        if (CRm == 1 && (op2 == 0 || op2 == 2 || op2 == 4 || op2 == 6)) {
+            return XPAC_1(false, Reg::R17);
+        }
+        if (CRm == 3) {
+            return XPAC_1(false, Reg::R30);
+        }
     }
     return true;
+}
+
+bool TranslatorVisitor::PACIA_1([[maybe_unused]] bool Z, [[maybe_unused]] Reg Rn, Reg Rd) {
+    return XPAC_1(false, Rd);
+}
+
+bool TranslatorVisitor::PACIB_1([[maybe_unused]] bool Z, [[maybe_unused]] Reg Rn, Reg Rd) {
+    return XPAC_1(false, Rd);
+}
+
+bool TranslatorVisitor::PACDA([[maybe_unused]] bool Z, [[maybe_unused]] Reg Rn, Reg Rd) {
+    return XPAC_1(true, Rd);
+}
+
+bool TranslatorVisitor::PACDB([[maybe_unused]] bool Z, [[maybe_unused]] Reg Rn, Reg Rd) {
+    return XPAC_1(true, Rd);
+}
+
+bool TranslatorVisitor::AUTIA_1([[maybe_unused]] bool Z, [[maybe_unused]] Reg Rn, Reg Rd) {
+    return XPAC_1(false, Rd);
+}
+
+bool TranslatorVisitor::AUTIB_1([[maybe_unused]] bool Z, [[maybe_unused]] Reg Rn, Reg Rd) {
+    return XPAC_1(false, Rd);
+}
+
+bool TranslatorVisitor::AUTDA([[maybe_unused]] bool Z, [[maybe_unused]] Reg Rn, Reg Rd) {
+    return XPAC_1(true, Rd);
+}
+
+bool TranslatorVisitor::AUTDB([[maybe_unused]] bool Z, [[maybe_unused]] Reg Rn, Reg Rd) {
+    return XPAC_1(true, Rd);
+}
+
+bool TranslatorVisitor::PACIA_2() {
+    return XPAC_1(false, Reg::R30);
+}
+
+bool TranslatorVisitor::PACIB_2() {
+    return XPAC_1(false, Reg::R30);
+}
+
+bool TranslatorVisitor::AUTIA_2() {
+    return XPAC_1(false, Reg::R30);
+}
+
+bool TranslatorVisitor::AUTIB_2() {
+    return XPAC_1(false, Reg::R30);
+}
+
+bool TranslatorVisitor::XPAC_2() {
+    return XPAC_1(false, Reg::R30);
+}
+
+bool TranslatorVisitor::PACGA([[maybe_unused]] Reg Rm, [[maybe_unused]] Reg Rn, Reg Rd) {
+    if (!options.enable_pauth_returns) {
+        return UnallocatedEncoding();
+    }
+    X(64, Rd, ir.Imm64(0));
+    return true;
+}
+
+IR::U64 TranslatorVisitor::StripPAC(IR::U64 pointer) {
+    const auto bits = options.address_space_bits;
+    if (bits >= 64) {
+        return pointer;
+    }
+    const u64 address_mask = (u64{1} << bits) - 1;
+    // This compatibility model has TBI disabled; bit 55 selects the address extension.
+    const auto extension = ir.ArithmeticShiftRight(
+        ir.LogicalShiftLeft(pointer, ir.Imm8(8)), ir.Imm8(63));
+    return ir.Or(ir.And(pointer, ir.Imm64(address_mask)),
+                 ir.And(extension, ir.Imm64(~address_mask)));
+}
+
+IR::U64 TranslatorVisitor::SignPointer(IR::U64 pointer, [[maybe_unused]] IR::U64 modifier, [[maybe_unused]] bool is_data, [[maybe_unused]] bool use_key_b) {
+    return pointer;
+}
+
+IR::U64 TranslatorVisitor::AuthPointer(IR::U64 pointer, [[maybe_unused]] IR::U64 modifier, [[maybe_unused]] bool is_data, [[maybe_unused]] bool use_key_b) {
+    return StripPAC(pointer);
 }
 
 bool TranslatorVisitor::XPAC_1([[maybe_unused]] bool D, Reg Rd) {

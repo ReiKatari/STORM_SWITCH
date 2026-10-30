@@ -385,7 +385,7 @@
     <string name="frame_limit_enable">محدودیت سرعت</string>
     <string name="frame_limit_enable_description">سرعت شبیه‌سازی را به درصد مشخصی از سرعت عادی محدود می‌کند.</string>
     <string name="frame_limit_slider">درصد محدودیت سرعت</string>
-    <string name="frame_limit_slider_description">درصدی را برای محدود کردن سرعت شبیه‌سازی مشخص می‌کند. 100% سرعت عادی است. مقادیر بیشتر یا کمتر باعث افزایش یا کاهش سرعت می‌شود.</string>
+    <string name="frame_limit_slider_description" formatted="false">درصدی را برای محدود کردن سرعت شبیه‌سازی مشخص می‌کند. 100% سرعت عادی است. مقادیر بیشتر یا کمتر باعث افزایش یا کاهش سرعت می‌شود.</string>
     <string name="cpu_backend">پشتگاه پردازنده</string>
     <string name="cpu_accuracy">دقت پردازنده</string>
     <string name="value_with_units">%1$s%2$s</string>
@@ -844,7 +844,7 @@
     <!-- Licenses screen strings -->
     <string name="licenses">مجوزها</string>
     <string name="license_fidelityfx_fsr_description">High-quality upscaling from AMD</string>
-    
+
     <string name="app_notification_channel_description">STORM SWITCH Switch emulator notifications</string>
     <string name="app_notification_running">STORM SWITCH is Running</string>
     <string name="seconds">Seconds</string>
@@ -1022,10 +1022,10 @@
     <string name="gpu_fence_behavior">GPU Fence Behavior</string>
     <string name="gpu_fence_behavior_description">Controls the GPU fence synchronization behavior. Immediate is the fastest option, but can introduce some issues. Balanced offers better compatibility and may fix issues in some games. Accurate further improves compatibility at the cost of some performance. Strict is the slowest option, but can fix issues that require stricter synchronization. Default follows the GPU Accuracy setting.</string>
     <string name="astc_recompression">ASTC Texture Recompression</string>
-    <string name="astc_recompression_description">Recompresses ASTC textures to BC1, BC3, or BC5 formats on the fly to reduce RAM and VRAM usage by 50–80%.</string>
+    <string name="astc_recompression_description" formatted="false">Recompresses ASTC textures to BC1, BC3, or BC5 formats on the fly to reduce RAM and VRAM usage by 50–80%.</string>
     <string name="astc_recompression_uncompressed">Uncompressed (Highest Quality / Max RAM)</string>
     <string name="astc_recompression_bc1">BC1 (Low Quality / Max RAM Savings)</string>
-    <string name="astc_recompression_bc3">BC3 (Medium Quality / 50% RAM Savings)</string>
+    <string name="astc_recompression_bc3" formatted="false">BC3 (Medium Quality / 50% RAM Savings)</string>
     <string name="astc_recompression_bc5">BC5 (High Quality for Normals)</string>
     <string name="renderer_asynchronous_gpu_emulation">GPU async emulation</string>
     <string name="renderer_asynchronous_gpu_emulation_description">This hack can increase performance by running GPU emulation asynchronously at the cost of graphical issues and increased crash rates by timing-related operations.</string>
@@ -1428,7 +1428,7 @@
     <string name="auto_optimization_mode_fast">⚡ Fast</string>
     <string name="auto_optimization_mode_fast_desc">Maximum FPS, lowest heat, and battery saving. 0.75X resolution, conservative VRAM, fast GPU fences, NCE.</string>
     <string name="auto_optimization_mode_normal">⚖️ Normal (Recommended)</string>
-    <string name="auto_optimization_mode_normal_desc">Optimal balance of visual fidelity, smoothness, and stability. 1X (720p/1080p), FSR 85%, FXAA, balanced fences.</string>
+    <string name="auto_optimization_mode_normal_desc" formatted="false">Optimal balance of visual fidelity, smoothness, and stability. 1X (720p/1080p), FSR 85%, FXAA, balanced fences.</string>
     <string name="auto_optimization_mode_accurate">💎 Accurate</string>
     <string name="auto_optimization_mode_accurate_desc">Maximum graphical accuracy, 1.5X/1X resolution, safe DMA, strict GPU fences, SMAA, 16x Anisotropy.</string>
     <string name="auto_optimization_apply">Apply Mode</string>
@@ -1465,11 +1465,11 @@
     <string name="profile_preset_fast_title">⚡ Fast (Maximum FPS and Low Temp)</string>
     <string name="profile_preset_fast_desc">0.75X resolution, fast JIT, async shaders, disabled reactive flushing, 6GB DRAM, cool SoC.</string>
     <string name="profile_preset_balanced_title">⚖️ Balanced (Recommended)</string>
-    <string name="profile_preset_balanced_desc">1.0X (720p/1080p), FSR 85%, fast JIT, async shaders, EDS1 dynamic state, 6GB DRAM.</string>
+    <string name="profile_preset_balanced_desc" formatted="false">1.0X (720p/1080p), FSR 85%, fast JIT, async shaders, EDS1 dynamic state, 6GB DRAM.</string>
     <string name="profile_preset_accurate_title">💎 High Quality (Accurate)</string>
     <string name="profile_preset_accurate_desc">1.0X-1.5X, high GPU accuracy, strict sync, FXAA/SMAA, 8GB DRAM.</string>
     <string name="profile_preset_saver_title">🔋 Battery Saver and Cool SoC</string>
-    <string name="profile_preset_saver_desc">0.75X resolution, 100% speed limit, battery-efficient VRAM, minimum thermal output.</string>
+    <string name="profile_preset_saver_desc" formatted="false">0.75X resolution, 100% speed limit, battery-efficient VRAM, minimum thermal output.</string>
     <string name="profile_btn_apply">Apply</string>
     <string name="profile_btn_share">Share</string>
     <string name="profile_btn_rename">Rename</string>
@@ -1795,7 +1795,7 @@
     <string name="cheat_desc_no_fog">Disable Fog &amp; Haze</string>
     <string name="cheat_desc_no_blur">Disable Blur &amp; Post-Processing</string>
     <string name="cheat_desc_fov">Camera &amp; FOV Adjustment</string>
-    <string name="cheat_desc_drop_rate">100% Rare Item Drop Rate</string>
+    <string name="cheat_desc_drop_rate" formatted="false">100% Rare Item Drop Rate</string>
     <string name="cheat_desc_unlock_all">Unlock All Content</string>
     <string name="cheat_desc_freeze_timer">Freeze Timer (Infinite Time)</string>
     <string name="cheat_desc_master_code">Master Code</string>
@@ -1903,7 +1903,7 @@
     <string name="translator_btn_test_voice">▶ Test voice</string>
     <string name="translator_sec_floating_btn">🔘 FLOATING TRANSLATE BUTTON</string>
     <string name="translator_lbl_floating_show">Show translate button on screen:</string>
-    <string name="translator_lbl_floating_opacity_default">Button opacity: 90%</string>
+    <string name="translator_lbl_floating_opacity_default" formatted="false">Button opacity: 90%</string>
     <string name="translator_lbl_floating_opacity_fmt">Button opacity: %1$d%%</string>
     <string name="translator_engine_google">Google Translate (Fast / Free)</string>
     <string name="translator_engine_yandex">Yandex Translate (High quality Russian)</string>
@@ -1924,7 +1924,7 @@
     <string name="translator_style_dark">Semi-transparent dark</string>
     <string name="translator_style_neon">Neon bubble</string>
     <string name="translator_style_outline">Outline only</string>
-    <string name="translator_roi_all">Full game screen (100%)</string>
+    <string name="translator_roi_all" formatted="false">Full game screen (100%)</string>
     <string name="translator_roi_bottom">Bottom third (Dialogue boxes)</string>
     <string name="translator_roi_center">Center area (Subtitles &amp; cutscenes)</string>
     <string name="translator_roi_top">Top third (Quests, HUD &amp; hints)</string>

@@ -8,6 +8,7 @@
 
 #include <array>
 #include <map>
+#include <mutex>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -18,6 +19,7 @@
 #include <QFileInfo>
 #include <QFont>
 #include <QIcon>
+#include <QImage>
 #include <QObject>
 #include <QPainter>
 #include <QPen>
@@ -44,14 +46,16 @@ enum class GameListItemType {
 
 Q_DECLARE_METATYPE(GameListItemType);
 
-static QPixmap GetDefaultIcon(u32 size) {
+[[maybe_unused]] static inline QImage GetDefaultImage(u32 size) {
     if (size == 0) size = 32;
-    static std::unordered_map<u32, QPixmap> s_default_icon_cache;
-    auto it = s_default_icon_cache.find(size);
-    if (it != s_default_icon_cache.end()) {
+    static std::unordered_map<u32, QImage> s_default_image_cache;
+    static std::mutex s_default_image_mutex;
+    std::lock_guard<std::mutex> lock(s_default_image_mutex);
+    auto it = s_default_image_cache.find(size);
+    if (it != s_default_image_cache.end()) {
         return it->second;
     }
-    QPixmap icon(size, size);
+    QImage icon(size, size, QImage::Format_ARGB32_Premultiplied);
     icon.fill(Qt::transparent);
     QPainter p(&icon);
     p.setRenderHint(QPainter::Antialiasing);
@@ -80,14 +84,20 @@ static QPixmap GetDefaultIcon(u32 size) {
     p.drawEllipse(size * 7 / 12, size * 7 / 12, size / 5, size / 5);
     p.end();
 
-    s_default_icon_cache.emplace(size, icon);
+    s_default_image_cache.emplace(size, icon);
     return icon;
 }
 
-static QPixmap ThemeIcon(const char* name) {
+[[maybe_unused]] static inline QPixmap GetDefaultIcon(u32 size) {
+    return QPixmap::fromImage(GetDefaultImage(size));
+}
+
+[[maybe_unused]] static inline QPixmap ThemeIcon(const char* name) {
     const int size = std::max(20, static_cast<int>(UISettings::values.folder_icon_size.GetValue()));
     const std::string key = std::string(name ? name : "") + ":" + std::to_string(size);
     static std::unordered_map<std::string, QPixmap> s_theme_icon_cache;
+    static std::mutex s_theme_icon_mutex;
+    std::lock_guard<std::mutex> lock(s_theme_icon_mutex);
     auto it = s_theme_icon_cache.find(key);
     if (it != s_theme_icon_cache.end()) {
         return it->second;
@@ -164,6 +174,9 @@ public:
  * If this class receives valid title metadata, it will also display game icons and titles.
  */
 class GameListItemPath : public GameListItem {
+    QImage m_image;
+    mutable QPixmap m_pixmap;
+
 public:
     static constexpr int TitleRole = SortRole + 1;
     static constexpr int FullPathRole = SortRole + 2;
@@ -246,45 +259,54 @@ public:
                                         : QObject::tr("Нет");
 
         const u32 size = UISettings::values.game_icon_size.GetValue();
-        static std::unordered_map<u64, QPixmap> s_game_icon_cache;
+        static std::unordered_map<u64, QImage> s_game_icon_cache;
         static std::unordered_map<u64, QString> s_tooltip_b64_cache;
+        static std::mutex s_icon_cache_mutex;
 
         const u64 icon_cache_key = (program_id << 12) ^ static_cast<u64>(size);
-        QPixmap picture;
-        auto icon_it = (program_id != 0) ? s_game_icon_cache.find(icon_cache_key) : s_game_icon_cache.end();
-        if (icon_it != s_game_icon_cache.end()) {
-            picture = icon_it->second;
-        } else {
-            if (!picture.loadFromData(picture_data.data(), static_cast<u32>(picture_data.size()))) {
-                picture = GetDefaultIcon(size);
+        QImage picture_img;
+        {
+            std::lock_guard<std::mutex> lock(s_icon_cache_mutex);
+            auto icon_it = (program_id != 0) ? s_game_icon_cache.find(icon_cache_key) : s_game_icon_cache.end();
+            if (icon_it != s_game_icon_cache.end()) {
+                picture_img = icon_it->second;
             } else {
-                picture = picture.scaled(size, size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-            }
-            if (program_id != 0) {
-                s_game_icon_cache.emplace(icon_cache_key, picture);
+                if (!picture_img.loadFromData(picture_data.data(), static_cast<u32>(picture_data.size()))) {
+                    picture_img = GetDefaultImage(size);
+                } else {
+                    picture_img = picture_img.scaled(size, size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+                }
+                if (program_id != 0) {
+                    s_game_icon_cache.emplace(icon_cache_key, picture_img);
+                }
             }
         }
-
-        setData(picture, Qt::DecorationRole);
+        m_image = picture_img;
 
         QString icon_base64;
-        auto b64_it = (program_id != 0) ? s_tooltip_b64_cache.find(program_id) : s_tooltip_b64_cache.end();
-        if (b64_it != s_tooltip_b64_cache.end()) {
-            icon_base64 = b64_it->second;
-        } else if (!picture_data.empty()) {
-            const QByteArray raw = QByteArray::fromRawData(
-                reinterpret_cast<const char*>(picture_data.data()),
-                static_cast<qsizetype>(picture_data.size()));
-            icon_base64 = QString::fromLatin1(raw.toBase64());
-            if (program_id != 0) {
-                s_tooltip_b64_cache.emplace(program_id, icon_base64);
+        {
+            std::lock_guard<std::mutex> lock(s_icon_cache_mutex);
+            auto b64_it = (program_id != 0) ? s_tooltip_b64_cache.find(program_id) : s_tooltip_b64_cache.end();
+            if (b64_it != s_tooltip_b64_cache.end()) {
+                icon_base64 = b64_it->second;
+            } else if (!picture_data.empty()) {
+                const QByteArray raw = QByteArray::fromRawData(
+                    reinterpret_cast<const char*>(picture_data.data()),
+                    static_cast<qsizetype>(picture_data.size()));
+                icon_base64 = QString::fromLatin1(raw.toBase64());
+                if (program_id != 0) {
+                    s_tooltip_b64_cache.emplace(program_id, icon_base64);
+                }
+            } else {
+                QByteArray bArray;
+                QBuffer buffer(&bArray);
+                buffer.open(QIODevice::WriteOnly);
+                picture_img.save(&buffer, "PNG", 90);
+                icon_base64 = QString::fromLatin1(bArray.toBase64());
+                if (program_id != 0) {
+                    s_tooltip_b64_cache.emplace(program_id, icon_base64);
+                }
             }
-        } else {
-            QByteArray bArray;
-            QBuffer buffer(&bArray);
-            buffer.open(QIODevice::WriteOnly);
-            picture.save(&buffer, "PNG", 90);
-            icon_base64 = QString::fromLatin1(bArray.toBase64());
         }
 
         const QString formatted_title_id =
@@ -326,6 +348,15 @@ public:
     }
 
     QVariant data(int role) const override {
+        if (role == Qt::DecorationRole) {
+            if (m_pixmap.isNull() && !m_image.isNull()) {
+                m_pixmap = QPixmap::fromImage(m_image);
+            }
+            if (!m_pixmap.isNull()) {
+                return m_pixmap;
+            }
+        }
+
         if (role == Qt::DisplayRole || role == SortRole) {
             std::string filename;
             Common::SplitPath(data(FullPathRole).toString().toStdString(), nullptr, &filename,

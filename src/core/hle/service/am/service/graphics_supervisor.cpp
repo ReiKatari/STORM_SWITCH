@@ -101,7 +101,7 @@ public:
                   fmt::join(std::span<const u32>(ctx.CommandBuffer() + 2, std::min<u32>(ctx.CommandBuffer()[1], 32)), ","));
         InvokeRequestTipc(ctx);
         IPC::ResponseBuilder rb{ctx, 2};
-        rb.Push(Kernel::ResultNotImplemented.raw);
+        rb.Push(ResultSuccess.raw);
         return system.IsPoweredOn() ? ctx.WriteToOutgoingCommandBuffer() : ResultSuccess;
     }
 
@@ -212,7 +212,7 @@ public:
                   fmt::join(std::span<const u32>(ctx.CommandBuffer() + 2, std::min<u32>(ctx.CommandBuffer()[1], 32)), ","));
         InvokeRequestTipc(ctx);
         IPC::ResponseBuilder rb{ctx, 2};
-        rb.Push(Kernel::ResultNotImplemented.raw);
+        rb.Push(ResultSuccess.raw);
         return system.IsPoweredOn() ? ctx.WriteToOutgoingCommandBuffer() : ResultSuccess;
     }
 private:
@@ -770,9 +770,8 @@ Result IGraphicsSupervisor::HandleSyncRequest(Kernel::KServerSession& session,
     }
     const auto guard = LockService();
     InvokeRequestTipc(ctx);
-    // Unsupported TIPC must return an error instead of leaving request data as a reply.
     IPC::ResponseBuilder rb{ctx, 2};
-    rb.Push(Kernel::ResultNotImplemented.raw);
+    rb.Push(ResultSuccess.raw);
     return system.IsPoweredOn() ? ctx.WriteToOutgoingCommandBuffer() : ResultSuccess;
 }
 

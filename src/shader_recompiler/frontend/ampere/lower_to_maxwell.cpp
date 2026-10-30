@@ -6,13 +6,17 @@
 namespace Shader::Ampere {
 
 void ClearLoweringCache() {
-    std::scoped_lock lk(s_ampere_lower_mutex);
-    s_ampere_lower_cache.clear();
+    for (auto& shard : s_ampere_lower_shards) {
+        shard.Clear();
+    }
 }
 
 size_t GetLoweringCacheSize() {
-    std::scoped_lock lk(s_ampere_lower_mutex);
-    return s_ampere_lower_cache.size();
+    size_t total = 0;
+    for (const auto& shard : s_ampere_lower_shards) {
+        total += shard.Size();
+    }
+    return total;
 }
 
 } // namespace Shader::Ampere

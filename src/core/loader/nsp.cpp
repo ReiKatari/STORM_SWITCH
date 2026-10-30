@@ -453,7 +453,7 @@ ResultStatus AppLoader_NSP::ReadProgramId(u64& out_program_id) {
             }
         }
         if (file) {
-            std::regex id_regex(R"(0100[0-9a-fA-F]{12})");
+            std::regex id_regex(R"((?:0100|0400)[0-9a-fA-F]{12})");
             std::smatch match;
             const std::string fname = file->GetName();
             if (std::regex_search(fname, match, id_regex)) {

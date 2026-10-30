@@ -7,7 +7,7 @@
 // where smoothstep "expansion" actually results in worse codegen (SPIRV-Opt does a direct conv to smoothstep)
 // TODO: Numerical analysis - fract is sawtooth func and floor, reuse params? Perhaps - no need for precision
 
-#version 460 core
+#version 450
 
 layout (location = 0) in vec2 frag_tex_coord;
 layout (location = 0) out vec4 color;

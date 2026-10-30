@@ -196,7 +196,12 @@ vk::ImageView CreateWrappedImageView(const Device& device, vk::Image& image, VkF
 }
 
 vk::RenderPass CreateWrappedRenderPass(const Device& device, VkFormat format,
-                                       VkImageLayout initial_layout) {
+                                       VkImageLayout initial_layout,
+                                       VkImageLayout final_layout) {
+    const VkImageLayout subpass_layout = (final_layout == VK_IMAGE_LAYOUT_GENERAL)
+        ? VK_IMAGE_LAYOUT_GENERAL
+        : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
     const VkAttachmentDescription attachment{
         .flags = VK_ATTACHMENT_DESCRIPTION_MAY_ALIAS_BIT,
         .format = format,
@@ -204,15 +209,15 @@ vk::RenderPass CreateWrappedRenderPass(const Device& device, VkFormat format,
         .loadOp = initial_layout == VK_IMAGE_LAYOUT_UNDEFINED ? VK_ATTACHMENT_LOAD_OP_DONT_CARE
                                                               : VK_ATTACHMENT_LOAD_OP_LOAD,
         .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-        .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
-        .stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE,
+        .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+        .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
         .initialLayout = initial_layout,
-        .finalLayout = VK_IMAGE_LAYOUT_GENERAL,
+        .finalLayout = final_layout,
     };
 
-    constexpr VkAttachmentReference color_attachment_ref{
+    const VkAttachmentReference color_attachment_ref{
         .attachment = 0,
-        .layout = VK_IMAGE_LAYOUT_GENERAL,
+        .layout = subpass_layout,
     };
 
     const VkSubpassDescription subpass_description{

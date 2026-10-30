@@ -105,6 +105,7 @@ struct ImageBase {
     u64 modification_tick = 0;
     u8 generation = 0; // 0: Active, 1: Standby, 2: Eviction Candidate
     size_t lru_index = SIZE_MAX;
+    u64 last_frame_tick = 0;
 
     std::array<u32, MAX_MIP_LEVELS> mip_level_offsets{};
 

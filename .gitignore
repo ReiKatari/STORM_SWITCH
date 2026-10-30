@@ -120,3 +120,7 @@ temp_*
 test_*
 crash_*
 
+
+
+# STORM Clean Git & Secrets Policy
+temp_load/

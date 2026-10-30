@@ -18,7 +18,7 @@
 #include "video_core/renderer_vulkan/vk_scheduler.h"
 
 namespace Vulkan {
-namespace { thread_local bool post_shader_active = false; }
+namespace { thread_local int post_shader_id = 0; }
 
 BlitScreen::BlitScreen(Tegra::MaxwellDeviceMemoryManager& device_memory_, const Device& device_, MemoryAllocator& memory_allocator_, PresentManager& present_manager_, Scheduler& scheduler_, const PresentFilters& filters_)
     : device_memory{device_memory_}
@@ -42,9 +42,13 @@ void BlitScreen::WaitIdle(const Device& device) {
 void BlitScreen::SetWindowAdaptPass(const Device& device) {
     layers.clear();
     scaling_filter = filters.get_scaling_filter();
-    post_shader_active = Settings::values.post_processing_shader.GetValue() > 0;
+    post_shader_id = Settings::values.post_processing_shader.GetValue();
 
-    if (post_shader_active) {
+    if (post_shader_id == 1) {
+        window_adapt = MakeCrtRoyale(device, swapchain_view_format);
+        return;
+    }
+    if (post_shader_id > 1) {
         window_adapt = MakeBilinear(device, swapchain_view_format);
         return;
     }
@@ -126,8 +130,8 @@ void BlitScreen::DrawToFrame(const Device& device, RasterizerVulkan& rasterizer,
     bool resource_update_required = false;
     bool presentation_recreate_required = false;
 
-    const bool want_post_shader = Settings::values.post_processing_shader.GetValue() > 0;
-    if (!window_adapt || scaling_filter != active_scaling || post_shader_active != want_post_shader) {
+    const int want_post_shader = Settings::values.post_processing_shader.GetValue();
+    if (!window_adapt || scaling_filter != active_scaling || post_shader_id != want_post_shader) {
         resource_update_required = true;
     }
 

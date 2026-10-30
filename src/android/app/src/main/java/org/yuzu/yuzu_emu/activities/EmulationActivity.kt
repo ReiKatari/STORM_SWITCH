@@ -41,6 +41,7 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.Surface
 import android.view.View
+import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -209,6 +210,11 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
         Log.gameLaunched = true
         CrashHandler.exportLiveLog(this)
         ThemeHelper.setTheme(this)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            window.attributes.layoutInDisplayCutoutMode =
+                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+        }
 
         super.onCreate(savedInstanceState)
 
@@ -801,8 +807,8 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
             gyro[2] = event.values[2] / 6.0f
 
             // Auto-calibration: detect stillness
-            if (Math.abs(gyro[0]) < GYRO_STILL_THRESHOLD && 
-                Math.abs(gyro[1]) < GYRO_STILL_THRESHOLD && 
+            if (Math.abs(gyro[0]) < GYRO_STILL_THRESHOLD &&
+                Math.abs(gyro[1]) < GYRO_STILL_THRESHOLD &&
                 Math.abs(gyro[2]) < GYRO_STILL_THRESHOLD) {
                 gyroStillFrames++
                 if (gyroStillFrames > GYRO_CALIB_FRAMES) {

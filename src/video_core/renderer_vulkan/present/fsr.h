@@ -7,6 +7,7 @@
 #pragma once
 
 #include "common/math_util.h"
+#include "video_core/renderer_vulkan/present/fsr2.h"
 #include "video_core/vulkan_common/vulkan_memory_allocator.h"
 #include "video_core/vulkan_common/vulkan_wrapper.h"
 
@@ -65,6 +66,7 @@ private:
     };
     std::vector<Images> m_dynamic_images;
     bool m_images_ready{};
+    std::unique_ptr<FSR2::Pipeline> m_fsr2;
 };
 
 } // namespace Vulkan

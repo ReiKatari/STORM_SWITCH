@@ -454,7 +454,7 @@
     <string name="frame_limit_enable">Ограничить скорость</string>
     <string name="frame_limit_enable_description">Ограничивает скорость эмуляции указанным процентом от нормальной скорости.</string>
     <string name="frame_limit_slider">Ограничение процента cкорости</string>
-    <string name="frame_limit_slider_description">Указывает процент ограничения скорости эмуляции. 100% - это нормальная скорость. Значения больше или меньше увеличивают или уменьшают ограничение скорости.</string>
+    <string name="frame_limit_slider_description" formatted="false">Указывает процент ограничения скорости эмуляции. 100% - это нормальная скорость. Значения больше или меньше увеличивают или уменьшают ограничение скорости.</string>
     <string name="turbo_speed_limit">Турбо-режим</string>
     <string name="turbo_speed_limit_description">Когда турбо-режим включён, эмуляция будет работать на этой скорости.</string>
     <string name="slow_speed_limit">Замедленный режим</string>
@@ -523,10 +523,10 @@
     <string name="accelerate_astc">Метод декодирования ASTC</string>
     <string name="accelerate_astc_description">Выберите способ декодирования сжатых текстур ASTC для рендеринга: ЦП (медленно, безопасно), ГПУ (быстро, рекомендуется) или ЦП асинхронно (без заиканий, могут возникнуть проблемы)</string>
     <string name="astc_recompression">Пересжатие текстур ASTC</string>
-    <string name="astc_recompression_description">Сжимает текстуры ASTC в BC1/BC3/BC5 на лету, снижая потребление оперативной и видеопамяти (RAM/VRAM) на 50–80%.</string>
+    <string name="astc_recompression_description" formatted="false">Сжимает текстуры ASTC в BC1/BC3/BC5 на лету, снижая потребление оперативной и видеопамяти (RAM/VRAM) на 50–80%.</string>
     <string name="astc_recompression_uncompressed">Без сжатия (Максимальное качество / Много ОЗУ)</string>
     <string name="astc_recompression_bc1">BC1 (Низкое качество / Максимальная экономия ОЗУ)</string>
-    <string name="astc_recompression_bc3">BC3 (Среднее качество / Экономия 50% ОЗУ)</string>
+    <string name="astc_recompression_bc3" formatted="false">BC3 (Среднее качество / Экономия 50% ОЗУ)</string>
     <string name="astc_recompression_bc5">BC5 (Высокое качество карт нормалей)</string>
 
     <string name="sync_memory_operations">Синхронизация операций памяти</string>
@@ -1395,7 +1395,7 @@
     <string name="auto_optimization_mode_fast">⚡ Быстрый</string>
     <string name="auto_optimization_mode_fast_desc">Максимальный FPS, минимальный нагрев и экономия батареи. 0.75X разрешение, экономный VRAM, быстрые барьеры ГПУ, NCE.</string>
     <string name="auto_optimization_mode_normal">⚖️ Нормальный (Рекомендуется)</string>
-    <string name="auto_optimization_mode_normal_desc">Идеальный баланс между великолепной графикой, плавностью и стабильностью. 1X (720p/1080p), FSR 85%, FXAA, сбалансированные барьеры.</string>
+    <string name="auto_optimization_mode_normal_desc" formatted="false">Идеальный баланс между великолепной графикой, плавностью и стабильностью. 1X (720p/1080p), FSR 85%, FXAA, сбалансированные барьеры.</string>
     <string name="auto_optimization_mode_accurate">💎 Точный</string>
     <string name="auto_optimization_mode_accurate_desc">Максимальное качество графики, разрешение 1.5X/1X, Безопасный DMA, строгие барьеры ГПУ, SMAA, анизотропия 16x.</string>
     <string name="auto_optimization_apply">Применить режим</string>
@@ -1500,11 +1500,11 @@
     <string name="profile_preset_fast_title">⚡ Быстрый (Макс. FPS и низкий нагрев)</string>
     <string name="profile_preset_fast_desc">0.75X разрешение, быстрый JIT, асинхронные шейдеры, отключенная реактивная очистка, 6 ГБ DRAM, холодный SoC.</string>
     <string name="profile_preset_balanced_title">⚖️ Сбалансированный (Рекомендуемый)</string>
-    <string name="profile_preset_balanced_desc">1.0X (720p/1080p), FSR 85%, быстрый JIT, асинхронные шейдеры, базовая динамика EDS1, 6 ГБ DRAM.</string>
+    <string name="profile_preset_balanced_desc" formatted="false">1.0X (720p/1080p), FSR 85%, быстрый JIT, асинхронные шейдеры, базовая динамика EDS1, 6 ГБ DRAM.</string>
     <string name="profile_preset_accurate_title">💎 Высокое качество (Точная точность)</string>
     <string name="profile_preset_accurate_desc">1.0X-1.5X, высокая точность ГПУ, строгая синхронизация, FXAA/SMAA, 8 ГБ DRAM.</string>
     <string name="profile_preset_saver_title">🔋 Энергосбережение и холодный SoC</string>
-    <string name="profile_preset_saver_desc">0.75X разрешение, лимит 100% скорости, экономный VRAM, минимальный нагрев аккумулятора.</string>
+    <string name="profile_preset_saver_desc" formatted="false">0.75X разрешение, лимит 100% скорости, экономный VRAM, минимальный нагрев аккумулятора.</string>
     <string name="profile_btn_apply">Применить</string>
     <string name="profile_btn_share">Поделиться</string>
     <string name="profile_btn_rename">Переименовать</string>
@@ -1936,7 +1936,7 @@
     <string name="cheat_desc_no_fog">Отключение тумана и дымки</string>
     <string name="cheat_desc_no_blur">Отключение размытия и постобработки</string>
     <string name="cheat_desc_fov">Настройка угла обзора и камеры (FOV)</string>
-    <string name="cheat_desc_drop_rate">100% шанс выпадения редких предметов</string>
+    <string name="cheat_desc_drop_rate" formatted="false">100% шанс выпадения редких предметов</string>
     <string name="cheat_desc_unlock_all">Разблокировка всего контента</string>
     <string name="cheat_desc_freeze_timer">Заморозка таймера (Бесконечное время)</string>
     <string name="cheat_desc_master_code">Главный мастер-код (Master Code)</string>
@@ -2045,7 +2045,7 @@
     <string name="translator_btn_test_voice">▶ Проверить голос</string>
     <string name="translator_sec_floating_btn">🔘 ПЛАВАЮЩАЯ КНОПКА ПЕРЕВОДА</string>
     <string name="translator_lbl_floating_show">Кнопка перевода поверх экрана:</string>
-    <string name="translator_lbl_floating_opacity_default">Прозрачность кнопки: 90%</string>
+    <string name="translator_lbl_floating_opacity_default" formatted="false">Прозрачность кнопки: 90%</string>
     <string name="translator_lbl_floating_opacity_fmt">Прозрачность кнопки: %1$d%%</string>
     <string name="translator_engine_google">Google Translate (Быстрый / Бесплатно)</string>
     <string name="translator_engine_yandex">Яндекс Переводчик (Качественный русский)</string>
@@ -2066,7 +2066,7 @@
     <string name="translator_style_dark">Полупрозрачный темный</string>
     <string name="translator_style_neon">Неоновый бабл</string>
     <string name="translator_style_outline">Только контур</string>
-    <string name="translator_roi_all">Весь игровой экран (100%)</string>
+    <string name="translator_roi_all" formatted="false">Весь игровой экран (100%)</string>
     <string name="translator_roi_bottom">Нижняя треть (Диалоговые окна)</string>
     <string name="translator_roi_center">Центральная область (Субтитры и катсцены)</string>
     <string name="translator_roi_top">Верхняя треть (Квесты, интерфейс и подсказки)</string>
@@ -2315,4 +2315,28 @@
     <string name="resolution_two_handheld">2.0X (1440p / 2K) (Медленно)</string>
     <string name="resolution_three_handheld">3.0X (2160p / 4K) (Медленно)</string>
     <string name="resolution_four_handheld">4.0X (2880p) (Медленно)</string>
+
+    <string name="theme_storm_elemental">STORM ELEMENTAL (Стихийный огонь)</string>
+    <string name="theme_storm_flagship">STORM (Флагманский)</string>
+    <string name="auto_opt_dialog_title">АВТО-НАСТРОЙКА STORM FLUID</string>
+    <string name="auto_opt_dialog_subtitle">Интеллектуальное профилирование оборудования</string>
+    <string name="auto_opt_telemetry_title">ТЕЛЕМЕТРИЯ ОБОРУДОВАНИЯ</string>
+    <string name="auto_opt_profiles_title">ПРОФИЛИ В 1 КЛИК</string>
+    <string name="auto_opt_profile_fast_title">МАКСИМУМ FPS (Киберспорт / 60 FPS)</string>
+    <string name="auto_opt_badge_60fps">60 FPS</string>
+    <string name="auto_opt_profile_fast_desc">Упор на минимальную задержку кадра, быстрый таймер ГПУ, NCE и агрессивную разгрузку потоков.</string>
+    <string name="auto_opt_profile_balance_title">БАЛАНС (РЕКОМЕНДУЕТСЯ)</string>
+    <string name="auto_opt_badge_recommended">РЕКОМЕНДУЕТСЯ</string>
+    <string name="auto_opt_profile_balance_desc">Идеальный баланс чёткости изображения, стабильных 30/60 FPS и защиты глифов/текстур.</string>
+    <string name="auto_opt_profile_ultra_title">УЛЬТРА КАЧЕСТВО (2K / FSR / Чёткость)</string>
+    <string name="auto_opt_badge_2k_fsr">2K / FSR</string>
+    <string name="auto_opt_profile_ultra_desc">Повышенное разрешение, сглаживание, максимальная фильтрация и точность шейдеров.</string>
+    <string name="auto_opt_profile_eco_title">ЭКО / ПОРТАТИВ (Без нагрева)</string>
+    <string name="auto_opt_badge_cool">ХОЛОД</string>
+    <string name="auto_opt_profile_eco_desc">Снижение тепловыделения и расхода заряда батареи для долгих поездок.</string>
+    <string name="auto_opt_mode_fast_short">МАКСИМУМ FPS</string>
+    <string name="auto_opt_mode_normal_short">БАЛАНС</string>
+    <string name="auto_opt_mode_accurate_short">УЛЬТРА КАЧЕСТВО</string>
+    <string name="auto_opt_mode_battery_short">ЭКО / ПОРТАТИВ</string>
+    <string name="auto_opt_mode_default_short">ПО УМОЛЧАНИЮ</string>
 </resources>

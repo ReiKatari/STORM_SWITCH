@@ -518,7 +518,7 @@
     <string name="frame_limit_enable">Limit speed</string>
     <string name="frame_limit_enable_description">Limits emulation speed to a specified percentage of normal speed.</string>
     <string name="frame_limit_slider">Limit speed percent</string>
-    <string name="frame_limit_slider_description">Specifies the percentage to limit emulation speed. 100% is the normal speed. Values higher or lower will increase or decrease the speed limit.</string>
+    <string name="frame_limit_slider_description" formatted="false">Specifies the percentage to limit emulation speed. 100% is the normal speed. Values higher or lower will increase or decrease the speed limit.</string>
     <string name="turbo_speed_limit">Turbo speed</string>
     <string name="turbo_speed_limit_description">When Turbo Mode is enabled, emulation will run at this speed.</string>
     <string name="slow_speed_limit">Slow speed</string>
@@ -584,10 +584,10 @@
     <string name="accelerate_astc">ASTC Decoding Method</string>
     <string name="accelerate_astc_description">Pick how ASTC-compressed textures are decoded for rendering: CPU (slow, safe), GPU (fast, recommended), or CPU Async (no stutters, may cause issues)</string>
     <string name="astc_recompression">ASTC Texture Recompression</string>
-    <string name="astc_recompression_description">Recompresses ASTC textures to BC1, BC3, or BC5 formats on the fly to reduce RAM and VRAM usage by 50–80%.</string>
+    <string name="astc_recompression_description" formatted="false">Recompresses ASTC textures to BC1, BC3, or BC5 formats on the fly to reduce RAM and VRAM usage by 50–80%.</string>
     <string name="astc_recompression_uncompressed">Uncompressed (Highest Quality / Max RAM)</string>
     <string name="astc_recompression_bc1">BC1 (Low Quality / Max RAM Savings)</string>
-    <string name="astc_recompression_bc3">BC3 (Medium Quality / 50% RAM Savings)</string>
+    <string name="astc_recompression_bc3" formatted="false">BC3 (Medium Quality / 50% RAM Savings)</string>
     <string name="astc_recompression_bc5">BC5 (High Quality for Normals)</string>
 
     <string name="sync_memory_operations">Sync Memory Operations</string>
@@ -1385,6 +1385,7 @@
     <string name="app_language_hebrew" translatable="false">עברית</string>
     <string name="app_language_serbian" translatable="false">Српски</string>
     <string name="app_language_thai" translatable="false">แบบไทย</string>
+    <string name="app_language_hindi" translatable="false">हिन्दी</string>
 
     <!-- Static Themes -->
     <string name="static_theme_color">STORM SWITCH Theme</string>
@@ -1396,6 +1397,8 @@
     <string name="theme_storm_cyberpunk">STORM CYBERPUNK</string>
     <string name="theme_storm_fantasy">STORM FANTASY</string>
     <string name="theme_storm_warhammer_40k">STORM WARHAMMER 40K</string>
+    <string name="theme_storm_elemental">STORM ELEMENTAL</string>
+    <string name="theme_storm_flagship">STORM</string>
 
     <!-- Legacy alias for theme list -->
     <string name="eden_theme">STORM NIGHT (Default)</string>
@@ -2114,7 +2117,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="auto_optimization_mode_fast">⚡ Fast</string>
     <string name="auto_optimization_mode_fast_desc">Maximum FPS, lowest heat, and battery saving. 0.75X resolution, conservative VRAM, fast GPU fences, NCE.</string>
     <string name="auto_optimization_mode_normal">⚖️ Normal (Recommended)</string>
-    <string name="auto_optimization_mode_normal_desc">Optimal balance of visual fidelity, smoothness, and stability. 1X (720p/1080p), FSR 85%, FXAA, balanced fences.</string>
+    <string name="auto_optimization_mode_normal_desc" formatted="false">Optimal balance of visual fidelity, smoothness, and stability. 1X (720p/1080p), FSR 85%, FXAA, balanced fences.</string>
     <string name="auto_optimization_mode_accurate">💎 Accurate</string>
     <string name="auto_optimization_mode_accurate_desc">Maximum graphical accuracy, 1.5X/1X resolution, safe DMA, strict GPU fences, SMAA, 16x Anisotropy.</string>
     <string name="auto_optimization_apply">Apply Mode</string>
@@ -2155,11 +2158,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="profile_preset_fast_title">⚡ Fast (Maximum FPS and Low Temp)</string>
     <string name="profile_preset_fast_desc">0.75X resolution, fast JIT, async shaders, disabled reactive flushing, 6GB DRAM, cool SoC.</string>
     <string name="profile_preset_balanced_title">⚖️ Balanced (Recommended)</string>
-    <string name="profile_preset_balanced_desc">1.0X (720p/1080p), FSR 85%, fast JIT, async shaders, EDS1 dynamic state, 6GB DRAM.</string>
+    <string name="profile_preset_balanced_desc" formatted="false">1.0X (720p/1080p), FSR 85%, fast JIT, async shaders, EDS1 dynamic state, 6GB DRAM.</string>
     <string name="profile_preset_accurate_title">💎 High Quality (Accurate)</string>
     <string name="profile_preset_accurate_desc">1.0X-1.5X, high GPU accuracy, strict sync, FXAA/SMAA, 8GB DRAM.</string>
     <string name="profile_preset_saver_title">🔋 Battery Saver and Cool SoC</string>
-    <string name="profile_preset_saver_desc">0.75X resolution, 100% speed limit, battery-efficient VRAM, minimum thermal output.</string>
+    <string name="profile_preset_saver_desc" formatted="false">0.75X resolution, 100% speed limit, battery-efficient VRAM, minimum thermal output.</string>
     <string name="profile_btn_apply">Apply</string>
     <string name="profile_btn_share">Share</string>
     <string name="profile_btn_rename">Rename</string>
@@ -2491,7 +2494,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="cheat_desc_no_fog">Disable Fog &amp; Haze</string>
     <string name="cheat_desc_no_blur">Disable Blur &amp; Post-Processing</string>
     <string name="cheat_desc_fov">Camera &amp; FOV Adjustment</string>
-    <string name="cheat_desc_drop_rate">100% Rare Item Drop Rate</string>
+    <string name="cheat_desc_drop_rate" formatted="false">100% Rare Item Drop Rate</string>
     <string name="cheat_desc_unlock_all">Unlock All Content</string>
     <string name="cheat_desc_freeze_timer">Freeze Timer (Infinite Time)</string>
     <string name="cheat_desc_master_code">Master Code</string>
@@ -2600,7 +2603,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="translator_btn_test_voice">▶ Test voice</string>
     <string name="translator_sec_floating_btn">🔘 FLOATING TRANSLATE BUTTON</string>
     <string name="translator_lbl_floating_show">Show translate button on screen:</string>
-    <string name="translator_lbl_floating_opacity_default">Button opacity: 90%</string>
+    <string name="translator_lbl_floating_opacity_default" formatted="false">Button opacity: 90%</string>
     <string name="translator_lbl_floating_opacity_fmt">Button opacity: %1$d%%</string>
     <string name="translator_engine_google">Google Translate (Fast / Free)</string>
     <string name="translator_engine_yandex">Yandex Translate (High quality Russian)</string>
@@ -2621,7 +2624,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="translator_style_dark">Semi-transparent dark</string>
     <string name="translator_style_neon">Neon bubble</string>
     <string name="translator_style_outline">Outline only</string>
-    <string name="translator_roi_all">Full game screen (100%)</string>
+    <string name="translator_roi_all" formatted="false">Full game screen (100%)</string>
     <string name="translator_roi_bottom">Bottom third (Dialogue boxes)</string>
     <string name="translator_roi_center">Center area (Subtitles &amp; cutscenes)</string>
     <string name="translator_roi_top">Top third (Quests, HUD &amp; hints)</string>
@@ -2852,5 +2855,28 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="fsr2_quality_ultra_performance">Ultra Performance (3.0x)</string>
     <string name="mali_driver_info">Mali/Immortalis/Xclipse GPUs use the manufacturer system Vulkan driver. Upstream Mesa PanVK is experimental and does not yet support full Switch Vulkan extensions. Custom .zip driver installation remains available for experimental builds, while Adreno Turnip drivers are filtered to prevent crashes.</string>
     <string name="mali_turnip_incompatible_warning">Warning: Adreno Turnip drivers are designed specifically for Qualcomm Adreno GPUs. Installing this driver on a Mali or non-Adreno GPU may cause graphics instability or app crashes. Do you want to continue?</string>
-</resources>
 
+    <!-- Auto-Optimization Dialog Strings -->
+    <string name="auto_opt_dialog_title">STORM FLUID AUTO-CONFIG</string>
+    <string name="auto_opt_dialog_subtitle">Intelligent Hardware Profiling</string>
+    <string name="auto_opt_telemetry_title">HARDWARE TELEMETRY</string>
+    <string name="auto_opt_profiles_title">1-CLICK PROFILES</string>
+    <string name="auto_opt_profile_fast_title">MAX FPS (Esports / 60 FPS)</string>
+    <string name="auto_opt_badge_60fps">60 FPS</string>
+    <string name="auto_opt_profile_fast_desc">Prioritizes minimum frame latency, fast GPU timer, NCE, and aggressive thread dispatch.</string>
+    <string name="auto_opt_profile_balance_title">BALANCED (RECOMMENDED)</string>
+    <string name="auto_opt_badge_recommended">RECOMMENDED</string>
+    <string name="auto_opt_profile_balance_desc">Optimal balance of visual clarity, stable 30/60 FPS, and glyph/texture safety.</string>
+    <string name="auto_opt_profile_ultra_title">ULTRA QUALITY (2K / FSR / Clarity)</string>
+    <string name="auto_opt_badge_2k_fsr">2K / FSR</string>
+    <string name="auto_opt_profile_ultra_desc">Higher resolution, anti-aliasing, maximum filtering, and shader accuracy.</string>
+    <string name="auto_opt_profile_eco_title">ECO / PORTABLE (Low Heat)</string>
+    <string name="auto_opt_badge_cool">COOL</string>
+    <string name="auto_opt_profile_eco_desc">Reduces thermal output and battery consumption for long trips.</string>
+    <string name="auto_opt_mode_fast_short">MAX FPS</string>
+    <string name="auto_opt_mode_normal_short">BALANCED</string>
+    <string name="auto_opt_mode_accurate_short">ULTRA QUALITY</string>
+    <string name="auto_opt_mode_battery_short">ECO / PORTABLE</string>
+    <string name="auto_opt_mode_default_short">DEFAULT</string>
+
+</resources>

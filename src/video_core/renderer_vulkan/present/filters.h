@@ -26,5 +26,6 @@ std::unique_ptr<WindowAdaptPass> MakeArea(const Device& device, VkFormat frame_f
 std::unique_ptr<WindowAdaptPass> MakeMmpx(const Device& device, VkFormat frame_format);
 std::unique_ptr<WindowAdaptPass> MakeCas(const Device& device, VkFormat frame_format);
 std::unique_ptr<WindowAdaptPass> MakeOmniScale(const Device& device, VkFormat frame_format);
+std::unique_ptr<WindowAdaptPass> MakeCrtRoyale(const Device& device, VkFormat frame_format);
 
 } // namespace Vulkan

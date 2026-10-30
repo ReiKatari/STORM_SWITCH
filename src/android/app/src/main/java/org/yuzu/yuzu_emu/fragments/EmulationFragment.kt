@@ -3198,7 +3198,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
             return
         }
         Thread({
-            runCatching { emuThread.join() }
+            runCatching { emuThread.join(15000L) }
             Handler(Looper.getMainLooper()).post {
                 onStopped()
             }

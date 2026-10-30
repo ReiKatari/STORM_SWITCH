@@ -181,6 +181,18 @@ int main(int argc, char* argv[]) {
         }
     }
     SetUnhandledExceptionFilter(StormCrashHandler);
+
+    // Law 22: UIPI bypass for Drag-and-Drop when running elevated as Administrator
+    typedef BOOL(WINAPI* PFN_ChangeWindowMessageFilter)(UINT, DWORD);
+    if (HMODULE user32 = GetModuleHandleW(L"user32.dll")) {
+        auto pfnFilter = reinterpret_cast<PFN_ChangeWindowMessageFilter>(
+            GetProcAddress(user32, "ChangeWindowMessageFilter"));
+        if (pfnFilter) {
+            pfnFilter(0x0233 /* WM_DROPFILES */, 1 /* MSGFLT_ADD */);
+            pfnFilter(0x004A /* WM_COPYDATA */, 1 /* MSGFLT_ADD */);
+            pfnFilter(0x0049 /* WM_COPYGLOBALDATA */, 1 /* MSGFLT_ADD */);
+        }
+    }
 #endif
     std::set_terminate([]() {
         std::string msg = "Unknown terminate reason";
@@ -371,6 +383,21 @@ int main(int argc, char* argv[]) {
     MainWindow main_window{has_broken_vulkan};
     // After settings have been loaded by GMainWindow, apply the filter
     main_window.show();
+
+#ifdef _WIN32
+    // Law 22: UIPI bypass for Drag-and-Drop window message filter
+    typedef BOOL(WINAPI* PFN_ChangeWindowMessageFilterEx)(HWND, UINT, DWORD, PCHANGEFILTERSTRUCT);
+    if (HMODULE user32 = GetModuleHandleW(L"user32.dll")) {
+        auto pfnFilterEx = reinterpret_cast<PFN_ChangeWindowMessageFilterEx>(
+            GetProcAddress(user32, "ChangeWindowMessageFilterEx"));
+        if (pfnFilterEx) {
+            HWND hwnd = reinterpret_cast<HWND>(main_window.winId());
+            pfnFilterEx(hwnd, 0x0233 /* WM_DROPFILES */, 1 /* MSGFLT_ALLOW */, nullptr);
+            pfnFilterEx(hwnd, 0x004A /* WM_COPYDATA */, 1 /* MSGFLT_ALLOW */, nullptr);
+            pfnFilterEx(hwnd, 0x0049 /* WM_COPYGLOBALDATA */, 1 /* MSGFLT_ALLOW */, nullptr);
+        }
+    }
+#endif
 
     app.setQuitOnLastWindowClosed(true);
     app.connect(&app, &QGuiApplication::applicationStateChanged, &main_window, &MainWindow::OnAppFocusStateChanged);

@@ -314,7 +314,7 @@
     <string name="frame_limit_enable">エミュレーション速度を制限</string>
     <string name="frame_limit_enable_description">エミュレーション速度を指定した割合に制限します。</string>
     <string name="frame_limit_slider">エミュレーション速度</string>
-    <string name="frame_limit_slider_description">エミュレーション速度を制限するパーセンテージを指定します。100%は通常速度です。値の増減で速度も増減します。</string>
+    <string name="frame_limit_slider_description" formatted="false">エミュレーション速度を制限するパーセンテージを指定します。100%は通常速度です。値の増減で速度も増減します。</string>
     <string name="cpu_backend">CPUバックエンド</string>
     <string name="cpu_accuracy">CPU精度</string>
     <!-- System settings strings -->
@@ -697,7 +697,7 @@
     <string name="auto_optimization_mode_fast_desc">最大 FPS、最小発熱、省バッテリー。0.75X 解像度、控えめ VRAM、高速 GPU バリア、NCE。</string>
     <string name="cheat_status_disabled">⚪ 無効</string>
     <string name="search_amiibo_hint">名前、キャラクター、ID で検索...</string>
-    <string name="cheats_download_success">チートデータベースの取得に成功しました！ %1 件のコードが見つかりました。</string>
+    <string name="cheats_download_success">チートデータベースの取得に成功しました！ %1$d 件のコードが見つかりました。</string>
     <string name="auto_optimization_wizard_description">CPU、GPU、RAM を分析し、お使いの端末に最適な設定を自動構成します</string>
     <string name="downloading_cheats">チートデータベースをダウンロード中…</string>
     <string name="deselect_all">すべての選択を解除</string>
@@ -715,7 +715,7 @@
     <string name="vram_garbage_collection_description">不要なテクスチャメモリを定期的に解放し、Android LMK による強制終了を防ぎます。</string>
     <string name="translator_enable_floating_button">フローティングボタンを表示</string>
     <string name="cheat_code">Atmosphere コード</string>
-    <string name="auto_optimization_mode_normal_desc">画質・滑らかさ・安定性の理想的なバランス。1X (720p/1080p)、FSR 85%、FXAA、標準バリア。</string>
+    <string name="auto_optimization_mode_normal_desc" formatted="false">画質・滑らかさ・安定性の理想的なバランス。1X (720p/1080p)、FSR 85%、FXAA、標準バリア。</string>
     <string name="download_cheats">オンラインチートを取得</string>
     <string name="auto_optimization_mode_accurate_desc">最高の描画品質、1.5X/1X 解像度、安全 DMA、厳密 GPU バリア、SMAA、16x 異方性フィルタリング。</string>
     <string name="auto_optimization_mode_normal">⚖️ 標準（推奨）</string>
@@ -737,7 +737,7 @@
     <string name="app_language">アプリ言語</string>
     <string name="overlay_skin_theme">タッチコントローラーのスキン</string>
     <string name="eco_frame_pacing_description">フレーム表示待機中の無駄な CPU スピンサイクルを排除し、安定した 60 FPS で発熱を大幅に抑えます。</string>
-    <string name="auto_optimization_applied_toast">⚡ 自動設定を適用しました：「%1」プロファイル！</string>
+    <string name="auto_optimization_applied_toast">⚡ 自動設定を適用しました：「%1$s」プロファイル！</string>
     <string name="dma_accuracy_normal">標準（推奨）</string>
     <string name="cheat_name">チート名</string>
     <string name="auto_optimization_wizard_title">自動最適化</string>
@@ -858,10 +858,10 @@
     <string name="gpu_fence_behavior">GPUフェンス動作</string>
     <string name="gpu_fence_behavior_description">GPUフェンス同期の動作を制御します。</string>
     <string name="astc_recompression">ASTCテクスチャ再圧縮</string>
-    <string name="astc_recompression_description">ASTCテクスチャをBC1、BC3、またはBC5形式にリアルタイム再圧縮し、メモリ消費を50〜80%削減します。</string>
+    <string name="astc_recompression_description" formatted="false">ASTCテクスチャをBC1、BC3、またはBC5形式にリアルタイム再圧縮し、メモリ消費を50〜80%削減します。</string>
     <string name="astc_recompression_uncompressed">非圧縮 (最高品質 / 最大メモリ)</string>
     <string name="astc_recompression_bc1">BC1 (低品質 / 最大限のメモリ節約)</string>
-    <string name="astc_recompression_bc3">BC3 (中品質 / 50%メモリ節約)</string>
+    <string name="astc_recompression_bc3" formatted="false">BC3 (中品質 / 50%メモリ節約)</string>
     <string name="astc_recompression_bc5">BC5 (法線マップ用高品質)</string>
     <string name="renderer_asynchronous_gpu_emulation">非同期GPUエミュレーション</string>
     <string name="renderer_asynchronous_gpu_emulation_description">パフォーマンス向上のためGPUエミュレーションを非同期で実行します。</string>
@@ -979,11 +979,11 @@
     <string name="profile_preset_fast_title">⚡ 高速 (最高FPSと低温)</string>
     <string name="profile_preset_fast_desc">0.75X解像度、高速JIT、非同期シェーダー、6GB DRAM、低温SoC。</string>
     <string name="profile_preset_balanced_title">⚖️ バランス (推奨)</string>
-    <string name="profile_preset_balanced_desc">1.0X (720p/1080p)、FSR 85%、高速JIT、EDS1動的状態、6GB DRAM。</string>
+    <string name="profile_preset_balanced_desc" formatted="false">1.0X (720p/1080p)、FSR 85%、高速JIT、EDS1動的状態、6GB DRAM。</string>
     <string name="profile_preset_accurate_title">💎 高画質 (高精度)</string>
     <string name="profile_preset_accurate_desc">1.0X-1.5X、高精度GPU、厳格同期、FXAA/SMAA、8GB DRAM。</string>
     <string name="profile_preset_saver_title">🔋 省電力と低温SoC</string>
-    <string name="profile_preset_saver_desc">0.75X解像度、100%速度制限、省電力VRAM、最小発熱。</string>
+    <string name="profile_preset_saver_desc" formatted="false">0.75X解像度、100%速度制限、省電力VRAM、最小発熱。</string>
     <string name="profile_btn_apply">適用</string>
     <string name="profile_btn_share">共有</string>
     <string name="profile_btn_rename">名前変更</string>
@@ -1070,8 +1070,8 @@
     <string name="freedreno_clear_all">すべてクリア</string>
     <string name="freedreno_saved">設定を保存しました</string>
     <string name="freedreno_cleared_all">すべての変数をクリアしました</string>
-    <string name="freedreno_variable_added">変数を追加しました</string>
-    <string name="freedreno_preset_applied">プリセットを適用しました</string>
+    <string name="freedreno_variable_added">変数 %1$s を追加しました</string>
+    <string name="freedreno_preset_applied">プリセット \'%1$s\' を適用しました</string>
     <string name="freedreno_error_empty_name">変数名を入力してください</string>
     <string name="freedreno_error_setting_variable">変数の設定中にエラーが発生しました</string>
     <string name="freedreno_info_title">Freedreno情報</string>
@@ -1168,8 +1168,14 @@
     <string name="import_config">設定をインポート</string>
     <string name="export_config">設定をエクスポート</string>
     <string name="share_config_failed">設定の共有に失敗しました</string>
-    <string name="config_already_exists_message">同名の設定が既に存在します</string>
-    <string name="driver_missing_message">ドライバが見つかりません</string>
+    <string name="config_already_exists_message">%1$s のカスタム設定は既に存在します。
+
+既存の設定を上書きしますか？
+
+この操作は取り消せません。</string>
+    <string name="driver_missing_message">このゲーム設定には、端末にインストールされていない GPU ドライバ \"%s\" が必要です。
+
+今すぐダウンロードしてインストールしますか？</string>
     <string name="emulation_snap_to_grid">グリッドにスナップ</string>
     <string name="load_amiibo">Amiiboを読み込む</string>
     <string name="lock_drawer">ドロワーを固定</string>
@@ -1182,9 +1188,11 @@
     <string name="amiibo_in_use">Amiiboは既に使用中です</string>
     <string name="amiibo_unknown_error">不明なAmiiboエラーが発生しました</string>
     <string name="amiibo_load_success">Amiiboを読み込みました</string>
-    <string name="system_archive_not_found_message">システムアーカイブが見つかりません</string>
+    <string name="system_archive_not_found_message">%s が見つかりません。システムアーカイブをダンプしてください。
+エミュレーションを続行するとクラッシュする可能性があります。</string>
     <string name="fatal_error_message">致命的なエラーが発生しました</string>
-    <string name="device_memory_inadequate">端末のメモリが不足しています</string>
+    <string name="device_memory_inadequate">端末のメモリ: %1$s
+推奨: %2$s</string>
     <string name="clock_normal">標準</string>
     <string name="fast_gpu_normal">標準</string>
     <string name="fast_gpu_medium">中</string>
@@ -1858,7 +1866,7 @@
     <string name="cheat_desc_no_fog">Disable Fog &amp; Haze</string>
     <string name="cheat_desc_no_blur">Disable Blur &amp; Post-Processing</string>
     <string name="cheat_desc_fov">Camera &amp; FOV Adjustment</string>
-    <string name="cheat_desc_drop_rate">100% Rare Item Drop Rate</string>
+    <string name="cheat_desc_drop_rate" formatted="false">100% Rare Item Drop Rate</string>
     <string name="cheat_desc_unlock_all">Unlock All Content</string>
     <string name="cheat_desc_freeze_timer">Freeze Timer (Infinite Time)</string>
     <string name="cheat_desc_master_code">Master Code</string>
@@ -1966,7 +1974,7 @@
     <string name="translator_btn_test_voice">▶ Test voice</string>
     <string name="translator_sec_floating_btn">🔘 FLOATING TRANSLATE BUTTON</string>
     <string name="translator_lbl_floating_show">Show translate button on screen:</string>
-    <string name="translator_lbl_floating_opacity_default">Button opacity: 90%</string>
+    <string name="translator_lbl_floating_opacity_default" formatted="false">Button opacity: 90%</string>
     <string name="translator_lbl_floating_opacity_fmt">Button opacity: %1$d%%</string>
     <string name="translator_engine_google">Google Translate (Fast / Free)</string>
     <string name="translator_engine_yandex">Yandex Translate (High quality Russian)</string>
@@ -1987,7 +1995,7 @@
     <string name="translator_style_dark">Semi-transparent dark</string>
     <string name="translator_style_neon">Neon bubble</string>
     <string name="translator_style_outline">Outline only</string>
-    <string name="translator_roi_all">Full game screen (100%)</string>
+    <string name="translator_roi_all" formatted="false">Full game screen (100%)</string>
     <string name="translator_roi_bottom">Bottom third (Dialogue boxes)</string>
     <string name="translator_roi_center">Center area (Subtitles &amp; cutscenes)</string>
     <string name="translator_roi_top">Top third (Quests, HUD &amp; hints)</string>
@@ -2193,4 +2201,38 @@
     <string name="apply_driver_msg">ドライバーが正常にインストールされました。今すぐ有効にしますか？</string>
     <string name="apply_driver_positive">適用</string>
     <string name="apply_driver_negative">後で</string>
+
+    <string name="theme_storm_elemental">STORM ELEMENTAL (エレメンタルファイア)</string>
+    <string name="theme_storm_flagship">STORM (フラッグシップ)</string>
+    <string name="auto_opt_dialog_title">STORM FLUID 自動設定</string>
+    <string name="auto_opt_dialog_subtitle">インテリジェントハードウェアプロファイリング</string>
+    <string name="auto_opt_telemetry_title">ハードウェアテレメトリ</string>
+    <string name="auto_opt_profiles_title">1クリックプロファイル</string>
+    <string name="auto_opt_profile_fast_title">最大FPS (eスポーツ / 60 FPS)</string>
+    <string name="auto_opt_badge_60fps">60 FPS</string>
+    <string name="auto_opt_profile_fast_desc">最小フレーム遅延、高速GPUタイマー、NCE、積極的なスレッドオフロードを重視。</string>
+    <string name="auto_opt_profile_balance_title">バランス (推奨)</string>
+    <string name="auto_opt_badge_recommended">推奨</string>
+    <string name="auto_opt_profile_balance_desc">鮮明な画質、安定した30/60 FPS、グリフ・テクスチャ保護の最適なバランス。</string>
+    <string name="auto_opt_profile_ultra_title">ウルトラ品質 (2K / FSR / 高精細)</string>
+    <string name="auto_opt_badge_2k_fsr">2K / FSR</string>
+    <string name="auto_opt_profile_ultra_desc">高解像度、アンチエイリアス、最大異方性フィルタリング、高精度シェーダー。</string>
+    <string name="auto_opt_profile_eco_title">省電力 / ポータブル (低発熱)</string>
+    <string name="auto_opt_badge_cool">冷却</string>
+    <string name="auto_opt_profile_eco_desc">長時間の外出プレイ向けに発熱とバッテリー消費を最小限に抑制。</string>
+    <string name="auto_opt_mode_fast_short">最大FPS</string>
+    <string name="auto_opt_mode_normal_short">バランス</string>
+    <string name="auto_opt_mode_accurate_short">ウルトラ品質</string>
+    <string name="auto_opt_mode_battery_short">省電力</string>
+    <string name="auto_opt_mode_default_short">デフォルト</string>
+    <string name="scaling_filter_cas">AMD FidelityFX CAS (コントラスト適応型シャープネス)</string>
+    <string name="scaling_filter_omniscale">OmniScale HQ (高精度ピクセル再構成)</string>
+    <string name="fsr2_quality_mode">FSR 2.0 画質モード</string>
+    <string name="fsr2_quality_mode_description">AMD FSR 2.0 テンポラルアップスケーリングの品質プリセットを選択します</string>
+    <string name="fsr2_quality_quality">品質優先 (1.5x)</string>
+    <string name="fsr2_quality_balanced">バランス (1.7x)</string>
+    <string name="fsr2_quality_performance">パフォーマンス (2.0x)</string>
+    <string name="fsr2_quality_ultra_performance">ウルトラパフォーマンス (3.0x)</string>
+    <string name="mali_driver_info">Mali/Immortalis/Xclipse GPU はメーカー提供のシステム Vulkan ドライバを使用します。Mesa PanVK は実験段階であり、Switch の Vulkan 拡張機能を完全にはサポートしていません。実験的ビルド向けにカスタム .zip ドライバのインストールは引き続き可能ですが、クラッシュ防止のため Adreno Turnip ドライバは除外されます。</string>
+    <string name="mali_turnip_incompatible_warning">警告: Adreno Turnip ドライバは Qualcomm Adreno GPU 専用に設計されています。Mali やその他の非 Adreno GPU にこのドライバをインストールすると、画面の乱れやアプリの強制終了が発生する恐れがあります。続行しますか？</string>
 </resources>

@@ -263,7 +263,7 @@ static RomMetadata CacheRomMetadata(const std::string& raw_path) {
             }
         }
         if (raw_pid == 0) {
-            std::regex id_regex(R"(0100[0-9a-fA-F]{12})");
+            std::regex id_regex(R"((?:0100|0400)[0-9a-fA-F]{12})");
             std::smatch match;
             if (std::regex_search(path, match, id_regex)) {
                 try {

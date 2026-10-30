@@ -378,6 +378,266 @@ object AmiiboHelper {
         val fullFormatted: String get() = "[$icon $category] $title"
     }
 
+    private val CATEGORY_TRANSLATIONS: Map<String, Map<String, String>> = mapOf(
+        "Paraglider Fabric & Weapons" to mapOf(
+            "en" to "Paraglider Fabric & Weapons", "ru" to "Ткань параплана и оружие", "de" to "Gleiterstoff & Waffen",
+            "fr" to "Tissu de paravoile & armes", "es" to "Tela de paravela y armas", "it" to "Tessuto per paravela e armi",
+            "pt" to "Tecido do paravela e armas", "zh" to "滑翔伞织物与武器", "ja" to "パラセールの生地＆武器",
+            "ko" to "패러글라이더 원단 및 무기", "hi" to "पैराग्लाइडर कपड़ा और हथियार"
+        ),
+        "Weapons, Armor & Fabric" to mapOf(
+            "en" to "Weapons, Armor & Fabric", "ru" to "Оружие, броня и ткань", "de" to "Waffen, Rüstung & Stoff",
+            "fr" to "Armes, armure & tissu", "es" to "Armas, armadura y tela", "it" to "Armi, armatura e tessuto",
+            "pt" to "Armas, armadura e tecido", "zh" to "武器、防具与织物", "ja" to "武器・防具＆生地",
+            "ko" to "무기, 방어구 및 원단", "hi" to "हथियार, कवच और कपड़ा"
+        ),
+        "Mount, Armor & Fabric" to mapOf(
+            "en" to "Mount, Armor & Fabric", "ru" to "Скакун, броня и ткань", "de" to "Reittier, Rüstung & Stoff",
+            "fr" to "Monture, armure & tissu", "es" to "Montura, armadura y tela", "it" to "Cavalcatura, armatura e tessuto",
+            "pt" to "Montaria, armadura e tecido", "zh" to "坐骑、防具与织物", "ja" to "馬・防具＆生地",
+            "ko" to "탈것, 방어구 및 원단", "hi" to "सवारी, कवच और कपड़ा"
+        ),
+        "Armor & Fabric" to mapOf(
+            "en" to "Armor & Fabric", "ru" to "Броня и ткань", "de" to "Rüstung & Stoff",
+            "fr" to "Armure & tissu", "es" to "Armadura y tela", "it" to "Armatura e tessuto",
+            "pt" to "Armadura e tecido", "zh" to "防具与织物", "ja" to "防具＆生地",
+            "ko" to "방어구 및 원단", "hi" to "कवच और कपड़ा"
+        ),
+        "Weapons & Fabric" to mapOf(
+            "en" to "Weapons & Fabric", "ru" to "Оружие и ткань", "de" to "Waffen & Stoff",
+            "fr" to "Armes & tissu", "es" to "Armas y tela", "it" to "Armi e tessuto",
+            "pt" to "Armas e tecido", "zh" to "武器与织物", "ja" to "武器＆生地",
+            "ko" to "무기 및 원단", "hi" to "हथियार और कपड़ा"
+        ),
+        "Fabric & Gear" to mapOf(
+            "en" to "Fabric & Gear", "ru" to "Ткань и снаряжение", "de" to "Stoff & Ausrüstung",
+            "fr" to "Tissu & équipement", "es" to "Tela y equipo", "it" to "Tessuto ed equipaggiamento",
+            "pt" to "Tecido e equipamento", "zh" to "织物与装备", "ja" to "生地＆装備",
+            "ko" to "원단 및 장비", "hi" to "कपड़ा और गियर"
+        ),
+        "Hunting Supplies" to mapOf(
+            "en" to "Hunting Supplies", "ru" to "Охотничьи ресурсы", "de" to "Jagdvorräte",
+            "fr" to "Ressources de chasse", "es" to "Suministros de caza", "it" to "Provviste da caccia",
+            "pt" to "Suprimentos de caça", "zh" to "狩猎补给", "ja" to "狩猟物資",
+            "ko" to "사냥 보급품", "hi" to "शिकार आपूर्ति"
+        ),
+        "Fabric & Weapons" to mapOf(
+            "en" to "Fabric & Weapons", "ru" to "Ткань и оружие", "de" to "Stoff & Waffen",
+            "fr" to "Tissu & armes", "es" to "Tela y armas", "it" to "Tessuto e armi",
+            "pt" to "Tecido e armas", "zh" to "织物与武器", "ja" to "生地＆武器",
+            "ko" to "원단 및 무기", "hi" to "कपड़ा और हथियार"
+        ),
+        "Fabric & Ancient Parts" to mapOf(
+            "en" to "Fabric & Ancient Parts", "ru" to "Ткань и механизмы", "de" to "Stoff & Antike Teile",
+            "fr" to "Tissu & pièces antiques", "es" to "Tela y piezas ancestrales", "it" to "Tessuto e parti antiche",
+            "pt" to "Tecido e peças ancestrais", "zh" to "织物与古代核心", "ja" to "生地＆古代素材",
+            "ko" to "원단 및 고대 부품", "hi" to "कपड़ा और प्राचीन पुर्जे"
+        ),
+        "Divine Helm & Fabric" to mapOf(
+            "en" to "Divine Helm & Fabric", "ru" to "Божественный шлем и ткань", "de" to "Titanenhelm & Stoff",
+            "fr" to "Casque divin & tissu", "es" to "Casco divino y tela", "it" to "Elmo divino e tessuto",
+            "pt" to "Elmo divino e tecido", "zh" to "神兽兵装与织物", "ja" to "神獣の兜＆生地",
+            "ko" to "신수 투구 및 원단", "hi" to "दिव्य हेलमेट और कपड़ा"
+        ),
+        "Universal Supplies" to mapOf(
+            "en" to "Universal Supplies", "ru" to "Универсальные ресурсы", "de" to "Universelle Vorräte",
+            "fr" to "Ressources universelles", "es" to "Suministros universales", "it" to "Provviste universali",
+            "pt" to "Suprimentos universais", "zh" to "通用补给", "ja" to "汎用物資",
+            "ko" to "범용 보급품", "hi" to "सार्वभौमिक आपूर्ति"
+        ),
+        "Companion" to mapOf(
+            "en" to "Companion", "ru" to "Компаньон", "de" to "Gefährte",
+            "fr" to "Compagnon", "es" to "Compañero", "it" to "Compagno",
+            "pt" to "Companheiro", "zh" to "伙伴", "ja" to "相棒・仲間",
+            "ko" to "동료", "hi" to "साथी"
+        ),
+        "Mount & Armor" to mapOf(
+            "en" to "Mount & Armor", "ru" to "Скакун и броня", "de" to "Reittier & Rüstung",
+            "fr" to "Monture & armure", "es" to "Montura y armadura", "it" to "Cavalcatura e armatura",
+            "pt" to "Montaria e armadura", "zh" to "坐骑与防具", "ja" to "馬＆防具",
+            "ko" to "탈것 및 방어구", "hi" to "सवारी और कवच"
+        ),
+        "Weapons & Armor" to mapOf(
+            "en" to "Weapons & Armor", "ru" to "Оружие и броня", "de" to "Waffen & Rüstung",
+            "fr" to "Armes & armures", "es" to "Armas y armadura", "it" to "Armi e armature",
+            "pt" to "Armas e armadura", "zh" to "武器与防具", "ja" to "武器＆防具",
+            "ko" to "무기 및 방어구", "hi" to "हथियार और कवच"
+        ),
+        "Weapons" to mapOf(
+            "en" to "Weapons", "ru" to "Оружие", "de" to "Waffen",
+            "fr" to "Armes", "es" to "Armas", "it" to "Armi",
+            "pt" to "Armas", "zh" to "武器", "ja" to "武器",
+            "ko" to "무기", "hi" to "हथियार"
+        ),
+        "Shield & Gems" to mapOf(
+            "en" to "Shield & Gems", "ru" to "Щит и самоцветы", "de" to "Schild & Edelsteine",
+            "fr" to "Bouclier & gemmes", "es" to "Escudo y gemas", "it" to "Scudo e gemme",
+            "pt" to "Escudo e gemas", "zh" to "盾牌与宝石", "ja" to "盾＆宝石",
+            "ko" to "방패 및 보석", "hi" to "ढाल और रत्न"
+        ),
+        "Armor" to mapOf(
+            "en" to "Armor", "ru" to "Броня", "de" to "Rüstung",
+            "fr" to "Armure", "es" to "Armadura", "it" to "Armatura",
+            "pt" to "Armadura", "zh" to "防具", "ja" to "防具",
+            "ko" to "방어구", "hi" to "कवच"
+        ),
+        "Weapon & Chest" to mapOf(
+            "en" to "Weapon & Chest", "ru" to "Оружие и сундук", "de" to "Waffe & Truhe",
+            "fr" to "Arme & coffre", "es" to "Arma y cofre", "it" to "Arma e baule",
+            "pt" to "Arma e baú", "zh" to "武器与宝箱", "ja" to "武器＆宝箱",
+            "ko" to "무기 및 상자", "hi" to "हथियार और संदूक"
+        ),
+        "Supplies" to mapOf(
+            "en" to "Supplies", "ru" to "Ресурсы", "de" to "Vorräte",
+            "fr" to "Ressources", "es" to "Suministros", "it" to "Provviste",
+            "pt" to "Suprimentos", "zh" to "补给物资", "ja" to "物資",
+            "ko" to "보급품", "hi" to "आपूर्ति"
+        ),
+        "Outfit" to mapOf(
+            "en" to "Outfit", "ru" to "Костюм", "de" to "Outfit",
+            "fr" to "Tenue", "es" to "Atuendo", "it" to "Costume",
+            "pt" to "Traje", "zh" to "服装", "ja" to "コスチューム",
+            "ko" to "의상", "hi" to "पोशाक"
+        ),
+        "Outfit & Power-Up" to mapOf(
+            "en" to "Outfit & Power-Up", "ru" to "Костюм и усиление", "de" to "Outfit & Power-Up",
+            "fr" to "Tenue & bonus", "es" to "Atuendo y potenciador", "it" to "Costume e potenziamento",
+            "pt" to "Traje e poder", "zh" to "服装与强化道具", "ja" to "コスチューム＆強化",
+            "ko" to "의상 및 파워업", "hi" to "पोशाक और पावर-अप"
+        ),
+        "Outfit & Radar" to mapOf(
+            "en" to "Outfit & Radar", "ru" to "Костюм и подсказки", "de" to "Outfit & Radar",
+            "fr" to "Tenue & radar", "es" to "Atuendo y radar", "it" to "Costume e radar",
+            "pt" to "Traje e radar", "zh" to "服装与雷达", "ja" to "コスチューム＆レーダー",
+            "ko" to "의상 및 레이더", "hi" to "पोशाक और रडार"
+        ),
+        "Outfit & Life-Up" to mapOf(
+            "en" to "Outfit & Life-Up", "ru" to "Костюм и здоровье", "de" to "Outfit & Leben",
+            "fr" to "Tenue & vie", "es" to "Atuendo y vida", "it" to "Costume e vita",
+            "pt" to "Traje e vida", "zh" to "服装与生命恢复", "ja" to "コスチューム＆ライフUP",
+            "ko" to "의상 및 라이프업", "hi" to "पोशाक और जीवन"
+        ),
+        "Uncle amiibo Hint" to mapOf(
+            "en" to "Uncle amiibo Hint", "ru" to "Подсказка дяди Амибо", "de" to "Onkel amiibo Tipp",
+            "fr" to "Indice d'Oncle amiibo", "es" to "Pista del tío amiibo", "it" to "Indizio di Zio amiibo",
+            "pt" to "Dica do Tio amiibo", "zh" to "amiibo 叔叔提示", "ja" to "おじさんamiiboのヒント",
+            "ko" to "아미보 아저씨 힌트", "hi" to "अंकल amiibo संकेत"
+        ),
+        "Power-Up" to mapOf(
+            "en" to "Power-Up", "ru" to "Усилитель", "de" to "Power-Up",
+            "fr" to "Bonus", "es" to "Potenciador", "it" to "Potenziamento",
+            "pt" to "Poder", "zh" to "强化道具", "ja" to "パワーアップ",
+            "ko" to "파워업", "hi" to "पावर-अप"
+        ),
+        "Event" to mapOf(
+            "en" to "Event", "ru" to "Событие", "de" to "Event",
+            "fr" to "Événement", "es" to "Evento", "it" to "Evento",
+            "pt" to "Evento", "zh" to "事件触发", "ja" to "イベント",
+            "ko" to "이벤트", "hi" to "घटना"
+        ),
+        "Shockwave" to mapOf(
+            "en" to "Shockwave", "ru" to "Ударная волна", "de" to "Schockwelle",
+            "fr" to "Onde de choc", "es" to "Onda expansiva", "it" to "Onda d'urto",
+            "pt" to "Onda de choque", "zh" to "冲击波", "ja" to "ショックウェーブ",
+            "ko" to "충격파", "hi" to "शॉकवेव"
+        ),
+        "Bonus" to mapOf(
+            "en" to "Bonus", "ru" to "Бонус", "de" to "Bonus",
+            "fr" to "Bonus", "es" to "Bonificación", "it" to "Bonus",
+            "pt" to "Bônus", "zh" to "特别奖励", "ja" to "ボーナス",
+            "ko" to "보너스", "hi" to "बोनस"
+        ),
+        "Energy Tank" to mapOf(
+            "en" to "Energy Tank", "ru" to "Контейнер энергии", "de" to "Energie-Tank",
+            "fr" to "Réserve d'énergie", "es" to "Tanque de energía", "it" to "Serbatoio d'energia",
+            "pt" to "Tanque de energia", "zh" to "能量罐", "ja" to "エネルギータンク",
+            "ko" to "에너지 탱크", "hi" to "ऊर्जा टैंक"
+        ),
+        "Missile+ Tank" to mapOf(
+            "en" to "Missile+ Tank", "ru" to "Ракетный комплекс", "de" to "Raketen-Tank+",
+            "fr" to "Réserve de missiles+", "es" to "Tanque de misiles+", "it" to "Serbatoio missili+",
+            "pt" to "Tanque de mísseis+", "zh" to "导弹罐+", "ja" to "ミサイルタンク+",
+            "ko" to "미사일 탱크+", "hi" to "मिसाइल+ टैंक"
+        ),
+        "Replenish" to mapOf(
+            "en" to "Replenish", "ru" to "Пополнение", "de" to "Auffüllung",
+            "fr" to "Ravitaillement", "es" to "Reabastecimiento", "it" to "Rifornimento",
+            "pt" to "Reabastecimento", "zh" to "状态回复", "ja" to "補給・回復",
+            "ko" to "보충", "hi" to "पुनः भरना"
+        ),
+        "Exclusive Gear" to mapOf(
+            "en" to "Exclusive Gear", "ru" to "Экипировка", "de" to "Exklusive Ausrüstung",
+            "fr" to "Équipement exclusif", "es" to "Equipo exclusivo", "it" to "Equipaggiamento esclusivo",
+            "pt" to "Equipamento exclusivo", "zh" to "专属装备", "ja" to "限定ギア",
+            "ko" to "전용 기어", "hi" to "विशेष गियर"
+        ),
+        "Layered Armor" to mapOf(
+            "en" to "Layered Armor", "ru" to "Многослойная броня", "de" to "Dekorrüstung",
+            "fr" to "Armure spéciale", "es" to "Armadura superpuesta", "it" to "Armatura stile",
+            "pt" to "Armadura em camadas", "zh" to "外观装备", "ja" to "重ね着装備",
+            "ko" to "덧입는 장비", "hi" to "परतदार कवच"
+        ),
+        "Lottery" to mapOf(
+            "en" to "Lottery", "ru" to "Лотерея", "de" to "Lotterie",
+            "fr" to "Loterie", "es" to "Lotería", "it" to "Lotteria",
+            "pt" to "Loteria", "zh" to "抽奖", "ja" to "福引",
+            "ko" to "추첨", "hi" to "लॉटरी"
+        ),
+        "Weapon Skin" to mapOf(
+            "en" to "Weapon Skin", "ru" to "Облик оружия", "de" to "Waffen-Skin",
+            "fr" to "Apparence d'arme", "es" to "Diseño de arma", "it" to "Skin per arma",
+            "pt" to "Visual de arma", "zh" to "武器外观", "ja" to "武器スキン",
+            "ko" to "무기 외형", "hi" to "हथियार स्किन"
+        ),
+        "Collectibles" to mapOf(
+            "en" to "Collectibles", "ru" to "Предметы", "de" to "Sammelobjekte",
+            "fr" to "Objets de collection", "es" to "Coleccionables", "it" to "Collezionabili",
+            "pt" to "Colecionáveis", "zh" to "收集品", "ja" to "コレクティブル",
+            "ko" to "수집품", "hi" to "संग्रहणीय वस्तुएं"
+        ),
+        "FP Fighter" to mapOf(
+            "en" to "FP Fighter", "ru" to "Боец FP", "de" to "FP-Kämpfer",
+            "fr" to "Combattant FP", "es" to "Luchador FP", "it" to "Lottatore FP",
+            "pt" to "Lutador FP", "zh" to "FP 斗士", "ja" to "FPファイター",
+            "ko" to "FP 파이터", "hi" to "FP फाइटर"
+        ),
+        "Racing Suit" to mapOf(
+            "en" to "Racing Suit", "ru" to "Гоночный костюм", "de" to "Rennanzug",
+            "fr" to "Combinaison de course", "es" to "Traje de carreras", "it" to "Tuta da corsa",
+            "pt" to "Traje de corrida", "zh" to "赛车服", "ja" to "レーシングスーツ",
+            "ko" to "레이싱 슈트", "hi" to "रेसिंग सूट"
+        ),
+        "Campsite & Photo" to mapOf(
+            "en" to "Campsite & Photo", "ru" to "Кемпинг и фото", "de" to "Zeltplatz & Foto",
+            "fr" to "Camping & photo", "es" to "Zona de acampada y fotos", "it" to "Campeggio e foto",
+            "pt" to "Acampamento e foto", "zh" to "露营地与写真", "ja" to "キャンプ場＆写真",
+            "ko" to "캠핑장 및 사진", "hi" to "कैम्पसाइट और फोटो"
+        ),
+        "Music & Outfit" to mapOf(
+            "en" to "Music & Outfit", "ru" to "Музыка и костюм", "de" to "Musik & Outfit",
+            "fr" to "Musique & tenue", "es" to "Música y atuendo", "it" to "Musica e costume",
+            "pt" to "Música e traje", "zh" to "音乐与服装", "ja" to "楽曲＆衣装",
+            "ko" to "음악 및 의상", "hi" to "संगीत और पोशाक"
+        ),
+        "Boost" to mapOf(
+            "en" to "Boost", "ru" to "Усилитель", "de" to "Verstärkung",
+            "fr" to "Amélioration", "es" to "Mejora", "it" to "Potenziamento",
+            "pt" to "Impulso", "zh" to "状态增益", "ja" to "ブースト",
+            "ko" to "부스트", "hi" to "बूस्ट"
+        ),
+        "Reward" to mapOf(
+            "en" to "Reward", "ru" to "Награда", "de" to "Belohnung",
+            "fr" to "Récompense", "es" to "Recompensa", "it" to "Ricompensa",
+            "pt" to "Recompensa", "zh" to "奖励", "ja" to "報酬",
+            "ko" to "보상", "hi" to "पुरस्कार"
+        )
+    )
+
+    private fun getLocalizedCategory(catEn: String, lang: String): String {
+        val trans = CATEGORY_TRANSLATIONS[catEn] ?: return catEn
+        return trans[lang] ?: trans["en"] ?: catEn
+    }
+
     private fun biReward(
         isRu: Boolean,
         catRu: String,
@@ -387,12 +647,16 @@ object AmiiboHelper {
         titleEn: String,
         descRu: String,
         descEn: String
-    ): AmiiboRewardInfo = AmiiboRewardInfo(
-        category = if (isRu) catRu else catEn,
-        icon = icon,
-        title = if (isRu) titleRu else titleEn,
-        description = if (isRu) descRu else descEn
-    )
+    ): AmiiboRewardInfo {
+        val lang = java.util.Locale.getDefault().language.lowercase()
+        val resolvedCategory = if (isRu) catRu else getLocalizedCategory(catEn, lang)
+        return AmiiboRewardInfo(
+            category = resolvedCategory,
+            icon = icon,
+            title = if (isRu) titleRu else titleEn,
+            description = if (isRu) descRu else descEn
+        )
+    }
 
     fun getRewardForGame(entry: AmiiboEntry, gameTitle: String): AmiiboRewardInfo {
         val isRu = java.util.Locale.getDefault().language in setOf("ru", "uk", "be")

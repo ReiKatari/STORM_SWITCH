@@ -1,475 +1,1012 @@
+import java.util.Properties
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+
+
 // SPDX-FileCopyrightText: Copyright yuzu/Citra Emulator Project
+
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+
+
 // import android.annotation.SuppressLint
+
 import com.android.build.gradle.api.ApplicationVariant
+
 import kotlin.collections.setOf
+
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
+
 import com.github.triplet.gradle.androidpublisher.ReleaseStatus
+
 import org.gradle.api.tasks.Copy
 
+
+
 plugins {
+
     id("com.android.application")
+
     id("org.jetbrains.kotlin.android")
+
     id("kotlin-parcelize")
+
     kotlin("plugin.serialization") version "1.9.20"
+
     id("androidx.navigation.safeargs.kotlin")
+
     id("org.jlleitschuh.gradle.ktlint") version "11.4.0"
+
     id("com.github.triplet.play") version "3.8.6"
+
     id("idea")
+
 }
 
+
+
 /**
+
  * Use the number of seconds/10 since Jan 1 2016 as the versionCode.
+
  * This lets us upload a new build at most every 10 seconds for the
+
  * next 680 years.
+
  */
+
 val autoVersion = (((System.currentTimeMillis() / 1000) - 1451606400) / 10).toInt()
+
+
 
 val edenDir = project(":Eden").projectDir
 
+
+
 @Suppress("UnstableApiUsage")
+
 android {
+
     namespace = "org.yuzu.yuzu_emu"
 
+
+
     compileSdkVersion = "android-36"
+
     ndkVersion = "28.0.13004108"
 
+
+
     val isNightly =
+
         providers.gradleProperty("nightly").orNull?.toBooleanStrictOrNull() ?: false
 
+
+
     buildFeatures {
+
         viewBinding = true
+
     }
+
+
 
     compileOptions {
+
         sourceCompatibility = JavaVersion.VERSION_17
+
         targetCompatibility = JavaVersion.VERSION_17
+
     }
+
+
 
     kotlinOptions {
+
         jvmTarget = "17"
+
     }
+
+
 
     packaging {
+
         // This is necessary for libadrenotools custom driver loading
+
         jniLibs.useLegacyPackaging = true
+
     }
+
+
 
     androidResources {
+
         generateLocaleConfig = true
+
     }
+
+
 
     lint {
+
         abortOnError = false
+
         checkReleaseBuilds = false
+
         disable.add("ExtraTranslation")
+
     }
+
+
 
     defaultConfig {
+
         applicationId = "dev.storm_switch"
+
         minSdk = 24
+
         targetSdk = 36
+
         versionName = getGitVersion()
+
         versionCode = autoVersion
 
+
+
         externalNativeBuild {
+
             cmake {
+
                 val extraCMakeArgs =
+
                     (project.findProperty("YUZU_ANDROID_ARGS") as String?)?.split("\\s+".toRegex())
+
                         ?: emptyList()
 
+
+
                 arguments.addAll(
+
                     listOf(
+
                         "-DENABLE_QT=0", // Don't use QT
+
                         "-DENABLE_WEB_SERVICE=1", // Enable web service
+
                         "-DANDROID_ARM_NEON=true", // cryptopp requires Neon to work
+
                         "-DYUZU_USE_CPM=ON",
+
                         "-DCPMUTIL_FORCE_BUNDLED=ON",
+
                         "-DYUZU_USE_BUNDLED_FFMPEG=ON",
+
                         "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+
                         "-DENABLE_UPDATE_CHECKER=ON",
+
                         "-DBUILD_VERSION=16.0.0",
+
                         "-DGIT_TAG=16.0.0",
+
                         "-DGIT_RELEASE=16.0.0",
+
                         "-DBUILD_TESTING=OFF",
+
                         "-DYUZU_TESTS=OFF",
+
                         "-DDYNARMIC_TESTS=OFF",
+
                         "-DYUZU_DOWNLOAD_ANDROID_VVL=OFF",
+
                         *extraCMakeArgs.toTypedArray()
+
                     )
+
                 )
 
+
+
                 val pgoMode = project.findProperty("YUZU_PGO") as String?
+
                 if (pgoMode == "generate") {
+
                     arguments.add("-DYUZU_ENABLE_PGO_GENERATE=ON")
+
                 } else if (pgoMode == "use") {
+
                     arguments.add("-DYUZU_ENABLE_PGO_USE=ON")
+
                     val pgoPath = project.findProperty("YUZU_PGO_PATH") as String?
+
                     if (!pgoPath.isNullOrEmpty()) {
+
                         arguments.add("-DYUZU_PGO_PROFILE_PATH=$pgoPath")
+
                     }
+
                 }
+
+
 
                 if (isNightly) {
+
                     arguments.addAll(listOf(
+
                         "-DNIGHTLY_BUILD=ON",
+
                     ))
+
                 }
 
+
+
                 abiFilters("arm64-v8a")
+
             }
+
         }
+
     }
 
-    val keystoreFile = System.getenv("ANDROID_KEYSTORE_FILE")
-    signingConfigs {
-        if (keystoreFile != null) {
-            create("release") {
-                storeFile = file(keystoreFile)
-                storePassword = System.getenv("ANDROID_KEYSTORE_PASS")
-                keyAlias = System.getenv("ANDROID_KEY_ALIAS")
-                keyPassword = System.getenv("ANDROID_KEYSTORE_PASS")
-            }
-        }
-        create("default") {
-            storeFile = file("$projectDir/debug.keystore")
-            storePassword = "android"
-            keyAlias = "androiddebugkey"
-            keyPassword = "android"
-        }
+
+
+    val signingPropertiesFile = file("F:/STORM ALL PROJECTS/.storm-secrets/storm_signing.properties")
+
+    val stormProps = Properties()
+
+    if (signingPropertiesFile.exists()) {
+
+        signingPropertiesFile.inputStream().use { stormProps.load(it) }
+
     }
+
+
+
+    val keystorePath = System.getenv("ANDROID_KEYSTORE_FILE")
+
+        ?: stormProps.getProperty("STORM_CERT_FILE")
+
+        ?: stormProps.getProperty("storeFile")
+
+    val keystorePass = System.getenv("ANDROID_KEYSTORE_PASS")
+
+        ?: stormProps.getProperty("STORM_CERT_PASSWORD")
+
+        ?: stormProps.getProperty("storePassword")
+
+    val keyAliasName = System.getenv("ANDROID_KEY_ALIAS")
+
+        ?: stormProps.getProperty("STORM_KEY_ALIAS")
+
+        ?: stormProps.getProperty("keyAlias")
+
+    val keyPass = System.getenv("ANDROID_KEY_PASSWORD")
+
+        ?: System.getenv("ANDROID_KEYSTORE_PASS")
+
+        ?: stormProps.getProperty("STORM_KEY_PASSWORD")
+
+        ?: stormProps.getProperty("keyPassword")
+
+        ?: keystorePass
+
+
+
+    val resolvedKeystoreFile = if (keystorePath != null) {
+
+        val f = file(keystorePath)
+
+        if (f.isAbsolute && f.exists()) f else file("F:/STORM ALL PROJECTS/.storm-secrets/$keystorePath")
+
+    } else null
+
+
+
+    signingConfigs {
+
+        if (resolvedKeystoreFile != null && resolvedKeystoreFile.exists()) {
+
+            create("release") {
+
+                storeFile = resolvedKeystoreFile
+
+                storePassword = keystorePass
+
+                keyAlias = keyAliasName
+
+                keyPassword = keyPass
+
+            }
+
+            create("default") {
+
+                storeFile = resolvedKeystoreFile
+
+                storePassword = keystorePass
+
+                keyAlias = keyAliasName
+
+                keyPassword = keyPass
+
+            }
+
+        } else {
+
+            create("default") {
+
+                val debugKeystore = file("${System.getProperty("user.home")}/.android/debug.keystore")
+
+                if (debugKeystore.exists()) {
+
+                    storeFile = debugKeystore
+
+                    storePassword = "android"
+
+                    keyAlias = "androiddebugkey"
+
+                    keyPassword = "android"
+
+                }
+
+            }
+
+        }
+
+    }
+
+
 
     // The app name is constructed with the appNameSuffix and appNameBase manifest placeholders
+
     // suffix is used for build type--remember to include a space beforehand
 
+
+
     // Define build types, which are orthogonal to product flavors.
+
     buildTypes {
+
         // Signed by release key, allowing for upload to Play Store.
+
         release {
-            signingConfig = if (keystoreFile != null) {
-                signingConfigs.getByName("release")
-            } else {
-                signingConfigs.getByName("default")
-            }
+
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.findByName("default")
+
+
 
             if (isNightly) {
+
                 applicationIdSuffix = ".nightly"
+
                 manifestPlaceholders += mapOf("appNameSuffix" to " Nightly")
+
             } else {
+
                 manifestPlaceholders += mapOf("appNameSuffix" to "")
+
             }
 
+
+
             isMinifyEnabled = true
+
             isDebuggable = false
+
             proguardFiles(
+
                 getDefaultProguardFile("proguard-android-optimize.txt"),
+
                 "proguard-rules.pro"
+
             )
+
         }
 
+
+
         // builds a release build that doesn't need signing
+
         // Attaches 'debug' suffix to version and package name, allowing installation alongside the release build.
+
         register("relWithDebInfo") {
+
             isDefault = true
+
             signingConfig = signingConfigs.getByName("default")
+
             isDebuggable = true
+
             proguardFiles(
+
                 getDefaultProguardFile("proguard-android-optimize.txt"),
+
                 "proguard-rules.pro"
+
             )
+
+
 
             manifestPlaceholders += mapOf("appNameSuffix" to " Debug Release")
 
+
+
             versionNameSuffix = "-relWithDebInfo"
+
             applicationIdSuffix = ".relWithDebInfo"
+
             isJniDebuggable = true
+
         }
+
+
 
         // Signed by debug key disallowing distribution on Play Store.
+
         // Attaches 'debug' suffix to version and package name, allowing installation alongside the release build.
+
         debug {
+
             signingConfig = signingConfigs.getByName("default")
+
             isDebuggable = true
+
             isJniDebuggable = true
+
             versionNameSuffix = "-debug"
+
             applicationIdSuffix = ".debug"
 
+
+
             manifestPlaceholders += mapOf("appNameSuffix" to " Debug")
+
         }
+
     }
+
+
 
     // appNameBase is used for the primary identifier
+
     // this should be "STORM SWITCH <flavorName>"
+
     flavorDimensions.add("version")
+
     productFlavors {
+
         create("mainline") {
+
             dimension = "version"
+
             isDefault = true
+
             minSdk = 33
 
+
+
             manifestPlaceholders += mapOf("appNameBase" to "STORM SWITCH")
+
             resValue("string", "app_name_suffixed", "STORM SWITCH")
 
+
+
             ndk {
+
                 abiFilters += listOf("arm64-v8a")
+
             }
+
         }
+
+
 
         create("genshinSpoof") {
+
             dimension = "version"
+
             minSdk = 35
+
             manifestPlaceholders += mapOf("appNameBase" to "STORM SWITCH Optimized")
+
             resValue("string", "app_name_suffixed", "STORM SWITCH Optimized")
+
             applicationId = "com.miHoYo.Yuanshen"
 
+
+
             externalNativeBuild {
+
                 cmake {
+
                     arguments.add("-DGENSHIN_SPOOF=ON")
+
                 }
+
             }
 
+
+
             ndk {
+
                 abiFilters += listOf("arm64-v8a")
+
             }
+
         }
+
+
 
         create("legacy") {
+
             dimension = "version"
+
             minSdk = 26
+
             manifestPlaceholders += mapOf("appNameBase" to "STORM SWITCH Legacy")
+
             resValue("string", "app_name_suffixed", "STORM SWITCH Legacy")
+
             applicationId = "dev.storm_switch.legacy"
 
+
+
             externalNativeBuild {
+
                 cmake {
+
                     arguments.add("-DYUZU_LEGACY=ON")
+
                 }
+
             }
+
+
 
             sourceSets {
+
                 getByName("legacy") {
+
                     res.srcDirs("src/main/legacy")
+
                 }
+
             }
 
+
+
             ndk {
+
                 abiFilters += listOf("arm64-v8a")
+
             }
+
         }
+
+
 
         create("sdk27") {
+
             dimension = "version"
+
             minSdk = 27
+
             manifestPlaceholders += mapOf("appNameBase" to "STORM SWITCH SDK27")
+
             resValue("string", "app_name_suffixed", "STORM SWITCH SDK27")
+
             applicationId = "dev.storm_switch.sdk27"
 
+
+
             externalNativeBuild {
+
                 cmake {
+
                     arguments.addAll(listOf("-DANDROID_PLATFORM=android-27", "-DYUZU_LEGACY=ON"))
+
                 }
+
             }
+
+
 
             sourceSets {
+
                 getByName("sdk27") {
+
                     res.srcDirs("src/main/legacy")
+
                 }
+
             }
 
+
+
             ndk {
+
                 abiFilters += listOf("arm64-v8a")
+
             }
+
         }
+
+
 
         create("chromeOS") {
+
             dimension = "version"
+
             manifestPlaceholders += mapOf("appNameBase" to "STORM SWITCH ChromeOS")
+
             resValue("string", "app_name_suffixed", "STORM SWITCH ChromeOS")
 
+
+
             ndk {
+
                 abiFilters += listOf("x86_64")
+
             }
+
+
 
             externalNativeBuild {
+
                 cmake {
+
                     abiFilters("x86_64")
+
                 }
+
             }
+
         }
+
     }
+
+
 
     externalNativeBuild {
+
         cmake {
+
             path = file("${edenDir}/CMakeLists.txt")
+
         }
+
     }
+
+
 
     productFlavors.all {
+
         val currentName = manifestPlaceholders["appNameBase"] as? String ?: "STORM SWITCH"
+
         val suffix = if (isNightly) " Nightly" else ""
 
+
+
         // apply nightly suffix I/A
+
         resValue("string", "app_name_suffixed", "$currentName$suffix")
+
         resValue("string", "app_name", "STORM SWITCH$suffix")
+
     }
+
+
 
     sourceSets {
+
         named("main") {
+
             java.srcDir("${edenDir}/externals/generated/sdl/java")
+
             kotlin.srcDir("${edenDir}/externals/generated/sdl/java")
+
         }
+
     }
+
 }
+
+
 
 idea {
+
     module {
+
         // Inclusion to exclude build/ dir from non-Android
+
         excludeDirs.add(file("${edenDir}/build"))
 
+
+
         // also exclude CPM cache from automatic indexing
+
         excludeDirs.add(file("${edenDir}/.cache"))
+
     }
+
 }
+
+
 
 tasks.register<Delete>("ktlintReset", fun Delete.() {
+
     delete(File(layout.buildDirectory.toString() + File.separator + "intermediates/ktLint"))
+
 })
 
+
+
 val showFormatHelp = {
+
     logger.lifecycle(
+
         "If this check fails, please try running \"gradlew ktlintFormat\" for automatic " +
+
                 "codestyle fixes"
+
     )
+
 }
+
 tasks.getByPath("ktlintKotlinScriptCheck").doFirst { showFormatHelp.invoke() }
+
 tasks.getByPath("ktlintMainSourceSetCheck").doFirst { showFormatHelp.invoke() }
+
 tasks.getByPath("loadKtlintReporters").dependsOn("ktlintReset")
 
+
+
 ktlint {
+
     version.set("0.47.1")
+
     android.set(true)
+
     ignoreFailures.set(false)
+
     disabledRules.set(
+
         setOf(
+
             "no-wildcard-imports",
+
             "package-name",
+
             "import-ordering"
+
         )
+
     )
+
     reporters {
+
         reporter(ReporterType.CHECKSTYLE)
+
     }
+
 }
+
+
 
 play {
+
     val keyPath = System.getenv("SERVICE_ACCOUNT_KEY_PATH")
+
     if (keyPath != null) {
+
         serviceAccountCredentials.set(File(keyPath))
+
     }
+
     track.set(System.getenv("STORE_TRACK") ?: "internal")
+
     releaseStatus.set(ReleaseStatus.COMPLETED)
+
 }
+
+
 
 dependencies {
+
     implementation("androidx.core:core-ktx:1.15.0")
+
     implementation("androidx.appcompat:appcompat:1.7.0")
+
     implementation("androidx.recyclerview:recyclerview:1.4.0")
+
     implementation("androidx.constraintlayout:constraintlayout:2.2.1")
+
     implementation("androidx.fragment:fragment-ktx:1.8.6")
+
     implementation("androidx.documentfile:documentfile:1.0.1")
+
     implementation("com.google.android.material:material:1.12.0")
+
     implementation("androidx.preference:preference-ktx:1.2.1")
+
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
+
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
+
     implementation("io.coil-kt:coil:2.2.2")
+
     implementation("androidx.core:core-splashscreen:1.0.1")
+
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.2")
+
     implementation("androidx.window:window:1.3.0")
+
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+
     implementation("org.commonmark:commonmark:0.22.0")
+
     implementation("androidx.navigation:navigation-fragment-ktx:2.8.9")
+
     implementation("androidx.navigation:navigation-ui-ktx:2.8.9")
+
     implementation("info.debatty:java-string-similarity:2.0.0")
+
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+
     implementation("androidx.compose.ui:ui-graphics-android:1.7.8")
+
     implementation("androidx.compose.ui:ui-text-android:1.7.8")
+
     implementation("net.swiftzer.semver:semver:2.0.0")
 
+
+
     // Multi-format archive extraction (7z, rar, zip, tar)
+
     implementation(files("libs/sevenzipjbinding-4android.aar"))
+
     implementation("org.apache.commons:commons-compress:1.26.1")
+
     implementation("org.tukaani:xz:1.9")
+
     implementation("com.github.junrar:junrar:7.5.5")
 
+
+
     // Google ML Kit Text Recognition (OCR) for Auto-Translator
+
     implementation("com.google.mlkit:text-recognition:16.0.1")
+
     implementation("com.google.mlkit:text-recognition-japanese:16.0.1")
+
     implementation("com.google.mlkit:text-recognition-chinese:16.0.1")
+
     implementation("com.google.mlkit:text-recognition-korean:16.0.1")
+
     implementation("com.google.mlkit:text-recognition-devanagari:16.0.1")
+
 }
+
+
 
 fun runGitCommand(command: List<String>): String {
+
     return try {
+
         ProcessBuilder(command)
+
             .directory(project.rootDir)
+
             .redirectOutput(ProcessBuilder.Redirect.PIPE)
+
             .redirectError(ProcessBuilder.Redirect.PIPE)
+
             .start()
+
             .inputStream.bufferedReader()
+
             .use { it.readText() }
+
             .trim()
+
     } catch (e: Exception) {
+
         logger.error("Cannot find git")
+
         ""
+
     }
+
 }
 
+
+
 fun getGitVersion(): String {
+
     val gitReleaseFile = File(project.rootDir, "../../GIT-RELEASE")
+
     if (gitReleaseFile.exists()) {
+
         val ver = gitReleaseFile.readText().removePrefix("\uFEFF").trim()
+
         if (ver.isNotEmpty()) {
+
             return ver
+
         }
+
     }
+
     return "16.0.0"
+
 }
+
+
+
+
 
 
 
 afterEvaluate {
+
     val artifactsDir = layout.projectDirectory.dir("${edenDir}/artifacts")
+
     val outputsDir = layout.buildDirectory.dir("outputs").get()
 
+
+
     android.applicationVariants.forEach { variant ->
+
         val variantName = variant.name
+
         val variantTask = variantName.replaceFirstChar { it.uppercaseChar() }
 
+
+
         val flavor = variant.flavorName
+
         val type = variant.buildType.name
+
+
 
         val baseName = "app-$flavor-$type"
 
+
+
         val apkFile = outputsDir.file("apk/$flavor/$type/$baseName.apk")
+
         val aabFile = outputsDir.file("bundle/$variantName/$baseName.aab")
+
+
 
         val taskName = "copy${variantTask}Outputs"
 
+
+
         tasks.register<Copy>(taskName) {
+
             group = "publishing"
+
             description = "Copy APK and AAB for $variantName to $artifactsDir"
 
+
+
             from(apkFile)
+
             from(aabFile)
+
             into(artifactsDir)
 
+
+
             dependsOn("assemble${variantTask}")
+
             dependsOn("bundle${variantTask}")
+
         }
+
     }
+
 }

@@ -1,414 +1,931 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <resources>
 
+
+
     <style name="Theme.Yuzu.Splash.Main" parent="Theme.SplashScreen">
+
         <item name="windowSplashScreenBackground">@color/storm_night_background</item>
+
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_yuzu_splash</item>
+
         <item name="postSplashScreenTheme">@style/Theme.Storm.Night</item>
+
         <item name="colorSurface">@color/storm_night_surface</item>
+
         <item name="colorOnSurface">@color/storm_night_on_surface</item>
+
         <item name="colorSurfaceVariant">@color/storm_night_surface_variant</item>
+
         <item name="colorOnSurfaceVariant">@color/storm_night_on_surface</item>
+
         <item name="colorPrimary">@color/storm_night_primary</item>
+
         <item name="colorOnPrimary">#0A0E17</item>
+
         <item name="colorOutline">@color/storm_night_outline</item>
+
         <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
+
     </style>
+
+
 
     <style name="Theme.Yuzu.Main" parent="Theme.Material3.DayNight.NoActionBar">
+
         <item name="colorPrimary">@color/storm_night_primary</item>
+
         <item name="colorOnPrimary">#0A0E17</item>
+
         <item name="colorPrimaryContainer">@color/storm_night_primary_container</item>
+
         <item name="colorOnPrimaryContainer">@color/storm_night_primary</item>
+
         <item name="colorSecondary">@color/storm_night_secondary</item>
+
         <item name="colorOnSecondary">#0A0E17</item>
+
         <item name="colorSecondaryContainer">@color/storm_night_surface_variant</item>
+
         <item name="colorOnSecondaryContainer">@color/storm_night_on_surface</item>
+
         <item name="android:windowBackground">?android:attr/colorBackground</item>
+
         <item name="android:colorBackground">@color/storm_night_background</item>
+
         <item name="colorOnBackground">@color/storm_night_on_surface</item>
+
         <item name="colorSurface">@color/storm_night_surface</item>
+
         <item name="colorOnSurface">@color/storm_night_on_surface</item>
+
         <item name="colorSurfaceVariant">@color/storm_night_surface_variant</item>
+
         <item name="colorOnSurfaceVariant">@color/storm_night_on_surface</item>
+
         <item name="colorOutline">@color/storm_night_outline</item>
+
         <item name="android:textColorPrimary">@color/storm_night_on_surface</item>
+
         <item name="android:textColorSecondary">@color/storm_night_on_surface</item>
+
         <item name="android:textColorTertiary">@color/storm_night_on_surface</item>
+
         <item name="android:textColorHint">@color/storm_night_on_surface</item>
+
+
 
         <item name="colorError">@color/eden_error</item>
+
         <item name="colorErrorContainer">@color/eden_error</item>
+
         <item name="colorOnError">#FFFFFF</item>
+
         <item name="colorOnErrorContainer">#FFFFFF</item>
+
         <item name="android:shadowColor">#80000000</item>
 
+
+
         <item name="android:statusBarColor">@android:color/transparent</item>
+
         <item name="android:navigationBarColor">@android:color/transparent</item>
 
+
+
         <item name="sliderStyle">@style/EdenSlider</item>
+
         <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+
         <item name="android:enforceStatusBarContrast">false</item>
+
         <item name="android:enforceNavigationBarContrast">false</item>
+
         <item name="popupMenuStyle">@style/EdenPopupMenu</item>
+
         <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
+
         <item name="colorControlActivated">?attr/colorPrimary</item>
+
         <item name="elevationOverlayEnabled">false</item>
+
     </style>
+
+
 
     <!-- STORM DARK (Cyber Slate & Electric Cyan) -->
+
     <style name="Theme.Storm.Dark" parent="Theme.Yuzu.Main">
+
         <item name="colorPrimary">@color/storm_dark_primary</item>
+
         <item name="colorOnPrimary">#0F172A</item>
+
         <item name="colorPrimaryContainer">@color/storm_dark_primary_container</item>
+
         <item name="colorOnPrimaryContainer">@color/storm_dark_primary</item>
+
         <item name="colorSecondary">@color/storm_dark_secondary</item>
+
         <item name="colorOnSecondary">#0F172A</item>
+
         <item name="colorSecondaryContainer">@color/storm_dark_surface_variant</item>
+
         <item name="colorOnSecondaryContainer">@color/storm_dark_on_surface</item>
+
         <item name="android:colorBackground">@color/storm_dark_background</item>
+
         <item name="colorOnBackground">@color/storm_dark_on_surface</item>
+
         <item name="colorSurface">@color/storm_dark_surface</item>
+
         <item name="colorOnSurface">@color/storm_dark_on_surface</item>
+
         <item name="colorSurfaceVariant">@color/storm_dark_surface_variant</item>
+
         <item name="colorOnSurfaceVariant">@color/storm_dark_on_surface</item>
+
         <item name="colorOutline">@color/storm_dark_outline</item>
+
         <item name="android:textColorPrimary">@color/storm_dark_on_surface</item>
+
         <item name="android:textColorSecondary">@color/storm_dark_on_surface</item>
+
         <item name="android:textColorTertiary">@color/storm_dark_on_surface</item>
+
         <item name="android:textColorHint">@color/storm_dark_on_surface</item>
+
         <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
+
     </style>
+
+
 
     <!-- STORM NIGHT (Default) -->
+
     <style name="Theme.Storm.Night" parent="Theme.Yuzu.Main">
+
         <item name="colorPrimary">@color/storm_night_primary</item>
+
         <item name="colorOnPrimary">#0A0E17</item>
+
         <item name="colorPrimaryContainer">@color/storm_night_primary_container</item>
+
         <item name="colorOnPrimaryContainer">@color/storm_night_primary</item>
+
         <item name="colorSecondary">@color/storm_night_secondary</item>
+
         <item name="colorOnSecondary">#0A0E17</item>
+
         <item name="colorSecondaryContainer">@color/storm_night_surface_variant</item>
+
         <item name="colorOnSecondaryContainer">@color/storm_night_on_surface</item>
+
         <item name="android:colorBackground">@color/storm_night_background</item>
+
         <item name="colorOnBackground">@color/storm_night_on_surface</item>
+
         <item name="colorSurface">@color/storm_night_surface</item>
+
         <item name="colorOnSurface">@color/storm_night_on_surface</item>
+
         <item name="colorSurfaceVariant">@color/storm_night_surface_variant</item>
+
         <item name="colorOnSurfaceVariant">@color/storm_night_on_surface</item>
+
         <item name="colorOutline">@color/storm_night_outline</item>
+
         <item name="android:textColorPrimary">@color/storm_night_on_surface</item>
+
         <item name="android:textColorSecondary">@color/storm_night_on_surface</item>
+
         <item name="android:textColorTertiary">@color/storm_night_on_surface</item>
+
         <item name="android:textColorHint">@color/storm_night_on_surface</item>
+
         <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
+
     </style>
+
+
 
     <!-- Base alias -->
+
     <style name="Theme.Eden.Main" parent="Theme.Storm.Night" />
 
+
+
     <!-- STORM DAY (Light) -->
+
     <style name="Theme.Storm.Day" parent="Theme.Yuzu.Main">
+
         <item name="colorPrimary">@color/storm_day_primary</item>
+
         <item name="colorOnPrimary">#FFFFFF</item>
+
         <item name="colorPrimaryContainer">@color/storm_day_primary_container</item>
+
         <item name="colorOnPrimaryContainer">@color/storm_day_primary</item>
+
         <item name="colorSecondary">@color/storm_day_secondary</item>
+
         <item name="colorOnSecondary">#FFFFFF</item>
+
         <item name="colorSecondaryContainer">@color/storm_day_surface_variant</item>
+
         <item name="colorOnSecondaryContainer">@color/storm_day_on_surface</item>
+
         <item name="android:windowBackground">@color/storm_day_background</item>
+
         <item name="android:colorBackground">@color/storm_day_background</item>
+
         <item name="colorOnBackground">@color/storm_day_on_surface</item>
+
         <item name="colorSurface">@color/storm_day_surface</item>
+
         <item name="colorOnSurface">@color/storm_day_on_surface</item>
+
         <item name="colorSurfaceVariant">@color/storm_day_surface_variant</item>
+
         <item name="colorOnSurfaceVariant">@color/storm_day_on_surface</item>
+
         <item name="colorOutline">@color/storm_day_outline</item>
+
         <item name="android:textColorPrimary">@color/storm_day_on_surface</item>
+
         <item name="android:textColorSecondary">@color/storm_day_on_surface</item>
+
         <item name="android:textColorTertiary">@color/storm_day_on_surface</item>
+
         <item name="android:textColorHint">@color/storm_day_on_surface</item>
+
         <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
+
         <item name="elevationOverlayEnabled">false</item>
+
     </style>
+
+
 
     <!-- STORM MIDNIGHT (Deep Velvet Violet & Electric Purple) -->
+
     <style name="Theme.Storm.Midnight" parent="Theme.Yuzu.Main">
+
         <item name="colorPrimary">@color/storm_midnight_primary</item>
+
         <item name="colorOnPrimary">#0B0914</item>
+
         <item name="colorPrimaryContainer">@color/storm_midnight_primary_container</item>
+
         <item name="colorOnPrimaryContainer">@color/storm_midnight_primary</item>
+
         <item name="colorSecondary">@color/storm_midnight_secondary</item>
+
         <item name="colorOnSecondary">#0B0914</item>
+
         <item name="colorSecondaryContainer">@color/storm_midnight_surface_variant</item>
+
         <item name="colorOnSecondaryContainer">@color/storm_midnight_on_surface</item>
+
         <item name="android:colorBackground">@color/storm_midnight_background</item>
+
         <item name="colorOnBackground">@color/storm_midnight_on_surface</item>
+
         <item name="colorSurface">@color/storm_midnight_surface</item>
+
         <item name="colorOnSurface">@color/storm_midnight_on_surface</item>
+
         <item name="colorSurfaceVariant">@color/storm_midnight_surface_variant</item>
+
         <item name="colorOnSurfaceVariant">@color/storm_midnight_on_surface</item>
+
         <item name="colorOutline">@color/storm_midnight_outline</item>
+
         <item name="android:textColorPrimary">@color/storm_midnight_on_surface</item>
+
         <item name="android:textColorSecondary">@color/storm_midnight_on_surface</item>
+
         <item name="android:textColorTertiary">@color/storm_midnight_on_surface</item>
+
         <item name="android:textColorHint">@color/storm_midnight_on_surface</item>
+
         <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
+
     </style>
+
+
 
     <!-- STORM MATRIX (Dark Emerald & Matrix Green) -->
+
     <style name="Theme.Storm.Matrix" parent="Theme.Yuzu.Main">
+
         <item name="colorPrimary">@color/storm_matrix_primary</item>
+
         <item name="colorOnPrimary">#05100B</item>
+
         <item name="colorPrimaryContainer">@color/storm_matrix_primary_container</item>
+
         <item name="colorOnPrimaryContainer">@color/storm_matrix_primary</item>
+
         <item name="colorSecondary">@color/storm_matrix_secondary</item>
+
         <item name="colorOnSecondary">#05100B</item>
+
         <item name="colorSecondaryContainer">@color/storm_matrix_surface_variant</item>
+
         <item name="colorOnSecondaryContainer">@color/storm_matrix_on_surface</item>
+
         <item name="android:colorBackground">@color/storm_matrix_background</item>
+
         <item name="colorOnBackground">@color/storm_matrix_on_surface</item>
+
         <item name="colorSurface">@color/storm_matrix_surface</item>
+
         <item name="colorOnSurface">@color/storm_matrix_on_surface</item>
+
         <item name="colorSurfaceVariant">@color/storm_matrix_surface_variant</item>
+
         <item name="colorOnSurfaceVariant">@color/storm_matrix_on_surface</item>
+
         <item name="colorOutline">@color/storm_matrix_outline</item>
+
         <item name="android:textColorPrimary">@color/storm_matrix_on_surface</item>
+
         <item name="android:textColorSecondary">@color/storm_matrix_on_surface</item>
+
         <item name="android:textColorTertiary">@color/storm_matrix_on_surface</item>
+
         <item name="android:textColorHint">@color/storm_matrix_on_surface</item>
+
         <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
+
     </style>
+
+
 
     <!-- STORM CYBERPUNK (Night City Yellow & Neon Cyan) -->
+
     <style name="Theme.Storm.Cyberpunk" parent="Theme.Yuzu.Main">
+
         <item name="colorPrimary">@color/storm_cyberpunk_primary</item>
+
         <item name="colorOnPrimary">#08090D</item>
+
         <item name="colorPrimaryContainer">@color/storm_cyberpunk_primary_container</item>
+
         <item name="colorOnPrimaryContainer">@color/storm_cyberpunk_primary</item>
+
         <item name="colorSecondary">@color/storm_cyberpunk_secondary</item>
+
         <item name="colorOnSecondary">#08090D</item>
+
         <item name="colorSecondaryContainer">@color/storm_cyberpunk_surface_variant</item>
+
         <item name="colorOnSecondaryContainer">@color/storm_cyberpunk_on_surface</item>
+
         <item name="android:colorBackground">@color/storm_cyberpunk_background</item>
+
         <item name="colorOnBackground">@color/storm_cyberpunk_on_surface</item>
+
         <item name="colorSurface">@color/storm_cyberpunk_surface</item>
+
         <item name="colorOnSurface">@color/storm_cyberpunk_on_surface</item>
+
         <item name="colorSurfaceVariant">@color/storm_cyberpunk_surface_variant</item>
+
         <item name="colorOnSurfaceVariant">@color/storm_cyberpunk_on_surface</item>
+
         <item name="colorOutline">@color/storm_cyberpunk_outline</item>
+
         <item name="android:textColorPrimary">@color/storm_cyberpunk_on_surface</item>
+
         <item name="android:textColorSecondary">@color/storm_cyberpunk_on_surface</item>
+
         <item name="android:textColorTertiary">@color/storm_cyberpunk_on_surface</item>
+
         <item name="android:textColorHint">@color/storm_cyberpunk_on_surface</item>
+
         <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
+
     </style>
+
+
 
     <!-- STORM FANTASY (Royal Gold & Deep Night) -->
+
     <style name="Theme.Storm.Fantasy" parent="Theme.Yuzu.Main">
+
         <item name="colorPrimary">@color/storm_fantasy_primary</item>
+
         <item name="colorOnPrimary">#120E08</item>
+
         <item name="colorPrimaryContainer">@color/storm_fantasy_primary_container</item>
+
         <item name="colorOnPrimaryContainer">@color/storm_fantasy_primary</item>
+
         <item name="colorSecondary">@color/storm_fantasy_secondary</item>
+
         <item name="colorOnSecondary">#120E08</item>
+
         <item name="colorSecondaryContainer">@color/storm_fantasy_surface_variant</item>
+
         <item name="colorOnSecondaryContainer">@color/storm_fantasy_on_surface</item>
+
         <item name="android:colorBackground">@color/storm_fantasy_background</item>
+
         <item name="colorOnBackground">@color/storm_fantasy_on_surface</item>
+
         <item name="colorSurface">@color/storm_fantasy_surface</item>
+
         <item name="colorOnSurface">@color/storm_fantasy_on_surface</item>
+
         <item name="colorSurfaceVariant">@color/storm_fantasy_surface_variant</item>
+
         <item name="colorOnSurfaceVariant">@color/storm_fantasy_on_surface</item>
+
         <item name="colorOutline">@color/storm_fantasy_outline</item>
+
         <item name="android:textColorPrimary">@color/storm_fantasy_on_surface</item>
+
         <item name="android:textColorSecondary">@color/storm_fantasy_on_surface</item>
+
         <item name="android:textColorTertiary">@color/storm_fantasy_on_surface</item>
+
         <item name="android:textColorHint">@color/storm_fantasy_on_surface</item>
+
         <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
+
     </style>
+
+
 
     <!-- STORM WARHAMMER 40K (Imperial Gothic Gold & Titanium) -->
+
     <style name="Theme.Storm.Warhammer40k" parent="Theme.Yuzu.Main">
+
         <item name="colorPrimary">@color/storm_warhammer_40k_primary</item>
+
         <item name="colorOnPrimary">#111215</item>
+
         <item name="colorPrimaryContainer">@color/storm_warhammer_40k_primary_container</item>
+
         <item name="colorOnPrimaryContainer">@color/storm_warhammer_40k_primary</item>
+
         <item name="colorSecondary">@color/storm_warhammer_40k_secondary</item>
+
         <item name="colorOnSecondary">#111215</item>
+
         <item name="colorSecondaryContainer">@color/storm_warhammer_40k_surface_variant</item>
+
         <item name="colorOnSecondaryContainer">@color/storm_warhammer_40k_on_surface</item>
+
         <item name="android:colorBackground">@color/storm_warhammer_40k_background</item>
+
         <item name="colorOnBackground">@color/storm_warhammer_40k_on_surface</item>
+
         <item name="colorSurface">@color/storm_warhammer_40k_surface</item>
+
         <item name="colorOnSurface">@color/storm_warhammer_40k_on_surface</item>
+
         <item name="colorSurfaceVariant">@color/storm_warhammer_40k_surface_variant</item>
+
         <item name="colorOnSurfaceVariant">@color/storm_warhammer_40k_on_surface</item>
+
         <item name="colorOutline">@color/storm_warhammer_40k_outline</item>
+
         <item name="android:textColorPrimary">@color/storm_warhammer_40k_on_surface</item>
+
         <item name="android:textColorSecondary">@color/storm_warhammer_40k_on_surface</item>
+
         <item name="android:textColorTertiary">@color/storm_warhammer_40k_on_surface</item>
+
         <item name="android:textColorHint">@color/storm_warhammer_40k_on_surface</item>
+
         <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
+
     </style>
+
+
 
     <!-- STORM GOTHIC (Ruby Blood Red & Deep Graphite) -->
+
     <style name="Theme.Storm.Gothic" parent="Theme.Yuzu.Main">
+
         <item name="colorPrimary">@color/storm_gothic_primary</item>
+
         <item name="colorOnPrimary">#09090B</item>
+
         <item name="colorPrimaryContainer">@color/storm_gothic_primary_container</item>
+
         <item name="colorOnPrimaryContainer">@color/storm_gothic_primary</item>
+
         <item name="colorSecondary">@color/storm_gothic_secondary</item>
+
         <item name="colorOnSecondary">#09090B</item>
+
         <item name="colorSecondaryContainer">@color/storm_gothic_surface_variant</item>
+
         <item name="colorOnSecondaryContainer">@color/storm_gothic_on_surface</item>
+
         <item name="android:colorBackground">@color/storm_gothic_background</item>
+
         <item name="colorOnBackground">@color/storm_gothic_on_surface</item>
+
         <item name="colorSurface">@color/storm_gothic_surface</item>
+
         <item name="colorOnSurface">@color/storm_gothic_on_surface</item>
+
         <item name="colorSurfaceVariant">@color/storm_gothic_surface_variant</item>
+
         <item name="colorOnSurfaceVariant">@color/storm_gothic_on_surface</item>
+
         <item name="colorOutline">@color/storm_gothic_outline</item>
+
         <item name="android:textColorPrimary">@color/storm_gothic_on_surface</item>
+
         <item name="android:textColorSecondary">@color/storm_gothic_on_surface</item>
+
         <item name="android:textColorTertiary">@color/storm_gothic_on_surface</item>
+
         <item name="android:textColorHint">@color/storm_gothic_on_surface</item>
+
         <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
+
     </style>
+
+
 
     <!-- STORM NEON (Electric Lime & Teal) -->
+
     <style name="Theme.Storm.Neon" parent="Theme.Yuzu.Main">
+
         <item name="colorPrimary">@color/storm_neon_primary</item>
+
         <item name="colorOnPrimary">#050D0A</item>
+
         <item name="colorPrimaryContainer">@color/storm_neon_primary_container</item>
+
         <item name="colorOnPrimaryContainer">@color/storm_neon_primary</item>
+
         <item name="colorSecondary">@color/storm_neon_secondary</item>
+
         <item name="colorOnSecondary">#050D0A</item>
+
         <item name="colorSecondaryContainer">@color/storm_neon_surface_variant</item>
+
         <item name="colorOnSecondaryContainer">@color/storm_neon_on_surface</item>
+
         <item name="android:colorBackground">@color/storm_neon_background</item>
+
         <item name="colorOnBackground">@color/storm_neon_on_surface</item>
+
         <item name="colorSurface">@color/storm_neon_surface</item>
+
         <item name="colorOnSurface">@color/storm_neon_on_surface</item>
+
         <item name="colorSurfaceVariant">@color/storm_neon_surface_variant</item>
+
         <item name="colorOnSurfaceVariant">@color/storm_neon_on_surface</item>
+
         <item name="colorOutline">@color/storm_neon_outline</item>
+
         <item name="android:textColorPrimary">@color/storm_neon_on_surface</item>
+
         <item name="android:textColorSecondary">@color/storm_neon_on_surface</item>
+
         <item name="android:textColorTertiary">@color/storm_neon_on_surface</item>
+
         <item name="android:textColorHint">@color/storm_neon_on_surface</item>
+
         <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
+
     </style>
+
+
 
     <!-- STORM CRIMSON (Sunset Crimson) -->
+
     <style name="Theme.Storm.Crimson" parent="Theme.Yuzu.Main">
+
         <item name="colorPrimary">@color/storm_crimson_primary</item>
+
         <item name="colorOnPrimary">#0C0A09</item>
+
         <item name="colorPrimaryContainer">@color/storm_crimson_primary_container</item>
+
         <item name="colorOnPrimaryContainer">@color/storm_crimson_primary</item>
+
         <item name="colorSecondary">@color/storm_crimson_secondary</item>
+
         <item name="colorOnSecondary">#0C0A09</item>
+
         <item name="colorSecondaryContainer">@color/storm_crimson_surface_variant</item>
+
         <item name="colorOnSecondaryContainer">@color/storm_crimson_on_surface</item>
+
         <item name="android:colorBackground">@color/storm_crimson_background</item>
+
         <item name="colorOnBackground">@color/storm_crimson_on_surface</item>
+
         <item name="colorSurface">@color/storm_crimson_surface</item>
+
         <item name="colorOnSurface">@color/storm_crimson_on_surface</item>
+
         <item name="colorSurfaceVariant">@color/storm_crimson_surface_variant</item>
+
         <item name="colorOnSurfaceVariant">@color/storm_crimson_on_surface</item>
+
         <item name="colorOutline">@color/storm_crimson_outline</item>
+
         <item name="android:textColorPrimary">@color/storm_crimson_on_surface</item>
+
         <item name="android:textColorSecondary">@color/storm_crimson_on_surface</item>
+
         <item name="android:textColorTertiary">@color/storm_crimson_on_surface</item>
+
         <item name="android:textColorHint">@color/storm_crimson_on_surface</item>
+
         <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
+
     </style>
+
+
 
     <!-- STORM EMERALD (Deep Emerald Forest) -->
+
     <style name="Theme.Storm.Emerald" parent="Theme.Yuzu.Main">
+
         <item name="colorPrimary">@color/storm_emerald_primary</item>
+
         <item name="colorOnPrimary">#061A14</item>
+
         <item name="colorPrimaryContainer">@color/storm_emerald_primary_container</item>
+
         <item name="colorOnPrimaryContainer">@color/storm_emerald_primary</item>
+
         <item name="colorSecondary">@color/storm_emerald_secondary</item>
+
         <item name="colorOnSecondary">#061A14</item>
+
         <item name="colorSecondaryContainer">@color/storm_emerald_surface_variant</item>
+
         <item name="colorOnSecondaryContainer">@color/storm_emerald_on_surface</item>
+
         <item name="android:colorBackground">@color/storm_emerald_background</item>
+
         <item name="colorOnBackground">@color/storm_emerald_on_surface</item>
+
         <item name="colorSurface">@color/storm_emerald_surface</item>
+
         <item name="colorOnSurface">@color/storm_emerald_on_surface</item>
+
         <item name="colorSurfaceVariant">@color/storm_emerald_surface_variant</item>
+
         <item name="colorOnSurfaceVariant">@color/storm_emerald_on_surface</item>
+
         <item name="colorOutline">@color/storm_emerald_outline</item>
+
         <item name="android:textColorPrimary">@color/storm_emerald_on_surface</item>
+
         <item name="android:textColorSecondary">@color/storm_emerald_on_surface</item>
+
         <item name="android:textColorTertiary">@color/storm_emerald_on_surface</item>
+
         <item name="android:textColorHint">@color/storm_emerald_on_surface</item>
+
         <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
+
     </style>
+
+
 
     <!-- STORM GLACIER (Arctic Glacier Ice) -->
+
     <style name="Theme.Storm.Glacier" parent="Theme.Yuzu.Main">
+
         <item name="colorPrimary">@color/storm_glacier_primary</item>
+
         <item name="colorOnPrimary">#081A24</item>
+
         <item name="colorPrimaryContainer">@color/storm_glacier_primary_container</item>
+
         <item name="colorOnPrimaryContainer">@color/storm_glacier_primary</item>
+
         <item name="colorSecondary">@color/storm_glacier_secondary</item>
+
         <item name="colorOnSecondary">#081A24</item>
+
         <item name="colorSecondaryContainer">@color/storm_glacier_surface_variant</item>
+
         <item name="colorOnSecondaryContainer">@color/storm_glacier_on_surface</item>
+
         <item name="android:colorBackground">@color/storm_glacier_background</item>
+
         <item name="colorOnBackground">@color/storm_glacier_on_surface</item>
+
         <item name="colorSurface">@color/storm_glacier_surface</item>
+
         <item name="colorOnSurface">@color/storm_glacier_on_surface</item>
+
         <item name="colorSurfaceVariant">@color/storm_glacier_surface_variant</item>
+
         <item name="colorOnSurfaceVariant">@color/storm_glacier_on_surface</item>
+
         <item name="colorOutline">@color/storm_glacier_outline</item>
+
         <item name="android:textColorPrimary">@color/storm_glacier_on_surface</item>
+
         <item name="android:textColorSecondary">@color/storm_glacier_on_surface</item>
+
         <item name="android:textColorTertiary">@color/storm_glacier_on_surface</item>
+
         <item name="android:textColorHint">@color/storm_glacier_on_surface</item>
+
         <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
+
     </style>
+
+
 
     <!-- STORM AMETHYST (Royal Amethyst Fuchsia) -->
+
     <style name="Theme.Storm.Amethyst" parent="Theme.Yuzu.Main">
+
         <item name="colorPrimary">@color/storm_amethyst_primary</item>
+
         <item name="colorOnPrimary">#15081C</item>
+
         <item name="colorPrimaryContainer">@color/storm_amethyst_primary_container</item>
+
         <item name="colorOnPrimaryContainer">@color/storm_amethyst_primary</item>
+
         <item name="colorSecondary">@color/storm_amethyst_secondary</item>
+
         <item name="colorOnSecondary">#15081C</item>
+
         <item name="colorSecondaryContainer">@color/storm_amethyst_surface_variant</item>
+
         <item name="colorOnSecondaryContainer">@color/storm_amethyst_on_surface</item>
+
         <item name="android:colorBackground">@color/storm_amethyst_background</item>
+
         <item name="colorOnBackground">@color/storm_amethyst_on_surface</item>
+
         <item name="colorSurface">@color/storm_amethyst_surface</item>
+
         <item name="colorOnSurface">@color/storm_amethyst_on_surface</item>
+
         <item name="colorSurfaceVariant">@color/storm_amethyst_surface_variant</item>
+
         <item name="colorOnSurfaceVariant">@color/storm_amethyst_on_surface</item>
+
         <item name="colorOutline">@color/storm_amethyst_outline</item>
+
         <item name="android:textColorPrimary">@color/storm_amethyst_on_surface</item>
+
         <item name="android:textColorSecondary">@color/storm_amethyst_on_surface</item>
+
         <item name="android:textColorTertiary">@color/storm_amethyst_on_surface</item>
+
         <item name="android:textColorHint">@color/storm_amethyst_on_surface</item>
+
         <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
+
     </style>
 
+
+
     <!-- Backward compatibility aliases -->
+
     <style name="Theme.Yuzu.Main.Blue" parent="Theme.Storm.Midnight" />
+
     <style name="Theme.Yuzu.Main.Cyan" parent="Theme.Storm.Cyberpunk" />
+
     <style name="Theme.Yuzu.Main.Red" parent="Theme.Storm.Gothic" />
+
     <style name="Theme.Yuzu.Main.Green" parent="Theme.Storm.Neon" />
+
     <style name="Theme.Yuzu.Main.Yellow" parent="Theme.Storm.Crimson" />
+
     <style name="Theme.Yuzu.Main.Orange" parent="Theme.Storm.Emerald" />
+
     <style name="Theme.Yuzu.Main.Pink" parent="Theme.Storm.Glacier" />
+
     <style name="Theme.Yuzu.Main.Gray" parent="Theme.Storm.Amethyst" />
+
     <style name="Theme.Yuzu.Main.Violet" parent="Theme.Storm.Day" />
 
+
+
     <!-- Neutralized legacy dark overlay -->
+
     <style name="ThemeOverlay.Yuzu.Dark" parent="" />
+
+
+
+
+
+    <!-- STORM ELEMENTAL (4 Elements on Basalt) -->
+
+    <style name="Theme.Storm.Elemental" parent="Theme.Yuzu.Main">
+
+        <item name="colorPrimary">@color/storm_elemental_primary</item>
+
+        <item name="colorOnPrimary">#091318</item>
+
+        <item name="colorPrimaryContainer">@color/storm_elemental_primary_container</item>
+
+        <item name="colorOnPrimaryContainer">@color/storm_elemental_primary</item>
+
+        <item name="colorSecondary">@color/storm_elemental_secondary</item>
+
+        <item name="colorOnSecondary">#091318</item>
+
+        <item name="colorSecondaryContainer">@color/storm_elemental_surface_variant</item>
+
+        <item name="colorOnSecondaryContainer">@color/storm_elemental_on_surface</item>
+
+        <item name="android:colorBackground">@color/storm_elemental_background</item>
+
+        <item name="colorOnBackground">@color/storm_elemental_on_surface</item>
+
+        <item name="colorSurface">@color/storm_elemental_surface</item>
+
+        <item name="colorOnSurface">@color/storm_elemental_on_surface</item>
+
+        <item name="colorSurfaceVariant">@color/storm_elemental_surface_variant</item>
+
+        <item name="colorOnSurfaceVariant">@color/storm_elemental_on_surface</item>
+
+        <item name="colorOutline">@color/storm_elemental_outline</item>
+
+        <item name="android:textColorPrimary">@color/storm_elemental_on_surface</item>
+
+        <item name="android:textColorSecondary">@color/storm_elemental_on_surface</item>
+
+        <item name="android:textColorTertiary">@color/storm_elemental_on_surface</item>
+
+        <item name="android:textColorHint">@color/storm_elemental_on_surface</item>
+
+        <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
+
+    </style>
+
+
+
+    <!-- STORM FLAGSHIP (Aurora Plasma Energy) -->
+
+    <style name="Theme.Storm.Storm" parent="Theme.Yuzu.Main">
+
+        <item name="colorPrimary">@color/storm_flagship_primary</item>
+
+        <item name="colorOnPrimary">#0A0D14</item>
+
+        <item name="colorPrimaryContainer">@color/storm_flagship_primary_container</item>
+
+        <item name="colorOnPrimaryContainer">@color/storm_flagship_primary</item>
+
+        <item name="colorSecondary">@color/storm_flagship_secondary</item>
+
+        <item name="colorOnSecondary">#0A0D14</item>
+
+        <item name="colorSecondaryContainer">@color/storm_flagship_surface_variant</item>
+
+        <item name="colorOnSecondaryContainer">@color/storm_flagship_on_surface</item>
+
+        <item name="android:colorBackground">@color/storm_flagship_background</item>
+
+        <item name="colorOnBackground">@color/storm_flagship_on_surface</item>
+
+        <item name="colorSurface">@color/storm_flagship_surface</item>
+
+        <item name="colorOnSurface">@color/storm_flagship_on_surface</item>
+
+        <item name="colorSurfaceVariant">@color/storm_flagship_surface_variant</item>
+
+        <item name="colorOnSurfaceVariant">@color/storm_flagship_on_surface</item>
+
+        <item name="colorOutline">@color/storm_flagship_outline</item>
+
+        <item name="android:textColorPrimary">@color/storm_flagship_on_surface</item>
+
+        <item name="android:textColorSecondary">@color/storm_flagship_on_surface</item>
+
+        <item name="android:textColorTertiary">@color/storm_flagship_on_surface</item>
+
+        <item name="android:textColorHint">@color/storm_flagship_on_surface</item>
+
+        <item name="materialAlertDialogTheme">@style/EdenMaterialDialog</item>
+
+    </style>
+
+
+
+    <style name="Theme.Storm.Flagship" parent="Theme.Storm.Storm" />
+
+    <style name="Theme.Yuzu.Main.Elemental" parent="Theme.Storm.Elemental" />
+
+    <style name="Theme.Yuzu.Main.Storm" parent="Theme.Storm.Storm" />
 
 </resources>

@@ -1,5 +1,8 @@
-// Lanczos 3 Anti-Ringing EWA Resampling
-#version 460 core
+// SPDX-FileCopyrightText: Copyright 2026 STORM TEAM / Eden Emulator Project
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+// Fast 16-Tap Windowed Lanczos Resampling with Strict Anti-Ringing
+#version 450
 
 layout (location = 0) in vec2 frag_tex_coord;
 layout (location = 0) out vec4 color;
@@ -13,10 +16,10 @@ float sinc(float x) {
     return sin(pix) / pix;
 }
 
-float lanczos3(float x) {
+float lanczos(float x) {
     float ax = abs(x);
-    if (ax >= 3.0) return 0.0;
-    return sinc(x) * sinc(x / 3.0);
+    if (ax >= 2.0) return 0.0;
+    return sinc(x) * sinc(x * 0.5);
 }
 
 void main() {
@@ -25,11 +28,11 @@ void main() {
     vec2 base = floor(pos);
     vec2 f = pos - base;
 
-    float wx[6];
-    float wy[6];
-    for (int i = 0; i < 6; ++i) {
-        wx[i] = lanczos3(float(i - 2) - f.x);
-        wy[i] = lanczos3(float(i - 2) - f.y);
+    float wx[4];
+    float wy[4];
+    for (int i = 0; i < 4; ++i) {
+        wx[i] = lanczos(float(i - 1) - f.x);
+        wy[i] = lanczos(float(i - 1) - f.y);
     }
 
     vec3 sum = vec3(0.0);
@@ -37,17 +40,17 @@ void main() {
     vec3 min_color = vec3(1e6);
     vec3 max_color = vec3(-1e6);
 
-    for (int y = 0; y < 6; ++y) {
+    for (int y = 0; y < 4; ++y) {
         float yw = wy[y];
-        float py = (base.y + float(y - 2) + 0.5) / size.y;
-        for (int x = 0; x < 6; ++x) {
+        float py = (base.y + float(y - 1) + 0.5) / size.y;
+        for (int x = 0; x < 4; ++x) {
             float w = wx[x] * yw;
-            float px = (base.x + float(x - 2) + 0.5) / size.x;
+            float px = (base.x + float(x - 1) + 0.5) / size.x;
             vec3 s = texture(color_texture, vec2(px, py)).rgb;
             sum += s * w;
             total_w += w;
 
-            if ((x == 2 || x == 3) && (y == 2 || y == 3)) {
+            if ((x == 1 || x == 2) && (y == 1 || y == 2)) {
                 min_color = min(min_color, s);
                 max_color = max(max_color, s);
             }

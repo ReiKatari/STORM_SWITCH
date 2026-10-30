@@ -241,11 +241,11 @@ class AutoOptimizationDialogFragment : DialogFragment() {
         StormHardwareCalibrator.applyPreset(preset, context)
 
         val modeName = when (mode) {
-            MODE_FAST -> "МАКСИМУМ FPS"
-            MODE_NORMAL -> "БАЛАНС"
-            MODE_ACCURATE -> "УЛЬТРА КАЧЕСТВО"
-            MODE_BATTERY -> "ЭКО / ПОРТАТИВ"
-            else -> "ПО УМОЛЧАНИЮ"
+            MODE_FAST -> getString(R.string.auto_opt_mode_fast_short)
+            MODE_NORMAL -> getString(R.string.auto_opt_mode_normal_short)
+            MODE_ACCURATE -> getString(R.string.auto_opt_mode_accurate_short)
+            MODE_BATTERY -> getString(R.string.auto_opt_mode_battery_short)
+            else -> getString(R.string.auto_opt_mode_default_short)
         }
 
         Toast.makeText(

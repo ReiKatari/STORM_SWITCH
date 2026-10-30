@@ -143,13 +143,16 @@ void TextureCache<P>::RunGarbageCollector() {
             lru_cache.Touch(image.lru_index, frame_tick);
             return false;
         }
-        // Protect 2D Color Render Targets / dynamic font atlases from GC eviction
+        // Protect active recently-used 2D Color Render Targets / dynamic font atlases from GC eviction
         const bool is_color_2d = image.info.type == ImageType::e2D &&
                                  image.info.num_samples == 1 &&
                                  image.info.size.width <= 2048 &&
                                  image.info.size.height <= 2048 &&
                                  image.info.format < PixelFormat::MaxColorFormat;
-        if (is_color_2d && True(image.flags & ImageFlagBits::GpuModified)) {
+        constexpr u64 RT_PROTECTION_WINDOW = 360;
+        const bool is_recent_rt = is_color_2d && True(image.flags & ImageFlagBits::GpuModified) &&
+                                  (frame_tick < image.last_frame_tick + RT_PROTECTION_WINDOW);
+        if (is_recent_rt) {
             lru_cache.Touch(image.lru_index, frame_tick);
             return false;
         }
@@ -168,7 +171,8 @@ void TextureCache<P>::RunGarbageCollector() {
             return false;
         }
         if (!must_download && True(image.flags & ImageFlagBits::GpuModified)) {
-            if (!aggressive_mode) {
+            const bool is_stale_rt = is_color_2d && (frame_tick >= image.last_frame_tick + RT_PROTECTION_WINDOW);
+            if (!aggressive_mode && !is_stale_rt) {
                 lru_cache.Touch(image.lru_index, frame_tick);
                 return false;
             }
@@ -2318,6 +2322,7 @@ void TextureCache<P>::RegisterImage(ImageId image_id) {
     }
     total_used_memory += Common::AlignUp(tentative_size, 1024);
     image.lru_index = lru_cache.Insert(image_id, frame_tick);
+    image.last_frame_tick = frame_tick;
 
     ForEachGPUPage(image.gpu_addr, image.guest_size_bytes, [this, image_id](u64 page) {
         (*channel_state->gpu_page_table)[page].push_back(image_id);
@@ -2681,6 +2686,7 @@ void TextureCache<P>::PrepareImage(ImageId image_id, bool is_modification, bool 
     }
     lru_cache.Touch(image.lru_index, frame_tick);
     image.generation = 0; // Promoted to Generation 0 (Active)
+    image.last_frame_tick = frame_tick;
 }
 
 template <class P>

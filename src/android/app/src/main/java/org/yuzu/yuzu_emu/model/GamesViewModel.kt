@@ -12,7 +12,9 @@ import androidx.lifecycle.viewModelScope
 import androidx.preference.PreferenceManager
 import java.io.File
 import java.util.Locale
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.Dispatchers
+import org.yuzu.yuzu_emu.utils.DirectoryInitialization
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -56,9 +58,6 @@ class GamesViewModel : ViewModel() {
     var lastScrollPosition: Int = 0
 
     init {
-        // Ensure keys are loaded so that ROM metadata can be decrypted.
-        NativeLibrary.reloadKeys()
-
         // Frame 0 instant game list population from persistent cache without blocking on DocumentFile.exists()
         try {
             val storedGames = PreferenceManager.getDefaultSharedPreferences(YuzuApplication.appContext)
@@ -78,8 +77,14 @@ class GamesViewModel : ViewModel() {
             org.yuzu.yuzu_emu.utils.Log.error("[GamesViewModel] Error pre-loading cached games: ${e.message}")
         }
 
-        getGameDirsAndExternalContent()
-        reloadGames(directoriesChanged = false, firstStartup = false)
+        viewModelScope.launch(Dispatchers.IO) {
+            while (!DirectoryInitialization.areDirectoriesReady) {
+                delay(50)
+            }
+            NativeLibrary.reloadKeys()
+            getGameDirsAndExternalContent()
+            reloadGames(directoriesChanged = false, firstStartup = false)
+        }
     }
 
     fun setGames(games: List<Game>): Boolean {
@@ -131,6 +136,10 @@ class GamesViewModel : ViewModel() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 try {
+                    while (!DirectoryInitialization.areDirectoriesReady) {
+                        delay(50)
+                    }
+                    NativeLibrary.reloadKeys()
                     getGameDirsAndExternalContent()
                     val newGames = GameHelper.getGames()
                     val changed = if (newGames.isNotEmpty() || !hasExistingGames) {

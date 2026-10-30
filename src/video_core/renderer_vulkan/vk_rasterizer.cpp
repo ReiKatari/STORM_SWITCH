@@ -1115,8 +1115,10 @@ void RasterizerVulkan::ReleaseFences(bool force) {
 
 void RasterizerVulkan::FlushAndInvalidateRegion(DAddr addr, u64 size,
                                                 VideoCommon::CacheType which) {
-    if (Settings::IsGPULevelHigh() || Settings::values.use_reactive_flushing.GetValue() ||
-        True(which & VideoCommon::CacheType::TextureCache)) {
+    const bool is_high_gpu = Settings::IsGPULevelHigh() || Settings::IsGPULevelExtreme();
+    const bool is_reactive = Settings::values.use_reactive_flushing.GetValue();
+    const bool is_d2r_quirk = (current_title_id == 0x0100726014352000ULL);
+    if (is_high_gpu || is_reactive || (is_d2r_quirk && True(which & VideoCommon::CacheType::TextureCache))) {
         FlushRegion(addr, size, which);
     }
     InvalidateRegion(addr, size, which);
@@ -1261,6 +1263,7 @@ std::optional<FramebufferTextureInfo> RasterizerVulkan::AccelerateDisplay(
 
 void RasterizerVulkan::LoadDiskResources(u64 title_id, std::stop_token stop_loading,
                                          const VideoCore::DiskResourceLoadCallback& callback) {
+    current_title_id = title_id;
     pipeline_cache.LoadDiskResources(title_id, stop_loading, callback);
 }
 
@@ -2224,6 +2227,7 @@ void RasterizerVulkan::UpdateVertexInput(Tegra::Engines::Maxwell3D::Regs& regs) 
 }
 
 void RasterizerVulkan::InitializeChannel(Tegra::Control::ChannelState& channel) {
+    current_title_id = channel.program_id;
     CreateChannel(channel);
     {
         std::scoped_lock lock{buffer_cache.mutex, texture_cache.mutex};
@@ -2236,6 +2240,9 @@ void RasterizerVulkan::InitializeChannel(Tegra::Control::ChannelState& channel) 
 }
 
 void RasterizerVulkan::BindChannel(Tegra::Control::ChannelState& channel) {
+    if (channel.program_id != 0) {
+        current_title_id = channel.program_id;
+    }
     const s32 channel_id = channel.bind_id;
     BindToChannel(channel_id);
     {

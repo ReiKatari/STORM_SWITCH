@@ -412,7 +412,7 @@
     <string name="frame_limit_enable">运行速度限制</string>
     <string name="frame_limit_enable_description">将运行速度限制为正常速度的指定百分比。</string>
     <string name="frame_limit_slider">限制速度百分比</string>
-    <string name="frame_limit_slider_description">指定限制运行速度的百分比。100% 为正常速度。更高或更低的值将增加或降低速度限制上限。</string>
+    <string name="frame_limit_slider_description" formatted="false">指定限制运行速度的百分比。100% 为正常速度。更高或更低的值将增加或降低速度限制上限。</string>
     <string name="turbo_speed_limit">加速模式</string>
     <string name="turbo_speed_limit_description">当开启 加速模式 时，模拟器将以此速度百分比运行。</string>
     <string name="slow_speed_limit">减速模式</string>
@@ -1182,7 +1182,7 @@
     <string name="auto_optimization_mode_fast_desc">最高帧率、最低发热与省电。0.75X 分辨率、保守显存、快速 GPU 栅栏、NCE。</string>
     <string name="cheat_status_disabled">⚪ 已禁用</string>
     <string name="search_amiibo_hint">按名称、角色或 ID 搜索...</string>
-    <string name="cheats_download_success">金手指数据库下载成功！共找到 %1 个作弊码。</string>
+    <string name="cheats_download_success">金手指数据库下载成功！共找到 %1$d 个作弊码。</string>
     <string name="auto_optimization_wizard_description">智能分析 CPU、GPU 及内存，自动为您配置最适合本机的设置</string>
     <string name="downloading_cheats">正在下载在线金手指数据库…</string>
     <string name="deselect_all">取消全选</string>
@@ -1200,7 +1200,7 @@
     <string name="vram_garbage_collection_description">定期清理未引用的纹理缓存，防止微卡顿及 Android 系统内存杀手（LMK）闪退。</string>
     <string name="translator_enable_floating_button">显示悬浮翻译按钮</string>
     <string name="cheat_code">Atmosphere 作弊码</string>
-    <string name="auto_optimization_mode_normal_desc">画质、流畅度与稳定性的完美平衡。1X（720p/1080p）、FSR 85%、FXAA、均衡栅栏。</string>
+    <string name="auto_optimization_mode_normal_desc" formatted="false">画质、流畅度与稳定性的完美平衡。1X（720p/1080p）、FSR 85%、FXAA、均衡栅栏。</string>
     <string name="download_cheats">下载在线金手指</string>
     <string name="auto_optimization_mode_accurate_desc">顶级画质表现，1.5X/1X 分辨率、安全 DMA、严格 GPU 栅栏、SMAA、16x 各向异性过滤。</string>
     <string name="auto_optimization_mode_normal">⚖️ 均衡（推荐）</string>
@@ -1220,7 +1220,7 @@
     <string name="translator_disable_floating_button">隐藏悬浮翻译按钮</string>
     <string name="overlay_skin_theme">虚拟手柄皮肤主题</string>
     <string name="eco_frame_pacing_description">消除帧呈现间隙中的 CPU 空转，在稳定 60 FPS 的同时显著降低设备温度与功耗。</string>
-    <string name="auto_optimization_applied_toast">⚡ 自动配置已生效：「%1」配置方案！</string>
+    <string name="auto_optimization_applied_toast">⚡ 自动配置已生效：「%1$s」配置方案！</string>
     <string name="dma_accuracy_normal">正常（推荐）</string>
     <string name="cheat_name">作弊码名称</string>
     <string name="auto_optimization_wizard_title">自动配置</string>
@@ -1328,10 +1328,10 @@
     <string name="special_thanks_title">特别鸣谢与致谢</string>
     <string name="special_thanks_description">• Eden Project 与团队 — 核心模拟器基石\n• Yuzu 与 Citra 团队 — 开创性代码库\n• Ryujinx 团队 — 逆向工程与 Switch HLE 研究\n• Skyline / Strato 团队 — ARM64 NCE 技术\n• Mesa、Freedreno 与 Turnip 团队 — 开源 Vulkan 驱动\n• 全球开源模拟社区贡献者</string>
     <string name="astc_recompression">ASTC 纹理重压缩</string>
-    <string name="astc_recompression_description">将 ASTC 纹理实时重压缩为 BC1、BC3 或 BC5 格式，降低 50–80% 的内存占用。</string>
+    <string name="astc_recompression_description" formatted="false">将 ASTC 纹理实时重压缩为 BC1、BC3 或 BC5 格式，降低 50–80% 的内存占用。</string>
     <string name="astc_recompression_uncompressed">未压缩 (最高画质 / 最大内存)</string>
     <string name="astc_recompression_bc1">BC1 (低画质 / 最大限度节省内存)</string>
-    <string name="astc_recompression_bc3">BC3 (中等画质 / 节省 50% 内存)</string>
+    <string name="astc_recompression_bc3" formatted="false">BC3 (中等画质 / 节省 50% 内存)</string>
     <string name="astc_recompression_bc5">BC5 (法线贴图高质量)</string>
     <string name="clocks">时钟频率</string>
     <string name="amiibo_for_game_title">Amiibo: %1$s</string>
@@ -1407,11 +1407,11 @@
     <string name="profile_preset_fast_title">⚡ 极速 (高帧率与低温)</string>
     <string name="profile_preset_fast_desc">0.75X 分辨率，高速 JIT，异步着色器，6GB 内存，芯片凉爽。</string>
     <string name="profile_preset_balanced_title">⚖️ 均衡 (推荐)</string>
-    <string name="profile_preset_balanced_desc">1.0X (720p/1080p)，FSR 85%，高速 JIT，EDS1 动态状态，6GB 内存。</string>
+    <string name="profile_preset_balanced_desc" formatted="false">1.0X (720p/1080p)，FSR 85%，高速 JIT，EDS1 动态状态，6GB 内存。</string>
     <string name="profile_preset_accurate_title">💎 高画质 (精准)</string>
     <string name="profile_preset_accurate_desc">1.0X-1.5X，高精度 GPU，严格同步，FXAA/SMAA，8GB 内存。</string>
     <string name="profile_preset_saver_title">🔋 节能与芯片降温</string>
-    <string name="profile_preset_saver_desc">0.75X 分辨率，100% 速度限制，省电显存策略，最低发热。</string>
+    <string name="profile_preset_saver_desc" formatted="false">0.75X 分辨率，100% 速度限制，省电显存策略，最低发热。</string>
     <string name="profile_btn_apply">应用</string>
     <string name="profile_btn_share">分享</string>
     <string name="profile_btn_rename">重命名</string>
@@ -1803,7 +1803,7 @@
     <string name="cheat_desc_no_fog">Disable Fog &amp; Haze</string>
     <string name="cheat_desc_no_blur">Disable Blur &amp; Post-Processing</string>
     <string name="cheat_desc_fov">Camera &amp; FOV Adjustment</string>
-    <string name="cheat_desc_drop_rate">100% Rare Item Drop Rate</string>
+    <string name="cheat_desc_drop_rate" formatted="false">100% Rare Item Drop Rate</string>
     <string name="cheat_desc_unlock_all">Unlock All Content</string>
     <string name="cheat_desc_freeze_timer">Freeze Timer (Infinite Time)</string>
     <string name="cheat_desc_master_code">Master Code</string>
@@ -1911,7 +1911,7 @@
     <string name="translator_btn_test_voice">▶ Test voice</string>
     <string name="translator_sec_floating_btn">🔘 FLOATING TRANSLATE BUTTON</string>
     <string name="translator_lbl_floating_show">Show translate button on screen:</string>
-    <string name="translator_lbl_floating_opacity_default">Button opacity: 90%</string>
+    <string name="translator_lbl_floating_opacity_default" formatted="false">Button opacity: 90%</string>
     <string name="translator_lbl_floating_opacity_fmt">Button opacity: %1$d%%</string>
     <string name="translator_engine_google">Google Translate (Fast / Free)</string>
     <string name="translator_engine_yandex">Yandex Translate (High quality Russian)</string>
@@ -1932,7 +1932,7 @@
     <string name="translator_style_dark">Semi-transparent dark</string>
     <string name="translator_style_neon">Neon bubble</string>
     <string name="translator_style_outline">Outline only</string>
-    <string name="translator_roi_all">Full game screen (100%)</string>
+    <string name="translator_roi_all" formatted="false">Full game screen (100%)</string>
     <string name="translator_roi_bottom">Bottom third (Dialogue boxes)</string>
     <string name="translator_roi_center">Center area (Subtitles &amp; cutscenes)</string>
     <string name="translator_roi_top">Top third (Quests, HUD &amp; hints)</string>
@@ -2138,4 +2138,53 @@
     <string name="apply_driver_msg">驱动已成功安装，是否立即启用？</string>
     <string name="apply_driver_positive">应用</string>
     <string name="apply_driver_negative">稍后</string>
+
+    <string name="theme_storm_elemental">STORM ELEMENTAL (元素烈焰)</string>
+    <string name="theme_storm_flagship">STORM (旗舰版)</string>
+    <string name="auto_opt_dialog_title">STORM FLUID 自动配置向导</string>
+    <string name="auto_opt_dialog_subtitle">智能硬件性能分析与配置</string>
+    <string name="auto_opt_telemetry_title">硬件运行状态遥测</string>
+    <string name="auto_opt_profiles_title">一键优化预设</string>
+    <string name="auto_opt_profile_fast_title">极速竞技 (电竞 / 60 FPS)</string>
+    <string name="auto_opt_badge_60fps">60 FPS</string>
+    <string name="auto_opt_profile_fast_desc">优先保证极低帧延迟、极速 GPU 计时器、NCE 与激进的线程调度。</string>
+    <string name="auto_opt_profile_balance_title">均衡模式 (官方推荐)</string>
+    <string name="auto_opt_badge_recommended">官方推荐</string>
+    <string name="auto_opt_profile_balance_desc">画面清晰度、稳定 30/60 FPS 与字体/纹理保护的完美平衡。</string>
+    <string name="auto_opt_profile_ultra_title">极致画质 (2K / FSR / 超清)</string>
+    <string name="auto_opt_badge_2k_fsr">2K / FSR</string>
+    <string name="auto_opt_profile_ultra_desc">提升渲染分辨率、抗锯齿、最高各向异性过滤与着色器精度。</string>
+    <string name="auto_opt_profile_eco_title">节能省电 (低温长续航)</string>
+    <string name="auto_opt_badge_cool">低温</string>
+    <string name="auto_opt_profile_eco_desc">大幅降低机身发热与电池消耗，长途出行游玩首选。</string>
+    <string name="auto_opt_mode_fast_short">极速 FPS</string>
+    <string name="auto_opt_mode_normal_short">均衡模式</string>
+    <string name="auto_opt_mode_accurate_short">极致画质</string>
+    <string name="auto_opt_mode_battery_short">节能省电</string>
+    <string name="auto_opt_mode_default_short">默认设置</string>
+    <string name="scaling_filter_nearest_neighbor">最近邻插值 (Nearest Neighbor)</string>
+    <string name="scaling_filter_bilinear">双线性插值 (Bilinear)</string>
+    <string name="scaling_filter_bicubic">双三次插值 (Bicubic)</string>
+    <string name="scaling_filter_gaussian">高斯模糊 (Gaussian)</string>
+    <string name="scaling_filter_scale_force">ScaleForce (边缘增强缩放)</string>
+    <string name="scaling_filter_fsr">AMD FSR 2.0 (FidelityFX 超级分辨率技术)</string>
+    <string name="scaling_filter_sgsr">高通骁龙 GSR (游戏超级分辨率)</string>
+    <string name="scaling_filter_sgsr_edge">高通骁龙 GSR EdgeDir (边缘方向增强)</string>
+    <string name="scaling_filter_area">区域均值采样 (Area)</string>
+    <string name="scaling_filter_bspline">B样条插值 (B-Spline)</string>
+    <string name="scaling_filter_mitchell">米切尔滤波器 (Mitchell)</string>
+    <string name="scaling_filter_spline1">样条曲线 1 (Spline-1)</string>
+    <string name="scaling_filter_zero_tangent">零切线插值 (Zero-Tangent)</string>
+    <string name="scaling_filter_lanczos">兰索斯插值 (Lanczos 3)</string>
+    <string name="scaling_filter_mmpx">MMPX (像素艺术清晰缩放)</string>
+    <string name="scaling_filter_cas">AMD FidelityFX CAS (对比度自适应锐化)</string>
+    <string name="scaling_filter_omniscale">OmniScale HQ (高精分辨率像素重构)</string>
+    <string name="fsr2_quality_mode">FSR 2.0 画质预设模式</string>
+    <string name="fsr2_quality_mode_description">选择 AMD FSR 2.0 时间超采样升频画质预设</string>
+    <string name="fsr2_quality_quality">高质量 (1.5x)</string>
+    <string name="fsr2_quality_balanced">平衡 (1.7x)</string>
+    <string name="fsr2_quality_performance">性能优先 (2.0x)</string>
+    <string name="fsr2_quality_ultra_performance">极致性能 (3.0x)</string>
+    <string name="mali_driver_info">Mali/Immortalis/Xclipse GPU 使用厂商系统内置的 Vulkan 驱动。上游 Mesa PanVK 尚处于实验阶段，尚未完全支持 Switch 所需的 Vulkan 扩展指令集。自定义 .zip 驱动安装仍对测试版本开放，同时已自动过滤 Adreno Turnip 驱动以防止闪退。</string>
+    <string name="mali_turnip_incompatible_warning">警告：Adreno Turnip 驱动专为高通骁龙 Adreno GPU 深度定制。在 Mali、Immortalis 或非 Adreno GPU 上强行安装此驱动可能导致严重图形花屏或应用闪退崩溃。是否仍要继续安装？</string>
 </resources>

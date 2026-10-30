@@ -5308,7 +5308,7 @@ To invert the axes, first move your joystick vertically, and then horizontally.<
       <source>Failed to save the input profile "%1"</source>
       <translation>Не удалось сохранить профиль управления "%1"</translation>
     </message>
-  </context>
+  <message><source>Any</source><translation>Любое</translation></message><message><source>Keyboard Only</source><translation>Только клавиатура</translation></message><message><source>Keyboard/Mouse</source><translation>Клавиатура/Мышь</translation></message><message><source>Unknown</source><translation>Неизвестно</translation></message></context>
   <context>
     <name>ConfigureInputProfileDialog</name>
     <message>
@@ -11981,11 +11981,7 @@ Error code: %3</source>
       <source>Reset to Defaults</source>
       <translation>Сбросить по умолчанию</translation>
     </message>
-    <message>
-      <source>Don't Save</source>
-      <translation>Не сохранять</translation>
-    </message>
-  </context>
+    </context>
   <context>
     <name>QDialogButtonBox</name>
     <message>
@@ -12132,11 +12128,7 @@ Error code: %3</source>
       <source>Reset to Defaults</source>
       <translation>Сбросить по умолчанию</translation>
     </message>
-    <message>
-      <source>Don't Save</source>
-      <translation>Не сохранять</translation>
-    </message>
-  </context>
+    </context>
   <context>
     <name>QMessageBox</name>
     <message>
@@ -12283,11 +12275,7 @@ Error code: %3</source>
       <source>Reset to Defaults</source>
       <translation>Сбросить по умолчанию</translation>
     </message>
-    <message>
-      <source>Don't Save</source>
-      <translation>Не сохранять</translation>
-    </message>
-  </context>
+    </context>
   <context>
     <name>QGuiApplication</name>
     <message>
@@ -12434,11 +12422,7 @@ Error code: %3</source>
       <source>Reset to Defaults</source>
       <translation>Сбросить по умолчанию</translation>
     </message>
-    <message>
-      <source>Don't Save</source>
-      <translation>Не сохранять</translation>
-    </message>
-  </context>
+    </context>
   <context>
     <name>QAbstractButton</name>
     <message>

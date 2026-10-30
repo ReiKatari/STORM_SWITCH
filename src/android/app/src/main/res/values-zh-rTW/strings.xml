@@ -409,7 +409,7 @@
     <string name="frame_limit_enable">限制模擬速度</string>
     <string name="frame_limit_enable_description">將模擬速度限制在標準速度的指定百分比</string>
     <string name="frame_limit_slider">限制速度百分比</string>
-    <string name="frame_limit_slider_description">指定模擬速度的百分比。100% 為標準速度，更高或更低的值將會減少或增加速度限制</string>
+    <string name="frame_limit_slider_description" formatted="false">指定模擬速度的百分比。100% 為標準速度，更高或更低的值將會減少或增加速度限制</string>
     <string name="turbo_speed_limit">加速模式</string>
     <string name="turbo_speed_limit_description">當開啟加速模式時，模擬器將以此速度執行</string>
     <string name="slow_speed_limit">慢速模式</string>
@@ -977,7 +977,7 @@
     <string name="auto_optimization_apply">套用此配置</string>
     <string name="auto_optimization_mode_normal">⚖️ 均衡（推薦）</string>
     <string name="downloading_cheats">正在下載線上金手指資料庫…</string>
-    <string name="auto_optimization_mode_normal_desc">畫質、流暢度與穩定性的完美平衡。1X（720p/1080p）、FSR 85%、FXAA、均衡柵欄。</string>
+    <string name="auto_optimization_mode_normal_desc" formatted="false">畫質、流暢度與穩定性的完美平衡。1X（720p/1080p）、FSR 85%、FXAA、均衡柵欄。</string>
     <string name="auto_optimization_mode_accurate">💎 畫質 / 精確</string>
     <string name="auto_optimization_mode_accurate_desc">頂級畫質表現，1.5X/1X 解析度、安全 DMA、嚴格 GPU 柵欄、SMAA、16x 各向異性過濾。</string>
     <string name="dma_accuracy_high">高</string>
@@ -1130,10 +1130,10 @@
     <string name="special_thanks_title">Special Thanks &amp; Acknowledgements</string>
     <string name="special_thanks_description">• Eden Project &amp; Team — original project &amp; core emulator foundation\n• Yuzu &amp; Citra Teams — groundbreaking emulation codebase\n• Ryujinx Team — invaluable reverse engineering &amp; Switch HLE research\n• Skyline / Strato Team — ARM64 NCE and Android performance techniques\n• Mesa, Freedreno &amp; Turnip Teams — open-source Vulkan driver development\n• Global open-source emulation contributors</string>
     <string name="astc_recompression">ASTC Texture Recompression</string>
-    <string name="astc_recompression_description">Recompresses ASTC textures to BC1, BC3, or BC5 formats on the fly to reduce RAM and VRAM usage by 50–80%.</string>
+    <string name="astc_recompression_description" formatted="false">Recompresses ASTC textures to BC1, BC3, or BC5 formats on the fly to reduce RAM and VRAM usage by 50–80%.</string>
     <string name="astc_recompression_uncompressed">Uncompressed (Highest Quality / Max RAM)</string>
     <string name="astc_recompression_bc1">BC1 (Low Quality / Max RAM Savings)</string>
-    <string name="astc_recompression_bc3">BC3 (Medium Quality / 50% RAM Savings)</string>
+    <string name="astc_recompression_bc3" formatted="false">BC3 (Medium Quality / 50% RAM Savings)</string>
     <string name="astc_recompression_bc5">BC5 (High Quality for Normals)</string>
     <string name="renderer_asynchronous_gpu_emulation">GPU async emulation</string>
     <string name="renderer_asynchronous_gpu_emulation_description">This hack can increase performance by running GPU emulation asynchronously at the cost of graphical issues and increased crash rates by timing-related operations.</string>
@@ -1436,11 +1436,11 @@
     <string name="profile_preset_fast_title">⚡ Fast (Maximum FPS and Low Temp)</string>
     <string name="profile_preset_fast_desc">0.75X resolution, fast JIT, async shaders, disabled reactive flushing, 6GB DRAM, cool SoC.</string>
     <string name="profile_preset_balanced_title">⚖️ Balanced (Recommended)</string>
-    <string name="profile_preset_balanced_desc">1.0X (720p/1080p), FSR 85%, fast JIT, async shaders, EDS1 dynamic state, 6GB DRAM.</string>
+    <string name="profile_preset_balanced_desc" formatted="false">1.0X (720p/1080p), FSR 85%, fast JIT, async shaders, EDS1 dynamic state, 6GB DRAM.</string>
     <string name="profile_preset_accurate_title">💎 High Quality (Accurate)</string>
     <string name="profile_preset_accurate_desc">1.0X-1.5X, high GPU accuracy, strict sync, FXAA/SMAA, 8GB DRAM.</string>
     <string name="profile_preset_saver_title">🔋 Battery Saver and Cool SoC</string>
-    <string name="profile_preset_saver_desc">0.75X resolution, 100% speed limit, battery-efficient VRAM, minimum thermal output.</string>
+    <string name="profile_preset_saver_desc" formatted="false">0.75X resolution, 100% speed limit, battery-efficient VRAM, minimum thermal output.</string>
     <string name="profile_btn_apply">Apply</string>
     <string name="profile_btn_share">Share</string>
     <string name="profile_btn_rename">Rename</string>
@@ -1766,7 +1766,7 @@
     <string name="cheat_desc_no_fog">Disable Fog &amp; Haze</string>
     <string name="cheat_desc_no_blur">Disable Blur &amp; Post-Processing</string>
     <string name="cheat_desc_fov">Camera &amp; FOV Adjustment</string>
-    <string name="cheat_desc_drop_rate">100% Rare Item Drop Rate</string>
+    <string name="cheat_desc_drop_rate" formatted="false">100% Rare Item Drop Rate</string>
     <string name="cheat_desc_unlock_all">Unlock All Content</string>
     <string name="cheat_desc_freeze_timer">Freeze Timer (Infinite Time)</string>
     <string name="cheat_desc_master_code">Master Code</string>
@@ -1874,7 +1874,7 @@
     <string name="translator_btn_test_voice">▶ Test voice</string>
     <string name="translator_sec_floating_btn">🔘 FLOATING TRANSLATE BUTTON</string>
     <string name="translator_lbl_floating_show">Show translate button on screen:</string>
-    <string name="translator_lbl_floating_opacity_default">Button opacity: 90%</string>
+    <string name="translator_lbl_floating_opacity_default" formatted="false">Button opacity: 90%</string>
     <string name="translator_lbl_floating_opacity_fmt">Button opacity: %1$d%%</string>
     <string name="translator_engine_google">Google Translate (Fast / Free)</string>
     <string name="translator_engine_yandex">Yandex Translate (High quality Russian)</string>
@@ -1895,7 +1895,7 @@
     <string name="translator_style_dark">Semi-transparent dark</string>
     <string name="translator_style_neon">Neon bubble</string>
     <string name="translator_style_outline">Outline only</string>
-    <string name="translator_roi_all">Full game screen (100%)</string>
+    <string name="translator_roi_all" formatted="false">Full game screen (100%)</string>
     <string name="translator_roi_bottom">Bottom third (Dialogue boxes)</string>
     <string name="translator_roi_center">Center area (Subtitles &amp; cutscenes)</string>
     <string name="translator_roi_top">Top third (Quests, HUD &amp; hints)</string>
@@ -2027,4 +2027,53 @@
     <string name="apply_driver_msg">驅動已成功安裝，是否立即啟用？</string>
     <string name="apply_driver_positive">套用</string>
     <string name="apply_driver_negative">稍後</string>
+
+    <string name="theme_storm_elemental">STORM ELEMENTAL (元素烈焰)</string>
+    <string name="theme_storm_flagship">STORM (旗艦版)</string>
+    <string name="auto_opt_dialog_title">STORM FLUID 自動設定精靈</string>
+    <string name="auto_opt_dialog_subtitle">智慧硬體效能分析與最佳化</string>
+    <string name="auto_opt_telemetry_title">硬體運作狀態遙測</string>
+    <string name="auto_opt_profiles_title">一鍵最佳化設定檔</string>
+    <string name="auto_opt_profile_fast_title">極速競技 (電競 / 60 FPS)</string>
+    <string name="auto_opt_badge_60fps">60 FPS</string>
+    <string name="auto_opt_profile_fast_desc">優先確保極低幀延遲、極速 GPU 計時器、NCE 與主動式執行緒調度。</string>
+    <string name="auto_opt_profile_balance_title">平衡模式 (官方推薦)</string>
+    <string name="auto_opt_badge_recommended">官方推薦</string>
+    <string name="auto_opt_profile_balance_desc">畫面清晰度、穩定 30/60 FPS 與字型/材質保護的絕佳平衡。</string>
+    <string name="auto_opt_profile_ultra_title">極致畫質 (2K / FSR / 超清)</string>
+    <string name="auto_opt_badge_2k_fsr">2K / FSR</string>
+    <string name="auto_opt_profile_ultra_desc">提升渲染解析度、反鋸齒、最高各向異性過濾與著色器精度。</string>
+    <string name="auto_opt_profile_eco_title">節能省電 (低溫長續航)</string>
+    <string name="auto_opt_badge_cool">低溫</string>
+    <string name="auto_opt_profile_eco_desc">大幅降低機身發熱與電池消耗，長途外出遊玩首選。</string>
+    <string name="auto_opt_mode_fast_short">極速 FPS</string>
+    <string name="auto_opt_mode_normal_short">平衡模式</string>
+    <string name="auto_opt_mode_accurate_short">極致畫質</string>
+    <string name="auto_opt_mode_battery_short">節能省電</string>
+    <string name="auto_opt_mode_default_short">預設值</string>
+    <string name="scaling_filter_nearest_neighbor">最近鄰插值 (Nearest Neighbor)</string>
+    <string name="scaling_filter_bilinear">雙線性插值 (Bilinear)</string>
+    <string name="scaling_filter_bicubic">雙三次插值 (Bicubic)</string>
+    <string name="scaling_filter_gaussian">高斯模糊 (Gaussian)</string>
+    <string name="scaling_filter_scale_force">ScaleForce (邊緣增強縮放)</string>
+    <string name="scaling_filter_fsr">AMD FSR 2.0 (FidelityFX 超級解析度技術)</string>
+    <string name="scaling_filter_sgsr">高通驍龍 GSR (遊戲超級解析度)</string>
+    <string name="scaling_filter_sgsr_edge">高通驍龍 GSR EdgeDir (邊緣方向增強)</string>
+    <string name="scaling_filter_area">區域均值採樣 (Area)</string>
+    <string name="scaling_filter_bspline">B樣條插值 (B-Spline)</string>
+    <string name="scaling_filter_mitchell">米切爾濾波器 (Mitchell)</string>
+    <string name="scaling_filter_spline1">樣條曲線 1 (Spline-1)</string>
+    <string name="scaling_filter_zero_tangent">零切線插值 (Zero-Tangent)</string>
+    <string name="scaling_filter_lanczos">蘭索斯插值 (Lanczos 3)</string>
+    <string name="scaling_filter_mmpx">MMPX (像素藝術清晰縮放)</string>
+    <string name="scaling_filter_cas">AMD FidelityFX CAS (對比度自適應銳化)</string>
+    <string name="scaling_filter_omniscale">OmniScale HQ (高精解析度像素重構)</string>
+    <string name="fsr2_quality_mode">FSR 2.0 畫質預設模式</string>
+    <string name="fsr2_quality_mode_description">選擇 AMD FSR 2.0 時間超取樣升頻畫質預設</string>
+    <string name="fsr2_quality_quality">高品質 (1.5x)</string>
+    <string name="fsr2_quality_balanced">平衡 (1.7x)</string>
+    <string name="fsr2_quality_performance">效能優先 (2.0x)</string>
+    <string name="fsr2_quality_ultra_performance">極致效能 (3.0x)</string>
+    <string name="mali_driver_info">Mali/Immortalis/Xclipse GPU 使用廠商系統內建的 Vulkan 驅動程式。上游 Mesa PanVK 尚處於實驗階段，尚未完全支援 Switch 所需的 Vulkan 擴充指令集。自訂 .zip 驅動程式安裝仍對測試版本開放，同時已自動過濾 Adreno Turnip 驅動程式以防止當機。</string>
+    <string name="mali_turnip_incompatible_warning">警告：Adreno Turnip 驅動程式專為高通驍龍 Adreno GPU 深度自訂。在 Mali、Immortalis 或非 Adreno GPU 上強行安裝此驅動程式可能導致嚴重圖形破圖或應用程式閃退當機。是否仍要繼續安裝？</string>
 </resources>

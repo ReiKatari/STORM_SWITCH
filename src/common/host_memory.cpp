@@ -21,6 +21,7 @@
 #include <boost/icl/interval_set.hpp>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <sys/statvfs.h>
 #include <unistd.h>
 #include "common/scope_exit.h"
 
@@ -166,10 +167,14 @@ public:
                 size_li.QuadPart = static_cast<LONGLONG>(backing_size);
                 if (SetFilePointerEx(swap_file_handle, size_li, nullptr, FILE_BEGIN) && SetEndOfFile(swap_file_handle)) {
                     backing_handle = pfn_CreateFileMapping2(swap_file_handle, nullptr, FILE_MAP_WRITE | FILE_MAP_READ,
-                                                            PAGE_READWRITE, SEC_COMMIT, backing_size, nullptr, nullptr, 0);
+                                                            PAGE_READWRITE, SEC_RESERVE, backing_size, nullptr, nullptr, 0);
                     if (!backing_handle) {
-                        backing_handle = CreateFileMappingW(swap_file_handle, nullptr, PAGE_READWRITE,
+                        backing_handle = CreateFileMappingW(swap_file_handle, nullptr, PAGE_READWRITE | SEC_RESERVE,
                                                             size_li.HighPart, size_li.LowPart, nullptr);
+                    }
+                    if (!backing_handle) {
+                        backing_handle = pfn_CreateFileMapping2(swap_file_handle, nullptr, FILE_MAP_WRITE | FILE_MAP_READ,
+                                                                PAGE_READWRITE, SEC_COMMIT, backing_size, nullptr, nullptr, 0);
                     }
                 }
             }
@@ -298,6 +303,9 @@ private:
             backing_handle = nullptr;
         }
         if (swap_file_handle != INVALID_HANDLE_VALUE) {
+            LARGE_INTEGER zero_li{};
+            SetFilePointerEx(swap_file_handle, zero_li, nullptr, FILE_BEGIN);
+            SetEndOfFile(swap_file_handle);
             CloseHandle(swap_file_handle);
             swap_file_handle = INVALID_HANDLE_VALUE;
         }
@@ -380,6 +388,11 @@ private:
         if (!pfn_MapViewOfFile3(backing_handle, process, virtual_base + virtual_offset, host_offset,
                                 length, MEM_REPLACE_PLACEHOLDER, PAGE_READWRITE, nullptr, 0)) {
             LOG_CRITICAL(HW_Memory, "Failed to map placeholder");
+            return;
+        }
+        if (swap_file_handle != INVALID_HANDLE_VALUE) {
+            VirtualAlloc(virtual_base + virtual_offset, length, MEM_COMMIT, PAGE_READWRITE);
+            VirtualAlloc(backing_base + host_offset, length, MEM_COMMIT, PAGE_READWRITE);
         }
     }
 
@@ -581,6 +594,13 @@ public:
             };
             for (const char* dir : candidate_dirs) {
                 if (!dir || !*dir) continue;
+                struct statvfs vfs{};
+                if (statvfs(dir, &vfs) == 0) {
+                    const u64 free_bytes = static_cast<u64>(vfs.f_bavail) * static_cast<u64>(vfs.f_frsize);
+                    if (free_bytes < backing_size + (2ULL << 30)) {
+                        continue;
+                    }
+                }
                 std::string swap_path = std::string(dir) + "/storm_switch_swap_" + std::to_string(getpid()) + ".swp";
                 fd = open(swap_path.c_str(), O_CREAT | O_RDWR | O_CLOEXEC, 0600);
                 if (fd >= 0) {

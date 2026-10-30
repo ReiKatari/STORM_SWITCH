@@ -390,6 +390,7 @@ private slots:
     void OnMenuLoadFolder();
     void IncrementInstallProgress();
     void OnMenuInstallToNAND();
+    void InstallFilesToNAND(const QStringList& filenames);
     void OnMenuRecentFile();
     void OnConfigure();
     void OnConfigureTas();
