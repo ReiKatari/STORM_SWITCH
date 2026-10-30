@@ -2879,4 +2879,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="auto_opt_mode_battery_short">इको / पोर्टेबल</string>
     <string name="auto_opt_mode_default_short">डिफ़ॉल्ट</string>
 
+    <string name="storm_check_updates_now">अपडेट की जाँच करें</string>
+    <string name="storm_check_updates_now_desc">GitHub और STORM GAMES WORLD पर नए संस्करण की जाँच करें और सीधे इंस्टॉल करें</string>
+    <string name="storm_checking_updates">अपडेट की जाँच हो रही है…</string>
+    <string name="storm_up_to_date_fmt">आपके पास नवीनतम संस्करण इंस्टॉल है (%1$s)</string>
 </resources>

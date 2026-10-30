@@ -2235,4 +2235,8 @@
     <string name="fsr2_quality_ultra_performance">ウルトラパフォーマンス (3.0x)</string>
     <string name="mali_driver_info">Mali/Immortalis/Xclipse GPU はメーカー提供のシステム Vulkan ドライバを使用します。Mesa PanVK は実験段階であり、Switch の Vulkan 拡張機能を完全にはサポートしていません。実験的ビルド向けにカスタム .zip ドライバのインストールは引き続き可能ですが、クラッシュ防止のため Adreno Turnip ドライバは除外されます。</string>
     <string name="mali_turnip_incompatible_warning">警告: Adreno Turnip ドライバは Qualcomm Adreno GPU 専用に設計されています。Mali やその他の非 Adreno GPU にこのドライバをインストールすると、画面の乱れやアプリの強制終了が発生する恐れがあります。続行しますか？</string>
+    <string name="storm_check_updates_now">アップデートを確認</string>
+    <string name="storm_check_updates_now_desc">GitHub と STORM GAMES WORLD から最新バージョンを確認して上書きインストールします</string>
+    <string name="storm_checking_updates">アップデートを確認中…</string>
+    <string name="storm_up_to_date_fmt">最新バージョン (%1$s) がインストールされています</string>
 </resources>

@@ -2339,4 +2339,8 @@
     <string name="auto_opt_mode_accurate_short">УЛЬТРА КАЧЕСТВО</string>
     <string name="auto_opt_mode_battery_short">ЭКО / ПОРТАТИВ</string>
     <string name="auto_opt_mode_default_short">ПО УМОЛЧАНИЮ</string>
+    <string name="storm_check_updates_now">Проверить обновления</string>
+    <string name="storm_check_updates_now_desc">Проверить наличие новой версии на GitHub и STORM GAMES WORLD и установить поверх текущей</string>
+    <string name="storm_checking_updates">Проверка наличия обновлений…</string>
+    <string name="storm_up_to_date_fmt">У вас установлена актуальная версия (%1$s)</string>
 </resources>

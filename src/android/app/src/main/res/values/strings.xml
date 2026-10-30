@@ -2879,4 +2879,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="auto_opt_mode_battery_short">ECO / PORTABLE</string>
     <string name="auto_opt_mode_default_short">DEFAULT</string>
 
+    <string name="storm_check_updates_now">Check for Updates Now</string>
+    <string name="storm_check_updates_now_desc">Check GitHub and STORM GAMES WORLD for a newer release and install it in place</string>
+    <string name="storm_checking_updates">Checking for updates…</string>
+    <string name="storm_up_to_date_fmt">You have the latest version installed (%1$s)</string>
 </resources>

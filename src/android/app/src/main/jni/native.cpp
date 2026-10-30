@@ -2113,22 +2113,29 @@ JNIEXPORT jobject JNICALL Java_org_yuzu_yuzu_1emu_NativeLibrary_checkForUpdate(
     LOG_DEBUG(Frontend, "Body: {}", body);
     LOG_DEBUG(Frontend, "Url: {}", url);
 
-    const auto jtag = env->NewStringUTF(tag.c_str());
-    const auto jtitle = env->NewStringUTF(title.c_str());
-    const auto jbody = env->NewStringUTF(body.c_str());
-    const auto jurl = env->NewStringUTF(url.c_str());
+    const auto jtag = Common::Android::ToJString(env, tag);
+    const auto jtitle = Common::Android::ToJString(env, title);
+    const auto jbody = Common::Android::ToJString(env, body);
+    const auto jurl = Common::Android::ToJString(env, url);
 
     env->CallVoidMethod(updateResult, setTag, jtag);
     env->CallVoidMethod(updateResult, setTitle, jtitle);
     env->CallVoidMethod(updateResult, setBody, jbody);
     env->CallVoidMethod(updateResult, setUrl, jurl);
 
-    // TODO(crueter): Handling for multiple assets?
-    // Maybe another data class x(
-    for (const Common::Net::Asset &a : assets) {
-        const auto jaurl = env->NewStringUTF(a.path.c_str());
-        env->CallVoidMethod(updateResult, addAsset, jaurl);
-        env->DeleteLocalRef(jaurl);
+    for (const std::string& raw_asset : release->assets) {
+        if (!raw_asset.empty()) {
+            const auto jaurl = Common::Android::ToJString(env, raw_asset);
+            env->CallVoidMethod(updateResult, addAsset, jaurl);
+            env->DeleteLocalRef(jaurl);
+        }
+    }
+    if (release->assets.empty()) {
+        for (const Common::Net::Asset &a : assets) {
+            const auto jaurl = Common::Android::ToJString(env, a.path);
+            env->CallVoidMethod(updateResult, addAsset, jaurl);
+            env->DeleteLocalRef(jaurl);
+        }
     }
 
     env->DeleteLocalRef(jtag);

@@ -15,6 +15,7 @@ import android.os.Build
 import android.widget.Toast
 
 import org.yuzu.yuzu_emu.NativeLibrary
+import org.yuzu.yuzu_emu.updater.StormUpdateManager
 
 import org.yuzu.yuzu_emu.R
 
@@ -2386,6 +2387,16 @@ class SettingsFragmentPresenter(
 
 
 
+            add(
+                RunnableSetting(
+                    titleId = R.string.storm_check_updates_now,
+                    descriptionId = R.string.storm_check_updates_now_desc,
+                    isRunnable = true,
+                    iconId = R.drawable.ic_system_update_alt
+                ) {
+                    activity?.let { StormUpdateManager.checkForUpdates(it, manual = true) }
+                }
+            )
             if (NativeLibrary.isUpdateCheckerEnabled()) {
 
                 add(BooleanSetting.ENABLE_UPDATE_CHECKS.key)

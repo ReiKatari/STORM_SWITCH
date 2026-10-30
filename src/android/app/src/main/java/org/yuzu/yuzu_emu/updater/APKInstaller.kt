@@ -3,6 +3,7 @@
 
 package org.yuzu.yuzu_emu.updater
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -17,24 +18,61 @@ import java.io.File
 
 class APKInstaller(private val context: Context) {
 
-    fun install(apkFile: File, onComplete: () -> Unit, onFailure: (Exception) -> Unit) {
+    fun install(apkFile: File, onComplete: () -> Unit = {}, onFailure: (Exception) -> Unit = {}) {
         try {
-            if (!apkFile.exists() || apkFile.length() <= 1024 * 1024) {
-                onFailure(IllegalStateException("Invalid APK file: size is less than 1MB"))
+            if (!APKDownloader.isValidApkFile(apkFile)) {
+                onFailure(IllegalStateException("Invalid APK file"))
                 return
             }
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
                 !context.packageManager.canRequestPackageInstalls()
             ) {
+                pendingApkFile = apkFile
                 val permIntent = Intent(
                     Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
                     Uri.parse("package:${context.packageName}")
                 ).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    if (context !is Activity) {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
                 }
                 context.startActivity(permIntent)
+                return
             }
 
+            pendingApkFile = null
+            launchPackageInstaller(context, apkFile, onComplete, onFailure)
+        } catch (e: Exception) {
+            onFailure(e)
+        }
+    }
+
+    companion object {
+        @Volatile
+        private var pendingApkFile: File? = null
+
+        fun resumePendingInstall(context: Context) {
+            val file = pendingApkFile ?: return
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+                !context.packageManager.canRequestPackageInstalls()
+            ) {
+                return
+            }
+            pendingApkFile = null
+            if (APKDownloader.isValidApkFile(file)) {
+                try {
+                    launchPackageInstaller(context, file, {}, {})
+                } catch (_: Throwable) {}
+            }
+        }
+
+        private fun launchPackageInstaller(
+            context: Context,
+            apkFile: File,
+            onComplete: () -> Unit,
+            onFailure: (Exception) -> Unit
+        ) {
             val apkUri: Uri = FileProvider.getUriForFile(
                 context,
                 context.applicationContext.packageName + ".provider",
@@ -42,7 +80,10 @@ class APKInstaller(private val context: Context) {
             )
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 setDataAndType(apkUri, "application/vnd.android.package-archive")
-                flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true)
             }
             context.startActivity(intent)
 
@@ -55,17 +96,13 @@ class APKInstaller(private val context: Context) {
                         addDataScheme("package")
                     }
                     ContextCompat.registerReceiver(
-                        context,
+                        context.applicationContext,
                         receiver,
                         filter,
                         ContextCompat.RECEIVER_EXPORTED
                     )
-                } catch (_: Exception) {
-                    // System package installer activity is already launched
-                }
+                } catch (_: Throwable) {}
             }
-        } catch (e: Exception) {
-            onFailure(e)
         }
     }
 }

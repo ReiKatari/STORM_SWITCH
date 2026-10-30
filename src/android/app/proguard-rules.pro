@@ -12,6 +12,9 @@
 # Keep all JNI-referenced classes and members
 -keep class org.yuzu.yuzu_emu.NativeLibrary { *; }
 -keepclassmembers class org.yuzu.yuzu_emu.NativeLibrary { *; }
+-keep class org.yuzu.yuzu_emu.NativeLibrary$* { *; }
+-keepclassmembers class org.yuzu.yuzu_emu.NativeLibrary$* { *; }
+-keep class org.yuzu.yuzu_emu.updater.** { *; }
 -keep class org.yuzu.yuzu_emu.disk_shader_cache.** { *; }
 -keep class org.yuzu.yuzu_emu.model.** { *; }
 -keep class org.yuzu.yuzu_emu.overlay.model.** { *; }

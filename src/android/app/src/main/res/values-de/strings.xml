@@ -2178,4 +2178,8 @@ Starte ein Spiel oder verbinde dich mit einem anderen Gerät.</string>
     <string name="fsr2_quality_ultra_performance">Ultra-Leistung (3.0x)</string>
     <string name="mali_driver_info">Mali/Immortalis/Xclipse-GPUs verwenden den herstellereigenen System-Vulkan-Treiber. Das Upstream-Mesa-PanVK ist experimentell und unterstützt noch nicht alle Switch-Vulkan-Erweiterungen. Benutzerdefinierte .zip-Treiberinstallationen bleiben für Testbuilds verfügbar, während Adreno-Turnip-Treiber gefiltert werden.</string>
     <string name="mali_turnip_incompatible_warning">Warnung: Adreno-Turnip-Treiber wurden speziell für Qualcomm-Adreno-GPUs entwickelt. Die Installation auf einer Mali- oder Nicht-Adreno-GPU kann zu Grafikfehlern oder Abstürzen führen. Möchten Sie fortfahren?</string>
+    <string name="storm_check_updates_now">Jetzt nach Updates suchen</string>
+    <string name="storm_check_updates_now_desc">Auf GitHub und STORM GAMES WORLD nach einer neueren Version suchen und direkt installieren</string>
+    <string name="storm_checking_updates">Suche nach Updates…</string>
+    <string name="storm_up_to_date_fmt">Sie verwenden bereits die neueste Version (%1$s)</string>
 </resources>

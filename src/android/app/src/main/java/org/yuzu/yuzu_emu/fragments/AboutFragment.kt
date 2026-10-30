@@ -28,6 +28,7 @@ import org.yuzu.yuzu_emu.features.settings.ui.SettingsSubscreen
 import org.yuzu.yuzu_emu.model.HomeViewModel
 import org.yuzu.yuzu_emu.utils.ViewUtils.updateMargins
 import org.yuzu.yuzu_emu.NativeLibrary
+import org.yuzu.yuzu_emu.updater.StormUpdateManager
 
 class AboutFragment : Fragment() {
     private var _binding: FragmentAboutBinding? = null
@@ -89,6 +90,7 @@ class AboutFragment : Fragment() {
 
         binding.textVersionName.text = fullVersionText
         binding.buttonVersionName.setOnClickListener {
+            StormUpdateManager.checkForUpdates(requireActivity(), manual = true)
             val clipBoard =
                 requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             val clip = ClipData.newPlainText(getString(R.string.build), fullVersionText)

@@ -2065,4 +2065,8 @@
     <string name="fsr2_quality_ultra_performance">Prestazioni ultra (3.0x)</string>
     <string name="mali_driver_info">Le GPU Mali/Immortalis/Xclipse utilizzano il driver Vulkan di sistema del produttore. Mesa PanVK è sperimentale e non supporta ancora tutte le estensioni Vulkan per Switch. L\'installazione di driver .zip personalizzati rimane disponibile per le build di test, mentre i driver Turnip sono filtrati.</string>
     <string name="mali_turnip_incompatible_warning">Avviso: I driver Adreno Turnip sono progettati specificamente per le GPU Qualcomm Adreno. L\'installazione su una GPU Mali o non-Adreno può causare instabilità grafica o arresti anomali. Continuare?</string>
+    <string name="storm_check_updates_now">Controlla aggiornamenti</string>
+    <string name="storm_check_updates_now_desc">Verifica la presenza di una nuova versione su GitHub e STORM GAMES WORLD e installala direttamente</string>
+    <string name="storm_checking_updates">Ricerca aggiornamenti in corso…</string>
+    <string name="storm_up_to_date_fmt">Hai già installato la versione più recente (%1$s)</string>
 </resources>
