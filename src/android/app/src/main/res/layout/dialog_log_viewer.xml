@@ -260,7 +260,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_share_messenger"
-                android:stateListAnimator="@animator/storm_btn_press_animator"
+
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"

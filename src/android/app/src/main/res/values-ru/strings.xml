@@ -2274,7 +2274,7 @@
     <string name="menu_quick_save">Быстрое сохранение (Слот 1)</string>
     <string name="menu_quick_load">Быстрая загрузка (Слот 1)</string>
     <string name="menu_save_state_manager">Менеджер быстрых сохранений (Слоты 1–5)</string>
-    <string name="menu_toggle_quick_save_load_overlay">Экранные кнопки быстрого сохранения и загрузки (F5/F7)</string>
+    <string name="menu_toggle_quick_save_load_overlay">Кнопки быстрого сохранения</string>
     <string name="save_state_manager_title">МЕНЕДЖЕР БЫСТРЫХ СОХРАНЕНИЙ (SESS v2)</string>
     <string name="save_state_slot_fmt">Слот %1$d</string>
     <string name="save_state_empty">[Слот пуст]</string>
@@ -2318,7 +2318,7 @@
 
     <string name="theme_storm_elemental">STORM ELEMENTAL (Стихийный огонь)</string>
     <string name="theme_storm_flagship">STORM (Флагманский)</string>
-    <string name="auto_opt_dialog_title">АВТОМАТИЧЕСКАЯ НАСТРОЙКА</string>
+    <string name="auto_opt_dialog_title">Авто-настройка</string>
     <string name="auto_opt_dialog_subtitle">Интеллектуальное профилирование оборудования</string>
     <string name="auto_opt_telemetry_title">ТЕЛЕМЕТРИЯ ОБОРУДОВАНИЯ</string>
     <string name="auto_opt_profiles_title">ПРОФИЛИ В 1 КЛИК</string>
@@ -2347,7 +2347,7 @@
     <string name="profile_btn_save_current">Сохранить текущий профиль</string>
     <string name="profile_active_badge">АКТИВЕН</string>
     <string name="profile_total_count">Всего профилей: %1$d</string>
-    <string name="auto_opt_btn_apply">Применить оптимизацию</string>
+    <string name="auto_opt_btn_apply">Применить настройку</string>
     <string name="auto_opt_btn_reset">Сбросить по умолчанию</string>
     <string name="auto_opt_hw_soc_label">Процессор / SoC</string>
     <string name="auto_opt_hw_gpu_label">Графический чип (GPU)</string>
@@ -2361,4 +2361,5 @@
     <string name="home_cat_diagnostics_about">Данные, диагностика и информация</string>
     <string name="per_game_custom_badge">СВОЯ</string>
     <string name="vulkan_legacy_driver_warning">Обнаружен системный драйвер Vulkan %1$s на %2$s. Многим играм Nintendo Switch требуются функции Vulkan 1.3. Рекомендуется установить драйвер Mesa Turnip в Параметры -> Менеджер драйверов GPU.</string>
+    <string name="profile_empty_state">Нет сохранённых профилей настроек\nНажмите «Сохранить профиль», чтобы создать новый</string>
 </resources>

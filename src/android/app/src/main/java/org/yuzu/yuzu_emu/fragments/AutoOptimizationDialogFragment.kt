@@ -25,7 +25,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.yuzu.yuzu_emu.R
 import org.yuzu.yuzu_emu.databinding.DialogAutoOptimizationBinding
-import org.yuzu.yuzu_emu.ui.StormButton3dHelper
 import org.yuzu.yuzu_emu.utils.StormHardwareCalibrator
 import org.yuzu.yuzu_emu.utils.ThemeHelper
 
@@ -99,11 +98,7 @@ class AutoOptimizationDialogFragment : DialogFragment() {
         }
 
         // Apply 3D Faceted Tactile Buttons
-        StormButton3dHelper.applyPrimary(binding.btnApplyWizard)
-        StormButton3dHelper.applySecondary(binding.btnResetDefaults)
-        StormButton3dHelper.applySecondary(binding.btnCancel)
-
-        setupModeSelectors()
+                                setupModeSelectors()
         detectAndDisplayHardwareInfo()
 
         binding.btnApplyWizard.setOnClickListener {

@@ -14,7 +14,7 @@
         android:text="@string/settings_profiles_title"
         android:textSize="13.5sp"
         android:textStyle="bold"
-        android:stateListAnimator="@animator/storm_btn_press_animator"
+
         android:background="@drawable/storm_btn_3d_tonal"
         app:backgroundTint="@null"
         app:icon="@drawable/ic_folder_open"

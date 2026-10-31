@@ -176,7 +176,7 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
         }
 
         setContentView(binding.root)
-        org.yuzu.yuzu_emu.ui.StormButton3dHelper.install(this)
+        // StormButton3dHelper removed
 
         if (savedInstanceState != null) {
             checkedDecryption = savedInstanceState.getBoolean(CHECKED_DECRYPTION)

@@ -2857,7 +2857,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="mali_turnip_incompatible_warning">Warning: Adreno Turnip drivers are designed specifically for Qualcomm Adreno GPUs. Installing this driver on a Mali or non-Adreno GPU may cause graphics instability or app crashes. Do you want to continue?</string>
 
     <!-- Auto-Optimization Dialog Strings -->
-    <string name="auto_opt_dialog_title">AUTOMATIC CONFIGURATION</string>
+    <string name="auto_opt_dialog_title">Auto-Setup</string>
     <string name="auto_opt_dialog_subtitle">Intelligent Hardware Profiling</string>
     <string name="auto_opt_telemetry_title">HARDWARE TELEMETRY</string>
     <string name="auto_opt_profiles_title">1-CLICK PROFILES</string>
@@ -2901,4 +2901,5 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="home_cat_diagnostics_about">Diagnostics, Logs &amp; About</string>
     <string name="per_game_custom_badge">CUSTOM</string>
     <string name="vulkan_legacy_driver_warning">System Vulkan %1$s detected on %2$s. Many Switch titles require Vulkan 1.3 features. It is recommended to install a Mesa Turnip driver in Settings -> GPU Driver Manager.</string>
+    <string name="profile_empty_state">No saved setting profiles\nTap \'Save Profile\' to create one</string>
 </resources>

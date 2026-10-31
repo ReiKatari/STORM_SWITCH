@@ -142,78 +142,63 @@ QToolBar {
     spacing: 6px;
 }
 
-/* 3D Faceted Convex Buttons (Law 3 & STORM Standard) */
+/* Clean 1px Faceted Buttons (STORM Standard) */
 QPushButton, QDialogButtonBox QPushButton, QToolButton {
-    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #2c1212, stop:0.48 #1c0a0a, stop:0.52 #150707, stop:1 #0b0303);
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #2c1212, stop:1 #140707);
     color: #FFFFFF;
-    border-top: 1px solid rgba(255, 255, 255, 0.34);
-    border-left: 1px solid rgba(255, 255, 255, 0.16);
-    border-right: 1px solid rgba(255, 255, 255, 0.16);
-    border-bottom: 3px solid rgba(0, 0, 0, 0.58);
-    border-radius: 8px;
+    border: 1px solid #421b1b;
+    border-radius: 7px;
     padding: 6px 16px;
     font-weight: 600;
     min-height: 22px;
 }
 
 QPushButton:hover, QDialogButtonBox QPushButton:hover, QToolButton:hover {
-    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #3d1a1a, stop:0.48 #281010, stop:0.52 #200c0c, stop:1 #120505);
-    border-top: 1px solid rgba(255, 255, 255, 0.55);
-    border-left: 1px solid rgba(255, 23, 68, 0.45);
-    border-right: 1px solid rgba(255, 23, 68, 0.45);
-    border-bottom: 3px solid rgba(0, 0, 0, 0.70);
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #3d1a1a, stop:1 #1e0b0b);
+    border: 1px solid #ff1744;
     color: #ff1744;
 }
 
 QPushButton:pressed, QDialogButtonBox QPushButton:pressed, QToolButton:pressed {
-    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #080202, stop:0.5 #110505, stop:1 #1b0a0a);
-    border-top: 2px solid rgba(0, 0, 0, 0.55);
-    border-left: 1px solid rgba(0, 0, 0, 0.35);
-    border-right: 1px solid rgba(0, 0, 0, 0.35);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
-    padding-top: 8px;
-    padding-bottom: 4px;
+    background-color: #0c0404;
+    border: 1px solid #d50000;
+    padding: 6px 16px;
     color: #FFFFFF;
 }
 
 QPushButton:disabled, QDialogButtonBox QPushButton:disabled, QToolButton:disabled {
     background-color: #090303;
     color: rgba(255, 255, 255, 0.35);
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    border-left: 1px solid rgba(255, 255, 255, 0.04);
-    border-right: 1px solid rgba(255, 255, 255, 0.04);
-    border-bottom: 2px solid rgba(0, 0, 0, 0.40);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 7px;
+    padding: 6px 16px;
 }
 
 QPushButton:default, QDialogButtonBox QPushButton:default {
-    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ff4569, stop:0.48 #ff1744, stop:0.52 #d50000, stop:1 #9b0000);
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ff4569, stop:1 #b70000);
     color: #FFFFFF;
-    border-top: 1px solid rgba(255, 255, 255, 0.55);
-    border-left: 1px solid rgba(255, 255, 255, 0.28);
-    border-right: 1px solid rgba(255, 255, 255, 0.28);
-    border-bottom: 3px solid #5f0000;
-    border-radius: 8px;
+    border: 1px solid #d50000;
+    border-radius: 7px;
+    padding: 6px 16px;
     font-weight: 700;
+    min-height: 22px;
 }
 
 QPushButton:default:hover, QDialogButtonBox QPushButton:default:hover {
-    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ff7590, stop:0.48 #ff4569, stop:0.52 #ff1744, stop:1 #d50000);
-    border-top: 1px solid rgba(255, 255, 255, 0.75);
-    border-bottom: 3px solid #3a0000;
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ff7590, stop:1 #d50000);
+    border: 1px solid #ff7590;
 }
 
 QPushButton:default:pressed, QDialogButtonBox QPushButton:default:pressed {
-    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #5f0000, stop:0.5 #9b0000, stop:1 #d50000);
-    border-top: 2px solid rgba(0, 0, 0, 0.50);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.20);
-    padding-top: 8px;
-    padding-bottom: 4px;
+    background-color: #7f0000;
+    border: 1px solid #5f0000;
+    padding: 6px 16px;
 }
 
 QPushButton:disabled {
     background-color: #090303;
-    color: #FFFFFF;
-    border-color: #170707;
+    color: rgba(255, 255, 255, 0.35);
+    border: 1px solid #170707;
 }
 
 /* Line Edits & Text Inputs */
@@ -695,31 +680,25 @@ ConfigurationShared--Widget[stormOverrideRow="true"] {
     border-radius: 4px;
 }
 
-/* 3D Faceted Reset Custom Settings Button */
+/* Clean 1px Faceted Reset Custom Settings Button */
 QPushButton#ResetPerGameHeroButton {
-    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ef4444, stop:0.48 #dc2626, stop:0.52 #b91c1c, stop:1 #991b1b);
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ef4444, stop:1 #b91c1c);
     color: #FFFFFF;
-    border-top: 1px solid rgba(255, 255, 255, 0.45);
-    border-left: 1px solid rgba(255, 255, 255, 0.20);
-    border-right: 1px solid rgba(255, 255, 255, 0.20);
-    border-bottom: 3px solid #7f1d1d;
-    border-radius: 8px;
+    border: 1px solid #dc2626;
+    border-radius: 7px;
     padding: 6px 14px;
     font-weight: bold;
     font-size: 11.5px;
     min-height: 30px;
 }
 QPushButton#ResetPerGameHeroButton:hover {
-    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #f87171, stop:0.48 #ef4444, stop:0.52 #dc2626, stop:1 #b91c1c);
-    border-top: 1px solid rgba(255, 255, 255, 0.65);
-    border-bottom: 3px solid #7f1d1d;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #f87171, stop:1 #dc2626);
+    border: 1px solid #fca5a5;
 }
 QPushButton#ResetPerGameHeroButton:pressed {
     background: #991b1b;
-    border-top: 2px solid rgba(0, 0, 0, 0.60);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-    padding-top: 8px;
-    padding-bottom: 4px;
+    border: 1px solid #7f1d1d;
+    padding: 6px 14px;
 }
 
 /* Recessed 3D Status Bar Telemetry Capsules (Law 20) */

@@ -19,6 +19,15 @@
             android:icon="@drawable/ic_save"
             android:title="@string/menu_save_state_manager" />
 
+
+
+
+        <item
+            android:id="@+id/menu_toggle_quick_save_load_overlay"
+            android:checkable="true"
+            android:icon="@drawable/ic_overlay"
+            android:title="@string/menu_toggle_quick_save_load_overlay" />
+
         <item
             android:id="@+id/menu_pause_emulation"
             android:icon="@drawable/ic_pause"
@@ -84,11 +93,6 @@
     </group>
 
     <group android:id="@+id/group_controls">
-        <item
-            android:id="@+id/menu_toggle_quick_save_load_overlay"
-            android:checkable="true"
-            android:icon="@drawable/ic_overlay"
-            android:title="@string/menu_toggle_quick_save_load_overlay" />
 
         <item
             android:id="@+id/menu_quick_overlay"

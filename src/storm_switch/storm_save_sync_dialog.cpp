@@ -15,7 +15,6 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QFrame>
-#include <QGraphicsDropShadowEffect>
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QHostAddress>
@@ -81,49 +80,43 @@ StormSaveConflictDialog::StormSaveConflictDialog(QWidget* parent, const StormSav
         "    color: #FFFFFF;"
         "    font-size: 12px;"
         "}"
-        "QPushButton, QDialogButtonBox QPushButton, QToolButton {\n"
-        "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #25354e, stop:0.48 #1e293b, stop:0.52 #182232, stop:1 #0f172a);\n"
-        "    border-top: 1px solid rgba(255, 255, 255, 0.34);\n"
-        "    border-left: 1px solid rgba(255, 255, 255, 0.16);\n"
-        "    border-right: 1px solid rgba(255, 255, 255, 0.16);\n"
-        "    border-bottom: 3px solid rgba(0, 0, 0, 0.58);\n"
-        "    border-radius: 8px;\n"
-        "    color: #FFFFFF;\n"
-        "    padding: 6px 16px;\n"
-        "    font-weight: 600;\n"
-        "    font-size: 12px;\n"
-        "    min-height: 22px;\n"
-        "}\n"
-        "QPushButton:hover, QDialogButtonBox QPushButton:hover, QToolButton:hover {\n"
-        "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #334664, stop:0.48 #26364d, stop:0.52 #1e2b3e, stop:1 #131c2c);\n"
-        "    border-top: 1px solid rgba(255, 255, 255, 0.55);\n"
-        "    border-left: 1px solid rgba(0, 210, 255, 0.45);\n"
-        "    border-right: 1px solid rgba(0, 210, 255, 0.45);\n"
-        "    border-bottom: 3px solid rgba(0, 0, 0, 0.70);\n"
-        "    color: #00D2FF;\n"
-        "}\n"
-        "QPushButton:pressed, QDialogButtonBox QPushButton:pressed, QToolButton:pressed {\n"
-        "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #0d1522, stop:0.5 #131d2e, stop:1 #1a283e);\n"
-        "    border-top: 2px solid rgba(0, 0, 0, 0.55);\n"
-        "    border-bottom: 1px solid rgba(255, 255, 255, 0.14);\n"
-        "    padding-top: 8px;\n"
-        "    padding-bottom: 4px;\n"
-        "    color: #FFFFFF;\n"
-        "}\n"
-        "QPushButton#HeroBtn {\n"
-        "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #38bdf8, stop:0.48 #0ea5e9, stop:0.52 #0284c7, stop:1 #0369a1);\n"
-        "    border-top: 1px solid rgba(255, 255, 255, 0.55);\n"
-        "    border-left: 1px solid rgba(255, 255, 255, 0.28);\n"
-        "    border-right: 1px solid rgba(255, 255, 255, 0.28);\n"
-        "    border-bottom: 3px solid #0c4a6e;\n"
-        "    border-radius: 8px;\n"
-        "    color: #FFFFFF;\n"
-        "    font-weight: 700;\n"
-        "}\n"
-        "QPushButton#HeroBtn:hover {\n"
-        "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #7dd3fc, stop:0.48 #38bdf8, stop:0.52 #0ea5e9, stop:1 #0284c7);\n"
-        "    border-top: 1px solid rgba(255, 255, 255, 0.75);\n"
-        "    border-bottom: 3px solid #082f49;\n"
+        "QPushButton, QDialogButtonBox QPushButton, QToolButton {"
+        "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #25354e, stop:1 #0f172a);"
+        "    border: 1px solid #20354e;"
+        "    border-radius: 7px;"
+        "    color: #FFFFFF;"
+        "    padding: 6px 16px;"
+        "    font-weight: 600;"
+        "    font-size: 12px;"
+        "    min-height: 22px;"
+        "}"
+        "QPushButton:hover, QDialogButtonBox QPushButton:hover, QToolButton:hover {"
+        "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #334664, stop:1 #131c2c);"
+        "    border: 1px solid #00D2FF;"
+        "    color: #00D2FF;"
+        "}"
+        "QPushButton:pressed, QDialogButtonBox QPushButton:pressed, QToolButton:pressed {"
+        "    background-color: #0d1522;"
+        "    border: 1px solid #00A6CC;"
+        "    padding: 6px 16px;"
+        "    color: #FFFFFF;"
+        "}"
+        "QPushButton#HeroBtn {"
+        "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #38bdf8, stop:1 #0369a1);"
+        "    border: 1px solid #0284c7;"
+        "    border-radius: 7px;"
+        "    padding: 6px 16px;"
+        "    color: #FFFFFF;"
+        "    font-weight: 700;"
+        "}"
+        "QPushButton#HeroBtn:hover {"
+        "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #7dd3fc, stop:1 #0284c7);"
+        "    border: 1px solid #38bdf8;"
+        "}"
+        "QPushButton#HeroBtn:pressed {"
+        "    background-color: #0369a1;"
+        "    border: 1px solid #0284c7;"
+        "    padding: 6px 16px;"
         "}"
     ));
 
@@ -245,18 +238,7 @@ StormSaveConflictDialog::StormSaveConflictDialog(QWidget* parent, const StormSav
         reject();
     });
 
-    // 3D Drop shadows
-    auto add_shadow = [](QPushButton* btn, const QColor& color) {
-        auto* s = new QGraphicsDropShadowEffect(btn);
-        s->setBlurRadius(12);
-        s->setColor(color);
-        s->setOffset(0, 2);
-        btn->setGraphicsEffect(s);
-    };
 
-    add_shadow(btn_replace_local, QColor(0, 210, 255, 90));
-    add_shadow(btn_replace_remote, QColor(59, 130, 246, 90));
-    add_shadow(btn_keep_both, QColor(0, 240, 255, 140));
 
     btn_layout->addWidget(btn_replace_local);
     btn_layout->addWidget(btn_replace_remote);
@@ -1766,13 +1748,7 @@ void StormSaveSyncDialog::PopulateTable() {
         action_btn->setStyleSheet(btn_style);
         action_btn->setEnabled(btn_enabled);
 
-        if (btn_enabled) {
-            auto* s = new QGraphicsDropShadowEffect(action_btn);
-            s->setBlurRadius(8);
-            s->setColor(item.status == StormSaveSyncStatus::Conflict ? QColor(245, 158, 11, 100) : QColor(0, 210, 255, 90));
-            s->setOffset(0, 2);
-            action_btn->setGraphicsEffect(s);
-        }
+
 
         const QString title_id = item.title_id;
         connect(action_btn, &QPushButton::clicked, this, [this, title_id]() {

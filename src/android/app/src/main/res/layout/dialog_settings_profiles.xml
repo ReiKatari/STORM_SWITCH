@@ -119,7 +119,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_save_current_profile"
-                style="@style/StormButton.3D.Primary"
+                style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
             android:minHeight="48dp"
@@ -133,7 +133,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_import_profile"
-                style="@style/StormButton.3D.Secondary"
+                style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
             android:minHeight="48dp"
@@ -156,6 +156,19 @@
             android:clipToPadding="false"
             android:overScrollMode="never"
             android:paddingBottom="8dp" />
+
+
+        <!-- Empty state when zero profiles exist -->
+        <TextView
+            android:id="@+id/text_empty_profiles"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/profile_empty_state"
+            android:textColor="#64748B"
+            android:textSize="13sp"
+            android:visibility="gone" />
 
     </LinearLayout>
 

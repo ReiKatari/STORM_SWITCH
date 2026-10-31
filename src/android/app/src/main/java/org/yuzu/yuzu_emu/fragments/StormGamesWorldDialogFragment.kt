@@ -653,6 +653,25 @@ class StormGamesWorldDialogFragment : DialogFragment() {
     }
 
     private fun checkDownloadedStatus(games: List<StormWorldGameItem>, ctx: Context) {
+        val installedTids = HashSet<String>()
+        val installedBaseTids = HashSet<String>()
+        val installedTitles = HashSet<String>()
+        try {
+            gamesViewModel.games.value.forEach { gm ->
+                val rawTid = gm.programIdHex.trim().lowercase(Locale.ROOT)
+                if (rawTid.isNotEmpty() && rawTid != "0" && rawTid.length == 16) {
+                    installedTids.add(rawTid)
+                    val num = rawTid.toULongOrNull(16) ?: 0uL
+                    val baseNum = num and 0xFFFFFFFFFFFFE000uL
+                    installedBaseTids.add(baseNum.toString(16).padStart(16, '0').lowercase(Locale.ROOT))
+                }
+                val cleanName = gm.title.replace(Regex("""[\\/:*?"<>|]"""), " ").trim().lowercase(Locale.ROOT)
+                if (cleanName.isNotEmpty()) {
+                    installedTitles.add(cleanName)
+                }
+            }
+        } catch (_: Throwable) {}
+
         val gameDirs = NativeConfig.getGameDirs()
         data class LocalFile(
             val name: String,
@@ -664,6 +683,54 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             val extension: String = ""
         )
         val allFiles = mutableListOf<LocalFile>()
+
+        fun scanDoc(doc: DocumentFile?, depth: Int) {
+            if (doc == null || depth > 2) return
+            doc.listFiles()?.forEach { f ->
+                if (f.isDirectory) {
+                    scanDoc(f, depth + 1)
+                } else if (f.isFile) {
+                    val lower = f.name.orEmpty().lowercase(Locale.ROOT)
+                    if (lower.endsWith(".nsp") || lower.endsWith(".xci") || lower.endsWith(".nsz") || lower.endsWith(".xcz")) {
+                        allFiles.add(
+                            LocalFile(
+                                lower,
+                                lower.substringBeforeLast('.'),
+                                f.length(),
+                                0,
+                                0,
+                                lower.contains("rus") || lower.contains("рус"),
+                                lower.substringAfterLast('.', "")
+                            )
+                        )
+                    }
+                }
+            }
+        }
+
+        fun scanFile(dir: File, depth: Int) {
+            if (depth > 2) return
+            dir.listFiles()?.forEach { f ->
+                if (f.isDirectory) {
+                    scanFile(f, depth + 1)
+                } else if (f.isFile) {
+                    val lower = f.name.lowercase(Locale.ROOT)
+                    if (lower.endsWith(".nsp") || lower.endsWith(".xci") || lower.endsWith(".nsz") || lower.endsWith(".xcz")) {
+                        allFiles.add(
+                            LocalFile(
+                                lower,
+                                lower.substringBeforeLast('.'),
+                                f.length(),
+                                0,
+                                0,
+                                lower.contains("rus") || lower.contains("рус"),
+                                lower.substringAfterLast('.', "")
+                            )
+                        )
+                    }
+                }
+            }
+        }
 
         val modCountRegex = Regex("""(?:[+(\[{\s]|^)(\d+)m(?:[+)\]}\s]|$)""", RegexOption.IGNORE_CASE)
         val rusModRegex = Regex("""(?:\bmod\b)|(?:\bмод\b)|русификатор|озвучка""", RegexOption.IGNORE_CASE)
@@ -692,48 +759,10 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 val uri = Uri.parse(dir.uriString)
                 if (uri.scheme == "content") {
                     val rootDoc = DocumentFile.fromTreeUri(ctx, uri)
-                    rootDoc?.listFiles()?.forEach { f ->
-                        if (f.isFile) {
-                            val lower = f.name.orEmpty().lowercase(Locale.ROOT)
-                            if (lower.endsWith(".nsp") || lower.endsWith(".xci") || lower.endsWith(".nsz") || lower.endsWith(".xcz")) {
-                                val stem = lower.substringBeforeLast('.')
-                                val ext = lower.substringAfterLast('.', "")
-                                allFiles.add(
-                                    LocalFile(
-                                        lower,
-                                        stem,
-                                        f.length(),
-                                        extractModCount(lower),
-                                        extractDlcCount(lower),
-                                        lower.contains("rus") || lower.contains("рус"),
-                                        ext
-                                    )
-                                )
-                            }
-                        }
-                    }
+                    scanDoc(rootDoc, 0)
                 } else {
                     val path = uri.path ?: dir.uriString
-                    File(path).listFiles()?.forEach { f ->
-                        if (f.isFile) {
-                            val lower = f.name.lowercase(Locale.ROOT)
-                            if (lower.endsWith(".nsp") || lower.endsWith(".xci") || lower.endsWith(".nsz") || lower.endsWith(".xcz")) {
-                                val stem = lower.substringBeforeLast('.')
-                                val ext = lower.substringAfterLast('.', "")
-                                allFiles.add(
-                                    LocalFile(
-                                        lower,
-                                        stem,
-                                        f.length(),
-                                        extractModCount(lower),
-                                        extractDlcCount(lower),
-                                        lower.contains("rus") || lower.contains("рус"),
-                                        ext
-                                    )
-                                )
-                            }
-                        }
-                    }
+                    scanFile(File(path), 0)
                 }
             } catch (_: Exception) {}
         }
@@ -753,6 +782,18 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
         games.forEach { g ->
             val tid = g.serialId.trim().lowercase(Locale.ROOT)
+            val tidNum = tid.toULongOrNull(16) ?: 0uL
+            val baseTid = if (tidNum != 0uL) (tidNum and 0xFFFFFFFFFFFFE000uL).toString(16).padStart(16, '0').lowercase(Locale.ROOT) else ""
+            val normTitle = g.title.replace(Regex("""[\\/:*?"<>|]"""), " ").trim().lowercase(Locale.ROOT)
+            val normFinal = (if (g.finalTitle.isNotEmpty()) g.finalTitle else g.title).replace(Regex("""[\\/:*?"<>|]"""), " ").trim().lowercase(Locale.ROOT)
+
+            if ((tid.isNotEmpty() && installedTids.contains(tid)) ||
+                (baseTid.isNotEmpty() && installedBaseTids.contains(baseTid)) ||
+                (normTitle.isNotEmpty() && installedTitles.contains(normTitle)) ||
+                (normFinal.isNotEmpty() && installedTitles.contains(normFinal))) {
+                g.isDownloaded = true
+                return@forEach
+            }
             val cleanBaseTitle = g.title.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim().uppercase(Locale.ROOT)
             val groupKey = if (tid.isNotEmpty() && tid != "—" && tid != "-") tid.uppercase(Locale.ROOT) else cleanBaseTitle
             val isSingle = (groupCounts[groupKey] ?: 0) <= 1

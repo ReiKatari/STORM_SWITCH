@@ -606,7 +606,7 @@
         <!-- Primary Action Button: 3D Faceted Convex -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_apply_wizard"
-            style="@style/StormButton.3D.Primary"
+            style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="48dp"
@@ -626,7 +626,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_reset_defaults"
-                style="@style/StormButton.3D.Secondary"
+                style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:minHeight="46dp"
@@ -637,7 +637,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_cancel"
-                style="@style/StormButton.3D.Secondary"
+                style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:minHeight="46dp"

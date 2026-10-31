@@ -380,13 +380,13 @@
 
     <!-- STORM 3D Faceted Convex Buttons -->
 
-    <style name="StormButton.3D.Primary" parent="Widget.Material3.Button">
+    <style name="StormButton.Faceted.Primary" parent="Widget.Material3.Button">
 
         <item name="android:background">@drawable/storm_btn_3d_primary</item>
 
         <item name="backgroundTint">@null</item>
 
-        <item name="android:stateListAnimator">@animator/storm_btn_press_animator</item>
+
         <item name="android:textColor">#FFFFFF</item>
 
         <item name="android:textAllCaps">false</item>
@@ -411,13 +411,13 @@
 
 
 
-    <style name="StormButton.3D.Secondary" parent="Widget.Material3.Button.OutlinedButton">
+    <style name="StormButton.Faceted.Secondary" parent="Widget.Material3.Button.OutlinedButton">
 
         <item name="android:background">@drawable/storm_btn_3d_secondary</item>
 
         <item name="backgroundTint">@null</item>
 
-        <item name="android:stateListAnimator">@animator/storm_btn_press_animator</item>
+
         <item name="android:textColor">#F1F5F9</item>
 
         <item name="android:textAllCaps">false</item>
@@ -442,13 +442,13 @@
 
 
 
-    <style name="StormButton.3D.Success" parent="Widget.Material3.Button">
+    <style name="StormButton.Faceted.Success" parent="Widget.Material3.Button">
 
         <item name="android:background">@drawable/storm_btn_3d_success</item>
 
         <item name="backgroundTint">@null</item>
 
-        <item name="android:stateListAnimator">@animator/storm_btn_press_animator</item>
+
         <item name="android:textColor">#FFFFFF</item>
 
         <item name="android:textAllCaps">false</item>
@@ -473,13 +473,13 @@
 
 
 
-    <style name="StormButton.3D.Danger" parent="Widget.Material3.Button">
+    <style name="StormButton.Faceted.Danger" parent="Widget.Material3.Button">
 
         <item name="android:background">@drawable/storm_btn_3d_danger</item>
 
         <item name="backgroundTint">@null</item>
 
-        <item name="android:stateListAnimator">@animator/storm_btn_press_animator</item>
+
         <item name="android:textColor">#FFFFFF</item>
 
         <item name="android:textAllCaps">false</item>
@@ -504,13 +504,13 @@
 
 
 
-    <style name="StormButton.3D.Tonal" parent="Widget.Material3.Button.TonalButton">
+    <style name="StormButton.Faceted.Tonal" parent="Widget.Material3.Button.TonalButton">
 
         <item name="android:background">@drawable/storm_btn_3d_tonal</item>
 
         <item name="backgroundTint">@null</item>
 
-        <item name="android:stateListAnimator">@animator/storm_btn_press_animator</item>
+
         <item name="android:textColor">#FFFFFF</item>
 
         <item name="android:textAllCaps">false</item>
@@ -541,7 +541,7 @@
 
         <item name="backgroundTint">@null</item>
 
-        <item name="android:stateListAnimator">@animator/storm_btn_press_animator</item>
+
         <item name="android:textColor">#FFFFFF</item>
 
         <item name="android:textStyle">bold</item>
@@ -570,7 +570,7 @@
 
         <item name="backgroundTint">@null</item>
 
-        <item name="android:stateListAnimator">@animator/storm_btn_press_animator</item>
+
         <item name="android:textColor">#F1F5F9</item>
 
         <item name="android:textStyle">bold</item>
@@ -599,7 +599,7 @@
 
         <item name="backgroundTint">@null</item>
 
-        <item name="android:stateListAnimator">@animator/storm_btn_press_animator</item>
+
         <item name="android:textColor">#FFFFFF</item>
 
         <item name="android:textStyle">bold</item>

@@ -42,7 +42,7 @@
                     android:insetRight="0dp"
                     android:background="@drawable/storm_btn_3d_tonal"
                     app:backgroundTint="@null"
-                    android:stateListAnimator="@animator/storm_btn_press_animator"
+
                     app:icon="@drawable/ic_back"
                     app:iconSize="22dp"
                     app:iconTint="?attr/colorPrimary"
@@ -61,7 +61,7 @@
                     android:insetRight="0dp"
                     android:background="@drawable/storm_btn_3d_tonal"
                     app:backgroundTint="@null"
-                    android:stateListAnimator="@animator/storm_btn_press_animator"
+
                     app:icon="@drawable/ic_shortcut"
                     app:iconSize="22dp"
                     app:iconTint="?attr/colorPrimary"
@@ -154,7 +154,7 @@
         android:text="@string/start"
         android:textColor="#FFFFFF"
         android:textStyle="bold"
-        android:stateListAnimator="@animator/storm_btn_press_animator"
+
         app:icon="@drawable/ic_play"
         app:iconTint="#FFFFFF"
         app:layout_constraintBottom_toBottomOf="parent"

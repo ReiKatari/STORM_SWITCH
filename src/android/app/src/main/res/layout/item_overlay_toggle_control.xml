@@ -77,13 +77,14 @@
         </LinearLayout>
 
         <com.google.android.material.switchmaterial.SwitchMaterial
+            app:useMaterialThemeColors="false"
             android:id="@+id/switch_control"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:clickable="false"
             android:focusable="false"
-            app:thumbTint="#00F0FF"
-            app:trackTint="#3300D2FF" />
+            app:thumbTint="@color/switch_thumb_red_green"
+            app:trackTint="@color/switch_track_red_green" />
 
     </LinearLayout>
 

@@ -28,7 +28,6 @@ import org.yuzu.yuzu_emu.databinding.DialogSettingsProfilesBinding
 import org.yuzu.yuzu_emu.databinding.ItemSettingsProfileBinding
 import org.yuzu.yuzu_emu.features.settings.utils.SettingsProfile
 import org.yuzu.yuzu_emu.features.settings.utils.SettingsProfileManager
-import org.yuzu.yuzu_emu.ui.StormButton3dHelper
 import org.yuzu.yuzu_emu.utils.ThemeHelper
 
 class SettingsProfilesDialogFragment : DialogFragment() {
@@ -106,10 +105,7 @@ class SettingsProfilesDialogFragment : DialogFragment() {
         }
 
         // Apply 3D Faceted Tactile Button System
-        StormButton3dHelper.applyPrimary(binding.btnSaveCurrentProfile)
-        StormButton3dHelper.applySecondary(binding.btnImportProfile)
-
-        binding.listProfiles.layoutManager = LinearLayoutManager(requireContext())
+                        binding.listProfiles.layoutManager = LinearLayoutManager(requireContext())
         adapter = ProfilesAdapter(
             profiles = profilesList,
             onApply = { profile ->
@@ -139,7 +135,16 @@ class SettingsProfilesDialogFragment : DialogFragment() {
     private fun refreshProfiles() {
         profilesList.clear()
         profilesList.addAll(SettingsProfileManager.getCustomProfiles())
-        _binding?.textProfilesCounter?.text = profilesList.size.toString()
+        _binding?.let { b ->
+            b.textProfilesCounter?.text = profilesList.size.toString()
+            if (profilesList.isEmpty()) {
+                b.textEmptyProfiles?.visibility = View.VISIBLE
+                b.listProfiles.visibility = View.GONE
+            } else {
+                b.textEmptyProfiles?.visibility = View.GONE
+                b.listProfiles.visibility = View.VISIBLE
+            }
+        }
         adapter?.notifyDataSetChanged()
     }
 
@@ -154,10 +159,7 @@ class SettingsProfilesDialogFragment : DialogFragment() {
 
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
-        StormButton3dHelper.applySecondary(dialogBinding.btnCancelSaveProfile)
-        StormButton3dHelper.applyPrimary(dialogBinding.btnConfirmSaveProfile)
-
-        dialogBinding.btnCancelSaveProfile.setOnClickListener { dialog.dismiss() }
+                        dialogBinding.btnCancelSaveProfile.setOnClickListener { dialog.dismiss() }
         dialogBinding.btnConfirmSaveProfile.setOnClickListener {
             val name = dialogBinding.editProfileName.text?.toString()?.trim().orEmpty()
             if (name.isNotEmpty()) {
@@ -187,10 +189,7 @@ class SettingsProfilesDialogFragment : DialogFragment() {
 
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
-        StormButton3dHelper.applySecondary(dialogBinding.btnCancelSaveProfile)
-        StormButton3dHelper.applyPrimary(dialogBinding.btnConfirmSaveProfile)
-
-        dialogBinding.btnCancelSaveProfile.setOnClickListener { dialog.dismiss() }
+                        dialogBinding.btnCancelSaveProfile.setOnClickListener { dialog.dismiss() }
         dialogBinding.btnConfirmSaveProfile.setOnClickListener {
             val newName = dialogBinding.editProfileName.text?.toString()?.trim().orEmpty()
             if (newName.isNotEmpty() && SettingsProfileManager.renameProfile(profile, newName)) {
@@ -217,8 +216,7 @@ class SettingsProfilesDialogFragment : DialogFragment() {
             .create()
 
         alert.setOnShowListener {
-            StormButton3dHelper.fixAlertDialogButtons(alert)
-        }
+                    }
         alert.show()
     }
 
@@ -293,12 +291,7 @@ class SettingsProfilesDialogFragment : DialogFragment() {
             }
 
             // Apply 3D Faceted Tactile Buttons to item action buttons
-            StormButton3dHelper.applyPrimary(holder.binding.btnProfileApply)
-            StormButton3dHelper.applyTonal(holder.binding.btnProfileShare)
-            StormButton3dHelper.applySecondary(holder.binding.btnProfileRename)
-            StormButton3dHelper.applyDanger(holder.binding.btnProfileDelete)
-
-            holder.binding.btnProfileApply.setOnClickListener { onApply(profile) }
+                                                            holder.binding.btnProfileApply.setOnClickListener { onApply(profile) }
             holder.binding.btnProfileShare.setOnClickListener { onShare(profile) }
             holder.binding.btnProfileRename.setOnClickListener { onRename(profile) }
             holder.binding.btnProfileDelete.setOnClickListener { onDelete(profile) }

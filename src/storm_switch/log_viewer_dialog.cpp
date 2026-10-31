@@ -9,7 +9,6 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QFileInfo>
-#include <QGraphicsDropShadowEffect>
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QLabel>
@@ -242,9 +241,9 @@ void LogViewerDialog::ApplyStormStyles() {
         "QLineEdit { background: rgba(255, 255, 255, 0.05); border: 1px solid #20354E; border-radius: 6px; padding: 6px 12px; color: #FFFFFF; font-size: 12px; }"
         "QLineEdit:focus { border: 1px solid #00D2FF; background: rgba(0, 210, 255, 0.08); }"
         "QPlainTextEdit { background-color: #050811; border: 1px solid #1A2638; border-radius: 8px; color: #FFFFFF; padding: 8px; }"
-        "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1A2434, stop:1 #131A26); border: 1px solid #2A3B52; color: #FFFFFF; padding: 7px 16px; border-radius: 6px; font-weight: bold; font-size: 12px; }"
-        "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #25344C, stop:1 #1A2638); border-color: #00D2FF; color: #FFFFFF; }"
-        "QPushButton:pressed { background: #00D2FF; color: #000000; border-color: #38BDF8; }"
+        "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1A2434, stop:1 #131A26); border: 1px solid #2A3B52; color: #FFFFFF; padding: 6px 16px; border-radius: 7px; font-weight: 600; font-size: 12px; }"
+        "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #25344C, stop:1 #1A2638); border: 1px solid #00D2FF; color: #00D2FF; }"
+        "QPushButton:pressed { background: #0D1522; color: #FFFFFF; border: 1px solid #00A6CC; padding: 6px 16px; }"
         "QScrollBar:vertical { background: #0A0E17; width: 12px; margin: 0; }"
         "QScrollBar::handle:vertical { background: #1E2D42; min-height: 24px; border-radius: 6px; }"
         "QScrollBar::handle:vertical:hover { background: #00D2FF; }"
@@ -255,12 +254,7 @@ void LogViewerDialog::ApplyStormStyles() {
         "QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal { width: 0; }"
     ));
 
-    // Volumetric shadow for action buttons
-    auto* refresh_shadow = new QGraphicsDropShadowEffect(refresh_btn);
-    refresh_shadow->setBlurRadius(8);
-    refresh_shadow->setColor(QColor(0, 210, 255, 80));
-    refresh_shadow->setOffset(0, 2);
-    refresh_btn->setGraphicsEffect(refresh_shadow);
+
 }
 
 void LogViewerDialog::LoadLogFile() {

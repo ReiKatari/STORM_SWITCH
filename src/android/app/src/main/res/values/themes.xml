@@ -60,9 +60,9 @@
 
         <!-- STORM 3D Faceted Convex Buttons -->
 
-        <item name="materialButtonStyle">@style/StormButton.3D.Primary</item>
+        <item name="materialButtonStyle">@style/StormButton.Faceted.Primary</item>
 
-        <item name="materialButtonOutlinedStyle">@style/StormButton.3D.Secondary</item>
+        <item name="materialButtonOutlinedStyle">@style/StormButton.Faceted.Secondary</item>
 
 
 

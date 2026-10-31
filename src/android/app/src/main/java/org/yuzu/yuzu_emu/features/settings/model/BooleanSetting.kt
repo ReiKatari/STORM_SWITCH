@@ -118,7 +118,7 @@ enum class BooleanSetting(override val key: String) : AbstractBooleanSetting {
         if (this == SHOW_QUICK_SAVE_LOAD_OVERLAY) {
             return try {
                 androidx.preference.PreferenceManager.getDefaultSharedPreferences(org.yuzu.yuzu_emu.YuzuApplication.appContext)
-                    .getBoolean(key, true)
+                    .getBoolean(key, false)
             } catch (_: Throwable) {
                 true
             }
@@ -144,7 +144,7 @@ enum class BooleanSetting(override val key: String) : AbstractBooleanSetting {
 
     override val defaultValue: Boolean by lazy {
         if (this == SHOW_QUICK_SAVE_LOAD_OVERLAY) {
-            true
+            false
         } else {
             NativeConfig.getDefaultToString(key).toBoolean()
         }

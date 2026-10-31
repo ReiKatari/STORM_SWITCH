@@ -24,7 +24,6 @@
 
 #include "core/save_state.h"
 #include "main_window.h"
-#include "storm_switch/storm_button_3d_animator.h"
 #include "qt_common/titledb.h"
 
 #ifdef _WIN32
@@ -360,7 +359,6 @@ int main(int argc, char* argv[]) {
 #endif
 
     QApplication app(argc, argv);
-    StormButton3DAnimator::Install(&app);
     app.setApplicationDisplayName({});
 
 #ifdef _WIN32

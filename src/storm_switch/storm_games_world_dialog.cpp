@@ -12,7 +12,6 @@
 #include <QEvent>
 #include <QFileDialog>
 #include <QFileInfo>
-#include <QGraphicsDropShadowEffect>
 #include <QGroupBox>
 #include <QMouseEvent>
 #include <QHBoxLayout>
@@ -678,17 +677,41 @@ static int ExtractDlcCountFast(const QString bitand str) {
 }
 
 void StormGamesWorldDialog::RefreshDownloadedFilesCache(const QString bitand dir_path) const {
-    if (dir_path.isEmpty() or !QDir(dir_path).exists()) {
+    // Collect all unique directories to scan: download dir + real UISettings::values.game_dirs
+    QStringList dirs_to_scan;
+    QString key_builder = dir_path.trimmed();
+
+    if (!dir_path.isEmpty() and QDir(dir_path).exists()) {
+        dirs_to_scan.append(QDir::cleanPath(dir_path));
+    }
+
+    for (const auto bitand gd : UISettings::values.game_dirs) {
+        const QString gpath = QString::fromStdString(gd.path).trimmed();
+        if (gpath.isEmpty()) continue;
+        if (gpath == QStringLiteral("SDMC") or gpath == QStringLiteral("UserNAND") or
+            gpath == QStringLiteral("SysNAND")) {
+            continue;
+        }
+        if (!QDir(gpath).exists()) continue;
+        const QString clean = QDir::cleanPath(gpath);
+        if (!dirs_to_scan.contains(clean)) {
+            dirs_to_scan.append(clean);
+        }
+        key_builder += QLatin1Char(';') + clean;
+    }
+
+    if (dirs_to_scan.isEmpty()) {
         cached_dir_files.clear();
-        cached_dir_path = dir_path;
+        cached_dir_path = key_builder;
         return;
     }
-    if (cached_dir_path == dir_path and !cached_dir_files.empty()) {
+
+    if (cached_dir_path == key_builder and !cached_dir_files.empty()) {
         return;
     }
 
     cached_dir_files.clear();
-    cached_dir_path = dir_path;
+    cached_dir_path = key_builder;
 
     // Load file_metadata_cache.json if available
     QMap<QString, QJsonObject> meta_by_name;
@@ -711,93 +734,114 @@ void StormGamesWorldDialog::RefreshDownloadedFilesCache(const QString bitand dir
     }
 
     static const QRegularExpression tid_rx(QStringLiteral(R"(\b(01[0-9A-Fa-f]{14})\b)"));
+    static const QRegularExpression tid_bracket_rx(QStringLiteral(R"(\[([0-9A-Fa-f]{16})\])"));
     static const QRegularExpression ver_rx(QStringLiteral(R"(\(\s*([^-\)]+?)\s*-\s*(\d+)\s*-\s*([0-9A-Fa-f]{16})\s*\))"));
+    static const QStringList filters{
+        QStringLiteral("*.nsp"), QStringLiteral("*.xci"), QStringLiteral("*.nsz"),
+        QStringLiteral("*.nca"), QStringLiteral("*.nro")
+    };
 
-    QDirIterator it(dir_path, {QStringLiteral("*.nsp"), QStringLiteral("*.xci"), QStringLiteral("*.nsz")}, QDir::Files, QDirIterator::Subdirectories);
+    QSet<QString> seen_paths;
 
-    while (it.hasNext()) {
-        it.next();
-        const QFileInfo fi = it.fileInfo();
-        if (fi.size() < 32 * 1024) continue;
+    for (const auto bitand scan_dir : dirs_to_scan) {
+        QDirIterator it(scan_dir, filters, QDir::Files, QDirIterator::Subdirectories);
+        while (it.hasNext()) {
+            it.next();
+            const QFileInfo fi = it.fileInfo();
 
-        const QString lower_file = fi.fileName().toLower();
-        if (!lower_file.endsWith(QStringLiteral(".nsp")) and
-            !lower_file.endsWith(QStringLiteral(".xci")) and
-            !lower_file.endsWith(QStringLiteral(".nsz"))) {
-            continue;
-        }
-        if (fi.size() < 1024 * 1024) continue;
+            // Safe non-blocking depth check: limit to 2 levels of subdirectories
+            const QString rel = QDir(scan_dir).relativeFilePath(fi.absoluteFilePath());
+            if (rel.count(QLatin1Char('/')) > 2 or rel.count(QLatin1Char('\\')) > 2) {
+                continue;
+            }
 
-        DownloadedFileInfo info;
-        info.file_path = fi.absoluteFilePath();
-        info.file_name = fi.fileName();
-        info.extension = fi.suffix().toLower();
-        info.complete_base_name = fi.completeBaseName().toLower();
-        info.lower_name = lower_file;
-        info.size = fi.size();
-        info.mod_count = ExtractModCountFast(lower_file);
-        info.dlc_count = ExtractDlcCountFast(lower_file);
-        info.has_rus = lower_file.contains(QStringLiteral("rus")) or lower_file.contains(QStringLiteral("рус"));
-        info.has_mod = (info.mod_count > 0);
-        info.has_dlc = (info.dlc_count > 0);
+            const QString lower_file = fi.fileName().toLower();
+            const bool is_nro = lower_file.endsWith(QStringLiteral(".nro"));
+            const qint64 min_size = is_nro ? (32 * 1024) : (1024 * 1024);
+            if (fi.size() < min_size) continue;
 
-        // Try to obtain metadata from cache
-        const QString clean_path = QDir::cleanPath(fi.absoluteFilePath()).toLower();
-        QJsonObject meta_obj;
-        if (meta_by_path.contains(clean_path)) {
-            meta_obj = meta_by_path.value(clean_path);
-        } else if (meta_by_name.contains(lower_file)) {
-            meta_obj = meta_by_name.value(lower_file);
-        }
+            const QString clean_path = QDir::cleanPath(fi.absoluteFilePath()).toLower();
+            if (seen_paths.contains(clean_path)) continue;
+            seen_paths.insert(clean_path);
 
-        if (!meta_obj.isEmpty()) {
-            info.tid = meta_obj[QStringLiteral("id")].toString().toUpper();
-            info.title = meta_obj[QStringLiteral("name")].toString().trimmed();
-            info.version = meta_obj[QStringLiteral("version")].toString().trimmed();
-        }
+            DownloadedFileInfo info;
+            info.file_path = fi.absoluteFilePath();
+            info.file_name = fi.fileName();
+            info.extension = fi.suffix().toLower();
+            info.complete_base_name = fi.completeBaseName().toLower();
+            info.lower_name = lower_file;
+            info.size = fi.size();
+            info.mod_count = ExtractModCountFast(lower_file);
+            info.dlc_count = ExtractDlcCountFast(lower_file);
+            info.has_rus = lower_file.contains(QStringLiteral("rus")) or lower_file.contains(QStringLiteral("рус"));
+            info.has_mod = (info.mod_count > 0);
+            info.has_dlc = (info.dlc_count > 0);
 
-        // Fallbacks if not in metadata cache
-        if (info.tid.isEmpty()) {
-            auto m = ver_rx.match(fi.fileName());
-            if (m.hasMatch()) {
-                info.version = m.captured(1).trimmed();
-                info.tid = m.captured(3).toUpper();
-            } else {
-                auto m_tid = tid_rx.match(fi.fileName());
-                if (m_tid.hasMatch()) {
-                    info.tid = m_tid.captured(1).toUpper();
+            // Try to obtain metadata from cache
+            QJsonObject meta_obj;
+            if (meta_by_path.contains(clean_path)) {
+                meta_obj = meta_by_path.value(clean_path);
+            } else if (meta_by_name.contains(lower_file)) {
+                meta_obj = meta_by_name.value(lower_file);
+            }
+
+            if (!meta_obj.isEmpty()) {
+                info.tid = meta_obj[QStringLiteral("id")].toString().trimmed().toUpper();
+                info.title = meta_obj[QStringLiteral("name")].toString().trimmed();
+                info.version = meta_obj[QStringLiteral("version")].toString().trimmed();
+            }
+
+            // Fallbacks if not in metadata cache
+            if (info.tid.isEmpty()) {
+                auto m_v = ver_rx.match(fi.fileName());
+                if (m_v.hasMatch()) {
+                    info.version = m_v.captured(1).trimmed();
+                    info.tid = m_v.captured(3).toUpper();
+                } else {
+                    auto m_b = tid_bracket_rx.match(fi.fileName());
+                    if (m_b.hasMatch()) {
+                        info.tid = m_b.captured(1).toUpper();
+                    } else {
+                        auto m_tid = tid_rx.match(fi.fileName());
+                        if (m_tid.hasMatch()) {
+                            info.tid = m_tid.captured(1).toUpper();
+                        }
+                    }
                 }
             }
-        }
 
-        if (info.title.isEmpty()) {
-            bool ok_tid = false;
-            const u64 tid_val = info.tid.toULongLong(bitand ok_tid, 16);
-            if (ok_tid and tid_val != 0 and TitleDB::TitleDatabase::Instance().IsLoaded()) {
-                const auto entry = TitleDB::TitleDatabase::Instance().Lookup(tid_val);
-                if (entry and !entry->name.empty()) {
-                    info.title = QString::fromStdString(entry->name);
-                }
-            }
             if (info.title.isEmpty()) {
-                QString clean = fi.completeBaseName();
-                static const QRegularExpression strip_rx(QStringLiteral(R"(\s*(\[[^\]]*\]|\([^\)]*\)).*$)"));
-                clean = clean.remove(strip_rx).trimmed();
-                info.title = clean.isEmpty() ? fi.completeBaseName() : clean;
+                bool ok_tid = false;
+                const u64 tid_val = info.tid.toULongLong(bitand ok_tid, 16);
+                if (ok_tid and tid_val != 0 and TitleDB::TitleDatabase::Instance().IsLoaded()) {
+                    auto entry = TitleDB::TitleDatabase::Instance().Lookup(tid_val);
+                    if (!entry or entry->name.empty()) {
+                        entry = TitleDB::TitleDatabase::Instance().Lookup(tid_val & ~0x1FFFULL);
+                    }
+                    if (entry and !entry->name.empty()) {
+                        info.title = QString::fromStdString(entry->name);
+                    }
+                }
+                if (info.title.isEmpty()) {
+                    QString clean = fi.completeBaseName();
+                    static const QRegularExpression strip_rx(QStringLiteral(R"(\s*(\[[^\]]*\]|\([^\)]*\)).*$)"));
+                    clean = clean.remove(strip_rx).trimmed();
+                    info.title = clean.isEmpty() ? fi.completeBaseName() : clean;
+                }
             }
-        }
 
-        if (info.version.isEmpty()) {
-            static const QRegularExpression fn_ver_regex(QStringLiteral(R"((?:[\(\[\s]v?|\b)([0-9]+\.[0-9]+(?:\.[0-9]+)*)(?!\s*(?:GB|MB|KB|TB|ГБ|МБ|КБ|Б|B)\b))"));
-            auto m_ver = fn_ver_regex.match(fi.fileName());
-            if (m_ver.hasMatch()) {
-                info.version = m_ver.captured(1).trimmed();
-            } else {
-                info.version = QStringLiteral("1.0.0");
+            if (info.version.isEmpty()) {
+                static const QRegularExpression fn_ver_regex(QStringLiteral(R"((?:[\(\[\s]v?|\b)([0-9]+\.[0-9]+(?:\.[0-9]+)*)(?!\s*(?:GB|MB|KB|TB|ГБ|МБ|КБ|Б|B)\b))"));
+                auto m_ver = fn_ver_regex.match(fi.fileName());
+                if (m_ver.hasMatch()) {
+                    info.version = m_ver.captured(1).trimmed();
+                } else {
+                    info.version = QStringLiteral("1.0.0");
+                }
             }
-        }
 
-        cached_dir_files.push_back(std::move(info));
+            cached_dir_files.push_back(std::move(info));
+        }
     }
 }
 
@@ -815,11 +859,17 @@ void StormGamesWorldDialog::MergeLocalGamesIntoCatalog(const QString bitand dir_
 
     // Build sets of already cataloged Title IDs and names
     QSet<QString> catalog_tids;
+    QSet<u64> catalog_base_tids;
     QSet<QString> catalog_names;
     for (const auto bitand g : all_games) {
-        const QString c_tid = g.serial_id.trimmed().toUpper();
+        const QString c_tid = g.serial_id.trimmed().remove(QStringLiteral("0x"), Qt::CaseInsensitive).toUpper();
         if (!c_tid.isEmpty() and c_tid != QStringLiteral("—")) {
             catalog_tids.insert(c_tid);
+            bool ok = false;
+            const u64 val = c_tid.toULongLong(bitand ok, 16);
+            if (ok and val != 0) {
+                catalog_base_tids.insert(val & ~0x1FFFULL);
+            }
         }
         const QString clean_t = SanitizeFileName(g.final_title.isEmpty() ? g.title : g.final_title).toLower();
         if (!clean_t.isEmpty()) {
@@ -833,17 +883,27 @@ void StormGamesWorldDialog::MergeLocalGamesIntoCatalog(const QString bitand dir_
 
     int local_idx = 0;
     for (const auto bitand file : cached_dir_files) {
-        const QString ftid = file.tid.trimmed().toUpper();
+        const QString ftid = file.tid.trimmed().remove(QStringLiteral("0x"), Qt::CaseInsensitive).toUpper();
         const QString fname = SanitizeFileName(file.title).toLower();
         const QString fbase = file.complete_base_name;
 
         // Check if catalog already contains this game
         bool already_in_catalog = false;
-        if (!ftid.isEmpty() and catalog_tids.contains(ftid)) {
+        if (!ftid.isEmpty()) {
+            if (catalog_tids.contains(ftid)) {
+                already_in_catalog = true;
+            } else {
+                bool ok = false;
+                const u64 f_val = ftid.toULongLong(bitand ok, 16);
+                if (ok and f_val != 0 and catalog_base_tids.contains(f_val & ~0x1FFFULL)) {
+                    already_in_catalog = true;
+                }
+            }
+        }
+        if (!already_in_catalog and !fname.isEmpty() and catalog_names.contains(fname)) {
             already_in_catalog = true;
-        } else if (!fname.isEmpty() and catalog_names.contains(fname)) {
-            already_in_catalog = true;
-        } else if (!fbase.isEmpty() and catalog_names.contains(fbase)) {
+        }
+        if (!already_in_catalog and !fbase.isEmpty() and catalog_names.contains(fbase)) {
             already_in_catalog = true;
         }
 
@@ -871,6 +931,11 @@ void StormGamesWorldDialog::MergeLocalGamesIntoCatalog(const QString bitand dir_
 
             if (!ftid.isEmpty()) {
                 catalog_tids.insert(ftid);
+                bool ok = false;
+                const u64 f_val = ftid.toULongLong(bitand ok, 16);
+                if (ok and f_val != 0) {
+                    catalog_base_tids.insert(f_val & ~0x1FFFULL);
+                }
             }
             if (!fname.isEmpty()) {
                 catalog_names.insert(fname);
@@ -889,7 +954,7 @@ bool StormGamesWorldDialog::IsGameDownloaded(const StormWorldGame bitand game, c
 
     const QString clean_final = SanitizeFileName(game.final_title.isEmpty() ? game.title : game.final_title).toLower();
     const QString clean_title = SanitizeFileName(game.title).toLower();
-    const QString tid = game.serial_id.trimmed().toLower();
+    const QString tid = game.serial_id.trimmed().remove(QStringLiteral("0x"), Qt::CaseInsensitive).toUpper();
     const QString ver = game.version.trimmed().toLower();
     const QString int_ver = game.internal_version.trimmed();
 
@@ -900,70 +965,72 @@ bool StormGamesWorldDialog::IsGameDownloaded(const StormWorldGame bitand game, c
     const bool game_is_mod = (game_mod_count > 0);
     const bool game_has_dlc = (game_dlc_count > 0);
 
-    const QString key = !tid.isEmpty() and tid != QStringLiteral("—") ? tid : clean_title;
+    const QString key = (!tid.isEmpty() and tid != QStringLiteral("—")) ? tid.toLower() : clean_title;
     const int same_group_count = group_counts.value(key, 1);
     const bool is_single = (same_group_count <= 1);
 
+    bool ok_gtid = false;
+    const u64 game_tid_val = tid.toULongLong(bitand ok_gtid, 16);
+    const u64 game_base_tid = (ok_gtid and game_tid_val != 0) ? (game_tid_val & ~0x1FFFULL) : 0;
+
     for (const auto bitand file : cached_dir_files) {
         const QString ftid = file.tid.trimmed().remove(QStringLiteral("0x"), Qt::CaseInsensitive).toUpper();
-        const QString clean_ftid = ftid;
-        const QString target_tid = tid.toUpper();
-        if (!target_tid.isEmpty() and target_tid != QStringLiteral("—") and !clean_ftid.isEmpty() and clean_ftid == target_tid) {
-            if (is_single) {
-                return true;
+
+        // 1. Title ID matching (exact or base mask 0x1FFF)
+        if (!tid.isEmpty() and tid != QStringLiteral("—") and !ftid.isEmpty()) {
+            if (ftid == tid) {
+                if (is_single) return true;
+                if (game_is_mod == file.has_mod and game_has_dlc == file.has_dlc and game_is_rus == file.has_rus) {
+                    return true;
+                }
             }
+            if (game_base_tid != 0) {
+                bool ok_ftid = false;
+                const u64 file_tid_val = ftid.toULongLong(bitand ok_ftid, 16);
+                if (ok_ftid and file_tid_val != 0 and (file_tid_val & ~0x1FFFULL) == game_base_tid) {
+                    if (is_single) return true;
+                    if (game_is_mod == file.has_mod and game_has_dlc == file.has_dlc and game_is_rus == file.has_rus) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        // 2. Exact match with final_title
+        if (!clean_final.isEmpty() and file.complete_base_name == clean_final) {
+            return true;
+        }
+
+        // 3. Match normalized title
+        if (!clean_title.isEmpty() and file.complete_base_name == clean_title) {
+            if (is_single) return true;
             if (game_is_mod == file.has_mod and game_has_dlc == file.has_dlc and game_is_rus == file.has_rus) {
                 return true;
             }
         }
 
-        // 1. Exact match with final_title
-        if (!clean_final.isEmpty() and file.complete_base_name == clean_final) {
-            return true;
+        // 4. Filename contains title
+        if (!clean_title.isEmpty() and file.lower_name.contains(clean_title)) {
+            if (is_single) return true;
         }
 
-        if (!is_single) {
-            // Multiple versions/formats in catalog: must verify exact version/mod/dlc/rus and format
-            QString target_ext = game.real_extension.isEmpty() ? QStringLiteral("nsp") : game.real_extension;
-            target_ext.remove(QLatin1Char('.'));
-            target_ext = target_ext.toLower();
-            if (!file.extension.isEmpty() and file.extension.toLower() != target_ext) continue;
-            if (game_is_mod != file.has_mod) continue;
-            if (game_is_mod and game_mod_count != file.mod_count) continue;
-            if (game_has_dlc != file.has_dlc) continue;
-            if (game_has_dlc and game_dlc_count != file.dlc_count) continue;
-            if (game_is_rus != file.has_rus) continue;
-
-            if (!clean_final.isEmpty() and (file.complete_base_name == clean_final or file.lower_name.contains(clean_final))) {
+        // 5. Filename contains Title ID
+        if (!tid.isEmpty() and tid != QStringLiteral("—") and file.lower_name.contains(tid.toLower())) {
+            if (is_single) return true;
+            if (!int_ver.isEmpty() and int_ver != QStringLiteral("0")) {
+                if (file.lower_name.contains(int_ver) or file.lower_name.contains(QStringLiteral("v%1").arg(int_ver)) or
+                    file.lower_name.contains(QStringLiteral("-%1-").arg(int_ver))) {
+                    return true;
+                }
+            }
+            if (!ver.isEmpty() and ver != QStringLiteral("1.0.0")) {
+                if (file.lower_name.contains(ver) or file.lower_name.contains(QStringLiteral("v%1").arg(ver))) {
+                    return true;
+                }
+            }
+            if ((ver.isEmpty() or ver == QStringLiteral("1.0.0")) and (int_ver.isEmpty() or int_ver == QStringLiteral("0"))) {
                 return true;
             }
-
-            if (!tid.isEmpty() and tid != QStringLiteral("—") and file.lower_name.contains(tid)) {
-                if (!int_ver.isEmpty() and int_ver != QStringLiteral("0")) {
-                    if (file.lower_name.contains(int_ver) or file.lower_name.contains(QStringLiteral("v%1").arg(int_ver)) or
-                        file.lower_name.contains(QStringLiteral("-%1-").arg(int_ver))) {
-                        return true;
-                    }
-                }
-
-                if (!ver.isEmpty() and ver != QStringLiteral("1.0.0")) {
-                    if (file.lower_name.contains(ver) or file.lower_name.contains(QStringLiteral("v%1").arg(ver))) {
-                        return true;
-                    }
-                }
-
-                if ((ver.isEmpty() or ver == QStringLiteral("1.0.0")) and (int_ver.isEmpty() or int_ver == QStringLiteral("0"))) {
-                    static const QRegularExpression ver_regex(QStringLiteral(R"((?:v|\-|\b)(\d+\.\d+(?:\.\d+)?|\d{5,8})(?:\b|\]|\)))"));
-                    if (!file.lower_name.contains(ver_regex)) {
-                        return true;
-                    }
-                }
-            }
-        } else {
-            // Single version in catalog
-            if (!clean_final.isEmpty() and (file.complete_base_name == clean_final or file.lower_name.contains(clean_final))) return true;
-            if (!tid.isEmpty() and tid != QStringLiteral("—") and (file.lower_name.contains(tid) or clean_ftid == target_tid)) return true;
-            if (!clean_title.isEmpty() and clean_title.length() >= 4 and (file.lower_name.contains(clean_title) or file.title.toLower().contains(clean_title))) return true;
         }
     }
 
@@ -1015,6 +1082,7 @@ void StormGamesWorldDialog::SetupUI() {
         return btn;
     };
     top_bar->addWidget(make_pill(tr("Все"), QString()));
+    top_bar->addWidget(make_pill(tr("✅ Имеющиеся"), QStringLiteral("installed")));
     top_bar->addWidget(make_pill(tr("🇷🇺 RUS"), QStringLiteral("ru")));
     top_bar->addWidget(make_pill(tr("📦 DLC"), QStringLiteral("dlc")));
     top_bar->addWidget(make_pill(tr("⚡ MOD"), QStringLiteral("mod")));
@@ -1283,21 +1351,16 @@ void StormGamesWorldDialog::ApplyStormStyles() {
         "QTextBrowser { background-color: #070A10; border: 1px solid #1E2838; border-radius: 8px; color: #C8D8E8; font-size: 12px; padding: 8px; }"
         "QComboBox { background: rgba(255, 255, 255, 0.05); border: 1px solid #20354E; border-radius: 6px; color: #FFFFFF; padding: 5px 10px; font-weight: bold; }"
         "QComboBox QAbstractItemView { background-color: #141B26; color: #FFFFFF; selection-background-color: #00D2FF; selection-color: #000000; border: 1px solid #20354E; }"
-        "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1A2434, stop:1 #131A26); border: 1px solid #2A3B52; color: #FFFFFF; padding: 7px 16px; border-radius: 6px; font-weight: bold; font-size: 12px; }"
-        "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #25344C, stop:1 #1A2638); border-color: #00D2FF; color: #FFFFFF; }"
-        "QPushButton:pressed { background: #00D2FF; color: #000000; border-color: #38BDF8; }"
+        "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1A2434, stop:1 #131A26); border: 1px solid #2A3B52; color: #FFFFFF; padding: 6px 16px; border-radius: 7px; font-weight: 600; font-size: 12px; min-height: 22px; }"
+        "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #25344C, stop:1 #1A2638); border: 1px solid #00D2FF; color: #00D2FF; }"
+        "QPushButton:pressed { background: #0D1522; color: #FFFFFF; border: 1px solid #00A6CC; padding: 6px 16px; }"
         "QScrollBar:vertical { background: #0A0E17; width: 12px; margin: 0; }"
         "QScrollBar::handle:vertical { background: #1E2D42; min-height: 24px; border-radius: 6px; }"
         "QScrollBar::handle:vertical:hover { background: #00D2FF; }"
         "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }"
     ));
 
-    // Soft drop shadow on download button
-    auto* shadow = new QGraphicsDropShadowEffect(download_btn);
-    shadow->setBlurRadius(16);
-    shadow->setColor(QColor(0, 210, 255, 140));
-    shadow->setOffset(0, 3);
-    download_btn->setGraphicsEffect(shadow);
+
 }
 
 void StormGamesWorldDialog::OnFetchCatalog() {
@@ -1668,6 +1731,9 @@ void StormGamesWorldDialog::PopulateGameList(const QString bitand filter) {
                                     g.title.contains(QStringLiteral("рус"), Qt::CaseInsensitive) ||
                                     g.final_title.contains(QStringLiteral("рус"), Qt::CaseInsensitive);
                 if (!has_ru) continue;
+            } else if (lower_filter == QStringLiteral("installed") || lower_filter == QStringLiteral("скачано") ||
+                       lower_filter == QStringLiteral("имеющиеся") || lower_filter == QStringLiteral("установленные")) {
+                if (!IsGameDownloaded(g, current_dir, group_counts)) continue;
             } else {
                 const bool match_title = g.title.toLower().contains(lower_filter);
                 const bool match_final = g.final_title.toLower().contains(lower_filter);

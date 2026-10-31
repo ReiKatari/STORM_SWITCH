@@ -9,7 +9,7 @@
     android:insetBottom="0dp"
     android:insetLeft="0dp"
     android:insetRight="0dp"
-    android:stateListAnimator="@animator/storm_btn_press_animator"
+
     app:backgroundTint="@null"
     android:background="@drawable/storm_btn_3d_tonal"
     app:iconSize="18dp"
