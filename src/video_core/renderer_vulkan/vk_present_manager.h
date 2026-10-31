@@ -100,6 +100,7 @@ private:
     bool storage_supported;
     bool use_present_thread;
     std::size_t image_count{};
+    bool last_frame_gen_enabled{};
 };
 
 } // namespace Vulkan

@@ -75,6 +75,8 @@
 
 
     <style name="Theme.Yuzu.Main" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
         <item name="materialSwitchStyle">@style/Widget.Storm.Switch</item>
         <item name="switchStyle">@style/Widget.Storm.Switch</item>
 
@@ -245,6 +247,8 @@
 
 
     <style name="Theme.Storm.Dark" parent="Theme.Yuzu.Main">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
 
 
@@ -341,6 +345,8 @@
 
 
     <style name="Theme.Storm.Night" parent="Theme.Yuzu.Main">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
 
 
@@ -449,6 +455,8 @@
 
 
     <style name="Theme.Storm.Day" parent="Theme.Yuzu.Main">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
 
 
@@ -553,6 +561,8 @@
 
 
     <style name="Theme.Storm.Midnight" parent="Theme.Yuzu.Main">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
 
 
@@ -649,6 +659,8 @@
 
 
     <style name="Theme.Storm.Matrix" parent="Theme.Yuzu.Main">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
 
 
@@ -745,6 +757,8 @@
 
 
     <style name="Theme.Storm.Cyberpunk" parent="Theme.Yuzu.Main">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
 
 
@@ -841,6 +855,8 @@
 
 
     <style name="Theme.Storm.Fantasy" parent="Theme.Yuzu.Main">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
 
 
@@ -937,6 +953,8 @@
 
 
     <style name="Theme.Storm.Warhammer40k" parent="Theme.Yuzu.Main">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
 
 
@@ -1033,6 +1051,8 @@
 
 
     <style name="Theme.Storm.Gothic" parent="Theme.Yuzu.Main">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
 
 
@@ -1129,6 +1149,8 @@
 
 
     <style name="Theme.Storm.Neon" parent="Theme.Yuzu.Main">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
 
 
@@ -1225,6 +1247,8 @@
 
 
     <style name="Theme.Storm.Crimson" parent="Theme.Yuzu.Main">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
 
 
@@ -1321,6 +1345,8 @@
 
 
     <style name="Theme.Storm.Emerald" parent="Theme.Yuzu.Main">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
 
 
@@ -1417,6 +1443,8 @@
 
 
     <style name="Theme.Storm.Glacier" parent="Theme.Yuzu.Main">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
 
 
@@ -1513,6 +1541,8 @@
 
 
     <style name="Theme.Storm.Amethyst" parent="Theme.Yuzu.Main">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
 
 
@@ -1765,6 +1795,8 @@
 
 
     <style name="Theme.Storm.Storm" parent="Theme.Yuzu.Main">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
 
 

@@ -1,3 +1,5 @@
+#include <filesystem>
+#include <system_error>
 #include <QFutureWatcher>
 #include <QDirIterator>
 
@@ -16744,7 +16746,7 @@ void MainWindow::StartSilentCheatsSync() {
 
             auto* nam = new QNetworkAccessManager(this);
 
-            const QString url_str = QString(QStringLiteral("https://raw.githubusercontent.com/HamletDuFromage/switch-cheats-db/master/cheats/%1.json"))
+            const QString url_str = QString(QStringLiteral("https://cdn.jsdelivr.net/gh/HamletDuFromage/switch-cheats-db@master/cheats/%1.json"))
 
                                         .arg(tid_hex);
 
@@ -18435,9 +18437,51 @@ void MainWindow::OnQuickSave() {
 
 
 void MainWindow::OnQuickLoad() {
+    if (!emulation_running || !QtCommon::system || !QtCommon::system->IsPoweredOn()) {
+        OnLoadStateSlot(1);
+        return;
+    }
 
-    OnLoadStateSlot(1);
+    const u64 title_id = QtCommon::system->GetApplicationProcessProgramID();
+    if (title_id == 0) {
+        OnLoadStateSlot(1);
+        return;
+    }
 
+    QSettings settings;
+    const QString slot_key = QStringLiteral("last_save_slot_%1").arg(title_id, 16, 16, QLatin1Char('0')).toUpper();
+    const int saved_slot = settings.value(slot_key, 0).toInt();
+
+    if (saved_slot >= 1 && saved_slot <= 10) {
+        const auto path = Core::GetSaveStatePath(title_id, static_cast<u32>(saved_slot));
+        std::error_code ec;
+        if (std::filesystem::exists(path, ec)) {
+            OnLoadStateSlot(saved_slot);
+            return;
+        }
+    }
+
+    // Otherwise scan slots 1..10 for the newest existing save state file (by last_write_time)
+    int newest_slot = 1;
+    std::filesystem::file_time_type newest_time{};
+    bool found_any = false;
+
+    for (int s = 1; s <= 10; ++s) {
+        const auto path = Core::GetSaveStatePath(title_id, static_cast<u32>(s));
+        std::error_code ec;
+        if (std::filesystem::exists(path, ec)) {
+            const auto ftime = std::filesystem::last_write_time(path, ec);
+            if (!ec) {
+                if (!found_any || ftime > newest_time) {
+                    newest_time = ftime;
+                    newest_slot = s;
+                    found_any = true;
+                }
+            }
+        }
+    }
+
+    OnLoadStateSlot(newest_slot);
 }
 
 
@@ -18628,6 +18672,12 @@ void MainWindow::OnSaveStateSlot(int slot) {
 
         render_window->CaptureScreenshot(qpreview);
 
+    }
+
+        {
+        QSettings settings;
+        const QString slot_key = QStringLiteral("last_save_slot_%1").arg(title_id, 16, 16, QLatin1Char('0')).toUpper();
+        settings.setValue(slot_key, slot);
     }
 
     RefreshSaveStateMenus();
@@ -20096,7 +20146,7 @@ void MainWindow::OnSaveStateManager() {
 
     edit_note->setFixedHeight(58);
 
-    edit_note->setWordWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
+    edit_note->setWordWrapMode(QTextOption::WordWrap);
 
     edit_note->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 

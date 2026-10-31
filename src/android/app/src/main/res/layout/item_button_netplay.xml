@@ -11,7 +11,9 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:textAppearance="?attr/textAppearanceBodyLarge" />
+        android:textAppearance="?attr/textAppearanceBodyLarge"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
     <ImageButton
         android:id="@+id/item_button_more"

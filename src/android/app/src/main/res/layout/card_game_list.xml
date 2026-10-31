@@ -52,7 +52,9 @@
                 android:textColor="?attr/colorOnPrimary"
                 android:textSize="9sp"
                 android:textStyle="bold"
-                tools:text="NSZ" />
+                tools:text="NSZ"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         </FrameLayout>
 
@@ -80,7 +82,9 @@
                 android:textSize="14sp"
                 android:textStyle="bold"
                 android:textColor="?attr/colorOnSurface"
-                tools:text="The Legend of Zelda: Skyward Sword HD" />
+                tools:text="The Legend of Zelda: Skyward Sword HD"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/text_game_developer"
@@ -93,7 +97,9 @@
                 android:ellipsize="end"
                 android:textSize="12sp"
                 android:textColor="?attr/colorOnSurfaceVariant"
-                tools:text="Nintendo • 01002DA013484000" />
+                tools:text="Nintendo • 01002DA013484000"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         </LinearLayout>
 
@@ -120,7 +126,9 @@
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="11sp"
                 android:textStyle="bold"
-                tools:text="1.2.0" />
+                tools:text="1.2.0"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/badge_game_internal_version"
@@ -134,7 +142,9 @@
                 android:paddingBottom="1dp"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="10sp"
-                tools:text="196608" />
+                tools:text="196608"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/text_game_addons"
@@ -148,7 +158,9 @@
                 android:paddingBottom="1dp"
                 android:textColor="?attr/colorSecondary"
                 android:textSize="9sp"
-                tools:text="Дополнений: 5" />
+                tools:text="Дополнений: 5"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         </LinearLayout>
 

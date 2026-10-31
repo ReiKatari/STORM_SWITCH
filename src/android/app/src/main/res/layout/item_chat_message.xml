@@ -20,17 +20,23 @@
             android:id="@+id/username_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         <TextView
             android:id="@+id/message_text"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         <TextView
             android:id="@+id/timestamp_text"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
     </LinearLayout>
 </LinearLayout>

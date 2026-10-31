@@ -45,7 +45,9 @@
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:letterSpacing="0.02" />
+                android:letterSpacing="0.02"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <TextView
                 android:layout_width="match_parent"
@@ -53,7 +55,9 @@
                 android:layout_marginTop="2dp"
                 android:text="@string/auto_opt_dialog_subtitle"
                 android:textColor="?attr/colorOnSurfaceVariant"
-                android:textSize="12sp" />
+                android:textSize="12sp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
         </LinearLayout>
 
         <!-- Faceted Close Button -->
@@ -128,7 +132,9 @@
                         android:textColor="?attr/colorPrimary"
                         android:textSize="12sp"
                         android:textStyle="bold"
-                        android:letterSpacing="0.05" />
+                        android:letterSpacing="0.05"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     <TextView
                         android:id="@+id/text_hw_tier"
@@ -140,7 +146,9 @@
                         android:text="ELITE TIER"
                         android:textColor="#34D399"
                         android:textSize="11sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 </LinearLayout>
 
@@ -167,7 +175,9 @@
                             android:text="@string/auto_opt_hw_soc_label"
                             android:textColor="?attr/colorPrimary"
                             android:textSize="10sp"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                         <TextView
                             android:id="@+id/text_hw_soc"
@@ -178,7 +188,9 @@
                             android:textColor="?attr/colorOnSurface"
                             android:textSize="12sp"
                             android:textStyle="bold"
-                            android:maxLines="3" />
+                            android:maxLines="3"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     </LinearLayout>
 
@@ -198,7 +210,9 @@
                             android:text="@string/auto_opt_hw_gpu_label"
                             android:textColor="?attr/colorPrimary"
                             android:textSize="10sp"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                         <TextView
                             android:id="@+id/text_hw_gpu"
@@ -209,7 +223,9 @@
                             android:textColor="?attr/colorOnSurface"
                             android:textSize="12sp"
                             android:textStyle="bold"
-                            android:maxLines="3" />
+                            android:maxLines="3"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     </LinearLayout>
 
@@ -236,7 +252,9 @@
                             android:text="@string/auto_opt_hw_ram_label"
                             android:textColor="#34D399"
                             android:textSize="10sp"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                         <TextView
                             android:id="@+id/text_hw_ram"
@@ -247,7 +265,9 @@
                             android:textColor="?attr/colorOnSurface"
                             android:textSize="12sp"
                             android:textStyle="bold"
-                            android:maxLines="2" />
+                            android:maxLines="2"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     </LinearLayout>
 
@@ -267,7 +287,9 @@
                             android:text="@string/auto_opt_hw_tier_label"
                             android:textColor="#F59E0B"
                             android:textSize="10sp"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                         <TextView
                             android:id="@+id/tv_hardware_info"
@@ -277,7 +299,9 @@
                             android:text="✓ NCE • Affinity • Fast GPU"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             android:textSize="11sp"
-                            android:maxLines="3" />
+                            android:maxLines="3"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     </LinearLayout>
 
@@ -296,7 +320,9 @@
             android:textColor="?attr/colorPrimary"
             android:textSize="12sp"
             android:textStyle="bold"
-            android:letterSpacing="0.04" />
+            android:letterSpacing="0.04"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <!-- Preset 1: Maximum FPS (60 FPS) -->
         <com.google.android.material.card.MaterialCardView
@@ -347,7 +373,9 @@
                             android:text="@string/auto_opt_profile_fast_title"
                             android:textColor="?attr/colorOnSurface"
                             android:textSize="14sp"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -358,7 +386,9 @@
                             android:text="@string/auto_opt_badge_60fps"
                             android:textColor="?attr/colorPrimary"
                             android:textSize="10sp"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     </LinearLayout>
 
@@ -368,7 +398,9 @@
                         android:layout_marginTop="3dp"
                         android:text="@string/auto_opt_profile_fast_desc"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="12sp" />
+                        android:textSize="12sp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 </LinearLayout>
 
@@ -425,7 +457,9 @@
                             android:text="@string/auto_opt_profile_balance_title"
                             android:textColor="?attr/colorOnSurface"
                             android:textSize="14sp"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -436,7 +470,9 @@
                             android:text="@string/auto_opt_badge_recommended"
                             android:textColor="?attr/colorPrimary"
                             android:textSize="10sp"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     </LinearLayout>
 
@@ -446,7 +482,9 @@
                         android:layout_marginTop="3dp"
                         android:text="@string/auto_opt_profile_balance_desc"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="12sp" />
+                        android:textSize="12sp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 </LinearLayout>
 
@@ -503,7 +541,9 @@
                             android:text="@string/auto_opt_profile_ultra_title"
                             android:textColor="?attr/colorOnSurface"
                             android:textSize="14sp"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -514,7 +554,9 @@
                             android:text="@string/auto_opt_badge_2k_fsr"
                             android:textColor="#F59E0B"
                             android:textSize="10sp"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     </LinearLayout>
 
@@ -524,7 +566,9 @@
                         android:layout_marginTop="3dp"
                         android:text="@string/auto_opt_profile_ultra_desc"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="12sp" />
+                        android:textSize="12sp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 </LinearLayout>
 
@@ -581,7 +625,9 @@
                             android:text="@string/auto_opt_profile_eco_title"
                             android:textColor="?attr/colorOnSurface"
                             android:textSize="14sp"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -592,7 +638,9 @@
                             android:text="@string/auto_opt_badge_cool"
                             android:textColor="#34D399"
                             android:textSize="10sp"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     </LinearLayout>
 
@@ -602,7 +650,9 @@
                         android:layout_marginTop="3dp"
                         android:text="@string/auto_opt_profile_eco_desc"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="12sp" />
+                        android:textSize="12sp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 </LinearLayout>
 
@@ -624,44 +674,66 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
+        android:orientation="vertical"
         android:paddingHorizontal="16dp"
         android:paddingVertical="10dp">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_reset_defaults"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="0dp"
+        <!-- Row 1: Reset Defaults and Cancel -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="46dp"
-            android:layout_weight="1"
-            android:layout_marginEnd="6dp"
-            android:text="@string/auto_opt_btn_reset"
-            android:textSize="12sp"
-            app:strokeWidth="1dp"
-            app:strokeColor="?attr/colorOutline" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_cancel"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:minHeight="46dp"
-            android:layout_weight="1"
-            android:layout_marginEnd="6dp"
-            android:text="@android:string/cancel"
-            android:textSize="12sp"
-            app:strokeWidth="1dp"
-            app:strokeColor="?attr/colorOutline" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_reset_defaults"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:minHeight="46dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="10dp"
+                android:maxLines="1"
+                android:ellipsize="none"
+                android:hyphenationFrequency="none"
+                android:breakStrategy="simple"
+                app:autoSizeTextType="uniform"
+                app:autoSizeMinTextSize="10sp"
+                app:autoSizeMaxTextSize="13sp"
+                android:text="@string/auto_opt_btn_reset"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutline" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_cancel"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:minHeight="46dp"
+                android:layout_weight="1"
+                android:maxLines="1"
+                android:ellipsize="none"
+                android:hyphenationFrequency="none"
+                android:breakStrategy="simple"
+                android:text="@android:string/cancel"
+                android:textSize="12sp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutline" />
+
+        </LinearLayout>
+
+        <!-- Row 2: Apply Wizard -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_apply_wizard"
             style="@style/Widget.Material3.Button.TonalButton"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="46dp"
-            android:layout_weight="1.5"
+            android:minHeight="48dp"
+            android:layout_marginTop="8dp"
+            android:maxLines="1"
+            android:ellipsize="none"
+            android:hyphenationFrequency="none"
+            android:breakStrategy="simple"
             android:text="@string/auto_opt_btn_apply"
             android:textSize="13sp"
             app:icon="@drawable/ic_check"
@@ -674,7 +746,11 @@
             android:id="@+id/btn_cancel_wizard"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:visibility="gone" />
+            android:visibility="gone"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
     </LinearLayout>
 

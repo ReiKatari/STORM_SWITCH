@@ -54,7 +54,9 @@
                         android:text="The Legend of Zelda"
                         android:textSize="16sp"
                         android:textStyle="bold"
-                        android:textColor="?attr/colorOnSurface" />
+                        android:textColor="?attr/colorOnSurface"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     <LinearLayout
                         android:layout_width="wrap_content"
@@ -73,7 +75,9 @@
                             android:text="@string/auto_correction_status_active"
                             android:textSize="10.5sp"
                             android:textColor="?attr/colorPrimary"
-                            android:fontFamily="sans-serif-medium" />
+                            android:fontFamily="sans-serif-medium"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     </LinearLayout>
 
@@ -119,7 +123,9 @@
                             android:text="@string/auto_correction_issues_title"
                             android:textSize="12sp"
                             android:textStyle="bold"
-                            android:textColor="#EF4444" />
+                            android:textColor="#EF4444"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     </LinearLayout>
 
@@ -129,7 +135,9 @@
                         android:layout_height="wrap_content"
                         android:textSize="11sp"
                         android:lineSpacingExtra="2dp"
-                        android:textColor="?attr/colorOnSurfaceVariant" />
+                        android:textColor="?attr/colorOnSurfaceVariant"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 </LinearLayout>
 
@@ -172,7 +180,9 @@
                             android:text="@string/auto_correction_recommendations_title"
                             android:textSize="12sp"
                             android:textStyle="bold"
-                            android:textColor="?attr/colorPrimary" />
+                            android:textColor="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     </LinearLayout>
 
@@ -182,7 +192,9 @@
                         android:layout_height="wrap_content"
                         android:textSize="11sp"
                         android:lineSpacingExtra="2.5dp"
-                        android:textColor="?attr/colorOnSurface" />
+                        android:textColor="?attr/colorOnSurface"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 </LinearLayout>
 
@@ -230,14 +242,18 @@
                         android:textSize="12.5sp"
                         android:textStyle="bold"
                         android:textColor="?attr/colorPrimary"
-                        android:layout_marginBottom="4dp" />
+                        android:layout_marginBottom="4dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     <com.google.android.material.textview.MaterialTextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Dynamic thermal throttling &amp; frame pacing optimization."
                         android:textSize="11sp"
-                        android:textColor="?attr/colorOnSurfaceVariant" />
+                        android:textColor="?attr/colorOnSurfaceVariant"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 </LinearLayout>
 
@@ -259,7 +275,11 @@
                 app:iconSize="16dp"
                 android:layout_marginBottom="8dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorPrimary" />
+        app:strokeColor="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_reset_auto_correction"
@@ -272,7 +292,11 @@
                 app:cornerRadius="10dp"
                 android:layout_marginBottom="6dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_close_auto_correction"
@@ -283,7 +307,11 @@
                 android:textSize="12.5sp"
                 app:cornerRadius="10dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
         </LinearLayout>
 

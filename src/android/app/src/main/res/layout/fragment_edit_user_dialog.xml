@@ -79,7 +79,11 @@
                         app:icon="@drawable/ic_add"
                         android:layout_marginEnd="4dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/button_firmware_avatars"
@@ -92,7 +96,11 @@
                         style="@style/Widget.Material3.Button.TonalButton"
                         app:icon="@drawable/ic_account_circle"
                         android:layout_marginStart="4dp"
-                        android:visibility="gone" />
+                        android:visibility="gone"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
                 </LinearLayout>
 
@@ -105,7 +113,11 @@
                     style="@style/Widget.Material3.Button.TextButton"
                     android:visibility="gone"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
             </LinearLayout>
 
@@ -145,7 +157,9 @@
                         android:text="@string/profile_uuid"
                         android:textAppearance="?attr/textAppearanceLabelMedium"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        android:layout_marginBottom="8dp" />
+                        android:layout_marginBottom="8dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -161,7 +175,9 @@
                             android:textAppearance="?attr/textAppearanceBodyMedium"
                             android:fontFamily="monospace"
                             android:textIsSelectable="true"
-                            tools:text="12345678-1234-1234-1234-123456789012" />
+                            tools:text="12345678-1234-1234-1234-123456789012"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/button_generate_uuid"
@@ -172,7 +188,11 @@
                             app:icon="@drawable/ic_refresh"
                             app:iconGravity="textStart"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
                     </LinearLayout>
 
@@ -182,7 +202,9 @@
                         android:text="@string/profile_uuid_description"
                         android:textAppearance="?attr/textAppearanceBodySmall"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        android:layout_marginTop="8dp" />
+                        android:layout_marginTop="8dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 </LinearLayout>
 
@@ -218,7 +240,11 @@
                 android:text="@android:string/cancel"
                 style="@style/Widget.Material3.Button.TonalButton"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_save"
@@ -229,7 +255,11 @@
                 android:text="@string/save"
                 style="@style/Widget.Material3.Button"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
         </LinearLayout>
 

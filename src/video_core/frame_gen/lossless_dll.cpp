@@ -440,7 +440,28 @@ template <typename Map>
 } // Anonymous namespace
 
 std::filesystem::path GetLosslessDllPath() {
-    return Common::FS::GetEdenPath(Common::FS::EdenPath::LosslessDir) / LOSSLESS_DLL_FILE;
+    const auto default_path =
+        Common::FS::GetEdenPath(Common::FS::EdenPath::LosslessDir) / LOSSLESS_DLL_FILE;
+#ifdef _WIN32
+    if (!Common::FS::Exists(default_path)) {
+        static constexpr std::string_view steam_candidates[] = {
+            "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Lossless Scaling\\Lossless.dll",
+            "C:\\Program Files\\Steam\\steamapps\\common\\Lossless Scaling\\Lossless.dll",
+            "D:\\SteamLibrary\\steamapps\\common\\Lossless Scaling\\Lossless.dll",
+            "E:\\SteamLibrary\\steamapps\\common\\Lossless Scaling\\Lossless.dll",
+            "F:\\SteamLibrary\\steamapps\\common\\Lossless Scaling\\Lossless.dll",
+            "M:\\SteamLibrary\\steamapps\\common\\Lossless Scaling\\Lossless.dll",
+            "G:\\SteamLibrary\\steamapps\\common\\Lossless Scaling\\Lossless.dll",
+        };
+        for (const auto candidate : steam_candidates) {
+            std::filesystem::path cand_path{candidate};
+            if (Common::FS::Exists(cand_path)) {
+                return cand_path;
+            }
+        }
+    }
+#endif
+    return default_path;
 }
 
 std::filesystem::path GetShaderCachePath() {

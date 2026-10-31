@@ -1,4 +1,9 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+#include <QHBoxLayout>
+#include <QPushButton>
+#include "storm_switch/common/storm_theme.h"
+#include "storm_switch/common/storm_lang.h"
+#include "storm_switch/configuration/storm_ui_structure_helper.h"
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // SPDX-FileCopyrightText: 2016 Citra Emulator Project
@@ -30,6 +35,52 @@ ConfigureDebug::ConfigureDebug(const Core::System& system_, QWidget* parent)
 
     connect(ui->toggle_gdbstub, &QCheckBox::toggled,
             [&]() { ui->gdbport_spinbox->setEnabled(ui->toggle_gdbstub->isChecked()); });
+
+    // Homebrew Arguments volumetric styling & quick pills
+    StormUI::StructureEngine::StyleAsVolumetricCard(ui->groupBox_3);
+
+    const auto pal = StormTheme::GetThemePalette();
+    ui->homebrew_args_edit->setStyleSheet(QStringLiteral(
+        "QLineEdit { border: 1px solid %1; border-radius: 7px; padding: 6px 10px; background: %2; color: %3; font-family: 'Consolas', 'Cascadia Mono', monospace; font-size: 12.5px; }"
+        "QLineEdit:focus { border: 1px solid %4; }"
+    ).arg(pal.border, pal.inputBg, pal.textPrimary, pal.accent));
+
+    ui->homebrew_args_edit->setClearButtonEnabled(true);
+    ui->homebrew_args_edit->setPlaceholderText(
+        StormLang(QStringLiteral("Например: --verbose -noglsl"),
+                  QStringLiteral("Example: --verbose -noglsl"),
+                  QStringLiteral("Z. B.: --verbose -noglsl"),
+                  QStringLiteral("Exemple : --verbose -noglsl"),
+                  QStringLiteral("例如: --verbose -noglsl"),
+                  QStringLiteral("例: --verbose -noglsl")));
+
+    auto* pills_layout = new QHBoxLayout();
+    pills_layout->setSpacing(6);
+    pills_layout->setContentsMargins(0, 4, 0, 0);
+
+    auto create_pill = [this, &pal](const QString& arg) {
+        auto* btn = new QPushButton(arg, this);
+        btn->setCursor(Qt::PointingHandCursor);
+        btn->setStyleSheet(QStringLiteral(
+            "QPushButton { background: %1; border: 1px solid %2; border-radius: 5px; padding: 3px 10px; color: %3; font-family: 'Consolas', 'Cascadia Mono', monospace; font-size: 11.5px; font-weight: 600; }"
+            "QPushButton:hover { background: %4; border: 1px solid %5; color: %5; }"
+        ).arg(pal.surface, pal.border, pal.textSecondary, pal.cardAlt, pal.accent));
+        connect(btn, &QPushButton::clicked, this, [this, arg]() {
+            QString current = ui->homebrew_args_edit->text().trimmed();
+            if (current.isEmpty()) {
+                ui->homebrew_args_edit->setText(arg);
+            } else if (!current.contains(arg)) {
+                ui->homebrew_args_edit->setText(current + QStringLiteral(" ") + arg);
+            }
+        });
+        return btn;
+    };
+
+    pills_layout->addStretch(1);
+    pills_layout->addWidget(create_pill(QStringLiteral("--verbose")));
+    pills_layout->addWidget(create_pill(QStringLiteral("-noglsl")));
+
+    ui->verticalLayout_5->addLayout(pills_layout);
 }
 
 ConfigureDebug::~ConfigureDebug() = default;

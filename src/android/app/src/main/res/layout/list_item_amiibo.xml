@@ -63,7 +63,9 @@
                 android:textSize="13sp"
                 android:maxLines="2"
                 android:ellipsize="end"
-                tools:text="Link - Rider" />
+                tools:text="Link - Rider"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/text_amiibo_series"
@@ -75,7 +77,9 @@
                 android:textSize="11sp"
                 android:maxLines="2"
                 android:ellipsize="end"
-                tools:text="Zelda • Figure" />
+                tools:text="Zelda • Figure"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/text_amiibo_id"
@@ -86,7 +90,9 @@
                 android:textSize="10sp"
                 android:maxLines="2"
                 android:ellipsize="end"
-                tools:text="01010000002F0002" />
+                tools:text="01010000002F0002"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/text_amiibo_reward"
@@ -100,7 +106,9 @@
                 android:ellipsize="end"
                 android:visibility="gone"
                 tools:text="[🗡️ Оружие] Меч мудреца + Ткань ностальгии"
-                tools:visibility="visible" />
+                tools:visibility="visible"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         </LinearLayout>
 
@@ -125,7 +133,11 @@
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorPrimary" />
+        app:strokeColor="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_save_bin"
@@ -139,7 +151,11 @@
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
         </LinearLayout>
 

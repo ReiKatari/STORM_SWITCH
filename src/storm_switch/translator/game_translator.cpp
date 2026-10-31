@@ -746,7 +746,7 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
     auto* hotkey_info = new QLabel(tr("⌨️ Быстрые клавиши:\n"
                                        "• [F9] — Мгновенный перевод экрана / скрыть перевод\n"
                                        "• [F5] — Быстрое сохранение игры (< 20 мс)\n"
-                                       "• [F6] — Быстрая загрузка игры"), tab_hud);
+                                       "• [F7] — Быстрая загрузка игры"), tab_hud);
     hotkey_info->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 12px; background: #121826; padding: 12px; border-radius: 6px; border: 1px solid #1E293B;"));
     t3_layout->addWidget(hotkey_info);
     t3_layout->addStretch(1);

@@ -28,6 +28,8 @@
         android:textStyle="bold"
         android:letterSpacing="0.08"
         android:focusable="false"
-        tools:text="CPU SETTINGS" />
+        tools:text="CPU SETTINGS"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
 </LinearLayout>

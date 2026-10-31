@@ -34,7 +34,7 @@
 #include "core/hle/service/audio/audio_renderer_manager.h"
 #include "core/hle/service/sm/sm.h"
 #include "core/save_state.h"
-#include "video_core/gpu.h" 
+#include "video_core/gpu.h"
 
 namespace Core {
 
@@ -1418,6 +1418,30 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
     }
     if (auto audin_u = system.ServiceManager().GetService<Service::Audio::IAudioInManager>("audin:u")) {
         audin_u->Resynchronize();
+    }
+
+    // Restore guest thread contexts back onto process thread list before unstalling
+    for (auto& thread : process->GetThreadList()) {
+        const u32 tid = static_cast<u32>(thread.GetThreadId());
+        auto it = std::find_if(cached->threads.begin(), cached->threads.end(),
+                               [tid](const ThreadSnapshot& snap) { return snap.thread_id == tid; });
+        if (it == cached->threads.end()) {
+            continue;
+        }
+        // Matching src/core/savestate.cpp: a thread still sleeping in a kernel wait leaves its context as its live fiber expects
+        if (thread.GetWaitReasonForDebugging() != Kernel::ThreadWaitReasonForDebugging::None) {
+            continue;
+        }
+        std::memcpy(&thread.GetContext(), it->context_data,
+                    std::min(sizeof(thread.GetContext()), sizeof(it->context_data)));
+    }
+
+    // Invalidate CPU JIT / NCE instruction caches across all 4 cores
+    // so neither Dynarmic nor Android NCE executes stale blocks after RAM + PC/SP rollback
+    for (std::size_t i = 0; i < Core::Hardware::NUM_CPU_CORES; ++i) {
+        if (auto* arm = process->GetArmInterface(i)) {
+            arm->ClearInstructionCache();
+        }
     }
 
     system.UnstallApplication();

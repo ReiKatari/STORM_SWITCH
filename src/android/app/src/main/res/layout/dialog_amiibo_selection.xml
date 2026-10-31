@@ -43,7 +43,9 @@
                     android:text="@string/load_amiibo"
                     android:textSize="18sp"
                     android:textStyle="bold"
-                    android:textColor="?attr/colorOnSurface" />
+                    android:textColor="?attr/colorOnSurface"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <com.google.android.material.textview.MaterialTextView
                     android:layout_width="wrap_content"
@@ -51,7 +53,9 @@
                     android:text="@string/amiibo_title"
                     android:textSize="12.5sp"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:layout_marginTop="2dp" />
+                    android:layout_marginTop="2dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             </LinearLayout>
 
@@ -97,7 +101,9 @@
                         android:text="@string/amiibo_database_title"
                         android:textSize="15sp"
                         android:textStyle="bold"
-                        android:textColor="?attr/colorOnSurface" />
+                        android:textColor="?attr/colorOnSurface"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     <com.google.android.material.textview.MaterialTextView
                         android:layout_width="wrap_content"
@@ -105,7 +111,9 @@
                         android:text="@string/amiibo"
                         android:textSize="12sp"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        android:layout_marginTop="2dp" />
+                        android:layout_marginTop="2dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 </LinearLayout>
 
@@ -153,7 +161,9 @@
                         android:text="@string/amiibo_pick_file"
                         android:textSize="15sp"
                         android:textStyle="bold"
-                        android:textColor="?attr/colorOnSurface" />
+                        android:textColor="?attr/colorOnSurface"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     <com.google.android.material.textview.MaterialTextView
                         android:layout_width="wrap_content"
@@ -161,7 +171,9 @@
                         android:text=".bin"
                         android:textSize="12sp"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        android:layout_marginTop="2dp" />
+                        android:layout_marginTop="2dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 </LinearLayout>
 
@@ -180,7 +192,11 @@
             android:textSize="13sp"
             app:cornerRadius="12dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
     </LinearLayout>
 

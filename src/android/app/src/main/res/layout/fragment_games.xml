@@ -48,7 +48,9 @@
             app:layout_constraintStart_toEndOf="@+id/app_logo"
             app:layout_constraintEnd_toStartOf="@+id/buttons_container"
             app:layout_constraintTop_toTopOf="@+id/buttons_container"
-            app:layout_constraintBottom_toBottomOf="@+id/buttons_container" />
+            app:layout_constraintBottom_toBottomOf="@+id/buttons_container"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         <LinearLayout
             android:id="@+id/buttons_container"
@@ -249,7 +251,9 @@
                 android:padding="@dimen/spacing_large"
                 android:text="@string/empty_gamelist"
                 android:textColor="?attr/colorOnSurfaceVariant"
-                android:visibility="gone" />
+                android:visibility="gone"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/grid_games"

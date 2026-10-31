@@ -46,7 +46,9 @@
             android:textStyle="bold"
             android:letterSpacing="0.06"
             android:textAllCaps="true"
-            tools:text="ПРОИЗВОДИТЕЛЬНОСТЬ, ГРАФИКА И ДРАЙВЕРЫ" />
+            tools:text="ПРОИЗВОДИТЕЛЬНОСТЬ, ГРАФИКА И ДРАЙВЕРЫ"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
     </LinearLayout>
 

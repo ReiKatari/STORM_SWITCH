@@ -465,7 +465,7 @@ class OnlineToolsDialogFragment : DialogFragment() {
                     try {
                         val request = Request.Builder()
                             .url(reqUrl)
-                            .header("User-Agent", "STORM_SWITCH_Android")
+                            .header("User-Agent", "STORM-SWITCH/16.0.6")
                             .build()
                         val response = httpClient.newCall(request).execute()
                         if (response.isSuccessful) {
@@ -631,7 +631,7 @@ class OnlineToolsDialogFragment : DialogFragment() {
 
                         val request = Request.Builder()
                             .url(dlUrl)
-                            .header("User-Agent", "STORM_SWITCH_Installer")
+                            .header("User-Agent", "STORM-SWITCH/16.0.6")
                             .header("Accept-Encoding", "identity")
                             .build()
 

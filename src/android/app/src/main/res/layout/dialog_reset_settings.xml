@@ -28,7 +28,9 @@
             android:text="@string/reset_all_settings"
             android:textColor="#00F0FF"
             android:textSize="18sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
     </LinearLayout>
 
     <TextView
@@ -38,7 +40,9 @@
         android:textColor="#FFFFFF"
         android:textSize="14sp"
         android:lineSpacingExtra="4dp"
-        android:layout_marginBottom="24dp" />
+        android:layout_marginBottom="24dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -56,7 +60,11 @@
             android:textStyle="bold"
             android:layout_marginEnd="8dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_reset"
@@ -69,6 +77,10 @@
             app:backgroundTint="#16263D"
             app:strokeColor="#00D2FF"
             app:strokeWidth="1.5dp"
-            app:cornerRadius="8dp" />
+            app:cornerRadius="8dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
     </LinearLayout>
 </LinearLayout>

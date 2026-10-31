@@ -20,7 +20,9 @@
             android:textAppearance="?attr/textAppearanceHeadline6"
             android:gravity="center"
             android:paddingBottom="8dp"
-            android:textColor="?attr/colorOnSurface" />
+            android:textColor="?attr/colorOnSurface"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/layout_ip_address"
@@ -128,7 +130,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="@string/multiplayer_max_players_value" />
+                android:text="@string/multiplayer_max_players_value"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
         </LinearLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -154,6 +158,10 @@
             android:layout_gravity="center"
             style="@style/Widget.Material3.Button.ElevatedButton"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
     </LinearLayout>
 </ScrollView>

@@ -63,7 +63,9 @@
                         android:textColor="?attr/colorOnSurface"
                         android:textSize="14sp"
                         android:textStyle="bold"
-                         />
+
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     <TextView
                         android:id="@+id/text_profile_active_badge"
@@ -77,7 +79,9 @@
                         android:textColor="?attr/colorPrimary"
                         android:textSize="10sp"
                         android:textStyle="bold"
-                        android:visibility="gone" />
+                        android:visibility="gone"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 </LinearLayout>
 
@@ -89,7 +93,9 @@
                     android:text="Profile Description"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="11sp"
-                     />
+
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             </LinearLayout>
 
@@ -117,7 +123,11 @@
                 android:text="@string/profile_btn_apply"
                 android:textColor="?attr/colorPrimary"
                 android:textSize="11.5sp"
-                app:cornerRadius="8dp" />
+                app:cornerRadius="8dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_profile_share"
@@ -134,7 +144,11 @@
                 android:text="@string/profile_btn_share"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="11.5sp"
-                app:cornerRadius="8dp" />
+                app:cornerRadius="8dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
         </LinearLayout>
 
@@ -161,7 +175,11 @@
                 android:text="@string/profile_btn_rename"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="11.5sp"
-                app:cornerRadius="8dp" />
+                app:cornerRadius="8dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_profile_delete"
@@ -178,7 +196,11 @@
                 android:text="@string/profile_btn_delete"
                 android:textColor="#EF4444"
                 android:textSize="11.5sp"
-                app:cornerRadius="8dp" />
+                app:cornerRadius="8dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
         </LinearLayout>
 

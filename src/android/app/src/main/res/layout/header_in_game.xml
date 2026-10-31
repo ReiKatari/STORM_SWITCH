@@ -51,7 +51,9 @@
                     android:layout_height="wrap_content"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="11sp"
-                    tools:text="Dynarmic" />
+                    tools:text="Dynarmic"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <com.google.android.material.textview.MaterialTextView
                     style="@style/SynthwaveText.Body"
@@ -60,7 +62,9 @@
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginHorizontal="6dp"
                     android:textSize="11sp"
-                    android:text="•" />
+                    android:text="•"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/gpu_vendor"
@@ -69,7 +73,9 @@
                     android:layout_height="wrap_content"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="11sp"
-                    tools:text="Adreno 740" />
+                    tools:text="Adreno 740"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             </LinearLayout>
 
@@ -81,7 +87,9 @@
                 android:textColor="#00F0FF"
                 android:textSize="11sp"
                 android:fontFamily="sans-serif-medium"
-                android:text="@string/quick_settings_gesture_hint" />
+                android:text="@string/quick_settings_gesture_hint"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         </LinearLayout>
 

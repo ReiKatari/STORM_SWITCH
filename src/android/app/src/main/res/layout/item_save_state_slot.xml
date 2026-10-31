@@ -50,7 +50,9 @@
                 android:textColor="#00F0FF"
                 android:textSize="15sp"
                 android:textStyle="bold"
-                tools:text="Слот 1" />
+                tools:text="Слот 1"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <TextView
                 android:id="@+id/slot_metadata"
@@ -59,7 +61,9 @@
                 android:layout_marginTop="2dp"
                 android:textColor="#94A3B8"
                 android:textSize="12sp"
-                tools:text="28.10.2026 23:45 • 39.5 МБ" />
+                tools:text="28.10.2026 23:45 • 39.5 МБ"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <!-- Action Buttons Row -->
             <LinearLayout
@@ -83,7 +87,11 @@
                     app:backgroundTint="#2000D2FF"
                     app:cornerRadius="8dp"
                     app:strokeColor="#6000D2FF"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="1dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_load"
@@ -100,7 +108,11 @@
                     app:backgroundTint="#201E293B"
                     app:cornerRadius="8dp"
                     app:strokeColor="#4038BDF8"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="1dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
                 <View
                     android:layout_width="0dp"

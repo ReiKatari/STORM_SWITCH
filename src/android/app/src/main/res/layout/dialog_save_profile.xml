@@ -46,7 +46,9 @@
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:letterSpacing="0.02" />
+                android:letterSpacing="0.02"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         </LinearLayout>
 
@@ -57,7 +59,9 @@
             android:text="@string/profile_create_msg"
             android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="13sp"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="16dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         <!-- Themed TextInput Box -->
         <com.google.android.material.textfield.TextInputLayout
@@ -106,7 +110,11 @@
                 android:textSize="13sp"
                 android:layout_marginEnd="10dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_confirm_save_profile"
@@ -118,7 +126,11 @@
                 android:textColor="?attr/colorPrimary"
                 android:textSize="13sp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorPrimary" />
+        app:strokeColor="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
         </LinearLayout>
 

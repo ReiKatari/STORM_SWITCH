@@ -15,4 +15,8 @@
     app:iconSize="18dp"
     app:iconTint="?attr/colorPrimary"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorPrimary" />
+        app:strokeColor="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>

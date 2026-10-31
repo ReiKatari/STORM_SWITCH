@@ -25,7 +25,9 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toStartOf="@id/image_dropdown_arrow"
-            tools:text="KIMCHI Turnip Drivers" />
+            tools:text="KIMCHI Turnip Drivers"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         <ImageView
             android:id="@+id/image_dropdown_arrow"

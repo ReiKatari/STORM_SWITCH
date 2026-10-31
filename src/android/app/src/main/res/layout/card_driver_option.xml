@@ -51,7 +51,9 @@
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="15sp"
                 android:textStyle="bold"
-                tools:text="STORM DRIVER 5.0.0" />
+                tools:text="STORM DRIVER 5.0.0"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <!-- Version -->
             <com.google.android.material.textview.MaterialTextView
@@ -65,7 +67,9 @@
                 android:textColor="?attr/colorPrimary"
                 android:textSize="12sp"
                 android:textStyle="bold"
-                tools:text="26.3.0-devel-kgsl-storm-5.0.0" />
+                tools:text="26.3.0-devel-kgsl-storm-5.0.0"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <!-- Description -->
             <com.google.android.material.textview.MaterialTextView
@@ -79,7 +83,9 @@
                 android:maxLines="3"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="12.5sp"
-                tools:text="Snapdragon 8 Elite / Adreno 830, 7xx, 6xx • Universal Multi-Console and PC Emulation" />
+                tools:text="Snapdragon 8 Elite / Adreno 830, 7xx, 6xx • Universal Multi-Console and PC Emulation"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         </LinearLayout>
 
@@ -97,7 +103,11 @@
             app:iconSize="22dp"
             app:iconTint="?attr/colorError"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
     </LinearLayout>
 

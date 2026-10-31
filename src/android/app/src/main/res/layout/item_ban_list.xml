@@ -18,7 +18,9 @@
         android:id="@+id/ban_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1"/>
+        android:layout_weight="1"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_unban"
@@ -27,5 +29,9 @@
         android:layout_height="wrap_content"
         android:text="@string/multiplayer_unban"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 </LinearLayout>

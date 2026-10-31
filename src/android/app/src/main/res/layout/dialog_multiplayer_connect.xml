@@ -25,7 +25,9 @@
             android:textAppearance="?attr/textAppearanceHeadline6"
             android:gravity="center"
             android:layout_marginTop="4dp"
-            android:textColor="?attr/colorOnSurface" />
+            android:textColor="?attr/colorOnSurface"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         <ImageView
             android:layout_width="140dp"
@@ -66,7 +68,11 @@
                 app:iconTint="?attr/colorOnPrimary"
                 android:textColor="?attr/colorOnPrimary"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorPrimary" />
+        app:strokeColor="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
             <Space
                 android:layout_width="20dp"
@@ -95,7 +101,11 @@
                 app:icon="@drawable/ic_install"
                 app:iconPadding="12dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
             <Space
                 android:layout_width="24dp"
@@ -115,7 +125,11 @@
                 app:icon="@drawable/ic_add"
                 app:iconPadding="12dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
         </LinearLayout>
 

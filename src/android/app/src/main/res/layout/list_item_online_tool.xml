@@ -28,7 +28,9 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="12dp"
             android:text="📦"
-            android:textSize="24sp" />
+            android:textSize="24sp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         <LinearLayout
             android:layout_width="0dp"
@@ -43,7 +45,9 @@
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="14sp"
                 android:textStyle="bold"
-                tools:text="Прошивка 20.0.1" />
+                tools:text="Прошивка 20.0.1"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <TextView
                 android:id="@+id/text_tool_subtitle"
@@ -52,7 +56,9 @@
                 android:layout_marginTop="2dp"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="11sp"
-                tools:text="Файл: 20.0.1.zip • Размер: 324.7 МБ" />
+                tools:text="Файл: 20.0.1.zip • Размер: 324.7 МБ"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
         </LinearLayout>
 
         <TextView
@@ -68,7 +74,9 @@
             android:textSize="10sp"
             android:textStyle="bold"
             android:visibility="gone"
-            tools:visibility="visible" />
+            tools:visibility="visible"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         <TextView
             android:id="@+id/badge_recommended"
@@ -83,7 +91,9 @@
             android:textSize="10sp"
             android:textStyle="bold"
             android:visibility="gone"
-            tools:visibility="visible" />
+            tools:visibility="visible"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         <TextView
             android:id="@+id/badge_selected"
@@ -98,6 +108,8 @@
             android:textSize="10sp"
             android:textStyle="bold"
             android:visibility="gone"
-            tools:visibility="visible" />
+            tools:visibility="visible"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

@@ -15,4 +15,8 @@
     app:iconSize="24dp"
     app:iconPadding="10dp"
     app:rippleColor="?attr/colorControlHighlight"
-    style="@style/Widget.Material3.Button.ElevatedButton" />
+    style="@style/Widget.Material3.Button.ElevatedButton"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>

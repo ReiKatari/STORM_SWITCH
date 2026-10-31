@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
 $baseDir = Split-Path -Parent $PSScriptRoot
-$version = '16.0.5'
+$version = '16.0.6'
 if (Test-Path "$PSScriptRoot\GIT-RELEASE") {
     $v = (Get-Content "$PSScriptRoot\GIT-RELEASE" -Raw).Trim()
     if ($v) { $version = $v }
@@ -59,6 +59,17 @@ function Sign-ApkWithRotation([string]$apkPath) {
         & $apksignerItem.FullName verify $apkPath
         if ($LASTEXITCODE -ne 0) {
             throw "apksigner verify failed for $apkPath"
+        }
+        $aapt2Item = Get-ChildItem "C:\Users\ReiKa\AppData\Local\Android\Sdk\build-tools\*\aapt2.exe" | Sort-Object FullName -Descending | Select-Object -First 1
+        if ($null -ne $aapt2Item) {
+            $badging = (& $aapt2Item.FullName dump badging $apkPath | Select-Object -First 1)
+            if ($badging -match "versionCode='(\d+)'") {
+                $vc = [int64]$matches[1]
+                Write-Host "Verified $(Split-Path $apkPath -Leaf) versionCode=$vc"
+                if ($vc -le 34186401) {
+                    throw "FATAL UPGRADE GUARD: versionCode ($vc) is not strictly greater than previous release (34186401)! In-place upgrade would fail with INSTALL_FAILED_VERSION_DOWNGRADE."
+                }
+            }
         }
     }
 }

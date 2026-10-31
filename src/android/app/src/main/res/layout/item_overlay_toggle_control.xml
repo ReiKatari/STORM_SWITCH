@@ -40,7 +40,9 @@
                 android:textSize="14sp"
                 android:textStyle="bold"
                 android:fontFamily="monospace"
-                android:visibility="visible" />
+                android:visibility="visible"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <ImageView
                 android:id="@+id/icon_control"
@@ -65,7 +67,9 @@
                 android:text="@string/overlay_ctrl_button_a"
                 android:textColor="#FFFFFF"
                 android:textSize="14sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <TextView
                 android:id="@+id/text_control_desc"
@@ -73,7 +77,9 @@
                 android:layout_height="wrap_content"
                 android:text="@string/overlay_ctrl_button_a_desc"
                 android:textColor="#38BDF8"
-                android:textSize="11sp" />
+                android:textSize="11sp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
         </LinearLayout>
 
         <com.google.android.material.switchmaterial.SwitchMaterial

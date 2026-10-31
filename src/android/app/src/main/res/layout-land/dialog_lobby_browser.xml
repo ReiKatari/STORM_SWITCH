@@ -33,7 +33,9 @@
                     android:gravity="start|center_vertical"
                     android:text="@string/multiplayer_room_browser"
                     android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
-                    android:textColor="?attr/colorOnSurface" />
+                    android:textColor="?attr/colorOnSurface"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/search_background"
@@ -117,7 +119,11 @@
                         android:text="@string/refresh"
                         app:icon="@drawable/ic_refresh"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
                     <ProgressBar
                         android:id="@+id/progress_bar"
@@ -216,7 +222,9 @@
             android:layout_height="wrap_content"
             android:text="@string/multiplayer_no_rooms_found"
             android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
-            android:textColor="?attr/colorOnSurface" />
+            android:textColor="?attr/colorOnSurface"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         <TextView
             android:layout_width="wrap_content"
@@ -224,7 +232,9 @@
             android:layout_marginTop="8dp"
             android:text="@string/multiplayer_tap_refresh_to_check_again"
             android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
-            android:textColor="?attr/colorOnSurface" />
+            android:textColor="?attr/colorOnSurface"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/empty_refresh_button"
@@ -235,7 +245,11 @@
             android:text="@string/refresh"
             app:icon="@drawable/ic_refresh"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

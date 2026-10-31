@@ -98,38 +98,65 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:orientation="horizontal"
-            android:gravity="end">
+            android:layout_marginTop="16dp"
+            android:orientation="vertical">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_default"
-                style="@style/StormButton.Dialog.Neutral"
-                android:layout_width="wrap_content"
+            <!-- Row 1: Default & Cancel -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="6dp"
-                android:text="@string/gpu_unswizzle_default_button"
-        app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+                android:orientation="horizontal">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_cancel"
-                style="@style/StormButton.Dialog.Negative"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="6dp"
-                android:text="@android:string/cancel"
-        app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_default"
+                    style="@style/StormButton.Dialog.Neutral"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:minHeight="44dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:maxLines="1"
+                    android:ellipsize="none"
+                    android:hyphenationFrequency="none"
+                    android:breakStrategy="simple"
+                    app:autoSizeTextType="uniform"
+                    app:autoSizeMinTextSize="10sp"
+                    app:autoSizeMaxTextSize="13sp"
+                    android:text="@string/gpu_unswizzle_default_button"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="?attr/colorOutline" />
 
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_cancel"
+                    style="@style/StormButton.Dialog.Negative"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:minHeight="44dp"
+                    android:layout_weight="1"
+                    android:maxLines="1"
+                    android:ellipsize="none"
+                    android:hyphenationFrequency="none"
+                    android:breakStrategy="simple"
+                    android:text="@android:string/cancel"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="?attr/colorOutline" />
+            </LinearLayout>
+
+            <!-- Row 2: OK -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_ok"
                 style="@style/StormButton.Dialog.Positive"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:minHeight="46dp"
+                android:layout_marginTop="8dp"
+                android:maxLines="1"
+                android:ellipsize="none"
+                android:hyphenationFrequency="none"
+                android:breakStrategy="simple"
                 android:text="@android:string/ok"
-        app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutline" />
         </LinearLayout>
 
     </LinearLayout>

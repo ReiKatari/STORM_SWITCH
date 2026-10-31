@@ -128,6 +128,7 @@ PresentManager::PresentManager(const vk::Instance& instance_,
     , storage_supported{CanStoreToFrame(device.GetPhysical(), swapchain.GetImageFormat())}
     , use_present_thread{Settings::values.async_presentation.GetValue()}
 {
+    last_frame_gen_enabled = Settings::values.frame_gen.GetValue() || Settings::values.enable_frame_interpolation.GetValue();
     SetImageCount();
 
     auto& dld = device.GetLogical();
@@ -140,6 +141,7 @@ PresentManager::PresentManager(const vk::Instance& instance_,
     });
     auto cmdbuffers = cmdpool.Allocate(image_count);
 
+    frames.reserve(MAX_FRAMES_IN_FLIGHT);
     frames.resize(image_count);
     for (u32 i = 0; i < frames.size(); i++) {
         Frame& frame = frames[i];
@@ -390,6 +392,33 @@ void PresentManager::SetImageCount() {
         }
 #endif
     }
+
+    if (frames.size() < image_count && cmdpool) {
+        std::unique_lock lock{free_mutex};
+        const size_t old_size = frames.size();
+        const size_t diff = image_count - old_size;
+        auto& dld = device.GetLogical();
+        auto cmdbuffers = cmdpool.Allocate(diff);
+        for (size_t i = 0; i < diff; i++) {
+            const size_t idx = old_size + i;
+            frames.emplace_back();
+            Frame& frame = frames.back();
+            frame.index = static_cast<u32>(idx);
+            frame.cmdbuf = vk::CommandBuffer{cmdbuffers[i], device.GetDispatchLoader()};
+            frame.render_ready = dld.CreateSemaphore({
+                .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+                .pNext = nullptr,
+                .flags = 0,
+            });
+            frame.present_done = dld.CreateFence({
+                .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+                .pNext = nullptr,
+                .flags = VK_FENCE_CREATE_SIGNALED_BIT,
+            });
+            free_queue.push_back(&frame);
+        }
+        free_cv.notify_all();
+    }
 }
 
 void PresentManager::CopyToSwapchain(Frame* frame) {
@@ -422,7 +451,11 @@ void PresentManager::CopyToSwapchain(Frame* frame) {
         }
     }
 
-    bool requires_recreation = false;
+    const bool current_fg = Settings::values.frame_gen.GetValue() || Settings::values.enable_frame_interpolation.GetValue();
+    bool requires_recreation = (current_fg != last_frame_gen_enabled);
+    if (requires_recreation) {
+        last_frame_gen_enabled = current_fg;
+    }
 
     while (true) {
         if (scheduler.IsLost()) {
@@ -484,7 +517,12 @@ void PresentManager::CopyToSwapchainImpl(Frame* frame) {
 
     // If the size of the incoming frames has changed, recreate the swapchain
     // to account for that.
-    const bool is_suboptimal = swapchain.NeedsRecreation();
+    const bool current_fg_impl = Settings::values.frame_gen.GetValue() || Settings::values.enable_frame_interpolation.GetValue();
+    const bool fg_changed = (current_fg_impl != last_frame_gen_enabled);
+    if (fg_changed) {
+        last_frame_gen_enabled = current_fg_impl;
+    }
+    const bool is_suboptimal = swapchain.NeedsRecreation() || fg_changed;
     const VkExtent2D current_extent = swapchain.GetExtent();
     const bool size_changed =
         swapchain.GetWidth() != frame->width || swapchain.GetHeight() != frame->height ||

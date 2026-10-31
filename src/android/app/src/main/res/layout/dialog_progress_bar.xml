@@ -20,7 +20,9 @@
         android:maxLines="3"
         android:textColor="?attr/colorOnSurface"
         android:textSize="14sp"
-        android:visibility="gone" />
+        android:visibility="gone"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
     <com.google.android.material.progressindicator.LinearProgressIndicator
         android:id="@+id/progress_bar"

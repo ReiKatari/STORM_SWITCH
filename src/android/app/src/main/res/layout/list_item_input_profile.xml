@@ -35,7 +35,9 @@
             app:layout_constraintEnd_toStartOf="@+id/button_layout"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="My profile" />
+            tools:text="My profile"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         <LinearLayout
             android:id="@+id/button_layout"
@@ -53,7 +55,11 @@
                 android:layout_height="wrap_content"
                 android:contentDescription="@string/create_new_profile"
                 android:tooltipText="@string/create_new_profile"
-                app:icon="@drawable/ic_new_label" />
+                app:icon="@drawable/ic_new_label"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
             <Button
                 android:id="@+id/button_delete"
@@ -62,7 +68,11 @@
                 android:layout_height="wrap_content"
                 android:contentDescription="@string/delete"
                 android:tooltipText="@string/delete"
-                app:icon="@drawable/ic_delete" />
+                app:icon="@drawable/ic_delete"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
             <Button
                 android:id="@+id/button_save"
@@ -71,7 +81,11 @@
                 android:layout_height="wrap_content"
                 android:contentDescription="@string/save"
                 android:tooltipText="@string/save"
-                app:icon="@drawable/ic_save" />
+                app:icon="@drawable/ic_save"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
             <Button
                 android:id="@+id/button_load"
@@ -80,7 +94,11 @@
                 android:layout_height="wrap_content"
                 android:contentDescription="@string/load"
                 android:tooltipText="@string/load"
-                app:icon="@drawable/ic_import" />
+                app:icon="@drawable/ic_import"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
         </LinearLayout>
 

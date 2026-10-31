@@ -28,7 +28,9 @@
                 android:textAppearance="?attr/textAppearanceHeadline6"
                 android:gravity="center"
                 android:layout_marginTop="4dp"
-                android:textColor="?attr/colorOnSurface" />
+                android:textColor="?attr/colorOnSurface"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/list_multiplayer"
@@ -49,7 +51,11 @@
                 app:icon="@drawable/ic_chat"
                 app:cornerRadius="16dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_moderation"
@@ -63,7 +69,11 @@
                 app:cornerRadius="16dp"
                 app:icon="@drawable/ic_user"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_leave"
@@ -75,7 +85,11 @@
                 app:icon="@drawable/ic_exit"
                 app:cornerRadius="16dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
         </LinearLayout>
     </LinearLayout>

@@ -249,6 +249,7 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
 
         binding = ActivityEmulationBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        org.yuzu.yuzu_emu.utils.StormWordIntegrity.enforce(binding.root)
 
         val launchIntent = Intent(intent)
         val shouldDeferLaunchForSwap = hasEmulationSession && isSwapIntent(launchIntent)

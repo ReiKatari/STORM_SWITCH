@@ -34,7 +34,9 @@
                 android:layout_height="wrap_content"
                 android:text="VARIABLE_NAME"
                 android:textStyle="bold"
-                android:textColor="?attr/colorPrimary" />
+                android:textColor="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/variable_value"
@@ -45,7 +47,9 @@
                 android:text="variable_value"
                 android:textColor="?attr/colorOnSurface"
                 android:maxLines="3"
-                android:ellipsize="end" />
+                android:ellipsize="end"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         </LinearLayout>
 
@@ -61,7 +65,11 @@
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
     </LinearLayout>
 

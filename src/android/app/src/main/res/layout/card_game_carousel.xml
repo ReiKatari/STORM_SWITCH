@@ -51,7 +51,9 @@
                 android:textColor="?attr/colorOnPrimary"
                 android:textSize="10sp"
                 android:textStyle="bold"
-                tools:text="NSZ" />
+                tools:text="NSZ"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <LinearLayout
                 android:id="@+id/version_container"
@@ -74,7 +76,9 @@
                     android:textColor="?attr/colorOnSurface"
                     android:textSize="10sp"
                     android:textStyle="bold"
-                    tools:text="1.2.0" />
+                    tools:text="1.2.0"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/badge_game_internal_version"
@@ -88,7 +92,9 @@
                     android:paddingBottom="1dp"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="9sp"
-                    tools:text="196608" />
+                    tools:text="196608"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/badge_game_addons"
@@ -102,7 +108,9 @@
                     android:paddingBottom="1dp"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="8sp"
-                    tools:text="Дополнений: 5" />
+                    tools:text="Дополнений: 5"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             </LinearLayout>
 
@@ -127,7 +135,9 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            tools:text="Game Title" />
+            tools:text="Game Title"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </org.yuzu.yuzu_emu.views.GradientBorderCardView>

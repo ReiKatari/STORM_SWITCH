@@ -41,7 +41,9 @@
                 android:textSize="15sp"
                 android:textStyle="bold"
                 app:lineHeight="20dp"
-                tools:text="Setting Name" />
+                tools:text="Setting Name"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/text_setting_value"
@@ -53,7 +55,9 @@
                 android:textColor="?attr/colorPrimary"
                 android:textStyle="bold"
                 android:textSize="13sp"
-                tools:text="1x" />
+                tools:text="1x"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         </LinearLayout>
 
@@ -65,7 +69,11 @@
             android:nextFocusLeft="@id/setting_body"
             app:icon="@drawable/ic_more_vert"
             app:iconSize="24dp"
-            app:iconTint="?attr/colorPrimary" />
+            app:iconTint="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
     </LinearLayout>
 

@@ -1,55 +1,108 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:orientation="vertical"
     android:padding="20dp">
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/edit_text_layout"
-        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+    <!-- Optional helper description text -->
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/text_input_helper"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:boxBackgroundColor="?attr/colorSurface"
-        app:boxCornerRadiusBottomEnd="8dp"
-        app:boxCornerRadiusBottomStart="8dp"
-        app:boxCornerRadiusTopEnd="8dp"
-        app:boxCornerRadiusTopStart="8dp"
-        app:boxStrokeColor="?attr/colorPrimary"
-        app:boxStrokeWidth="1.5dp"
-        app:hintTextColor="?attr/colorPrimary"
-        app:layout_constraintTop_toTopOf="parent">
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:textSize="12.5sp"
+        android:layout_marginBottom="12dp"
+        android:visibility="gone"
+        android:hyphenationFrequency="none"
+        android:breakStrategy="simple"
+        tools:text="Command-line arguments passed to homebrew at launch." />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/edit_text"
+    <!-- Styled MaterialCardView housing the input layout -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline"
+        app:cardBackgroundColor="?attr/colorSurfaceVariant"
+        app:cardCornerRadius="14dp"
+        app:cardElevation="0dp"
+        android:layout_marginBottom="10dp">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/edit_text_layout"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="none"
-            android:paddingHorizontal="14dp"
-            android:paddingVertical="12dp"
-            android:textColor="?attr/colorOnSurface"
-            android:textColorHint="?attr/colorOutline"
-            android:textSize="14sp" />
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp"
+            app:boxStrokeColor="?attr/colorPrimary"
+            app:boxStrokeWidth="1.5dp"
+            app:endIconMode="clear_text"
+            app:endIconTint="?attr/colorOnSurfaceVariant"
+            app:hintTextColor="?attr/colorPrimary">
 
-    </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edit_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="52dp"
+                android:inputType="textNoSuggestions|textVisiblePassword"
+                android:fontFamily="monospace"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="12dp"
+                android:textColor="?attr/colorOnSurface"
+                android:textColorHint="?attr/colorOutline"
+                android:textSize="14sp"
+                android:hyphenationFrequency="none"
+                android:breakStrategy="simple" />
 
+        </com.google.android.material.textfield.TextInputLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Quick-insert Presets ChipGroup -->
+    <HorizontalScrollView
+        android:id="@+id/scroll_presets"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
+        android:overScrollMode="never"
+        android:layout_marginBottom="6dp">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chip_group_presets"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:singleLine="true" />
+
+    </HorizontalScrollView>
+
+    <!-- Optional Generate Button (e.g. for Tokens / Device Names) -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/generate"
         style="@style/Widget.Material3.Button.TonalButton"
         android:layout_width="wrap_content"
         android:layout_height="38dp"
-        android:layout_marginTop="12dp"
+        android:layout_gravity="end"
+        android:layout_marginTop="4dp"
         android:text="@string/generate"
         android:textColor="?attr/colorPrimary"
         android:textSize="12sp"
+        android:maxLines="1"
+        android:ellipsize="none"
+        android:hyphenationFrequency="none"
+        android:breakStrategy="simple"
         android:visibility="gone"
         app:backgroundTint="?attr/colorSurfaceVariant"
         app:cornerRadius="8dp"
         app:strokeColor="?attr/colorPrimary"
-        app:strokeWidth="1dp"
-        app:layout_constraintEnd_toEndOf="@+id/edit_text_layout"
-        app:layout_constraintTop_toBottomOf="@+id/edit_text_layout" />
+        app:strokeWidth="1dp" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

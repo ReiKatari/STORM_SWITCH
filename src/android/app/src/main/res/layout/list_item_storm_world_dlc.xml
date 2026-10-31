@@ -28,7 +28,9 @@
             android:textColor="#10B981"
             android:textSize="12sp"
             android:textStyle="bold"
-            tools:text="#1" />
+            tools:text="#1"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         <LinearLayout
             android:layout_width="0dp"
@@ -46,7 +48,9 @@
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="13sp"
                 android:textStyle="bold"
-                tools:text="Dredge Content Pack" />
+                tools:text="Dredge Content Pack"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <TextView
                 android:id="@+id/text_dlc_description"
@@ -57,7 +61,9 @@
                 android:textSize="11sp"
                 android:visibility="gone"
                 tools:text="Дополнительный сюжетный контент и локации"
-                tools:visibility="visible" />
+                tools:visibility="visible"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <TextView
                 android:id="@+id/text_dlc_id"
@@ -68,7 +74,9 @@
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="9sp"
                 android:visibility="gone"
-                tools:text="ID: 0.7202710899357588" />
+                tools:text="ID: 0.7202710899357588"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
         </LinearLayout>
 
         <ImageView

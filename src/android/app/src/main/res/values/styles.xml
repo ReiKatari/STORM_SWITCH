@@ -7,6 +7,8 @@
     <!-- Custom button styles -->
 
     <style name="InGameMenuOption" parent="Widget.Material3.Button.TextButton">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
         <item name="android:layout_width">match_parent</item>
 
@@ -61,6 +63,8 @@
 
 
     <style name="YuzuButton.Blue" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
         <item name="android:textColor">@color/yuzu_primary_blue</item>
 
@@ -93,6 +97,8 @@
 
 
     <style name="YuzuButton.Cyan" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
         <item name="android:textColor">@color/yuzu_primary_cyan</item>
 
@@ -125,6 +131,8 @@
 
 
     <style name="YuzuButton.Red" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
         <item name="android:textColor">@color/yuzu_primary_red</item>
 
@@ -157,6 +165,8 @@
 
 
     <style name="YuzuButton.Green" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
         <item name="android:textColor">@color/yuzu_primary_green</item>
 
@@ -189,6 +199,8 @@
 
 
     <style name="YuzuButton.Yellow" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
         <item name="android:textColor">@color/yuzu_primary_yellow</item>
 
@@ -221,6 +233,8 @@
 
 
     <style name="YuzuButton.Orange" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
         <item name="android:textColor">@color/yuzu_primary_orange</item>
 
@@ -253,6 +267,8 @@
 
 
     <style name="YuzuButton.Violet" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
         <item name="android:textColor">@color/yuzu_primary_violet</item>
 
@@ -285,6 +301,8 @@
 
 
     <style name="YuzuButton.Gray" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
         <item name="android:textColor">@color/yuzu_primary_gray</item>
 
@@ -317,6 +335,8 @@
 
 
     <style name="YuzuButton.Pink" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
         <item name="android:textColor">@color/yuzu_primary_pink</item>
 
@@ -355,6 +375,8 @@
 
 
     <style name="StormDialog.Title" parent="MaterialAlertDialog.Material3.Title.Text">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
         <item name="android:textColor">?attr/colorPrimary</item>
 
@@ -367,6 +389,8 @@
 
 
     <style name="StormDialog.Body" parent="MaterialAlertDialog.Material3.Body.Text">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
         <item name="android:textColor">?attr/colorOnSurface</item>
 
@@ -381,6 +405,8 @@
     <!-- STORM 3D Faceted Convex Buttons -->
 
     <style name="StormButton.Faceted.Primary" parent="Widget.Material3.Button">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
         <item name="strokeWidth">1dp</item>
         <item name="strokeColor">?attr/colorPrimary</item>
 
@@ -414,6 +440,8 @@
 
 
     <style name="StormButton.Faceted.Secondary" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
         <item name="strokeWidth">1dp</item>
         <item name="strokeColor">?attr/colorOutline</item>
 
@@ -447,6 +475,8 @@
 
 
     <style name="StormButton.Faceted.Success" parent="Widget.Material3.Button">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
         <item name="strokeWidth">1dp</item>
         <item name="strokeColor">#10B981</item>
 
@@ -480,6 +510,8 @@
 
 
     <style name="StormButton.Faceted.Danger" parent="Widget.Material3.Button">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
         <item name="strokeWidth">1dp</item>
         <item name="strokeColor">#EF4444</item>
 
@@ -513,6 +545,8 @@
 
 
     <style name="StormButton.Faceted.Tonal" parent="Widget.Material3.Button.TonalButton">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
         <item name="strokeWidth">1dp</item>
         <item name="strokeColor">?attr/colorOutline</item>
 
@@ -546,6 +580,8 @@
 
 
     <style name="StormButton.Dialog.Positive" parent="Widget.Material3.Button">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
         <item name="strokeWidth">1dp</item>
         <item name="strokeColor">?attr/colorPrimary</item>
 
@@ -577,6 +613,8 @@
 
 
     <style name="StormButton.Dialog.Negative" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
         <item name="strokeWidth">1dp</item>
         <item name="strokeColor">?attr/colorOutline</item>
 
@@ -608,6 +646,8 @@
 
 
     <style name="StormButton.Dialog.Neutral" parent="Widget.Material3.Button.TonalButton">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
         <item name="strokeWidth">1dp</item>
         <item name="strokeColor">?attr/colorOutline</item>
 
@@ -675,6 +715,8 @@
 
 
     <style name="EdenButton.Dialog" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
         <item name="android:textColor">?attr/colorPrimary</item>
 
@@ -739,6 +781,8 @@
 
 
     <style name="EdenButton.Primary" parent="Widget.Material3.Button">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
         <item name="strokeWidth">1dp</item>
         <item name="strokeColor">?attr/colorPrimary</item>
 
@@ -759,6 +803,8 @@
 
 
     <style name="EdenButton.Filled" parent="Widget.Material3.Button">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
         <item name="strokeWidth">1dp</item>
         <item name="strokeColor">?attr/colorPrimary</item>
 
@@ -779,6 +825,8 @@
 
 
     <style name="EdenButton.Secondary" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
         <item name="strokeColor">?attr/colorPrimary</item>
 
@@ -799,6 +847,8 @@
 
 
     <style name="EdenButton.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
         <item name="strokeColor">?attr/colorPrimary</item>
 
@@ -867,6 +917,8 @@
     <!-- Gothic / STORM Text Styles -->
 
     <style name="SynthwaveText.Title" parent="TextAppearance.Material3.DisplayLarge">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
         <item name="android:textColor">?attr/colorOnSurface</item>
 
@@ -879,6 +931,8 @@
     </style>
 
     <style name="SynthwaveText.Header" parent="TextAppearance.Material3.DisplaySmall">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
         <item name="android:textColor">?attr/colorPrimary</item>
 
@@ -891,6 +945,8 @@
     </style>
 
     <style name="SynthwaveText.Body" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
         <item name="android:textColor">?attr/colorOnSurface</item>
 
@@ -901,6 +957,8 @@
     </style>
 
     <style name="SynthwaveText.Secondary" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
         <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
 
@@ -909,6 +967,8 @@
     </style>
 
     <style name="SynthwaveText.Accent" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
 
         <item name="android:textColor">?attr/colorOnSurface</item>
 
@@ -940,16 +1000,22 @@
 
 
     <style name="Widget.Storm.Button.Tonal" parent="Widget.Material3.Button.TonalButton">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
         <item name="strokeWidth">1dp</item>
         <item name="strokeColor">?attr/colorOutline</item>
     </style>
 
     <style name="Widget.Storm.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
         <item name="strokeWidth">1dp</item>
         <item name="strokeColor">?attr/colorOutline</item>
     </style>
 
     <style name="Widget.Storm.Switch" parent="Widget.Material3.CompoundButton.MaterialSwitch">
+        <item name="android:breakStrategy">simple</item>
+        <item name="android:hyphenationFrequency">none</item>
         <item name="thumbTint">@color/switch_thumb_red_green</item>
         <item name="trackTint">@color/switch_track_red_green</item>
         <item name="useMaterialThemeColors">false</item>

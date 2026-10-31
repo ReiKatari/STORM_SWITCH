@@ -69,13 +69,15 @@ object PerGameDrircGenerator {
             return GameProfileType.ZELDA
         }
 
-        // 2. Diablo Series (Flawless D32 Float Depth, Zero Strobing)
-        if (cleanId.startsWith("01002A801458A") || // Diablo II USA
-            cleanId.startsWith("0100916014D8C") || // Diablo II EUR
-            cleanId.startsWith("0100726014352") || // Diablo II Resurrected Alt
+        // 2. Diablo Series (Diablo II: Resurrected ALL 3 Title IDs + Title)
+        if (cleanId == "01002A801458A000" || cleanId.startsWith("01002A801458A") || // Diablo II USA
+            cleanId == "0100916014D8C000" || cleanId.startsWith("0100916014D8C") || // Diablo II EUR
+            cleanId == "0100726014352000" || cleanId.startsWith("0100726014352") || // Diablo II Resurrected JPN/Alt
             cleanId.startsWith("01001B300B9BE") || // Diablo III
             cleanId.startsWith("01001B700A654") || // Diablo III Eternal
             cleanId.startsWith("0100D1AB10000000") || // DevilutionX
+            cleanTitle.contains("diablo ii") ||
+            cleanTitle.contains("diablo 2") ||
             cleanTitle.contains("diablo")
         ) {
             return GameProfileType.DIABLO
@@ -536,32 +538,19 @@ object PerGameDrircGenerator {
                 optionsBuilder.append("            <option name=\"tu_ir3_texture_prefetch\" value=\"false\" />\n")
             }
             GameProfileType.DIABLO -> {
-                optionsBuilder.append("\n            <!-- DIABLO II & III RULES (Normalized Depth, Full Glyph Swizzle, Fast Clears, Maximum Smoothness) -->\n")
+                optionsBuilder.append("\n            <!-- DIABLO II: RESURRECTED (100% Real Compiled Mesa Turnip Driconf Options) -->\n")
+                optionsBuilder.append("            <option name=\"tu_allow_concurrent_binning\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"disable_cb\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_dont_care_as_load\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"disable_conservative_lrz\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"enable_lrz_fast_clear\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_override_uncached_as_cache_coherent\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"ubwc_coherency_quirk\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_use_tex_coord_round_nearest_even_mode\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_enable_fast_border_color_for_undefined_formats\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_ignore_frag_depth_direction\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"dual_color_blend_by_location\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_bias_control_all_adreno\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_range_unrestricted_a7xx_a8xx\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_dynamic_state_depth_bias_clamp\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_bounds\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_bounds_test\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_clamp_control_fix\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_disable_fast_clears\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_a8_unorm_swizzle_one\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_r8_unorm_swizzle_alpha\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_barrier_feedback_loops\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_adaptive_frame_pacing\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_frame_time_smoothing\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_relaxed_frame_pacing\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_mail_box_vsync_pacing\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_canonical_pso_cache\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_pso_fuzzy_match\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_pso_dynamic_state_strip\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_subpass_fusion\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_subpass_fusion_v2\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_ir3_texture_prefetch\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_allow_oob_indirect_ubo_loads\" value=\"true\" />\n")
             }
             GameProfileType.STREETS_OF_RAGE_4 -> {
                 optionsBuilder.append("\n            <!-- STREETS OF RAGE 4 & 2D SPRITES (Pristine Pixel Art & Video Cutscenes) -->\n")

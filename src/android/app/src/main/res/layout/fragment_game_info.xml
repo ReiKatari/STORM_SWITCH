@@ -95,7 +95,9 @@
                             android:textColor="?attr/colorOnSurface"
                             android:maxLines="3"
                             android:ellipsize="end"
-                            tools:text="The Legend of Zelda: Tears of the Kingdom" />
+                            tools:text="The Legend of Zelda: Tears of the Kingdom"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                         <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/text_game_developer_header"
@@ -107,7 +109,9 @@
                             android:textColor="?attr/colorPrimary"
                             android:maxLines="2"
                             android:ellipsize="end"
-                            tools:text="Nintendo" />
+                            tools:text="Nintendo"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                         <LinearLayout
                             android:layout_width="wrap_content"
@@ -127,7 +131,9 @@
                                 android:textColor="?attr/colorOnPrimary"
                                 android:textSize="10sp"
                                 android:textStyle="bold"
-                                tools:text="NSP" />
+                                tools:text="NSP"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                             <com.google.android.material.textview.MaterialTextView
                                 android:id="@+id/badge_game_version"
@@ -140,7 +146,9 @@
                                 android:textColor="?attr/colorOnSurfaceVariant"
                                 android:textSize="10sp"
                                 android:textStyle="bold"
-                                tools:text="1.2.1" />
+                                tools:text="1.2.1"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                         </LinearLayout>
 
@@ -189,7 +197,9 @@
                             android:layout_height="wrap_content"
                             android:text="@string/path"
                             android:textSize="11sp"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
+                            android:textColor="?attr/colorOnSurfaceVariant"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                         <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/path_field"
@@ -199,7 +209,9 @@
                             android:layout_marginTop="2dp"
                             android:textSize="12.5sp"
                             android:textColor="?attr/colorOnSurface"
-                            tools:text="/storage/emulated/0/Switch/Zelda.nsp" />
+                            tools:text="/storage/emulated/0/Switch/Zelda.nsp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     </LinearLayout>
 
@@ -255,7 +267,9 @@
                             android:layout_height="wrap_content"
                             android:text="@string/program_id"
                             android:textSize="11sp"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
+                            android:textColor="?attr/colorOnSurfaceVariant"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                         <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/program_id_field"
@@ -267,7 +281,9 @@
                             android:textSize="13sp"
                             android:textStyle="bold"
                             android:textColor="?attr/colorOnSurface"
-                            tools:text="0100F2C0115B6000" />
+                            tools:text="0100F2C0115B6000"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     </LinearLayout>
 
@@ -323,7 +339,9 @@
                             android:layout_height="wrap_content"
                             android:text="@string/developer"
                             android:textSize="11sp"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
+                            android:textColor="?attr/colorOnSurfaceVariant"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                         <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/developer_field"
@@ -333,7 +351,9 @@
                             android:layout_marginTop="2dp"
                             android:textSize="13sp"
                             android:textColor="?attr/colorOnSurface"
-                            tools:text="Nintendo" />
+                            tools:text="Nintendo"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     </LinearLayout>
 
@@ -389,7 +409,9 @@
                             android:layout_height="wrap_content"
                             android:text="@string/version"
                             android:textSize="11sp"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
+                            android:textColor="?attr/colorOnSurfaceVariant"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                         <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/version_field"
@@ -399,7 +421,9 @@
                             android:layout_marginTop="2dp"
                             android:textSize="13sp"
                             android:textColor="?attr/colorOnSurface"
-                            tools:text="1.2.1 (v131072)" />
+                            tools:text="1.2.1 (v131072)"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     </LinearLayout>
 
@@ -455,7 +479,9 @@
                             android:layout_height="wrap_content"
                             android:text="@string/file_size"
                             android:textSize="11sp"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
+                            android:textColor="?attr/colorOnSurfaceVariant"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                         <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/file_size_field"
@@ -466,7 +492,9 @@
                             android:textSize="13sp"
                             android:textStyle="bold"
                             android:textColor="?attr/colorOnSurface"
-                            tools:text="16.3 ГБ" />
+                            tools:text="16.3 ГБ"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     </LinearLayout>
 
@@ -494,7 +522,11 @@
                 app:iconGravity="textStart"
                 app:cornerRadius="10dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorPrimary" />
+        app:strokeColor="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_verify_integrity"
@@ -507,7 +539,11 @@
                 app:iconGravity="textStart"
                 app:cornerRadius="10dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
         </LinearLayout>
 

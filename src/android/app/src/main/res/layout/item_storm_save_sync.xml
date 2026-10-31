@@ -48,7 +48,9 @@
                     android:textColor="?attr/colorOnSurface"
                     android:textSize="15sp"
                     android:textStyle="bold"
-                    tools:text="Assassin's Creed: The Rebel Collection" />
+                    tools:text="Assassin's Creed: The Rebel Collection"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <TextView
                     android:id="@+id/text_title_id"
@@ -57,7 +59,9 @@
                     android:fontFamily="monospace"
                     android:textColor="?attr/colorPrimary"
                     android:textSize="11sp"
-                    tools:text="010044700DEB0000" />
+                    tools:text="010044700DEB0000"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
             </LinearLayout>
 
             <TextView
@@ -70,7 +74,9 @@
                 android:textColor="#10B981"
                 android:textSize="11sp"
                 android:textStyle="bold"
-                tools:text="🟢 Синхронизировано" />
+                tools:text="🟢 Синхронизировано"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
         </LinearLayout>
 
         <!-- Details Box -->
@@ -88,7 +94,9 @@
                 android:layout_height="wrap_content"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="12sp"
-                tools:text="📱 На этом устройстве: 14.09.2026 13:30 (1.4 МБ, 6 файлов)" />
+                tools:text="📱 На этом устройстве: 14.09.2026 13:30 (1.4 МБ, 6 файлов)"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <TextView
                 android:id="@+id/text_remote_save_info"
@@ -97,7 +105,9 @@
                 android:layout_marginTop="3dp"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="12sp"
-                tools:text="💻 На удалённом устройстве: 14.09.2026 13:35 (1.5 МБ, 6 файлов)" />
+                tools:text="💻 На удалённом устройстве: 14.09.2026 13:35 (1.5 МБ, 6 файлов)"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
         </LinearLayout>
 
         <!-- Actions -->
@@ -118,7 +128,11 @@
                 android:textSize="12sp"
                 app:backgroundTint="?attr/colorSurface"
                 app:strokeColor="?attr/colorPrimary"
-                app:strokeWidth="1dp" />
+                app:strokeWidth="1dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
         </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

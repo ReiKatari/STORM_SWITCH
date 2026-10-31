@@ -42,7 +42,9 @@
                     android:text="@string/log_viewer_title"
                     android:textColor="?attr/colorPrimary"
                     android:textSize="14sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/text_log_subtitle"
@@ -52,77 +54,115 @@
                     android:textSize="11sp"
                     android:maxLines="3"
                     android:ellipsize="end"
-                    tools:text="Diablo II | 0100726014352000 | ⚡ В игре" />
+                    tools:text="Diablo II | 0100726014352000 | ⚡ В игре"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
             </LinearLayout>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_refresh_log"
-                style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
-                android:layout_width="38dp"
-                android:layout_height="38dp"
-                app:icon="@drawable/ic_refresh"
-                app:iconSize="18dp"
-                android:layout_marginEnd="4dp"
-                android:tooltipText="@string/storm_sync_refresh"
-                app:backgroundTint="?attr/colorSurfaceVariant"
-                app:iconTint="?attr/colorPrimary"
-        app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorPrimary" />
+            <HorizontalScrollView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:overScrollMode="never">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_copy_log"
-                style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
-                android:layout_width="38dp"
-                android:layout_height="38dp"
-                app:icon="@drawable/ic_copy"
-                app:iconSize="18dp"
-                android:layout_marginEnd="4dp"
-                android:tooltipText="@string/storm_sync_copy"
-                app:backgroundTint="?attr/colorSurfaceVariant"
-                app:iconTint="#FEB2B2"
-        app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_save_log"
-                style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
-                android:layout_width="38dp"
-                android:layout_height="38dp"
-                app:icon="@drawable/ic_save"
-                app:iconSize="18dp"
-                android:layout_marginEnd="4dp"
-                android:tooltipText="@string/log_viewer_save_file"
-                app:backgroundTint="?attr/colorSurfaceVariant"
-                app:iconTint="#4FD1C5"
-        app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_refresh_log"
+                        style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        app:icon="@drawable/ic_refresh"
+                        app:iconSize="18dp"
+                        android:layout_marginEnd="4dp"
+                        android:tooltipText="@string/storm_sync_refresh"
+                        app:backgroundTint="?attr/colorSurfaceVariant"
+                        app:iconTint="?attr/colorPrimary"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_share_log"
-                style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
-                android:layout_width="38dp"
-                android:layout_height="38dp"
-                app:icon="@drawable/ic_share"
-                app:iconSize="18dp"
-                android:layout_marginEnd="4dp"
-                android:tooltipText="@string/log_viewer_share"
-                app:backgroundTint="?attr/colorSurfaceVariant"
-                app:iconTint="#F6E05E"
-        app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_copy_log"
+                        style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        app:icon="@drawable/ic_copy"
+                        app:iconSize="18dp"
+                        android:layout_marginEnd="4dp"
+                        android:tooltipText="@string/storm_sync_copy"
+                        app:backgroundTint="?attr/colorSurfaceVariant"
+                        app:iconTint="#FEB2B2"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_close"
-                style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
-                android:layout_width="38dp"
-                android:layout_height="38dp"
-                app:icon="@drawable/ic_clear"
-                app:iconSize="18dp"
-                android:tooltipText="@string/storm_sync_close"
-                app:backgroundTint="?attr/colorSurfaceVariant"
-                app:iconTint="#FFFFFF"
-        app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_save_log"
+                        style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        app:icon="@drawable/ic_save"
+                        app:iconSize="18dp"
+                        android:layout_marginEnd="4dp"
+                        android:tooltipText="@string/log_viewer_save_file"
+                        app:backgroundTint="?attr/colorSurfaceVariant"
+                        app:iconTint="#4FD1C5"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_share_log"
+                        style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        app:icon="@drawable/ic_share"
+                        app:iconSize="18dp"
+                        android:layout_marginEnd="4dp"
+                        android:tooltipText="@string/log_viewer_share"
+                        app:backgroundTint="?attr/colorSurfaceVariant"
+                        app:iconTint="#F6E05E"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_close"
+                        style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        app:icon="@drawable/ic_clear"
+                        app:iconSize="18dp"
+                        android:tooltipText="@string/storm_sync_close"
+                        app:backgroundTint="?attr/colorSurfaceVariant"
+                        app:iconTint="#FFFFFF"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
+
+                </LinearLayout>
+
+            </HorizontalScrollView>
         </LinearLayout>
 
 
@@ -247,7 +287,9 @@
                     android:textSize="10.5sp"
                     android:lineSpacingExtra="2dp"
                     android:textIsSelectable="true"
-                    tools:text="[ 0.000000] Frontend [Info] Emulator initialized..." />
+                    tools:text="[ 0.000000] Frontend [Info] Emulator initialized..."
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
             </ScrollView>
         </com.google.android.material.card.MaterialCardView>
 
@@ -266,7 +308,9 @@
                 android:layout_weight="1"
                 android:textColor="?attr/colorPrimary"
                 android:textSize="11sp"
-                tools:text="Строк: 450 | Размер: 32 КБ" />
+                tools:text="Строк: 450 | Размер: 32 КБ"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_share_messenger"
@@ -282,7 +326,11 @@
                 app:iconTint="?attr/colorPrimary"
                 app:backgroundTint="?attr/colorSurfaceVariant"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorPrimary" />
+        app:strokeColor="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
         </LinearLayout>
 
     </LinearLayout>

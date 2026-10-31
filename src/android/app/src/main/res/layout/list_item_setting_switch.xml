@@ -53,7 +53,9 @@
                         android:textSize="15sp"
                         android:textStyle="bold"
                         android:textColor="?attr/colorOnSurface"
-                        tools:text="@string/frame_limit_enable" />
+                        tools:text="@string/frame_limit_enable"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     <!-- Glowing Per-Game Override Badge -->
                     <LinearLayout
@@ -83,7 +85,9 @@
                             android:textColor="?attr/colorPrimary"
                             android:textSize="10.5sp"
                             android:textStyle="bold"
-                            android:letterSpacing="0.04" />
+                            android:letterSpacing="0.04"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     </LinearLayout>
 
@@ -98,7 +102,9 @@
                     android:textAlignment="viewStart"
                     android:textSize="12.5sp"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    tools:text="@string/frame_limit_enable_description" />
+                    tools:text="@string/frame_limit_enable_description"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             </LinearLayout>
 
@@ -109,7 +115,9 @@
                 android:layout_gravity="center_vertical"
         app:useMaterialThemeColors="false"
         app:thumbTint="@color/switch_thumb_red_green"
-        app:trackTint="@color/switch_track_red_green" />
+        app:trackTint="@color/switch_track_red_green"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         </LinearLayout>
 
@@ -130,7 +138,11 @@
             android:visibility="gone"
             tools:visibility="visible"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
     </LinearLayout>
 

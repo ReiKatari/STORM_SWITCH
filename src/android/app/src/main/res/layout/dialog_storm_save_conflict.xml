@@ -34,7 +34,9 @@
                 android:text="@string/storm_save_conflict_title"
                 android:textColor="?attr/colorPrimary"
                 android:textSize="17sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <TextView
                 android:id="@+id/text_conflict_subtitle"
@@ -42,7 +44,9 @@
                 android:layout_height="wrap_content"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="12sp"
-                tools:text="Игра: Assassin's Creed: The Rebel Collection [010044700DEB0000]" />
+                tools:text="Игра: Assassin's Creed: The Rebel Collection [010044700DEB0000]"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
         </LinearLayout>
     </LinearLayout>
 
@@ -52,7 +56,9 @@
         android:layout_marginTop="10dp"
         android:text="@string/storm_sync_conflict_desc"
         android:textColor="?attr/colorOnSurface"
-        android:textSize="13sp" />
+        android:textSize="13sp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
     <!-- Cards container -->
     <LinearLayout
@@ -85,7 +91,9 @@
                     android:text="@string/storm_sync_current_device_phone"
                     android:textColor="?attr/colorPrimary"
                     android:textSize="14sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <TextView
                     android:id="@+id/text_local_date"
@@ -94,7 +102,9 @@
                     android:layout_marginTop="4dp"
                     android:textColor="?attr/colorOnSurface"
                     android:textSize="13sp"
-                    tools:text="📅 Дата и время: 14.09.2026 13:30" />
+                    tools:text="📅 Дата и время: 14.09.2026 13:30"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <TextView
                     android:id="@+id/text_local_size"
@@ -103,7 +113,9 @@
                     android:layout_marginTop="2dp"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="12sp"
-                    tools:text="📦 Размер данных: 1.42 МБ • Файлов: 6" />
+                    tools:text="📦 Размер данных: 1.42 МБ • Файлов: 6"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -131,7 +143,9 @@
                     android:text="@string/storm_sync_remote_device_pc"
                     android:textColor="?attr/colorPrimary"
                     android:textSize="14sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <TextView
                     android:id="@+id/text_remote_date"
@@ -140,7 +154,9 @@
                     android:layout_marginTop="4dp"
                     android:textColor="?attr/colorOnSurface"
                     android:textSize="13sp"
-                    tools:text="📅 Дата и время: 14.09.2026 13:35" />
+                    tools:text="📅 Дата и время: 14.09.2026 13:35"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <TextView
                     android:id="@+id/text_remote_size"
@@ -149,7 +165,9 @@
                     android:layout_marginTop="2dp"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="12sp"
-                    tools:text="📦 Размер данных: 1.50 МБ • Файлов: 6" />
+                    tools:text="📦 Размер данных: 1.50 МБ • Файлов: 6"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
@@ -171,7 +189,11 @@
             android:textSize="13sp"
             app:backgroundTint="?attr/colorSurfaceVariant"
             app:strokeColor="?attr/colorOutline"
-            app:strokeWidth="1dp" />
+            app:strokeWidth="1dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_replace_remote"
@@ -184,7 +206,11 @@
             android:textSize="13sp"
             app:backgroundTint="?attr/colorSurfaceVariant"
             app:strokeColor="?attr/colorOutline"
-            app:strokeWidth="1dp" />
+            app:strokeWidth="1dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_keep_both"
@@ -198,7 +224,11 @@
             android:textStyle="bold"
             app:backgroundTint="?attr/colorPrimary"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorPrimary" />
+        app:strokeColor="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_cancel_conflict"
@@ -209,6 +239,10 @@
             android:text="@android:string/cancel"
             android:textColor="?attr/colorOnSurfaceVariant"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
     </LinearLayout>
 </LinearLayout>

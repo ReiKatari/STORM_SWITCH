@@ -47,7 +47,9 @@
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="?attr/colorOnSurface"
-                tools:text="Room Name" />
+                tools:text="Room Name"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/room_owner"
@@ -58,7 +60,9 @@
                 android:textAlignment="viewStart"
                 android:textSize="14sp"
                 android:textColor="?attr/colorOnSurfaceVariant"
-                tools:text="Hosted by: Owner" />
+                tools:text="Hosted by: Owner"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <LinearLayout
                 android:id="@+id/game_info"
@@ -85,7 +89,9 @@
                     android:maxLines="2"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"
-                    tools:text="Game Name" />
+                    tools:text="Game Name"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
             </LinearLayout>
         </LinearLayout>
 
@@ -111,7 +117,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
                 android:textColor="?attr/colorPrimary"
-                tools:text="2/4" />
+                tools:text="2/4"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

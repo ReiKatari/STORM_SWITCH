@@ -32,7 +32,9 @@
             android:textColor="?attr/colorOnSurfaceVariant"
             android:gravity="center"
             android:padding="16dp"
-            android:visibility="gone" />
+            android:visibility="gone"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
     </FrameLayout>
 

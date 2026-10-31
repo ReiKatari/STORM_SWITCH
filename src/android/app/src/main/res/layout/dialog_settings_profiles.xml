@@ -60,7 +60,9 @@
                         android:textColor="?attr/colorOnSurface"
                         android:textSize="18sp"
                         android:textStyle="bold"
-                        android:letterSpacing="0.02" />
+                        android:letterSpacing="0.02"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     <!-- Counter pill -->
                     <TextView
@@ -74,7 +76,9 @@
                         android:text="0"
                         android:textColor="?attr/colorPrimary"
                         android:textSize="11sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
                 </LinearLayout>
 
                 <TextView
@@ -84,7 +88,9 @@
                     android:layout_marginTop="3dp"
                     android:text="@string/settings_profiles_description"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="12sp" />
+                    android:textSize="12sp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
             </LinearLayout>
 
             <!-- Faceted Close Button -->
@@ -130,7 +136,11 @@
                 app:iconTint="?attr/colorPrimary"
                 app:iconSize="18dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorPrimary" />
+        app:strokeColor="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_import_profile"
@@ -146,7 +156,11 @@
                 app:iconTint="?attr/colorOnSurfaceVariant"
                 app:iconSize="18dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
         </LinearLayout>
 
@@ -170,7 +184,9 @@
             android:text="@string/profile_empty_state"
             android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="13sp"
-            android:visibility="gone" />
+            android:visibility="gone"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
     </LinearLayout>
 

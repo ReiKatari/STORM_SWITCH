@@ -44,7 +44,9 @@
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="13sp"
                 android:textStyle="bold"
-                tools:text="Link_Rider.bin" />
+                tools:text="Link_Rider.bin"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <TextView
                 android:id="@+id/text_installed_amiibo_info"
@@ -54,7 +56,9 @@
                 android:fontFamily="monospace"
                 android:textColor="?attr/colorPrimary"
                 android:textSize="10sp"
-                tools:text="NTAG215 • 540 байт" />
+                tools:text="NTAG215 • 540 байт"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         </LinearLayout>
 
@@ -73,7 +77,11 @@
             android:textSize="11sp"
             app:cornerRadius="6dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorPrimary" />
+        app:strokeColor="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
         <ImageButton
             android:id="@+id/button_delete_installed"

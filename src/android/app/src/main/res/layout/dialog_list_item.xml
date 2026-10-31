@@ -25,6 +25,8 @@
         android:layout_marginStart="16dp"
         android:layout_gravity="center_vertical|start"
         android:textAlignment="viewStart"
-        tools:text="List option" />
+        tools:text="List option"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
 </LinearLayout>

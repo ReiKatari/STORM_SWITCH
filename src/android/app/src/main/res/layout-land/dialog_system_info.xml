@@ -45,7 +45,9 @@
                     android:text="@string/system_information"
                     android:textSize="16sp"
                     android:textStyle="bold"
-                    android:textColor="?attr/colorPrimary" />
+                    android:textColor="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/text_app_build"
@@ -53,7 +55,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="STORM SWITCH 4"
-                    android:textSize="11sp" />
+                    android:textSize="11sp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             </LinearLayout>
 
@@ -106,7 +110,9 @@
                                 android:textSize="12sp"
                                 android:textStyle="bold"
                                 android:textColor="?attr/colorPrimary"
-                                android:layout_marginBottom="4dp" />
+                                android:layout_marginBottom="4dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                             <com.google.android.material.textview.MaterialTextView
                                 android:id="@+id/text_device_info"
@@ -116,7 +122,9 @@
                                 android:textSize="11sp"
                                 android:lineSpacingExtra="2dp"
                                 android:textIsSelectable="true"
-                                tools:text="Device details" />
+                                tools:text="Device details"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                         </LinearLayout>
 
@@ -148,7 +156,9 @@
                                 android:textSize="12sp"
                                 android:textStyle="bold"
                                 android:textColor="?attr/colorPrimary"
-                                android:layout_marginBottom="4dp" />
+                                android:layout_marginBottom="4dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                             <com.google.android.material.textview.MaterialTextView
                                 android:id="@+id/text_cpu_info"
@@ -158,7 +168,9 @@
                                 android:textSize="11sp"
                                 android:lineSpacingExtra="2dp"
                                 android:textIsSelectable="true"
-                                tools:text="CPU details" />
+                                tools:text="CPU details"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                         </LinearLayout>
 
@@ -200,7 +212,9 @@
                                 android:textSize="12sp"
                                 android:textStyle="bold"
                                 android:textColor="?attr/colorPrimary"
-                                android:layout_marginBottom="4dp" />
+                                android:layout_marginBottom="4dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                             <com.google.android.material.textview.MaterialTextView
                                 android:id="@+id/text_gpu_info"
@@ -210,7 +224,9 @@
                                 android:textSize="11sp"
                                 android:lineSpacingExtra="2dp"
                                 android:textIsSelectable="true"
-                                tools:text="GPU details" />
+                                tools:text="GPU details"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                         </LinearLayout>
 
@@ -242,7 +258,9 @@
                                 android:textSize="12sp"
                                 android:textStyle="bold"
                                 android:textColor="?attr/colorPrimary"
-                                android:layout_marginBottom="4dp" />
+                                android:layout_marginBottom="4dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                             <com.google.android.material.textview.MaterialTextView
                                 android:id="@+id/text_ram_info"
@@ -252,7 +270,9 @@
                                 android:textSize="11sp"
                                 android:lineSpacingExtra="2dp"
                                 android:textIsSelectable="true"
-                                tools:text="RAM details" />
+                                tools:text="RAM details"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                         </LinearLayout>
 
@@ -284,7 +304,11 @@
                 app:iconSize="14dp"
                 app:cornerRadius="8dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_close_dialog"
@@ -295,7 +319,11 @@
                 android:textSize="11.5sp"
                 app:cornerRadius="8dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
         </LinearLayout>
 

@@ -31,7 +31,9 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/icon"
-        tools:text="@string/welcome" />
+        tools:text="@string/welcome"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/text_description"
@@ -47,7 +49,9 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/text_title"
-        tools:text="@string/welcome_description" />
+        tools:text="@string/welcome_description"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/text_confirmation"
@@ -63,7 +67,9 @@
         android:text="@string/step_complete"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_description" />
+        app:layout_constraintTop_toBottomOf="@+id/text_description"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
     <LinearLayout
         android:id="@+id/page_button_container"

@@ -140,9 +140,21 @@ VirtualDir FindSubdirectoryCaseless(const VirtualDir dir, std::string_view name)
 
 std::optional<std::vector<Core::Memory::CheatEntry>> ReadCheatFileFromFolder(
     u64 title_id, const PatchManager::BuildID& build_id_, const VirtualDir& base_path, bool upper) {
-    const auto build_id_raw = Common::HexToString(build_id_, upper);
+    const auto build_id_raw = Common::HexToString(build_id_, true);
     const auto build_id = build_id_raw.substr(0, sizeof(u64) * 2);
-    const auto file = base_path->GetFile(fmt::format("{}.txt", build_id));
+    const auto expected_name = fmt::format("{}.txt", build_id);
+
+    // Case-insensitive file lookup across directory entries so lowercase <build_id>.txt works on Android Linux
+    VirtualFile file = base_path->GetFile(expected_name);
+    if (file == nullptr) {
+        const auto expected_upper = Common::ToUpper(expected_name);
+        for (const auto& entry : base_path->GetFiles()) {
+            if (Common::ToUpper(entry->GetName()) == expected_upper) {
+                file = entry;
+                break;
+            }
+        }
+    }
 
     if (file == nullptr) {
         LOG_INFO(Common_Filesystem, "No cheats file found for title_id={:016X}, build_id={}",
@@ -508,20 +520,21 @@ std::vector<VirtualFile> PatchManager::CollectPatches(const std::vector<VirtualD
         auto exefs_dir = FindSubdirectoryCaseless(subdir, "exefs");
         if (exefs_dir != nullptr) {
             for (const auto& file : exefs_dir->GetFiles()) {
-                if (file->GetExtension() == "ips") {
+                const auto ext = Common::ToLower(file->GetExtension());
+                if (ext == "ips") {
                     auto name = file->GetName();
 
                     const auto this_build_id =
                         fmt::format("{:0<64}", name.substr(0, name.find('.')));
-                    if (nso_build_id == this_build_id)
+                    if (Common::ToUpper(nso_build_id) == Common::ToUpper(this_build_id))
                         out.push_back(file);
-                } else if (file->GetExtension() == "pchtxt") {
+                } else if (ext == "pchtxt") {
                     IPSwitchCompiler compiler{file};
                     if (!compiler.IsValid())
                         continue;
 
                     const auto this_build_id = Common::HexToString(compiler.GetBuildID());
-                    if (nso_build_id == this_build_id)
+                    if (Common::ToUpper(nso_build_id) == Common::ToUpper(this_build_id))
                         out.push_back(file);
                 }
             }
@@ -572,13 +585,14 @@ std::vector<u8> PatchManager::PatchNSO(const std::vector<u8>& nso, const std::st
         const auto patches = CollectPatches(patch_dirs, build_id);
 
         for (const auto& patch_file : patches) {
-            if (patch_file->GetExtension() == "ips") {
+            const auto ext = Common::ToLower(patch_file->GetExtension());
+            if (ext == "ips") {
                 LOG_INFO(Loader, "    - Applying IPS patch from mod \"{}\"",
                          patch_file->GetContainingDirectory()->GetParentDirectory()->GetName());
                 const auto patched = PatchIPS(std::make_shared<VectorVfsFile>(out), patch_file);
                 if (patched != nullptr)
                     out = patched->ReadAllBytes();
-            } else if (patch_file->GetExtension() == "pchtxt") {
+            } else if (ext == "pchtxt") {
                 LOG_INFO(Loader, "    - Applying IPSwitch patch from mod \"{}\"",
                          patch_file->GetContainingDirectory()->GetParentDirectory()->GetName());
                 const IPSwitchCompiler compiler{patch_file};
@@ -695,15 +709,75 @@ std::vector<Core::Memory::CheatEntry> PatchManager::CreateCheatList(const BuildI
 
     const auto& disabled = Settings::values.disabled_addons[title_id];
 
+    auto NormalizeCheatName = [](std::string_view s) -> std::string {
+        while (!s.empty() && (s.front() == ' ' || s.front() == '\t' || s.front() == '[')) {
+            s.remove_prefix(1);
+        }
+        while (!s.empty() && (s.back() == ' ' || s.back() == '\t' || s.back() == '\r' || s.back() == '\n' || s.back() == ']')) {
+            s.remove_suffix(1);
+        }
+        return Common::ToLower(s);
+    };
+
+    const bool has_explicit_enabled_tags = std::any_of(disabled.cbegin(), disabled.cend(), [](const std::string& s) {
+        return s.starts_with("__ENABLED__:");
+    });
+
     // <mod dir> / <folder> / cheats / <build id>.txt
     std::vector<Core::Memory::CheatEntry> out;
     for (const auto& subdir : patch_dirs) {
         if (std::find(disabled.cbegin(), disabled.cend(), subdir->GetName()) == disabled.cend()) {
             if (auto cheats_dir = FindSubdirectoryCaseless(subdir, "cheats"); cheats_dir != nullptr) {
-                if (auto const res = ReadCheatFileFromFolder(title_id, build_id_, cheats_dir, true))
-                    std::copy(res->begin(), res->end(), std::back_inserter(out));
-                if (auto const res = ReadCheatFileFromFolder(title_id, build_id_, cheats_dir, false))
-                    std::copy(res->begin(), res->end(), std::back_inserter(out));
+                if (auto const res = ReadCheatFileFromFolder(title_id, build_id_, cheats_dir, true)) {
+                    std::set<std::string> dir_enabled;
+                    bool has_dir_enabled = false;
+                    if (auto efile = cheats_dir->GetFile("enabled_cheats.txt"); efile != nullptr) {
+                        std::vector<u8> edata(efile->GetSize());
+                        if (efile->Read(edata.data(), edata.size()) == edata.size()) {
+                            std::istringstream iss{std::string(reinterpret_cast<const char*>(edata.data()), edata.size())};
+                            std::string line;
+                            while (std::getline(iss, line)) {
+                                std::string norm = NormalizeCheatName(line);
+                                if (!norm.empty()) {
+                                    dir_enabled.insert(std::move(norm));
+                                    has_dir_enabled = true;
+                                }
+                            }
+                        }
+                    }
+
+                    for (auto& entry : *res) {
+                        const std::string cheat_name(entry.definition.readable_name.data());
+                        if (cheat_name.empty()) continue;
+
+                        const std::string norm_name = NormalizeCheatName(cheat_name);
+                        bool is_active = false;
+                        if (has_dir_enabled || has_explicit_enabled_tags) {
+                            if (has_dir_enabled && dir_enabled.contains(norm_name)) {
+                                is_active = true;
+                            } else if (has_explicit_enabled_tags &&
+                                       std::find(disabled.cbegin(), disabled.cend(), "__ENABLED__:" + cheat_name) != disabled.cend()) {
+                                is_active = true;
+                            }
+                        } else {
+                            const auto mod_name = subdir->GetName();
+                            if (res->size() <= 2 && mod_name != "Cheats" && mod_name != "OnlineCheats") {
+                                is_active = true;
+                            } else {
+                                is_active = false;
+                            }
+                        }
+
+                        if (is_active) {
+                            bool already_exists = std::any_of(out.begin(), out.end(), [&](const Core::Memory::CheatEntry& existing) {
+                                return std::string_view(existing.definition.readable_name.data()) == cheat_name;
+                            });
+                            if (!already_exists) {
+                                out.push_back(std::move(entry));
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -796,18 +870,13 @@ std::vector<Core::Memory::CheatEntry> PatchManager::CreateCheatList(const BuildI
         cheat_files_to_check.push_back(cheats_base_path / (title_str + ".txt"));
     }
 
-    const bool has_explicit_enabled_tags = std::any_of(disabled.cbegin(), disabled.cend(), [](const std::string& s) {
-        return s.starts_with("__ENABLED__:");
-    });
+
 
     auto MatchEnabled = [&](const std::string& name) -> bool {
-        const std::string lower_name = Common::ToLower(name);
+        const std::string lower_name = NormalizeCheatName(name);
         for (const auto& ef : enabled_from_file) {
-            std::string lower_ef = Common::ToLower(ef);
-            if (lower_ef.starts_with('[') && lower_ef.ends_with(']')) {
-                lower_ef = lower_ef.substr(1, lower_ef.size() - 2);
-            }
-            if (lower_name == lower_ef || lower_ef.find(lower_name) != std::string::npos || lower_name.find(lower_ef) != std::string::npos) {
+            const std::string lower_ef = NormalizeCheatName(ef);
+            if (lower_name == lower_ef) {
                 return true;
             }
         }
@@ -1343,14 +1412,15 @@ std::vector<Patch> PatchManager::GetPatches(VirtualFile update_raw) const {
                 bool layeredfs = false;
 
                 for (const auto& file : exefs_dir->GetFiles()) {
-                    if (file->GetExtension() == "ips") {
+                    const auto ext = Common::ToLower(file->GetExtension());
+                    if (ext == "ips") {
                         ips = true;
-                    } else if (file->GetExtension() == "pchtxt") {
+                    } else if (ext == "pchtxt") {
                         ipswitch = true;
                     } else if (std::find(EXEFS_FILE_NAMES.begin(), EXEFS_FILE_NAMES.end(),
                                          file->GetName()) != EXEFS_FILE_NAMES.end()) {
                         layeredfs = true;
-                                         }
+                    }
                 }
 
                 if (ips)

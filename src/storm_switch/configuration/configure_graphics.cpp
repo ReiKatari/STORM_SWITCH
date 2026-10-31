@@ -44,6 +44,13 @@
 #include "qt_common/util/vk.h"
 #include "ui_configure_graphics.h"
 #include "storm_switch/configuration/configuration_shared.h"
+#include <QFileDialog>
+#include <QMessageBox>
+#include <filesystem>
+#include "common/fs/fs_paths.h"
+#include "common/fs/path_util.h"
+#include "common/fs/path_util.h"
+#include "storm_switch/common/storm_theme.h"
 #include "storm_switch/configuration/configure_graphics.h"
 #include "storm_switch/configuration/retroarch_shader_catalog.h"
 #include "storm_switch/common/storm_lang.h"
@@ -739,6 +746,138 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
         fg_layout->setContentsMargins(10, 16, 10, 10);
         fg_layout->setSpacing(6);
 
+        // Lossless.dll detection & status badge
+        const auto pal = StormTheme::GetThemePalette();
+        const auto lossless_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::LosslessDir);
+        const auto lossless_file = lossless_dir / "Lossless.dll";
+
+        bool lossless_installed = false;
+        std::error_code ec_ls;
+        if (std::filesystem::exists(lossless_file, ec_ls)) {
+            lossless_installed = true;
+        }
+
+        bool steam_detected = false;
+        std::filesystem::path steam_lossless_path;
+        if (!lossless_installed) {
+            const std::vector<std::filesystem::path> steam_search_dirs = {
+                std::filesystem::path("C:/Program Files (x86)/Steam/steamapps/common/Lossless Scaling/Lossless.dll"),
+                std::filesystem::path("C:/Program Files/Steam/steamapps/common/Lossless Scaling/Lossless.dll"),
+                std::filesystem::path("D:/Steam/steamapps/common/Lossless Scaling/Lossless.dll"),
+                std::filesystem::path("D:/SteamLibrary/steamapps/common/Lossless Scaling/Lossless.dll"),
+                std::filesystem::path("E:/SteamLibrary/steamapps/common/Lossless Scaling/Lossless.dll"),
+                std::filesystem::path("F:/SteamLibrary/steamapps/common/Lossless Scaling/Lossless.dll"),
+            };
+            for (const auto& sp : steam_search_dirs) {
+                std::error_code ec_sp;
+                if (std::filesystem::exists(sp, ec_sp)) {
+                    steam_detected = true;
+                    steam_lossless_path = sp;
+                    break;
+                }
+            }
+        }
+
+        auto* badge_layout = new QHBoxLayout();
+        badge_layout->setContentsMargins(4, 4, 4, 4);
+        badge_layout->setSpacing(8);
+
+        auto* status_badge = new QLabel(fg_group);
+        auto* locate_btn = new QPushButton(StormLang(
+            QStringLiteral("Указать Lossless.dll..."),
+            QStringLiteral("Locate Lossless.dll..."),
+            QStringLiteral("Lossless.dll auswählen..."),
+            QStringLiteral("Localiser Lossless.dll..."),
+            QStringLiteral("指定 Lossless.dll..."),
+            QStringLiteral("Lossless.dll を指定..."),
+            QStringLiteral("Lossless.dll 지정...")), fg_group);
+
+        locate_btn->setCursor(Qt::PointingHandCursor);
+        locate_btn->setStyleSheet(QStringLiteral(
+            "QPushButton { background: %1; border: 1px solid %2; border-radius: 6px; padding: 5px 12px; color: %3; font-size: 11.5px; font-weight: 600; min-height: 22px; }"
+            "QPushButton:hover { background: %4; border: 1px solid %5; color: %5; }"
+        ).arg(pal.surface, pal.border, pal.textPrimary, pal.cardAlt, pal.accent));
+
+        auto update_badge_state = [status_badge, pal](bool installed, bool steam_found) {
+            if (installed) {
+                status_badge->setStyleSheet(QStringLiteral(
+                    "QLabel { background: rgba(16, 185, 129, 0.15); border: 1px solid #10B981; color: #10B981; border-radius: 6px; padding: 6px 10px; font-weight: 600; font-size: 11.5px; }"
+                ));
+                status_badge->setText(StormLang(
+                    QStringLiteral("✔️ Lossless.dll подключён (активно аппаратное LSFG-ускорение)"),
+                    QStringLiteral("✔️ Lossless.dll linked (hardware LSFG acceleration active)"),
+                    QStringLiteral("✔️ Lossless.dll verknüpft (Hardware-LSFG-Beschleunigung aktiv)"),
+                    QStringLiteral("✔️ Lossless.dll lié (accélération matérielle LSFG active)"),
+                    QStringLiteral("✔️ 已连接 Lossless.dll（硬件 LSFG 加速已启用）"),
+                    QStringLiteral("✔️ Lossless.dll がリンクされました（ハードウェア LSFG 加速が有効）"),
+                    QStringLiteral("✔️ Lossless.dll 연결됨 (하드웨어 LSFG 가속 활성화)")));
+            } else if (steam_found) {
+                status_badge->setStyleSheet(QStringLiteral(
+                    "QLabel { background: rgba(16, 185, 129, 0.15); border: 1px solid #10B981; color: #10B981; border-radius: 6px; padding: 6px 10px; font-weight: 600; font-size: 11.5px; }"
+                ));
+                status_badge->setText(StormLang(
+                    QStringLiteral("✔️ Lossless.dll обнаружен в Steam (Lossless Scaling)"),
+                    QStringLiteral("✔️ Lossless.dll detected in Steam (Lossless Scaling)"),
+                    QStringLiteral("✔️ Lossless.dll in Steam erkannt (Lossless Scaling)"),
+                    QStringLiteral("✔️ Lossless.dll détecté dans Steam (Lossless Scaling)"),
+                    QStringLiteral("✔️ 在 Steam 中检测到 Lossless.dll（Lossless Scaling）"),
+                    QStringLiteral("✔️ Steam で Lossless.dll が検出されました（Lossless Scaling）"),
+                    QStringLiteral("✔️ Steam에서 Lossless.dll 감지됨 (Lossless Scaling)")));
+            } else {
+                status_badge->setStyleSheet(QStringLiteral(
+                    "QLabel { background: rgba(0, 240, 255, 0.10); border: 1px solid %1; color: %2; border-radius: 6px; padding: 6px 10px; font-size: 11.5px; }"
+                ).arg(pal.accent, pal.textPrimary));
+                status_badge->setText(StormLang(
+                    QStringLiteral("⚡ Встроенная Vulkan-интерполяция активна (опционально: подключить Lossless.dll)"),
+                    QStringLiteral("⚡ Built-in Vulkan interpolation active (optional: link Lossless.dll)"),
+                    QStringLiteral("⚡ Integrierte Vulkan-Interpolation aktiv (optional: Lossless.dll verknüpfen)"),
+                    QStringLiteral("⚡ Interpolation Vulkan intégrée active (optionnel: lier Lossless.dll)"),
+                    QStringLiteral("⚡ 内置 Vulkan 插帧已激活（可选：连接 Lossless.dll）"),
+                    QStringLiteral("⚡ 組み込み Vulkan 補間がアクティブ（オプション: Lossless.dll をリンク）"),
+                    QStringLiteral("⚡ 기본 내장 Vulkan 보간 활성화 (선택 사항: Lossless.dll 연결)")));
+            }
+        };
+
+        update_badge_state(lossless_installed, steam_detected);
+
+        QObject::connect(locate_btn, &QPushButton::clicked, this, [this, lossless_dir, lossless_file, update_badge_state]() {
+            const QString selected_file = QFileDialog::getOpenFileName(
+                this,
+                StormLang(QStringLiteral("Укажите Lossless.dll"), QStringLiteral("Locate Lossless.dll")),
+                QString(),
+                QStringLiteral("Dynamic Link Library (*.dll);;All Files (*.*)"));
+
+            if (!selected_file.isEmpty()) {
+                std::error_code ec;
+                std::filesystem::create_directories(lossless_dir, ec);
+                std::filesystem::copy_file(
+                    std::filesystem::path(selected_file.toStdWString()),
+                    lossless_file,
+                    std::filesystem::copy_options::overwrite_existing,
+                    ec);
+
+                if (!ec) {
+                    update_badge_state(true, false);
+                    QMessageBox::information(
+                        this,
+                        StormLang(QStringLiteral("Генерация кадров LSFG"), QStringLiteral("LSFG Frame Generation")),
+                        StormLang(
+                            QStringLiteral("Lossless.dll успешно подключён и скопирован в каталог эмулятора!"),
+                            QStringLiteral("Lossless.dll successfully linked and copied to emulator directory!")));
+                } else {
+                    QMessageBox::warning(
+                        this,
+                        StormLang(QStringLiteral("Ошибка"), QStringLiteral("Error")),
+                        StormLang(
+                            QStringLiteral("Не удалось скопировать Lossless.dll: ") + QString::fromStdString(ec.message()),
+                            QStringLiteral("Failed to copy Lossless.dll: ") + QString::fromStdString(ec.message())));
+                }
+            }
+        });
+
+        badge_layout->addWidget(status_badge, 1);
+        badge_layout->addWidget(locate_btn);
+
         const std::vector<u32> fg_order = {
             Settings::values.frame_gen.Id(),
             Settings::values.frame_gen_multiplier.Id(),
@@ -753,6 +892,9 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
             auto it = hold_frame_gen.find(fg_id);
             if (it != hold_frame_gen.end()) {
                 fg_layout->addWidget(it->second);
+                if (fg_id == Settings::values.frame_gen.Id()) {
+                    fg_layout->addLayout(badge_layout);
+                }
             }
         }
         for (const auto& [id, widget] : hold_frame_gen) {

@@ -48,7 +48,9 @@
                     android:text="The Legend of Zelda"
                     android:textSize="15sp"
                     android:textStyle="bold"
-                    android:textColor="?attr/colorOnSurface" />
+                    android:textColor="?attr/colorOnSurface"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -72,13 +74,17 @@
                             android:text="ID: 0100F2C0115B6000"
                             android:textSize="10sp"
                             android:textColor="?attr/colorPrimary"
-                            android:fontFamily="monospace" />
+                            android:fontFamily="monospace"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                         <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/text_game_fix_title_id"
                             android:layout_width="0dp"
                             android:layout_height="0dp"
-                            android:visibility="gone" />
+                            android:visibility="gone"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     </LinearLayout>
 
@@ -92,7 +98,9 @@
                         android:text="🛡️ AUTO-FIX"
                         android:textSize="9.5sp"
                         android:textStyle="bold"
-                        android:textColor="?attr/colorPrimary" />
+                        android:textColor="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 </LinearLayout>
 
@@ -152,7 +160,9 @@
                                 android:text="@string/game_fix_issues_header"
                                 android:textSize="11sp"
                                 android:textStyle="bold"
-                                android:textColor="#EF4444" />
+                                android:textColor="#EF4444"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                         </LinearLayout>
 
@@ -163,7 +173,9 @@
                             android:textSize="10.5sp"
                             android:lineSpacingExtra="1.5dp"
                             android:textColor="?attr/colorOnSurfaceVariant"
-                            tools:text="• Visual artifacts in shadow rendering\n• Memory leak on scene transition" />
+                            tools:text="• Visual artifacts in shadow rendering\n• Memory leak on scene transition"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     </LinearLayout>
 
@@ -206,7 +218,9 @@
                                 android:text="@string/game_fix_recommended_header"
                                 android:textSize="11sp"
                                 android:textStyle="bold"
-                                android:textColor="?attr/colorPrimary" />
+                                android:textColor="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                         </LinearLayout>
 
@@ -217,13 +231,17 @@
                             android:textSize="10.5sp"
                             android:lineSpacingExtra="1.5dp"
                             android:textColor="?attr/colorOnSurface"
-                            tools:text="✓ Fastmem: Enabled\n✓ Reactive Flushing: Enabled" />
+                            tools:text="✓ Fastmem: Enabled\n✓ Reactive Flushing: Enabled"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                         <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/text_game_fix_recommended"
                             android:layout_width="0dp"
                             android:layout_height="0dp"
-                            android:visibility="gone" />
+                            android:visibility="gone"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     </LinearLayout>
 
@@ -250,7 +268,9 @@
             android:textSize="12sp"
             android:textStyle="bold"
             android:textColor="?attr/colorOnSurface"
-            android:layout_marginBottom="5dp" />
+            android:layout_marginBottom="5dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         <!-- Card 1: Auto-Fix -->
         <com.google.android.material.card.MaterialCardView
@@ -294,7 +314,9 @@
                         android:text="@string/launch_mode_auto_fix"
                         android:textSize="11.5sp"
                         android:textStyle="bold"
-                        android:textColor="?attr/colorPrimary" />
+                        android:textColor="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     <ImageView
                         android:layout_width="13dp"
@@ -309,7 +331,9 @@
                     android:layout_height="wrap_content"
                     android:text="@string/launch_mode_auto_fix_description"
                     android:textSize="9.5sp"
-                    android:textColor="?attr/colorOnSurfaceVariant" />
+                    android:textColor="?attr/colorOnSurfaceVariant"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             </LinearLayout>
 
@@ -357,7 +381,9 @@
                         android:text="@string/launch_mode_auto_fix_with_custom"
                         android:textSize="11.5sp"
                         android:textStyle="bold"
-                        android:textColor="?attr/colorOnSurface" />
+                        android:textColor="?attr/colorOnSurface"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     <ImageView
                         android:layout_width="13dp"
@@ -372,7 +398,9 @@
                     android:layout_height="wrap_content"
                     android:text="@string/launch_mode_auto_fix_with_custom_description"
                     android:textSize="9.5sp"
-                    android:textColor="?attr/colorOnSurfaceVariant" />
+                    android:textColor="?attr/colorOnSurfaceVariant"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             </LinearLayout>
 
@@ -420,7 +448,9 @@
                         android:text="@string/launch_mode_custom"
                         android:textSize="11.5sp"
                         android:textStyle="bold"
-                        android:textColor="?attr/colorOnSurface" />
+                        android:textColor="?attr/colorOnSurface"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     <ImageView
                         android:layout_width="13dp"
@@ -435,7 +465,9 @@
                     android:layout_height="wrap_content"
                     android:text="@string/launch_mode_custom_description"
                     android:textSize="9.5sp"
-                    android:textColor="?attr/colorOnSurfaceVariant" />
+                    android:textColor="?attr/colorOnSurfaceVariant"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             </LinearLayout>
 
@@ -483,7 +515,9 @@
                         android:text="@string/launch_mode_global"
                         android:textSize="11.5sp"
                         android:textStyle="bold"
-                        android:textColor="?attr/colorOnSurface" />
+                        android:textColor="?attr/colorOnSurface"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     <ImageView
                         android:layout_width="13dp"
@@ -498,7 +532,9 @@
                     android:layout_height="wrap_content"
                     android:text="@string/launch_mode_global_description"
                     android:textSize="9.5sp"
-                    android:textColor="?attr/colorOnSurfaceVariant" />
+                    android:textColor="?attr/colorOnSurfaceVariant"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             </LinearLayout>
 
@@ -528,13 +564,21 @@
             app:backgroundTint="@null"
             app:strokeColor="#F87171"
             app:strokeWidth="1dp"
-            app:cornerRadius="8dp" />
+            app:cornerRadius="8dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_cancel_launch"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:visibility="gone" />
+            android:visibility="gone"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
     </LinearLayout>
 

@@ -25,7 +25,9 @@
             android:gravity="center"
             android:textColor="#00F0FF"
             android:textStyle="bold"
-            android:layout_marginBottom="12dp" />
+            android:layout_marginBottom="12dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         <!-- Scale Section -->
         <LinearLayout
@@ -42,7 +44,9 @@
                 android:text="@string/emulation_control_scale"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="13sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/scaleValueText"
@@ -51,7 +55,9 @@
                 android:text="1.0x"
                 android:textColor="#38BDF8"
                 android:textSize="13sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
         </LinearLayout>
 
         <com.google.android.material.slider.Slider
@@ -82,7 +88,9 @@
                 android:text="@string/emulation_control_opacity"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="13sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/opacityValueText"
@@ -91,7 +99,9 @@
                 android:text="100%"
                 android:textColor="#38BDF8"
                 android:textSize="13sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
         </LinearLayout>
 
         <com.google.android.material.slider.Slider
@@ -111,80 +121,76 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:weightSum="3">
+            android:orientation="vertical">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/resetButton"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="0dp"
-                android:layout_height="40dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="4dp"
-                android:insetLeft="0dp"
-                android:insetRight="0dp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:paddingLeft="2dp"
-                android:paddingRight="2dp"
-                android:paddingTop="0dp"
-                android:paddingBottom="0dp"
-                android:text="@string/reset"
-                android:textSize="11sp"
-                android:ellipsize="none"
-                app:cornerRadius="8dp"
-                android:textColor="#FFFFFF"
-                app:backgroundTint="#1E293B"
-        app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+            <!-- Row 1: Reset & Cancel -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/cancelButton"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="0dp"
-                android:layout_height="40dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="4dp"
-                android:insetLeft="0dp"
-                android:insetRight="0dp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:paddingLeft="2dp"
-                android:paddingRight="2dp"
-                android:paddingTop="0dp"
-                android:paddingBottom="0dp"
-                android:text="@android:string/cancel"
-                android:textSize="11sp"
-                android:ellipsize="none"
-                app:cornerRadius="8dp"
-                android:textColor="#FFFFFF"
-                app:backgroundTint="#334155"
-        app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/resetButton"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="0dp"
+                    android:layout_height="42dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:maxLines="1"
+                    android:ellipsize="none"
+                    android:hyphenationFrequency="none"
+                    android:breakStrategy="simple"
+                    app:autoSizeTextType="uniform"
+                    app:autoSizeMinTextSize="10sp"
+                    app:autoSizeMaxTextSize="12sp"
+                    android:text="@string/reset"
+                    app:cornerRadius="8dp"
+                    android:textColor="#FFFFFF"
+                    app:backgroundTint="#1E293B"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="?attr/colorOutline" />
 
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/cancelButton"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="0dp"
+                    android:layout_height="42dp"
+                    android:layout_weight="1"
+                    android:maxLines="1"
+                    android:ellipsize="none"
+                    android:hyphenationFrequency="none"
+                    android:breakStrategy="simple"
+                    app:autoSizeTextType="uniform"
+                    app:autoSizeMinTextSize="10sp"
+                    app:autoSizeMaxTextSize="12sp"
+                    android:text="@android:string/cancel"
+                    app:cornerRadius="8dp"
+                    android:textColor="#FFFFFF"
+                    app:backgroundTint="#334155"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="?attr/colorOutline" />
+
+            </LinearLayout>
+
+            <!-- Row 2: Confirm Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/confirmButton"
                 style="@style/Widget.Material3.Button"
-                android:layout_width="0dp"
-                android:layout_height="40dp"
-                android:layout_weight="1"
-                android:insetLeft="0dp"
-                android:insetRight="0dp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:paddingLeft="2dp"
-                android:paddingRight="2dp"
-                android:paddingTop="0dp"
-                android:paddingBottom="0dp"
-                android:text="@string/confirm"
-                android:textSize="11sp"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="8dp"
+                android:maxLines="1"
                 android:ellipsize="none"
+                android:hyphenationFrequency="none"
+                android:breakStrategy="simple"
+                android:text="@string/confirm"
+                android:textSize="12sp"
                 app:cornerRadius="8dp"
                 android:textColor="#0F172A"
                 android:textStyle="bold"
                 app:backgroundTint="#00D2FF"
-        app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutline" />
 
         </LinearLayout>
 

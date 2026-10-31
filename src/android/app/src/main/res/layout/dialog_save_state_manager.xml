@@ -35,7 +35,9 @@
                 android:text="@string/save_state_manager_title"
                 android:textColor="?attr/colorPrimary"
                 android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <TextView
                 android:id="@+id/text_game_title"
@@ -43,7 +45,9 @@
                 android:layout_height="wrap_content"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="12sp"
-                tools:text="Game Title • SESS v2 (Слоты 1–5)" />
+                tools:text="Game Title • SESS v2 (Слоты 1–5)"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
         </LinearLayout>
 
         <ImageButton

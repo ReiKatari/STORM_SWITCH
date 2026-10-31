@@ -50,14 +50,18 @@
                     android:text="@string/quick_settings"
                     android:textColor="?attr/colorPrimary"
                     android:textSize="15sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <com.google.android.material.textview.MaterialTextView
                     style="@style/SynthwaveText.Secondary"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/quick_settings_subtitle"
-                    android:textSize="11sp" />
+                    android:textSize="11sp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             </LinearLayout>
 

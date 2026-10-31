@@ -11,6 +11,8 @@
 #include <vector>
 
 #include "common/common_types.h"
+#include <fmt/format.h>
+#include "common/settings.h"
 #include "common/logging.h"
 #include "video_core/vulkan_common/vk_enum_string_helper.h"
 #include "video_core/vulkan_common/vma.h"
@@ -456,11 +458,14 @@ Instance Instance::Create(u32 version, Span<const char*> layers, Span<const char
     constexpr VkFlags ci_flags{};
 #endif
 #ifdef ANDROID
-    // Masquerade as PUBG Mobile / Unreal Engine on Android to trigger OEM GPU driver game mode heuristics
+    // Masquerade as PUBG Mobile / Unreal Engine with Title ID and game name on Android to trigger
+    // OEM GPU driver game mode heuristics while matching Mesa Turnip driconf per-game profiles
+    std::string const android_app_name =
+        fmt::format("PUBGMOBILE_{:016X}_{}", Settings::GetCurrentProgramID(), app_name);
     const VkApplicationInfo application_info{
         .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
         .pNext = nullptr,
-        .pApplicationName = "PUBGMOBILE",
+        .pApplicationName = android_app_name.c_str(),
         .applicationVersion = VK_MAKE_VERSION(1, 3, 0),
         .pEngineName = "UnrealEngine",
         .engineVersion = VK_MAKE_VERSION(1, 3, 0),

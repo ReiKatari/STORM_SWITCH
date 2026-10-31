@@ -32,7 +32,11 @@
             app:backgroundTint="?attr/colorSurfaceVariant"
             app:cornerRadius="10dp"
             app:strokeColor="?attr/colorPrimary"
-            app:strokeWidth="1.5dp" />
+            app:strokeWidth="1.5dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/text_input_layout"
@@ -81,7 +85,11 @@
             app:backgroundTint="?attr/colorSurfaceVariant"
             app:cornerRadius="10dp"
             app:strokeColor="?attr/colorPrimary"
-            app:strokeWidth="1.5dp" />
+            app:strokeWidth="1.5dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
     </LinearLayout>
 

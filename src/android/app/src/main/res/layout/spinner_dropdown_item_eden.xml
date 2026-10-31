@@ -11,4 +11,6 @@
     android:background="?attr/colorSurfaceVariant"
     android:paddingStart="16dp"
     android:paddingEnd="16dp"
-    android:gravity="center_vertical" />
+    android:gravity="center_vertical"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>

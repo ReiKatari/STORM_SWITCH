@@ -66,7 +66,9 @@
                     android:textColor="?attr/colorOnPrimary"
                     android:textSize="9sp"
                     android:textStyle="bold"
-                    tools:text="NSZ" />
+                    tools:text="NSZ"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <LinearLayout
                     android:id="@+id/version_container"
@@ -89,7 +91,9 @@
                         android:textColor="?attr/colorOnSurface"
                         android:textSize="9sp"
                         android:textStyle="bold"
-                        tools:text="1.2.0" />
+                        tools:text="1.2.0"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/badge_game_internal_version"
@@ -103,7 +107,9 @@
                         android:paddingBottom="1dp"
                         android:textColor="?attr/colorOnSurfaceVariant"
                         android:textSize="8sp"
-                        tools:text="196608" />
+                        tools:text="196608"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/text_game_addons_compact"
@@ -117,7 +123,9 @@
                         android:paddingBottom="1dp"
                         android:textColor="?attr/colorOnSurfaceVariant"
                         android:textSize="8sp"
-                        tools:text="Дополнений: 5" />
+                        tools:text="Дополнений: 5"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 </LinearLayout>
 
@@ -139,7 +147,9 @@
                     android:maxLines="3"
                     android:minLines="1"
                     android:ellipsize="end"
-                    tools:text="The Legend of Zelda: Tears of the Kingdom" />
+                    tools:text="The Legend of Zelda: Tears of the Kingdom"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             </FrameLayout>
 

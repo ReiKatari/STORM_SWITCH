@@ -53,7 +53,9 @@
                         android:text="@string/storm_world_dlc_title"
                         android:textColor="?attr/colorOnSurface"
                         android:textSize="16sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     <TextView
                         android:id="@+id/text_dlc_dialog_badge"
@@ -66,7 +68,9 @@
                         android:textColor="#10B981"
                         android:textSize="11sp"
                         android:textStyle="bold"
-                        tools:text="6 DLC" />
+                        tools:text="6 DLC"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
                 </LinearLayout>
 
                 <TextView
@@ -78,7 +82,9 @@
                     android:maxLines="3"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="12sp"
-                    tools:text="Dave the Diver" />
+                    tools:text="Dave the Diver"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
             </LinearLayout>
 
             <ImageButton
@@ -106,7 +112,9 @@
             android:paddingVertical="8dp"
             android:text="@string/storm_world_dlc_subtitle"
             android:textColor="?attr/colorOnSurfaceVariant"
-            android:textSize="11sp" />
+            android:textSize="11sp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         <!-- Content Area -->
         <FrameLayout
@@ -143,7 +151,9 @@
                 android:text="@string/storm_world_dlc_empty"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="13sp"
-                android:visibility="gone" />
+                android:visibility="gone"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
         </FrameLayout>
 
         <!-- Bottom Button -->
@@ -161,7 +171,11 @@
             app:backgroundTint="?attr/colorPrimary"
             app:cornerRadius="8dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorPrimary" />
+        app:strokeColor="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
     </LinearLayout>
 

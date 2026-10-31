@@ -32,7 +32,9 @@
             app:layout_constraintEnd_toStartOf="@+id/button_download_mod"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="Ultra 60FPS Dynamic FPS Mod" />
+            tools:text="Ultra 60FPS Dynamic FPS Mod"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/text_mod_author"
@@ -48,7 +50,9 @@
             app:layout_constraintEnd_toStartOf="@+id/button_download_mod"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/text_mod_title"
-            tools:text="By PixelHero • 12 450 downloads" />
+            tools:text="By PixelHero • 12 450 downloads"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_download_mod"
@@ -64,7 +68,11 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorPrimary" />
+        app:strokeColor="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
         <com.google.android.material.progressindicator.LinearProgressIndicator
             android:id="@+id/progress_mod_download"

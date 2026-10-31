@@ -22,7 +22,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="🌐"
-                android:textSize="26sp" />
+                android:textSize="26sp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -38,7 +40,9 @@
                     android:textColor="?attr/colorPrimary"
                     android:textSize="16sp"
                     android:textStyle="bold"
-                    tools:text="Онлайн-установка прошивки" />
+                    tools:text="Онлайн-установка прошивки"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <TextView
                     android:id="@+id/text_header_subtitle"
@@ -47,7 +51,9 @@
                     android:layout_marginTop="2dp"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="11sp"
-                    tools:text="Выберите версию для загрузки без сохранения архивов" />
+                    tools:text="Выберите версию для загрузки без сохранения архивов"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
             </LinearLayout>
 
             <ImageButton
@@ -82,7 +88,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="🟢"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <TextView
                 android:id="@+id/text_installed_status"
@@ -93,7 +101,9 @@
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="12sp"
                 android:textStyle="bold"
-                tools:text="Установлена версия: 20.0.1" />
+                tools:text="Установлена версия: 20.0.1"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <TextView
                 android:id="@+id/badge_installed_header"
@@ -105,7 +115,9 @@
                 android:text="@string/online_tools_badge_active"
                 android:textColor="#10B981"
                 android:textSize="10sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
         </LinearLayout>
 
         <!-- Divider -->
@@ -145,7 +157,9 @@
                 android:layout_height="wrap_content"
                 android:text="@string/online_tools_select_prompt"
                 android:textColor="?attr/colorOnSurfaceVariant"
-                android:textSize="12sp" />
+                android:textSize="12sp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <ProgressBar
                 android:id="@+id/progress_bar"
@@ -191,7 +205,11 @@
                     android:textSize="12sp"
                     android:textStyle="bold"
                     app:strokeColor="?attr/colorOutline"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="1dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_cancel"
@@ -211,7 +229,11 @@
                     android:textSize="12sp"
                     android:textStyle="bold"
                     app:strokeColor="?attr/colorOutline"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="1dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
             </LinearLayout>
 
             <com.google.android.material.button.MaterialButton
@@ -232,6 +254,10 @@
                 android:textStyle="bold"
                 android:elevation="4dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorPrimary" />
+        app:strokeColor="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
         </LinearLayout>
 </LinearLayout>

@@ -32,7 +32,9 @@
                 android:layout_weight="1"
                 android:textColor="?attr/colorOnSurface"
                 android:textStyle="bold"
-                tools:text="@string/license_adreno_tools" />
+                tools:text="@string/license_adreno_tools"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <ImageView
                 android:id="@+id/btn_close"
@@ -75,7 +77,9 @@
                     android:layout_height="wrap_content"
                     android:textColor="?attr/colorPrimary"
                     android:autoLink="all"
-                    tools:text="@string/license_adreno_tools_link" />
+                    tools:text="@string/license_adreno_tools_link"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/text_copyright"
@@ -85,7 +89,9 @@
                     android:layout_marginTop="12dp"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"
-                    tools:text="@string/license_adreno_tools_copyright" />
+                    tools:text="@string/license_adreno_tools_copyright"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/text_license"
@@ -96,7 +102,9 @@
                     android:layout_marginBottom="16dp"
                     android:autoLink="all"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    tools:text="@string/license_adreno_tools_text" />
+                    tools:text="@string/license_adreno_tools_text"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             </LinearLayout>
 

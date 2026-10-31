@@ -31,7 +31,9 @@
             android:text="@string/app_name"
             style="@style/SynthwaveText.Title"
             android:textSize="20sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         <FrameLayout
             android:id="@+id/frame_search"
@@ -224,7 +226,9 @@
                 android:gravity="center"
                 android:padding="@dimen/spacing_large"
                 android:text="@string/empty_gamelist"
-                android:visibility="gone" />
+                android:visibility="gone"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <org.yuzu.yuzu_emu.ui.CarouselRecyclerView
                 android:id="@+id/grid_games"

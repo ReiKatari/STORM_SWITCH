@@ -37,7 +37,9 @@
                 android:text="@string/storm_games_world"
                 android:textColor="?attr/colorPrimary"
                 android:textSize="15sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <TextView
                 android:id="@+id/text_catalog_status"
@@ -45,7 +47,9 @@
                 android:layout_height="wrap_content"
                 android:text="@string/storm_world_subtitle"
                 android:textColor="?attr/colorOnSurfaceVariant"
-                android:textSize="11sp" />
+                android:textSize="11sp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
         </LinearLayout>
 
         <ImageButton
@@ -152,7 +156,11 @@
                         app:backgroundTint="?attr/colorSurfaceVariant"
                         app:cornerRadius="16dp"
                         app:strokeColor="?attr/colorOutline"
-                        app:strokeWidth="1dp" />
+                        app:strokeWidth="1dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/chip_lang_rus"
@@ -169,7 +177,11 @@
                         app:backgroundTint="?attr/colorSurfaceVariant"
                         app:cornerRadius="16dp"
                         app:strokeColor="?attr/colorOutline"
-                        app:strokeWidth="1dp" />
+                        app:strokeWidth="1dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/chip_lang_eng"
@@ -186,7 +198,11 @@
                         app:backgroundTint="?attr/colorSurfaceVariant"
                         app:cornerRadius="16dp"
                         app:strokeColor="?attr/colorOutline"
-                        app:strokeWidth="1dp" />
+                        app:strokeWidth="1dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/chip_lang_multi"
@@ -203,7 +219,11 @@
                         app:backgroundTint="?attr/colorSurfaceVariant"
                         app:cornerRadius="16dp"
                         app:strokeColor="?attr/colorOutline"
-                        app:strokeWidth="1dp" />
+                        app:strokeWidth="1dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
 
                     <com.google.android.material.button.MaterialButton
@@ -220,7 +240,11 @@
                         app:backgroundTint="?attr/colorSurfaceVariant"
                         app:cornerRadius="16dp"
                         app:strokeColor="?attr/colorOutline"
-                        app:strokeWidth="1dp" />
+                        app:strokeWidth="1dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
                     <View
                         android:layout_width="1dp"
@@ -243,7 +267,11 @@
                         app:backgroundTint="?attr/colorSurfaceVariant"
                         app:cornerRadius="16dp"
                         app:strokeColor="?attr/colorOutline"
-                        app:strokeWidth="1dp" />
+                        app:strokeWidth="1dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/chip_ext_nsp"
@@ -260,7 +288,11 @@
                         app:backgroundTint="?attr/colorSurfaceVariant"
                         app:cornerRadius="16dp"
                         app:strokeColor="?attr/colorOutline"
-                        app:strokeWidth="1dp" />
+                        app:strokeWidth="1dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/chip_ext_nsz"
@@ -277,7 +309,11 @@
                         app:backgroundTint="?attr/colorSurfaceVariant"
                         app:cornerRadius="16dp"
                         app:strokeColor="?attr/colorOutline"
-                        app:strokeWidth="1dp" />
+                        app:strokeWidth="1dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/chip_ext_xci"
@@ -294,7 +330,11 @@
                         app:backgroundTint="?attr/colorSurfaceVariant"
                         app:cornerRadius="16dp"
                         app:strokeColor="?attr/colorOutline"
-                        app:strokeWidth="1dp" />
+                        app:strokeWidth="1dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/chip_ext_xcz"
@@ -310,7 +350,11 @@
                         app:backgroundTint="?attr/colorSurfaceVariant"
                         app:cornerRadius="16dp"
                         app:strokeColor="?attr/colorOutline"
-                        app:strokeWidth="1dp" />
+                        app:strokeWidth="1dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
                 </LinearLayout>
             </HorizontalScrollView>
 
@@ -343,7 +387,9 @@
                     android:text="@string/storm_world_empty_games"
                     android:textColor="#FFFFFF"
                     android:textSize="13sp"
-                    android:visibility="gone" />
+                    android:visibility="gone"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
             </FrameLayout>
 
             <!-- Bottom Pagination Bar -->
@@ -388,7 +434,11 @@
                         app:strokeWidth="1dp"
                         app:icon="@drawable/ic_filter"
                         app:iconSize="12dp"
-                        app:iconTint="#38BDF8" />
+                        app:iconTint="#38BDF8"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -413,7 +463,11 @@
                             android:textColor="?attr/colorPrimary"
                             app:backgroundTint="?attr/colorSurfaceVariant"
                             app:strokeColor="?attr/colorOutline"
-                            app:strokeWidth="1dp" />
+                            app:strokeWidth="1dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
                         <HorizontalScrollView
                             android:id="@+id/scroll_page_numbers"
@@ -446,7 +500,11 @@
                             android:textColor="?attr/colorPrimary"
                             app:backgroundTint="?attr/colorSurfaceVariant"
                             app:strokeColor="?attr/colorOutline"
-                            app:strokeWidth="1dp" />
+                            app:strokeWidth="1dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
                     </LinearLayout>
 
                     <TextView
@@ -460,7 +518,9 @@
                         android:textSize="10sp"
                         android:textStyle="bold"
                         android:ellipsize="end"
-                        tools:text="Страница 1 из 7 (161)" />
+                        tools:text="Страница 1 из 7 (161)"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
@@ -522,7 +582,9 @@
                                 android:textColor="?attr/colorOnPrimary"
                                 android:textSize="9sp"
                                 android:textStyle="bold"
-                                tools:text="NSP" />
+                                tools:text="NSP"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                         </FrameLayout>
 
@@ -542,7 +604,9 @@
                                 android:textColor="?attr/colorOnSurface"
                                 android:textSize="14sp"
                                 android:textStyle="bold"
-                                tools:text="Diablo III: Eternal Collection" />
+                                tools:text="Diablo III: Eternal Collection"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                             <!-- Badges Row 1: Version, Internal Version, Size -->
                             <LinearLayout
@@ -564,7 +628,9 @@
                                     android:textStyle="bold"
                                     android:maxLines="2"
                                     android:ellipsize="end"
-                                    tools:text="1.0.10" />
+                                    tools:text="1.0.10"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                                 <TextView
                                     android:id="@+id/detail_internal_version"
@@ -579,7 +645,9 @@
                                     android:textStyle="bold"
                                     android:maxLines="2"
                                     android:ellipsize="end"
-                                    tools:text="655360" />
+                                    tools:text="655360"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                                 <TextView
                                     android:id="@+id/detail_game_size"
@@ -594,7 +662,9 @@
                                     android:textStyle="bold"
                                     android:maxLines="2"
                                     android:ellipsize="end"
-                                    tools:text="37,63 MB" />
+                                    tools:text="37,63 MB"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
                             </LinearLayout>
 
                             <!-- Badges Row 2: Languages, DLC, MOD -->
@@ -617,7 +687,9 @@
                                     android:textStyle="bold"
                                     android:maxLines="3"
                                     android:ellipsize="end"
-                                    tools:text="RUS" />
+                                    tools:text="RUS"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                                 <TextView
                                     android:id="@+id/detail_game_dlc"
@@ -636,7 +708,9 @@
                                     android:ellipsize="end"
                                     android:visibility="gone"
                                     tools:visibility="visible"
-                                    tools:text="+5 DLC" />
+                                    tools:text="+5 DLC"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                                 <TextView
                                     android:id="@+id/detail_game_mod"
@@ -653,7 +727,9 @@
                                     android:ellipsize="end"
                                     android:visibility="gone"
                                     tools:visibility="visible"
-                                    tools:text="+1 MOD" />
+                                    tools:text="+1 MOD"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
                             </LinearLayout>
 
                             <TextView
@@ -663,7 +739,9 @@
                                 android:layout_marginTop="2dp"
                                 android:visibility="gone"
                                 android:textColor="?attr/colorOnSurfaceVariant"
-                                android:textSize="11sp" />
+                                android:textSize="11sp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                             <TextView
                                 android:id="@+id/detail_game_id"
@@ -672,7 +750,9 @@
                                 android:fontFamily="monospace"
                                 android:textColor="?attr/colorOnSurfaceVariant"
                                 android:textSize="10sp"
-                                tools:text="ID: 01001B700A654000" />
+                                tools:text="ID: 01001B700A654000"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
                         </LinearLayout>
                     </LinearLayout>
 
@@ -685,7 +765,9 @@
                         android:maxLines="6"
                         android:textColor="#FFFFFF"
                         android:textSize="11sp"
-                        tools:text="Описание игры..." />
+                        tools:text="Описание игры..."
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     <TextView
                         android:id="@+id/detail_save_folder"
@@ -696,7 +778,9 @@
                         android:maxLines="2"
                         android:textColor="?attr/colorOnSurfaceVariant"
                         android:textSize="10sp"
-                        tools:text="📁 Папка: /storage/emulated/0/Switch" />
+                        tools:text="📁 Папка: /storage/emulated/0/Switch"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     <!-- Action buttons -->
                     <LinearLayout
@@ -720,7 +804,11 @@
                             app:icon="@drawable/ic_install"
                             app:iconTint="?attr/colorOnPrimary"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorPrimary" />
+        app:strokeColor="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
                     </LinearLayout>
 
                     <!-- Download progress -->
@@ -756,7 +844,9 @@
                                 android:layout_weight="1"
                                 android:textColor="?attr/colorOnSurface"
                                 android:textSize="10sp"
-                                tools:text="150 МБ из 4.2 ГБ • 14.5 МБ/с • Ост: 4 мин" />
+                                tools:text="150 МБ из 4.2 ГБ • 14.5 МБ/с • Ост: 4 мин"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btn_pause_download"
@@ -771,7 +861,11 @@
                                 android:textSize="10sp"
                                 app:cornerRadius="6dp"
                                 app:strokeColor="?attr/colorOutline"
-        app:strokeWidth="1dp" />
+        app:strokeWidth="1dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btn_cancel_download"
@@ -785,7 +879,11 @@
                                 android:textSize="10sp"
                                 app:cornerRadius="6dp"
                                 app:strokeColor="#FF4444"
-        app:strokeWidth="1dp" />
+        app:strokeWidth="1dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
                         </LinearLayout>
                     </LinearLayout>
 

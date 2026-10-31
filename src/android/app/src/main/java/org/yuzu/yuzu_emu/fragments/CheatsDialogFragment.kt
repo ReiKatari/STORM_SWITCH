@@ -236,8 +236,8 @@ class CheatsDialogFragment : DialogFragment() {
         for (file in filesToRead) {
             try {
                 var buildId = file.nameWithoutExtension.uppercase()
-                if (buildId == "CHEATS" || buildId == game.programIdHex) {
-                    buildId = getString(R.string.cheat_build_all_versions)
+                if (buildId == "CHEATS" || buildId == game.programIdHex || buildId == "ALL" || buildId == getString(R.string.cheat_build_all_versions)) {
+                    buildId = "ALL"
                 }
 
                 val lines = file.readLines(Charsets.UTF_8)
@@ -353,7 +353,7 @@ class CheatsDialogFragment : DialogFragment() {
                 content.append("[${cheat.name}]\n")
                 content.append(cheat.code.trim()).append("\n\n")
 
-                if (cheat.buildId.isNotBlank()) {
+                if (cheat.buildId.isNotBlank() && cheat.buildId != "ALL" && cheat.buildId != "CHEATS" && cheat.buildId != game.programIdHex && cheat.buildId != getString(R.string.cheat_build_all_versions)) {
                     val bsb = buildMap.getOrPut(cheat.buildId) { StringBuilder() }
                     bsb.append("[${cheat.name}]\n").append(cheat.code.trim()).append("\n\n")
                 }
@@ -362,8 +362,10 @@ class CheatsDialogFragment : DialogFragment() {
             for (d in targetDirs) {
                 File(d, "cheats.txt").writeText(content.toString(), Charsets.UTF_8)
                 for ((bId, bContent) in buildMap) {
-                    File(d, "$bId.txt").writeText(bContent.toString(), Charsets.UTF_8)
-                    File(d, "${bId.lowercase()}.txt").writeText(bContent.toString(), Charsets.UTF_8)
+                    if (bId.length == 16 && bId.all { it.isDigit() || (it in 'A'..'F') || (it in 'a'..'f') }) {
+                        File(d, "$bId.txt").writeText(bContent.toString(), Charsets.UTF_8)
+                        File(d, "${bId.lowercase()}.txt").writeText(bContent.toString(), Charsets.UTF_8)
+                    }
                 }
             }
         } catch (e: Exception) {
@@ -390,133 +392,240 @@ class CheatsDialogFragment : DialogFragment() {
         }
     }
 
-    private fun downloadOnlineCheats() {
+        private fun downloadOnlineCheats() {
         binding.layoutDownloadStatus.visibility = View.VISIBLE
         binding.btnDownloadOnline.isEnabled = false
 
         lifecycleScope.launch(Dispatchers.IO) {
-            val tid = game.programIdHex.uppercase()
-            val urls = listOf(
-                "https://tinfoil.media/api/cheats/$tid",
-                "https://tinfoil.io/api/cheats/$tid",
-                "https://raw.githubusercontent.com/HamletDuFromage/switch-cheats-db/master/cheats/$tid.json",
-                "https://cdn.jsdelivr.net/gh/HamletDuFromage/switch-cheats-db@master/cheats/$tid.json",
-                "https://fastly.jsdelivr.net/gh/HamletDuFromage/switch-cheats-db@master/cheats/$tid.json",
-                "https://raw.githubusercontent.com/HamletDuFromage/switch-cheats-db/master/titles/$tid.txt",
-                "https://raw.githubusercontent.com/ibnux/switch-cheat/master/contents/$tid/cheats.txt",
-                "https://raw.githubusercontent.com/astranvg/Cheats-Atmosphere/master/cheats/$tid.txt",
-                "https://raw.githubusercontent.com/mrdude2478/Breeze/master/cheats/$tid.txt"
-            )
+            val tidUpper = game.programIdHex.uppercase()
+            val userAgent = "STORM-SWITCH/16.0.6"
+            val timeoutMs = 10000
 
-            var success = false
-            var loadedCount = 0
-
-            for (urlStr in urls) {
-                try {
+            // Helper for HTTP GET with timeout and User-Agent
+            fun fetchUrl(urlStr: String): String? {
+                return try {
                     val url = URL(urlStr)
                     val conn = url.openConnection() as HttpURLConnection
                     conn.requestMethod = "GET"
-                    conn.connectTimeout = 8000
-                    conn.readTimeout = 8000
-                    conn.setRequestProperty("User-Agent", "STORM_EDEN_Emulator/4.3.1")
-
+                    conn.connectTimeout = timeoutMs
+                    conn.readTimeout = timeoutMs
+                    conn.setRequestProperty("User-Agent", userAgent)
                     if (conn.responseCode == 200) {
-                        val reader = BufferedReader(InputStreamReader(conn.inputStream, Charsets.UTF_8))
-                        val text = reader.readText().trim()
-                        reader.close()
+                        conn.inputStream.bufferedReader(Charsets.UTF_8).use { it.readText().trim() }
+                    } else null
+                } catch (_: Exception) {
+                    null
+                }
+            }
 
-                        if (text.isNotEmpty() && text != "[]" && text != "{}") {
-                            val rootDir = DirectoryInitialization.userDirectory ?: YuzuApplication.appContext.filesDir.absolutePath
-                            val dir = getCheatsDir()
-                            val loadCheatsDir = File(rootDir, "load/$tid/cheats")
-                            val atmoCheatsDir = File(rootDir, "sdmc/atmosphere/contents/$tid/cheats")
-                            val atmoCheatsLowerDir = File(rootDir, "sdmc/atmosphere/contents/${tid.lowercase()}/cheats")
-                            val allDirs = listOf(dir, loadCheatsDir, atmoCheatsDir, atmoCheatsLowerDir)
-                            for (d in allDirs) {
-                                if (!d.exists()) d.mkdirs()
-                            }
+            // Discover known local BuildIDs
+            val knownBuildIds = mutableSetOf<String>()
+            val cheatsDir = getCheatsDir()
+            if (cheatsDir.exists()) {
+                cheatsDir.listFiles()?.forEach { f ->
+                    val name = f.nameWithoutExtension.uppercase()
+                    if (name.length == 16 && name.all { it.isDigit() || (it in 'A'..'F') }) {
+                        knownBuildIds.add(name)
+                    }
+                }
+            }
+            allCheats.forEach { c ->
+                val b = c.buildId.uppercase()
+                if (b.length == 16 && b.all { it.isDigit() || (it in 'A'..'F') }) {
+                    knownBuildIds.add(b)
+                }
+            }
 
-                            if (text.startsWith("[")) {
-                                // Tinfoil API format: [ { "name": "...", "build_id": "...", "source": "..." } ]
-                                val jsonArr = org.json.JSONArray(text)
-                                if (jsonArr.length() > 0) {
-                                    val bidMap = mutableMapOf<String, StringBuilder>()
-                                    val combined = StringBuilder()
-                                    for (i in 0 until jsonArr.length()) {
-                                        val item = jsonArr.optJSONObject(i) ?: continue
-                                        var cName = item.optString("name", "").trim()
-                                        val cBid = item.optString("build_id", "").trim().uppercase()
-                                        val cSrc = item.optString("source", "").trim()
-                                        if (cName.isEmpty() || cSrc.isEmpty()) continue
-                                        if (!cName.startsWith("[")) cName = "[$cName]"
-                                        if (!cName.endsWith("]")) cName = "$cName]"
+            // Storage for deduplicated cheats: normalized title -> (name, code, buildId)
+            data class OnlineCheat(val name: String, val code: String, var buildId: String)
+            val deduplicatedCheats = mutableMapOf<String, OnlineCheat>()
 
-                                        val entry = "$cName\n$cSrc\n\n"
-                                        val targetBid = if (cBid.isNotEmpty()) cBid else tid
-                                        bidMap.getOrPut(targetBid) { StringBuilder() }.append(entry)
-                                        combined.append(entry)
-                                        loadedCount++
-                                    }
+            fun normalizeTitle(title: String): String {
+                return title.replace("[", "").replace("]", "").trim().lowercase()
+            }
 
-                                    for ((bidKey, content) in bidMap) {
-                                        for (d in allDirs) {
-                                            File(d, "$bidKey.txt").writeText(content.toString(), Charsets.UTF_8)
-                                            File(d, "${bidKey.lowercase()}.txt").writeText(content.toString(), Charsets.UTF_8)
-                                        }
+            fun addCheat(name: String, code: String, bid: String) {
+                val cleanName = name.trim()
+                val cleanCode = code.trim()
+                if (cleanName.isEmpty() || cleanCode.isEmpty()) return
+                val norm = normalizeTitle(cleanName)
+                val targetBid = if (bid.length == 16 && bid.all { it.isDigit() || (it in 'A'..'F') }) bid else "ALL"
+                if (!deduplicatedCheats.containsKey(norm)) {
+                    deduplicatedCheats[norm] = OnlineCheat(cleanName, cleanCode, targetBid)
+                }
+            }
+
+            fun parseRawCheatText(text: String, defaultBid: String) {
+                var currentName = ""
+                val currentCode = StringBuilder()
+                for (line in text.lines()) {
+                    val trimmed = line.trim()
+                    if (trimmed.isEmpty() || trimmed.startsWith("#") || trimmed.startsWith("//") || trimmed.startsWith(";")) {
+                        continue
+                    }
+                    if (trimmed.startsWith("[") && trimmed.contains("]")) {
+                        if (currentName.isNotEmpty() && currentCode.isNotEmpty()) {
+                            addCheat(currentName, currentCode.toString().trim(), defaultBid)
+                        }
+                        val closeIdx = trimmed.indexOf(']')
+                        currentName = trimmed.substring(1, closeIdx).trim()
+                        currentCode.clear()
+                    } else {
+                        currentCode.append(trimmed).append("\n")
+                    }
+                }
+                if (currentName.isNotEmpty() && currentCode.isNotEmpty()) {
+                    addCheat(currentName, currentCode.toString().trim(), defaultBid)
+                }
+            }
+
+            // 1. HamletDuFromage/switch-cheats-db JSON
+            try {
+                val jsonUrl = "https://cdn.jsdelivr.net/gh/HamletDuFromage/switch-cheats-db@master/cheats/${tidUpper}.json"
+                val jsonText = fetchUrl(jsonUrl)
+                if (!jsonText.isNullOrEmpty() && jsonText.startsWith("{")) {
+                    val jsonObj = JSONObject(jsonText)
+                    val keys = jsonObj.keys()
+                    val candidateBids = mutableListOf<String>()
+                    while (keys.hasNext()) {
+                        val k = keys.next().trim().uppercase()
+                        if (k != "ATTRIBUTION" && k.length == 16 && k.all { it.isDigit() || (it in 'A'..'F') }) {
+                            candidateBids.add(k)
+                        }
+                    }
+                    for (bidKey in candidateBids) {
+                        knownBuildIds.add(bidKey)
+                        val bidObj = jsonObj.optJSONObject(bidKey)
+                        if (bidObj != null) {
+                            val cheatNames = bidObj.keys()
+                            while (cheatNames.hasNext()) {
+                                val cName = cheatNames.next()
+                                val cCode = bidObj.optString(cName, "").trim()
+                                if (cCode.isNotEmpty()) {
+                                    val formattedName = if (cName.startsWith("[") && cName.endsWith("]")) {
+                                        cName.substring(1, cName.length - 1).trim()
+                                    } else {
+                                        cName
                                     }
-                                    if (combined.isNotEmpty()) {
-                                        for (d in allDirs) {
-                                            File(d, "cheats.txt").writeText(combined.toString(), Charsets.UTF_8)
-                                        }
-                                    }
-                                    success = true
-                                    break
+                                    addCheat(formattedName, cCode, bidKey)
                                 }
-                            } else if (text.startsWith("{")) {
-                                val json = JSONObject(text)
-                                val combined = StringBuilder()
-                                val keys = json.keys()
-                                while (keys.hasNext()) {
-                                    val bidKey = keys.next().trim().uppercase()
-                                    val bidObj = json.optJSONObject(bidKey)
-                                    if (bidObj != null) {
-                                        val bidContent = StringBuilder()
-                                        val cheatNames = bidObj.keys()
-                                        while (cheatNames.hasNext()) {
-                                            val cName = cheatNames.next()
-                                            val cCode = bidObj.optString(cName, "").trim()
-                                            if (cCode.isNotEmpty()) {
-                                                bidContent.append(cCode).append("\n\n")
-                                                combined.append(cCode).append("\n\n")
-                                                loadedCount++
-                                            }
-                                        }
-                                        if (bidContent.isNotEmpty()) {
-                                            for (d in allDirs) {
-                                                File(d, "$bidKey.txt").writeText(bidContent.toString(), Charsets.UTF_8)
-                                                File(d, "${bidKey.lowercase()}.txt").writeText(bidContent.toString(), Charsets.UTF_8)
-                                            }
-                                        }
-                                    }
-                                }
-                                if (combined.isNotEmpty()) {
-                                    for (d in allDirs) {
-                                        File(d, "cheats.txt").writeText(combined.toString(), Charsets.UTF_8)
-                                    }
-                                }
-                                success = true
-                                break
-                            } else {
-                                for (d in allDirs) {
-                                    File(d, "cheats.txt").writeText(text, Charsets.UTF_8)
-                                }
-                                success = true
-                                break
                             }
                         }
                     }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+            // 2. Tinfoil Media API
+            try {
+                val tinfoilUrl = "https://tinfoil.media/api/cheats/${tidUpper}"
+                val tinfoilText = fetchUrl(tinfoilUrl)
+                if (!tinfoilText.isNullOrEmpty() && tinfoilText.startsWith("[")) {
+                    val jsonArr = org.json.JSONArray(tinfoilText)
+                    for (i in 0 until jsonArr.length()) {
+                        val item = jsonArr.optJSONObject(i) ?: continue
+                        var cName = item.optString("name", "").trim()
+                        val cBid = item.optString("build_id", "").trim().uppercase()
+                        val cSrc = item.optString("source", "").trim()
+                        if (cName.isEmpty() || cSrc.isEmpty()) continue
+                        if (cName.startsWith("[") && cName.endsWith("]")) {
+                            cName = cName.substring(1, cName.length - 1).trim()
+                        }
+                        if (cBid.length == 16 && cBid.all { it.isDigit() || (it in 'A'..'F') }) {
+                            knownBuildIds.add(cBid)
+                        }
+                        addCheat(cName, cSrc, cBid)
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+            // 5. GitHub contents API fallback to discover all BuildIDs if knownBuildIds is empty or partial
+            try {
+                val contentsApis = listOf(
+                    "https://api.github.com/repos/ibnux/switch-cheat/contents/atmosphere/titles/${tidUpper}/cheats",
+                    "https://api.github.com/repos/ChanseyIsTheBest/NX-60FPS-RES-GFX-Cheats/contents/titles/${tidUpper}/cheats"
+                )
+                for (api in contentsApis) {
+                    val contentsText = fetchUrl(api)
+                    if (!contentsText.isNullOrEmpty() && contentsText.startsWith("[")) {
+                        val arr = org.json.JSONArray(contentsText)
+                        for (i in 0 until arr.length()) {
+                            val fObj = arr.optJSONObject(i) ?: continue
+                            val fName = fObj.optString("name", "").trim()
+                            if (fName.endsWith(".txt", ignoreCase = true)) {
+                                val bidName = fName.substringBeforeLast(".").uppercase()
+                                if (bidName.length == 16 && bidName.all { it.isDigit() || (it in 'A'..'F') }) {
+                                    knownBuildIds.add(bidName)
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+            // 3. ChanseyIsTheBest/NX-60FPS-RES-GFX-Cheats (60FPS, Resolution, Graphics cheats)
+            for (bid in knownBuildIds) {
+                try {
+                    val chanseyUrl = "https://cdn.jsdelivr.net/gh/ChanseyIsTheBest/NX-60FPS-RES-GFX-Cheats@main/titles/${tidUpper}/cheats/${bid}.txt"
+                    val chanseyText = fetchUrl(chanseyUrl)
+                    if (!chanseyText.isNullOrEmpty() && chanseyText.contains("[")) {
+                        parseRawCheatText(chanseyText, bid)
+                    }
                 } catch (e: Exception) {
                     e.printStackTrace()
+                }
+            }
+
+            // 4. ibnux/switch-cheat
+            for (bid in knownBuildIds) {
+                try {
+                    var ibnuxText = fetchUrl("https://cdn.jsdelivr.net/gh/ibnux/switch-cheat@master/atmosphere/titles/${tidUpper}/cheats/${bid.lowercase()}.txt")
+                    if (ibnuxText.isNullOrEmpty()) {
+                        ibnuxText = fetchUrl("https://cdn.jsdelivr.net/gh/ibnux/switch-cheat@master/atmosphere/titles/${tidUpper}/cheats/${bid.uppercase()}.txt")
+                    }
+                    if (!ibnuxText.isNullOrEmpty() && ibnuxText.contains("[")) {
+                        parseRawCheatText(ibnuxText, bid)
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+
+            // Write all discovered deduplicated cheats to disk
+            val success = deduplicatedCheats.isNotEmpty()
+            if (success) {
+                val rootDir = DirectoryInitialization.userDirectory ?: YuzuApplication.appContext.filesDir.absolutePath
+                val dir = getCheatsDir()
+                val loadCheatsDir = File(rootDir, "load/${tidUpper}/cheats")
+                val atmoCheatsDir = File(rootDir, "sdmc/atmosphere/contents/${tidUpper}/cheats")
+                val atmoCheatsLowerDir = File(rootDir, "sdmc/atmosphere/contents/${tidUpper.lowercase()}/cheats")
+                val allDirs = listOf(dir, loadCheatsDir, atmoCheatsDir, atmoCheatsLowerDir)
+                for (d in allDirs) {
+                    if (!d.exists()) d.mkdirs()
+                }
+
+                val allCheatsContent = StringBuilder()
+                val buildMap = mutableMapOf<String, StringBuilder>()
+
+                for ((_, cheat) in deduplicatedCheats) {
+                    val entry = "[${cheat.name}]\n${cheat.code.trim()}\n\n"
+                    allCheatsContent.append(entry)
+                    if (cheat.buildId.length == 16 && cheat.buildId.all { it.isDigit() || (it in 'A'..'F') }) {
+                        buildMap.getOrPut(cheat.buildId) { StringBuilder() }.append(entry)
+                    }
+                }
+
+                for (d in allDirs) {
+                    File(d, "cheats.txt").writeText(allCheatsContent.toString(), Charsets.UTF_8)
+                    for ((bId, bContent) in buildMap) {
+                        File(d, "$bId.txt").writeText(bContent.toString(), Charsets.UTF_8)
+                        File(d, "${bId.lowercase()}.txt").writeText(bContent.toString(), Charsets.UTF_8)
+                    }
                 }
             }
 
@@ -528,7 +637,7 @@ class CheatsDialogFragment : DialogFragment() {
                     loadCheatsFromDisk()
                     Toast.makeText(
                         requireContext(),
-                        getString(R.string.cheats_download_success, allCheats.size),
+                        getString(R.string.cheats_download_success, deduplicatedCheats.size),
                         Toast.LENGTH_LONG
                     ).show()
                 } else {
@@ -542,7 +651,7 @@ class CheatsDialogFragment : DialogFragment() {
         }
     }
 
-    private fun showAddCustomCheatDialog() {
+private fun showAddCustomCheatDialog() {
         val context = requireContext()
         val layout = android.widget.LinearLayout(context).apply {
             orientation = android.widget.LinearLayout.VERTICAL
@@ -774,7 +883,7 @@ class CheatsDialogFragment : DialogFragment() {
         _binding = null
     }
 
-    private class CheatsAdapter(
+    private inner class CheatsAdapter(
         private val items: List<CheatModel>,
         private val isRunning: Boolean,
         private val onCheckChanged: (CheatModel, Boolean) -> Unit,
@@ -799,8 +908,12 @@ class CheatsDialogFragment : DialogFragment() {
             b.checkboxCheat.setOnCheckedChangeListener(null)
             b.checkboxCheat.isChecked = item.isEnabled
 
-            b.textBuildIdBadge.text = item.buildId
-            b.textBuildIdBadge.visibility = if (item.buildId.isNotEmpty()) View.VISIBLE else View.GONE
+            b.textBuildIdBadge.text = if (item.buildId.isEmpty() || item.buildId.equals("ALL", ignoreCase = true) || item.buildId.equals("CHEATS", ignoreCase = true) || item.buildId.equals(game.programIdHex, ignoreCase = true)) {
+                b.root.context.getString(R.string.cheat_build_all_versions)
+            } else {
+                item.buildId
+            }
+            b.textBuildIdBadge.visibility = View.VISIBLE
 
             if (isRunning && item.isEnabled) {
                 b.textCheatStatus.text = b.root.context.getString(R.string.cheat_status_active)

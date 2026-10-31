@@ -62,7 +62,9 @@
                 android:textStyle="bold"
                 android:textSize="15sp"
                 android:textColor="?attr/colorOnSurface"
-                tools:text="Расширенные настройки" />
+                tools:text="Расширенные настройки"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <com.google.android.material.textview.MaterialTextView
                 style="@style/SynthwaveText.Body"
@@ -73,7 +75,9 @@
                 android:textSize="12.5sp"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:layout_marginTop="2dp"
-                tools:text="Глубокая настройка параметров ядра, CPU и графики" />
+                tools:text="Глубокая настройка параметров ядра, CPU и графики"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <com.google.android.material.textview.MaterialTextView
                 style="@style/SynthwaveText.Secondary"
@@ -90,7 +94,9 @@
                 android:background="@drawable/bg_storm_badge_capsule"
                 android:visibility="gone"
                 tools:visibility="visible"
-                tools:text="/storage/emulated/0/STORM SWITCH" />
+                tools:text="/storage/emulated/0/STORM SWITCH"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         </LinearLayout>
 

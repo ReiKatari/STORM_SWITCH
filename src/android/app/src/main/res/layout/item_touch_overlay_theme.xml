@@ -58,7 +58,9 @@
                 android:textColor="?attr/colorOnSurface"
                 android:textStyle="bold"
                 android:textSize="14sp"
-                tools:text="Cyberpunk Neon" />
+                tools:text="Cyberpunk Neon"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/text_theme_style"
@@ -68,7 +70,9 @@
                 android:layout_marginTop="2dp"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="11sp"
-                tools:text="Неоновое кибер-свечение (3D)" />
+                tools:text="Неоновое кибер-свечение (3D)"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         </LinearLayout>
 
@@ -78,7 +82,9 @@
             android:layout_height="wrap_content"
             android:clickable="false"
             android:focusable="false"
-            android:layout_marginStart="8dp" />
+            android:layout_marginStart="8dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
     </LinearLayout>
 

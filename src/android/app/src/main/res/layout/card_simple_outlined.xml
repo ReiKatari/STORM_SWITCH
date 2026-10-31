@@ -65,7 +65,9 @@
                     android:textSize="15sp"
                     android:textStyle="bold"
                     android:textAlignment="viewStart"
-                    tools:text="@string/applets" />
+                    tools:text="@string/applets"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/description"
@@ -76,7 +78,9 @@
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="12.5sp"
                     android:textAlignment="viewStart"
-                    tools:text="@string/applets_description" />
+                    tools:text="@string/applets_description"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <com.google.android.material.textview.MaterialTextView
                     style="@style/SynthwaveText.Secondary"
@@ -92,7 +96,9 @@
                     android:background="@drawable/bg_storm_badge_capsule"
                     android:visibility="gone"
                     tools:visibility="visible"
-                    tools:text="/tree/primary:Games" />
+                    tools:text="/tree/primary:Games"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             </LinearLayout>
 

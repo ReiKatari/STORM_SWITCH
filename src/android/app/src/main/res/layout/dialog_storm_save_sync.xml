@@ -37,14 +37,18 @@
                 android:text="STORM SAVE SYNC"
                 android:textColor="?attr/colorPrimary"
                 android:textSize="17sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/storm_sync_subtitle"
                 android:textColor="?attr/colorOnSurfaceVariant"
-                android:textSize="12sp" />
+                android:textSize="12sp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
         </LinearLayout>
 
         <ImageButton
@@ -102,7 +106,9 @@
                         android:layout_height="wrap_content"
                         android:text="@string/storm_sync_device_key_label"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="12sp" />
+                        android:textSize="12sp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -120,7 +126,9 @@
                             android:textColor="?attr/colorPrimary"
                             android:textSize="14sp"
                             android:textStyle="bold"
-                            tools:text="STORM-C0A80169-6F1B" />
+                            tools:text="STORM-C0A80169-6F1B"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btn_copy_key"
@@ -134,7 +142,11 @@
                             app:icon="@drawable/ic_copy"
                             app:iconTint="?attr/colorPrimary"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorPrimary" />
+        app:strokeColor="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
                     </LinearLayout>
 
                     <TextView
@@ -144,7 +156,9 @@
                         android:layout_marginTop="4dp"
                         android:text="@string/storm_sync_server_active"
                         android:textColor="#10B981"
-                        android:textSize="11sp" />
+                        android:textSize="11sp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -171,7 +185,9 @@
                         android:text="@string/storm_sync_remote_connect_title"
                         android:textColor="?attr/colorOnSurface"
                         android:textSize="13sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -203,7 +219,11 @@
                             android:textSize="12sp"
                             app:backgroundTint="?attr/colorSurface"
                             app:strokeColor="?attr/colorPrimary"
-                            app:strokeWidth="1dp" />
+                            app:strokeWidth="1dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
                     </LinearLayout>
 
                     <LinearLayout
@@ -224,7 +244,11 @@
                             app:icon="@drawable/ic_network"
                             app:iconTint="?attr/colorPrimary"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorPrimary" />
+        app:strokeColor="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
                         <Spinner
                             android:id="@+id/spinner_discovered"
@@ -242,7 +266,9 @@
                         android:layout_marginTop="4dp"
                         android:text="@string/storm_sync_state_disconnected"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="11sp" />
+                        android:textSize="11sp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -272,7 +298,9 @@
                     android:text="@string/storm_sync_saves_count_zero"
                     android:textColor="?attr/colorOnSurface"
                     android:textSize="14sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_sync_all"
@@ -285,7 +313,11 @@
                     android:textStyle="bold"
                     app:backgroundTint="?attr/colorPrimary"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorPrimary" />
+        app:strokeColor="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
             </LinearLayout>
 
             <!-- Search Saves -->
@@ -335,7 +367,9 @@
                 android:text="@string/storm_sync_empty_saves"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="13sp"
-                android:visibility="gone" />
+                android:visibility="gone"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </LinearLayout>

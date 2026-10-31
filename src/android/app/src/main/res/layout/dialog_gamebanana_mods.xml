@@ -45,7 +45,9 @@
                     android:text="@string/gamebanana_mods"
                     android:textSize="15sp"
                     android:textStyle="bold"
-                    android:textColor="?attr/colorOnSurface" />
+                    android:textColor="?attr/colorOnSurface"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/text_game_title"
@@ -56,7 +58,9 @@
                     android:textColor="?attr/colorPrimary"
                     android:maxLines="3"
                     android:ellipsize="end"
-                    tools:text="The Legend of Zelda: Tears of the Kingdom" />
+                    tools:text="The Legend of Zelda: Tears of the Kingdom"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             </LinearLayout>
 
@@ -102,7 +106,11 @@
                     app:cornerRadius="8dp"
                     app:strokeWidth="0dp"
                     android:insetTop="0dp"
-                    android:insetBottom="0dp" />
+                    android:insetBottom="0dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_tab_installed"
@@ -117,7 +125,11 @@
                     app:strokeWidth="1dp"
                     app:strokeColor="?attr/colorOutline"
                     android:insetTop="0dp"
-                    android:insetBottom="0dp" />
+                    android:insetBottom="0dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
             </LinearLayout>
 
@@ -179,7 +191,11 @@
                     app:cornerRadius="8dp"
                     android:paddingHorizontal="12dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorPrimary" />
+        app:strokeColor="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
             </LinearLayout>
 
@@ -199,7 +215,9 @@
                     android:textSize="11sp"
                     android:textColor="?attr/colorPrimary"
                     android:textStyle="bold"
-                    android:layout_marginEnd="6dp" />
+                    android:layout_marginEnd="6dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <Spinner
                     android:id="@+id/spinner_sort"
@@ -222,7 +240,11 @@
                     app:icon="@drawable/ic_install"
                     app:iconSize="14dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
             </LinearLayout>
 
@@ -255,7 +277,9 @@
                     android:layout_gravity="center"
                     android:text="@string/gamebanana_no_mods"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:visibility="gone" />
+                    android:visibility="gone"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             </FrameLayout>
 
@@ -281,7 +305,9 @@
                     android:maxLines="2"
                     android:ellipsize="end"
                     android:textColor="?attr/colorOnSurface"
-                    tools:text="Страница 1" />
+                    tools:text="Страница 1"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -303,7 +329,11 @@
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/button_prev_page"
@@ -320,7 +350,11 @@
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/text_page_indicator"
@@ -331,7 +365,9 @@
                         android:text="@string/page_1"
                         android:textColor="?attr/colorPrimary"
                         android:textStyle="bold"
-                        android:textSize="11sp" />
+                        android:textSize="11sp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/button_next_page"
@@ -346,7 +382,11 @@
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
                 </LinearLayout>
 
@@ -371,7 +411,11 @@
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
                 </LinearLayout>
 
@@ -407,7 +451,9 @@
                     android:textSize="11sp"
                     android:textStyle="bold"
                     android:maxLines="2"
-                    android:ellipsize="end" />
+                    android:ellipsize="end"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_refresh_installed"
@@ -421,7 +467,11 @@
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_manual_install_installed"
@@ -437,7 +487,11 @@
                     app:icon="@drawable/ic_install"
                     app:iconSize="14dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
             </LinearLayout>
 
@@ -461,7 +515,9 @@
                     android:layout_gravity="center"
                     android:text="@string/gamebanana_no_installed_mods"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:visibility="gone" />
+                    android:visibility="gone"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             </FrameLayout>
 
@@ -489,7 +545,11 @@
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
             </LinearLayout>
 

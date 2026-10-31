@@ -51,7 +51,9 @@
                     android:textSize="12sp"
                     android:textStyle="bold"
                     android:ellipsize="end"
-                    android:maxLines="3" />
+                    android:maxLines="3"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/text_build_id_badge"
@@ -63,7 +65,9 @@
                     android:paddingHorizontal="4dp"
                     android:paddingVertical="1dp"
                     android:background="@drawable/badge_pill_blue"
-                    android:layout_marginStart="4dp" />
+                    android:layout_marginStart="4dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/text_cheat_status"
@@ -73,7 +77,9 @@
                     android:textSize="9sp"
                     android:textColor="?attr/colorPrimary"
                     android:textStyle="bold"
-                    android:layout_marginStart="4dp" />
+                    android:layout_marginStart="4dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             </LinearLayout>
 
@@ -87,7 +93,9 @@
                 android:maxLines="3"
                 android:ellipsize="end"
                 android:visibility="gone"
-                tools:visibility="visible" />
+                tools:visibility="visible"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/text_code_preview"
@@ -98,7 +106,9 @@
                 android:textSize="9sp"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:maxLines="1"
-                android:ellipsize="end" />
+                android:ellipsize="end"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         </LinearLayout>
 
@@ -121,7 +131,11 @@
             android:insetTop="0dp"
             android:insetBottom="0dp"
             android:layout_marginStart="4dp"
-            android:visibility="visible" />
+            android:visibility="visible"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
     </LinearLayout>
 

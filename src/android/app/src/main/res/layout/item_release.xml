@@ -16,12 +16,13 @@
         android:layout_height="wrap_content"
         android:textSize="15sp"
         android:textStyle="bold"
-        android:breakStrategy="high_quality"
+        android:breakStrategy="simple"
         android:textColor="?attr/colorOnSurface"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toStartOf="@id/badge_latest"
-        tools:text="Turnip-25.2.0-devel" />
+        tools:text="Turnip-25.2.0-devel"
+    android:hyphenationFrequency="none"/>
 
     <TextView
         android:id="@+id/badge_latest"
@@ -36,7 +37,9 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/text_release_name"
         app:layout_constraintBottom_toBottomOf="@id/text_release_name"
-        android:layout_marginStart="8dp" />
+        android:layout_marginStart="8dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
     <TextView
         android:id="@+id/text_body"
@@ -47,10 +50,11 @@
         android:maxLines="4"
         android:textSize="13sp"
         android:textColor="?attr/colorOnSurfaceVariant"
-        android:breakStrategy="high_quality"
+        android:breakStrategy="simple"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text_release_name" />
+        app:layout_constraintTop_toBottomOf="@id/text_release_name"
+    android:hyphenationFrequency="none"/>
 
     <TextView
         android:id="@+id/button_toggle_downloads"
@@ -62,7 +66,9 @@
         android:textColor="?attr/colorPrimary"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/text_body"
-        android:layout_marginTop="8dp" />
+        android:layout_marginTop="8dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
     <ImageView
         android:id="@+id/image_downloads_arrow"

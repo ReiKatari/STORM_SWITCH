@@ -29,7 +29,9 @@
             android:textColor="?attr/colorPrimary"
             android:textSize="22sp"
             android:textStyle="bold"
-            tools:text="75%" />
+            tools:text="75%"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
     </com.google.android.material.card.MaterialCardView>
 
     <com.google.android.material.slider.Slider

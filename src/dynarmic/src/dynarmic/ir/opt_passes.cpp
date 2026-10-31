@@ -1443,6 +1443,76 @@ static void VerificationPass(const IR::Block& block) {
         ASSERT(pair.first->UseCount() == pair.second);
 }
 
+void StormTier2IROptimize(IR::Block& block) {
+    auto ValuesEquivalent = [](const IR::Value& a, const IR::Value& b) -> bool {
+        if (a.IsImmediate() != b.IsImmediate()) {
+            return false;
+        }
+        if (a.IsImmediate()) {
+            return a.GetImmediateAsU64() == b.GetImmediateAsU64();
+        }
+        return a.GetInstRecursive() == b.GetInstRecursive();
+    };
+
+    for (auto& inst : block.instructions) {
+        if (inst.HasAssociatedPseudoOperation()) {
+            continue;
+        }
+        const auto opcode = inst.GetOpcode();
+        switch (opcode) {
+        case IR::Opcode::And32:
+        case IR::Opcode::Or32: {
+            if (inst.NumArgs() >= 2 && ValuesEquivalent(inst.GetArg(0), inst.GetArg(1))) {
+                inst.ReplaceUsesWith(inst.GetArg(0));
+            }
+            break;
+        }
+        case IR::Opcode::Eor32: {
+            if (inst.NumArgs() >= 2 && ValuesEquivalent(inst.GetArg(0), inst.GetArg(1))) {
+                inst.ReplaceUsesWith(IR::Value{u32(0)});
+            }
+            break;
+        }
+        case IR::Opcode::And64:
+        case IR::Opcode::Or64: {
+            if (inst.NumArgs() >= 2 && ValuesEquivalent(inst.GetArg(0), inst.GetArg(1))) {
+                inst.ReplaceUsesWith(inst.GetArg(0));
+            }
+            break;
+        }
+        case IR::Opcode::Eor64: {
+            if (inst.NumArgs() >= 2 && ValuesEquivalent(inst.GetArg(0), inst.GetArg(1))) {
+                inst.ReplaceUsesWith(IR::Value{u64(0)});
+            }
+            break;
+        }
+        case IR::Opcode::LeastSignificantWord: {
+            if (inst.NumArgs() >= 1 && !inst.GetArg(0).IsImmediate()) {
+                const auto* arg_inst = inst.GetArg(0).GetInstRecursive();
+                if (arg_inst && arg_inst->GetOpcode() == IR::Opcode::ZeroExtendWordToLong) {
+                    inst.ReplaceUsesWith(arg_inst->GetArg(0));
+                }
+            }
+            break;
+        }
+        case IR::Opcode::ZeroExtendWordToLong: {
+            if (inst.NumArgs() >= 1 && !inst.GetArg(0).IsImmediate()) {
+                const auto* arg_inst = inst.GetArg(0).GetInstRecursive();
+                if (arg_inst && arg_inst->GetOpcode() == IR::Opcode::LeastSignificantWord) {
+                    const auto* inner = arg_inst->GetArg(0).GetInstRecursive();
+                    if (inner && inner->GetOpcode() == IR::Opcode::ZeroExtendWordToLong) {
+                        inst.ReplaceUsesWith(arg_inst->GetArg(0));
+                    }
+                }
+            }
+            break;
+        }
+        default:
+            break;
+        }
+    }
+}
+
 void Optimize(IR::Block& block, const A32::UserConfig& conf, const Optimization::PolyfillOptions& polyfill_options) {
     Optimization::PolyfillPass(block, polyfill_options);
     Optimization::NamingPass(block);
@@ -1452,6 +1522,12 @@ void Optimize(IR::Block& block, const A32::UserConfig& conf, const Optimization:
     }
     if (conf.HasOptimization(OptimizationFlag::ConstProp)) {
         Optimization::ConstantMemoryReads(block, conf.callbacks);
+        Optimization::ConstantPropagation(block);
+        Optimization::DeadCodeElimination(block);
+    }
+    if (conf.HasOptimization(OptimizationFlag::MiscIROpt) || conf.HasOptimization(OptimizationFlag::CodeSpeed)) {
+        Optimization::StormTier2IROptimize(block);
+        Optimization::DeadCodeElimination(block);
         Optimization::ConstantPropagation(block);
         Optimization::DeadCodeElimination(block);
     }
@@ -1470,6 +1546,12 @@ void Optimize(IR::Block& block, const A64::UserConfig& conf, const Optimization:
         Optimization::DeadCodeElimination(block);
     }
     if (conf.HasOptimization(OptimizationFlag::ConstProp)) {
+        Optimization::ConstantPropagation(block);
+        Optimization::DeadCodeElimination(block);
+    }
+    if (conf.HasOptimization(OptimizationFlag::MiscIROpt) || conf.HasOptimization(OptimizationFlag::CodeSpeed)) {
+        Optimization::StormTier2IROptimize(block);
+        Optimization::DeadCodeElimination(block);
         Optimization::ConstantPropagation(block);
         Optimization::DeadCodeElimination(block);
     }

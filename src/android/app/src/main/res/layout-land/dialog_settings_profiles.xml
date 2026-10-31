@@ -40,7 +40,9 @@
                 android:text="@string/settings_profiles_title"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <TextView
                 android:id="@+id/text_profiles_counter"
@@ -54,7 +56,9 @@
                 android:text="0"
                 android:textColor="?attr/colorPrimary"
                 android:textSize="11sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <ImageButton
                 android:id="@+id/btn_close_profiles"
@@ -75,7 +79,9 @@
             android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="11.5sp"
             android:lineSpacingExtra="2dp"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="16dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         <View
             android:layout_width="match_parent"
@@ -104,7 +110,11 @@
                 app:iconSize="16dp"
                 app:cornerRadius="10dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorPrimary" />
+        app:strokeColor="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_import_profile"
@@ -121,7 +131,11 @@
                 app:iconSize="16dp"
                 app:cornerRadius="10dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
         </LinearLayout>
 
@@ -148,7 +162,9 @@
             android:text="@string/profile_empty_state"
             android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="13sp"
-            android:visibility="gone" />
+            android:visibility="gone"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
     </FrameLayout>
 

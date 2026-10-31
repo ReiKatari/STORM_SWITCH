@@ -2434,9 +2434,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="auto_opt_detected_hw">🔍 पहचाना गया हार्डवेयर</string>
     <string name="auto_opt_form_tablet">टैबलेट</string>
     <string name="auto_opt_form_phone">स्मार्टफ़ोन</string>
-    <string name="auto_opt_soc_fmt">SoC / CPU: %1$s (%2$d कोर, %3$s)</string>
-    <string name="auto_opt_gpu_fmt">GPU: %1$s</string>
-    <string name="auto_opt_ram_fmt">RAM: %1$.1f GB (उपलब्ध: %2$.1f GB)</string>
+    <string name="auto_opt_soc_fmt">%1$s (%2$d कोर, %3$s)</string>
+    <string name="auto_opt_gpu_fmt">%1$s</string>
+    <string name="auto_opt_ram_fmt">%1$.1f GB (उपलब्ध: %2$.1f GB)</string>
     <string name="auto_opt_tier_elite">अल्ट्रा-फ्लैगशिप (Snapdragon 8 Elite / 12GB+ RAM)</string>
     <string name="auto_opt_tier_flagship">फ्लैगशिप (उच्च प्रदर्शन, 12GB+ RAM)</string>
     <string name="auto_opt_tier_high_mid">अपर मिड-रेंज (संतुलित प्रदर्शन, 8GB RAM)</string>

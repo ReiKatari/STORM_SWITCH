@@ -48,7 +48,9 @@
                 android:layout_marginBottom="8dp"
                 android:text="@string/freedreno_presets"
                 android:textSize="16sp"
-                android:textColor="?attr/colorPrimary" />
+                android:textColor="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/list_freedreno_presets"
@@ -71,7 +73,9 @@
                 android:layout_marginBottom="8dp"
                 android:text="@string/freedreno_current_settings"
                 android:textSize="16sp"
-                android:textColor="?attr/colorPrimary" />
+                android:textColor="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <!-- Settings List -->
             <androidx.recyclerview.widget.RecyclerView
@@ -90,7 +94,9 @@
                 android:layout_marginBottom="8dp"
                 android:text="@string/freedreno_debug"
                 android:textSize="16sp"
-                android:textColor="?attr/colorPrimary" />
+                android:textColor="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <!-- Manual Variable Input Card -->
             <com.google.android.material.card.MaterialCardView
@@ -156,7 +162,11 @@
                         android:text="@string/freedreno_add_variable"
                         app:cornerRadius="12dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
                 </LinearLayout>
 
@@ -179,7 +189,11 @@
                     android:text="@string/freedreno_clear_all"
                     app:cornerRadius="14dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_save"
@@ -191,7 +205,11 @@
                     android:text="@string/save"
                     app:cornerRadius="14dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
             </LinearLayout>
 
@@ -219,7 +237,9 @@
                         android:layout_height="wrap_content"
                         android:text="@string/freedreno_info_title"
                         android:textStyle="bold"
-                        android:textColor="?attr/colorPrimary" />
+                        android:textColor="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     <com.google.android.material.textview.MaterialTextView
                         style="@style/SynthwaveText.Body"
@@ -228,7 +248,9 @@
                         android:layout_marginTop="8dp"
                         android:text="@string/freedreno_info_description"
                         android:textColor="?attr/colorOnSurface"
-                        android:textSize="12sp" />
+                        android:textSize="12sp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 </LinearLayout>
 

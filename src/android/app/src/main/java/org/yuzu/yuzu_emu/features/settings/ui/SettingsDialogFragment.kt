@@ -23,6 +23,10 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
+import android.content.res.ColorStateList
+import android.util.TypedValue
+import com.google.android.material.color.MaterialColors
+import org.yuzu.yuzu_emu.features.settings.model.StringSetting
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.slider.Slider
 import org.yuzu.yuzu_emu.R
@@ -318,6 +322,57 @@ class SettingsDialogFragment : DialogFragment(), DialogInterface.OnClickListener
                 stringInputBinding = DialogEditTextBinding.inflate(LayoutInflater.from(themedContext))
                 val item = settingsViewModel.clickedItem as StringInputSetting
                 stringInputBinding.editText.setText(item.getSelectedValue())
+
+                if (item.setting == StringSetting.PROGRAM_ARGS) {
+                    stringInputBinding.textInputHelper.setText(R.string.program_args_description)
+                    stringInputBinding.textInputHelper.visibility = View.VISIBLE
+                    stringInputBinding.editTextLayout.hint = "--verbose -noglsl"
+                    stringInputBinding.chipGroupPresets.visibility = View.VISIBLE
+                    stringInputBinding.chipGroupPresets.removeAllViews()
+
+                    val presets = listOf("--verbose", "-noglsl", "--safe-mode")
+                    for (preset in presets) {
+                        val chip = com.google.android.material.chip.Chip(themedContext).apply {
+                            text = preset
+                            isCheckable = false
+                            isClickable = true
+                            isFocusable = true
+                            chipStrokeWidth = TypedValue.applyDimension(
+                                TypedValue.COMPLEX_UNIT_DIP,
+                                1f,
+                                resources.displayMetrics
+                            )
+                            chipStrokeColor = ColorStateList.valueOf(
+                                MaterialColors.getColor(this, com.google.android.material.R.attr.colorOutline)
+                            )
+                            chipBackgroundColor = ColorStateList.valueOf(
+                                MaterialColors.getColor(this, com.google.android.material.R.attr.colorSurfaceVariant)
+                            )
+                            setTextColor(
+                                MaterialColors.getColor(this, com.google.android.material.R.attr.colorPrimary)
+                            )
+                            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+                            setOnClickListener {
+                                val currentText = stringInputBinding.editText.text?.toString() ?: ""
+                                val tokens = currentText.split(" ").filter { it.isNotBlank() }.toMutableList()
+                                if (tokens.contains(preset)) {
+                                    tokens.remove(preset)
+                                } else {
+                                    tokens.add(preset)
+                                }
+                                stringInputBinding.editText.setText(tokens.joinToString(" "))
+                                stringInputBinding.editText.setSelection(stringInputBinding.editText.text?.length ?: 0)
+                            }
+                        }
+                        stringInputBinding.chipGroupPresets.addView(chip)
+                    }
+                } else if (item.descriptionId != 0) {
+                    stringInputBinding.textInputHelper.setText(item.descriptionId)
+                    stringInputBinding.textInputHelper.visibility = View.VISIBLE
+                } else if (item.descriptionString.isNotBlank()) {
+                    stringInputBinding.textInputHelper.text = item.descriptionString
+                    stringInputBinding.textInputHelper.visibility = View.VISIBLE
+                }
 
                 val onGenerate = item.onGenerate
                 stringInputBinding.generate.isVisible = onGenerate != null

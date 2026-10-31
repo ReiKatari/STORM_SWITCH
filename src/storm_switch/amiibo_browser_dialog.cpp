@@ -438,7 +438,7 @@ void AmiiboBrowserDialog::SetupUi() {
 
     m_progress_bar = new QProgressBar(this);
     m_progress_bar->setRange(0, 0); // Busy indicator initially
-    m_progress_bar->setFixedWidth(140);
+    m_progress_bar->setMinimumWidth(140);
     bottom_bar->addWidget(m_progress_bar);
 
     m_open_folder_btn = new QPushButton(tr("📁 Открыть папку Amiibo"), this);

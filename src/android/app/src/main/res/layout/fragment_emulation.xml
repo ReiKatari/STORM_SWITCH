@@ -77,7 +77,9 @@
                             android:requiresFadingEdge="horizontal"
                             android:singleLine="true"
                             android:textAlignment="viewStart"
-                            tools:text="@string/games" />
+                            tools:text="@string/games"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                         <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/loading_text"
@@ -90,7 +92,9 @@
                             android:requiresFadingEdge="horizontal"
                             android:singleLine="true"
                             android:text="@string/loading"
-                            android:textAlignment="viewStart" />
+                            android:textAlignment="viewStart"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                         <com.google.android.material.progressindicator.LinearProgressIndicator
                             android:id="@+id/loading_progress_indicator"
@@ -149,7 +153,11 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/emulation_done"
-                android:visibility="gone" />
+                android:visibility="gone"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
         </FrameLayout>
 
@@ -193,7 +201,9 @@
                     android:fontFamily="sans-serif-medium"
                     android:textSize="15sp"
                     android:textColor="#00F0FF"
-                    android:text="@string/emulation_cooling_paused_title" />
+                    android:text="@string/emulation_cooling_paused_title"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/paused_cooling_temp"
@@ -202,7 +212,9 @@
                     android:layout_marginTop="4dp"
                     android:textSize="12sp"
                     android:textColor="#FFFFFF"
-                    android:text="@string/emulation_cooling_temp_default" />
+                    android:text="@string/emulation_cooling_temp_default"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/paused_cooling_sub"
@@ -211,7 +223,9 @@
                     android:layout_marginTop="2dp"
                     android:textSize="11sp"
                     android:textColor="#38BDF8"
-                    android:text="@string/emulation_cooling_chipset_unloaded" />
+                    android:text="@string/emulation_cooling_chipset_unloaded"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
             </LinearLayout>
 
             <com.google.android.material.textview.MaterialTextView
@@ -224,7 +238,9 @@
                 android:textColor="@android:color/white"
                 android:shadowColor="@android:color/black"
                 android:shadowRadius="3"
-                tools:ignore="RtlHardcoded" />
+                tools:ignore="RtlHardcoded"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/show_soc_overlay_text"
@@ -239,7 +255,9 @@
                 android:textColor="@android:color/white"
                 android:shadowColor="@android:color/black"
                 android:shadowRadius="3"
-                tools:ignore="RtlHardcoded" />
+                tools:ignore="RtlHardcoded"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/show_load_overlay_text"
@@ -254,7 +272,9 @@
                 android:textColor="@android:color/white"
                 android:shadowColor="@android:color/black"
                 android:shadowRadius="3"
-                tools:ignore="RtlHardcoded" />
+                tools:ignore="RtlHardcoded"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <org.yuzu.yuzu_emu.translator.ui.GameTranslationOverlayView
                 android:id="@+id/translation_overlay"
@@ -313,7 +333,9 @@
                     android:text="💾 F5"
                     android:textColor="#00F0FF"
                     android:textSize="12sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <View
                     android:layout_width="6dp"
@@ -332,7 +354,9 @@
                     android:text="📂 F7"
                     android:textColor="#38BDF8"
                     android:textSize="12sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
             </LinearLayout>
 
         </FrameLayout>

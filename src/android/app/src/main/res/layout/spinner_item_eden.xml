@@ -10,4 +10,6 @@
     android:textColor="?attr/colorOnSurface"
     android:paddingStart="4dp"
     android:paddingEnd="4dp"
-    android:gravity="center_vertical" />
+    android:gravity="center_vertical"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>

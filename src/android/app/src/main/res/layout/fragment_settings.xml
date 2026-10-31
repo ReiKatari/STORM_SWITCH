@@ -74,7 +74,11 @@
                     app:iconSize="18dp"
                     app:iconTint="?attr/colorOnSurfaceVariant"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
             </LinearLayout>
 

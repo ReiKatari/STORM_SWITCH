@@ -51,7 +51,7 @@ static bool IsBogusCheatText(const QString& content) {
 
 ConfigurePerGameCheats::ConfigurePerGameCheats(Core::System& system_, u64 title_id_, const QString& file_name_, QWidget* parent)
     : QWidget(parent), system(system_), title_id(title_id_), file_name(file_name_) {
-    
+
     if (system.IsPoweredOn() && system.GetApplicationProcessProgramID() == title_id) {
         build_id = system.GetApplicationProcessBuildID();
         build_id_str = QString::fromStdString(Common::HexToString(build_id)).left(16).toUpper();
@@ -389,31 +389,23 @@ void ConfigurePerGameCheats::OnOpenCheatsFolder() {
 
 void ConfigurePerGameCheats::OnDownloadOnlineCheats() {
     const auto tid_hex = QString(QStringLiteral("%1")).arg(title_id, 16, 16, QLatin1Char('0')).toUpper();
+    const auto bid_hex = build_id_str.trimmed().toUpper();
+    const auto bid_lower = bid_hex.toLower();
 
     download_button->setEnabled(false);
     download_button->setText(tr("⏳ Загрузка..."));
 
-    // URLs: Tinfoil official media database, Atmosphere switch-cheats-db and mirrors
-    QStringList urls_to_try = {
-        QString(QStringLiteral("https://tinfoil.media/api/cheats/%1")).arg(tid_hex),
-        QString(QStringLiteral("https://tinfoil.io/api/cheats/%1")).arg(tid_hex),
-        QString(QStringLiteral("https://raw.githubusercontent.com/HamletDuFromage/switch-cheats-db/master/cheats/%1.json")).arg(tid_hex),
-        QString(QStringLiteral("https://cdn.jsdelivr.net/gh/HamletDuFromage/switch-cheats-db@master/cheats/%1.json")).arg(tid_hex),
-        QString(QStringLiteral("https://fastly.jsdelivr.net/gh/HamletDuFromage/switch-cheats-db@master/cheats/%1.json")).arg(tid_hex),
-        QString(QStringLiteral("https://raw.githubusercontent.com/HamletDuFromage/switch-cheats-db/master/titles/%1.txt")).arg(tid_hex),
-        QString(QStringLiteral("https://raw.githubusercontent.com/ibnux/switch-cheat/master/contents/%1/cheats.txt")).arg(tid_hex),
-        QString(QStringLiteral("https://raw.githubusercontent.com/astranvg/Cheats-Atmosphere/master/cheats/%1.txt")).arg(tid_hex),
-        QString(QStringLiteral("https://raw.githubusercontent.com/mrdude2478/Breeze/master/cheats/%1.txt")).arg(tid_hex)
-    };
-
-    bool downloaded = false;
-    QString downloaded_raw;
-    bool is_json = false;
+    // 5 Live HTTP-200 Nintendo Switch Cheat Databases:
+    // 1. https://cdn.jsdelivr.net/gh/HamletDuFromage/switch-cheats-db@master/cheats/<TID_UPPER>.json
+    // 2. https://tinfoil.media/api/cheats/<TID_UPPER>
+    // 3. https://cdn.jsdelivr.net/gh/ChanseyIsTheBest/NX-60FPS-RES-GFX-Cheats@main/titles/<TID_UPPER>/cheats/<BID_UPPER>.txt
+    // 4. https://cdn.jsdelivr.net/gh/ibnux/switch-cheat@master/atmosphere/titles/<TID_UPPER>/cheats/<bid_lower>.txt
+    // 5. https://api.github.com/repos/ibnux/switch-cheat/contents/atmosphere/titles/<TID_UPPER>/cheats
 
     QNetworkAccessManager manager;
-    for (const auto& url_str : urls_to_try) {
+    auto fetch_http = [&](const QString& url_str, int timeout_ms = 7000) -> std::pair<int, QByteArray> {
         QNetworkRequest request{QUrl(url_str)};
-        request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_EDEN_Emulator/4.3.1"));
+        request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("STORM_SWITCH_Emulator/16.0.6"));
         request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
 
         QEventLoop loop;
@@ -423,144 +415,161 @@ void ConfigurePerGameCheats::OnDownloadOnlineCheats() {
 
         QNetworkReply* reply = manager.get(request);
         connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
-        timer.start(6000);
+        timer.start(timeout_ms);
         loop.exec();
 
-        if (reply->error() == QNetworkReply::NoError && reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200) {
-            downloaded_raw = QString::fromUtf8(reply->readAll());
-            if (!downloaded_raw.trimmed().isEmpty() && !IsBogusCheatText(downloaded_raw)) {
-                // If it's a JSON array or object, check if it contains actual cheat entries
-                if (url_str.contains(QStringLiteral("api/cheats"), Qt::CaseInsensitive) || url_str.contains(QStringLiteral(".json"), Qt::CaseInsensitive)) {
-                    QJsonDocument test_doc = QJsonDocument::fromJson(downloaded_raw.toUtf8());
-                    if (test_doc.isArray() && !test_doc.array().isEmpty()) {
-                        downloaded = true;
-                        is_json = true;
-                        reply->deleteLater();
-                        break;
-                    } else if (test_doc.isObject() && !test_doc.object().isEmpty()) {
-                        downloaded = true;
-                        is_json = true;
-                        reply->deleteLater();
-                        break;
+        int status_code = 0;
+        QByteArray data;
+        if (reply->error() == QNetworkReply::NoError) {
+            status_code = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+            data = reply->readAll();
+        }
+        reply->deleteLater();
+        return {status_code, data};
+    };
+
+    const auto dir_path = GetCheatsDirectoryPath();
+    QDir().mkpath(dir_path);
+    bool any_success = false;
+
+    // Helper to safely write a 16-char uppercase BuildID file
+    auto save_clean_bid_file = [&](const QString& raw_bid, const QString& cheat_body) {
+        QString clean_bid = raw_bid.trimmed().toUpper();
+        if (clean_bid.length() != 16 && bid_hex.length() == 16) {
+            clean_bid = bid_hex;
+        }
+        if (clean_bid.length() != 16 || cheat_body.trimmed().isEmpty() || IsBogusCheatText(cheat_body)) {
+            return;
+        }
+        QFile bid_file(QDir(dir_path).filePath(QStringLiteral("%1.txt").arg(clean_bid)));
+        if (bid_file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            QTextStream stream(&bid_file);
+            stream << cheat_body.trimmed() << QStringLiteral("\n\n");
+            bid_file.close();
+            any_success = true;
+        }
+    };
+
+    // DB 1: HamletDuFromage switch-cheats-db via jsDelivr CDN
+    {
+        const QString url = QStringLiteral("https://cdn.jsdelivr.net/gh/HamletDuFromage/switch-cheats-db@master/cheats/%1.json").arg(tid_hex);
+        auto [code, resp_data] = fetch_http(url, 7000);
+        if (code == 200 && !resp_data.isEmpty()) {
+            QJsonDocument doc = QJsonDocument::fromJson(resp_data);
+            if (doc.isObject()) {
+                const QJsonObject root = doc.object();
+                for (auto it = root.begin(); it != root.end(); ++it) {
+                    const QString cur_bid = it.key().trimmed().toUpper();
+                    const QJsonObject bid_cheats = it.value().toObject();
+                    QString bid_file_content;
+                    for (auto c_it = bid_cheats.begin(); c_it != bid_cheats.end(); ++c_it) {
+                        const QString body = c_it.value().toString().trimmed();
+                        if (!body.isEmpty() && !IsBogusCheatText(body)) {
+                            bid_file_content += body + QStringLiteral("\n\n");
+                        }
                     }
-                } else {
-                    downloaded = true;
-                    is_json = false;
-                    reply->deleteLater();
-                    break;
+                    if (!bid_file_content.isEmpty()) {
+                        save_clean_bid_file(cur_bid, bid_file_content);
+                    }
                 }
             }
         }
-        reply->deleteLater();
+    }
+
+    // DB 2: Tinfoil Media API
+    {
+        const QString url = QStringLiteral("https://tinfoil.media/api/cheats/%1").arg(tid_hex);
+        auto [code, resp_data] = fetch_http(url, 7000);
+        if (code == 200 && !resp_data.isEmpty()) {
+            QJsonDocument doc = QJsonDocument::fromJson(resp_data);
+            if (doc.isArray()) {
+                QMap<QString, QString> bid_map;
+                for (const auto& item_val : doc.array()) {
+                    const QJsonObject item = item_val.toObject();
+                    QString c_name = item.value(QStringLiteral("name")).toString().trimmed();
+                    QString c_bid = item.value(QStringLiteral("build_id")).toString().trimmed().toUpper();
+                    QString c_source = item.value(QStringLiteral("source")).toString().trimmed();
+                    if (c_name.isEmpty() || c_source.isEmpty()) continue;
+                    if (c_bid.isEmpty() && bid_hex.length() == 16) c_bid = bid_hex;
+                    if (c_bid.length() != 16) continue;
+                    if (!c_name.startsWith(QLatin1Char('['))) c_name = QStringLiteral("[%1]").arg(c_name);
+                    if (!c_name.endsWith(QLatin1Char(']'))) c_name = QStringLiteral("%1]").arg(c_name);
+                    bid_map[c_bid] += QStringLiteral("%1\n%2\n\n").arg(c_name, c_source);
+                }
+                for (auto it = bid_map.begin(); it != bid_map.end(); ++it) {
+                    save_clean_bid_file(it.key(), it.value());
+                }
+            }
+        }
+    }
+
+    // DB 3: ChanseyIsTheBest NX-60FPS-RES-GFX-Cheats (BuildID uppercase .txt)
+    if (bid_hex.length() == 16) {
+        const QString url = QStringLiteral("https://cdn.jsdelivr.net/gh/ChanseyIsTheBest/NX-60FPS-RES-GFX-Cheats@main/titles/%1/cheats/%2.txt")
+                                .arg(tid_hex, bid_hex);
+        auto [code, resp_data] = fetch_http(url, 6000);
+        if (code == 200 && !resp_data.isEmpty()) {
+            const QString text = QString::fromUtf8(resp_data);
+            if (!text.trimmed().isEmpty() && !IsBogusCheatText(text)) {
+                save_clean_bid_file(bid_hex, text);
+            }
+        }
+    }
+
+    // DB 4: ibnux switch-cheat master (BuildID lowercase .txt)
+    if (bid_hex.length() == 16) {
+        const QString url = QStringLiteral("https://cdn.jsdelivr.net/gh/ibnux/switch-cheat@master/atmosphere/titles/%1/cheats/%2.txt")
+                                .arg(tid_hex, bid_lower);
+        auto [code, resp_data] = fetch_http(url, 6000);
+        if (code == 200 && !resp_data.isEmpty()) {
+            const QString text = QString::fromUtf8(resp_data);
+            if (!text.trimmed().isEmpty() && !IsBogusCheatText(text)) {
+                save_clean_bid_file(bid_hex, text);
+            }
+        }
+    }
+
+    // DB 5: ibnux switch-cheat directory listing API fallback
+    {
+        const QString url = QStringLiteral("https://api.github.com/repos/ibnux/switch-cheat/contents/atmosphere/titles/%1/cheats").arg(tid_hex);
+        auto [code, resp_data] = fetch_http(url, 6000);
+        if (code == 200 && !resp_data.isEmpty()) {
+            QJsonDocument doc = QJsonDocument::fromJson(resp_data);
+            if (doc.isArray()) {
+                for (const auto& item_val : doc.array()) {
+                    const QJsonObject file_obj = item_val.toObject();
+                    const QString entry_name = file_obj.value(QStringLiteral("name")).toString().trimmed();
+                    const QString download_url = file_obj.value(QStringLiteral("download_url")).toString().trimmed();
+                    if (entry_name.endsWith(QStringLiteral(".txt"), Qt::CaseInsensitive) && !download_url.isEmpty()) {
+                        const QString file_bid = entry_name.left(entry_name.lastIndexOf(QLatin1Char('.'))).trimmed().toUpper();
+                        if (file_bid.length() == 16) {
+                            const QString local_path = QDir(dir_path).filePath(QStringLiteral("%1.txt").arg(file_bid));
+                            if (!QFile::exists(local_path)) {
+                                auto [f_code, f_data] = fetch_http(download_url, 6000);
+                                if (f_code == 200 && !f_data.isEmpty()) {
+                                    const QString text = QString::fromUtf8(f_data);
+                                    if (!text.trimmed().isEmpty() && !IsBogusCheatText(text)) {
+                                        save_clean_bid_file(file_bid, text);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     download_button->setEnabled(true);
     download_button->setText(tr("📥 Скачать базу читов"));
 
-    if (downloaded && !downloaded_raw.isEmpty()) {
-        const auto dir_path = GetCheatsDirectoryPath();
-        QDir().mkpath(dir_path);
-
-        if (is_json) {
-            QJsonDocument doc = QJsonDocument::fromJson(downloaded_raw.toUtf8());
-            if (doc.isArray()) {
-                // Tinfoil Media API format: [ { "name": "...", "build_id": "...", "source": "..." } ]
-                const QJsonArray arr = doc.array();
-                QMap<QString, QString> bid_map;
-                QString combined_cheats;
-
-                for (const auto& item_val : arr) {
-                    const QJsonObject item = item_val.toObject();
-                    QString c_name = item.value(QStringLiteral("name")).toString().trimmed();
-                    QString c_bid = item.value(QStringLiteral("build_id")).toString().trimmed().toUpper();
-                    QString c_source = item.value(QStringLiteral("source")).toString().trimmed();
-
-                    if (c_name.isEmpty() || c_source.isEmpty()) continue;
-                    if (!c_name.startsWith(QLatin1Char('['))) c_name = QStringLiteral("[%1]").arg(c_name);
-                    if (!c_name.endsWith(QLatin1Char(']'))) c_name = QStringLiteral("%1]").arg(c_name);
-
-                    QString entry = QStringLiteral("%1\n%2\n\n").arg(c_name, c_source);
-                    if (c_bid.isEmpty()) c_bid = build_id_str.trimmed().toUpper();
-
-                    bid_map[c_bid] += entry;
-                    combined_cheats += entry;
-                }
-
-                for (auto it = bid_map.begin(); it != bid_map.end(); ++it) {
-                    QFile bid_file(QDir(dir_path).filePath(QStringLiteral("%1.txt").arg(it.key())));
-                    if (bid_file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-                        QTextStream stream(&bid_file);
-                        stream << it.value();
-                        bid_file.close();
-                    }
-                }
-
-                if (!combined_cheats.isEmpty()) {
-                    QFile all_file(QDir(dir_path).filePath(QStringLiteral("cheats.txt")));
-                    if (all_file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-                        QTextStream stream(&all_file);
-                        stream << combined_cheats;
-                        all_file.close();
-                    }
-                }
-            } else if (doc.isObject()) {
-                // Switch-cheats-db format: { "BUILD_ID": { "Cheat Name": "..." } }
-                const QJsonObject root = doc.object();
-                QString combined_cheats;
-
-                for (auto it = root.begin(); it != root.end(); ++it) {
-                    const QString bid_key = it.key().trimmed().toUpper();
-                    const QJsonObject bid_cheats = it.value().toObject();
-
-                    QString bid_file_content;
-                    for (auto c_it = bid_cheats.begin(); c_it != bid_cheats.end(); ++c_it) {
-                        const QString cheat_body = c_it.value().toString();
-                        if (!cheat_body.trimmed().isEmpty()) {
-                            bid_file_content += cheat_body.trimmed() + QStringLiteral("\n\n");
-                            combined_cheats += cheat_body.trimmed() + QStringLiteral("\n\n");
-                        }
-                    }
-
-                    if (!bid_file_content.isEmpty()) {
-                        QFile bid_file(QDir(dir_path).filePath(QStringLiteral("%1.txt").arg(bid_key)));
-                        if (bid_file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-                            QTextStream stream(&bid_file);
-                            stream << bid_file_content;
-                            bid_file.close();
-                        }
-                    }
-                }
-
-                if (!combined_cheats.isEmpty()) {
-                    QFile all_file(QDir(dir_path).filePath(QStringLiteral("cheats.txt")));
-                    if (all_file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-                        QTextStream stream(&all_file);
-                        stream << combined_cheats;
-                        all_file.close();
-                    }
-                }
-            }
-        } else {
-            // Direct .txt file
-            QFile file(QDir(dir_path).filePath(QStringLiteral("cheats.txt")));
-            if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-                QTextStream stream(&file);
-                stream << downloaded_raw;
-                file.close();
-            }
-        }
-
-        LoadCheats();
-        if (!cheat_items.isEmpty()) {
-            QMessageBox::information(this, tr("Читы загружены"),
-                                     tr("Успешно загружена база чит-кодов из Tinfoil / Atmosphere!\nНайдено уникальных читов: %1").arg(cheat_items.size()));
-        } else {
-            QMessageBox::information(this, tr("Чит-коды"),
-                                     tr("Для данной версии/сборки игры читы в базе пока не найдены."));
-        }
+    LoadCheats();
+    if (!cheat_items.isEmpty()) {
+        QMessageBox::information(this, tr("Читы загружены"),
+                                 tr("Успешно загружена база чит-кодов из проверенных источников!\nНайдено уникальных читов: %1").arg(cheat_items.size()));
     } else {
         QMessageBox::information(this, tr("Чит-коды"),
-                                 tr("Для данной игры (Title ID: %1) в базах Tinfoil и Atmosphere пока нет чит-кодов.\nВы можете добавить чит вручную кнопкой «➕ Добавить чит».").arg(tid_hex));
+                                 tr("Для данной версии/сборки игры читы в базах пока не найдены."));
     }
 }
 

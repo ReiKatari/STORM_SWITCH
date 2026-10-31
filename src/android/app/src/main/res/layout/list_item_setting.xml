@@ -49,7 +49,9 @@
                 android:textSize="15sp"
                 android:textStyle="bold"
                 android:textColor="?attr/colorOnSurface"
-                tools:text="Разрешение рендеринга" />
+                tools:text="Разрешение рендеринга"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <!-- Glowing Per-Game Override Badge -->
             <LinearLayout
@@ -79,7 +81,9 @@
                     android:textColor="?attr/colorPrimary"
                     android:textSize="10.5sp"
                     android:textStyle="bold"
-                    android:letterSpacing="0.04" />
+                    android:letterSpacing="0.04"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             </LinearLayout>
 
@@ -95,7 +99,9 @@
             android:textAlignment="viewStart"
             android:textSize="12.5sp"
             android:textColor="?attr/colorOnSurfaceVariant"
-            tools:text="Масштабирование внутреннего буфера кадров консоли" />
+            tools:text="Масштабирование внутреннего буфера кадров консоли"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         <!-- Bottom Row: Value Capsule Pill + Reset Action -->
         <LinearLayout
@@ -116,7 +122,9 @@
                 android:paddingHorizontal="10dp"
                 android:paddingVertical="4dp"
                 android:background="@drawable/bg_storm_badge_capsule"
-                tools:text="1x (720p/1080p)" />
+                tools:text="1x (720p/1080p)"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <View
                 android:layout_width="0dp"
@@ -139,7 +147,11 @@
                 android:visibility="gone"
                 tools:visibility="visible"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
         </LinearLayout>
 

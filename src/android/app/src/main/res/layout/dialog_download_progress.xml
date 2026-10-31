@@ -15,7 +15,9 @@
         android:text="0%"
         android:textAlignment="center"
         android:textSize="18sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
     <com.google.android.material.progressindicator.LinearProgressIndicator
         android:id="@+id/download_progress_bar"

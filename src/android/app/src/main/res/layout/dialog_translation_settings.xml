@@ -59,7 +59,9 @@
                         android:textColor="?attr/colorPrimary"
                         android:textSize="16sp"
                         android:textStyle="bold"
-                        android:letterSpacing="0.08" />
+                        android:letterSpacing="0.08"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     <com.google.android.material.textview.MaterialTextView
                         style="@style/SynthwaveText.Body"
@@ -67,7 +69,9 @@
                         android:layout_height="wrap_content"
                         android:text="@string/translator_settings_subtitle"
                         android:textSize="11sp"
-                        android:textColor="?attr/colorOnSurfaceVariant" />
+                        android:textColor="?attr/colorOnSurfaceVariant"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 </LinearLayout>
 
@@ -81,7 +85,9 @@
                     android:background="@drawable/theme_card_background"
                     android:backgroundTint="?attr/colorPrimary"
                     android:paddingHorizontal="6dp"
-                    android:paddingVertical="2dp" />
+                    android:paddingVertical="2dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             </LinearLayout>
 
@@ -126,7 +132,9 @@
                         android:textColor="?attr/colorPrimary"
                         android:textSize="12sp"
                         android:textStyle="bold"
-                        android:letterSpacing="0.05" />
+                        android:letterSpacing="0.05"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 </LinearLayout>
 
@@ -137,7 +145,9 @@
                     android:text="@string/translator_lbl_service"
                     android:textSize="13sp"
                     android:textColor="?attr/colorOnSurface"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <Spinner
                     android:id="@+id/spinner_engine"
@@ -153,7 +163,9 @@
                     android:text="@string/translator_lbl_source_lang"
                     android:textSize="13sp"
                     android:textColor="?attr/colorOnSurface"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <Spinner
                     android:id="@+id/spinner_source_lang"
@@ -169,7 +181,9 @@
                     android:text="@string/translator_lbl_target_lang"
                     android:textSize="13sp"
                     android:textColor="?attr/colorOnSurface"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <Spinner
                     android:id="@+id/spinner_target_lang"
@@ -241,7 +255,9 @@
                         android:textColor="@color/synthwave_neon_cyan"
                         android:textSize="12sp"
                         android:textStyle="bold"
-                        android:letterSpacing="0.05" />
+                        android:letterSpacing="0.05"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 </LinearLayout>
 
@@ -252,7 +268,9 @@
                     android:text="@string/translator_lbl_overlay_style"
                     android:textSize="13sp"
                     android:textColor="?attr/colorOnSurface"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <Spinner
                     android:id="@+id/spinner_style"
@@ -303,7 +321,9 @@
                         android:textColor="@color/synthwave_neon_green"
                         android:textSize="12sp"
                         android:textStyle="bold"
-                        android:letterSpacing="0.05" />
+                        android:letterSpacing="0.05"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 </LinearLayout>
 
@@ -314,7 +334,9 @@
                     android:text="@string/translator_lbl_roi_preset"
                     android:textSize="13sp"
                     android:textColor="?attr/colorOnSurface"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <Spinner
                     android:id="@+id/spinner_scan_region"
@@ -331,7 +353,11 @@
                     android:text="@string/translator_btn_custom_roi"
                     android:textSize="13sp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
             </LinearLayout>
 
@@ -376,7 +402,9 @@
                         android:textColor="@color/synthwave_neon_pink"
                         android:textSize="12sp"
                         android:textStyle="bold"
-                        android:letterSpacing="0.05" />
+                        android:letterSpacing="0.05"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 </LinearLayout>
 
@@ -394,7 +422,9 @@
                         android:layout_weight="1"
                         android:text="@string/translator_lbl_auto_tts"
                         android:textStyle="bold"
-                        android:textSize="13sp" />
+                        android:textSize="13sp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/switch_auto_tts"
@@ -402,7 +432,9 @@
                         android:layout_height="wrap_content"
         app:useMaterialThemeColors="false"
         app:thumbTint="@color/switch_thumb_red_green"
-        app:trackTint="@color/switch_track_red_green" />
+        app:trackTint="@color/switch_track_red_green"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 </LinearLayout>
 
@@ -420,7 +452,9 @@
                         android:layout_weight="1"
                         android:text="@string/translator_lbl_smart_voices"
                         android:textStyle="bold"
-                        android:textSize="13sp" />
+                        android:textSize="13sp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/switch_smart_voices"
@@ -428,7 +462,9 @@
                         android:layout_height="wrap_content"
         app:useMaterialThemeColors="false"
         app:thumbTint="@color/switch_thumb_red_green"
-        app:trackTint="@color/switch_track_red_green" />
+        app:trackTint="@color/switch_track_red_green"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 </LinearLayout>
 
@@ -440,7 +476,9 @@
                     android:layout_marginTop="4dp"
                     android:text="@string/translator_lbl_tts_speed_default"
                     android:textSize="12sp"
-                    android:textColor="?attr/colorOnSurfaceVariant" />
+                    android:textColor="?attr/colorOnSurfaceVariant"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <com.google.android.material.slider.Slider
                     android:id="@+id/slider_tts_speed"
@@ -461,7 +499,11 @@
                     android:text="@string/translator_btn_test_voice"
                     android:textSize="12sp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
             </LinearLayout>
 
@@ -506,7 +548,9 @@
                         android:textColor="?attr/colorPrimary"
                         android:textSize="12sp"
                         android:textStyle="bold"
-                        android:letterSpacing="0.05" />
+                        android:letterSpacing="0.05"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 </LinearLayout>
 
@@ -523,7 +567,9 @@
                         android:layout_weight="1"
                         android:text="@string/translator_lbl_floating_show"
                         android:textStyle="bold"
-                        android:textSize="13sp" />
+                        android:textSize="13sp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/switch_floating_btn"
@@ -531,7 +577,9 @@
                         android:layout_height="wrap_content"
         app:useMaterialThemeColors="false"
         app:thumbTint="@color/switch_thumb_red_green"
-        app:trackTint="@color/switch_track_red_green" />
+        app:trackTint="@color/switch_track_red_green"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 </LinearLayout>
 
@@ -543,7 +591,9 @@
                     android:layout_marginTop="8dp"
                     android:text="@string/translator_lbl_floating_opacity_default"
                     android:textSize="12sp"
-                    android:textColor="?attr/colorOnSurfaceVariant" />
+                    android:textColor="?attr/colorOnSurfaceVariant"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <com.google.android.material.slider.Slider
                     android:id="@+id/slider_floating_opacity"
@@ -569,7 +619,11 @@
             android:text="@string/close"
             app:cornerRadius="14dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline" />
+        app:strokeColor="?attr/colorOutline"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
         </LinearLayout>
 

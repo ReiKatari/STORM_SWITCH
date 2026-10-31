@@ -42,7 +42,9 @@
                     android:text="@string/cheats_manager_title"
                     android:textColor="?attr/colorPrimary"
                     android:textSize="13sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/text_game_info"
@@ -51,7 +53,9 @@
                     android:layout_height="wrap_content"
                     android:text="Title ID: 0000000000000000"
                     android:textSize="10sp"
-                    android:textColor="?attr/colorOnSurfaceVariant" />
+                    android:textColor="?attr/colorOnSurfaceVariant"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             </LinearLayout>
 
@@ -67,128 +71,146 @@
         </LinearLayout>
 
         <!-- Search Bar & Actions in a single/compact row -->
+        <!-- Search Card -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/EdenCard"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:layout_marginBottom="6dp"
+            app:cardCornerRadius="10dp"
+            app:cardBackgroundColor="@android:color/transparent"
+            app:strokeColor="?attr/colorOutline"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="10dp">
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_search"
+                    app:tint="?attr/colorSecondary"
+                    android:layout_marginEnd="6dp" />
+
+                <EditText
+                    android:id="@+id/edit_search_cheats"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@android:color/transparent"
+                    android:hint="@string/cheats_search_hint"
+                    android:textSize="12sp"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textColorHint="?attr/colorOnSurfaceVariant"
+                    android:maxLines="1"
+                    android:hyphenationFrequency="none"
+                    android:breakStrategy="simple"
+                    android:inputType="text" />
+
+                <ImageView
+                    android:id="@+id/btn_clear_search"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_clear"
+                    android:visibility="gone"
+                    app:tint="?attr/colorOnSurfaceVariant"
+                    android:background="?attr/selectableItemBackgroundBorderless" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Action Buttons Row -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="4dp">
-
-            <com.google.android.material.card.MaterialCardView
-                style="@style/EdenCard"
-                android:layout_width="0dp"
-                android:layout_height="30dp"
-                android:layout_weight="1.4"
-                android:layout_marginEnd="4dp"
-                app:cardCornerRadius="15dp"
-                app:cardBackgroundColor="@android:color/transparent"
-                app:strokeColor="?attr/colorOutline"
-                app:strokeWidth="1dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingHorizontal="8dp">
-
-                    <ImageView
-                        android:layout_width="14dp"
-                        android:layout_height="14dp"
-                        android:src="@drawable/ic_search"
-                        app:tint="?attr/colorSecondary"
-                        android:layout_marginEnd="4dp" />
-
-                    <EditText
-                        android:id="@+id/edit_search_cheats"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:background="@android:color/transparent"
-                        android:hint="@string/cheats_search_hint"
-                        android:textSize="11sp"
-                        android:textColor="?attr/colorOnSurface"
-                        android:textColorHint="?attr/colorOnSurfaceVariant"
-                        android:maxLines="1"
-                        android:inputType="text" />
-
-                    <ImageView
-                        android:id="@+id/btn_clear_search"
-                        android:layout_width="14dp"
-                        android:layout_height="14dp"
-                        android:src="@drawable/ic_clear"
-                        android:visibility="gone"
-                        app:tint="?attr/colorOnSurfaceVariant"
-                        android:background="?attr/selectableItemBackgroundBorderless" />
-
-                </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
+            android:layout_marginBottom="6dp">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_download_online"
                 style="@style/EdenButton.Outlined"
-                android:layout_width="wrap_content"
-                android:layout_height="30dp"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
                 android:minHeight="0dp"
                 android:text="@string/download_cheats"
-                android:textSize="10sp"
+                android:maxLines="1"
+                android:ellipsize="none"
+                android:hyphenationFrequency="none"
+                android:breakStrategy="simple"
+                app:autoSizeTextType="uniform"
+                app:autoSizeMinTextSize="9sp"
+                app:autoSizeMaxTextSize="11sp"
                 android:textStyle="bold"
                 android:textColor="?attr/colorPrimary"
                 android:backgroundTint="?attr/colorSurfaceVariant"
                 app:strokeColor="?attr/colorPrimary"
                 app:strokeWidth="1dp"
                 app:cornerRadius="8dp"
-                android:paddingHorizontal="8dp"
+                android:paddingHorizontal="6dp"
                 android:paddingVertical="0dp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
                 app:icon="@drawable/ic_import"
                 app:iconTint="?attr/colorPrimary"
-                app:iconSize="12dp"
-                android:layout_marginEnd="4dp" />
+                app:iconSize="14dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_add_custom_cheat"
                 style="@style/EdenButton.Outlined"
-                android:layout_width="wrap_content"
-                android:layout_height="30dp"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
                 android:minHeight="0dp"
                 android:text="@string/add_cheat"
-                android:textSize="10sp"
+                android:maxLines="1"
+                android:ellipsize="none"
+                android:hyphenationFrequency="none"
+                android:breakStrategy="simple"
+                app:autoSizeTextType="uniform"
+                app:autoSizeMinTextSize="9sp"
+                app:autoSizeMaxTextSize="11sp"
                 android:textStyle="bold"
                 android:textColor="?attr/colorPrimary"
                 android:backgroundTint="?attr/colorSurfaceVariant"
                 app:strokeColor="?attr/colorPrimary"
                 app:strokeWidth="1dp"
                 app:cornerRadius="8dp"
-                android:paddingHorizontal="8dp"
+                android:paddingHorizontal="6dp"
                 android:paddingVertical="0dp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
                 app:icon="@drawable/ic_add"
                 app:iconTint="?attr/colorPrimary"
-                app:iconSize="12dp"
-                android:layout_marginEnd="4dp" />
+                app:iconSize="14dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_toggle_all"
                 style="@style/EdenButton.Outlined"
-                android:layout_width="wrap_content"
-                android:layout_height="30dp"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
                 android:minHeight="0dp"
                 android:text="@string/select_all"
-                android:textSize="10sp"
+                android:maxLines="1"
+                android:ellipsize="none"
+                android:hyphenationFrequency="none"
+                android:breakStrategy="simple"
+                app:autoSizeTextType="uniform"
+                app:autoSizeMinTextSize="9sp"
+                app:autoSizeMaxTextSize="11sp"
                 android:textStyle="bold"
                 android:textColor="?attr/colorPrimary"
                 android:backgroundTint="?attr/colorSurfaceVariant"
                 app:strokeColor="?attr/colorPrimary"
                 app:strokeWidth="1dp"
                 app:cornerRadius="8dp"
-                android:paddingHorizontal="8dp"
-                android:paddingVertical="0dp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp" />
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="0dp" />
 
         </LinearLayout>
 
@@ -216,7 +238,9 @@
                 android:layout_height="wrap_content"
                 android:text="@string/downloading_cheats"
                 android:textSize="11sp"
-                android:textColor="?attr/colorPrimary" />
+                android:textColor="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         </LinearLayout>
 
@@ -256,7 +280,9 @@
                     android:text="@string/cheats_not_found"
                     android:textSize="12sp"
                     android:gravity="center"
-                    android:textColor="?attr/colorOnSurfaceVariant" />
+                    android:textColor="?attr/colorOnSurfaceVariant"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             </LinearLayout>
 
@@ -277,7 +303,9 @@
                 android:layout_weight="1"
                 android:text="@string/cheats_summary_zero"
                 android:textSize="10sp"
-                android:textColor="?attr/colorOnSurfaceVariant" />
+                android:textColor="?attr/colorOnSurfaceVariant"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_save_cheats"
@@ -290,7 +318,11 @@
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="0dp"
         app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorPrimary" />
+        app:strokeColor="?attr/colorPrimary"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
         </LinearLayout>
 

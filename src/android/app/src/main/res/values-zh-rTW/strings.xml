@@ -1706,9 +1706,9 @@
     <string name="auto_opt_detected_hw">🔍 Detected Hardware</string>
     <string name="auto_opt_form_tablet">Tablet</string>
     <string name="auto_opt_form_phone">Smartphone</string>
-    <string name="auto_opt_soc_fmt">SoC / CPU: %1$s (%2$d cores, %3$s)</string>
-    <string name="auto_opt_gpu_fmt">GPU: %1$s</string>
-    <string name="auto_opt_ram_fmt">RAM: %1$.1f GB (Available: %2$.1f GB)</string>
+    <string name="auto_opt_soc_fmt">%1$s (%2$d cores, %3$s)</string>
+    <string name="auto_opt_gpu_fmt">%1$s</string>
+    <string name="auto_opt_ram_fmt">%1$.1f GB (Available: %2$.1f GB)</string>
     <string name="auto_opt_tier_elite">Ultra-Flagship (Snapdragon 8 Elite / 12GB+ RAM)</string>
     <string name="auto_opt_tier_flagship">Flagship (High Performance, 12GB+ RAM)</string>
     <string name="auto_opt_tier_high_mid">Upper Mid-Range (Balanced Performance, 8GB RAM)</string>

@@ -28,6 +28,7 @@ object LosslessScalingHelper {
     fun isSupportedByGpu(): Boolean = true
 
     fun refreshStatus(): Boolean {
+        migrateLegacyDll()
         val result = try { NativeLibrary.validateLosslessDll() == RESULT_OK } catch (_: Throwable) { false }
         installed = result
         if (!result) {
@@ -49,11 +50,11 @@ object LosslessScalingHelper {
             if (rawPath.isBlank()) {
                 val userDir = DirectoryInitialization.userDirectory ?: ""
                 rawPath = if (userDir.isNotBlank()) {
-                    File(userDir, "lossless/LosslessScaling.dll").absolutePath
+                    File(userDir, "lossless/Lossless.dll").absolutePath
                 } else {
                     val fallbackBase = YuzuApplication.appContext.getExternalFilesDir(null)?.absolutePath
                         ?: YuzuApplication.appContext.filesDir.absolutePath
-                    File(fallbackBase, "lossless/LosslessScaling.dll").absolutePath
+                    File(fallbackBase, "lossless/Lossless.dll").absolutePath
                 }
             }
             val destination = File(rawPath)
@@ -64,7 +65,7 @@ object LosslessScalingHelper {
             val copied = FileUtil.copyUriToInternalStorage(
                 source,
                 parentDir.absolutePath,
-                destination.name.ifEmpty { "LosslessScaling.dll" }
+                destination.name.ifEmpty { "Lossless.dll" }
             )
             if (copied == null) {
                 refreshStatus()
@@ -94,6 +95,28 @@ object LosslessScalingHelper {
         cleanCustomConfigsFrameGen()
         refreshStatus()
         return removed
+    }
+
+
+    private fun migrateLegacyDll() {
+        try {
+            val userDir = DirectoryInitialization.userDirectory ?: ""
+            val parentDir = if (userDir.isNotBlank()) {
+                File(userDir, "lossless")
+            } else {
+                val fallbackBase = YuzuApplication.appContext.getExternalFilesDir(null)?.absolutePath
+                    ?: YuzuApplication.appContext.filesDir.absolutePath
+                File(fallbackBase, "lossless")
+            }
+            val oldDll = File(parentDir, "LosslessScaling.dll")
+            val newDll = File(parentDir, "Lossless.dll")
+            if (oldDll.exists() && oldDll.isFile && !newDll.exists()) {
+                oldDll.copyTo(newDll, overwrite = true)
+                Log.info("[LosslessScalingHelper] Auto-migrated LosslessScaling.dll -> Lossless.dll")
+            }
+        } catch (e: Exception) {
+            Log.error("[LosslessScalingHelper] Error during legacy DLL migration: ${e.message}")
+        }
     }
 
     private fun cleanCustomConfigsFrameGen() {

@@ -1879,9 +1879,9 @@
     <string name="auto_opt_detected_hw">🔍 Обнаруженное оборудование</string>
     <string name="auto_opt_form_tablet">Планшет</string>
     <string name="auto_opt_form_phone">Смартфон</string>
-    <string name="auto_opt_soc_fmt">SoC / ЦП: %1$s (%2$d ядер, %3$s)</string>
-    <string name="auto_opt_gpu_fmt">ГПУ: %1$s</string>
-    <string name="auto_opt_ram_fmt">ОЗУ: %1$.1f ГБ (Доступно: %2$.1f ГБ)</string>
+    <string name="auto_opt_soc_fmt">%1$s (%2$d ядер, %3$s)</string>
+    <string name="auto_opt_gpu_fmt">%1$s</string>
+    <string name="auto_opt_ram_fmt">%1$.1f ГБ (Доступно: %2$.1f ГБ)</string>
     <string name="auto_opt_tier_elite">Ультра-флагман (Snapdragon 8 Elite / 12GB+ RAM)</string>
     <string name="auto_opt_tier_flagship">Флагман (Высокая производительность, 12GB+ RAM)</string>
     <string name="auto_opt_tier_high_mid">Продвинутый (Сбалансированная производительность, 8GB RAM)</string>

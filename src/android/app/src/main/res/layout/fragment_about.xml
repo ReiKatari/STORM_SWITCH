@@ -60,7 +60,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/app_name"
-                    android:textAlignment="center" />
+                    android:textAlignment="center"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <com.google.android.material.textview.MaterialTextView
                     style="@style/SynthwaveText.Body"
@@ -68,7 +70,9 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:textAlignment="center"
-                    android:text="@string/about_app_description" />
+                    android:text="@string/about_app_description"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             </LinearLayout>
 
@@ -100,7 +104,9 @@
                         android:textAlignment="viewStart"
                         android:textColor="?attr/colorPrimary"
                         android:textStyle="bold"
-                        android:text="@string/about_fork_title" />
+                        android:text="@string/about_fork_title"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     <com.google.android.material.textview.MaterialTextView
                         style="@style/SynthwaveText.Body"
@@ -108,7 +114,9 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
                         android:textAlignment="viewStart"
-                        android:text="@string/about_fork_description" />
+                        android:text="@string/about_fork_description"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -141,7 +149,9 @@
                         android:textAlignment="viewStart"
                         android:textColor="?attr/colorPrimary"
                         android:textStyle="bold"
-                        android:text="@string/special_thanks_title" />
+                        android:text="@string/special_thanks_title"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     <com.google.android.material.textview.MaterialTextView
                         style="@style/SynthwaveText.Body"
@@ -149,7 +159,9 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
                         android:textAlignment="viewStart"
-                        android:text="@string/special_thanks_description" />
+                        android:text="@string/special_thanks_description"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -182,7 +194,9 @@
                         android:textAlignment="viewStart"
                         android:textColor="?attr/colorPrimary"
                         android:textStyle="bold"
-                        android:text="@string/contributors" />
+                        android:text="@string/contributors"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     <com.google.android.material.textview.MaterialTextView
                         style="@style/SynthwaveText.Body"
@@ -190,7 +204,9 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
                         android:textAlignment="viewStart"
-                        android:text="@string/contributors_description" />
+                        android:text="@string/contributors_description"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -223,7 +239,9 @@
                         android:textAlignment="viewStart"
                         android:textColor="?attr/colorPrimary"
                         android:textStyle="bold"
-                        android:text="@string/licenses" />
+                        android:text="@string/licenses"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     <com.google.android.material.textview.MaterialTextView
                         style="@style/TextAppearance.Material3.BodyMedium"
@@ -231,7 +249,9 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
                         android:textAlignment="viewStart"
-                        android:text="@string/licenses_description" />
+                        android:text="@string/licenses_description"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -264,7 +284,9 @@
                         android:textAlignment="viewStart"
                         android:textColor="?attr/colorPrimary"
                         android:textStyle="bold"
-                        android:text="@string/build" />
+                        android:text="@string/build"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/text_version_name"
@@ -273,7 +295,9 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
                         android:textAlignment="viewStart"
-                        tools:text="abc123" />
+                        tools:text="abc123"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -299,7 +323,11 @@
                     app:iconGravity="textStart"
                     app:iconPadding="0dp"
                     app:strokeColor="?attr/colorPrimary"
-                    app:strokeWidth="1.5dp" />
+                    app:strokeWidth="1.5dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
                 <com.google.android.material.button.MaterialButton
                     style="@style/EdenButton.Secondary"
@@ -313,7 +341,11 @@
                     app:iconGravity="textStart"
                     app:iconPadding="0dp"
                     app:strokeColor="?attr/colorPrimary"
-                    app:strokeWidth="1.5dp" />
+                    app:strokeWidth="1.5dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
                 <com.google.android.material.button.MaterialButton
                     style="@style/EdenButton.Secondary"
@@ -327,7 +359,11 @@
                     app:iconGravity="textStart"
                     app:iconPadding="0dp"
                     app:strokeColor="?attr/colorPrimary"
-                    app:strokeWidth="1.5dp" />
+                    app:strokeWidth="1.5dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
                 <com.google.android.material.button.MaterialButton
                     style="@style/EdenButton.Secondary"
@@ -341,7 +377,11 @@
                     app:iconGravity="textStart"
                     app:iconPadding="0dp"
                     app:strokeColor="?attr/colorPrimary"
-                    app:strokeWidth="1.5dp" />
+                    app:strokeWidth="1.5dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_github"
@@ -355,7 +395,11 @@
                     app:iconGravity="textStart"
                     app:iconPadding="0dp"
                     app:strokeColor="?attr/colorPrimary"
-                    app:strokeWidth="1.5dp" />
+                    app:strokeWidth="1.5dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
             </LinearLayout>
 

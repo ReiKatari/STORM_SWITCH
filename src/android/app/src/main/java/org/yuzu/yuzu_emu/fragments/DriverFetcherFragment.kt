@@ -228,27 +228,27 @@ class DriverFetcherFragment : Fragment() {
 
         IntRange(Integer.MIN_VALUE, 9) to "Unsupported",
 
-        IntRange(10, 99) to "STORM DRIVER 7.0.0 / KIMCHI Turnip", // Special case for Adreno Axx
+        IntRange(10, 99) to "STORM DRIVER 8.0.0 / KIMCHI Turnip", // Special case for Adreno Axx
 
         IntRange(100, 599) to "Unsupported",
 
-        IntRange(600, 639) to "STORM DRIVER 7.0.0 / Mr. Purple EOL / AK-Turnip",
+        IntRange(600, 639) to "STORM DRIVER 8.0.0 / Mr. Purple EOL / AK-Turnip",
 
-        IntRange(640, 699) to "STORM DRIVER 7.0.0 / KIMCHI Turnip / AK-Turnip",
+        IntRange(640, 699) to "STORM DRIVER 8.0.0 / KIMCHI Turnip / AK-Turnip",
 
-        IntRange(710, 725) to "STORM DRIVER 7.0.0 / Vauzi-17 (A710/A720) / AK-Turnip",
+        IntRange(710, 725) to "STORM DRIVER 8.0.0 / Vauzi-17 (A710/A720) / AK-Turnip",
 
-        IntRange(726, 750) to "STORM DRIVER 7.0.0 / Amaral 26.2.0 / Balemuni Apex",
+        IntRange(726, 750) to "STORM DRIVER 8.0.0 / Amaral 26.2.0 / Balemuni Apex",
 
-        IntRange(751, 799) to "STORM DRIVER 7.0.0 / Amaral Turnip / AK-Turnip",
+        IntRange(751, 799) to "STORM DRIVER 8.0.0 / Amaral Turnip / AK-Turnip",
 
-        IntRange(800, 829) to "STORM DRIVER 7.0.0 / Amaral A8xx / AK-Turnip",
+        IntRange(800, 829) to "STORM DRIVER 8.0.0 / Amaral A8xx / AK-Turnip",
 
-        IntRange(830, 840) to "STORM DRIVER 7.0.0 / Amaral 26.2.0 (8Elite) / AK-Turnip",
+        IntRange(830, 840) to "STORM DRIVER 8.0.0 / Amaral 26.2.0 (8Elite) / AK-Turnip",
 
-        IntRange(841, 899) to "STORM DRIVER 7.0.0 / Amaral A8xx / Whitebelyash",
+        IntRange(841, 899) to "STORM DRIVER 8.0.0 / Amaral A8xx / Whitebelyash",
 
-        IntRange(900, Int.MAX_VALUE) to "STORM DRIVER 7.0.0 / Mesa Unified"
+        IntRange(900, Int.MAX_VALUE) to "STORM DRIVER 8.0.0 / Mesa Unified"
 
     )
 
@@ -456,19 +456,19 @@ class DriverFetcherFragment : Fragment() {
 
                     Release(
 
-                        tagName = "v7.0.0",
+                        tagName = "8.0.0",
 
-                        titleName = "STORM DRIVER 7.0.0 (Unified Mesa Turnip Adreno 6xx/7xx/8xx)",
+                        titleName = "STORM DRIVER 8.0.0 (Unified Mesa Turnip Adreno 6xx/7xx/8xx)",
 
-                        title = "STORM DRIVER 7.0.0 (Unified Mesa Turnip Adreno 6xx/7xx/8xx)",
+                        title = "STORM DRIVER 8.0.0 (Unified Mesa Turnip Adreno 6xx/7xx/8xx)",
 
-                        body = "STORM DRIVER 7.0.0 Unified Driver for Snapdragon Adreno 6xx, 7xx, 8xx (Qualcomm 8 Gen 1/2/3/Elite) with 4PDA curated reference packs.",
+                        body = "STORM DRIVER 8.0.0 Unified Driver for Snapdragon Adreno 6xx, 7xx, 8xx (Qualcomm 8 Gen 1/2/3/Elite) with 4PDA curated reference packs.",
 
                         artifacts = listOf(
 
-                            Artifact(URL("https://github.com/ReiKatari/STORM_DRIVER/releases/download/v7.0.0/STORM_DRIVER_7.0.0_Mesa_Turnip_A6xx_A7xx_A8xx.zip"), "STORM_DRIVER_7.0.0_Mesa_Turnip_A6xx_A7xx_A8xx.zip"),
+                            Artifact(URL("https://github.com/ReiKatari/STORM_DRIVER/releases/download/8.0.0/STORM_DRIVER_8.0.0.zip"), "STORM_DRIVER_8.0.0.zip"),
 
-                            Artifact(URL("https://stormgamesworld.ru/drivers/STORM_DRIVER_7.0.0_Unified.zip"), "STORM_DRIVER_7.0.0_Unified_Direct.zip"),
+                            Artifact(URL("https://stormgamesworld.ru/drivers/STORM_DRIVER_8.0.0.zip"), "STORM_DRIVER_8.0.0_Direct.zip"),
 
                             Artifact(URL("https://stormgamesworld.ru/drivers/4PDA_Turnip_Qualcomm_Reference_Pack.zip"), "4PDA_Turnip_Qualcomm_Reference_Pack.zip")
 
@@ -800,7 +800,7 @@ class DriverFetcherFragment : Fragment() {
 
 
 
-                    // 4. Built-in curated fallback catalog (STORM DRIVER 7.0.0 / 4PDA / Mesa Turnip)
+                    // 4. Built-in curated fallback catalog (STORM DRIVER 8.0.0 / 4PDA / Mesa Turnip)
 
                     if (releases.isEmpty()) {
 

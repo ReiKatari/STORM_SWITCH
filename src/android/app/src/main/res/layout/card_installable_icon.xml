@@ -50,7 +50,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/user_data"
-                    android:textAlignment="viewStart" />
+                    android:textAlignment="viewStart"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/description"
@@ -59,7 +61,9 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
                     android:text="@string/user_data_description"
-                    android:textAlignment="viewStart" />
+                    android:textAlignment="viewStart"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             </LinearLayout>
 
@@ -81,7 +85,11 @@
                 android:tooltipText="@string/string_import"
                 android:visibility="gone"
                 app:icon="@drawable/ic_import"
-                tools:visibility="visible" />
+                tools:visibility="visible"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
             <Button
                 android:id="@+id/button_export"
@@ -93,7 +101,11 @@
                 android:tooltipText="@string/export"
                 android:visibility="gone"
                 app:icon="@drawable/ic_export"
-                tools:visibility="visible" />
+                tools:visibility="visible"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
         </LinearLayout>
 

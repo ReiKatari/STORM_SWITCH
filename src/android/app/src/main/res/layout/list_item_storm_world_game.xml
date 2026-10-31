@@ -47,7 +47,9 @@
                 android:textColor="?attr/colorOnPrimary"
                 android:textSize="9sp"
                 android:textStyle="bold"
-                tools:text="NSP" />
+                tools:text="NSP"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         </FrameLayout>
 
@@ -67,7 +69,9 @@
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="14sp"
                 android:textStyle="bold"
-                tools:text="Diablo III: Eternal Collection" />
+                tools:text="Diablo III: Eternal Collection"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <!-- Badges Row 1: Version, Internal Version, Size -->
             <LinearLayout
@@ -89,7 +93,9 @@
                     android:textStyle="bold"
                     android:maxLines="2"
                     android:ellipsize="end"
-                    tools:text="1.0.10" />
+                    tools:text="1.0.10"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <TextView
                     android:id="@+id/text_internal_version"
@@ -104,7 +110,9 @@
                     android:textStyle="bold"
                     android:maxLines="2"
                     android:ellipsize="end"
-                    tools:text="655360" />
+                    tools:text="655360"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <TextView
                     android:id="@+id/text_game_size"
@@ -119,7 +127,9 @@
                     android:textStyle="bold"
                     android:maxLines="2"
                     android:ellipsize="end"
-                    tools:text="37,63 MB" />
+                    tools:text="37,63 MB"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
             </LinearLayout>
 
             <!-- Badges Row 2: Languages, DLC -->
@@ -142,7 +152,9 @@
                     android:textStyle="bold"
                     android:maxLines="3"
                     android:ellipsize="end"
-                    tools:text="RUS" />
+                    tools:text="RUS"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <TextView
                     android:id="@+id/text_game_dlc"
@@ -161,7 +173,9 @@
                     android:ellipsize="end"
                     android:visibility="gone"
                     tools:visibility="visible"
-                    tools:text="+5 DLC" />
+                    tools:text="+5 DLC"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <TextView
                     android:id="@+id/badge_mod"
@@ -178,7 +192,9 @@
                     android:ellipsize="end"
                     android:visibility="gone"
                     tools:visibility="visible"
-                    tools:text="+1 MOD" />
+                    tools:text="+1 MOD"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <TextView
                     android:id="@+id/badge_recommended"
@@ -195,7 +211,9 @@
                     android:maxLines="1"
                     android:text="@string/storm_world_badge_recommended"
                     android:visibility="gone"
-                    tools:visibility="visible" />
+                    tools:visibility="visible"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
             </LinearLayout>
 
             <TextView
@@ -206,7 +224,9 @@
                 android:fontFamily="monospace"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="10sp"
-                tools:text="01001B700A654000" />
+                tools:text="01001B700A654000"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
         </LinearLayout>
 
         <com.google.android.material.button.MaterialButton
@@ -228,13 +248,19 @@
             app:iconPadding="4dp"
             app:strokeWidth="1dp"
             app:strokeColor="?attr/colorPrimary"
-            tools:text="Скачать" />
+            tools:text="Скачать"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
         <TextView
             android:id="@+id/text_download_status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:visibility="gone" />
+            android:visibility="gone"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
     </LinearLayout>
 

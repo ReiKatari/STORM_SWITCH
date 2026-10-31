@@ -35,7 +35,9 @@
                 android:gravity="center"
                 android:paddingTop="8dp"
                 android:text="@string/search_settings"
-                tools:visibility="visible" />
+                tools:visibility="visible"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         </LinearLayout>
 
@@ -78,7 +80,11 @@
                     android:layout_gravity="center_vertical"
                     android:layout_marginStart="8dp"
                     app:backgroundTint="@android:color/transparent"
-                    app:icon="@drawable/ic_back" />
+                    app:icon="@drawable/ic_back"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
                 <EditText
                     android:id="@+id/search_text"
@@ -102,7 +108,11 @@
                 android:visibility="invisible"
                 app:backgroundTint="@android:color/transparent"
                 app:icon="@drawable/ic_clear"
-                tools:visibility="visible" />
+                tools:visibility="visible"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:maxLines="1"
+    android:ellipsize="none"/>
 
         </com.google.android.material.card.MaterialCardView>
 

@@ -15,4 +15,6 @@
     android:textSize="15sp"
     android:textStyle="bold"
     android:background="@drawable/storm_dialog_item_bg"
-    android:ellipsize="marquee" />
+    android:ellipsize="marquee"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>

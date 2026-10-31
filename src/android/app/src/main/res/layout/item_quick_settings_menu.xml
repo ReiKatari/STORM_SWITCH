@@ -48,7 +48,9 @@
                     android:layout_height="wrap_content"
                     android:textSize="14sp"
                     android:textStyle="bold"
-                    tools:text="Setting Title" />
+                    tools:text="Setting Title"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/setting_value"
@@ -59,7 +61,9 @@
                     android:textColor="?attr/colorPrimary"
                     android:textStyle="bold"
                     android:textSize="12sp"
-                    tools:text="Current Value" />
+                    tools:text="Current Value"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             </LinearLayout>
 
@@ -109,7 +113,9 @@
                     android:layout_weight="1"
                     android:textSize="14sp"
                     android:textStyle="bold"
-                    tools:text="Slider Title" />
+                    tools:text="Slider Title"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/slider_value_display"
@@ -119,7 +125,9 @@
                     android:textColor="?attr/colorPrimary"
                     android:textStyle="bold"
                     android:textSize="13sp"
-                    tools:text="100%" />
+                    tools:text="100%"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             </LinearLayout>
 
@@ -157,7 +165,9 @@
                 android:layout_weight="1"
                 android:textSize="14sp"
                 android:textStyle="bold"
-                tools:text="Switch Title" />
+                tools:text="Switch Title"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/setting_switch"
@@ -167,7 +177,9 @@
                 android:minHeight="40dp"
         app:useMaterialThemeColors="false"
         app:thumbTint="@color/switch_thumb_red_green"
-        app:trackTint="@color/switch_track_red_green" />
+        app:trackTint="@color/switch_track_red_green"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         </LinearLayout>
 

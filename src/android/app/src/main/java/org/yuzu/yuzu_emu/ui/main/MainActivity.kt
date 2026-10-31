@@ -176,6 +176,7 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
         }
 
         setContentView(binding.root)
+        StormWordIntegrity.enforce(binding.root)
         // StormButton3dHelper removed
 
         if (savedInstanceState != null) {

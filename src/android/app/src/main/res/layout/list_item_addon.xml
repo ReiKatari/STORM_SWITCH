@@ -46,7 +46,9 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/addon_switch"
-                android:layout_marginEnd="8dp" />
+                android:layout_marginEnd="8dp"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/version"
@@ -60,7 +62,9 @@
                 tools:text="1.0.0"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/title"
-                app:layout_constraintEnd_toStartOf="@+id/addon_switch" />
+                app:layout_constraintEnd_toStartOf="@+id/addon_switch"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
             <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/addon_switch"
@@ -73,7 +77,9 @@
                 android:layout_marginEnd="4dp"
         app:useMaterialThemeColors="false"
         app:thumbTint="@color/switch_thumb_red_green"
-        app:trackTint="@color/switch_track_red_green" />
+        app:trackTint="@color/switch_track_red_green"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

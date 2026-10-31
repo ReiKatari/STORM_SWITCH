@@ -457,14 +457,20 @@ void Java_org_yuzu_yuzu_1emu_utils_NativeConfig_setDisabledAddons(JNIEnv* env, j
                                                                   jstring jprogramId,
                                                                   jobjectArray jdisabledAddons) {
     auto program_id = EmulationSession::GetProgramId(env, jprogramId);
-    Settings::values.disabled_addons[program_id].clear();
+    std::vector<std::string> preserved_cheats;
+    for (const auto& entry : Settings::values.disabled_addons[program_id]) {
+        if (entry.starts_with("__ENABLED__:") || entry.starts_with("__DISABLED__:")) {
+            preserved_cheats.push_back(entry);
+        }
+    }
     std::vector<std::string> disabled_addons;
     const int size = env->GetArrayLength(jdisabledAddons);
     for (int i = 0; i < size; ++i) {
         auto jaddon = static_cast<jstring>(env->GetObjectArrayElement(jdisabledAddons, i));
         disabled_addons.push_back(Common::Android::GetJString(env, jaddon));
     }
-    Settings::values.disabled_addons[program_id] = disabled_addons;
+    disabled_addons.insert(disabled_addons.end(), preserved_cheats.begin(), preserved_cheats.end());
+    Settings::values.disabled_addons[program_id] = std::move(disabled_addons);
 }
 
 jobjectArray Java_org_yuzu_yuzu_1emu_utils_NativeConfig_getOverlayControlData(JNIEnv* env,
