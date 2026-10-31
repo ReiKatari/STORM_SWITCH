@@ -206,7 +206,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:clickable="false"
-                        android:focusable="false" />
+                        android:focusable="false"
+        app:useMaterialThemeColors="false"
+        app:thumbTint="@color/switch_thumb_red_green"
+        app:trackTint="@color/switch_track_red_green" />
 
                 </LinearLayout>
 
@@ -393,7 +396,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:clickable="false"
-                        android:focusable="false" />
+                        android:focusable="false"
+        app:useMaterialThemeColors="false"
+        app:thumbTint="@color/switch_thumb_red_green"
+        app:trackTint="@color/switch_track_red_green" />
 
                 </LinearLayout>
 
@@ -451,7 +457,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:clickable="false"
-                        android:focusable="false" />
+                        android:focusable="false"
+        app:useMaterialThemeColors="false"
+        app:thumbTint="@color/switch_thumb_red_green"
+        app:trackTint="@color/switch_track_red_green" />
 
                 </LinearLayout>
 
@@ -471,7 +480,9 @@
             android:textStyle="bold"
             app:backgroundTint="?attr/colorPrimary"
             app:cornerRadius="12dp"
-            android:layout_marginTop="4dp" />
+            android:layout_marginTop="4dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorPrimary" />
 
         </LinearLayout>
 

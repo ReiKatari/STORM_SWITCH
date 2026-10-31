@@ -151,7 +151,7 @@ InGameNotificationOverlay::InGameNotificationOverlay(QWidget* parent)
     setAttribute(Qt::WA_TransparentForMouseEvents);
     setFocusPolicy(Qt::NoFocus);
 
-    setFixedSize(580, 86);
+    setFixedSize(620, 92);
 
     m_fade_anim = new QPropertyAnimation(this, "panelOpacity", this);
     m_fade_anim->setDuration(220);
@@ -354,21 +354,17 @@ void InGameNotificationOverlay::paintEvent(QPaintEvent* /*event*/) {
                badgeFm.elidedText(badgeStr, Qt::ElideRight, badgeRect.width() - 8));
 
     // Title
-    const QRect titleRect(textLeft, r.y() + 11, textMaxWidth - badgeW - 10, 24);
+    const QRect titleRect(textLeft, r.y() + 10, textMaxWidth - badgeW - 10, 24);
     p.setPen(pal.is_light ? accent.darker(145) : accent.lighter(135));
     QFont titleFont(QStringLiteral("Segoe UI"), 10, QFont::ExtraBold);
     titleFont.setLetterSpacing(QFont::AbsoluteSpacing, 0.4);
     p.setFont(titleFont);
-    const QString elided_title =
-        QFontMetrics(titleFont).elidedText(m_title, Qt::ElideRight, titleRect.width());
-    p.drawText(titleRect, Qt::AlignLeft | Qt::AlignVCenter, elided_title);
+    p.drawText(titleRect, Qt::AlignLeft | Qt::AlignVCenter, m_title);
 
-    // Subtitle / Message
-    const QRect msgRect(textLeft, r.y() + 38, textMaxWidth, 26);
+    // Subtitle / Message (Law 12/17: multi-line wrapping without aggressive truncation)
+    const QRect msgRect(textLeft, r.y() + 34, textMaxWidth, 48);
     p.setPen(pal.title_color);
     QFont msgFont(QStringLiteral("Segoe UI"), 9, QFont::DemiBold);
     p.setFont(msgFont);
-    const QString elided_msg =
-        QFontMetrics(msgFont).elidedText(m_message, Qt::ElideRight, msgRect.width());
-    p.drawText(msgRect, Qt::AlignLeft | Qt::AlignVCenter, elided_msg);
+    p.drawText(msgRect, Qt::AlignLeft | Qt::AlignTop | Qt::TextWordWrap, m_message);
 }

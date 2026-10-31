@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <QDir>
+#include <QLocale>
 #include <QIcon>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -222,12 +223,134 @@ void GameListModel::ResetExternalWatcher() {
     }
 }
 
+namespace {
+
+QString GetColumnHeaderTitle(GameListModel::Column col) {
+    std::string lang = UISettings::values.language.GetValue();
+    if (lang.empty()) {
+        lang = QLocale::system().name().toStdString();
+    }
+
+    if (lang.rfind("ru", 0) == 0 || lang.rfind("be", 0) == 0) {
+        switch (col) {
+        case GameListModel::COLUMN_NAME: return QStringLiteral("НАЗВАНИЕ");
+        case GameListModel::COLUMN_FILE_TYPE: return QStringLiteral("ТИП ФАЙЛА");
+        case GameListModel::COLUMN_SIZE: return QStringLiteral("РАЗМЕР");
+        case GameListModel::COLUMN_PLAY_TIME: return QStringLiteral("ВРЕМЯ ИГРЫ");
+        case GameListModel::COLUMN_ADD_ONS: return QStringLiteral("ДОПОЛНЕНИЯ");
+        default: return {};
+        }
+    }
+    if (lang.rfind("de", 0) == 0) {
+        switch (col) {
+        case GameListModel::COLUMN_NAME: return QStringLiteral("NAME");
+        case GameListModel::COLUMN_FILE_TYPE: return QStringLiteral("DATEITYP");
+        case GameListModel::COLUMN_SIZE: return QStringLiteral("GRÖSSE");
+        case GameListModel::COLUMN_PLAY_TIME: return QStringLiteral("SPIELZEIT");
+        case GameListModel::COLUMN_ADD_ONS: return QStringLiteral("ADD-ONS");
+        default: return {};
+        }
+    }
+    if (lang.rfind("fr", 0) == 0) {
+        switch (col) {
+        case GameListModel::COLUMN_NAME: return QStringLiteral("NOM");
+        case GameListModel::COLUMN_FILE_TYPE: return QStringLiteral("TYPE DE FICHIER");
+        case GameListModel::COLUMN_SIZE: return QStringLiteral("TAILLE");
+        case GameListModel::COLUMN_PLAY_TIME: return QStringLiteral("TEMPS DE JEU");
+        case GameListModel::COLUMN_ADD_ONS: return QStringLiteral("EXTENSIONS");
+        default: return {};
+        }
+    }
+    if (lang.rfind("es", 0) == 0) {
+        switch (col) {
+        case GameListModel::COLUMN_NAME: return QStringLiteral("NOMBRE");
+        case GameListModel::COLUMN_FILE_TYPE: return QStringLiteral("TIPO DE ARCHIVO");
+        case GameListModel::COLUMN_SIZE: return QStringLiteral("TAMAÑO");
+        case GameListModel::COLUMN_PLAY_TIME: return QStringLiteral("TIEMPO DE JUEGO");
+        case GameListModel::COLUMN_ADD_ONS: return QStringLiteral("COMPLEMENTOS");
+        default: return {};
+        }
+    }
+    if (lang.rfind("it", 0) == 0) {
+        switch (col) {
+        case GameListModel::COLUMN_NAME: return QStringLiteral("NOME");
+        case GameListModel::COLUMN_FILE_TYPE: return QStringLiteral("TIPO DI FILE");
+        case GameListModel::COLUMN_SIZE: return QStringLiteral("DIMENSIONE");
+        case GameListModel::COLUMN_PLAY_TIME: return QStringLiteral("TEMPO DI GIOCO");
+        case GameListModel::COLUMN_ADD_ONS: return QStringLiteral("COMPONENTI AGGIUNTIVI");
+        default: return {};
+        }
+    }
+    if (lang.rfind("pt", 0) == 0) {
+        switch (col) {
+        case GameListModel::COLUMN_NAME: return QStringLiteral("NOME");
+        case GameListModel::COLUMN_FILE_TYPE: return QStringLiteral("TIPO DE ARQUIVO");
+        case GameListModel::COLUMN_SIZE: return QStringLiteral("TAMANHO");
+        case GameListModel::COLUMN_PLAY_TIME: return QStringLiteral("TEMPO DE JOGO");
+        case GameListModel::COLUMN_ADD_ONS: return QStringLiteral("COMPLEMENTOS");
+        default: return {};
+        }
+    }
+    if (lang.rfind("zh", 0) == 0) {
+        switch (col) {
+        case GameListModel::COLUMN_NAME: return QStringLiteral("名称");
+        case GameListModel::COLUMN_FILE_TYPE: return QStringLiteral("文件类型");
+        case GameListModel::COLUMN_SIZE: return QStringLiteral("大小");
+        case GameListModel::COLUMN_PLAY_TIME: return QStringLiteral("游玩时间");
+        case GameListModel::COLUMN_ADD_ONS: return QStringLiteral("附加内容");
+        default: return {};
+        }
+    }
+    if (lang.rfind("ja", 0) == 0) {
+        switch (col) {
+        case GameListModel::COLUMN_NAME: return QStringLiteral("タイトル");
+        case GameListModel::COLUMN_FILE_TYPE: return QStringLiteral("ファイル形式");
+        case GameListModel::COLUMN_SIZE: return QStringLiteral("サイズ");
+        case GameListModel::COLUMN_PLAY_TIME: return QStringLiteral("プレイ時間");
+        case GameListModel::COLUMN_ADD_ONS: return QStringLiteral("追加コンテンツ");
+        default: return {};
+        }
+    }
+    if (lang.rfind("ko", 0) == 0) {
+        switch (col) {
+        case GameListModel::COLUMN_NAME: return QStringLiteral("이름");
+        case GameListModel::COLUMN_FILE_TYPE: return QStringLiteral("파일 형식");
+        case GameListModel::COLUMN_SIZE: return QStringLiteral("크기");
+        case GameListModel::COLUMN_PLAY_TIME: return QStringLiteral("플레이 시간");
+        case GameListModel::COLUMN_ADD_ONS: return QStringLiteral("추가 콘텐츠");
+        default: return {};
+        }
+    }
+    if (lang.rfind("hi", 0) == 0) {
+        switch (col) {
+        case GameListModel::COLUMN_NAME: return QStringLiteral("नाम");
+        case GameListModel::COLUMN_FILE_TYPE: return QStringLiteral("फ़ाइल प्रकार");
+        case GameListModel::COLUMN_SIZE: return QStringLiteral("आकार");
+        case GameListModel::COLUMN_PLAY_TIME: return QStringLiteral("खेल का समय");
+        case GameListModel::COLUMN_ADD_ONS: return QStringLiteral("अतिरिक्त सामग्री");
+        default: return {};
+        }
+    }
+
+    // Default: English
+    switch (col) {
+    case GameListModel::COLUMN_NAME: return QStringLiteral("NAME");
+    case GameListModel::COLUMN_FILE_TYPE: return QStringLiteral("FILE TYPE");
+    case GameListModel::COLUMN_SIZE: return QStringLiteral("SIZE");
+    case GameListModel::COLUMN_PLAY_TIME: return QStringLiteral("PLAY TIME");
+    case GameListModel::COLUMN_ADD_ONS: return QStringLiteral("ADD-ONS");
+    default: return {};
+    }
+}
+
+} // namespace
+
 void GameListModel::RetranslateUI() {
-    setHeaderData(COLUMN_NAME, Qt::Horizontal, tr("НАЗВАНИЕ"));
-    setHeaderData(COLUMN_FILE_TYPE, Qt::Horizontal, tr("ТИП ФАЙЛА"));
-    setHeaderData(COLUMN_SIZE, Qt::Horizontal, tr("РАЗМЕР"));
-    setHeaderData(COLUMN_PLAY_TIME, Qt::Horizontal, tr("ВРЕМЯ ИГРЫ"));
-    setHeaderData(COLUMN_ADD_ONS, Qt::Horizontal, tr("ДОПОЛНЕНИЯ"));
+    setHeaderData(COLUMN_NAME, Qt::Horizontal, GetColumnHeaderTitle(COLUMN_NAME));
+    setHeaderData(COLUMN_FILE_TYPE, Qt::Horizontal, GetColumnHeaderTitle(COLUMN_FILE_TYPE));
+    setHeaderData(COLUMN_SIZE, Qt::Horizontal, GetColumnHeaderTitle(COLUMN_SIZE));
+    setHeaderData(COLUMN_PLAY_TIME, Qt::Horizontal, GetColumnHeaderTitle(COLUMN_PLAY_TIME));
+    setHeaderData(COLUMN_ADD_ONS, Qt::Horizontal, GetColumnHeaderTitle(COLUMN_ADD_ONS));
 
     setHeaderData(COLUMN_NAME, Qt::Horizontal, Qt::AlignCenter, Qt::TextAlignmentRole);
     setHeaderData(COLUMN_FILE_TYPE, Qt::Horizontal, Qt::AlignCenter, Qt::TextAlignmentRole);

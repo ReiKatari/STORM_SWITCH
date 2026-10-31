@@ -137,7 +137,9 @@
                 app:icon="@drawable/ic_undo"
                 app:iconSize="14dp"
                 android:visibility="gone"
-                tools:visibility="visible" />
+                tools:visibility="visible"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
         </LinearLayout>
 

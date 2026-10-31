@@ -40,6 +40,11 @@ bool DecrementIfLessThan(KernelCore& kernel, s32* out, KProcessAddress address, 
 
     // TODO(bunnei): We should call CanAccessAtomic(..) here.
 
+    auto* current_process = GetCurrentProcessPointer(kernel);
+    if (!current_process || !current_process->GetMemory().IsValidVirtualAddressRange(GetInteger(address), sizeof(s32))) {
+        return false;
+    }
+
     s32 current_value{};
 
     while (true) {
@@ -80,6 +85,11 @@ bool UpdateIfEqual(KernelCore& kernel, s32* out, KProcessAddress address, s32 va
     // KScopedInterruptDisable di;
 
     // TODO(bunnei): We should call CanAccessAtomic(..) here.
+
+    auto* current_process = GetCurrentProcessPointer(kernel);
+    if (!current_process || !current_process->GetMemory().IsValidVirtualAddressRange(GetInteger(address), sizeof(s32))) {
+        return false;
+    }
 
     s32 current_value{};
 

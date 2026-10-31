@@ -62,7 +62,9 @@
             android:insetBottom="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorPrimary" />
 
         <com.google.android.material.progressindicator.LinearProgressIndicator
             android:id="@+id/progress_mod_download"

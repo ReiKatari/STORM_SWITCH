@@ -121,7 +121,8 @@
                     android:text="@string/amiibo_disconnect_button"
                     android:textColor="?attr/colorError"
                     app:strokeColor="?attr/colorError"
-                    android:paddingHorizontal="6dp" />
+                    android:paddingHorizontal="6dp"
+        app:strokeWidth="1dp" />
 
             </LinearLayout>
 
@@ -231,7 +232,9 @@
                     android:text="@string/refresh"
                     android:textSize="11sp"
                     app:cornerRadius="8dp"
-                    android:paddingHorizontal="10dp" />
+                    android:paddingHorizontal="10dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
             </LinearLayout>
 
@@ -322,7 +325,9 @@
                         android:textSize="10sp"
                         android:enabled="false"
                         android:insetTop="0dp"
-                        android:insetBottom="0dp" />
+                        android:insetBottom="0dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/button_prev_page"
@@ -337,7 +342,9 @@
                         android:textSize="10sp"
                         android:enabled="false"
                         android:insetTop="0dp"
-                        android:insetBottom="0dp" />
+                        android:insetBottom="0dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/text_page_indicator"
@@ -361,7 +368,9 @@
                         android:text="&gt;"
                         android:textSize="10sp"
                         android:insetTop="0dp"
-                        android:insetBottom="0dp" />
+                        android:insetBottom="0dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
                 </LinearLayout>
 
@@ -384,7 +393,9 @@
                         android:text="@string/close"
                         android:textSize="10sp"
                         android:insetTop="0dp"
-                        android:insetBottom="0dp" />
+                        android:insetBottom="0dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
                 </LinearLayout>
 
@@ -457,7 +468,9 @@
                     android:layout_marginEnd="6dp"
                     app:cornerRadius="6dp"
                     android:insetTop="0dp"
-                    android:insetBottom="0dp" />
+                    android:insetBottom="0dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_close_installed"
@@ -471,7 +484,9 @@
                     android:textSize="10sp"
                     app:cornerRadius="6dp"
                     android:insetTop="0dp"
-                    android:insetBottom="0dp" />
+                    android:insetBottom="0dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
             </LinearLayout>
 

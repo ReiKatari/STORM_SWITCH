@@ -106,7 +106,10 @@
                 android:id="@+id/switch_widget"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical" />
+                android:layout_gravity="center_vertical"
+        app:useMaterialThemeColors="false"
+        app:thumbTint="@color/switch_thumb_red_green"
+        app:trackTint="@color/switch_track_red_green" />
 
         </LinearLayout>
 
@@ -125,7 +128,9 @@
             app:icon="@drawable/ic_undo"
             app:iconSize="14dp"
             android:visibility="gone"
-            tools:visibility="visible" />
+            tools:visibility="visible"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
     </LinearLayout>
 

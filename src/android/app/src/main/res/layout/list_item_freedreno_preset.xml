@@ -14,6 +14,8 @@
         android:layout_height="wrap_content"
         android:minWidth="100dp"
         android:text="Preset"
-        app:cornerRadius="14dp" />
+        app:cornerRadius="14dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
 </LinearLayout>

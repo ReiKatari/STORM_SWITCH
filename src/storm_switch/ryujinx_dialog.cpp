@@ -6,12 +6,14 @@
 #include "qt_common/util/fs.h"
 #include "ryujinx_dialog.h"
 #include "ui_ryujinx_dialog.h"
+#include "storm_switch/configuration/storm_ui_structure_helper.h"
 
 RyujinxDialog::RyujinxDialog(std::filesystem::path eden_path, std::filesystem::path ryu_path,
                              QWidget* parent)
     : QDialog(parent), ui(new Ui::RyujinxDialog), m_eden(eden_path.make_preferred()),
       m_ryu(ryu_path.make_preferred()) {
     ui->setupUi(this);
+    StormUI::StructureEngine::InstallEscDismiss(this);
 
     connect(ui->eden, &QPushButton::clicked, this, &RyujinxDialog::fromEden);
     connect(ui->ryujinx, &QPushButton::clicked, this, &RyujinxDialog::fromRyujinx);

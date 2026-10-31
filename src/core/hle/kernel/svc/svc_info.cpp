@@ -149,7 +149,7 @@ Result GetInfo(Core::System& system, u64* result, InfoType info_id_type, Handle 
                     resource_limit->GetCurrentValue(Svc::LimitableResource::ThreadCountMax);
                 const auto limit_value =
                     resource_limit->GetLimitValue(Svc::LimitableResource::ThreadCountMax);
-                *result = limit_value - current_value;
+                *result = (limit_value > current_value) ? (limit_value - current_value) : 0;
             } else {
                 *result = 0;
             }
@@ -175,6 +175,19 @@ Result GetInfo(Core::System& system, u64* result, InfoType info_id_type, Handle 
     }
 
     case InfoType::DebuggerAttached:
+        *result = 0;
+        R_SUCCEED();
+
+    case InfoType::IsSvcPermitted: {
+        R_UNLESS(info_sub_id < Svc::NumSupervisorCalls, ResultInvalidCombination);
+        const auto& handle_table = GetCurrentProcess(system.Kernel()).GetHandleTable();
+        KScopedAutoObject process = handle_table.GetObject<KProcess>(system.Kernel(), handle);
+        R_UNLESS(process.IsNotNull(), ResultInvalidHandle);
+        *result = process->IsPermittedSvc(static_cast<u32>(info_sub_id)) ? 1 : 0;
+        R_SUCCEED();
+    }
+
+    case InfoType::IoRegionHint:
         *result = 0;
         R_SUCCEED();
 
@@ -307,11 +320,14 @@ Result GetSystemInfo(Core::System& system, uint64_t* out, SystemInfoType info_ty
                      uint64_t info_subtype) {
     const u32 info_id = static_cast<u32>(info_type);
 
-    R_UNLESS(info_id <= 2, ResultInvalidEnumValue);
+    R_UNLESS(info_id <= 3, ResultInvalidEnumValue);
 
     R_UNLESS(handle == 0, ResultInvalidHandle);
 
-    if (info_id < 2) {
+    if (info_id == 3) {
+        R_UNLESS(info_subtype == 0, ResultInvalidCombination);
+        *out = 0; // Safe Horizon minimum non-secure system pool size
+    } else if (info_id < 2) {
         R_UNLESS(info_subtype <= 3, ResultInvalidCombination);
 
         auto& memory_manager = system.Kernel().MemoryManager();

@@ -60,6 +60,14 @@ class OverlayToggleDialogFragment : DialogFragment() {
         val dialog = super.onCreateDialog(savedInstanceState)
         dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE)
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        dialog.setOnKeyListener { _, keyCode, event ->
+            if (keyCode == android.view.KeyEvent.KEYCODE_ESCAPE && event.action == android.view.KeyEvent.ACTION_UP) {
+                dismissAllowingStateLoss()
+                true
+            } else {
+                false
+            }
+        }
         return dialog
     }
 

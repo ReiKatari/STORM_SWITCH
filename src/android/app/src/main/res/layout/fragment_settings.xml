@@ -72,7 +72,9 @@
                     android:visibility="gone"
                     app:icon="@drawable/ic_clear"
                     app:iconSize="18dp"
-                    app:iconTint="?attr/colorOnSurfaceVariant" />
+                    app:iconTint="?attr/colorOnSurfaceVariant"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
             </LinearLayout>
 

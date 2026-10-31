@@ -3,6 +3,8 @@
 
 package org.yuzu.yuzu_emu.fragments
 
+import android.view.KeyEvent
+
 import android.app.Dialog
 import android.graphics.BitmapFactory
 import android.os.Bundle
@@ -120,6 +122,14 @@ class AmiiboDialogFragment : DialogFragment() {
 
     override fun onStart() {
         super.onStart()
+        dialog?.setOnKeyListener { _, keyCode, event ->
+            if (keyCode == KeyEvent.KEYCODE_ESCAPE && event.action == KeyEvent.ACTION_UP) {
+                dismissAllowingStateLoss()
+                true
+            } else {
+                false
+            }
+        }
         dialog?.window?.let { window ->
             window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)

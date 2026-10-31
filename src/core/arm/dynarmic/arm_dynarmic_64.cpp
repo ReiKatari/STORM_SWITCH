@@ -4,6 +4,7 @@
 // SPDX-FileCopyrightText: Copyright 2018 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include "common/memory_detect.h"
 #include "common/settings.h"
 #include "core/arm/dynarmic/arm_dynarmic.h"
 #include "core/arm/dynarmic/arm_dynarmic_64.h"
@@ -399,11 +400,26 @@ void ArmDynarmic64::MakeJit(Common::PageTable* page_table, std::size_t address_s
     config.wall_clock_cntpct = m_uses_wall_clock;
     config.enable_cycle_counting = !m_uses_wall_clock;
 
-    // Code cache size
+    // Code cache size (Adaptive scaling based on physical RAM)
+    const u64 host_ram = Common::GetMemInfo().TotalPhysicalMemory;
 #if defined(ARCHITECTURE_arm64) || defined(__sun__) || defined(__NetBSD__) || defined(__DragonFly__) || defined(__OpenBSD__)
-    config.code_cache_size = std::uint32_t(128_MiB);
+    if (host_ram >= 12_GiB) {
+        config.code_cache_size = std::uint32_t(256_MiB);
+    } else if (host_ram >= 8_GiB) {
+        config.code_cache_size = std::uint32_t(192_MiB);
+    } else {
+        config.code_cache_size = std::uint32_t(128_MiB);
+    }
 #else
-    config.code_cache_size = std::uint32_t(512_MiB);
+    if (host_ram >= 16_GiB) {
+        config.code_cache_size = std::uint32_t(512_MiB);
+    } else if (host_ram >= 12_GiB) {
+        config.code_cache_size = std::uint32_t(256_MiB);
+    } else if (host_ram >= 8_GiB) {
+        config.code_cache_size = std::uint32_t(192_MiB);
+    } else {
+        config.code_cache_size = std::uint32_t(128_MiB);
+    }
 #endif
 
     // Allow memory fault handling to work

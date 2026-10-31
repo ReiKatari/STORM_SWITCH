@@ -50,7 +50,9 @@
                         android:layout_height="match_parent"
                         android:layout_gravity="center"
                         android:text="@string/refresh"
-                        app:icon="@drawable/ic_refresh" />
+                        app:icon="@drawable/ic_refresh"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
                     <ProgressBar
                         android:id="@+id/progress_bar"
@@ -242,7 +244,9 @@
             android:layout_marginTop="16dp"
             android:text="@string/refresh"
             app:icon="@drawable/ic_refresh"
-            style="@style/Widget.Material3.Button.ElevatedButton" />
+            style="@style/Widget.Material3.Button.ElevatedButton"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

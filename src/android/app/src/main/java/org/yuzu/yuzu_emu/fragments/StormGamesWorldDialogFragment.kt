@@ -379,6 +379,14 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             window.setBackgroundDrawableResource(android.R.color.transparent)
             ThemeHelper.applySystemBarsTheme(window, requireContext())
         }
+        dialog?.setOnKeyListener { _, keyCode, event ->
+            if (keyCode == android.view.KeyEvent.KEYCODE_ESCAPE && event.action == android.view.KeyEvent.ACTION_UP) {
+                dismissAllowingStateLoss()
+                true
+            } else {
+                false
+            }
+        }
     }
 
     override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {

@@ -1208,6 +1208,9 @@
     <string name="gamebanana_author">Автор: %1$s</string>
     <string name="gamebanana_downloads">%1$d скачиваний</string>
     <string name="gamebanana_download_button">Скачать и установить</string>
+        <string name="install_mod_title">Установка мода или читов</string>
+    <string name="install_mod_from_archive">Установить из архива (.zip / .7z / .rar)</string>
+    <string name="install_mod_from_folder">Установить из папки</string>
     <string name="gamebanana_install_manual">Установить мод вручную</string>
     <string name="gamebanana_install_manual_description">Выбрать ZIP-архив с модом для автоматической распаковки и структурирования в load</string>
     <string name="gamebanana_installing_manual">Распаковка и структурирование мода…</string>
@@ -2244,7 +2247,7 @@
     <string name="post_shader_47">ZFast-LCD (Быстрая имитация ЖК-матрицы портативной консоли)</string>
     <string name="post_shader_48">GBA Color + LCD Grid (Тёплая цветопередача и сетка Game Boy Advance)</string>
     <string name="post_shader_49">GBC Dot-Matrix (Рефлективная точечная матрица Game Boy Color)</string>
-    <string name="post_shader_50">Game Boy DMG-01 Olive Green (Классический оливковый экран 1989 г.)</string>
+    <string name="post_shader_50">Game Boy DMG-01 Olive Green (Классический оливковый экран 1989 года)</string>
     <string name="post_shader_51">Game Boy Pocket Silver (Монохромная матрица высокой контрастности)</string>
     <string name="post_shader_52">PSP Color Matrix (Широкий цветовой охват экрана PlayStation Portable)</string>
     <string name="post_shader_53">NDS LCD Grid (Субпиксельная сетка и гамма Nintendo DS)</string>

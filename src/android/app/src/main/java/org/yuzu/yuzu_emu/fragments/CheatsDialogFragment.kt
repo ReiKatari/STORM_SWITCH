@@ -82,6 +82,14 @@ class CheatsDialogFragment : DialogFragment() {
         dialog.window?.let { window ->
             window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
         }
+        dialog.setOnKeyListener { _, keyCode, event ->
+            if (keyCode == android.view.KeyEvent.KEYCODE_ESCAPE && event.action == android.view.KeyEvent.ACTION_UP) {
+                dismissAllowingStateLoss()
+                true
+            } else {
+                false
+            }
+        }
         return dialog
     }
 
@@ -199,7 +207,7 @@ class CheatsDialogFragment : DialogFragment() {
         allCheats.clear()
         val cheatsDir = getCheatsDir()
         val prefs = PreferenceManager.getDefaultSharedPreferences(YuzuApplication.appContext)
-        
+
         val enabledFile = File(cheatsDir, "enabled_cheats.txt")
         val enabledSet = if (enabledFile.exists()) {
             try {

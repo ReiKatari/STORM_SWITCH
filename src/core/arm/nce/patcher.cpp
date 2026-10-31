@@ -108,6 +108,16 @@ bool Patcher::PatchText(std::span<const u8> program_image, const Kernel::CodeSet
 
         // SVC
         if (auto svc = SVC{inst}; svc.Verify()) {
+            if (svc.GetValue() == 0x1E) { // svcGetSystemTick fast inline trampoline
+                bool pre_buffer = false;
+                auto ret = AddRelocations(pre_buffer);
+                if (pre_buffer) {
+                    WriteCntpctHandler(ret, X0, c_pre);
+                } else {
+                    WriteCntpctHandler(ret, X0, c);
+                }
+                continue;
+            }
             bool pre_buffer = false;
             auto ret = AddRelocations(pre_buffer);
             if (pre_buffer) {

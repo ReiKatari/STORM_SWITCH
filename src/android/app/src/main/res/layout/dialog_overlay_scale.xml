@@ -134,7 +134,9 @@
                 android:ellipsize="none"
                 app:cornerRadius="8dp"
                 android:textColor="#FFFFFF"
-                app:backgroundTint="#1E293B" />
+                app:backgroundTint="#1E293B"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/cancelButton"
@@ -156,7 +158,9 @@
                 android:ellipsize="none"
                 app:cornerRadius="8dp"
                 android:textColor="#FFFFFF"
-                app:backgroundTint="#334155" />
+                app:backgroundTint="#334155"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/confirmButton"
@@ -178,7 +182,9 @@
                 app:cornerRadius="8dp"
                 android:textColor="#0F172A"
                 android:textStyle="bold"
-                app:backgroundTint="#00D2FF" />
+                app:backgroundTint="#00D2FF"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
         </LinearLayout>
 

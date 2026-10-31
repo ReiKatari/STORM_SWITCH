@@ -1424,6 +1424,9 @@
     <string name="gamebanana_author">By %1$s</string>
     <string name="gamebanana_downloads">%1$d downloads</string>
     <string name="gamebanana_download_button">Download and install</string>
+        <string name="install_mod_title">Install Mod or Cheats</string>
+    <string name="install_mod_from_archive">Install from archive (.zip / .7z / .rar)</string>
+    <string name="install_mod_from_folder">Install from folder</string>
     <string name="gamebanana_install_manual">Install mod manually</string>
     <string name="gamebanana_install_manual_description">Select a ZIP archive containing the mod to unpack and structure in load</string>
     <string name="gamebanana_installing_manual">Extracting and organizing mod structure…</string>

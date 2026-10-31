@@ -3,6 +3,8 @@
 
 package org.yuzu.yuzu_emu.features.settings.ui
 
+import android.view.KeyEvent
+
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
@@ -182,6 +184,14 @@ class GpuUnswizzleDialogFragment : DialogFragment() {
 
     override fun onStart() {
         super.onStart()
+        dialog?.setOnKeyListener { _, keyCode, event ->
+            if (keyCode == KeyEvent.KEYCODE_ESCAPE && event.action == KeyEvent.ACTION_UP) {
+                dismissAllowingStateLoss()
+                true
+            } else {
+                false
+            }
+        }
         dialog?.window?.let { window ->
             ThemeHelper.applySystemBarsTheme(window, requireContext())
         }

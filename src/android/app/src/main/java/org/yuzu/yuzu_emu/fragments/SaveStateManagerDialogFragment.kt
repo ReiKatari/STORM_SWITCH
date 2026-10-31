@@ -52,6 +52,14 @@ class SaveStateManagerDialogFragment : DialogFragment() {
             window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             WindowCompat.setDecorFitsSystemWindows(window, false)
         }
+        dialog.setOnKeyListener { _, keyCode, event ->
+            if (keyCode == android.view.KeyEvent.KEYCODE_ESCAPE && event.action == android.view.KeyEvent.ACTION_UP) {
+                dismissAllowingStateLoss()
+                true
+            } else {
+                false
+            }
+        }
         return dialog
     }
 
@@ -112,14 +120,14 @@ class SaveStateManagerDialogFragment : DialogFragment() {
 
         if (exists) {
             slotBinding.slotMetadata.text = if (timestamp.isNotEmpty()) "$timestamp • $sizeMb" else sizeMb
-            slotBinding.slotMetadata.setTextColor(Color.parseColor("#94A3B8"))
+            slotBinding.slotMetadata.setTextColor(org.yuzu.yuzu_emu.utils.ThemeHelper.getColorFromAttr(requireContext(), com.google.android.material.R.attr.colorOnSurfaceVariant))
             slotBinding.btnLoad.isEnabled = true
             slotBinding.btnLoad.alpha = 1.0f
             slotBinding.btnDelete.isEnabled = true
             slotBinding.btnDelete.visibility = View.VISIBLE
         } else {
             slotBinding.slotMetadata.text = getString(R.string.save_state_empty)
-            slotBinding.slotMetadata.setTextColor(Color.parseColor("#64748B"))
+            slotBinding.slotMetadata.setTextColor(org.yuzu.yuzu_emu.utils.ThemeHelper.getColorFromAttr(requireContext(), com.google.android.material.R.attr.colorOutline))
             slotBinding.btnLoad.isEnabled = false
             slotBinding.btnLoad.alpha = 0.4f
             slotBinding.btnDelete.isEnabled = false

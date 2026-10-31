@@ -95,7 +95,9 @@
             android:tooltipText="@string/delete"
             app:icon="@drawable/ic_delete"
             app:iconSize="22dp"
-            app:iconTint="?attr/colorError" />
+            app:iconTint="?attr/colorError"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
     </LinearLayout>
 

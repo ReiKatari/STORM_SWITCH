@@ -22,6 +22,7 @@
 #include "core/core.h"
 #include "qt_common/config/uisettings.h"
 #include "storm_switch/nand_manager_dialog.h"
+#include "storm_switch/common/storm_theme.h"
 #include "storm_switch/configuration/storm_ui_structure_helper.h"
 
 std::string GetActiveNandProfileName() {
@@ -53,14 +54,19 @@ NandManagerDialog::NandManagerDialog(QWidget* parent, Core::System& system_)
     resize(1160, 700);
     setMinimumSize(680, 460);
 
+    const StormTheme::Palette pal = StormTheme::GetThemePalette();
     setStyleSheet(QStringLiteral(
-        "QDialog { background-color: #0B0F19; color: #FFFFFF; font-family: 'Segoe UI', sans-serif; font-size: 12px; }"
-        "QTableWidget { background-color: #0A0E17; border: 1px solid #1E293B; border-radius: 6px; gridline-color: #1E293B; selection-background-color: #1E293B; selection-color: #00D2FF; }"
-        "QHeaderView::section { background-color: #0F172A; color: #FFFFFF; padding: 6px; font-weight: bold; border: 1px solid #1E293B; }"
-        "QPushButton, QDialogButtonBox QPushButton, QToolButton { background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #25354e, stop:1 #0f172a); border: 1px solid #20354e; border-radius: 7px; padding: 6px 16px; color: #FFFFFF; font-weight: 600; min-height: 22px; }" "QPushButton:hover, QDialogButtonBox QPushButton:hover, QToolButton:hover { background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #334664, stop:1 #131c2c); border: 1px solid #00D2FF; color: #00D2FF; }" "QPushButton:pressed, QDialogButtonBox QPushButton:pressed, QToolButton:pressed { background-color: #0d1522; border: 1px solid #00A6CC; padding: 6px 16px; color: #FFFFFF; }"
-        "QPushButton:hover { border: 1px solid #00D2FF; color: #00D2FF; background: #1E293B; }"
-        "QPushButton:pressed { background: #0284C7; color: #FFFFFF; }"
-        "QPushButton:disabled { background: #0A0E17; border: 1px solid #1E293B; color: #FFFFFF; }"
+        "QDialog { background-color: %1; color: %2; font-family: 'Segoe UI', sans-serif; font-size: 12px; }"
+        "QTableWidget { background-color: %6; border: 1px solid %3; border-radius: 6px; gridline-color: %3; selection-background-color: %3; selection-color: %5; color: %2; }"
+        "QHeaderView::section { background-color: %4; color: %2; padding: 6px; font-weight: bold; border: 1px solid %3; }"
+        "QPushButton, QDialogButtonBox QPushButton, QToolButton { background-color: %7; border: 1px solid %3; border-radius: 6px; padding: 6px 16px; color: %2; font-weight: 600; min-height: 22px; }"
+        "QPushButton:hover, QDialogButtonBox QPushButton:hover, QToolButton:hover { background-color: %3; border: 1px solid %5; color: %5; }"
+        "QPushButton:pressed, QDialogButtonBox QPushButton:pressed, QToolButton:pressed { background-color: %4; border: 1px solid %5; padding: 6px 16px; color: %2; }"
+        "QPushButton:disabled { background: %6; border: 1px solid %3; color: %8; }"
+        "QCheckBox::indicator:unchecked { border: 1px solid #EF4444; background-color: rgba(239, 68, 68, 0.18); border-radius: 4px; width: 15px; height: 15px; }"
+        "QCheckBox::indicator:checked { border: 1px solid #10B981; background-color: #10B981; border-radius: 4px; width: 15px; height: 15px; }"
+    ).arg(
+        pal.bg, pal.textPrimary, pal.border, pal.surface, pal.accent, pal.inputBg, pal.buttonBg, pal.textSecondary
     ));
 
     auto* main_layout = new QVBoxLayout(this);

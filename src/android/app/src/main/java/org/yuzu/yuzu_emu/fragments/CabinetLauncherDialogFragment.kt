@@ -3,6 +3,8 @@
 
 package org.yuzu.yuzu_emu.fragments
 
+import android.view.KeyEvent
+
 import android.app.Dialog
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -37,5 +39,16 @@ class CabinetLauncherDialogFragment : DialogFragment() {
         savedInstanceState: Bundle?
     ): View {
         return binding.root
+    }
+    override fun onStart() {
+        super.onStart()
+        dialog?.setOnKeyListener { _, keyCode, event ->
+            if (keyCode == KeyEvent.KEYCODE_ESCAPE && event.action == KeyEvent.ACTION_UP) {
+                dismissAllowingStateLoss()
+                true
+            } else {
+                false
+            }
+        }
     }
 }

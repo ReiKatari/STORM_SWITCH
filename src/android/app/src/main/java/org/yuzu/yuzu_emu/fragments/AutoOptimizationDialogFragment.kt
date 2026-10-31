@@ -77,13 +77,10 @@ class AutoOptimizationDialogFragment : DialogFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         ViewCompat.setOnApplyWindowInsetsListener(view) { v, windowInsets ->
-            val insets = windowInsets.getInsets(
+            val systemBars = windowInsets.getInsets(
                 WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
             )
-            val density = resources.displayMetrics.density
-            val dp16 = (16 * density).toInt()
-            val topInset = maxOf(insets.top, (28 * density).toInt()) + (16 * density).toInt()
-            v.setPadding(insets.left + dp16, topInset, insets.right + dp16, insets.bottom + dp16)
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             windowInsets
         }
         view.requestApplyInsets()

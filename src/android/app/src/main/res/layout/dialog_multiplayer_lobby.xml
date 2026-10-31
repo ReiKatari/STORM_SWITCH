@@ -47,7 +47,9 @@
                 android:enabled="true"
                 android:text="@string/multiplayer_chat"
                 app:icon="@drawable/ic_chat"
-                app:cornerRadius="16dp" />
+                app:cornerRadius="16dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_moderation"
@@ -59,7 +61,9 @@
                 android:enabled="true"
                 android:text="@string/multiplayer_moderation"
                 app:cornerRadius="16dp"
-                app:icon="@drawable/ic_user" />
+                app:icon="@drawable/ic_user"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_leave"
@@ -69,7 +73,9 @@
                 android:layout_marginHorizontal="16dp"
                 android:text="@string/multiplayer_exit_room"
                 app:icon="@drawable/ic_exit"
-                app:cornerRadius="16dp" />
+                app:cornerRadius="16dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
         </LinearLayout>
     </LinearLayout>

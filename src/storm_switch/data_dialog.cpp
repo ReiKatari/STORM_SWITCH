@@ -17,9 +17,11 @@
 #include <core/frontend/applets/profile_select.h>
 
 #include <applets/qt_profile_select.h>
+#include "storm_switch/configuration/storm_ui_structure_helper.h"
 
 DataDialog::DataDialog(QWidget* parent) : QDialog(parent), ui(std::make_unique<Ui::DataDialog>()) {
     ui->setupUi(this);
+    StormUI::StructureEngine::InstallEscDismiss(this);
 
     // TODO: Should we make this a single widget that pulls data from a model?
 #define WIDGET(label, name)                                                                        \

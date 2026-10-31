@@ -19,6 +19,8 @@
         app:backgroundTint="@null"
         app:icon="@drawable/ic_folder_open"
         app:iconSize="18dp"
-        app:iconTint="?attr/colorPrimary" />
+        app:iconTint="?attr/colorPrimary"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorPrimary" />
 
 </LinearLayout>

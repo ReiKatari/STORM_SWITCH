@@ -48,9 +48,7 @@
                     android:text="The Legend of Zelda"
                     android:textSize="15sp"
                     android:textStyle="bold"
-                    android:textColor="?attr/colorOnSurface"
-                    android:maxLines="3"
-                    android:ellipsize="end" />
+                    android:textColor="?attr/colorOnSurface" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -94,7 +92,7 @@
                         android:text="🛡️ AUTO-FIX"
                         android:textSize="9.5sp"
                         android:textStyle="bold"
-                        android:textColor="#00E5FF" />
+                        android:textColor="?attr/colorPrimary" />
 
                 </LinearLayout>
 
@@ -296,9 +294,7 @@
                         android:text="@string/launch_mode_auto_fix"
                         android:textSize="11.5sp"
                         android:textStyle="bold"
-                        android:textColor="?attr/colorPrimary"
-                        android:maxLines="3"
-                        android:ellipsize="end" />
+                        android:textColor="?attr/colorPrimary" />
 
                     <ImageView
                         android:layout_width="13dp"
@@ -313,9 +309,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/launch_mode_auto_fix_description"
                     android:textSize="9.5sp"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:maxLines="4"
-                    android:ellipsize="end" />
+                    android:textColor="?attr/colorOnSurfaceVariant" />
 
             </LinearLayout>
 
@@ -333,7 +327,7 @@
             app:cardCornerRadius="10dp"
             app:cardElevation="0dp"
             app:cardBackgroundColor="?attr/colorSurfaceVariant"
-            app:strokeColor="#38BDF8"
+            app:strokeColor="?attr/colorPrimary"
             app:strokeWidth="1.2dp">
 
             <LinearLayout
@@ -353,7 +347,7 @@
                         android:layout_width="16dp"
                         android:layout_height="16dp"
                         android:src="@drawable/ic_tune"
-                        app:tint="#38BDF8"
+                        app:tint="?attr/colorPrimary"
                         android:layout_marginEnd="5dp" />
 
                     <com.google.android.material.textview.MaterialTextView
@@ -363,15 +357,13 @@
                         android:text="@string/launch_mode_auto_fix_with_custom"
                         android:textSize="11.5sp"
                         android:textStyle="bold"
-                        android:textColor="?attr/colorOnSurface"
-                        android:maxLines="3"
-                        android:ellipsize="end" />
+                        android:textColor="?attr/colorOnSurface" />
 
                     <ImageView
                         android:layout_width="13dp"
                         android:layout_height="13dp"
                         android:src="@drawable/ic_arrow_forward"
-                        app:tint="#38BDF8" />
+                        app:tint="?attr/colorPrimary" />
 
                 </LinearLayout>
 
@@ -380,9 +372,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/launch_mode_auto_fix_with_custom_description"
                     android:textSize="9.5sp"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:maxLines="4"
-                    android:ellipsize="end" />
+                    android:textColor="?attr/colorOnSurfaceVariant" />
 
             </LinearLayout>
 
@@ -400,7 +390,7 @@
             app:cardCornerRadius="10dp"
             app:cardElevation="0dp"
             app:cardBackgroundColor="?attr/colorSurfaceVariant"
-            app:strokeColor="#0284C7"
+            app:strokeColor="?attr/colorPrimary"
             app:strokeWidth="1.2dp">
 
             <LinearLayout
@@ -420,7 +410,7 @@
                         android:layout_width="16dp"
                         android:layout_height="16dp"
                         android:src="@drawable/ic_controller"
-                        app:tint="#0284C7"
+                        app:tint="?attr/colorPrimary"
                         android:layout_marginEnd="5dp" />
 
                     <com.google.android.material.textview.MaterialTextView
@@ -430,15 +420,13 @@
                         android:text="@string/launch_mode_custom"
                         android:textSize="11.5sp"
                         android:textStyle="bold"
-                        android:textColor="?attr/colorOnSurface"
-                        android:maxLines="3"
-                        android:ellipsize="end" />
+                        android:textColor="?attr/colorOnSurface" />
 
                     <ImageView
                         android:layout_width="13dp"
                         android:layout_height="13dp"
                         android:src="@drawable/ic_arrow_forward"
-                        app:tint="#0284C7" />
+                        app:tint="?attr/colorPrimary" />
 
                 </LinearLayout>
 
@@ -447,9 +435,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/launch_mode_custom_description"
                     android:textSize="9.5sp"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:maxLines="4"
-                    android:ellipsize="end" />
+                    android:textColor="?attr/colorOnSurfaceVariant" />
 
             </LinearLayout>
 
@@ -497,9 +483,7 @@
                         android:text="@string/launch_mode_global"
                         android:textSize="11.5sp"
                         android:textStyle="bold"
-                        android:textColor="?attr/colorOnSurface"
-                        android:maxLines="3"
-                        android:ellipsize="end" />
+                        android:textColor="?attr/colorOnSurface" />
 
                     <ImageView
                         android:layout_width="13dp"
@@ -514,9 +498,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/launch_mode_global_description"
                     android:textSize="9.5sp"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:maxLines="4"
-                    android:ellipsize="end" />
+                    android:textColor="?attr/colorOnSurfaceVariant" />
 
             </LinearLayout>
 

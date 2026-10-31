@@ -51,9 +51,7 @@
                         android:text="The Legend of Zelda"
                         android:textSize="17sp"
                         android:textStyle="bold"
-                        android:textColor="?attr/colorOnSurface"
-                        android:maxLines="3"
-                        android:ellipsize="end" />
+                        android:textColor="?attr/colorOnSurface" />
 
                     <LinearLayout
                         android:layout_width="wrap_content"
@@ -208,7 +206,9 @@
                     app:icon="@drawable/ic_build"
                     app:iconTint="?attr/colorOnPrimary"
                     app:iconSize="16dp"
-                    android:layout_marginBottom="8dp" />
+                    android:layout_marginBottom="8dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorPrimary" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_reset_auto_correction"
@@ -219,7 +219,9 @@
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="12.5sp"
                     app:cornerRadius="10dp"
-                    android:layout_marginBottom="6dp" />
+                    android:layout_marginBottom="6dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_close_auto_correction"
@@ -228,7 +230,9 @@
                     android:layout_height="40dp"
                     android:text="@string/close"
                     android:textSize="12.5sp"
-                    app:cornerRadius="10dp" />
+                    app:cornerRadius="10dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
             </LinearLayout>
 

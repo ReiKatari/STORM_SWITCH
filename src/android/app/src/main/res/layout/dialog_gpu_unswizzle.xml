@@ -19,9 +19,10 @@
             android:textColor="?attr/colorOnSurface"
             android:textSize="15sp"
             android:textStyle="bold"
-            app:thumbTint="?attr/colorPrimary"
-            app:trackTint="?attr/colorOutline"
-            android:text="@string/gpu_unswizzle_enable" />
+            android:text="@string/gpu_unswizzle_enable"
+        app:useMaterialThemeColors="false"
+        app:thumbTint="@color/switch_thumb_red_green"
+        app:trackTint="@color/switch_track_red_green" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/layout_texture_size"
@@ -107,7 +108,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="6dp"
-                android:text="@string/gpu_unswizzle_default_button" />
+                android:text="@string/gpu_unswizzle_default_button"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_cancel"
@@ -115,14 +118,18 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="6dp"
-                android:text="@android:string/cancel" />
+                android:text="@android:string/cancel"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_ok"
                 style="@style/StormButton.Dialog.Positive"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@android:string/ok" />
+                android:text="@android:string/ok"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
         </LinearLayout>
 
     </LinearLayout>

@@ -4,6 +4,10 @@
 package org.yuzu.yuzu_emu.fragments
 
 import android.content.Intent
+import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.coroutines.launch
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -78,7 +82,7 @@ class AddonsFragment : Fragment() {
         addonViewModel.showModInstallPicker.collect(
             viewLifecycleOwner,
             resetState = { addonViewModel.showModInstallPicker(false) }
-        ) { if (it) installAddon.launch(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).data) }
+        ) { if (it) showModInstallChoiceDialog() }
         addonViewModel.showModNoticeDialog.collect(
             viewLifecycleOwner,
             resetState = { addonViewModel.showModNoticeDialog(false) }
@@ -89,7 +93,7 @@ class AddonsFragment : Fragment() {
                     titleId = R.string.addon_notice,
                     descriptionId = R.string.addon_notice_description,
                     dismissible = false,
-                    positiveAction = { addonViewModel.showModInstallPicker(true) },
+                    positiveAction = { showModInstallChoiceDialog() },
                     negativeAction = {},
                     negativeButtonTitleId = R.string.close
                 ).show(parentFragmentManager, MessageDialogFragment.TAG)
@@ -137,6 +141,52 @@ class AddonsFragment : Fragment() {
         }
         super.onDestroy()
     }
+
+    private fun showModInstallChoiceDialog() {
+        val options = arrayOf(
+            getString(R.string.install_mod_from_archive),
+            getString(R.string.install_mod_from_folder)
+        )
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.install_mod_title)
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> installAddonArchive.launch(arrayOf("*/*"))
+                    1 -> installAddon.launch(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).data)
+                }
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private val installAddonArchive =
+        registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            if (uri == null) return@registerForActivityResult
+            val progressDialog = MaterialAlertDialogBuilder(requireContext())
+                .setTitle(getString(R.string.install_mod_title))
+                .setMessage(getString(R.string.gamebanana_installing_manual))
+                .setCancelable(false)
+                .show()
+
+            viewLifecycleOwner.lifecycleScope.launch {
+                val (success, modName) = GameBananaHelper.installManualMod(args.game, uri, requireContext())
+                progressDialog.dismiss()
+                if (success) {
+                    Toast.makeText(
+                        requireContext(),
+                        getString(R.string.gamebanana_manual_success, modName),
+                        Toast.LENGTH_LONG
+                    ).show()
+                    addonViewModel.refreshAddons(force = true)
+                } else {
+                    Toast.makeText(
+                        requireContext(),
+                        getString(R.string.gamebanana_install_error) + ": $modName",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        }
 
     private val installAddon =
         registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { result ->

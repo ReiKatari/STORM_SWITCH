@@ -65,7 +65,9 @@
                 app:cornerRadius="16dp"
                 app:icon="@drawable/ic_search"
                 app:iconPadding="12dp"
-                app:iconTint="?attr/colorOnPrimary" />
+                app:iconTint="?attr/colorOnPrimary"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorPrimary" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -84,7 +86,9 @@
                     android:text="@string/multiplayer_join_room"
                     app:cornerRadius="16dp"
                     app:icon="@drawable/ic_install"
-                    app:iconPadding="12dp" />
+                    app:iconPadding="12dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
                 <Space
                     android:layout_width="16dp"
@@ -102,7 +106,9 @@
                     android:text="@string/multiplayer_create_room"
                     app:cornerRadius="16dp"
                     app:icon="@drawable/ic_add"
-                    app:iconPadding="12dp" />
+                    app:iconPadding="12dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
             </LinearLayout>
 

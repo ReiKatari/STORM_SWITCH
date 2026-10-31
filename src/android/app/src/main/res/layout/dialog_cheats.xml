@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurfaceVariant"
+    android:background="?attr/colorSurface"
     android:clipToPadding="false">
 
     <LinearLayout
@@ -288,7 +288,9 @@
                 android:text="@string/ok"
                 android:textSize="11sp"
                 android:paddingHorizontal="16dp"
-                android:paddingVertical="0dp" />
+                android:paddingVertical="0dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorPrimary" />
 
         </LinearLayout>
 

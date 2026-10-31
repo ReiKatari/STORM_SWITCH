@@ -52,6 +52,14 @@ class TouchOverlayStyleDialogFragment : DialogFragment() {
         val dialog = super.onCreateDialog(savedInstanceState)
         dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE)
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        dialog.setOnKeyListener { _, keyCode, event ->
+            if (keyCode == android.view.KeyEvent.KEYCODE_ESCAPE && event.action == android.view.KeyEvent.ACTION_UP) {
+                dismissAllowingStateLoss()
+                true
+            } else {
+                false
+            }
+        }
         return dialog
     }
 
@@ -147,8 +155,8 @@ class TouchOverlayStyleDialogFragment : DialogFragment() {
             holder.binding.viewColorPreviewBg.backgroundTintList = ColorStateList.valueOf(theme.colorDefault)
             holder.binding.viewColorPressedDot.backgroundTintList = ColorStateList.valueOf(theme.colorPressed)
 
-            val activeColor = Color.parseColor("#00F0FF")
-            val defaultOutline = Color.parseColor("#374151")
+            val activeColor = org.yuzu.yuzu_emu.utils.ThemeHelper.getColorFromAttr(context, com.google.android.material.R.attr.colorPrimary)
+            val defaultOutline = org.yuzu.yuzu_emu.utils.ThemeHelper.getColorFromAttr(context, com.google.android.material.R.attr.colorOutline)
 
             holder.binding.cardTheme.strokeColor = if (isSelected) activeColor else defaultOutline
             holder.binding.cardTheme.strokeWidth = if (isSelected) 5 else 2

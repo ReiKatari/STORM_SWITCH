@@ -20,7 +20,7 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:src="@drawable/ic_save"
-            app:tint="#00F0FF" />
+            app:tint="?attr/colorPrimary" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -33,7 +33,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/save_state_manager_title"
-                android:textColor="#00F0FF"
+                android:textColor="?attr/colorPrimary"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
@@ -41,7 +41,7 @@
                 android:id="@+id/text_game_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#94A3B8"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="12sp"
                 tools:text="Game Title • SESS v2 (Слоты 1–5)" />
         </LinearLayout>
@@ -53,13 +53,13 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="@string/close"
             android:src="@drawable/ic_clear"
-            app:tint="#E2E8F0" />
+            app:tint="?attr/colorOnSurfaceVariant" />
     </LinearLayout>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#20354E" />
+        android:background="?attr/colorOutline" />
 
     <!-- Slots Container in ScrollView -->
     <androidx.core.widget.NestedScrollView

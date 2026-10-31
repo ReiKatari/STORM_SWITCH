@@ -10,6 +10,7 @@
 #include <dynarmic/interface/optimization_flags.h>
 #include "common/common_types.h"
 #include "common/literals.h"
+#include "common/memory_detect.h"
 #include "common/settings.h"
 
 namespace Core {
@@ -176,10 +177,15 @@ public:
             return;
         }
         if (!is_null_jit) {
+            const u64 host_ram = Common::GetMemInfo().TotalPhysicalMemory;
+            const u32 target_size = (host_ram >= 12_GiB) ? static_cast<u32>(256_MiB)
+                                  : (host_ram >= 8_GiB)  ? static_cast<u32>(192_MiB)
+                                                         : static_cast<u32>(128_MiB);
 #if defined(ARCHITECTURE_arm64)
-            config.code_cache_size = (std::max)(config.code_cache_size, static_cast<std::uint32_t>(128_MiB));
+            config.code_cache_size = (std::max)(config.code_cache_size, target_size);
 #else
-            config.code_cache_size = (std::max)(config.code_cache_size, static_cast<std::uint32_t>(512_MiB));
+            const u32 desktop_size = (host_ram >= 16_GiB) ? static_cast<u32>(512_MiB) : target_size;
+            config.code_cache_size = (std::max)(config.code_cache_size, desktop_size);
 #endif
         }
 
@@ -209,10 +215,15 @@ public:
             return;
         }
         if (!is_null_jit) {
+            const u64 host_ram = Common::GetMemInfo().TotalPhysicalMemory;
+            const u32 target_size = (host_ram >= 12_GiB) ? static_cast<u32>(256_MiB)
+                                  : (host_ram >= 8_GiB)  ? static_cast<u32>(192_MiB)
+                                                         : static_cast<u32>(128_MiB);
 #if defined(ARCHITECTURE_arm64)
-            config.code_cache_size = (std::max)(config.code_cache_size, static_cast<std::uint32_t>(128_MiB));
+            config.code_cache_size = (std::max)(config.code_cache_size, target_size);
 #else
-            config.code_cache_size = (std::max)(config.code_cache_size, static_cast<std::uint32_t>(256_MiB));
+            const u32 desktop_size = (host_ram >= 16_GiB) ? static_cast<u32>(512_MiB) : target_size;
+            config.code_cache_size = (std::max)(config.code_cache_size, desktop_size);
 #endif
         }
 

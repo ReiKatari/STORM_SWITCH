@@ -4,10 +4,12 @@
 #include "frontend_common/play_time_manager.h"
 #include "ui_set_play_time_dialog.h"
 #include "storm_switch/set_play_time_dialog.h"
+#include "storm_switch/configuration/storm_ui_structure_helper.h"
 
 SetPlayTimeDialog::SetPlayTimeDialog(QWidget* parent, u64 current_play_time)
     : QDialog(parent), ui{std::make_unique<Ui::SetPlayTimeDialog>()} {
     ui->setupUi(this);
+    StormUI::StructureEngine::InstallEscDismiss(this);
 
     ui->hoursSpinBox->setValue(
         QString::fromStdString(PlayTime::PlayTimeManager::GetPlayTimeHours(current_play_time))

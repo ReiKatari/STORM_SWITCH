@@ -450,82 +450,96 @@ struct Memory::Impl {
             return;
         }
 
-        if (current_page_table->fastmem_arena) {
-            Common::MemoryPermission perm{};
-            if (!Settings::values.use_reactive_flushing.GetValue() || !cached) {
-                perm |= Common::MemoryPermission::Read;
-            }
-            if (!cached) {
-                perm |= Common::MemoryPermission::Write;
-            }
-            host_buffer->Protect(vaddr, size, perm);
+        Common::MemoryPermission perm{};
+        if (!Settings::values.use_reactive_flushing.GetValue() || !cached) {
+            perm |= Common::MemoryPermission::Read;
+        }
+        if (!cached) {
+            perm |= Common::MemoryPermission::Write;
         }
 
-        // Iterate over a contiguous CPU address space, which corresponds to the specified GPU
-        // address space, marking the region as un/cached. The region is marked un/cached at a
-        // granularity of CPU pages, hence why we iterate on a CPU page basis (note: GPU page size
-        // is different). This assumes the specified GPU address region is contiguous as well.
+        const bool has_fastmem = current_page_table->fastmem_arena != nullptr;
+        u64 run_start = 0;
+        u64 run_size = 0;
 
+        auto FlushProtectRun = [&]() {
+            if (has_fastmem && run_size > 0) {
+                host_buffer->Protect(run_start, run_size, perm);
+            }
+            run_size = 0;
+        };
+
+        // Iterate over a contiguous CPU address space, which corresponds to the specified GPU
+        // address space, marking the region as un/cached. Redundant mprotect calls are avoided
+        // by detecting transitioning pages and coalescing contiguous spans.
         const u64 num_pages = ((vaddr + size - 1) >> YUZU_PAGEBITS) - (vaddr >> YUZU_PAGEBITS) + 1;
-        for (u64 i = 0; i < num_pages; ++i, vaddr += YUZU_PAGESIZE) {
-            const Common::PageType page_type= current_page_table->entries[vaddr >> YUZU_PAGEBITS].ptr.Type();
+        u64 cur_page_vaddr = (vaddr >> YUZU_PAGEBITS) << YUZU_PAGEBITS;
+
+        for (u64 i = 0; i < num_pages; ++i, cur_page_vaddr += YUZU_PAGESIZE) {
+            const size_t page_index = cur_page_vaddr >> YUZU_PAGEBITS;
+            const Common::PageType page_type = current_page_table->entries[page_index].ptr.Type();
+
+            bool page_transitioned = false;
+
             if (cached) {
-                // Switch page type to cached if now cached
                 switch (page_type) {
                 case Common::PageType::Unmapped:
-                    // It is not necessary for a process to have this region mapped into its address
-                    // space, for example, a system module need not have a VRAM mapping.
                     break;
                 case Common::PageType::DebugMemory:
                 case Common::PageType::Memory:
-                    current_page_table->entries[vaddr >> YUZU_PAGEBITS].ptr.Store(0, Common::PageType::RasterizerCachedMemory);
+                    current_page_table->entries[page_index].ptr.Store(0, Common::PageType::RasterizerCachedMemory);
+                    page_transitioned = true;
                     break;
                 case Common::PageType::RasterizerCachedMemory:
-                    // There can be more than one GPU region mapped per CPU region, so it's common
-                    // that this area is already marked as cached.
+                    // Already cached; redundant mprotect skipped
                     break;
                 default:
                     break;
                 }
             } else {
-                // Switch page type to uncached if now uncached
                 switch (page_type) {
-                case Common::PageType::Unmapped: // NOLINT(bugprone-branch-clone)
-                    // It is not necessary for a process to have this region mapped into its address
-                    // space, for example, a system module need not have a VRAM mapping.
-                    break;
+                case Common::PageType::Unmapped:
                 case Common::PageType::DebugMemory:
                 case Common::PageType::Memory:
-                    // There can be more than one GPU region mapped per CPU region, so it's common
-                    // that this area is already unmarked as cached.
+                    // Already uncached; redundant mprotect skipped
                     break;
                 case Common::PageType::RasterizerCachedMemory: {
-                    if (u8* const pointer = GetPointerFromRasterizerCachedMemory(vaddr & ~YUZU_PAGEMASK); pointer == nullptr) {
-                        // It's possible that this function has been called while updating the
-                        // pagetable after unmapping a VMA. In that case the underlying VMA will no
-                        // longer exist, and we should just leave the pagetable entry blank.
-                        current_page_table->entries[vaddr >> YUZU_PAGEBITS].ptr.Store(0, Common::PageType::Unmapped);
+                    if (u8* const pointer = GetPointerFromRasterizerCachedMemory(cur_page_vaddr & ~YUZU_PAGEMASK); pointer == nullptr) {
+                        current_page_table->entries[page_index].ptr.Store(0, Common::PageType::Unmapped);
                     } else {
-                        current_page_table->entries[vaddr >> YUZU_PAGEBITS].ptr.Store(uintptr_t(pointer) - (vaddr & ~YUZU_PAGEMASK), Common::PageType::Memory);
+                        current_page_table->entries[page_index].ptr.Store(uintptr_t(pointer) - (cur_page_vaddr & ~YUZU_PAGEMASK), Common::PageType::Memory);
                     }
+                    page_transitioned = true;
                     break;
                 }
                 default:
                     break;
                 }
             }
+
+            if (page_transitioned) {
+                if (run_size == 0) {
+                    run_start = cur_page_vaddr;
+                    run_size = YUZU_PAGESIZE;
+                } else if (cur_page_vaddr == run_start + run_size) {
+                    run_size += YUZU_PAGESIZE;
+                } else {
+                    FlushProtectRun();
+                    run_start = cur_page_vaddr;
+                    run_size = YUZU_PAGESIZE;
+                }
+            } else {
+                if (run_size > 0) {
+                    FlushProtectRun();
+                }
+            }
+        }
+
+        if (run_size > 0) {
+            FlushProtectRun();
         }
     }
 
-    /**
-     * Maps a region of pages as a specific type.
-     *
-     * @param page_table The page table to use to perform the mapping.
-     * @param base       The base address to begin mapping at.
-     * @param size       The total size of the range in bytes.
-     * @param target     The target address to begin mapping from.
-     * @param type       The page type to map the memory as.
-     */
     void MapPages(Common::PageTable& page_table, Common::ProcessAddress base_address, u64 size,
                   Common::PhysicalAddress target, Common::PageType type) {
         auto base = GetInteger(base_address);

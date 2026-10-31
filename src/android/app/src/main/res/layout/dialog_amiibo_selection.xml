@@ -178,7 +178,9 @@
             android:text="@string/close"
             android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="13sp"
-            app:cornerRadius="12dp" />
+            app:cornerRadius="12dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
     </LinearLayout>
 

@@ -161,6 +161,14 @@ class StormSaveSyncDialogFragment : DialogFragment() {
             window.setBackgroundDrawableResource(android.R.color.transparent)
             androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
         }
+        dialog.setOnKeyListener { _, keyCode, event ->
+            if (keyCode == android.view.KeyEvent.KEYCODE_ESCAPE && event.action == android.view.KeyEvent.ACTION_UP) {
+                dismissAllowingStateLoss()
+                true
+            } else {
+                false
+            }
+        }
         return dialog
     }
 

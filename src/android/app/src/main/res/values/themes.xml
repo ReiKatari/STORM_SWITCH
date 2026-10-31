@@ -75,6 +75,8 @@
 
 
     <style name="Theme.Yuzu.Main" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="materialSwitchStyle">@style/Widget.Storm.Switch</item>
+        <item name="switchStyle">@style/Widget.Storm.Switch</item>
 
 
 

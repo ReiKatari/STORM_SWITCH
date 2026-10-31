@@ -70,7 +70,10 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
-                android:layout_marginEnd="4dp" />
+                android:layout_marginEnd="4dp"
+        app:useMaterialThemeColors="false"
+        app:thumbTint="@color/switch_thumb_red_green"
+        app:trackTint="@color/switch_track_red_green" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

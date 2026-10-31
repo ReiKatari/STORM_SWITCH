@@ -492,7 +492,9 @@
                 android:text="@string/copy_details"
                 app:icon="@drawable/ic_copy"
                 app:iconGravity="textStart"
-                app:cornerRadius="10dp" />
+                app:cornerRadius="10dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorPrimary" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_verify_integrity"
@@ -503,7 +505,9 @@
                 android:text="@string/verify_integrity"
                 app:icon="@drawable/ic_check_circle"
                 app:iconGravity="textStart"
-                app:cornerRadius="10dp" />
+                app:cornerRadius="10dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
         </LinearLayout>
 

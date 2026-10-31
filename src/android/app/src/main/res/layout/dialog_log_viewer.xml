@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurfaceVariant"
+    android:background="?attr/colorSurface"
     android:clipToPadding="false">
 
     <LinearLayout
@@ -48,7 +48,7 @@
                     android:id="@+id/text_log_subtitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="#38BDF8"
+                    android:textColor="?attr/colorPrimary"
                     android:textSize="11sp"
                     android:maxLines="3"
                     android:ellipsize="end"
@@ -64,8 +64,10 @@
                 app:iconSize="18dp"
                 android:layout_marginEnd="4dp"
                 android:tooltipText="@string/storm_sync_refresh"
-                app:backgroundTint="#2D3748"
-                app:iconTint="#00F2FE" />
+                app:backgroundTint="?attr/colorSurfaceVariant"
+                app:iconTint="?attr/colorPrimary"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorPrimary" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_copy_log"
@@ -76,8 +78,10 @@
                 app:iconSize="18dp"
                 android:layout_marginEnd="4dp"
                 android:tooltipText="@string/storm_sync_copy"
-                app:backgroundTint="#2D3748"
-                app:iconTint="#FEB2B2" />
+                app:backgroundTint="?attr/colorSurfaceVariant"
+                app:iconTint="#FEB2B2"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_save_log"
@@ -88,8 +92,10 @@
                 app:iconSize="18dp"
                 android:layout_marginEnd="4dp"
                 android:tooltipText="@string/log_viewer_save_file"
-                app:backgroundTint="#2D3748"
-                app:iconTint="#4FD1C5" />
+                app:backgroundTint="?attr/colorSurfaceVariant"
+                app:iconTint="#4FD1C5"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_share_log"
@@ -100,8 +106,10 @@
                 app:iconSize="18dp"
                 android:layout_marginEnd="4dp"
                 android:tooltipText="@string/log_viewer_share"
-                app:backgroundTint="#2D3748"
-                app:iconTint="#F6E05E" />
+                app:backgroundTint="?attr/colorSurfaceVariant"
+                app:iconTint="#F6E05E"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_close"
@@ -111,8 +119,10 @@
                 app:icon="@drawable/ic_clear"
                 app:iconSize="18dp"
                 android:tooltipText="@string/storm_sync_close"
-                app:backgroundTint="#2D3748"
-                app:iconTint="#FFFFFF" />
+                app:backgroundTint="?attr/colorSurfaceVariant"
+                app:iconTint="#FFFFFF"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
         </LinearLayout>
 
 
@@ -131,7 +141,7 @@
                 android:layout_width="16dp"
                 android:layout_height="16dp"
                 android:src="@drawable/ic_search"
-                app:tint="#38BDF8"
+                app:tint="?attr/colorPrimary"
                 android:layout_marginEnd="6dp" />
 
             <EditText
@@ -142,7 +152,7 @@
                 android:background="@null"
                 android:hint="@string/log_viewer_search_hint"
                 android:textColor="#FFFFFF"
-                android:textColorHint="#38BDF8"
+                android:textColorHint="?attr/colorOnSurfaceVariant"
                 android:textSize="12sp"
                 android:inputType="text"
                 android:imeOptions="actionSearch" />
@@ -152,7 +162,7 @@
                 android:layout_width="18dp"
                 android:layout_height="18dp"
                 android:src="@drawable/ic_clear"
-                app:tint="#38BDF8"
+                app:tint="?attr/colorPrimary"
                 android:visibility="gone"
                 android:background="?attr/selectableItemBackgroundBorderless" />
         </LinearLayout>
@@ -217,8 +227,8 @@
             android:layout_weight="1"
             app:cardCornerRadius="12dp"
             app:cardElevation="0dp"
-            app:cardBackgroundColor="#0D1117"
-            app:strokeColor="#30363D"
+            app:cardBackgroundColor="?attr/colorSurfaceVariant"
+            app:strokeColor="?attr/colorOutline"
             app:strokeWidth="1dp">
 
             <ScrollView
@@ -233,7 +243,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:fontFamily="monospace"
-                    android:textColor="#C9D1D9"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="10.5sp"
                     android:lineSpacingExtra="2dp"
                     android:textIsSelectable="true"
@@ -254,7 +264,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:textColor="#38BDF8"
+                android:textColor="?attr/colorPrimary"
                 android:textSize="11sp"
                 tools:text="Строк: 450 | Размер: 32 КБ" />
 
@@ -265,12 +275,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
                 android:text="Telegram / MAX"
-                android:textColor="#00F2FE"
+                android:textColor="?attr/colorPrimary"
                 android:textSize="11sp"
                 app:icon="@drawable/ic_share"
                 app:iconSize="14dp"
-                app:iconTint="#00F2FE"
-                app:backgroundTint="#1A202C" />
+                app:iconTint="?attr/colorPrimary"
+                app:backgroundTint="?attr/colorSurfaceVariant"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorPrimary" />
         </LinearLayout>
 
     </LinearLayout>

@@ -143,7 +143,9 @@
                                 android:textSize="11sp"
                                 app:icon="@drawable/ic_copy"
                                 app:iconSize="14dp"
-                                app:cornerRadius="8dp" />
+                                app:cornerRadius="8dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
                         </LinearLayout>
 
@@ -204,7 +206,7 @@
                                 android:paddingVertical="0dp"
                                 android:fontFamily="monospace"
                                 android:singleLine="true"
-                                android:background="#0D0F18" />
+                                android:background="?attr/colorSurfaceVariant" />
 
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btn_connect"
@@ -214,7 +216,9 @@
                                 android:text="@string/storm_sync_btn_connect"
                                 android:textSize="11sp"
                                 android:layout_marginStart="6dp"
-                                app:cornerRadius="8dp" />
+                                app:cornerRadius="8dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
                         </LinearLayout>
 
@@ -235,7 +239,9 @@
                                 android:textSize="10.5sp"
                                 app:icon="@drawable/ic_search"
                                 app:iconSize="14dp"
-                                app:cornerRadius="8dp" />
+                                app:cornerRadius="8dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
                             <Spinner
                                 android:id="@+id/spinner_discovered"
@@ -307,7 +313,9 @@
                     android:textSize="10.5sp"
                     app:icon="@drawable/ic_sync"
                     app:iconSize="14dp"
-                    app:cornerRadius="8dp" />
+                    app:cornerRadius="8dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
             </LinearLayout>
 
@@ -322,7 +330,7 @@
                 android:paddingVertical="0dp"
                 android:singleLine="true"
                 android:layout_marginBottom="6dp"
-                android:background="#0D0F18" />
+                android:background="?attr/colorSurfaceVariant" />
 
             <FrameLayout
                 android:layout_width="match_parent"

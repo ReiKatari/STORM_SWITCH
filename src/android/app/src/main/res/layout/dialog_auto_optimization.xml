@@ -1,90 +1,101 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/transparent"
-    android:clipToPadding="false"
-    android:fillViewport="true"
-    android:paddingHorizontal="16dp"
-    android:paddingVertical="18dp">
+    android:orientation="vertical"
+    android:background="?attr/colorSurface">
 
-    <!-- Flagship Sculpted Dark Glassmorphic Container -->
+    <!-- Top Pinned Header Bar -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/storm_dialog_card_bg"
-        android:orientation="vertical"
-        android:padding="18dp">
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="14dp"
+        android:paddingBottom="12dp">
 
-        <!-- Top Header Bar -->
+        <FrameLayout
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="@drawable/storm_tile_3d_recessed"
+            android:layout_marginEnd="12dp">
+
+            <ImageView
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_storm_lightning"
+                app:tint="?attr/colorPrimary" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/text_wizard_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/auto_opt_dialog_title"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.02" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/auto_opt_dialog_subtitle"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- Faceted Close Button -->
+        <ImageView
+            android:id="@+id/btn_close"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:padding="9dp"
+            android:background="@drawable/bg_storm_circle_button"
+            android:src="@drawable/ic_clear"
+            app:tint="?attr/colorOnSurfaceVariant"
+            android:contentDescription="@string/close" />
+
+        <ImageView
+            android:id="@+id/btn_close_wizard"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+    <!-- Header Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?attr/colorOutline" />
+
+    <!-- Inner Scrollable Body -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="true"
+        android:fillViewport="true"
+        android:padding="16dp">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:layout_marginBottom="16dp">
+            android:orientation="vertical">
 
-            <FrameLayout
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                android:background="@drawable/storm_tile_3d_recessed"
-                android:layout_marginEnd="12dp">
-
-                <ImageView
-                    android:layout_width="26dp"
-                    android:layout_height="26dp"
-                    android:layout_gravity="center"
-                    android:src="@drawable/ic_storm_lightning"
-                    app:tint="?attr/colorPrimary" />
-            </FrameLayout>
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/text_wizard_title"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/auto_opt_dialog_title"
-                    android:textColor="?attr/colorOnSurface"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="0.02" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="@string/auto_opt_dialog_subtitle"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="12sp" />
-            </LinearLayout>
-
-            <!-- Faceted 3D Close Button -->
-            <ImageView
-                android:id="@+id/btn_close"
-                android:layout_width="38dp"
-                android:layout_height="38dp"
-                android:padding="9dp"
-                android:background="@drawable/bg_storm_circle_button"
-                android:src="@drawable/ic_clear"
-                app:tint="?attr/colorOnSurfaceVariant"
-                android:contentDescription="@string/close" />
-
-            <ImageView
-                android:id="@+id/btn_close_wizard"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:visibility="gone" />
-
-        </LinearLayout>
-
-        <!-- Hardware Telemetry Bento Grid Card -->
+            <!-- Hardware Telemetry Bento Grid Card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -287,7 +298,7 @@
             android:textStyle="bold"
             android:letterSpacing="0.04" />
 
-        <!-- Preset 1: Maximum FPS (60 FPS) -->
+            <!-- Preset 1: Maximum FPS (60 FPS) -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_preset_max_fps"
             android:layout_width="match_parent"
@@ -357,8 +368,7 @@
                         android:layout_marginTop="3dp"
                         android:text="@string/auto_opt_profile_fast_desc"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="12sp"
-                        android:maxLines="4" />
+                        android:textSize="12sp" />
 
                 </LinearLayout>
 
@@ -366,7 +376,7 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Preset 2: Balanced (Recommended) -->
+            <!-- Preset 2: Balanced (Recommended) -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_preset_balanced"
             android:layout_width="match_parent"
@@ -436,8 +446,7 @@
                         android:layout_marginTop="3dp"
                         android:text="@string/auto_opt_profile_balance_desc"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="12sp"
-                        android:maxLines="4" />
+                        android:textSize="12sp" />
 
                 </LinearLayout>
 
@@ -445,7 +454,7 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Preset 3: Ultra Quality (2K / FSR) -->
+            <!-- Preset 3: Ultra Quality (2K / FSR) -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_preset_quality"
             android:layout_width="match_parent"
@@ -515,8 +524,7 @@
                         android:layout_marginTop="3dp"
                         android:text="@string/auto_opt_profile_ultra_desc"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="12sp"
-                        android:maxLines="4" />
+                        android:textSize="12sp" />
 
                 </LinearLayout>
 
@@ -524,7 +532,7 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Preset 4: Eco / Battery -->
+            <!-- Preset 4: Eco / Battery -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_preset_battery"
             android:layout_width="match_parent"
@@ -594,8 +602,7 @@
                         android:layout_marginTop="3dp"
                         android:text="@string/auto_opt_profile_eco_desc"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="12sp"
-                        android:maxLines="4" />
+                        android:textSize="12sp" />
 
                 </LinearLayout>
 
@@ -603,57 +610,72 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Primary Action Button: 3D Faceted Convex -->
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Bottom Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?attr/colorOutline" />
+
+    <!-- Pinned Bottom Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="10dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_reset_defaults"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:minHeight="46dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="6dp"
+            android:text="@string/auto_opt_btn_reset"
+            android:textSize="12sp"
+            app:strokeWidth="1dp"
+            app:strokeColor="?attr/colorOutline" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_cancel"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:minHeight="46dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="6dp"
+            android:text="@android:string/cancel"
+            android:textSize="12sp"
+            app:strokeWidth="1dp"
+            app:strokeColor="?attr/colorOutline" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_apply_wizard"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="match_parent"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:layout_marginBottom="10dp"
+            android:minHeight="46dp"
+            android:layout_weight="1.5"
             android:text="@string/auto_opt_btn_apply"
-            android:textSize="14sp"
+            android:textSize="13sp"
             app:icon="@drawable/ic_check"
             app:iconTint="?attr/colorPrimary"
-            app:iconSize="18dp" />
+            app:iconSize="18dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="?attr/colorPrimary" />
 
-        <!-- Secondary Action Buttons Row -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_reset_defaults"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:minHeight="46dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="6dp"
-                android:text="@string/auto_opt_btn_reset"
-                android:textSize="12sp" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_cancel"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:minHeight="46dp"
-                android:layout_weight="1"
-                android:layout_marginStart="6dp"
-                android:text="@android:string/cancel"
-                android:textSize="12sp" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_cancel_wizard"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:visibility="gone" />
-
-        </LinearLayout>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_cancel_wizard"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone" />
 
     </LinearLayout>
 
-</androidx.core.widget.NestedScrollView>
+</LinearLayout>

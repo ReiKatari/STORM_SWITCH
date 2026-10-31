@@ -18,12 +18,14 @@
 #endif
 
 #include <QDesktopServices>
+#include "storm_switch/configuration/storm_ui_structure_helper.h"
 
 #undef GetSaveFileName
 
 UpdateDialog::UpdateDialog(const Common::Net::Release& release, QWidget* parent)
     : QDialog(parent), ui(new Ui::UpdateDialog) {
     ui->setupUi(this);
+    StormUI::StructureEngine::InstallEscDismiss(this);
 
     ui->version->setText(
         tr("%1 is available for download.").arg(QString::fromStdString(release.title)));

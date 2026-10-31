@@ -763,6 +763,569 @@ bool InterpreterVisitor::LDR_reg_fpsimd(Imm<2> size, Imm<1> opc_1, Reg Rm, Imm<3
     return this->SIMDOffset(scale, shift, opc_0, Rm, option, Rn, Vt);
 }
 
+bool InterpreterVisitor::STXR(Imm<2> sz, Reg Rs, Reg Rn, Reg Rt) {
+    const size_t size = sz.ZeroExtend<size_t>();
+    const size_t dbytes = 1ULL << size;
+    const u64 address = (Rn == Reg::SP) ? this->GetSp() : this->GetReg(Rn);
+    const u64 val = this->GetReg(Rt);
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    m_memory.WriteBlock(address, &val, dbytes);
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    this->SetReg(Rs, 0);
+    return true;
+}
+
+bool InterpreterVisitor::STXP(Imm<1> sz, Reg Rs, Reg Rt2, Reg Rn, Reg Rt) {
+    const size_t dbytes = sz.ZeroExtend<size_t>() == 1 ? 8 : 4;
+    const u64 address = (Rn == Reg::SP) ? this->GetSp() : this->GetReg(Rn);
+    const u64 val1 = this->GetReg(Rt);
+    const u64 val2 = this->GetReg(Rt2);
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    m_memory.WriteBlock(address, &val1, dbytes);
+    m_memory.WriteBlock(address + dbytes, &val2, dbytes);
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    this->SetReg(Rs, 0);
+    return true;
+}
+
+bool InterpreterVisitor::STLXP(Imm<1> sz, Reg Rs, Reg Rt2, Reg Rn, Reg Rt) {
+    return this->STXP(sz, Rs, Rt2, Rn, Rt);
+}
+
+bool InterpreterVisitor::LDXR(Imm<2> sz, Reg Rn, Reg Rt) {
+    const size_t size = sz.ZeroExtend<size_t>();
+    const size_t dbytes = 1ULL << size;
+    const u64 address = (Rn == Reg::SP) ? this->GetSp() : this->GetReg(Rn);
+    u64 val = 0;
+    m_memory.ReadBlock(address, &val, dbytes);
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    this->SetReg(Rt, val);
+    return true;
+}
+
+bool InterpreterVisitor::LDXP(Imm<1> sz, Reg Rt2, Reg Rn, Reg Rt) {
+    const size_t dbytes = sz.ZeroExtend<size_t>() == 1 ? 8 : 4;
+    const u64 address = (Rn == Reg::SP) ? this->GetSp() : this->GetReg(Rn);
+    u64 val1 = 0;
+    u64 val2 = 0;
+    m_memory.ReadBlock(address, &val1, dbytes);
+    m_memory.ReadBlock(address + dbytes, &val2, dbytes);
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    this->SetReg(Rt, val1);
+    this->SetReg(Rt2, val2);
+    return true;
+}
+
+bool InterpreterVisitor::LDAXP(Imm<1> sz, Reg Rt2, Reg Rn, Reg Rt) {
+    return this->LDXP(sz, Rt2, Rn, Rt);
+}
+
+bool InterpreterVisitor::CAS(Imm<2> sz, bool L, Reg Rs, bool o0, Reg Rn, Reg Rt) {
+    const size_t dbytes = sz.Bit<0>() ? 8 : 4;
+    const u64 address = (Rn == Reg::SP) ? this->GetSp() : this->GetReg(Rn);
+    u64 expected = this->GetReg(Rs);
+    u64 desired = this->GetReg(Rt);
+    if (dbytes == 4) {
+        expected = static_cast<u32>(expected);
+        desired = static_cast<u32>(desired);
+    }
+    u8* ptr = m_memory.GetPointer(address);
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    if (ptr && (reinterpret_cast<uintptr_t>(ptr) % dbytes == 0)) {
+        if (dbytes == 4) {
+            u32 exp32 = static_cast<u32>(expected);
+            const u32 des32 = static_cast<u32>(desired);
+#if defined(_MSC_VER)
+            const u32 old = _InterlockedCompareExchange(reinterpret_cast<volatile long*>(ptr), des32, exp32);
+            this->SetReg(Rs, old);
+#else
+            __atomic_compare_exchange_n(reinterpret_cast<u32*>(ptr), &exp32, des32, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+            this->SetReg(Rs, exp32);
+#endif
+        } else {
+#if defined(_MSC_VER)
+            const u64 old = _InterlockedCompareExchange64(reinterpret_cast<volatile long long*>(ptr), desired, expected);
+            this->SetReg(Rs, old);
+#else
+            __atomic_compare_exchange_n(reinterpret_cast<u64*>(ptr), &expected, desired, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+            this->SetReg(Rs, expected);
+#endif
+        }
+    } else {
+        u64 cur = 0;
+        m_memory.ReadBlock(address, &cur, dbytes);
+        if (cur == expected) {
+            m_memory.WriteBlock(address, &desired, dbytes);
+        }
+        this->SetReg(Rs, cur);
+    }
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    return true;
+}
+
+bool InterpreterVisitor::CASB(bool L, Reg Rs, bool o0, Reg Rn, Reg Rt) {
+    const u64 address = (Rn == Reg::SP) ? this->GetSp() : this->GetReg(Rn);
+    u8 expected = static_cast<u8>(this->GetReg(Rs));
+    const u8 desired = static_cast<u8>(this->GetReg(Rt));
+    u8* ptr = m_memory.GetPointer(address);
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    if (ptr) {
+#if !defined(_MSC_VER)
+        __atomic_compare_exchange_n(reinterpret_cast<u8*>(ptr), &expected, desired, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+        this->SetReg(Rs, expected);
+#else
+        const u8 cur = *ptr;
+        if (cur == expected) {
+            *ptr = desired;
+        }
+        this->SetReg(Rs, cur);
+#endif
+    } else {
+        const u8 cur = m_memory.Read8(address);
+        if (cur == expected) {
+            m_memory.Write8(address, desired);
+        }
+        this->SetReg(Rs, cur);
+    }
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    return true;
+}
+
+bool InterpreterVisitor::CASH(bool L, Reg Rs, bool o0, Reg Rn, Reg Rt) {
+    const u64 address = (Rn == Reg::SP) ? this->GetSp() : this->GetReg(Rn);
+    u16 expected = static_cast<u16>(this->GetReg(Rs));
+    const u16 desired = static_cast<u16>(this->GetReg(Rt));
+    u8* ptr = m_memory.GetPointer(address);
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    if (ptr && (reinterpret_cast<uintptr_t>(ptr) % 2 == 0)) {
+#if !defined(_MSC_VER)
+        __atomic_compare_exchange_n(reinterpret_cast<u16*>(ptr), &expected, desired, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+        this->SetReg(Rs, expected);
+#else
+        const u16 old = _InterlockedCompareExchange16(reinterpret_cast<volatile short*>(ptr), desired, expected);
+        this->SetReg(Rs, old);
+#endif
+    } else {
+        const u16 cur = m_memory.Read16(address);
+        if (cur == expected) {
+            m_memory.Write16(address, desired);
+        }
+        this->SetReg(Rs, cur);
+    }
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    return true;
+}
+
+bool InterpreterVisitor::CASP(bool sz, bool L, Reg Rs, bool o0, Reg Rn, Reg Rt) {
+    const size_t dbytes = sz ? 8 : 4;
+    const u64 address = (Rn == Reg::SP) ? this->GetSp() : this->GetReg(Rn);
+    const Reg Rs2 = static_cast<Reg>(static_cast<size_t>(Rs) + 1);
+    const Reg Rt2 = static_cast<Reg>(static_cast<size_t>(Rt) + 1);
+    u64 exp1 = this->GetReg(Rs);
+    u64 exp2 = this->GetReg(Rs2);
+    u64 des1 = this->GetReg(Rt);
+    u64 des2 = this->GetReg(Rt2);
+    if (dbytes == 4) {
+        exp1 = static_cast<u32>(exp1);
+        exp2 = static_cast<u32>(exp2);
+        des1 = static_cast<u32>(des1);
+        des2 = static_cast<u32>(des2);
+    }
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    u64 cur1 = 0;
+    u64 cur2 = 0;
+    m_memory.ReadBlock(address, &cur1, dbytes);
+    m_memory.ReadBlock(address + dbytes, &cur2, dbytes);
+    if (cur1 == exp1 && cur2 == exp2) {
+        m_memory.WriteBlock(address, &des1, dbytes);
+        m_memory.WriteBlock(address + dbytes, &des2, dbytes);
+    }
+    this->SetReg(Rs, cur1);
+    this->SetReg(Rs2, cur2);
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    return true;
+}
+
+bool InterpreterVisitor::SWP(bool sz, bool A, bool R, Reg Rs, Reg Rn, Reg Rt) {
+    const size_t dbytes = sz ? 8 : 4;
+    const u64 address = (Rn == Reg::SP) ? this->GetSp() : this->GetReg(Rn);
+    u64 val = this->GetReg(Rs);
+    if (dbytes == 4) {
+        val = static_cast<u32>(val);
+    }
+    u8* ptr = m_memory.GetPointer(address);
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    if (ptr && (reinterpret_cast<uintptr_t>(ptr) % dbytes == 0)) {
+        if (dbytes == 4) {
+#if defined(_MSC_VER)
+            const u32 old = _InterlockedExchange(reinterpret_cast<volatile long*>(ptr), static_cast<u32>(val));
+            this->SetReg(Rt, old);
+#else
+            const u32 old = __atomic_exchange_n(reinterpret_cast<u32*>(ptr), static_cast<u32>(val), __ATOMIC_SEQ_CST);
+            this->SetReg(Rt, old);
+#endif
+        } else {
+#if defined(_MSC_VER)
+            const u64 old = _InterlockedExchange64(reinterpret_cast<volatile long long*>(ptr), val);
+            this->SetReg(Rt, old);
+#else
+            const u64 old = __atomic_exchange_n(reinterpret_cast<u64*>(ptr), val, __ATOMIC_SEQ_CST);
+            this->SetReg(Rt, old);
+#endif
+        }
+    } else {
+        u64 old = 0;
+        m_memory.ReadBlock(address, &old, dbytes);
+        m_memory.WriteBlock(address, &val, dbytes);
+        this->SetReg(Rt, old);
+    }
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    return true;
+}
+
+bool InterpreterVisitor::SWPB(bool A, bool R, Reg Rs, Reg Rn, Reg Rt) {
+    const u64 address = (Rn == Reg::SP) ? this->GetSp() : this->GetReg(Rn);
+    const u8 val = static_cast<u8>(this->GetReg(Rs));
+    u8* ptr = m_memory.GetPointer(address);
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    if (ptr) {
+#if !defined(_MSC_VER)
+        const u8 old = __atomic_exchange_n(reinterpret_cast<u8*>(ptr), val, __ATOMIC_SEQ_CST);
+        this->SetReg(Rt, old);
+#else
+        const u8 old = *ptr;
+        *ptr = val;
+        this->SetReg(Rt, old);
+#endif
+    } else {
+        const u8 old = m_memory.Read8(address);
+        m_memory.Write8(address, val);
+        this->SetReg(Rt, old);
+    }
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    return true;
+}
+
+bool InterpreterVisitor::SWPH(bool A, bool R, Reg Rs, Reg Rn, Reg Rt) {
+    const u64 address = (Rn == Reg::SP) ? this->GetSp() : this->GetReg(Rn);
+    const u16 val = static_cast<u16>(this->GetReg(Rs));
+    u8* ptr = m_memory.GetPointer(address);
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    if (ptr && (reinterpret_cast<uintptr_t>(ptr) % 2 == 0)) {
+#if !defined(_MSC_VER)
+        const u16 old = __atomic_exchange_n(reinterpret_cast<u16*>(ptr), val, __ATOMIC_SEQ_CST);
+        this->SetReg(Rt, old);
+#else
+        const u16 old = _InterlockedExchange16(reinterpret_cast<volatile short*>(ptr), val);
+        this->SetReg(Rt, old);
+#endif
+    } else {
+        const u16 old = m_memory.Read16(address);
+        m_memory.Write16(address, val);
+        this->SetReg(Rt, old);
+    }
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    return true;
+}
+
+bool InterpreterVisitor::LDADD(bool sz, bool A, bool R, Reg Rs, Reg Rn, Reg Rt) {
+    const size_t dbytes = sz ? 8 : 4;
+    const u64 address = (Rn == Reg::SP) ? this->GetSp() : this->GetReg(Rn);
+    u64 add_val = this->GetReg(Rs);
+    if (dbytes == 4) {
+        add_val = static_cast<u32>(add_val);
+    }
+    u8* ptr = m_memory.GetPointer(address);
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    if (ptr && (reinterpret_cast<uintptr_t>(ptr) % dbytes == 0)) {
+        if (dbytes == 4) {
+#if defined(_MSC_VER)
+            const u32 old = _InterlockedExchangeAdd(reinterpret_cast<volatile long*>(ptr), static_cast<u32>(add_val));
+            if (Rt != Reg::ZR) {
+                this->SetReg(Rt, old);
+            }
+#else
+            const u32 old = __atomic_fetch_add(reinterpret_cast<u32*>(ptr), static_cast<u32>(add_val), __ATOMIC_SEQ_CST);
+            if (Rt != Reg::ZR) {
+                this->SetReg(Rt, old);
+            }
+#endif
+        } else {
+#if defined(_MSC_VER)
+            const u64 old = _InterlockedExchangeAdd64(reinterpret_cast<volatile long long*>(ptr), add_val);
+            if (Rt != Reg::ZR) {
+                this->SetReg(Rt, old);
+            }
+#else
+            const u64 old = __atomic_fetch_add(reinterpret_cast<u64*>(ptr), add_val, __ATOMIC_SEQ_CST);
+            if (Rt != Reg::ZR) {
+                this->SetReg(Rt, old);
+            }
+#endif
+        }
+    } else {
+        u64 old = 0;
+        m_memory.ReadBlock(address, &old, dbytes);
+        const u64 res = old + add_val;
+        m_memory.WriteBlock(address, &res, dbytes);
+        if (Rt != Reg::ZR) {
+            this->SetReg(Rt, old);
+        }
+    }
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    return true;
+}
+
+bool InterpreterVisitor::LDADDB(bool A, bool R, Reg Rs, Reg Rn, Reg Rt) {
+    const u64 address = (Rn == Reg::SP) ? this->GetSp() : this->GetReg(Rn);
+    const u8 add_val = static_cast<u8>(this->GetReg(Rs));
+    u8* ptr = m_memory.GetPointer(address);
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    if (ptr) {
+#if !defined(_MSC_VER)
+        const u8 old = __atomic_fetch_add(reinterpret_cast<u8*>(ptr), add_val, __ATOMIC_SEQ_CST);
+        if (Rt != Reg::ZR) {
+            this->SetReg(Rt, old);
+        }
+#else
+        const u8 old = *ptr;
+        *ptr = old + add_val;
+        if (Rt != Reg::ZR) {
+            this->SetReg(Rt, old);
+        }
+#endif
+    } else {
+        const u8 old = m_memory.Read8(address);
+        m_memory.Write8(address, static_cast<u8>(old + add_val));
+        if (Rt != Reg::ZR) {
+            this->SetReg(Rt, old);
+        }
+    }
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    return true;
+}
+
+bool InterpreterVisitor::LDADDH(bool A, bool R, Reg Rs, Reg Rn, Reg Rt) {
+    const u64 address = (Rn == Reg::SP) ? this->GetSp() : this->GetReg(Rn);
+    const u16 add_val = static_cast<u16>(this->GetReg(Rs));
+    u8* ptr = m_memory.GetPointer(address);
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    if (ptr && (reinterpret_cast<uintptr_t>(ptr) % 2 == 0)) {
+#if !defined(_MSC_VER)
+        const u16 old = __atomic_fetch_add(reinterpret_cast<u16*>(ptr), add_val, __ATOMIC_SEQ_CST);
+        if (Rt != Reg::ZR) {
+            this->SetReg(Rt, old);
+        }
+#else
+        const u16 old = _InterlockedExchangeAdd16(reinterpret_cast<volatile short*>(ptr), add_val);
+        if (Rt != Reg::ZR) {
+            this->SetReg(Rt, old);
+        }
+#endif
+    } else {
+        const u16 old = m_memory.Read16(address);
+        m_memory.Write16(address, static_cast<u16>(old + add_val));
+        if (Rt != Reg::ZR) {
+            this->SetReg(Rt, old);
+        }
+    }
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    return true;
+}
+
+bool InterpreterVisitor::LDCLR(bool sz, bool A, bool R, Reg Rs, Reg Rn, Reg Rt) {
+    const size_t dbytes = sz ? 8 : 4;
+    const u64 address = (Rn == Reg::SP) ? this->GetSp() : this->GetReg(Rn);
+    u64 val = this->GetReg(Rs);
+    if (dbytes == 4) {
+        val = static_cast<u32>(val);
+    }
+    u8* ptr = m_memory.GetPointer(address);
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    if (ptr && (reinterpret_cast<uintptr_t>(ptr) % dbytes == 0)) {
+        if (dbytes == 4) {
+#if !defined(_MSC_VER)
+            const u32 old = __atomic_fetch_and(reinterpret_cast<u32*>(ptr), ~static_cast<u32>(val), __ATOMIC_SEQ_CST);
+            if (Rt != Reg::ZR) {
+                this->SetReg(Rt, old);
+            }
+#else
+            const u32 old = _InterlockedAnd(reinterpret_cast<volatile long*>(ptr), ~static_cast<u32>(val));
+            if (Rt != Reg::ZR) {
+                this->SetReg(Rt, old);
+            }
+#endif
+        } else {
+#if !defined(_MSC_VER)
+            const u64 old = __atomic_fetch_and(reinterpret_cast<u64*>(ptr), ~val, __ATOMIC_SEQ_CST);
+            if (Rt != Reg::ZR) {
+                this->SetReg(Rt, old);
+            }
+#else
+            const u64 old = _InterlockedAnd64(reinterpret_cast<volatile long long*>(ptr), ~val);
+            if (Rt != Reg::ZR) {
+                this->SetReg(Rt, old);
+            }
+#endif
+        }
+    } else {
+        u64 old = 0;
+        m_memory.ReadBlock(address, &old, dbytes);
+        const u64 res = old & ~val;
+        m_memory.WriteBlock(address, &res, dbytes);
+        if (Rt != Reg::ZR) {
+            this->SetReg(Rt, old);
+        }
+    }
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    return true;
+}
+
+bool InterpreterVisitor::LDCLRB(bool A, bool R, Reg Rs, Reg Rn, Reg Rt) {
+    const u64 address = (Rn == Reg::SP) ? this->GetSp() : this->GetReg(Rn);
+    const u8 val = static_cast<u8>(this->GetReg(Rs));
+    const u8 old = m_memory.Read8(address);
+    m_memory.Write8(address, static_cast<u8>(old & ~val));
+    if (Rt != Reg::ZR) {
+        this->SetReg(Rt, old);
+    }
+    return true;
+}
+
+bool InterpreterVisitor::LDCLRH(bool A, bool R, Reg Rs, Reg Rn, Reg Rt) {
+    const u64 address = (Rn == Reg::SP) ? this->GetSp() : this->GetReg(Rn);
+    const u16 val = static_cast<u16>(this->GetReg(Rs));
+    const u16 old = m_memory.Read16(address);
+    m_memory.Write16(address, static_cast<u16>(old & ~val));
+    if (Rt != Reg::ZR) {
+        this->SetReg(Rt, old);
+    }
+    return true;
+}
+
+bool InterpreterVisitor::LDSET(bool sz, bool A, bool R, Reg Rs, Reg Rn, Reg Rt) {
+    const size_t dbytes = sz ? 8 : 4;
+    const u64 address = (Rn == Reg::SP) ? this->GetSp() : this->GetReg(Rn);
+    u64 val = this->GetReg(Rs);
+    if (dbytes == 4) {
+        val = static_cast<u32>(val);
+    }
+    u8* ptr = m_memory.GetPointer(address);
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    if (ptr && (reinterpret_cast<uintptr_t>(ptr) % dbytes == 0)) {
+        if (dbytes == 4) {
+#if !defined(_MSC_VER)
+            const u32 old = __atomic_fetch_or(reinterpret_cast<u32*>(ptr), static_cast<u32>(val), __ATOMIC_SEQ_CST);
+            if (Rt != Reg::ZR) {
+                this->SetReg(Rt, old);
+            }
+#else
+            const u32 old = _InterlockedOr(reinterpret_cast<volatile long*>(ptr), static_cast<u32>(val));
+            if (Rt != Reg::ZR) {
+                this->SetReg(Rt, old);
+            }
+#endif
+        } else {
+#if !defined(_MSC_VER)
+            const u64 old = __atomic_fetch_or(reinterpret_cast<u64*>(ptr), val, __ATOMIC_SEQ_CST);
+            if (Rt != Reg::ZR) {
+                this->SetReg(Rt, old);
+            }
+#else
+            const u64 old = _InterlockedOr64(reinterpret_cast<volatile long long*>(ptr), val);
+            if (Rt != Reg::ZR) {
+                this->SetReg(Rt, old);
+            }
+#endif
+        }
+    } else {
+        u64 old = 0;
+        m_memory.ReadBlock(address, &old, dbytes);
+        const u64 res = old | val;
+        m_memory.WriteBlock(address, &res, dbytes);
+        if (Rt != Reg::ZR) {
+            this->SetReg(Rt, old);
+        }
+    }
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    return true;
+}
+
+bool InterpreterVisitor::LDSETB(bool A, bool R, Reg Rs, Reg Rn, Reg Rt) {
+    const u64 address = (Rn == Reg::SP) ? this->GetSp() : this->GetReg(Rn);
+    const u8 val = static_cast<u8>(this->GetReg(Rs));
+    const u8 old = m_memory.Read8(address);
+    m_memory.Write8(address, static_cast<u8>(old | val));
+    if (Rt != Reg::ZR) {
+        this->SetReg(Rt, old);
+    }
+    return true;
+}
+
+bool InterpreterVisitor::LDSETH(bool A, bool R, Reg Rs, Reg Rn, Reg Rt) {
+    const u64 address = (Rn == Reg::SP) ? this->GetSp() : this->GetReg(Rn);
+    const u16 val = static_cast<u16>(this->GetReg(Rs));
+    const u16 old = m_memory.Read16(address);
+    m_memory.Write16(address, static_cast<u16>(old | val));
+    if (Rt != Reg::ZR) {
+        this->SetReg(Rt, old);
+    }
+    return true;
+}
+
+bool InterpreterVisitor::LDEOR(bool A, bool R, Reg Rs, Reg Rn, Reg Rt) {
+    const size_t dbytes = 8;
+    const u64 address = (Rn == Reg::SP) ? this->GetSp() : this->GetReg(Rn);
+    const u64 val = this->GetReg(Rs);
+    u8* ptr = m_memory.GetPointer(address);
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    if (ptr && (reinterpret_cast<uintptr_t>(ptr) % dbytes == 0)) {
+#if !defined(_MSC_VER)
+        const u64 old = __atomic_fetch_xor(reinterpret_cast<u64*>(ptr), val, __ATOMIC_SEQ_CST);
+        if (Rt != Reg::ZR) {
+            this->SetReg(Rt, old);
+        }
+#else
+        const u64 old = _InterlockedXor64(reinterpret_cast<volatile long long*>(ptr), val);
+        if (Rt != Reg::ZR) {
+            this->SetReg(Rt, old);
+        }
+#endif
+    } else {
+        u64 old = 0;
+        m_memory.ReadBlock(address, &old, dbytes);
+        const u64 res = old ^ val;
+        m_memory.WriteBlock(address, &res, dbytes);
+        if (Rt != Reg::ZR) {
+            this->SetReg(Rt, old);
+        }
+    }
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    return true;
+}
+
+bool InterpreterVisitor::LDEORB(bool A, bool R, Reg Rs, Reg Rn, Reg Rt) {
+    const u64 address = (Rn == Reg::SP) ? this->GetSp() : this->GetReg(Rn);
+    const u8 val = static_cast<u8>(this->GetReg(Rs));
+    const u8 old = m_memory.Read8(address);
+    m_memory.Write8(address, static_cast<u8>(old ^ val));
+    if (Rt != Reg::ZR) {
+        this->SetReg(Rt, old);
+    }
+    return true;
+}
+
+bool InterpreterVisitor::LDEORH(bool A, bool R, Reg Rs, Reg Rn, Reg Rt) {
+    const u64 address = (Rn == Reg::SP) ? this->GetSp() : this->GetReg(Rn);
+    const u16 val = static_cast<u16>(this->GetReg(Rs));
+    const u16 old = m_memory.Read16(address);
+    m_memory.Write16(address, static_cast<u16>(old ^ val));
+    if (Rt != Reg::ZR) {
+        this->SetReg(Rt, old);
+    }
+    return true;
+}
+
 std::optional<u64> MatchAndExecuteOneInstruction(Core::Memory::Memory& memory, mcontext_t* context, fpsimd_context* fpsimd_context) {
     std::span<u64, 31> regs(reinterpret_cast<u64*>(context->regs), 31);
     std::span<u128, 32> vregs(reinterpret_cast<u128*>(fpsimd_context->vregs), 32);

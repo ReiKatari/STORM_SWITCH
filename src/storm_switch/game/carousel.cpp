@@ -26,7 +26,7 @@ GameCarousel::GameCarousel(QWidget* parent) : QListView{parent} {
 
     setSpacing(10);
     setWordWrap(true);
-    setTextElideMode(Qt::ElideRight);
+    setTextElideMode(Qt::ElideNone);
     setFlow(QListView::LeftToRight);
     setWrapping(false);
 }
@@ -62,18 +62,18 @@ void GameCarousel::UpdateIconSize() {
     if (UISettings::values.show_game_name) {
         switch (icon_size) {
         case 128:
-            heightMargin = 65;
+            heightMargin = 72;
             break;
         case 0:
             widthMargin = 120;
             heightMargin = 120;
             break;
         case 64:
-            heightMargin = 77;
+            heightMargin = 82;
             break;
         case 32:
         case 256:
-            heightMargin = 81;
+            heightMargin = 88;
             break;
         }
     } else {

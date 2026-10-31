@@ -46,6 +46,7 @@
 #include "qt_common/util/compress.h"
 #include <QMenu>
 #include "storm_switch/configuration/storm_ui_structure_helper.h"
+#include "storm_switch/common/storm_theme.h"
 
 // ---------------------------------------------------------------------------
 // StormSaveConflictDialog implementation
@@ -59,65 +60,78 @@ StormSaveConflictDialog::StormSaveConflictDialog(QWidget* parent, const StormSav
     resize(720, 420);
     setMinimumSize(640, 360);
 
+    const StormTheme::Palette pal = StormTheme::GetThemePalette();
     setStyleSheet(QStringLiteral(
         "QDialog {"
-        "    background-color: #0A0E17;"
-        "    color: #FFFFFF;"
+        "    background-color: %1;"
+        "    color: %2;"
         "    font-family: 'Segoe UI', sans-serif;"
         "}"
         "QFrame#CardLocal, QFrame#CardRemote {"
-        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #141C2B, stop:1 #0D131F);"
-        "    border: 1px solid #1F2D42;"
+        "    background: %3;"
+        "    border: 1px solid %4;"
         "    border-radius: 8px;"
         "    padding: 12px;"
         "}"
         "QLabel#CardTitle {"
-        "    color: #00F0FF;"
+        "    color: %5;"
         "    font-size: 13px;"
         "    font-weight: bold;"
         "}"
         "QLabel#CardDetail {"
-        "    color: #FFFFFF;"
+        "    color: %2;"
         "    font-size: 12px;"
         "}"
         "QPushButton, QDialogButtonBox QPushButton, QToolButton {"
-        "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #25354e, stop:1 #0f172a);"
-        "    border: 1px solid #20354e;"
+        "    background-color: %6;"
+        "    border: 1px solid %4;"
         "    border-radius: 7px;"
-        "    color: #FFFFFF;"
+        "    color: %2;"
         "    padding: 6px 16px;"
         "    font-weight: 600;"
         "    font-size: 12px;"
         "    min-height: 22px;"
         "}"
         "QPushButton:hover, QDialogButtonBox QPushButton:hover, QToolButton:hover {"
-        "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #334664, stop:1 #131c2c);"
-        "    border: 1px solid #00D2FF;"
-        "    color: #00D2FF;"
+        "    background-color: %7;"
+        "    border: 1px solid %5;"
+        "    color: %2;"
         "}"
         "QPushButton:pressed, QDialogButtonBox QPushButton:pressed, QToolButton:pressed {"
-        "    background-color: #0d1522;"
-        "    border: 1px solid #00A6CC;"
+        "    background-color: %3;"
+        "    border: 1px solid %5;"
         "    padding: 6px 16px;"
-        "    color: #FFFFFF;"
+        "    color: %2;"
         "}"
         "QPushButton#HeroBtn {"
-        "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #38bdf8, stop:1 #0369a1);"
-        "    border: 1px solid #0284c7;"
+        "    background-color: %5;"
+        "    border: 1px solid %5;"
         "    border-radius: 7px;"
         "    padding: 6px 16px;"
-        "    color: #FFFFFF;"
+        "    color: %8;"
         "    font-weight: 700;"
         "}"
         "QPushButton#HeroBtn:hover {"
-        "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #7dd3fc, stop:1 #0284c7);"
-        "    border: 1px solid #38bdf8;"
+        "    background-color: %9;"
+        "    border: 1px solid %9;"
+        "    color: %8;"
         "}"
         "QPushButton#HeroBtn:pressed {"
-        "    background-color: #0369a1;"
-        "    border: 1px solid #0284c7;"
+        "    background-color: %5;"
+        "    border: 1px solid %5;"
         "    padding: 6px 16px;"
+        "    color: %8;"
         "}"
+    ).arg(
+        pal.bg,
+        pal.textPrimary,
+        pal.card,
+        pal.border,
+        pal.accent,
+        pal.buttonBg,
+        pal.itemHover,
+        pal.is_light ? QStringLiteral("#FFFFFF") : QStringLiteral("#000000"),
+        pal.accentHover
     ));
 
     auto* main_layout = new QVBoxLayout(this);
@@ -125,7 +139,7 @@ StormSaveConflictDialog::StormSaveConflictDialog(QWidget* parent, const StormSav
     main_layout->setContentsMargins(18, 18, 18, 18);
 
     auto* header_lbl = new QLabel(tr("⚡ Обнаружен конфликт версий сохранения"), this);
-    header_lbl->setStyleSheet(QStringLiteral("font-size: 16px; font-weight: bold; color: #00F0FF;"));
+    header_lbl->setStyleSheet(QStringLiteral("font-size: 16px; font-weight: bold; color: %1;").arg(pal.accent));
     main_layout->addWidget(header_lbl);
 
     auto* desc_lbl = new QLabel(
@@ -649,7 +663,7 @@ void StormSaveSyncDialog::SetupUI() {
     auto* key_row = new QHBoxLayout();
     key_row->setSpacing(8);
     m_local_key_label = new QLabel(tr("Ключ: инициализация..."), header_card);
-    m_local_key_label->setStyleSheet(QStringLiteral("font-family: monospace; font-size: 13px; font-weight: bold; color: #00F0FF;"));
+    m_local_key_label->setStyleSheet(QStringLiteral("font-family: monospace; font-size: 13px; font-weight: bold; color: %1;"));
     key_row->addWidget(m_local_key_label);
 
     auto* copy_key_btn = new QPushButton(tr("📋 Скопировать"), header_card);
@@ -716,7 +730,7 @@ void StormSaveSyncDialog::SetupUI() {
     auto* search_layout = new QHBoxLayout();
     search_layout->setSpacing(8);
     auto* search_icon_lbl = new QLabel(tr("🔍 Поиск:"), this);
-    search_icon_lbl->setStyleSheet(QStringLiteral("font-weight: bold; color: #00F0FF; font-size: 12px;"));
+    search_icon_lbl->setStyleSheet(QStringLiteral("font-weight: bold; color: %1; font-size: 12px;"));
     search_layout->addWidget(search_icon_lbl);
 
     m_search_edit = new QLineEdit(this);
@@ -893,7 +907,7 @@ void StormSaveSyncDialog::ApplyStormStyles() {
         "    border-radius: 8px;"
         "}"
         "QLabel#AppTitle {"
-        "    color: #00F0FF;"
+        "    color: %1;"
         "    font-size: 18px;"
         "    font-weight: bold;"
         "    letter-spacing: 1px;"
@@ -978,7 +992,7 @@ void StormSaveSyncDialog::ApplyStormStyles() {
         "}"
         "QHeaderView::section {"
         "    background-color: #121824;"
-        "    color: #00F0FF;"
+        "    color: %1;"
         "    font-weight: bold;"
         "    border: none;"
         "    border-right: 1px solid #20354E;"

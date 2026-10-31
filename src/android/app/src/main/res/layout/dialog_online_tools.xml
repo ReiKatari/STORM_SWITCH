@@ -230,6 +230,8 @@
                 android:textColor="?attr/colorOnPrimary"
                 android:textSize="13sp"
                 android:textStyle="bold"
-                android:elevation="4dp" />
+                android:elevation="4dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorPrimary" />
         </LinearLayout>
 </LinearLayout>

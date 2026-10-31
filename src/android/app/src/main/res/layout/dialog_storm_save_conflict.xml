@@ -196,7 +196,9 @@
             android:textColor="?attr/colorOnPrimary"
             android:textSize="13sp"
             android:textStyle="bold"
-            app:backgroundTint="?attr/colorPrimary" />
+            app:backgroundTint="?attr/colorPrimary"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorPrimary" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_cancel_conflict"
@@ -205,6 +207,8 @@
             android:layout_height="40dp"
             android:layout_marginTop="4dp"
             android:text="@android:string/cancel"
-            android:textColor="?attr/colorOnSurfaceVariant" />
+            android:textColor="?attr/colorOnSurfaceVariant"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
     </LinearLayout>
 </LinearLayout>

@@ -59,7 +59,9 @@
             android:minWidth="0dp"
             android:minHeight="36dp"
             android:paddingStart="12dp"
-            android:paddingEnd="12dp" />
+            android:paddingEnd="12dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
     </LinearLayout>
 

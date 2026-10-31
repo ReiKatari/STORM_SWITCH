@@ -4,6 +4,7 @@
 // SPDX-FileCopyrightText: Copyright 2020 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include "common/memory_detect.h"
 #include "common/settings.h"
 #include "core/arm/dynarmic/arm_dynarmic.h"
 #include "core/arm/dynarmic/arm_dynarmic_32.h"
@@ -212,11 +213,26 @@ void ArmDynarmic32::MakeJit(Common::PageTable* page_table) {
     config.wall_clock_cntpct = m_uses_wall_clock;
     config.enable_cycle_counting = !m_uses_wall_clock;
 
-    // Code cache size
+    // Code cache size (Adaptive scaling based on physical RAM)
+    const u64 host_ram = Common::GetMemInfo().TotalPhysicalMemory;
 #if defined(ARCHITECTURE_arm64) || defined(__sun__) || defined(__NetBSD__) || defined(__DragonFly__) || defined(__OpenBSD__)
-    config.code_cache_size = std::uint32_t(128_MiB);
+    if (host_ram >= 12_GiB) {
+        config.code_cache_size = std::uint32_t(256_MiB);
+    } else if (host_ram >= 8_GiB) {
+        config.code_cache_size = std::uint32_t(192_MiB);
+    } else {
+        config.code_cache_size = std::uint32_t(128_MiB);
+    }
 #else
-    config.code_cache_size = std::uint32_t(512_MiB);
+    if (host_ram >= 16_GiB) {
+        config.code_cache_size = std::uint32_t(512_MiB);
+    } else if (host_ram >= 12_GiB) {
+        config.code_cache_size = std::uint32_t(256_MiB);
+    } else if (host_ram >= 8_GiB) {
+        config.code_cache_size = std::uint32_t(192_MiB);
+    } else {
+        config.code_cache_size = std::uint32_t(128_MiB);
+    }
 #endif
 
     // Allow memory fault handling to work
@@ -274,6 +290,12 @@ void ArmDynarmic32::MakeJit(Common::PageTable* page_table) {
     // Unsafe optimizations
     case Settings::CpuAccuracy::Unsafe:
         config.unsafe_optimizations = true;
+        config.optimizations |= Dynarmic::OptimizationFlag::BlockLinking;
+        config.optimizations |= Dynarmic::OptimizationFlag::ReturnStackBuffer;
+        config.optimizations |= Dynarmic::OptimizationFlag::FastDispatch;
+        config.optimizations |= Dynarmic::OptimizationFlag::GetSetElimination;
+        config.optimizations |= Dynarmic::OptimizationFlag::ConstProp;
+        config.optimizations |= Dynarmic::OptimizationFlag::MiscIROpt;
         if (!Settings::values.cpuopt_unsafe_host_mmu) {
             config.fastmem_pointer = std::nullopt;
             config.fastmem_exclusive_access = false;
@@ -297,7 +319,14 @@ void ArmDynarmic32::MakeJit(Common::PageTable* page_table) {
     // Curated optimizations
     case Settings::CpuAccuracy::Auto:
         config.unsafe_optimizations = true;
+        config.optimizations |= Dynarmic::OptimizationFlag::BlockLinking;
+        config.optimizations |= Dynarmic::OptimizationFlag::ReturnStackBuffer;
+        config.optimizations |= Dynarmic::OptimizationFlag::FastDispatch;
+        config.optimizations |= Dynarmic::OptimizationFlag::GetSetElimination;
+        config.optimizations |= Dynarmic::OptimizationFlag::ConstProp;
+        config.optimizations |= Dynarmic::OptimizationFlag::MiscIROpt;
         config.optimizations |= Dynarmic::OptimizationFlag::Unsafe_UnfuseFMA;
+        config.optimizations |= Dynarmic::OptimizationFlag::Unsafe_ReducedErrorFP;
         config.optimizations |= Dynarmic::OptimizationFlag::Unsafe_IgnoreStandardFPCRValue;
         config.optimizations |= Dynarmic::OptimizationFlag::Unsafe_InaccurateNaN;
         if (Settings::values.cpuopt_unsafe_ignore_global_monitor) {

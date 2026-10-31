@@ -6,6 +6,8 @@
 
 package org.yuzu.yuzu_emu.fragments
 
+import android.view.KeyEvent
+
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
@@ -69,6 +71,18 @@ class GameFolderPropertiesDialogFragment : DialogFragment() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putBoolean(DEEP_SCAN, deepScan)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        dialog?.setOnKeyListener { _, keyCode, event ->
+            if (keyCode == KeyEvent.KEYCODE_ESCAPE && event.action == KeyEvent.ACTION_UP) {
+                dismissAllowingStateLoss()
+                true
+            } else {
+                false
+            }
+        }
     }
 
     companion object {

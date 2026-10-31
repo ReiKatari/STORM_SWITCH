@@ -532,6 +532,8 @@ static inline void ApplyDarkToTopLevel(QWidget* w, bool on) {
 #include <QPushButton>
 
 #include "storm_switch/common/storm_lang.h"
+#include "storm_switch/common/storm_theme.h"
+#include "storm_switch/configuration/storm_ui_structure_helper.h"
 
 
 
@@ -1508,49 +1510,47 @@ QString MainWindow::GetGameTitleByProgramId(u64 program_id) const {
 
 
 class StormEscModalFilter final : public QObject {
-
 public:
-
     explicit StormEscModalFilter(QObject* parent = nullptr) : QObject(parent) {}
 
 protected:
-
     bool eventFilter(QObject* obj, QEvent* event) override {
-
         if (event->type() == QEvent::KeyPress) {
-
             auto* keyEvent = static_cast<QKeyEvent*>(event);
-
             if (keyEvent->key() == Qt::Key_Escape) {
-
                 if (QApplication::activePopupWidget()) {
-
                     return false;
-
                 }
-
-                auto* activeModal = QApplication::activeModalWidget();
-
-                if (auto* dlg = qobject_cast<QDialog*>(activeModal)) {
-
-                    if (!dlg->property("isKeyCapturing").toBool()) {
-
-                        dlg->reject();
-
+                if (auto* le = qobject_cast<QLineEdit*>(obj)) {
+                    if (!le->text().isEmpty()) {
+                        le->clear();
                         return true;
-
                     }
-
                 }
-
+                QDialog* dlg = qobject_cast<QDialog*>(QApplication::activeModalWidget());
+                if (!dlg) {
+                    dlg = qobject_cast<QDialog*>(QApplication::activeWindow());
+                }
+                if (!dlg) {
+                    QWidget* w = qobject_cast<QWidget*>(obj);
+                    while (w) {
+                        if (auto* d = qobject_cast<QDialog*>(w)) {
+                            dlg = d;
+                            break;
+                        }
+                        w = w->parentWidget();
+                    }
+                }
+                if (dlg) {
+                    if (!dlg->property("isKeyCapturing").toBool()) {
+                        dlg->reject();
+                        return true;
+                    }
+                }
             }
-
         }
-
         return QObject::eventFilter(obj, event);
-
     }
-
 };
 
 
@@ -3132,44 +3132,76 @@ void MainWindow::InitializeWidgets() {
 
 
     shader_building_label = new QLabel();
-
-    shader_building_label->setToolTip(tr("The amount of shaders currently being built"));
+    shader_building_label->setToolTip(StormLangStorm11(
+        QStringLiteral("Количество компилируемых шейдеров"),
+        QStringLiteral("The amount of shaders currently being built"),
+        QStringLiteral("Anzahl der aktuell erstellten Shader"),
+        QStringLiteral("Nombre de shaders en cours de compilation"),
+        QStringLiteral("当前正在编译的着色器数量"),
+        QStringLiteral("현재 빌드 중인 셰이더 수"),
+        QStringLiteral("現在ビルド中のシェーダーの数"),
+        QStringLiteral("Cantidad de sombreadores en compilación"),
+        QStringLiteral("Quantità di shader in compilazione"),
+        QStringLiteral("Quantidade de shaders sendo compilados"),
+        QStringLiteral("वर्तमान में बनाए जा रहे शेडर्स की संख्या")));
 
     res_scale_label = new QLabel();
-
-    res_scale_label->setToolTip(tr("The current selected resolution scaling multiplier."));
+    res_scale_label->setToolTip(StormLangStorm11(
+        QStringLiteral("Текущий множитель масштабирования разрешения экрана"),
+        QStringLiteral("The current selected resolution scaling multiplier"),
+        QStringLiteral("Aktueller Auflösungsskalierungs-Multiplikator"),
+        QStringLiteral("Multiplicateur de mise à l'échelle de résolution actuel"),
+        QStringLiteral("当前选择的分辨率缩放倍率"),
+        QStringLiteral("현재 선택된 해상도 배율"),
+        QStringLiteral("現在の解像度スケーリング倍率"),
+        QStringLiteral("Multiplicador de escala de resolución actual"),
+        QStringLiteral("Moltiplicatore di scala della risoluzione attuale"),
+        QStringLiteral("Multiplicador de escala de resolução atual"),
+        QStringLiteral("वर्तमान संकल्प स्केलिंग गुणक")));
 
     emu_speed_label = new QLabel();
-
-    emu_speed_label->setToolTip(StormLang(
+    emu_speed_label->setToolTip(StormLangStorm11(
         QStringLiteral("Текущая скорость эмуляции. Значения выше или ниже 100% означают ускорение или замедление работы относительно Switch."),
         QStringLiteral("Current emulation speed. Values higher or lower than 100% indicate emulation is running faster or slower than a Switch."),
         QStringLiteral("Aktuelle Emulationsgeschwindigkeit. Werte über oder unter 100 % bedeuten schnellere oder langsamere Ausführung."),
         QStringLiteral("Vitesse d'émulation actuelle. Les valeurs supérieures ou inférieures à 100 % indiquent une vitesse plus ou moins rapide qu'une Switch."),
         QStringLiteral("当前模拟速度。高于或低于 100% 表示模拟速度快于或慢于真实 Switch。"),
-        QStringLiteral("現在のエミュレーション速度。100%より上または下の場合は実機より速いまたは遅いことを示します。")));
+        QStringLiteral("현재 에뮬레이션 속도. 100% 이상 또는 이하는 Switch보다 빠르거나 느림을 나타냅니다."),
+        QStringLiteral("現在のエミュレーション速度。100%より上または下の場合は実機より速いまたは遅いことを示します。"),
+        QStringLiteral("Velocidad de emulación actual. Valores superiores o inferiores al 100% indican emulación más rápida o lenta que una Switch."),
+        QStringLiteral("Velocità di emulazione attuale. Valori superiori o inferiori al 100% indicano un'emulazione più veloce o più lenta di una Switch."),
+        QStringLiteral("Velocidade de emulação atual. Valores acima ou abaixo de 100% indicam emulação mais rápida ou lenta que um Switch."),
+        QStringLiteral("वर्तमान अनुकरण गति। 100% से अधिक या कम मान Switch से तेज़ या धीमे चलने का संकेत देते हैं।")));
     emu_speed_label->setProperty("stormStatusCapsule", true);
 
     game_fps_label = new QLabel();
-
-    game_fps_label->setToolTip(StormLang(
+    game_fps_label->setToolTip(StormLangStorm11(
         QStringLiteral("Частота кадров в секунду (FPS), отображаемая игрой в данный момент."),
         QStringLiteral("How many frames per second the game is currently displaying."),
         QStringLiteral("Aktuelle Bildwiederholrate (FPS) des Spiels."),
         QStringLiteral("Nombre d'images par seconde (FPS) actuellement affichées par le jeu."),
         QStringLiteral("游戏当前显示的每秒帧数 (FPS)。"),
-        QStringLiteral("ゲームが現在表示している1秒あたりのフレーム数（FPS）。")));
+        QStringLiteral("게임이 현재 표시 중인 초당 프레임 수 (FPS)."),
+        QStringLiteral("ゲームが現在表示している1秒あたりのフレーム数（FPS）。"),
+        QStringLiteral("Fotogramas por segundo (FPS) que muestra el juego actualmente."),
+        QStringLiteral("Fotogrammi al secondo (FPS) attualmente visualizzati dal gioco."),
+        QStringLiteral("Quadros por segundo (FPS) exibidos atualmente pelo jogo."),
+        QStringLiteral("गेम वर्तमान में प्रति सेकंड कितने फ्रेम (FPS) प्रदर्शित कर रहा है।")));
     game_fps_label->setProperty("stormStatusCapsule", true);
 
     emu_frametime_label = new QLabel();
-
-    emu_frametime_label->setToolTip(StormLang(
+    emu_frametime_label->setToolTip(StormLangStorm11(
         QStringLiteral("Время формирования кадра эмуляции (Frame Time) в миллисекундах. Для плавных 60 FPS время должно составлять не более 16.67 мс."),
         QStringLiteral("Time taken to emulate a Switch frame in milliseconds. For 60 FPS full-speed emulation this should be at most 16.67 ms."),
         QStringLiteral("Frame-Zeit in Millisekunden. Für flüssige 60 FPS sollte dies maximal 16,67 ms betragen."),
         QStringLiteral("Temps d'émulation d'une image en millisecondes. Pour 60 FPS, cela doit être au maximum de 16,67 ms."),
         QStringLiteral("模拟一帧所需的时间（毫秒）。要达到流畅的 60 FPS，该数值应不高于 16.67 毫秒。"),
-        QStringLiteral("Switchフレームの処理時間（ミリ秒）。滑らかな60 FPSでは最大16.67ミリ秒である必要があります。")));
+        QStringLiteral("Switch 프레임을 에뮬레이트하는 데 걸리는 시간(밀리초). 원활한 60 FPS 에뮬레이션을 위해서는 최대 16.67ms여야 합니다."),
+        QStringLiteral("Switchフレームの処理時間（ミリ秒）。滑らかな60 FPSでは最大16.67ミリ秒である必要があります。"),
+        QStringLiteral("Tiempo necesario para emular un fotograma de Switch en milisegundos. Para 60 FPS fluidos debe ser como máximo de 16.67 ms."),
+        QStringLiteral("Tempo impiegato per emulare un frame Switch in millisecondi. Per 60 FPS fluidi dovrebbe essere al massimo 16,67 ms."),
+        QStringLiteral("Tempo necessário para emular um quadro do Switch em milissegundos. Para 60 FPS suaves, deve ser no máximo 16,67 ms."),
+        QStringLiteral("मिलीसेकंड में एक Switch फ़्रेम का अनुकरण करने में लगा समय। 60 FPS के लिए यह अधिकतम 16.67 ms होना चाहिए।")));
     emu_frametime_label->setProperty("stormStatusCapsule", true);
 
 
@@ -6220,71 +6252,58 @@ void MainWindow::InitializeWidgets() {
 
 
     // --- Group 0: CONTROLS (Green accent) ---
-
     statusBar()->insertPermanentWidget(0, createGroup(
-
-        0, StormLang(QStringLiteral("УПРАВЛЕНИЕ"), QStringLiteral("CONTROLS"), QStringLiteral("STEUERUNG"), QStringLiteral("COMMANDES"), QStringLiteral("控制"), QStringLiteral("操作")),
-
+        0, StormLangStorm11(
+            QStringLiteral("УПРАВЛЕНИЕ"), QStringLiteral("CONTROLS"), QStringLiteral("STEUERUNG"),
+            QStringLiteral("COMMANDES"), QStringLiteral("控制"), QStringLiteral("컨트롤"),
+            QStringLiteral("操作"), QStringLiteral("CONTROLES"), QStringLiteral("CONTROLLI"),
+            QStringLiteral("CONTROLES"), QStringLiteral("नियंत्रण")),
         QStringLiteral("#00e676"),
-
         {refresh_button, fullscreen_button}));
 
-
-
     // --- Group 1: ADD-ONS (Purple/Magenta accent) ---
-
     statusBar()->insertPermanentWidget(1, createGroup(
-
-        1, StormLang(QStringLiteral("ДОПОЛНЕНИЯ"), QStringLiteral("ADD-ONS"), QStringLiteral("ADD-ONS"), QStringLiteral("EXTENSIONS"), QStringLiteral("附加组件"), QStringLiteral("アドオン")),
-
+        1, StormLangStorm11(
+            QStringLiteral("ДОПОЛНЕНИЯ"), QStringLiteral("ADD-ONS"), QStringLiteral("ADD-ONS"),
+            QStringLiteral("EXTENSIONS"), QStringLiteral("附加组件"), QStringLiteral("추가 콘텐츠"),
+            QStringLiteral("アドオン"), QStringLiteral("COMPLEMENTOS"), QStringLiteral("COMPONENTI AGGIUNTIVI"),
+            QStringLiteral("COMPLEMENTOS"), QStringLiteral("अतिरिक्त सामग्री")),
         QStringLiteral("#e040fb"),
-
         {addons_status_button, gamefix_status_button}));
 
-
-
     // --- Group 2: RENDER (Cyan accent) ---
-
     statusBar()->insertPermanentWidget(2, createGroup(
-
-        2, StormLang(QStringLiteral("РЕНДЕР"), QStringLiteral("RENDER"), QStringLiteral("RENDER"), QStringLiteral("RENDU"), QStringLiteral("渲染"), QStringLiteral("レンダー")),
-
+        2, StormLangStorm11(
+            QStringLiteral("РЕНДЕР"), QStringLiteral("RENDER"), QStringLiteral("RENDER"),
+            QStringLiteral("RENDU"), QStringLiteral("渲染"), QStringLiteral("렌더"),
+            QStringLiteral("レンダー"), QStringLiteral("RENDER"), QStringLiteral("RENDER"),
+            QStringLiteral("RENDER"), QStringLiteral("रेंडर")),
         QStringLiteral("#00e5ff"),
-
         {renderer_status_button, gpu_accuracy_button, cpu_accuracy_button, vsync_mode_button, dma_accuracy_button, gpu_fence_button, nvdec_status_button}));
 
-
-
     // --- Group 3: GRAPHICS (Yellow accent) ---
-
     statusBar()->insertPermanentWidget(3, createGroup(
-
-        3, StormLang(QStringLiteral("ГРАФИКА"), QStringLiteral("GRAPHICS"), QStringLiteral("GRAFIK"), QStringLiteral("GRAPHISMES"), QStringLiteral("图形"), QStringLiteral("グラフィックス")),
-
+        3, StormLangStorm11(
+            QStringLiteral("ГРАФИКА"), QStringLiteral("GRAPHICS"), QStringLiteral("GRAFIK"),
+            QStringLiteral("GRAPHISMES"), QStringLiteral("图形"), QStringLiteral("그래픽"),
+            QStringLiteral("グラフィックス"), QStringLiteral("GRÁFICOS"), QStringLiteral("GRAFICA"),
+            QStringLiteral("GRÁFICOS"), QStringLiteral("ग्राफ़िक्स")),
         QStringLiteral("#ffca28"),
-
         {aa_status_button, filter_status_button, shader_status_button, aspect_ratio_button, res_scale_button, vram_mode_button, anisotropy_button, disk_cache_button}));
 
-
-
     // --- Group 4: ASTC (Pink accent) ---
-
     statusBar()->insertPermanentWidget(4, createGroup(
-
         4, QStringLiteral("ASTC"), QStringLiteral("#ff4081"),
-
         {astc_decode_button, astc_recompress_button}));
 
-
-
     // --- Group 5: MODE (Purple accent) ---
-
     statusBar()->insertPermanentWidget(5, createGroup(
-
-        5, StormLang(QStringLiteral("РЕЖИМ"), QStringLiteral("MODE"), QStringLiteral("MODUS"), QStringLiteral("MODE"), QStringLiteral("模式"), QStringLiteral("モード")),
-
+        5, StormLangStorm11(
+            QStringLiteral("РЕЖИМ"), QStringLiteral("MODE"), QStringLiteral("MODUS"),
+            QStringLiteral("MODE"), QStringLiteral("模式"), QStringLiteral("모드"),
+            QStringLiteral("モード"), QStringLiteral("MODO"), QStringLiteral("MODO"),
+            QStringLiteral("MODO"), QStringLiteral("मोड")),
         QStringLiteral("#b388ff"),
-
         {dock_status_button, airplane_mode_button, speed_limit_button, volume_button, mute_button}));
 
 
@@ -17574,28 +17593,22 @@ void MainWindow::OnCheckUpdates(bool manual_check) {
 
 
         QDialog dlg(this);
-
-        dlg.setWindowTitle(tr("Доступно обновление STORM SWITCH"));
-
+        dlg.setWindowTitle(StormLangStorm11(
+            QStringLiteral("Доступно обновление STORM SWITCH"),
+            QStringLiteral("STORM SWITCH Update Available"),
+            QStringLiteral("STORM SWITCH Aktualisierung verfügbar"),
+            QStringLiteral("Mise à jour STORM SWITCH disponible"),
+            QStringLiteral("STORM SWITCH 更新可用"),
+            QStringLiteral("STORM SWITCH 업데이트 사용 가능"),
+            QStringLiteral("STORM SWITCH アップデート利用可能"),
+            QStringLiteral("Actualización de STORM SWITCH disponible"),
+            QStringLiteral("Aggiornamento STORM SWITCH disponibile"),
+            QStringLiteral("Atualização do STORM SWITCH disponível"),
+            QStringLiteral("STORM SWITCH अपडेट उपलब्ध")));
         dlg.resize(660, 470);
-
-        dlg.setStyleSheet(QStringLiteral(
-
-            "QDialog { background-color: #0b0f19; color: #ffffff; font-family: 'Segoe UI', sans-serif; }"
-
-            "QLabel { color: #ffffff; }"
-
-            "QTextEdit { background-color: #121826; color: #FFFFFF; border: 1px solid #1e283d; border-radius: 8px; padding: 10px; font-size: 9pt; }"
-
-            "QPushButton { background-color: #161e30; color: #ffffff; border: 1px solid #23314a; border-radius: 6px; padding: 8px 18px; font-weight: bold; font-size: 9pt; }"
-
-            "QPushButton:hover { background-color: #00e5ff; color: #FFFFFF; border-color: #00e5ff; }"
-
-            "QPushButton#DownloadBtn { background-color: #00e5ff; color: #FFFFFF; border: 1px solid #00e5ff; }"
-
-            "QPushButton#DownloadBtn:hover { background-color: #33ebff; color: #FFFFFF; }"
-
-        ));
+        const StormTheme::Palette update_pal = StormTheme::GetThemePalette();
+        dlg.setStyleSheet(StormTheme::GetDialogStyle(update_pal));
+        StormUI::StructureEngine::InstallEscDismiss(&dlg);
 
 
 
@@ -22326,9 +22339,12 @@ void MainWindow::UpdateWindowTitle(std::string_view filename, std::string_view d
         const QString build_ver = QString::fromStdString(std::string{Common::g_build_version});
 
         if (m_tray_header_action) {
-
-            m_tray_header_action->setText(QStringLiteral("STORM SWITCH %1 — %2").arg(build_ver, tr("Готов к работе")));
-
+            const QString ready_str = StormLangStorm11(
+                QStringLiteral("Готов к работе"), QStringLiteral("Ready"), QStringLiteral("Bereit"),
+                QStringLiteral("Prêt"), QStringLiteral("就绪"), QStringLiteral("준비 완료"),
+                QStringLiteral("準備完了"), QStringLiteral("Listo"), QStringLiteral("Pronto"),
+                QStringLiteral("Pronto"), QStringLiteral("तैयार"));
+            m_tray_header_action->setText(QStringLiteral("STORM SWITCH %1 — %2").arg(build_ver, ready_str));
         }
 
     } else {
@@ -22374,11 +22390,13 @@ void MainWindow::UpdateWindowTitle(std::string_view filename, std::string_view d
         setWindowTitle(QString::fromStdString(run_title));
 
         if (m_tray_header_action) {
-
+            const QString in_game_str = StormLangStorm11(
+                QStringLiteral("В игре"), QStringLiteral("In Game"), QStringLiteral("Im Spiel"),
+                QStringLiteral("En jeu"), QStringLiteral("游戏中"), QStringLiteral("게임 중"),
+                QStringLiteral("ゲーム中"), QStringLiteral("En juego"), QStringLiteral("In gioco"),
+                QStringLiteral("No jogo"), QStringLiteral("खेल में"));
             m_tray_header_action->setText(QStringLiteral("STORM SWITCH %1 — %2: %3").arg(
-
-                build_ver, tr("В игре"), QString::fromUtf8(filename.data(), static_cast<int>(filename.size()))));
-
+                build_ver, in_game_str, QString::fromUtf8(filename.data(), static_cast<int>(filename.size()))));
         }
 
     }
@@ -27189,84 +27207,52 @@ void MainWindow::InitializeSystemTray() {
 
 
     m_tray_menu = new QMenu(this);
-
     m_tray_menu->setObjectName(QStringLiteral("StormSystemTrayMenu"));
-
     m_tray_menu->setFont(QFont(QStringLiteral("Segoe UI"), 9));
 
+    const StormTheme::Palette tray_pal = StormTheme::GetThemePalette();
     m_tray_menu->setStyleSheet(QStringLiteral(
-
         "QMenu#StormSystemTrayMenu {"
-
-        "  background-color: #141026;"
-
-        "  color: #E6EDF3;"
-
-        "  border: 1px solid #8B5CF6;"
-
+        "  background-color: %1;"
+        "  color: %2;"
+        "  border: 1px solid %3;"
         "  padding: 4px 0px;"
-
         "  font-family: 'Segoe UI';"
-
         "  font-size: 9pt;"
-
         "}"
-
         "QMenu#StormSystemTrayMenu::item {"
-
         "  background-color: transparent;"
-
-        "  color: #E6EDF3;"
-
+        "  color: %2;"
         "  padding: 6px 20px 6px 14px;"
-
         "  margin: 0px;"
-
         "}"
-
         "QMenu#StormSystemTrayMenu::item:disabled {"
-
-        "  color: #8B949E;"
-
+        "  color: %5;"
         "  font-weight: 600;"
-
         "}"
-
         "QMenu#StormSystemTrayMenu::item:selected {"
-
-        "  background-color: #241e3d;"
-
-        "  color: #FFFFFF;"
-
+        "  background-color: %4;"
+        "  color: %2;"
         "}"
-
         "QMenu#StormSystemTrayMenu::separator {"
-
         "  height: 1px;"
-
-        "  background: #8B5CF6;"
-
+        "  background: %3;"
         "  margin: 4px 8px;"
-
         "}"
-
         "QMenu#StormSystemTrayMenu::icon {"
-
         "  width: 0px;"
-
         "  padding: 0px;"
-
         "  margin: 0px;"
-
         "}"
+    ).arg(tray_pal.bg, tray_pal.textPrimary, tray_pal.border, tray_pal.itemHover, tray_pal.textSecondary));
 
-    ));
-
-
-
-    // First item: unclickable info header
-
-    m_tray_header_action = m_tray_menu->addAction(QStringLiteral("STORM SWITCH %1 — %2").arg(build_ver, tr("Готов к работе")));
+    // First item: unclickable info header (Law 1: zero icons/emojis, Segoe UI 9pt)
+    const QString init_ready = StormLangStorm11(
+        QStringLiteral("Готов к работе"), QStringLiteral("Ready"), QStringLiteral("Bereit"),
+        QStringLiteral("Prêt"), QStringLiteral("就绪"), QStringLiteral("준비 완료"),
+        QStringLiteral("準備完了"), QStringLiteral("Listo"), QStringLiteral("Pronto"),
+        QStringLiteral("Pronto"), QStringLiteral("तैयार"));
+    m_tray_header_action = m_tray_menu->addAction(QStringLiteral("STORM SWITCH %1 — %2").arg(build_ver, init_ready));
 
     m_tray_header_action->setEnabled(false);
 
@@ -27457,133 +27443,99 @@ void MainWindow::InitializeSystemTray() {
 
 
 void MainWindow::UpdateSystemTrayStrings() {
-
     if (!m_tray_menu) {
-
         return;
+    }
 
+    if (m_tray_header_action) {
+        const QString build_ver = QString::fromStdString(std::string{Common::g_build_version});
+        const QString ready_str = StormLangStorm11(
+            QStringLiteral("Готов к работе"), QStringLiteral("Ready"), QStringLiteral("Bereit"),
+            QStringLiteral("Prêt"), QStringLiteral("就绪"), QStringLiteral("준비 완료"),
+            QStringLiteral("準備完了"), QStringLiteral("Listo"), QStringLiteral("Pronto"),
+            QStringLiteral("Pronto"), QStringLiteral("तैयार"));
+        m_tray_header_action->setText(QStringLiteral("STORM SWITCH %1 — %2").arg(build_ver, ready_str));
     }
 
     if (m_tray_restore_action) {
-
-        m_tray_restore_action->setText(StormLang(
-
+        m_tray_restore_action->setText(StormLangStorm11(
             QStringLiteral("Развернуть STORM SWITCH"),
-
             QStringLiteral("Restore STORM SWITCH"),
-
             QStringLiteral("STORM SWITCH wiederherstellen"),
-
             QStringLiteral("Restaurer STORM SWITCH"),
-
             QStringLiteral("展开 STORM SWITCH"),
-
+            QStringLiteral("STORM SWITCH 열기"),
             QStringLiteral("STORM SWITCH を表示"),
-
-            QStringLiteral("استعادة STORM SWITCH"),
-
-            QStringLiteral("Restaurar STORM SWITCH")
-
+            QStringLiteral("Restaurar STORM SWITCH"),
+            QStringLiteral("Ripristina STORM SWITCH"),
+            QStringLiteral("Restaurar STORM SWITCH"),
+            QStringLiteral("STORM SWITCH पुनर्स्थापित करें")
         ));
-
     }
 
     if (m_tray_pause_action) {
-
-        m_tray_pause_action->setText(StormLang(
-
+        m_tray_pause_action->setText(StormLangStorm11(
             QStringLiteral("Пауза / Продолжить эмуляцию"),
-
             QStringLiteral("Pause / Resume Emulation"),
-
             QStringLiteral("Pause / Emulation fortsetzen"),
-
             QStringLiteral("Pause / Reprendre l'émulation"),
-
             QStringLiteral("暂停 / 继续模拟"),
-
+            QStringLiteral("일시 정지 / 에뮬레이션 재개"),
             QStringLiteral("一時停止 / エミュレーション再開"),
-
-            QStringLiteral("إيقاف مؤقت / متابعة المحاكاة"),
-
-            QStringLiteral("Pausar / Continuar emulación")
-
+            QStringLiteral("Pausar / Continuar emulación"),
+            QStringLiteral("Pausa / Riprendi emulazione"),
+            QStringLiteral("Pausar / Retomar emulação"),
+            QStringLiteral("रोकें / अनुकरण फिर से शुरू करें")
         ));
-
     }
 
     if (m_tray_settings_action) {
-
-        m_tray_settings_action->setText(StormLang(
-
+        m_tray_settings_action->setText(StormLangStorm11(
             QStringLiteral("Настройки..."),
-
             QStringLiteral("Settings..."),
-
             QStringLiteral("Einstellungen..."),
-
             QStringLiteral("Paramètres..."),
-
             QStringLiteral("设置..."),
-
+            QStringLiteral("설정..."),
             QStringLiteral("設定..."),
-
-            QStringLiteral("الإعدادات..."),
-
-            QStringLiteral("Ajustes...")
-
+            QStringLiteral("Ajustes..."),
+            QStringLiteral("Impostazioni..."),
+            QStringLiteral("Configurações..."),
+            QStringLiteral("सेटिंग्स...")
         ));
-
     }
 
     if (m_tray_about_action) {
-
-        m_tray_about_action->setText(StormLang(
-
+        m_tray_about_action->setText(StormLangStorm11(
             QStringLiteral("О программе"),
-
             QStringLiteral("About"),
-
             QStringLiteral("Über das Programm"),
-
             QStringLiteral("À propos"),
-
             QStringLiteral("关于程序"),
-
+            QStringLiteral("정보"),
             QStringLiteral("バージョン情報"),
-
-            QStringLiteral("حول البرنامج"),
-
-            QStringLiteral("Acerca de")
-
+            QStringLiteral("Acerca de"),
+            QStringLiteral("Informazioni"),
+            QStringLiteral("Sobre"),
+            QStringLiteral("के बारे में")
         ));
-
     }
 
     if (m_tray_exit_action) {
-
-        m_tray_exit_action->setText(StormLang(
-
+        m_tray_exit_action->setText(StormLangStorm11(
             QStringLiteral("Выход"),
-
             QStringLiteral("Exit"),
-
             QStringLiteral("Beenden"),
-
             QStringLiteral("Quitter"),
-
             QStringLiteral("退出"),
-
+            QStringLiteral("종료"),
             QStringLiteral("終了"),
-
-            QStringLiteral("خروج"),
-
-            QStringLiteral("Salir")
-
+            QStringLiteral("Salir"),
+            QStringLiteral("Esci"),
+            QStringLiteral("Sair"),
+            QStringLiteral("बाहर निकलें")
         ));
-
     }
-
 }
 
 

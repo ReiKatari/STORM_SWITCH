@@ -282,7 +282,9 @@
                 android:textSize="11.5sp"
                 app:icon="@drawable/ic_copy"
                 app:iconSize="14dp"
-                app:cornerRadius="8dp" />
+                app:cornerRadius="8dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_close_dialog"
@@ -291,7 +293,9 @@
                 android:layout_height="38dp"
                 android:text="@string/close"
                 android:textSize="11.5sp"
-                app:cornerRadius="8dp" />
+                app:cornerRadius="8dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
         </LinearLayout>
 

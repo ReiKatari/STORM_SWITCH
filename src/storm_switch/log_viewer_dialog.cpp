@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "storm_switch/log_viewer_dialog.h"
+#include "storm_switch/common/storm_theme.h"
 
 #include <QButtonGroup>
 #include <QClipboard>
@@ -231,27 +232,30 @@ void LogViewerDialog::SetupUI() {
 }
 
 void LogViewerDialog::ApplyStormStyles() {
+    const StormTheme::Palette pal = StormTheme::GetThemePalette();
     setStyleSheet(QStringLiteral(
-        "QDialog { background-color: #0A0E17; color: #FFFFFF; font-family: 'Segoe UI', sans-serif; }"
-        "QRadioButton { color: #B0C4DE; font-size: 12px; font-weight: bold; spacing: 6px; }"
-        "QRadioButton:hover { color: #00F0FF; }"
-        "QRadioButton:checked { color: #00F0FF; }"
-        "QRadioButton::indicator { width: 14px; height: 14px; border-radius: 7px; border: 2px solid #20354E; background: #0E1422; }"
-        "QRadioButton::indicator:checked { border-color: #00D2FF; background: #00D2FF; }"
-        "QLineEdit { background: rgba(255, 255, 255, 0.05); border: 1px solid #20354E; border-radius: 6px; padding: 6px 12px; color: #FFFFFF; font-size: 12px; }"
-        "QLineEdit:focus { border: 1px solid #00D2FF; background: rgba(0, 210, 255, 0.08); }"
-        "QPlainTextEdit { background-color: #050811; border: 1px solid #1A2638; border-radius: 8px; color: #FFFFFF; padding: 8px; }"
-        "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1A2434, stop:1 #131A26); border: 1px solid #2A3B52; color: #FFFFFF; padding: 6px 16px; border-radius: 7px; font-weight: 600; font-size: 12px; }"
-        "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #25344C, stop:1 #1A2638); border: 1px solid #00D2FF; color: #00D2FF; }"
-        "QPushButton:pressed { background: #0D1522; color: #FFFFFF; border: 1px solid #00A6CC; padding: 6px 16px; }"
-        "QScrollBar:vertical { background: #0A0E17; width: 12px; margin: 0; }"
-        "QScrollBar::handle:vertical { background: #1E2D42; min-height: 24px; border-radius: 6px; }"
-        "QScrollBar::handle:vertical:hover { background: #00D2FF; }"
+        "QDialog { background-color: %1; color: %2; font-family: 'Segoe UI', sans-serif; }"
+        "QRadioButton { color: %8; font-size: 12px; font-weight: bold; spacing: 6px; }"
+        "QRadioButton:hover { color: %5; }"
+        "QRadioButton:checked { color: %5; }"
+        "QRadioButton::indicator { width: 14px; height: 14px; border-radius: 7px; border: 2px solid %3; background: %6; }"
+        "QRadioButton::indicator:checked { border-color: %5; background: %5; }"
+        "QLineEdit { background: %6; border: 1px solid %3; border-radius: 6px; padding: 6px 12px; color: %2; font-size: 12px; }"
+        "QLineEdit:focus { border: 1px solid %5; }"
+        "QPlainTextEdit { background-color: %6; border: 1px solid %3; border-radius: 8px; color: %2; padding: 8px; }"
+        "QPushButton { background-color: %7; border: 1px solid %3; color: %2; padding: 6px 16px; border-radius: 7px; font-weight: 600; font-size: 12px; min-height: 22px; }"
+        "QPushButton:hover { background-color: %3; border: 1px solid %5; color: %2; }"
+        "QPushButton:pressed { background-color: %4; color: %2; border: 1px solid %5; padding: 6px 16px; }"
+        "QScrollBar:vertical { background: transparent; width: 8px; margin: 0; }"
+        "QScrollBar::handle:vertical { background: %3; min-height: 24px; border-radius: 4px; }"
+        "QScrollBar::handle:vertical:hover { background: %5; }"
         "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }"
-        "QScrollBar:horizontal { background: #0A0E17; height: 12px; margin: 0; }"
-        "QScrollBar::handle:horizontal { background: #1E2D42; min-width: 24px; border-radius: 6px; }"
-        "QScrollBar::handle:horizontal:hover { background: #00D2FF; }"
+        "QScrollBar:horizontal { background: transparent; height: 8px; margin: 0; }"
+        "QScrollBar::handle:horizontal { background: %3; min-width: 24px; border-radius: 4px; }"
+        "QScrollBar::handle:horizontal:hover { background: %5; }"
         "QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal { width: 0; }"
+    ).arg(
+        pal.bg, pal.textPrimary, pal.border, pal.surface, pal.accent, pal.inputBg, pal.buttonBg, pal.textSecondary
     ));
 
 

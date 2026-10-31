@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "storm_switch/amiibo_browser_dialog.h"
+#include "storm_switch/configuration/storm_ui_structure_helper.h"
 
 #include <algorithm>
 #include <filesystem>
@@ -39,6 +40,7 @@
 AmiiboBrowserDialog::AmiiboBrowserDialog(QWidget* parent, Core::System& system, const QString& initial_game_hint)
     : QDialog(parent), m_system(system), m_network_mgr(new QNetworkAccessManager(this)), m_initial_game_hint(initial_game_hint) {
     SetupUi();
+    StormUI::StructureEngine::InstallEscDismiss(this);
     FetchAmiiboDatabase();
 }
 

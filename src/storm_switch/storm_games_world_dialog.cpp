@@ -5,6 +5,7 @@
 #include "storm_switch/storm_catalog_cache.h"
 #include "common/scm_rev.h"
 #include "storm_switch/common/storm_lang.h"
+#include "storm_switch/common/storm_theme.h"
 
 #include <QDesktopServices>
 #include <QDir>
@@ -338,24 +339,25 @@ public:
         resize(740, 500);
         setMinimumSize(620, 380);
 
+        const StormTheme::Palette pal = StormTheme::GetThemePalette();
         setStyleSheet(QStringLiteral(
             "QDialog {"
-            "    background-color: #0c1017;"
-            "    color: #FFFFFF;"
-            "    font-family: 'Segoe UI';"
+            "    background-color: %1;"
+            "    color: %2;"
+            "    font-family: 'Segoe UI', sans-serif;"
             "}"
             "QFrame#HeaderBox {"
-            "    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #16202e, stop:1 #0e141d);"
-            "    border: 1px solid #1e293b;"
+            "    background: %3;"
+            "    border: 1px solid %4;"
             "    border-radius: 10px;"
             "    padding: 10px;"
             "}"
             "QTreeWidget {"
-            "    background-color: #080b10;"
-            "    border: 1px solid #1e293b;"
+            "    background-color: %5;"
+            "    border: 1px solid %4;"
             "    border-radius: 8px;"
-            "    color: #FFFFFF;"
-            "    alternate-background-color: #0d121a;"
+            "    color: %2;"
+            "    alternate-background-color: %1;"
             "    outline: none;"
             "}"
             "QTreeWidget::item {"
@@ -363,32 +365,52 @@ public:
             "    padding: 4px;"
             "}"
             "QTreeWidget::item:hover {"
-            "    background: rgba(0, 210, 255, 0.12);"
+            "    background: %6;"
             "}"
             "QTreeWidget::item:selected {"
-            "    background: rgba(0, 240, 255, 0.22);"
-            "    color: #00F0FF;"
+            "    background: %7;"
+            "    color: %8;"
             "}"
             "QHeaderView::section {"
-            "    background-color: #111722;"
-            "    color: #00F0FF;"
+            "    background-color: %3;"
+            "    color: %8;"
             "    font-weight: bold;"
             "    padding: 6px;"
             "    border: none;"
-            "    border-bottom: 1px solid #1e293b;"
+            "    border-bottom: 1px solid %4;"
             "}"
             "QPushButton {"
-            "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00B4D8, stop:1 #00F0FF);"
-            "    border: none;"
+            "    background-color: %8;"
+            "    border: 1px solid %8;"
             "    border-radius: 6px;"
-            "    color: #050a12;"
+            "    color: %9;"
             "    font-weight: bold;"
             "    font-size: 12px;"
             "    padding: 8px 26px;"
+            "    min-height: 24px;"
             "}"
             "QPushButton:hover {"
-            "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00C6EB, stop:1 #33F5FF);"
+            "    background-color: %10;"
+            "    border: 1px solid %10;"
+            "    color: %9;"
             "}"
+            "QPushButton:pressed {"
+            "    background-color: %8;"
+            "    border: 1px solid %8;"
+            "    padding: 8px 26px;"
+            "    color: %9;"
+            "}"
+        ).arg(
+            pal.bg,
+            pal.textPrimary,
+            pal.surface,
+            pal.border,
+            pal.inputBg,
+            pal.itemHover,
+            pal.itemSelected,
+            pal.accent,
+            pal.is_light ? QStringLiteral("#FFFFFF") : QStringLiteral("#000000"),
+            pal.accentHover
         ));
 
         auto* layout = new QVBoxLayout(this);

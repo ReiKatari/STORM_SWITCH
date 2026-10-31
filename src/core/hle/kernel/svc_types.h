@@ -598,6 +598,7 @@ enum class SystemInfoType : u32 {
     TotalPhysicalMemorySize = 0,
     UsedPhysicalMemorySize = 1,
     InitialProcessIdRange = 2,
+    MinimumNonSecureSystemPoolSize = 3,
 };
 
 enum class ProcessInfoType : u32 {

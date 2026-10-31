@@ -327,10 +327,17 @@ void CheatEngine::FrameCallback(std::chrono::nanoseconds ns_late) {
     }
 
     if (metadata.main_nso_extents.base == 0) {
-        metadata.main_nso_extents = {
-            .base = GetInteger(proc->GetPageTable().GetCodeRegionStart()),
-            .size = proc->GetPageTable().GetCodeRegionSize(),
-        };
+        if (system.GetMainNsoBase() != 0) {
+            metadata.main_nso_extents = {
+                .base = system.GetMainNsoBase(),
+                .size = system.GetMainNsoSize(),
+            };
+        } else {
+            metadata.main_nso_extents = {
+                .base = GetInteger(proc->GetPageTable().GetCodeRegionStart()),
+                .size = proc->GetPageTable().GetCodeRegionSize(),
+            };
+        }
         if (metadata.main_nso_extents.base == 0) {
             return;
         }

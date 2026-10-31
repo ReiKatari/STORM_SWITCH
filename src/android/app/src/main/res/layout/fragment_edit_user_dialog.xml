@@ -77,10 +77,14 @@
                         android:text="@string/profile_select_image"
                         style="@style/Widget.Material3.Button.TonalButton"
                         app:icon="@drawable/ic_add"
-                        android:layout_marginEnd="4dp" />
+                        android:layout_marginEnd="4dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/button_firmware_avatars"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="?attr/colorOutline"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
@@ -99,7 +103,9 @@
                     android:layout_marginTop="8dp"
                     android:text="@string/profile_revert_image"
                     style="@style/Widget.Material3.Button.TextButton"
-                    android:visibility="gone" />
+                    android:visibility="gone"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
             </LinearLayout>
 
@@ -164,7 +170,9 @@
                             android:text="@string/profile_generate"
                             style="@style/Widget.Material3.Button.TextButton"
                             app:icon="@drawable/ic_refresh"
-                            app:iconGravity="textStart" />
+                            app:iconGravity="textStart"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
                     </LinearLayout>
 
@@ -208,7 +216,9 @@
                 android:layout_weight="1"
                 android:layout_marginEnd="8dp"
                 android:text="@android:string/cancel"
-                style="@style/Widget.Material3.Button.TonalButton" />
+                style="@style/Widget.Material3.Button.TonalButton"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_save"
@@ -217,7 +227,9 @@
                 android:layout_weight="1"
                 android:layout_marginStart="8dp"
                 android:text="@string/save"
-                style="@style/Widget.Material3.Button" />
+                style="@style/Widget.Material3.Button"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
         </LinearLayout>
 

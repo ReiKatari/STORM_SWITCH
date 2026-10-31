@@ -12,6 +12,7 @@
 #include <QVBoxLayout>
 #include "qt_common/config/uisettings.h"
 #include "storm_switch/install_dialog.h"
+#include "storm_switch/configuration/storm_ui_structure_helper.h"
 
 InstallDialog::InstallDialog(QWidget* parent, const QStringList& files) : QDialog(parent) {
     file_list = new QListWidget(this);

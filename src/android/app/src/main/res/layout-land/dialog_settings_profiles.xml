@@ -102,7 +102,9 @@
                 app:icon="@drawable/ic_add"
                 app:iconTint="?attr/colorPrimary"
                 app:iconSize="16dp"
-                app:cornerRadius="10dp" />
+                app:cornerRadius="10dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorPrimary" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_import_profile"
@@ -117,7 +119,9 @@
                 app:icon="@drawable/ic_install"
                 app:iconTint="?attr/colorOnSurfaceVariant"
                 app:iconSize="16dp"
-                app:cornerRadius="10dp" />
+                app:cornerRadius="10dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
         </LinearLayout>
 

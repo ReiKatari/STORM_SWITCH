@@ -31,48 +31,58 @@ QCheckBox, QRadioButton {
     font-weight: 500;
 }
 
-QCheckBox::indicator, QRadioButton::indicator, QGroupBox::indicator,
+/* Law 12 & Law 19: Red OFF / Green ON Checkboxes */
+QCheckBox::indicator, QGroupBox::indicator, QRadioButton::indicator,
 QTreeView::indicator, QTableView::indicator, QListView::indicator, QAbstractItemView::indicator {
     width: 15px;
     height: 15px;
-    border-radius: 3px;
-    border: 1.5px solid #2a2d3d;
-    background-color: #1c1d29;
+    border-radius: 4px;
+    border: 1px solid #EF4444;
+    background-color: rgba(239, 68, 68, 0.18);
     image: none;
 }
-
-QCheckBox::indicator:hover, QRadioButton::indicator:hover, QGroupBox::indicator:hover,
+QCheckBox::indicator:hover, QGroupBox::indicator:hover, QRadioButton::indicator:hover,
 QTreeView::indicator:hover, QTableView::indicator:hover, QListView::indicator:hover, QAbstractItemView::indicator:hover {
-    border-color: #f59e0b;
-    background-color: #141824;
+    border-color: #F87171;
+    background-color: rgba(239, 68, 68, 0.28);
     image: none;
 }
-
-QCheckBox::indicator:checked, QRadioButton::indicator:checked, QGroupBox::indicator:checked,
+QCheckBox::indicator:unchecked, QGroupBox::indicator:unchecked, QRadioButton::indicator:unchecked,
+QTreeView::indicator:unchecked, QTableView::indicator:unchecked, QListView::indicator:unchecked, QAbstractItemView::indicator:unchecked {
+    border: 1px solid #EF4444;
+    background-color: rgba(239, 68, 68, 0.18);
+    border-radius: 4px;
+    image: none;
+}
+QCheckBox::indicator:unchecked:hover, QGroupBox::indicator:unchecked:hover, QRadioButton::indicator:unchecked:hover,
+QTreeView::indicator:unchecked:hover, QTableView::indicator:unchecked:hover, QListView::indicator:unchecked:hover, QAbstractItemView::indicator:unchecked:hover {
+    border-color: #F87171;
+    background-color: rgba(239, 68, 68, 0.28);
+    image: none;
+}
+QCheckBox::indicator:checked, QGroupBox::indicator:checked, QRadioButton::indicator:checked,
 QTreeView::indicator:checked, QTableView::indicator:checked, QListView::indicator:checked, QAbstractItemView::indicator:checked {
-    background-color: #f59e0b;
-    border: 1.5px solid #f59e0b;
+    background-color: #10B981;
+    border: 1px solid #10B981;
+    border-radius: 4px;
     image: none;
 }
-
-QCheckBox::indicator:checked:hover, QRadioButton::indicator:checked:hover, QGroupBox::indicator:checked:hover,
+QCheckBox::indicator:checked:hover, QGroupBox::indicator:checked:hover, QRadioButton::indicator:checked:hover,
 QTreeView::indicator:checked:hover, QTableView::indicator:checked:hover, QListView::indicator:checked:hover, QAbstractItemView::indicator:checked:hover {
-    background-color: #fbbf24;
-    border-color: #fbbf24;
+    background-color: #34D399;
+    border-color: #34D399;
     image: none;
 }
-
-QCheckBox::indicator:disabled, QRadioButton::indicator:disabled, QGroupBox::indicator:disabled,
+QCheckBox::indicator:disabled, QGroupBox::indicator:disabled, QRadioButton::indicator:disabled,
 QTreeView::indicator:disabled, QTableView::indicator:disabled, QListView::indicator:disabled, QAbstractItemView::indicator:disabled {
-    border-color: #202028;
-    background-color: #161720;
+    border-color: #4B5563;
+    background-color: rgba(75, 85, 99, 0.2);
     image: none;
 }
-
-QCheckBox::indicator:checked:disabled, QRadioButton::indicator:checked:disabled, QGroupBox::indicator:checked:disabled,
+QCheckBox::indicator:checked:disabled, QGroupBox::indicator:checked:disabled, QRadioButton::indicator:checked:disabled,
 QTreeView::indicator:checked:disabled, QTableView::indicator:checked:disabled, QListView::indicator:checked:disabled, QAbstractItemView::indicator:checked:disabled {
-    background-color: #555566;
-    border-color: #555566;
+    background-color: #065F46;
+    border-color: #065F46;
     image: none;
 }
 
@@ -436,7 +446,7 @@ ClickableLabel:hover {
 QScrollBar:vertical {
     border: none;
     background-color: transparent;
-    width: 7px;
+    width: 8px;
     margin: 0px;
 }
 

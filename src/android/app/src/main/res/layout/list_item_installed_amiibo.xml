@@ -71,7 +71,9 @@
             android:paddingHorizontal="10dp"
             android:text="@string/inject_amiibo"
             android:textSize="11sp"
-            app:cornerRadius="6dp" />
+            app:cornerRadius="6dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorPrimary" />
 
         <ImageButton
             android:id="@+id/button_delete_installed"

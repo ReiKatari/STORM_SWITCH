@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 package org.yuzu.yuzu_emu.fragments
+
+import android.view.KeyEvent
 import org.yuzu.yuzu_emu.R
 
 import android.app.Dialog
@@ -69,7 +71,7 @@ class LogViewerDialogFragment : DialogFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         game = arguments?.getParcelable(ARG_GAME)
-        setStyle(STYLE_NO_TITLE, 0)
+        setStyle(STYLE_NORMAL, org.yuzu.yuzu_emu.utils.ThemeHelper.getSelectedStaticThemeColor())
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -144,6 +146,14 @@ class LogViewerDialogFragment : DialogFragment() {
 
     override fun onStart() {
         super.onStart()
+        dialog?.setOnKeyListener { _, keyCode, event ->
+            if (keyCode == KeyEvent.KEYCODE_ESCAPE && event.action == KeyEvent.ACTION_UP) {
+                dismissAllowingStateLoss()
+                true
+            } else {
+                false
+            }
+        }
         dialog?.window?.apply {
             setLayout(
                 ViewGroup.LayoutParams.MATCH_PARENT,

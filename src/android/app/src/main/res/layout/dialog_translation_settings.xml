@@ -329,7 +329,9 @@
                     android:layout_height="48dp"
                     android:layout_marginTop="10dp"
                     android:text="@string/translator_btn_custom_roi"
-                    android:textSize="13sp" />
+                    android:textSize="13sp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
             </LinearLayout>
 
@@ -397,7 +399,10 @@
                     <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/switch_auto_tts"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+        app:useMaterialThemeColors="false"
+        app:thumbTint="@color/switch_thumb_red_green"
+        app:trackTint="@color/switch_track_red_green" />
 
                 </LinearLayout>
 
@@ -420,7 +425,10 @@
                     <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/switch_smart_voices"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+        app:useMaterialThemeColors="false"
+        app:thumbTint="@color/switch_thumb_red_green"
+        app:trackTint="@color/switch_track_red_green" />
 
                 </LinearLayout>
 
@@ -451,7 +459,9 @@
                     android:layout_height="40dp"
                     android:layout_marginTop="4dp"
                     android:text="@string/translator_btn_test_voice"
-                    android:textSize="12sp" />
+                    android:textSize="12sp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
             </LinearLayout>
 
@@ -518,7 +528,10 @@
                     <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/switch_floating_btn"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+        app:useMaterialThemeColors="false"
+        app:thumbTint="@color/switch_thumb_red_green"
+        app:trackTint="@color/switch_track_red_green" />
 
                 </LinearLayout>
 
@@ -554,7 +567,9 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="@string/close"
-            app:cornerRadius="14dp" />
+            app:cornerRadius="14dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline" />
 
         </LinearLayout>
 

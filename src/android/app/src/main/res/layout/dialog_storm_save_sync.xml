@@ -132,7 +132,9 @@
                             android:textSize="12sp"
                             app:backgroundTint="?attr/colorSurface"
                             app:icon="@drawable/ic_copy"
-                            app:iconTint="?attr/colorPrimary" />
+                            app:iconTint="?attr/colorPrimary"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorPrimary" />
                     </LinearLayout>
 
                     <TextView
@@ -220,7 +222,9 @@
                             android:textColor="?attr/colorPrimary"
                             android:textSize="12sp"
                             app:icon="@drawable/ic_network"
-                            app:iconTint="?attr/colorPrimary" />
+                            app:iconTint="?attr/colorPrimary"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorPrimary" />
 
                         <Spinner
                             android:id="@+id/spinner_discovered"
@@ -279,7 +283,9 @@
                     android:textColor="?attr/colorOnPrimary"
                     android:textSize="12sp"
                     android:textStyle="bold"
-                    app:backgroundTint="?attr/colorPrimary" />
+                    app:backgroundTint="?attr/colorPrimary"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorPrimary" />
             </LinearLayout>
 
             <!-- Search Saves -->

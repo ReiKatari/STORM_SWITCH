@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 package org.yuzu.yuzu_emu.fragments
+
+import android.view.KeyEvent
 import org.yuzu.yuzu_emu.YuzuApplication
 
 import android.app.Dialog
@@ -158,6 +160,14 @@ class OnlineToolsDialogFragment : DialogFragment() {
 
     override fun onStart() {
         super.onStart()
+        dialog?.setOnKeyListener { _, keyCode, event ->
+            if (keyCode == KeyEvent.KEYCODE_ESCAPE && event.action == KeyEvent.ACTION_UP) {
+                dismissAllowingStateLoss()
+                true
+            } else {
+                false
+            }
+        }
         dialog?.window?.let { window ->
             window.setLayout(
                 ViewGroup.LayoutParams.MATCH_PARENT,

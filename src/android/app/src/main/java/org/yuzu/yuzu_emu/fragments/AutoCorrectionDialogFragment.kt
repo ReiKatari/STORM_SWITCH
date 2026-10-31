@@ -3,6 +3,8 @@
 
 package org.yuzu.yuzu_emu.fragments
 
+import android.view.KeyEvent
+
 import android.app.Dialog
 import android.content.res.Configuration
 import android.graphics.Color
@@ -92,7 +94,7 @@ class AutoCorrectionDialogFragment : DialogFragment() {
 
         if (isAutoCorrected) {
             binding.textAutoCorrectionStatus.text = getString(R.string.auto_correction_status_active)
-            binding.textAutoCorrectionStatus.setTextColor(Color.parseColor("#00F0FF"))
+            binding.textAutoCorrectionStatus.setTextColor(org.yuzu.yuzu_emu.utils.ThemeHelper.getColorFromAttr(requireContext(), com.google.android.material.R.attr.colorPrimary))
         } else {
             binding.textAutoCorrectionStatus.text = getString(R.string.auto_correction_status_inactive)
             binding.textAutoCorrectionStatus.setTextColor(Color.parseColor("#EF4444"))
@@ -181,6 +183,14 @@ class AutoCorrectionDialogFragment : DialogFragment() {
 
     override fun onStart() {
         super.onStart()
+        dialog?.setOnKeyListener { _, keyCode, event ->
+            if (keyCode == KeyEvent.KEYCODE_ESCAPE && event.action == KeyEvent.ACTION_UP) {
+                dismissAllowingStateLoss()
+                true
+            } else {
+                false
+            }
+        }
         dialog?.window?.let { window ->
             window.setLayout(
                 ViewGroup.LayoutParams.MATCH_PARENT,

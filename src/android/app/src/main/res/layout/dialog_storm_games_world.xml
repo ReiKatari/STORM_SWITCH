@@ -419,7 +419,7 @@
                             android:background="@drawable/badge_pill_purple"
                             android:paddingHorizontal="6dp"
                             android:paddingVertical="2dp"
-                            android:textColor="#C084FC"
+                            android:textColor="?attr/colorPrimary"
                             android:textSize="10sp"
                             android:textStyle="bold"
                             android:maxLines="2"
@@ -491,7 +491,7 @@
                             android:background="@drawable/badge_pill_purple"
                             android:paddingHorizontal="6dp"
                             android:paddingVertical="2dp"
-                            android:textColor="#C084FC"
+                            android:textColor="?attr/colorPrimary"
                             android:textSize="10sp"
                             android:textStyle="bold"
                             android:maxLines="3"
@@ -568,7 +568,9 @@
                     app:backgroundTint="?attr/colorPrimary"
                     app:cornerRadius="6dp"
                     app:icon="@drawable/ic_install"
-                    app:iconTint="?attr/colorOnPrimary" />
+                    app:iconTint="?attr/colorOnPrimary"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorPrimary" />
             </LinearLayout>
 
             <!-- Download progress -->
@@ -618,7 +620,8 @@
                         android:textColor="?attr/colorPrimary"
                         android:textSize="11sp"
                         app:cornerRadius="6dp"
-                        app:strokeColor="?attr/colorPrimary" />
+                        app:strokeColor="?attr/colorPrimary"
+        app:strokeWidth="1dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_cancel_download"
@@ -631,7 +634,8 @@
                         android:textColor="?attr/colorError"
                         android:textSize="11sp"
                         app:cornerRadius="6dp"
-                        app:strokeColor="?attr/colorError" />
+                        app:strokeColor="?attr/colorError"
+        app:strokeWidth="1dp" />
                 </LinearLayout>
             </LinearLayout>
 

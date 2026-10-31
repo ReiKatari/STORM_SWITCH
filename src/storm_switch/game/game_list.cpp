@@ -17,6 +17,7 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QScrollBar>
+#include <QSettings>
 #include <QScroller>
 #include <QScrollerProperties>
 #include <QToolButton>
@@ -43,6 +44,65 @@
 #include "storm_switch/game/search_field.h"
 #include "storm_switch/main_window.h"
 #include "storm_switch/util/controller_navigation.h"
+
+namespace {
+
+QModelIndex FindGameIndex(QStandardItemModel* model, const QString& target_path, u64 target_tid) {
+    if (!model) return {};
+    auto* root = model->invisibleRootItem();
+    if (!root) return {};
+
+    for (int i = 0; i < root->rowCount(); ++i) {
+        auto* item = root->child(i, 0);
+        if (!item) continue;
+        if (item->data(GameListItem::TypeRole).value<GameListItemType>() == GameListItemType::Game) {
+            u64 tid = item->data(GameListItemPath::ProgramIdRole).toULongLong();
+            QString path = item->data(GameListItemPath::FullPathRole).toString();
+            if ((!target_path.isEmpty() && path == target_path) || (target_tid != 0 && tid == target_tid)) {
+                return item->index();
+            }
+        }
+        for (int j = 0; j < item->rowCount(); ++j) {
+            auto* child = item->child(j, 0);
+            if (!child) continue;
+            if (child->data(GameListItem::TypeRole).value<GameListItemType>() == GameListItemType::Game) {
+                u64 tid = child->data(GameListItemPath::ProgramIdRole).toULongLong();
+                QString path = child->data(GameListItemPath::FullPathRole).toString();
+                if ((!target_path.isEmpty() && path == target_path) || (target_tid != 0 && tid == target_tid)) {
+                    return child->index();
+                }
+            }
+        }
+    }
+    return {};
+}
+
+QModelIndex FindFirstGameIndex(QStandardItemModel* model) {
+    if (!model) return {};
+    auto* root = model->invisibleRootItem();
+    if (!root) return {};
+
+    for (int i = 0; i < root->rowCount(); ++i) {
+        auto* item = root->child(i, 0);
+        if (!item) continue;
+        if (item->data(GameListItem::TypeRole).value<GameListItemType>() == GameListItemType::Game) {
+            return item->index();
+        }
+        for (int j = 0; j < item->rowCount(); ++j) {
+            auto* child = item->child(j, 0);
+            if (!child) continue;
+            if (child->data(GameListItem::TypeRole).value<GameListItemType>() == GameListItemType::Game) {
+                return child->index();
+            }
+        }
+    }
+    if (root->rowCount() > 0 && root->child(0, 0)) {
+        return root->child(0, 0)->index();
+    }
+    return {};
+}
+
+} // namespace
 
 GameList::GameList(FileSys::VirtualFilesystem vfs_, FileSys::ManualContentProvider* provider_,
                    PlayTime::PlayTimeManager& play_time_manager_, Core::System& system_,
@@ -162,6 +222,7 @@ GameList::GameList(FileSys::VirtualFilesystem vfs_, FileSys::ManualContentProvid
 }
 
 GameList::~GameList() {
+    SaveInterfaceLayout();
     UnloadController();
 }
 
@@ -173,6 +234,23 @@ void GameList::SetupViews() {
     tree_view->SetModel(item_model);
     grid_view->SetModel(item_model);
     carousel_view->SetModel(item_model);
+
+    auto connect_selection = [this](QAbstractItemView* view) {
+        if (!view) return;
+        if (auto* sm = view->selectionModel()) {
+            connect(sm, &QItemSelectionModel::selectionChanged, this, [this]() {
+                auto [tid, path] = GetSelectedGameInfo();
+                if (!path.isEmpty() || tid != 0) {
+                    QSettings s;
+                    s.setValue(QStringLiteral("gamelist/last_selected_path"), path);
+                    s.setValue(QStringLiteral("gamelist/last_selected_tid"), static_cast<qulonglong>(tid));
+                }
+            });
+        }
+    };
+    connect_selection(tree_view);
+    connect_selection(grid_view);
+    connect_selection(carousel_view);
 }
 
 QString GameList::GetLastFilterResultItem() const {
@@ -227,6 +305,17 @@ void GameList::CancelPopulate() {
 
 void GameList::SaveInterfaceLayout() {
     tree_view->SaveInterfaceLayout();
+
+    // Law 21: Persist selection and scroll position
+    QSettings settings;
+    auto [tid, path] = GetSelectedGameInfo();
+    if (!path.isEmpty() || tid != 0) {
+        settings.setValue(QStringLiteral("gamelist/last_selected_path"), path);
+        settings.setValue(QStringLiteral("gamelist/last_selected_tid"), static_cast<qulonglong>(tid));
+    }
+    if (tree_view && tree_view->verticalScrollBar()) {
+        settings.setValue(QStringLiteral("gamelist/last_scroll_pos"), tree_view->verticalScrollBar()->value());
+    }
 }
 
 void GameList::LoadInterfaceLayout() {
@@ -403,6 +492,34 @@ void GameList::OnPopulatingCompleted(const QStringList& watch_list) {
     // TODO: carousel/grid impl.
     item_model->sort(tree_view->header()->sortIndicatorSection(),
                      tree_view->header()->sortIndicatorOrder());
+
+    // Law 21: Scroll & Selection Persistence + 1st-Game Auto-Select in 1st Second
+    QSettings settings;
+    QString last_path = settings.value(QStringLiteral("gamelist/last_selected_path")).toString();
+    u64 last_tid = settings.value(QStringLiteral("gamelist/last_selected_tid"), 0).toULongLong();
+    int last_scroll = settings.value(QStringLiteral("gamelist/last_scroll_pos"), 0).toInt();
+
+    QModelIndex target_idx = FindGameIndex(item_model, last_path, last_tid);
+    if (!target_idx.isValid()) {
+        target_idx = FindFirstGameIndex(item_model);
+    }
+
+    if (target_idx.isValid() && m_currentView && m_currentView->selectionModel()) {
+        m_currentView->selectionModel()->setCurrentIndex(
+            target_idx, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+        m_currentView->setCurrentIndex(target_idx);
+        m_currentView->scrollTo(target_idx, QAbstractItemView::EnsureVisible);
+        const auto sel = target_idx.sibling(target_idx.row(), 0);
+        if (sel.data(GameListItem::TypeRole).value<GameListItemType>() == GameListItemType::Game) {
+            u64 tid = sel.data(GameListItemPath::ProgramIdRole).toULongLong();
+            QString path = sel.data(GameListItemPath::FullPathRole).toString();
+            emit GameSelected(tid, path);
+        }
+    }
+
+    if (tree_view && tree_view->verticalScrollBar() && last_scroll > 0) {
+        tree_view->verticalScrollBar()->setValue(last_scroll);
+    }
 
     emit PopulatingCompleted();
 }
