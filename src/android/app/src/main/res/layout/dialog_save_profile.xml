@@ -4,12 +4,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/storm_dialog_card_bg"
     app:cardCornerRadius="22dp"
     app:cardElevation="8dp"
-    app:strokeColor="#668B5CF6"
+    app:strokeColor="?attr/colorOutline"
     app:strokeWidth="1.5dp"
-    app:cardBackgroundColor="#141026">
+    app:cardBackgroundColor="?attr/colorSurface">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -36,7 +35,7 @@
                     android:layout_height="24dp"
                     android:layout_gravity="center"
                     android:src="@drawable/ic_folder_open"
-                    app:tint="#C084FC" />
+                    app:tint="?attr/colorPrimary" />
             </FrameLayout>
 
             <TextView
@@ -44,7 +43,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/profile_create_title"
-                android:textColor="#FFFFFF"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:letterSpacing="0.02" />
@@ -56,11 +55,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/profile_create_msg"
-            android:textColor="#94A3B8"
+            android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="13sp"
             android:layout_marginBottom="16dp" />
 
-        <!-- Recessed 3D TextInput Box -->
+        <!-- Themed TextInput Box -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/input_layout_profile_name"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
@@ -71,9 +70,9 @@
             app:boxCornerRadiusTopEnd="14dp"
             app:boxCornerRadiusBottomStart="14dp"
             app:boxCornerRadiusBottomEnd="14dp"
-            app:boxStrokeColor="#8B5CF6"
+            app:boxStrokeColor="?attr/colorPrimary"
             app:boxStrokeWidth="1.5dp"
-            app:hintTextColor="#C084FC"
+            app:hintTextColor="?attr/colorPrimary"
             app:endIconMode="clear_text"
             android:layout_marginBottom="22dp">
 
@@ -84,12 +83,12 @@
                 android:inputType="textCapSentences"
                 android:maxLines="1"
                 android:singleLine="true"
-                android:textColor="#FFFFFF"
-                android:textColorHint="#64748B" />
+                android:textColor="?attr/colorOnSurface"
+                android:textColorHint="?attr/colorOnSurfaceVariant" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- 3D Faceted Convex Action Buttons -->
+        <!-- Themed Action Buttons -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -101,18 +100,20 @@
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-            android:minHeight="44dp"
+                android:minHeight="44dp"
                 android:text="@android:string/cancel"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="13sp"
                 android:layout_marginEnd="10dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_confirm_save_profile"
-                style="@style/Widget.Material3.Button.OutlinedButton"
+                style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-            android:minHeight="44dp"
+                android:minHeight="44dp"
                 android:text="@string/save"
+                android:textColor="?attr/colorPrimary"
                 android:textSize="13sp" />
 
         </LinearLayout>

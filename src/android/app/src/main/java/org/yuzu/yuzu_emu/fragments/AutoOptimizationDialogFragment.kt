@@ -206,8 +206,8 @@ class AutoOptimizationDialogFragment : DialogFragment() {
         val selectedBorderPx = (2.5f * density).toInt()
         val defaultBorderPx = (1.2f * density).toInt()
 
-        val selectedColor = Color.parseColor("#8B5CF6")
-        val defaultBorderColor = Color.parseColor("#358B5CF6")
+        val selectedColor = ThemeHelper.getColorFromAttr(requireContext(), com.google.android.material.R.attr.colorPrimary)
+        val defaultBorderColor = ThemeHelper.getColorFromAttr(requireContext(), com.google.android.material.R.attr.colorOutline)
 
         binding.cardPresetMaxFps.strokeColor = if (mode == MODE_FAST) selectedColor else defaultBorderColor
         binding.cardPresetMaxFps.strokeWidth = if (mode == MODE_FAST) selectedBorderPx else defaultBorderPx

@@ -4,11 +4,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#A607050F"
+    android:background="@android:color/transparent"
     android:paddingHorizontal="16dp"
     android:paddingVertical="20dp">
 
-    <!-- Flagship Sculpted Dark Glassmorphic Container -->
+    <!-- Flagship Sculpted Dark Glassmorphic Container themed with ?attr/colorSurface -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -36,7 +36,7 @@
                     android:layout_height="26dp"
                     android:layout_gravity="center"
                     android:src="@drawable/ic_folder_open"
-                    app:tint="#C084FC" />
+                    app:tint="?attr/colorPrimary" />
             </FrameLayout>
 
             <LinearLayout
@@ -57,7 +57,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/settings_profiles_title"
-                        android:textColor="#FFFFFF"
+                        android:textColor="?attr/colorOnSurface"
                         android:textSize="18sp"
                         android:textStyle="bold"
                         android:letterSpacing="0.02" />
@@ -72,7 +72,7 @@
                         android:paddingHorizontal="10dp"
                         android:paddingVertical="4dp"
                         android:text="0"
-                        android:textColor="#38BDF8"
+                        android:textColor="?attr/colorPrimary"
                         android:textSize="11sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -83,12 +83,12 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
                     android:text="@string/settings_profiles_description"
-                    android:textColor="#94A3B8"
+                    android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="12sp"
                     android:maxLines="2" />
             </LinearLayout>
 
-            <!-- Faceted 3D Close Button -->
+            <!-- Faceted Close Button -->
             <ImageView
                 android:id="@+id/btn_close_profiles"
                 android:layout_width="38dp"
@@ -97,7 +97,7 @@
                 android:padding="9dp"
                 android:background="@drawable/bg_storm_circle_button"
                 android:src="@drawable/ic_clear"
-                app:tint="#CBD5E1"
+                app:tint="?attr/colorOnSurfaceVariant"
                 android:contentDescription="@string/close" />
 
         </LinearLayout>
@@ -106,10 +106,10 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="#258B5CF6"
+            android:background="?attr/colorOutline"
             android:layout_marginBottom="12dp" />
 
-        <!-- Top Action Bar: 3D Faceted Convex Buttons (Zero abbreviation, Zero truncation) -->
+        <!-- Top Action Bar: Themed Faceted Buttons (Zero abbreviation, Zero truncation) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -119,16 +119,16 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_save_current_profile"
-                style="@style/Widget.Material3.Button.OutlinedButton"
+                style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-            android:minHeight="48dp"
+                android:minHeight="48dp"
                 android:layout_weight="1"
                 android:layout_marginEnd="6dp"
                 android:text="@string/profile_btn_save_current"
                 android:textSize="13sp"
                 app:icon="@drawable/ic_add"
-                app:iconTint="#FFFFFF"
+                app:iconTint="?attr/colorPrimary"
                 app:iconSize="18dp" />
 
             <com.google.android.material.button.MaterialButton
@@ -136,13 +136,13 @@
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-            android:minHeight="48dp"
+                android:minHeight="48dp"
                 android:layout_weight="1"
                 android:layout_marginStart="6dp"
                 android:text="@string/profile_btn_import"
                 android:textSize="13sp"
                 app:icon="@drawable/ic_folder_open"
-                app:iconTint="#CBD5E1"
+                app:iconTint="?attr/colorOnSurfaceVariant"
                 app:iconSize="18dp" />
 
         </LinearLayout>
@@ -157,7 +157,6 @@
             android:overScrollMode="never"
             android:paddingBottom="8dp" />
 
-
         <!-- Empty state when zero profiles exist -->
         <TextView
             android:id="@+id/text_empty_profiles"
@@ -166,7 +165,7 @@
             android:layout_weight="1"
             android:gravity="center"
             android:text="@string/profile_empty_state"
-            android:textColor="#64748B"
+            android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="13sp"
             android:visibility="gone" />
 

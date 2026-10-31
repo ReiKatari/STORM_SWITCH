@@ -52,7 +52,7 @@
                 android:paddingHorizontal="8dp"
                 android:paddingVertical="2dp"
                 android:text="0"
-                android:textColor="#38BDF8"
+                android:textColor="?attr/colorPrimary"
                 android:textSize="11sp"
                 android:textStyle="bold" />
 
@@ -62,7 +62,8 @@
                 android:layout_height="32dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_clear"
-                app:tint="?attr/colorOnSurfaceVariant" />
+                app:tint="?attr/colorOnSurfaceVariant"
+                android:contentDescription="@string/close" />
 
         </LinearLayout>
 
@@ -99,6 +100,7 @@
                 android:text="@string/profile_btn_create"
                 android:textSize="12sp"
                 app:icon="@drawable/ic_add"
+                app:iconTint="?attr/colorPrimary"
                 app:iconSize="16dp"
                 app:cornerRadius="10dp" />
 
@@ -113,6 +115,7 @@
                 android:text="@string/profile_btn_import"
                 android:textSize="12sp"
                 app:icon="@drawable/ic_install"
+                app:iconTint="?attr/colorOnSurfaceVariant"
                 app:iconSize="16dp"
                 app:cornerRadius="10dp" />
 
@@ -139,7 +142,7 @@
             android:layout_height="match_parent"
             android:gravity="center"
             android:text="@string/profile_empty_state"
-            android:textColor="#64748B"
+            android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="13sp"
             android:visibility="gone" />
 

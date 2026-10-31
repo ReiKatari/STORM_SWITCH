@@ -11,8 +11,8 @@
     app:cardCornerRadius="14dp"
     app:cardElevation="2dp"
     app:strokeWidth="1dp"
-    app:strokeColor="#2A3950"
-    app:cardBackgroundColor="#131B2B">
+    app:strokeColor="?attr/colorOutline"
+    app:cardBackgroundColor="?attr/colorSurfaceVariant">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -39,7 +39,7 @@
                     android:layout_height="22dp"
                     android:layout_gravity="center"
                     android:src="@drawable/ic_settings"
-                    app:tint="#38BDF8" />
+                    app:tint="?attr/colorPrimary" />
             </FrameLayout>
 
             <LinearLayout
@@ -60,7 +60,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Profile Name"
-                        android:textColor="#FFFFFF"
+                        android:textColor="?attr/colorOnSurface"
                         android:textSize="14sp"
                         android:textStyle="bold"
                         android:maxLines="2" />
@@ -74,7 +74,7 @@
                         android:paddingHorizontal="7dp"
                         android:paddingVertical="2dp"
                         android:text="@string/profile_active_badge"
-                        android:textColor="#34D399"
+                        android:textColor="?attr/colorPrimary"
                         android:textSize="10sp"
                         android:textStyle="bold"
                         android:visibility="gone" />
@@ -87,7 +87,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:text="Profile Description"
-                    android:textColor="#94A3B8"
+                    android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="11sp"
                     android:maxLines="2" />
 
@@ -104,7 +104,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_profile_apply"
-                style="@style/Widget.Material3.Button.OutlinedButton"
+                style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="0dp"
                 android:layout_height="36dp"
                 android:layout_weight="1"
@@ -115,15 +115,9 @@
                 android:singleLine="true"
                 android:ellipsize="none"
                 android:text="@string/profile_btn_apply"
-                android:textColor="#38BDF8"
-                android:textSize="12sp"
-                app:strokeWidth="1dp"
-                app:strokeColor="#4D38BDF8"
-                app:cornerRadius="8dp"
-                app:backgroundTint="#2038BDF8"
-                app:icon="@drawable/ic_check"
-                app:iconTint="#38BDF8"
-                app:iconSize="14dp" />
+                android:textColor="?attr/colorPrimary"
+                android:textSize="11.5sp"
+                app:cornerRadius="8dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_profile_share"
@@ -138,19 +132,13 @@
                 android:singleLine="true"
                 android:ellipsize="none"
                 android:text="@string/profile_btn_share"
-                android:textColor="#E2E8F0"
-                android:textSize="12sp"
-                app:strokeWidth="1dp"
-                app:strokeColor="#334766"
-                app:cornerRadius="8dp"
-                app:backgroundTint="#1A2436"
-                app:icon="@drawable/ic_share"
-                app:iconTint="#94A3B8"
-                app:iconSize="14dp" />
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="11.5sp"
+                app:cornerRadius="8dp" />
 
         </LinearLayout>
 
-        <!-- Custom Profile Actions: Row 2 [Переименовать] + [Удалить] -->
+        <!-- Profile Actions: Row 2 [Переименовать] + [Удалить] -->
         <LinearLayout
             android:id="@+id/layout_custom_actions"
             android:layout_width="match_parent"
@@ -171,15 +159,9 @@
                 android:singleLine="true"
                 android:ellipsize="none"
                 android:text="@string/profile_btn_rename"
-                android:textColor="#E2E8F0"
-                android:textSize="12sp"
-                app:strokeWidth="1dp"
-                app:strokeColor="#334766"
-                app:cornerRadius="8dp"
-                app:backgroundTint="#1A2436"
-                app:icon="@drawable/ic_edit"
-                app:iconTint="#94A3B8"
-                app:iconSize="14dp" />
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="11.5sp"
+                app:cornerRadius="8dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_profile_delete"
@@ -194,15 +176,10 @@
                 android:singleLine="true"
                 android:ellipsize="none"
                 android:text="@string/profile_btn_delete"
-                android:textColor="#F87171"
-                android:textSize="12sp"
-                app:strokeWidth="1dp"
-                app:strokeColor="#66EF4444"
-                app:cornerRadius="8dp"
-                app:backgroundTint="#22EF4444"
-                app:icon="@drawable/ic_delete"
-                app:iconTint="#F87171"
-                app:iconSize="14dp" />
+                android:textColor="#EF4444"
+                android:textSize="11.5sp"
+                app:strokeColor="#EF4444"
+                app:cornerRadius="8dp" />
 
         </LinearLayout>
 

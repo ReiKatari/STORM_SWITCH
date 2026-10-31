@@ -187,11 +187,11 @@ android {
 
                         "-DENABLE_UPDATE_CHECKER=ON",
 
-                        "-DBUILD_VERSION=16.0.3",
+                        "-DBUILD_VERSION=16.0.4",
 
-                        "-DGIT_TAG=16.0.3",
+                        "-DGIT_TAG=16.0.4",
 
-                        "-DGIT_RELEASE=16.0.3",
+                        "-DGIT_RELEASE=16.0.4",
 
                         "-DBUILD_TESTING=OFF",
 
@@ -939,7 +939,7 @@ fun getGitVersion(): String {
 
     }
 
-    return "16.0.2"
+    return "16.0.4"
 
 }
 

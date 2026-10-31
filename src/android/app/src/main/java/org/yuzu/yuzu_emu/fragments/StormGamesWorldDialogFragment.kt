@@ -653,88 +653,26 @@ class StormGamesWorldDialogFragment : DialogFragment() {
     }
 
     private fun checkDownloadedStatus(games: List<StormWorldGameItem>, ctx: Context) {
-        val installedTids = HashSet<String>()
-        val installedBaseTids = HashSet<String>()
-        val installedTitles = HashSet<String>()
-        try {
-            gamesViewModel.games.value.forEach { gm ->
-                val rawTid = gm.programIdHex.trim().lowercase(Locale.ROOT)
-                if (rawTid.isNotEmpty() && rawTid != "0" && rawTid.length == 16) {
-                    installedTids.add(rawTid)
-                    val num = rawTid.toULongOrNull(16) ?: 0uL
-                    val baseNum = num and 0xFFFFFFFFFFFFE000uL
-                    installedBaseTids.add(baseNum.toString(16).padStart(16, '0').lowercase(Locale.ROOT))
-                }
-                val cleanName = gm.title.replace(Regex("""[\\/:*?"<>|]"""), " ").trim().lowercase(Locale.ROOT)
-                if (cleanName.isNotEmpty()) {
-                    installedTitles.add(cleanName)
-                }
-            }
-        } catch (_: Throwable) {}
-
         val gameDirs = NativeConfig.getGameDirs()
-        data class LocalFile(
+        data class LocalGameFile(
             val name: String,
             val stem: String,
-            val size: Long,
-            val modCount: Int,
-            val dlcCount: Int,
-            val hasRus: Boolean,
-            val extension: String = ""
+            val extension: String,
+            val tid: String = "",
+            val baseTid: String = "",
+            val version: String = "",
+            val internalVersion: String = "",
+            val modCount: Int = 0,
+            val dlcCount: Int = 0,
+            val hasRus: Boolean = false,
+            val cleanTitle: String = ""
         )
-        val allFiles = mutableListOf<LocalFile>()
-
-        fun scanDoc(doc: DocumentFile?, depth: Int) {
-            if (doc == null || depth > 2) return
-            doc.listFiles()?.forEach { f ->
-                if (f.isDirectory) {
-                    scanDoc(f, depth + 1)
-                } else if (f.isFile) {
-                    val lower = f.name.orEmpty().lowercase(Locale.ROOT)
-                    if (lower.endsWith(".nsp") || lower.endsWith(".xci") || lower.endsWith(".nsz") || lower.endsWith(".xcz")) {
-                        allFiles.add(
-                            LocalFile(
-                                lower,
-                                lower.substringBeforeLast('.'),
-                                f.length(),
-                                0,
-                                0,
-                                lower.contains("rus") || lower.contains("рус"),
-                                lower.substringAfterLast('.', "")
-                            )
-                        )
-                    }
-                }
-            }
-        }
-
-        fun scanFile(dir: File, depth: Int) {
-            if (depth > 2) return
-            dir.listFiles()?.forEach { f ->
-                if (f.isDirectory) {
-                    scanFile(f, depth + 1)
-                } else if (f.isFile) {
-                    val lower = f.name.lowercase(Locale.ROOT)
-                    if (lower.endsWith(".nsp") || lower.endsWith(".xci") || lower.endsWith(".nsz") || lower.endsWith(".xcz")) {
-                        allFiles.add(
-                            LocalFile(
-                                lower,
-                                lower.substringBeforeLast('.'),
-                                f.length(),
-                                0,
-                                0,
-                                lower.contains("rus") || lower.contains("рус"),
-                                lower.substringAfterLast('.', "")
-                            )
-                        )
-                    }
-                }
-            }
-        }
+        val allFiles = mutableListOf<LocalGameFile>()
 
         val modCountRegex = Regex("""(?:[+(\[{\s]|^)(\d+)m(?:[+)\]}\s]|$)""", RegexOption.IGNORE_CASE)
         val rusModRegex = Regex("""(?:\bmod\b)|(?:\bмод\b)|русификатор|озвучка""", RegexOption.IGNORE_CASE)
         val dlcCountRegex = Regex("""(?:[+(\[{\s]|^)(\d+)d(?:[+)\]}\s]|$)""", RegexOption.IGNORE_CASE)
+        val verRegex = Regex("""(?:v|\-|\b)(\d+\.\d+(?:\.\d+)?|\d{5,8})(?:\b|\]|\))""")
 
         fun extractModCount(str: String): Int {
             return try {
@@ -754,6 +692,117 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             }
         }
 
+        // 1. Ingest installed games from user library database
+        try {
+            gamesViewModel.games.value.forEach { gm ->
+                val uri = Uri.parse(gm.path)
+                val fileName = FileUtil.getFilename(uri).lowercase(Locale.ROOT)
+                val ext = (FileUtil.getExtension(uri).ifEmpty { gm.extension }).lowercase(Locale.ROOT).removePrefix(".")
+                val rawTid = gm.programIdHex.trim().lowercase(Locale.ROOT)
+                val num = rawTid.toULongOrNull(16) ?: 0uL
+                val baseTid = if (num != 0uL) (num and 0xFFFFFFFFFFFFE000uL).toString(16).padStart(16, '0').lowercase(Locale.ROOT) else ""
+                val cleanName = gm.title.replace(Regex("""[\\/:*?"<>|]"""), " ").trim().lowercase(Locale.ROOT)
+                val fullCandidateStr = "$fileName ${gm.title.lowercase(Locale.ROOT)}"
+                val modCount = maxOf(if (gm.addonCount > 0) 1 else 0, extractModCount(fullCandidateStr))
+                val dlcCount = extractDlcCount(fullCandidateStr)
+                val hasRus = fullCandidateStr.contains("rus") || fullCandidateStr.contains("рус")
+                allFiles.add(
+                    LocalGameFile(
+                        name = fileName,
+                        stem = fileName.substringBeforeLast('.', fileName),
+                        extension = ext,
+                        tid = rawTid,
+                        baseTid = baseTid,
+                        version = gm.version.trim().lowercase(Locale.ROOT),
+                        internalVersion = gm.internalVersion.trim(),
+                        modCount = modCount,
+                        dlcCount = dlcCount,
+                        hasRus = hasRus,
+                        cleanTitle = cleanName
+                    )
+                )
+            }
+        } catch (_: Throwable) {}
+
+        // 2. Scan physical directories for standalone packages
+        fun scanDoc(doc: DocumentFile?, depth: Int) {
+            if (doc == null || depth > 2) return
+            doc.listFiles()?.forEach { f ->
+                if (f.isDirectory) {
+                    scanDoc(f, depth + 1)
+                } else if (f.isFile) {
+                    val lower = f.name.orEmpty().lowercase(Locale.ROOT)
+                    if (lower.endsWith(".nsp") || lower.endsWith(".xci") || lower.endsWith(".nsz") || lower.endsWith(".xcz")) {
+                        val ext = lower.substringAfterLast('.', "")
+                        val stem = lower.substringBeforeLast('.')
+                        val modCount = extractModCount(lower)
+                        val dlcCount = extractDlcCount(lower)
+                        val hasRus = lower.contains("rus") || lower.contains("рус")
+                        val tidMatch = Regex("""\b(01[0-9a-f]{14})\b""").find(lower) ?: Regex("""\[([0-9a-f]{16})\]""").find(lower)
+                        val rawTid = tidMatch?.groupValues?.get(1)?.lowercase(Locale.ROOT) ?: ""
+                        val num = rawTid.toULongOrNull(16) ?: 0uL
+                        val baseTid = if (num != 0uL) (num and 0xFFFFFFFFFFFFE000uL).toString(16).padStart(16, '0').lowercase(Locale.ROOT) else ""
+                        val verMatch = verRegex.find(lower)
+                        val fileVer = verMatch?.groupValues?.get(1)?.lowercase(Locale.ROOT) ?: ""
+                        allFiles.add(
+                            LocalGameFile(
+                                name = lower,
+                                stem = stem,
+                                extension = ext,
+                                tid = rawTid,
+                                baseTid = baseTid,
+                                version = fileVer,
+                                internalVersion = "",
+                                modCount = modCount,
+                                dlcCount = dlcCount,
+                                hasRus = hasRus,
+                                cleanTitle = stem.replace(Regex("""[\\/:*?"<>|]"""), " ").trim()
+                            )
+                        )
+                    }
+                }
+            }
+        }
+
+        fun scanFile(dir: File, depth: Int) {
+            if (depth > 2) return
+            dir.listFiles()?.forEach { f ->
+                if (f.isDirectory) {
+                    scanFile(f, depth + 1)
+                } else if (f.isFile) {
+                    val lower = f.name.lowercase(Locale.ROOT)
+                    if (lower.endsWith(".nsp") || lower.endsWith(".xci") || lower.endsWith(".nsz") || lower.endsWith(".xcz")) {
+                        val ext = lower.substringAfterLast('.', "")
+                        val stem = lower.substringBeforeLast('.')
+                        val modCount = extractModCount(lower)
+                        val dlcCount = extractDlcCount(lower)
+                        val hasRus = lower.contains("rus") || lower.contains("рус")
+                        val tidMatch = Regex("""\b(01[0-9a-f]{14})\b""").find(lower) ?: Regex("""\[([0-9a-f]{16})\]""").find(lower)
+                        val rawTid = tidMatch?.groupValues?.get(1)?.lowercase(Locale.ROOT) ?: ""
+                        val num = rawTid.toULongOrNull(16) ?: 0uL
+                        val baseTid = if (num != 0uL) (num and 0xFFFFFFFFFFFFE000uL).toString(16).padStart(16, '0').lowercase(Locale.ROOT) else ""
+                        val verMatch = verRegex.find(lower)
+                        val fileVer = verMatch?.groupValues?.get(1)?.lowercase(Locale.ROOT) ?: ""
+                        allFiles.add(
+                            LocalGameFile(
+                                name = lower,
+                                stem = stem,
+                                extension = ext,
+                                tid = rawTid,
+                                baseTid = baseTid,
+                                version = fileVer,
+                                internalVersion = "",
+                                modCount = modCount,
+                                dlcCount = dlcCount,
+                                hasRus = hasRus,
+                                cleanTitle = stem.replace(Regex("""[\\/:*?"<>|]"""), " ").trim()
+                            )
+                        )
+                    }
+                }
+            }
+        }
+
         for (dir in gameDirs) {
             try {
                 val uri = Uri.parse(dir.uriString)
@@ -767,38 +816,17 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             } catch (_: Exception) {}
         }
 
-        val exactStems = allFiles.map { it.stem }.toHashSet()
-        val exactFileNames = allFiles.map { it.name }.toHashSet()
-
-        val groupCounts = mutableMapOf<String, Int>()
+        // 3. Match each catalog item with 100% full-set precision
         games.forEach { g ->
-            val tid = g.serialId.trim().uppercase(Locale.ROOT)
-            val cleanBaseTitle = g.title.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim().uppercase(Locale.ROOT)
-            val key = if (tid.isNotEmpty() && tid != "—" && tid != "-") tid else cleanBaseTitle
-            groupCounts[key] = (groupCounts[key] ?: 0) + 1
-        }
-
-        val verRegex = Regex("""(?:v|\-|\b)(\d+\.\d+(?:\.\d+)?|\d{5,8})(?:\b|\]|\))""")
-
-        games.forEach { g ->
+            val expectedExt = g.extensionClean.lowercase(Locale.ROOT)
             val tid = g.serialId.trim().lowercase(Locale.ROOT)
             val tidNum = tid.toULongOrNull(16) ?: 0uL
             val baseTid = if (tidNum != 0uL) (tidNum and 0xFFFFFFFFFFFFE000uL).toString(16).padStart(16, '0').lowercase(Locale.ROOT) else ""
+            val cleanTitle = g.title.replace(Regex("""[\\/:*?"<>|]"""), "_").trim().lowercase(Locale.ROOT)
+            val cleanFinal = (if (g.finalTitle.isNotEmpty()) g.finalTitle else g.title).replace(Regex("""[\\/:*?"<>|]"""), "_").trim().lowercase(Locale.ROOT)
             val normTitle = g.title.replace(Regex("""[\\/:*?"<>|]"""), " ").trim().lowercase(Locale.ROOT)
             val normFinal = (if (g.finalTitle.isNotEmpty()) g.finalTitle else g.title).replace(Regex("""[\\/:*?"<>|]"""), " ").trim().lowercase(Locale.ROOT)
 
-            if ((tid.isNotEmpty() && installedTids.contains(tid)) ||
-                (baseTid.isNotEmpty() && installedBaseTids.contains(baseTid)) ||
-                (normTitle.isNotEmpty() && installedTitles.contains(normTitle)) ||
-                (normFinal.isNotEmpty() && installedTitles.contains(normFinal))) {
-                g.isDownloaded = true
-                return@forEach
-            }
-            val cleanBaseTitle = g.title.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim().uppercase(Locale.ROOT)
-            val groupKey = if (tid.isNotEmpty() && tid != "—" && tid != "-") tid.uppercase(Locale.ROOT) else cleanBaseTitle
-            val isSingle = (groupCounts[groupKey] ?: 0) <= 1
-            val cleanTitle = g.title.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim().lowercase(Locale.ROOT)
-            val cleanFinal = (if (g.finalTitle.isNotEmpty()) g.finalTitle else g.title).replace(Regex("[\\\\/:*?\"<>|]"), "_").trim().lowercase(Locale.ROOT)
             val ver = g.version.trim().lowercase(Locale.ROOT)
             val intVer = g.internalVersion.trim()
             val fullTitle = "${g.finalTitle} ${g.title}".lowercase(Locale.ROOT)
@@ -808,65 +836,62 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             val gameIsMod = gameModCount > 0
             val gameHasDlc = gameDlcCount > 0
 
-            // Fast path: exact filename with extension match
-            val expectedFullName = "$cleanFinal.${g.extensionClean.lowercase(Locale.ROOT)}"
-            if (cleanFinal.isNotEmpty() && exactFileNames.contains(expectedFullName)) {
-                g.isDownloaded = true
-                return@forEach
-            }
-            if (isSingle && cleanFinal.isNotEmpty() && exactStems.contains(cleanFinal)) {
-                g.isDownloaded = true
-                return@forEach
-            }
-
-            g.isDownloaded = allFiles.any { fileItem ->
-                val lowerName = fileItem.name
-                val fileStem = fileItem.stem
-
-                if (isSingle && cleanFinal.isNotEmpty() && fileStem == cleanFinal) {
-                    return@any true
+            g.isDownloaded = allFiles.any { cand ->
+                // [Rule 1: MANDATORY FORMAT MATCH]
+                // An NSP file NEVER matches an NSZ entry; an NSZ file NEVER matches an NSP entry!
+                if (cand.extension.isNotEmpty() && !cand.extension.equals(expectedExt, ignoreCase = true)) {
+                    return@any false
                 }
 
-                if (!isSingle) {
-                    // Multiple versions/formats in catalog: must verify exact format/version/mod/dlc/rus
-                    if (fileItem.extension.isNotEmpty() && !fileItem.extension.equals(g.extensionClean, ignoreCase = true)) return@any false
-                    if (gameIsMod != (fileItem.modCount > 0)) return@any false
-                    if (gameIsMod && gameModCount != fileItem.modCount) return@any false
-                    if (gameHasDlc != (fileItem.dlcCount > 0)) return@any false
-                    if (gameHasDlc && gameDlcCount != fileItem.dlcCount) return@any false
-                    if (gameIsRus != fileItem.hasRus) return@any false
+                // [Rule 2: GAME IDENTITY MATCH]
+                val idMatch = (tid.isNotEmpty() && tid != "—" && tid != "-" && (cand.tid == tid || cand.name.contains(tid))) ||
+                              (baseTid.isNotEmpty() && (cand.baseTid == baseTid || (cand.tid.isNotEmpty() && cand.tid.startsWith(baseTid.take(13))))) ||
+                              (cleanFinal.isNotEmpty() && (cand.stem == cleanFinal || cand.name.contains(cleanFinal))) ||
+                              (normFinal.isNotEmpty() && (cand.cleanTitle == normFinal || cand.cleanTitle.contains(normFinal))) ||
+                              (cleanTitle.isNotEmpty() && cleanTitle.length >= 4 && (cand.stem == cleanTitle || cand.name.contains(cleanTitle)))
 
-                    if (cleanFinal.isNotEmpty() && (fileStem == cleanFinal || lowerName.contains(cleanFinal))) {
-                        return@any true
-                    }
-
-                    if (tid.isNotEmpty() && tid != "—" && lowerName.contains(tid)) {
-                        if (intVer.isNotEmpty() && intVer != "0") {
-                            if (lowerName.contains(intVer) || lowerName.contains("v$intVer") || lowerName.contains("-$intVer-")) {
-                                return@any true
-                            }
-                        }
-
-                        if (ver.isNotEmpty() && ver != "1.0.0") {
-                            if (lowerName.contains(ver) || lowerName.contains("v$ver")) {
-                                return@any true
-                            }
-                        }
-
-                        if ((ver.isEmpty() || ver == "1.0.0") && (intVer.isEmpty() || intVer == "0")) {
-                            if (!verRegex.containsMatchIn(lowerName)) {
-                                return@any true
-                            }
-                        }
-                    }
-                    false
-                } else {
-                    // Single version in catalog
-                    if (cleanFinal.isNotEmpty() && lowerName.contains(cleanFinal)) return@any true
-                    if (tid.isNotEmpty() && tid != "—" && lowerName.contains(tid)) return@any true
-                    if (cleanTitle.isNotEmpty() && cleanTitle.length >= 4 && lowerName.contains(cleanTitle)) return@any true
-                    false
+                if (!idMatch) {
+                    return@any false
                 }
+
+                // [Rule 3: FULL-SET MATCHING - MODS]
+                if (gameIsMod != (cand.modCount > 0)) {
+                    return@any false
+                }
+                if (gameIsMod && gameModCount > 0 && cand.modCount > 0 && cand.modCount < gameModCount) {
+                    return@any false
+                }
+
+                // [Rule 4: FULL-SET MATCHING - DLC]
+                if (gameHasDlc != (cand.dlcCount > 0)) {
+                    return@any false
+                }
+                if (gameHasDlc && gameDlcCount > 0 && cand.dlcCount > 0 && cand.dlcCount < gameDlcCount) {
+                    return@any false
+                }
+
+                // [Rule 5: FULL-SET MATCHING - RUSSIAN]
+                if (gameIsRus != cand.hasRus) {
+                    return@any false
+                }
+
+                // [Rule 6: FULL-SET MATCHING - VERSION]
+                val hasSpecificVer = ver.isNotEmpty() && ver != "1.0.0" && ver != "—" && ver != "-"
+                val hasSpecificIntVer = intVer.isNotEmpty() && intVer != "0"
+                if (hasSpecificVer || hasSpecificIntVer) {
+                    val verMatched = (hasSpecificVer && (cand.version == ver || cand.name.contains(ver) || cand.name.contains("v$ver"))) ||
+                                     (hasSpecificIntVer && (cand.internalVersion == intVer || cand.name.contains(intVer) || cand.name.contains("v$intVer")))
+                    if (!verMatched) {
+                        return@any false
+                    }
+                } else if (ver == "1.0.0" || intVer == "0") {
+                    // Base version: if candidate is clearly an update version (e.g. v1.2.0), reject
+                    if (cand.version.isNotEmpty() && cand.version != "1.0.0" && cand.version != "0") {
+                        return@any false
+                    }
+                }
+
+                true
             }
         }
     }

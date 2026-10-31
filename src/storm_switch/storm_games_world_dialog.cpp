@@ -952,6 +952,9 @@ bool StormGamesWorldDialog::IsGameDownloaded(const StormWorldGame bitand game, c
     RefreshDownloadedFilesCache(dir_path);
     if (cached_dir_files.empty()) return false;
 
+    QString expected_ext = game.real_extension.trimmed().remove(QLatin1Char('.')).toLower();
+    if (expected_ext.isEmpty()) expected_ext = QStringLiteral("nsp");
+
     const QString clean_final = SanitizeFileName(game.final_title.isEmpty() ? game.title : game.final_title).toLower();
     const QString clean_title = SanitizeFileName(game.title).toLower();
     const QString tid = game.serial_id.trimmed().remove(QStringLiteral("0x"), Qt::CaseInsensitive).toUpper();
@@ -965,73 +968,78 @@ bool StormGamesWorldDialog::IsGameDownloaded(const StormWorldGame bitand game, c
     const bool game_is_mod = (game_mod_count > 0);
     const bool game_has_dlc = (game_dlc_count > 0);
 
-    const QString key = (!tid.isEmpty() and tid != QStringLiteral("—")) ? tid.toLower() : clean_title;
-    const int same_group_count = group_counts.value(key, 1);
-    const bool is_single = (same_group_count <= 1);
-
     bool ok_gtid = false;
     const u64 game_tid_val = tid.toULongLong(bitand ok_gtid, 16);
     const u64 game_base_tid = (ok_gtid and game_tid_val != 0) ? (game_tid_val & ~0x1FFFULL) : 0;
 
     for (const auto bitand file : cached_dir_files) {
+        // [Rule 1: MANDATORY FORMAT MATCH]
+        // An NSP file NEVER matches an NSZ entry; an NSZ file NEVER matches an NSP entry!
+        if (!file.extension.isEmpty() and !expected_ext.isEmpty() and file.extension.toLower() != expected_ext) {
+            continue;
+        }
+
         const QString ftid = file.tid.trimmed().remove(QStringLiteral("0x"), Qt::CaseInsensitive).toUpper();
+        bool ok_ftid = false;
+        const u64 file_tid_val = ftid.toULongLong(bitand ok_ftid, 16);
 
-        // 1. Title ID matching (exact or base mask 0x1FFF)
-        if (!tid.isEmpty() and tid != QStringLiteral("—") and !ftid.isEmpty()) {
-            if (ftid == tid) {
-                if (is_single) return true;
-                if (game_is_mod == file.has_mod and game_has_dlc == file.has_dlc and game_is_rus == file.has_rus) {
-                    return true;
-                }
+        // [Rule 2: GAME IDENTITY MATCH]
+        bool id_match = false;
+        if (!tid.isEmpty() and tid != QStringLiteral("—") and !ftid.isEmpty() and ftid == tid) {
+            id_match = true;
+        } else if (game_base_tid != 0 and ok_ftid and file_tid_val != 0 and (file_tid_val & ~0x1FFFULL) == game_base_tid) {
+            id_match = true;
+        } else if (!clean_final.isEmpty() and (file.complete_base_name == clean_final or file.lower_name.contains(clean_final))) {
+            id_match = true;
+        } else if (!clean_title.isEmpty() and (file.complete_base_name == clean_title or (clean_title.length() >= 4 and file.lower_name.contains(clean_title)))) {
+            id_match = true;
+        } else if (!tid.isEmpty() and tid != QStringLiteral("—") and file.lower_name.contains(tid.toLower())) {
+            id_match = true;
+        }
+
+        if (!id_match) {
+            continue;
+        }
+
+        // [Rule 3: FULL-SET MATCHING - MODS]
+        if (game_is_mod != file.has_mod) {
+            continue;
+        }
+        if (game_is_mod and game_mod_count > 0 and file.mod_count > 0 and file.mod_count < game_mod_count) {
+            continue;
+        }
+
+        // [Rule 4: FULL-SET MATCHING - DLC]
+        if (game_has_dlc != file.has_dlc) {
+            continue;
+        }
+        if (game_has_dlc and game_dlc_count > 0 and file.dlc_count > 0 and file.dlc_count < game_dlc_count) {
+            continue;
+        }
+
+        // [Rule 5: FULL-SET MATCHING - RUSSIAN]
+        if (game_is_rus != file.has_rus) {
+            continue;
+        }
+
+        // [Rule 6: FULL-SET MATCHING - VERSION]
+        const bool has_ver = (!ver.isEmpty() and ver != QStringLiteral("1.0.0") and ver != QStringLiteral("—") and ver != QStringLiteral("-"));
+        const bool has_int_ver = (!int_ver.isEmpty() and int_ver != QStringLiteral("0"));
+        if (has_ver or has_int_ver) {
+            bool ver_matched = false;
+            if (has_ver and (!file.version.isEmpty() and file.version.toLower() == ver)) ver_matched = true;
+            if (has_ver and (file.lower_name.contains(ver) or file.lower_name.contains(QStringLiteral("v%1").arg(ver)))) ver_matched = true;
+            if (has_int_ver and (file.lower_name.contains(int_ver) or file.lower_name.contains(QStringLiteral("v%1").arg(int_ver)))) ver_matched = true;
+            if (!ver_matched) {
+                continue;
             }
-            if (game_base_tid != 0) {
-                bool ok_ftid = false;
-                const u64 file_tid_val = ftid.toULongLong(bitand ok_ftid, 16);
-                if (ok_ftid and file_tid_val != 0 and (file_tid_val & ~0x1FFFULL) == game_base_tid) {
-                    if (is_single) return true;
-                    if (game_is_mod == file.has_mod and game_has_dlc == file.has_dlc and game_is_rus == file.has_rus) {
-                        return true;
-                    }
-                }
+        } else if (ver == QStringLiteral("1.0.0") or int_ver == QStringLiteral("0")) {
+            if (!file.version.isEmpty() and file.version != QStringLiteral("1.0.0") and file.version != QStringLiteral("0")) {
+                continue;
             }
         }
 
-        // 2. Exact match with final_title
-        if (!clean_final.isEmpty() and file.complete_base_name == clean_final) {
-            return true;
-        }
-
-        // 3. Match normalized title
-        if (!clean_title.isEmpty() and file.complete_base_name == clean_title) {
-            if (is_single) return true;
-            if (game_is_mod == file.has_mod and game_has_dlc == file.has_dlc and game_is_rus == file.has_rus) {
-                return true;
-            }
-        }
-
-        // 4. Filename contains title
-        if (!clean_title.isEmpty() and file.lower_name.contains(clean_title)) {
-            if (is_single) return true;
-        }
-
-        // 5. Filename contains Title ID
-        if (!tid.isEmpty() and tid != QStringLiteral("—") and file.lower_name.contains(tid.toLower())) {
-            if (is_single) return true;
-            if (!int_ver.isEmpty() and int_ver != QStringLiteral("0")) {
-                if (file.lower_name.contains(int_ver) or file.lower_name.contains(QStringLiteral("v%1").arg(int_ver)) or
-                    file.lower_name.contains(QStringLiteral("-%1-").arg(int_ver))) {
-                    return true;
-                }
-            }
-            if (!ver.isEmpty() and ver != QStringLiteral("1.0.0")) {
-                if (file.lower_name.contains(ver) or file.lower_name.contains(QStringLiteral("v%1").arg(ver))) {
-                    return true;
-                }
-            }
-            if ((ver.isEmpty() or ver == QStringLiteral("1.0.0")) and (int_ver.isEmpty() or int_ver == QStringLiteral("0"))) {
-                return true;
-            }
-        }
+        return true;
     }
 
     return false;
