@@ -94,7 +94,7 @@ size_t KSystemControl::Init::GetIntendedMemorySize() {
     case Smc::MemorySize_10GB:
         return 10_GiB;
     case Smc::MemorySize_12GB:
-        return 12_GiB;
+        return 12_GiB + KSystemControl::Nx2GraphicsServerMemorySize;
     }
 }
 
@@ -218,10 +218,7 @@ size_t KSystemControl::CalculateRequiredSecureMemorySize(size_t size, u32 pool) 
 Result KSystemControl::AllocateSecureMemory(KernelCore& kernel, KVirtualAddress* out, size_t size,
                                             u32 pool) {
     // Applet secure memory is handled separately.
-    if (pool == static_cast<u32>(KMemoryManager::Pool::Applet)) {
-        LOG_WARNING(Kernel, "AllocateSecureMemory: Applet pool requested");
-        R_THROW(ResultNotImplemented);
-    }
+    UNIMPLEMENTED_IF(pool == static_cast<u32>(KMemoryManager::Pool::Applet));
 
     // Ensure the size is aligned.
     const size_t alignment =
@@ -249,10 +246,7 @@ Result KSystemControl::AllocateSecureMemory(KernelCore& kernel, KVirtualAddress*
 void KSystemControl::FreeSecureMemory(KernelCore& kernel, KVirtualAddress address, size_t size,
                                       u32 pool) {
     // Applet secure memory is handled separately.
-    if (pool == static_cast<u32>(KMemoryManager::Pool::Applet)) {
-        LOG_WARNING(Kernel, "FreeSecureMemory: Applet pool requested");
-        return;
-    }
+    UNIMPLEMENTED_IF(pool == static_cast<u32>(KMemoryManager::Pool::Applet));
 
     // Ensure the size is aligned.
     const size_t alignment =

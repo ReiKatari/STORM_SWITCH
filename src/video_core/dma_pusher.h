@@ -114,6 +114,10 @@ struct CommandList final {
 
     boost::container::small_vector<CommandListHeader, 512> command_lists;
     boost::container::small_vector<CommandHeader, 512> prefetch_command_list;
+    /// The entries' words when they were submitted (NX2), each entry's at submitted_offsets[i]:
+    /// executed instead of the memory, which the game may already be refilling for a later frame.
+    std::vector<CommandHeader> submitted_words;
+    std::vector<u32> submitted_offsets;
 };
 
 /// @brief The DmaPusher class implements DMA submission to FIFOs, providing an area of memory that the
@@ -131,6 +135,9 @@ public:
     }
 
     void DispatchCalls();
+    bool IsGpuWrittenCommands(GPUVAddr address, size_t size);
+    bool ReadGpuWrittenCommands(GPUVAddr address, u32 count);
+    void FlushGpuWrittenCommands(GPUVAddr address, size_t size);
     [[nodiscard]] bool HasPendingNativeAcquire() const { return puller.HasPendingNativeAcquire(); }
     [[nodiscard]] bool CanResumeNativeAcquire() { return !HasFailedNativeWork() && puller.CanResumeNativeAcquire(*this); }
 

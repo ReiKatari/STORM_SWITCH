@@ -17,6 +17,16 @@
 
 namespace AudioCore {
 constexpr u32 CurrentRevision = 15;
+constexpr u32 NativeCurrentRevision = 16;
+
+constexpr bool IsNativeRevision(u32 revision) {
+    return (revision & 0xffffff) == Common::MakeMagic('R', 'E', 'v', '\0');
+}
+
+constexpr u32 EncodeRevision(u32 revision, bool native) {
+    return Common::MakeMagic('R', 'E', native ? 'v' : 'V',
+                             static_cast<char>('0' + revision));
+}
 
 enum class SupportTags {
     CommandProcessingTimeEstimatorVersion4,
@@ -59,32 +69,15 @@ enum class SupportTags {
 constexpr u32 MaxSupportedRevision = 32;
 
 constexpr u32 GetRevisionNum(u32 user_revision) {
-    if (user_revision >= 0x100) {
-        const u8 magic0 = static_cast<u8>(user_revision & 0xFF);
-        const u8 magic1 = static_cast<u8>((user_revision >> 8) & 0xFF);
-        const u8 magic2 = static_cast<u8>((user_revision >> 16) & 0xFF);
-        const u8 rev_byte = static_cast<u8>((user_revision >> 24) & 0xFF);
-
-        if (magic0 == 'R' && magic1 == 'E' && (magic2 == 'V' || magic2 == 'v')) {
-            if (rev_byte >= '0' && rev_byte <= '9') {
-                return rev_byte - '0';
-            }
-            if (rev_byte >= ':' && rev_byte <= '@') {
-                return rev_byte - '0';
-            }
-            if (rev_byte >= 'A' && rev_byte <= 'Z') {
-                return rev_byte - '0';
-            }
-            if (rev_byte > 0 && rev_byte <= 64) {
-                return rev_byte;
-            }
-        }
-
-        user_revision -= Common::MakeMagic('R', 'E', 'V', '0');
-        user_revision >>= 24;
+    if (user_revision < 0x100) {
+        return user_revision;
     }
-
-    return user_revision;
+    if (!IsNativeRevision(user_revision) &&
+        (user_revision & 0xffffff) != Common::MakeMagic('R', 'E', 'V', '\0')) {
+        return ~u32{0};
+    }
+    const u32 encoded = user_revision >> 24;
+    return encoded >= '0' ? encoded - '0' : ~u32{0};
 }
 
 constexpr bool CheckFeatureSupported(SupportTags tag, u32 user_revision) {
@@ -130,12 +123,12 @@ constexpr bool CheckFeatureSupported(SupportTags tag, u32 user_revision) {
         return false;
     }
     user_revision = GetRevisionNum(user_revision);
-    return (*feature).second <= user_revision;
+    return user_revision != ~u32{0} && (*feature).second <= user_revision;
 }
 
 constexpr bool CheckValidRevision(u32 user_revision) {
-    const auto rev = GetRevisionNum(user_revision);
-    return rev <= MaxSupportedRevision;
+    return GetRevisionNum(user_revision) <=
+           (IsNativeRevision(user_revision) ? NativeCurrentRevision : CurrentRevision);
 };
 
 } // namespace AudioCore

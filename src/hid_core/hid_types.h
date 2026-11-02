@@ -64,6 +64,11 @@ enum class NpadButton : u64 {
     LagonCRight = 1ULL << 33,
     LagonCDown = 1ULL << 34,
 
+    // Switch 2 Joy-Con 2 buttons
+    GL = 1ULL << 35,
+    GR = 1ULL << 36,
+    C = 1ULL << 37,
+
     All = 0xFFFFFFFFFFFFFFFFULL,
 };
 DECLARE_ENUM_FLAG_OPERATORS(NpadButton);

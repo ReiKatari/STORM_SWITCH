@@ -48,6 +48,7 @@ enum class FileType {
     XCZ,
     NAX,
     KIP,
+    NUP,
     DeconstructedRomDirectory,
 };
 
@@ -158,6 +159,8 @@ enum class ResultStatus : u16 {
     ErrorINITooManyKIPs,
     ErrorIntegrityVerificationNotImplemented,
     ErrorIntegrityVerificationFailed,
+    ErrorNUPBadFormat,
+    ErrorNUPNoBasePackage,
 };
 
 std::string GetResultStatusString(ResultStatus status);
@@ -322,6 +325,10 @@ public:
      *
      * @return ResultStatus result of function
      */
+    virtual ResultStatus ReadDisplayVersion(std::string& version) {
+        return ResultStatus::ErrorNotImplemented;
+    }
+
     virtual ResultStatus ReadTitle(std::string& title) {
         return ResultStatus::ErrorNotImplemented;
     }

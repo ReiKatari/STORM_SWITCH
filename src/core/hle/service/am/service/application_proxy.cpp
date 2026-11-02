@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // SPDX-FileCopyrightText: Copyright 2024 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
@@ -8,13 +11,13 @@
 #include "core/hle/service/am/service/common_state_getter.h"
 #include "core/hle/service/am/service/debug_functions.h"
 #include "core/hle/service/am/service/display_controller.h"
-#include "core/hle/service/am/service/graphics_scaling_parameters_functions.h"
+#include "core/hle/service/am/service/graphics_scale_controller.h"
 #include "core/hle/service/am/service/library_applet_creator.h"
-#include "core/hle/service/am/service/performance_functions.h"
 #include "core/hle/service/am/service/process_winding_controller.h"
 #include "core/hle/service/am/service/self_controller.h"
 #include "core/hle/service/am/service/window_controller.h"
 #include "core/hle/service/cmif_serialization.h"
+#include "core/hle/service/nx2_stub_interface.h"
 
 namespace Service::AM {
 
@@ -32,9 +35,13 @@ IApplicationProxy::IApplicationProxy(Core::System& system_, std::shared_ptr<Appl
         {10, D<&IApplicationProxy::GetProcessWindingController>, "GetProcessWindingController"},
         {11, D<&IApplicationProxy::GetLibraryAppletCreator>, "GetLibraryAppletCreator"},
         {20, D<&IApplicationProxy::GetApplicationFunctions>, "GetApplicationFunctions"},
-        {40, D<&IApplicationProxy::GetPerformanceFunctions>, "GetPerformanceFunctions"},
-        {60, D<&IApplicationProxy::GetGraphicsScalingParametersFunctions>,
-         "GetGraphicsScalingParametersFunctions"},
+        // Switch 2-only getters; see nx2_stub_interface.h.
+        {40, &IApplicationProxy::GetNx2Interface, "Nx2Getter40"},
+        {50, &IApplicationProxy::GetNx2Interface, "Nx2Getter50"},
+        {60, D<&IApplicationProxy::GetGraphicsScaleController>, "GetGraphicsScaleController (Switch 2)"},
+        {70, &IApplicationProxy::GetNx2Interface, "Nx2Getter70"},
+        {80, &IApplicationProxy::GetNx2Interface, "Nx2Getter80"},
+        {90, &IApplicationProxy::GetNx2Interface, "Nx2Getter90"},
         {1000, D<&IApplicationProxy::GetDebugFunctions>, "GetDebugFunctions"},
     };
     // clang-format on
@@ -43,6 +50,17 @@ IApplicationProxy::IApplicationProxy(Core::System& system_, std::shared_ptr<Appl
 }
 
 IApplicationProxy::~IApplicationProxy() = default;
+
+Result IApplicationProxy::GetGraphicsScaleController(
+    Out<SharedPointer<IGraphicsScaleController>> out_controller) {
+    LOG_DEBUG(Service_AM, "called");
+    *out_controller = std::make_shared<IGraphicsScaleController>(system);
+    R_SUCCEED();
+}
+
+void IApplicationProxy::GetNx2Interface(HLERequestContext& ctx) {
+    ReturnNx2StubInterface(system, ctx, "IApplicationProxy");
+}
 
 Result IApplicationProxy::GetAudioController(
     Out<SharedPointer<IAudioController>> out_audio_controller) {
@@ -105,20 +123,6 @@ Result IApplicationProxy::GetApplicationFunctions(
     Out<SharedPointer<IApplicationFunctions>> out_application_functions) {
     LOG_DEBUG(Service_AM, "called");
     *out_application_functions = std::make_shared<IApplicationFunctions>(system, m_applet);
-    R_SUCCEED();
-}
-
-Result IApplicationProxy::GetPerformanceFunctions(
-    Out<SharedPointer<IPerformanceFunctions>> out_functions) {
-    LOG_DEBUG(Service_AM, "called");
-    *out_functions = std::make_shared<IPerformanceFunctions>(system);
-    R_SUCCEED();
-}
-
-Result IApplicationProxy::GetGraphicsScalingParametersFunctions(
-    Out<SharedPointer<IGraphicsScalingParametersFunctions>> out_functions) {
-    LOG_DEBUG(Service_AM, "called");
-    *out_functions = std::make_shared<IGraphicsScalingParametersFunctions>(system, m_applet);
     R_SUCCEED();
 }
 

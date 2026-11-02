@@ -231,10 +231,29 @@ static bool IsBaseVersion(std::string_view ver) {
            ver.starts_with("0.");
 }
 
+static std::string UrlDecodePath(std::string_view in) {
+    std::string out;
+    out.reserve(in.size());
+    for (size_t i = 0; i < in.size(); ++i) {
+        if (in[i] == '%' && i + 2 < in.size()) {
+            int value = 0;
+            auto hex = in.substr(i + 1, 2);
+            if (std::from_chars(hex.data(), hex.data() + hex.size(), value, 16).ec == std::errc{}) {
+                out += static_cast<char>(value);
+                i += 2;
+                continue;
+            }
+        }
+        out += in[i];
+    }
+    return out;
+}
+
 static RomMetadata CacheRomMetadata(const std::string& raw_path) {
     std::string path = raw_path;
     if (path.starts_with("file://")) {
         path = path.substr(7);
+        path = UrlDecodePath(path);
     }
     if (!Core::Crypto::KeyManager::Instance().AreKeysLoaded()) {
         Core::Crypto::KeyManager::Instance().ReloadKeys();
@@ -542,6 +561,7 @@ jboolean Java_org_yuzu_yuzu_1emu_utils_GameMetadata_getIsValid(JNIEnv* env, jobj
     std::string path_str = Common::Android::GetJString(env, jpath);
     if (path_str.starts_with("file://")) {
         path_str = path_str.substr(7);
+        path_str = UrlDecodePath(path_str);
     }
     const auto l_path = Common::ToLower(path_str);
     if (l_path.ends_with(".part") || l_path.ends_with(".tmp") ||

@@ -108,16 +108,6 @@ bool Patcher::PatchText(std::span<const u8> program_image, const Kernel::CodeSet
 
         // SVC
         if (auto svc = SVC{inst}; svc.Verify()) {
-            if (svc.GetValue() == 0x1E) { // svcGetSystemTick fast inline trampoline
-                bool pre_buffer = false;
-                auto ret = AddRelocations(pre_buffer);
-                if (pre_buffer) {
-                    WriteCntpctHandler(ret, X0, c_pre);
-                } else {
-                    WriteCntpctHandler(ret, X0, c);
-                }
-                continue;
-            }
             bool pre_buffer = false;
             auto ret = AddRelocations(pre_buffer);
             if (pre_buffer) {
@@ -609,7 +599,7 @@ void Patcher::WriteMsrHandler(ModuleDestLabel module_dest, oaknut::XReg src_reg,
 }
 
 void Patcher::WriteCntfrqHandler(ModuleDestLabel module_dest, oaknut::XReg dest_reg, oaknut::VectorCodeGenerator& cg) {
-    cg.MOV(dest_reg, Common::WallClock::CNTFRQ);
+    cg.MOV(dest_reg, Common::g_wall_clock.GetGuestCNTFRQ());
 
     // Jump back to the instruction after the emulated MRS.
     if (&cg == &c_pre)
@@ -635,6 +625,7 @@ void Patcher::WriteCntpctHandler(ModuleDestLabel module_dest, oaknut::XReg dest_
 #else
     static Common::WallClock clock(true, 1);
 #endif
+    clock.SetGuestCNTFRQ(Common::g_wall_clock.GetGuestCNTFRQ());
     const auto factor = clock.GetGuestCNTFRQFactor();
     const auto raw_factor = std::bit_cast<std::array<u64, 2>>(factor);
 

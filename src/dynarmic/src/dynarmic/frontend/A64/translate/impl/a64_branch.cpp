@@ -70,15 +70,6 @@ bool TranslatorVisitor::RET(Reg Rn) {
     return false;
 }
 
-bool TranslatorVisitor::RETA(bool M) {
-    if (!options.enable_pauth_returns) {
-        return UnallocatedEncoding();
-    }
-    // Authenticate and strip PAC bits [54:48] / [63:bits] from R30 before return.
-    X(64, Reg::R30, AuthPointer(X(64, Reg::R30), SP(64), false, M));
-    return RET(Reg::R30);
-}
-
 bool TranslatorVisitor::CBZ(bool sf, Imm<19> imm19, Reg Rt) {
     const size_t datasize = sf ? 64 : 32;
     const s64 offset = concatenate(imm19, Imm<2>{0}).SignExtend<s64>();

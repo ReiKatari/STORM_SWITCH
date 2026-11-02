@@ -43,6 +43,18 @@ public:
     SharedNcaBodyStorage(VirtualFile s, std::shared_ptr<NcaReader> r)
         : m_storage(std::move(s)), m_nca_reader(std::move(r)) {}
 
+    bool HasDecryptedSections() const override {
+        return m_storage && m_storage->HasDecryptedSections();
+    }
+
+    std::optional<std::array<u8, 16>> GetEmbeddedCryptoKey() const override {
+        return m_storage ? m_storage->GetEmbeddedCryptoKey() : std::nullopt;
+    }
+
+    std::shared_ptr<VfsFile> GetUnderlyingFile() const override {
+        return m_storage;
+    }
+
     virtual size_t Read(u8* buffer, size_t size, size_t offset) const override {
         // Validate pre-conditions.
         ASSERT(m_storage != nullptr);
@@ -197,7 +209,10 @@ Result NcaFileSystemDriver::OpenStorageImpl(VirtualFile* out, NcaFsHeaderReader*
             ctx->fs_data_storage = storage;
         }
     } else {
-        if (is_pre_decrypted) {
+        const bool sparse_needs_virtual_decrypt =
+            out_header_reader->ExistsSparseLayer() &&
+            out_header_reader->GetSparseInfo().bucket.size > 0;
+        if (is_pre_decrypted && !sparse_needs_virtual_decrypt) {
             // Data in NCZ sections is already decrypted plaintext, bypass secondary AES decryption
             if (ctx != nullptr) {
                 ctx->fs_data_storage = storage;
@@ -215,14 +230,16 @@ Result NcaFileSystemDriver::OpenStorageImpl(VirtualFile* out, NcaFsHeaderReader*
             case NcaFsHeader::EncryptionType::AesCtr:
                 R_TRY(this->CreateAesCtrStorage(std::addressof(storage), std::move(storage),
                                                 fs_data_offset, out_header_reader->GetAesCtrUpperIv(),
-                                                AlignmentStorageRequirement::None));
+                                                AlignmentStorageRequirement::None,
+                                                sparse_needs_virtual_decrypt));
                 break;
             case NcaFsHeader::EncryptionType::AesCtrSkipLayerHash: {
                 // Create the aes ctr storage.
                 VirtualFile aes_ctr_storage;
                 R_TRY(this->CreateAesCtrStorage(std::addressof(aes_ctr_storage), storage,
                                                 fs_data_offset, out_header_reader->GetAesCtrUpperIv(),
-                                                AlignmentStorageRequirement::None));
+                                                AlignmentStorageRequirement::None,
+                                                sparse_needs_virtual_decrypt));
 
                 // Create region switch storage.
                 R_TRY(this->CreateRegionSwitchStorage(std::addressof(storage), out_header_reader,
@@ -392,7 +409,10 @@ Result NcaFileSystemDriver::OpenIndirectableStorageAsOriginal(
 
     // Create the appropriate storage for the encryption type.
     const bool is_pre_decrypted = m_reader->GetStorage() && m_reader->GetStorage()->HasDecryptedSections();
-    if (!is_pre_decrypted) {
+    const bool sparse_needs_virtual_decrypt =
+        header_reader->ExistsSparseLayer() &&
+        header_reader->GetSparseInfo().bucket.size > 0;
+    if (!is_pre_decrypted || sparse_needs_virtual_decrypt) {
         switch (header_reader->GetEncryptionType()) {
         case NcaFsHeader::EncryptionType::None:
             // If there's no encryption, use the base storage we made previously.
@@ -404,7 +424,8 @@ Result NcaFileSystemDriver::OpenIndirectableStorageAsOriginal(
         case NcaFsHeader::EncryptionType::AesCtr:
             R_TRY(this->CreateAesCtrStorage(std::addressof(storage), std::move(storage), fs_data_offset,
                                             header_reader->GetAesCtrUpperIv(),
-                                            AlignmentStorageRequirement::CacheBlockSize));
+                                            AlignmentStorageRequirement::CacheBlockSize,
+                                            sparse_needs_virtual_decrypt));
             break;
         default:
             R_THROW(ResultInvalidNcaFsHeaderEncryptionType);
@@ -439,12 +460,12 @@ Result NcaFileSystemDriver::CreateBodySubStorage(VirtualFile* out, s64 offset, s
 
 Result NcaFileSystemDriver::CreateAesCtrStorage(
     VirtualFile* out, VirtualFile base_storage, s64 offset, const NcaAesCtrUpperIv& upper_iv,
-    AlignmentStorageRequirement alignment_storage_requirement) {
+    AlignmentStorageRequirement alignment_storage_requirement, bool force_decrypt) {
     // Check pre-conditions.
     ASSERT(out != nullptr);
     ASSERT(base_storage != nullptr);
 
-    if (m_reader->GetStorage() && m_reader->GetStorage()->HasDecryptedSections()) {
+    if (!force_decrypt && m_reader->GetStorage() && m_reader->GetStorage()->HasDecryptedSections()) {
         *out = std::move(base_storage);
         R_SUCCEED();
     }
@@ -538,7 +559,7 @@ Result NcaFileSystemDriver::CreateSparseStorageMetaStorage(VirtualFile* out,
     VirtualFile decrypted_storage;
     R_TRY(this->CreateAesCtrStorage(std::addressof(decrypted_storage), std::move(enc_storage),
                                     offset + meta_offset, sparse_info.MakeAesCtrUpperIv(upper_iv),
-                                    AlignmentStorageRequirement::None));
+                                    AlignmentStorageRequirement::None, true));
 
     // Create buffered storage.
     std::vector<u8> meta_data(meta_size);
@@ -628,6 +649,14 @@ Result NcaFileSystemDriver::CreateSparseStorage(VirtualFile* out, s64* out_fs_da
                                          sparse_info.physical_offset,
                                          sparse_info.GetPhysicalSize()));
 
+        if (m_reader->GetStorage() && m_reader->GetStorage()->HasDecryptedSections()) {
+            // Undo NSZ's linear physical AES-CTR pass (which used generation=0 at physical offsets)
+            // so SparseStorage and SparseStorageMetaStorage see the original NCA physical body.
+            R_TRY(this->CreateAesCtrStorage(std::addressof(body_substorage),
+                                            std::move(body_substorage), sparse_info.physical_offset,
+                                            upper_iv, AlignmentStorageRequirement::None, true));
+        }
+
         // Create the meta storage.
         VirtualFile meta_storage;
         R_TRY(this->CreateSparseStorageMetaStorage(std::addressof(meta_storage), body_substorage,
@@ -707,7 +736,7 @@ Result NcaFileSystemDriver::CreateSparseStorageMetaStorageWithVerification(
     VirtualFile decrypted_storage;
     R_TRY(this->CreateAesCtrStorage(std::addressof(decrypted_storage), std::move(enc_storage),
                                     offset + meta_offset, sparse_info.MakeAesCtrUpperIv(upper_iv),
-                                    AlignmentStorageRequirement::None));
+                                    AlignmentStorageRequirement::None, true));
 
     // Create the verification storage.
     VirtualFile integrity_storage;
@@ -765,6 +794,12 @@ Result NcaFileSystemDriver::CreateSparseStorageWithVerification(
             Common::AlignUp<s64>(static_cast<s64>(meta_data_hash_data_info.offset) +
                                      static_cast<s64>(meta_data_hash_data_info.size),
                                  NcaHeader::CtrBlockSize)));
+
+        if (m_reader->GetStorage() && m_reader->GetStorage()->HasDecryptedSections()) {
+            R_TRY(this->CreateAesCtrStorage(std::addressof(body_substorage),
+                                            std::move(body_substorage), sparse_info.physical_offset,
+                                            upper_iv, AlignmentStorageRequirement::None, true));
+        }
 
         // Check the meta data hash type.
         if (meta_data_hash_type != NcaFsHeader::MetaDataHashType::HierarchicalIntegrity) {

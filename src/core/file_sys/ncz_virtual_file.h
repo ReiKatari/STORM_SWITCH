@@ -48,6 +48,7 @@ public:
     void RegisterPartition(s32 fs_index, s64 virtual_offset, s64 virtual_size, s64 physical_offset, s64 physical_size);
     void SetDecryptedHeader(const u8* data, std::size_t size);
     bool HasDecryptedSections() const override;
+    std::optional<std::array<u8, 16>> GetEmbeddedCryptoKey() const override;
 
 
 #pragma pack(push, 1)

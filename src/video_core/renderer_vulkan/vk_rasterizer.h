@@ -105,6 +105,8 @@ public:
         std::span<const std::pair<DAddr, std::size_t>> sequences) override;
     void FlushRegion(DAddr addr, u64 size,
                      VideoCommon::CacheType which = VideoCommon::CacheType::All) override;
+    GpuWrittenList ReadGpuWrittenCommandList(DAddr addr, std::span<u8> out) override;
+    void NoteGpuWrittenCommandListSynced(DAddr page) override;
     bool MustFlushRegion(DAddr addr, u64 size,
                          VideoCommon::CacheType which = VideoCommon::CacheType::All) override;
     VideoCore::RasterizerDownloadArea GetFlushArea(DAddr addr, u64 size) override;
@@ -227,6 +229,10 @@ private:
     bool split_attribute_handles{};
 
     void FlushWork();
+
+    /// Records the copies of the command list pages the work just recorded wrote and submits, so
+    /// the GPU makes them now (BufferCache::Nx2CopyListPages).
+    void SubmitNx2ListCopies();
 
     void UpdateDynamicStates();
 

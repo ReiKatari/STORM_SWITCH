@@ -47,7 +47,6 @@ std::optional<u32> DynarmicCallbacks32::MemoryReadCode(u32 vaddr) {
     auto const aligned_vaddr = vaddr & ~Core::Memory::YUZU_PAGEMASK;
     if (last_code_addr != aligned_vaddr) {
         m_memory.ReadBlock(aligned_vaddr, &cached_code_page, sizeof(cached_code_page));
-        StormTier2Compiler::OptimizePage32(cached_code_page.inst);
         last_code_addr = aligned_vaddr;
     }
     return cached_code_page.inst[(vaddr & Core::Memory::YUZU_PAGEMASK) / sizeof(u32)];

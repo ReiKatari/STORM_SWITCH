@@ -1155,14 +1155,17 @@ namespace Kernel {
 
             // If either this thread or the current thread are requesting termination, note it.
             R_UNLESS(!this->IsTerminationRequested(), ResultTerminationRequested);
-            R_UNLESS(!GetCurrentThread(kernel).IsTerminationRequested(), ResultTerminationRequested);
+            auto* cur_thread = GetCurrentThreadPointer(kernel);
+            if (cur_thread != nullptr) {
+                R_UNLESS(!cur_thread->IsTerminationRequested(), ResultTerminationRequested);
+            }
 
             // Ensure our thread state is correct.
             R_UNLESS(this->GetState() == ThreadState::Initialized, ResultInvalidState);
 
             // If the current thread has been asked to suspend, suspend it and retry.
-            if (GetCurrentThread(kernel).IsSuspended()) {
-                GetCurrentThread(kernel).UpdateState(kernel);
+            if (cur_thread != nullptr && cur_thread->IsSuspended()) {
+                cur_thread->UpdateState(kernel);
                 continue;
             }
 
@@ -1414,15 +1417,19 @@ namespace Kernel {
     }
 
     KProcess* GetCurrentProcessPointer(KernelCore& kernel) {
-        return GetCurrentThread(kernel).GetOwnerProcess();
+        auto* cur_thread = GetCurrentThreadPointer(kernel);
+        return cur_thread ? cur_thread->GetOwnerProcess() : nullptr;
     }
 
     KProcess& GetCurrentProcess(KernelCore& kernel) {
-        return *GetCurrentProcessPointer(kernel);
+        auto* process = GetCurrentProcessPointer(kernel);
+        ASSERT(process != nullptr);
+        return *process;
     }
 
     s32 GetCurrentCoreId(KernelCore& kernel) {
-        return GetCurrentThread(kernel).GetCurrentCore();
+        auto* cur_thread = GetCurrentThreadPointer(kernel);
+        return cur_thread ? cur_thread->GetCurrentCore() : 0;
     }
 
     Core::Memory::Memory& GetCurrentMemory(KernelCore& kernel) {
@@ -1435,7 +1442,12 @@ namespace Kernel {
             return;
         }
 
-        if (GetCurrentThread(m_kernel).GetDisableDispatchCount() <= 1) {
+        auto* cur_thread = GetCurrentThreadPointer(m_kernel);
+        if (!cur_thread) {
+            return;
+        }
+
+        if (cur_thread->GetDisableDispatchCount() <= 1) {
             auto* scheduler = m_kernel.CurrentScheduler();
 
             if (scheduler && !m_kernel.IsPhantomModeForSingleCore()) {
@@ -1444,7 +1456,7 @@ namespace Kernel {
                 KScheduler::RescheduleCurrentHLEThread(m_kernel);
             }
         } else {
-            GetCurrentThread(m_kernel).EnableDispatch(m_kernel);
+            cur_thread->EnableDispatch(m_kernel);
         }
     }
 }

@@ -723,7 +723,7 @@ object GameHelper {
         addedToLibrary: Boolean = false,
         registerFilesystemProvider: Boolean = true
     ): Game? {
-        val filePath = uri.toString()
+        val filePath = if (uri.scheme == "file") (android.net.Uri.decode(uri.path ?: uri.toString())) else uri.toString()
         val filename = FileUtil.getFilename(uri)
         val isCartridge = filename.endsWith(".xci", ignoreCase = true) || filename.endsWith(".xcz", ignoreCase = true)
 

@@ -269,6 +269,7 @@ ShaderCache::ShaderCache(Tegra::MaxwellDeviceMemoryManager& device_memory_,
         .support_viewport_index_layer = device.HasVertexViewportLayer(),
         .support_geometry_shader_passthrough = device.HasGeometryShaderPassthrough(),
         .support_conditional_barrier = device.SupportsConditionalBarriers(),
+        .support_viewport_mask = device.HasNvViewportArray2(),
       } {
     host_info.ApplyDescriptorLimitPolicy();
     if (use_asynchronous_shaders) {

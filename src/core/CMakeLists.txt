@@ -132,6 +132,8 @@ add_library(core STATIC
     file_sys/program_metadata.h
     file_sys/registered_cache.cpp
     file_sys/registered_cache.h
+    file_sys/nup_container.cpp
+    file_sys/nup_container.h
     file_sys/romfs.cpp
     file_sys/romfs.h
     file_sys/romfs_factory.cpp
@@ -1175,6 +1177,8 @@ add_library(core STATIC
     loader/nso.h
     loader/nsp.cpp
     loader/nsp.h
+    loader/nup.cpp
+    loader/nup.h
     loader/xci.cpp
     loader/xci.h
     memory.cpp
@@ -1197,7 +1201,21 @@ add_library(core STATIC
     tools/freezer.cpp
     tools/freezer.h
     tools/renderdoc.cpp
-    tools/renderdoc.h)
+    tools/renderdoc.h
+    crypto/ncz_decompressor.h
+    crypto/ncz_decompressor.cpp
+    hle/service/wlan/wlan.h
+    hle/service/wlan/wlan.cpp
+    hle/service/tma/tma.h
+    hle/service/tma/tma.cpp
+    hle/service/nx2_gsv.h
+    hle/service/nx2_stub_interface.h
+    hle/service/nx2_streamplay.h
+    hle/service/nvdrv/devices/nx2_stub_device.h
+    hle/service/audio/nx2_audio_user_client.h
+    hle/service/am/service/graphics_scale_controller.h
+    launch_params.h
+    launch_params.cpp)
 
 if (ENABLE_WIFI_SCAN)
     target_sources(core PRIVATE internal_network/wifi_scanner.cpp)
@@ -1305,6 +1323,9 @@ endif()
 target_sources(core PRIVATE hle/service/ssl/ssl_backend_openssl.cpp)
 
 target_link_libraries(core PRIVATE OpenSSL::SSL OpenSSL::Crypto)
+if (MSVC)
+    target_link_libraries(core PRIVATE getopt)
+endif()
 
 # TODO
 

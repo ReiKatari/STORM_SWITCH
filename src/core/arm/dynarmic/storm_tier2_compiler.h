@@ -10,7 +10,6 @@
 #include <dynarmic/interface/optimization_flags.h>
 #include "common/common_types.h"
 #include "common/literals.h"
-#include "common/memory_detect.h"
 #include "common/settings.h"
 
 namespace Core {
@@ -28,59 +27,6 @@ namespace Core {
  * 2. Tunes Dynarmic Tier-2 IR optimization flags and code cache geometry for large AAA titles
  *    (Xenoblade Chronicles 1/2/3, Hogwarts Legacy, EA Sports FC 24-27, Disco Elysium).
  */
-struct Tier2Stats {
-    u64 rewritten_instructions{};
-    u64 superblock_optimizations{};
-    u64 hot_blocks{};
-    u64 tier2_compiled{};
-};
-
-struct alignas(64) HotBlockEntry {
-    std::atomic<u64> tag{0};
-    std::atomic<u32> hits{0};
-    std::atomic<u32> tier{0}; // 1 = Tier-1, 2 = Pending Tier-2, 3 = Tier-2 Optimized
-    std::atomic<uintptr_t> compiled_ptr{0};
-    std::atomic<u32> code_size{0};
-    u8 padding[36]{};
-};
-static_assert(sizeof(HotBlockEntry) == 64);
-
-class alignas(64) HotBlockTable {
-public:
-    static constexpr size_t TABLE_SIZE = 65536;
-    static constexpr size_t TABLE_MASK = TABLE_SIZE - 1;
-
-    HotBlockTable() : entries(std::make_unique<HotBlockEntry[]>(TABLE_SIZE)) {}
-
-    HotBlockEntry& GetEntry(u64 vaddr) noexcept {
-        const size_t index = (vaddr ^ (vaddr >> 16)) & TABLE_MASK;
-        return entries[index];
-    }
-
-    void Clear() noexcept {
-        for (size_t i = 0; i < TABLE_SIZE; ++i) {
-            entries[i].tag.store(0, std::memory_order_relaxed);
-            entries[i].hits.store(0, std::memory_order_relaxed);
-            entries[i].tier.store(0, std::memory_order_relaxed);
-            entries[i].compiled_ptr.store(0, std::memory_order_relaxed);
-            entries[i].code_size.store(0, std::memory_order_relaxed);
-        }
-    }
-
-    [[nodiscard]] size_t CountActive() const noexcept {
-        size_t count = 0;
-        for (size_t i = 0; i < TABLE_SIZE; ++i) {
-            if (entries[i].tag.load(std::memory_order_relaxed) != 0) {
-                ++count;
-            }
-        }
-        return count;
-    }
-
-private:
-    std::unique_ptr<HotBlockEntry[]> entries;
-};
-
 class StormTier2Compiler {
 public:
     static constexpr u32 A64_NOP   = 0xD503201FU;
@@ -98,13 +44,8 @@ public:
     static constexpr u32 A64_MOV_REG_MASK = 0xFFE0FFE0U;
     static constexpr u32 A64_MOV_REG_VAL  = 0xAA0003E0U;
 
-    // ARM32 Constants
-    static constexpr u32 A32_NOP = 0xE320F000U;
-
     static inline std::atomic<u64> s_rewritten_inst_count{0};
     static inline std::atomic<u64> s_superblock_opt_count{0};
-    static inline std::atomic<u64> s_hot_blocks_count{0};
-    static inline std::atomic<u64> s_tier2_compiled_count{0};
 
     [[nodiscard]] static inline u64 GetRewrittenCount() noexcept {
         return s_rewritten_inst_count.load(std::memory_order_relaxed);
@@ -112,15 +53,6 @@ public:
 
     [[nodiscard]] static inline u64 GetSuperblockOptCount() noexcept {
         return s_superblock_opt_count.load(std::memory_order_relaxed);
-    }
-
-    [[nodiscard]] static inline Tier2Stats GetStats() noexcept {
-        return Tier2Stats{
-            .rewritten_instructions = s_rewritten_inst_count.load(std::memory_order_relaxed),
-            .superblock_optimizations = s_superblock_opt_count.load(std::memory_order_relaxed),
-            .hot_blocks = s_hot_blocks_count.load(std::memory_order_relaxed),
-            .tier2_compiled = s_tier2_compiled_count.load(std::memory_order_relaxed),
-        };
     }
 
     [[nodiscard]] static inline bool IsRedundantSelfMov64(u32 inst) noexcept {
@@ -191,52 +123,6 @@ public:
         return OptimizeInstruction64(inst, Settings::values.use_storm_tier2_compiler.GetValue());
     }
 
-    static inline void OptimizePage32(std::span<u32> page) noexcept {
-        if (!Settings::values.use_storm_tier2_compiler.GetValue() || page.empty()) {
-            return;
-        }
-
-        u32 rewritten = 0;
-        u32 superblock_opts = 0;
-        const size_t count = page.size();
-
-        for (size_t i = 0; i < count; ++i) {
-            const u32 inst = page[i];
-
-            // 1. Fold ARM32 identity MOV Rd, Rd (0xE1A00000 | (d<<12) | d, d != 15) -> ARM32 NOP (0xE320F000)
-            if ((inst & 0xFFF00FF0U) == 0xE1A00000U) [[unlikely]] {
-                const u32 rd = (inst >> 12) & 0xFU;
-                const u32 rm = inst & 0xFU;
-                if (rd == rm && rd != 15U) {
-                    page[i] = A32_NOP;
-                    ++superblock_opts;
-                    continue;
-                }
-            }
-
-            // 2. Fold ARM32 SEV (0xE320F004) / SEVL (0xE320F005) -> NOP (0xE320F000)
-            if (inst == 0xE320F004U || inst == 0xE320F005U) [[unlikely]] {
-                page[i] = A32_NOP;
-                ++rewritten;
-                continue;
-            }
-
-            // 3. Fold ARM32 PLD ((insn & 0xFD70F000) == 0xF550F000) -> NOP (0xE320F000)
-            if ((inst & 0xFD70F000U) == 0xF550F000U) [[unlikely]] {
-                page[i] = A32_NOP;
-                ++superblock_opts;
-                continue;
-            }
-        }
-
-        if (rewritten > 0) {
-            s_rewritten_inst_count.fetch_add(rewritten, std::memory_order_relaxed);
-        }
-        if (superblock_opts > 0) {
-            s_superblock_opt_count.fetch_add(superblock_opts, std::memory_order_relaxed);
-        }
-    }
-
     static inline void OptimizePage64(std::span<u32> page) noexcept {
         if (!Settings::values.use_storm_tier2_compiler.GetValue() || page.empty()) {
             return;
@@ -269,34 +155,7 @@ public:
                 page[i] = A64_NOP;
                 inst = A64_NOP;
                 ++superblock_opts;
-            } else if ((inst & 0xFFC00000U) == 0xF9800000U) [[unlikely]] {
-                // PRFM (immediate) hint stripping
-                page[i] = A64_NOP;
-                inst = A64_NOP;
-                ++superblock_opts;
-            } else if ((inst & 0xFF000000U) == 0xD8000000U) [[unlikely]] {
-                // PRFM (literal) hint stripping
-                page[i] = A64_NOP;
-                inst = A64_NOP;
-                ++superblock_opts;
-            } else if ((inst & 0xFFC00000U) == 0x91000000U) [[unlikely]] {
-                // ADD Xd, Xd, #0 folding -> NOP
-                const u32 rn = (inst >> 5) & 0x1FU;
-                const u32 rd = inst & 0x1FU;
-                if (rn == rd && rd != 31U) {
-                    page[i] = A64_NOP;
-                    inst = A64_NOP;
-                    ++superblock_opts;
-                }
             }
-
-            // Consecutive identical DMB ISH (0xD5033BBF) deduplication -> second becomes NOP
-            if (i > 0 && inst == 0xD5033BBFU && page[i - 1] == 0xD5033BBFU) [[unlikely]] {
-                page[i] = A64_NOP;
-                inst = A64_NOP;
-                ++superblock_opts;
-            }
-
             // Superblock 2-instruction peephole: collapse back-to-back YIELD hints into YIELD + NOP
             if (i > 0 && inst == A64_YIELD && page[i - 1] == A64_YIELD) [[unlikely]] {
                 page[i] = A64_NOP;
@@ -317,15 +176,10 @@ public:
             return;
         }
         if (!is_null_jit) {
-            const u64 host_ram = Common::GetMemInfo().TotalPhysicalMemory;
-            const u32 target_size = (host_ram >= 12_GiB) ? static_cast<u32>(256_MiB)
-                                  : (host_ram >= 8_GiB)  ? static_cast<u32>(192_MiB)
-                                                         : static_cast<u32>(128_MiB);
 #if defined(ARCHITECTURE_arm64)
-            config.code_cache_size = (std::max)(config.code_cache_size, target_size);
+            config.code_cache_size = (std::max)(config.code_cache_size, static_cast<std::uint32_t>(128_MiB));
 #else
-            const u32 desktop_size = (host_ram >= 16_GiB) ? static_cast<u32>(512_MiB) : target_size;
-            config.code_cache_size = (std::max)(config.code_cache_size, desktop_size);
+            config.code_cache_size = (std::max)(config.code_cache_size, static_cast<std::uint32_t>(512_MiB));
 #endif
         }
 
@@ -355,15 +209,10 @@ public:
             return;
         }
         if (!is_null_jit) {
-            const u64 host_ram = Common::GetMemInfo().TotalPhysicalMemory;
-            const u32 target_size = (host_ram >= 12_GiB) ? static_cast<u32>(256_MiB)
-                                  : (host_ram >= 8_GiB)  ? static_cast<u32>(192_MiB)
-                                                         : static_cast<u32>(128_MiB);
 #if defined(ARCHITECTURE_arm64)
-            config.code_cache_size = (std::max)(config.code_cache_size, target_size);
+            config.code_cache_size = (std::max)(config.code_cache_size, static_cast<std::uint32_t>(128_MiB));
 #else
-            const u32 desktop_size = (host_ram >= 16_GiB) ? static_cast<u32>(512_MiB) : target_size;
-            config.code_cache_size = (std::max)(config.code_cache_size, desktop_size);
+            config.code_cache_size = (std::max)(config.code_cache_size, static_cast<std::uint32_t>(256_MiB));
 #endif
         }
 

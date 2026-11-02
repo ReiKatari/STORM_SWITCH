@@ -8,18 +8,25 @@
 #include <tuple>
 #include "common/assert.h"
 #include "common/scope_exit.h"
-#include "common/settings.h"
 #include "core/core.h"
 #include "core/core_timing.h"
 #include "core/hle/kernel/k_client_port.h"
 #include "core/hle/kernel/k_client_session.h"
 #include "core/hle/kernel/k_port.h"
+#include "core/hle/kernel/k_process.h"
+#include "core/hle/kernel/k_resource_limit.h"
 #include "core/hle/kernel/k_scoped_resource_reservation.h"
 #include "core/hle/kernel/k_server_port.h"
+#include "core/hle/kernel/k_server_session.h"
+#include "core/hle/kernel/k_session.h"
 #include "core/hle/kernel/k_thread.h"
+#include "core/hle/kernel/kernel.h"
 #include "core/hle/result.h"
 #include "core/hle/service/cmif_types.h"
+#include "core/hle/service/hle_ipc.h"
 #include "core/hle/service/ipc_helpers.h"
+#include "core/hle/service/nx2_streamplay.h"
+#include "core/hle/service/nx2_stub_interface.h"
 #include "core/hle/service/server_manager.h"
 #include "core/hle/service/sm/sm.h"
 #include "core/hle/service/sm/sm_controller.h"
@@ -45,6 +52,7 @@ ServiceManager::~ServiceManager() {
     }
 }
 
+
 void ServiceManager::WaitForService(std::unique_lock<std::mutex>& l,
                                     const std::string& name) const {
     using namespace std::literals::chrono_literals;
@@ -67,27 +75,7 @@ void ServiceManager::WaitForService(std::unique_lock<std::mutex>& l,
 }
 
 void ServiceManager::InvokeControlRequest(HLERequestContext& context) {
-    const u32 cmd = static_cast<u32>(context.GetCommand());
-    switch (cmd) {
-    case 0:
-        controller_interface->ConvertCurrentObjectToDomain(context);
-        break;
-    case 2:
-        controller_interface->CloneCurrentObject(context);
-        break;
-    case 3:
-        controller_interface->QueryPointerBufferSize(context);
-        break;
-    case 4:
-        controller_interface->CloneCurrentObjectEx(context);
-        break;
-    case 5:
-        controller_interface->SetPointerBufferSize(context);
-        break;
-    default:
-        controller_interface->InvokeRequest(context);
-        break;
-    }
+    controller_interface->InvokeRequest(context);
 }
 
 static Result ValidateServiceName(const std::string& name) {
@@ -98,8 +86,7 @@ static Result ValidateServiceName(const std::string& name) {
     return ResultSuccess;
 }
 
-Result ServiceManager::RegisterService(Kernel::KServerPort** out_server_port, std::string name,
-                                       u32 max_sessions, SessionRequestHandlerFactory handler) {
+Result ServiceManager::RegisterService(Kernel::KServerPort** out_server_port, std::string name, u32 max_sessions, SessionRequestHandlerFactory handler) {
     R_TRY(ValidateServiceName(name));
 
     std::scoped_lock lk{lock};
@@ -109,7 +96,7 @@ Result ServiceManager::RegisterService(Kernel::KServerPort** out_server_port, st
     }
 
     auto* port = Kernel::KPort::Create(kernel);
-    port->Initialize(kernel, ServerSessionCountMax, false, 0);
+    port->Initialize(kernel, max_sessions, false, 0);
 
     // Register the port.
     Kernel::KPort::Register(kernel, port);
@@ -216,6 +203,34 @@ static std::string PopServiceName(IPC::RequestParser& rp) {
     return result;
 }
 
+namespace {
+
+// A session served by a Switch 2 stub interface named after the missing service (see
+// nx2_stub_interface.h), set up like a session handed out by a service.
+Kernel::KClientSession* CreateStubSession(Core::System& system, HLERequestContext& ctx,
+                                          const std::string& name) {
+    auto& kernel = system.Kernel();
+    ASSERT(Kernel::GetCurrentProcess(kernel).GetResourceLimit()->Reserve(
+        kernel, Kernel::LimitableResource::SessionCountMax, 1));
+
+    auto* session = Kernel::KSession::Create(kernel);
+    session->Initialize(kernel, nullptr, 0);
+    Kernel::KSession::Register(kernel, session);
+
+    auto manager =
+        std::make_shared<SessionRequestManager>(kernel, ctx.GetManager()->GetServerManager());
+    if (name == "stpl:u") {
+        manager->SetSessionHandler(std::make_shared<INx2StreamPlayService>(system));
+    } else {
+        manager->SetSessionHandler(std::make_shared<INx2StubInterface>(
+            system, INx2StubInterface::InternName(fmt::format("{}{}", Nx2StubPrefix, name))));
+    }
+    ctx.GetManager()->GetServerManager().RegisterSession(&session->GetServerSession(), manager);
+    return &session->GetClientSession();
+}
+
+} // namespace
+
 Result SM::GetServiceImpl(Kernel::KClientSession** out_client_session, HLERequestContext& ctx) {
     if (!ctx.GetManager()->GetIsInitializedForSm()) {
         return Service::SM::ResultInvalidClient;
@@ -233,21 +248,20 @@ Result SM::GetServiceImpl(Kernel::KClientSession** out_client_session, HLEReques
     }
 
     if (port_result != ResultSuccess) {
-        if (Settings::values.use_auto_stub.GetValue()) {
-            LOG_WARNING(Service_SM,
-                        "Service '{}' is not registered; auto-stubbing because use_auto_stub is enabled",
+        // Switch 2 programs also ask for services Eden does not have at all (newer Mario Kart
+        // World updates open chat:u, GameChat, while booting). Nothing ever registers those, so
+        // waiting would hang them for good: hand out a placeholder whose commands are all
+        // auto-stubbed, like their unknown commands on existing services.
+        const auto* const caller = ctx.GetThread().GetOwnerProcess();
+        if (caller != nullptr && caller->IsSwitch2()) {
+            LOG_WARNING(Service_SM, "(STUBBED) Switch 2 service {} does not exist, returning a stub",
                         name);
-            if (auto mgr = ctx.GetManager()) {
-                mgr->GetServerManager().RegisterNamedService(
-                    name, []() -> SessionRequestHandlerPtr { return nullptr; }, 64);
-                port_result = service_manager.GetServicePort(&client_port, name);
-            }
+            *out_client_session = CreateStubSession(system, ctx, name);
+            return ResultSuccess;
         }
-        if (port_result != ResultSuccess) {
-            LOG_INFO(Service_SM, "Waiting for service {} to become available", name);
-            ctx.SetIsDeferred();
-            return Service::SM::ResultNotRegistered;
-        }
+        LOG_INFO(Service_SM, "Waiting for service {} to become available", name);
+        ctx.SetIsDeferred();
+        return Service::SM::ResultNotRegistered;
     }
 
     // Create a new session.
@@ -321,7 +335,7 @@ void SM::AtmosphereHasService(HLERequestContext& ctx) {
 }
 
 SM::SM(ServiceManager& service_manager_, Core::System& system_)
-    : ServiceFramework{system_, "sm:", 4}
+    : ServiceFramework{system_, "sm:", 64}
     , service_manager{service_manager_}
     , kernel{system_.Kernel()}
 {

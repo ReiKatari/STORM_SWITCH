@@ -26,7 +26,7 @@ public:
         static const FunctionInfo functions[] = {
             {0, &IFriendService::GetCompletionEvent, "GetCompletionEvent"},
             {1, &IFriendService::Cancel, "Cancel"},
-            {10100, &IFriendService::GetFriendList, "GetFriendListIds"},
+            {10100, nullptr, "GetFriendListIds"},
             {10101, &IFriendService::GetFriendList, "GetFriendList"},
             {10102, nullptr, "UpdateFriendInfo"},
             {10110, nullptr, "GetFriendProfileImage"},
@@ -40,7 +40,7 @@ public:
             {10421, nullptr, "EnsureBlockedUserListAvailable"},
             {10500, nullptr, "GetProfileList"},
             {10501, nullptr, "GetProfileListV2"}, // 18.0.0+
-            {10600, &IFriendService::DeclareOpenOnlinePlaySession, "DeclareOpenOnlinePlaySession"},
+            {10600, nullptr, "DeclareOpenOnlinePlaySession"},
             {10601, &IFriendService::DeclareCloseOnlinePlaySession, "DeclareCloseOnlinePlaySession"},
             {10610, &IFriendService::UpdateUserPresence, "UpdateUserPresence"},
             {10700, &IFriendService::GetPlayHistoryRegistrationKey, "GetPlayHistoryRegistrationKey"},
@@ -241,12 +241,6 @@ private:
         IPC::ResponseBuilder rb{ctx, 3};
         rb.Push(ResultSuccess);
         rb.Push(true);
-    }
-
-    void DeclareOpenOnlinePlaySession(HLERequestContext& ctx) {
-        LOG_DEBUG(Service_Friend, "(STUBBED) called");
-        IPC::ResponseBuilder rb{ctx, 2};
-        rb.Push(ResultSuccess);
     }
 
     void DeclareCloseOnlinePlaySession(HLERequestContext& ctx) {
@@ -503,20 +497,131 @@ Module::Interface::Interface(std::shared_ptr<Module> module_, Core::System& syst
 
 Module::Interface::~Interface() = default;
 
+class IServiceForApplication final : public ServiceFramework<IServiceForApplication> {
+public:
+    explicit IServiceForApplication(Core::System& system_)
+        : ServiceFramework{system_, "nd:app"}
+    {
+        static const FunctionInfo functions[] = {
+            {0, nullptr, "GetReceivableNeighborInfoCountMax"},
+            {10, nullptr, "IsNeighborDetectionEnabled"},
+        };
+        RegisterHandlers(functions);
+    }
+};
+
+class IServiceForSystem final : public ServiceFramework<IServiceForSystem> {
+public:
+    explicit IServiceForSystem(Core::System& system_)
+        : ServiceFramework{system_, "nd:sys"}
+    {
+        static const FunctionInfo functions[] = {
+            {0, nullptr, "GetReceivableNeighborInfoCountMax"},
+            {10, nullptr, "IsNeighborDetectionEnabled"},
+            {200, nullptr, "SetSystemData"},
+            {201, nullptr, "ClearSystemData"},
+            {203, nullptr, "GetReceivableNeighborInfoCountForSystem"},
+            {204, nullptr, "ReceiveNeighborInfoForSystem"},
+            {205, nullptr, "SetSender"},
+            {206, nullptr, "GetSender"},
+            {207, nullptr, "CreateScannerForSystem"},
+            {208, nullptr, "CreateReceiveEventHolderForSystem"},
+            {223, nullptr, "EnableNeighborDetection"},
+            {224, nullptr, "DisableNeighborDetection"},
+            {226, nullptr, "EnablePowerSave"},
+            {227, nullptr, "DisablePowerSave"},
+            {228, nullptr, "IsPowerSaveEnabled"},
+            {232, nullptr, "ClearBlockedUsers"},
+            {233, nullptr, "GetBlockedUserCount"},
+            {234, nullptr, "BlockUserByLocalUserId"},
+            {235, nullptr, "BlockUserByNetworkUserId"},
+            {236, nullptr, "UnblockUserByLocalUserId"},
+            {237, nullptr, "UnblockUserByNetworkUserId"},
+            {240, nullptr, "DeleteApplication"},
+            {250, nullptr, "InitializeApplicationInfo"},
+            {260, nullptr, "CreateAccountSystemSaveDataAccessSuppressor"},
+            {300, nullptr, "AddReceivedNeighborInfoForSystemForDebug"},
+            {301, nullptr, "GetSendDataForDebug"},
+            {302, nullptr, "ClearReceiveCounterForDebug"},
+            {303, nullptr, "GetNextReceiveCounterForDebug"},
+            {304, nullptr, "ListBlockedUsersForDebug"},
+            {305, nullptr, "RefreshSendDataIdForDebug"},
+            {306, nullptr, "ReloadFwdbgSettingsForDebug"},
+            {307, nullptr, "EnableApplicationForDebug"},
+            {308, nullptr, "GetNextReceiveCountersForDebug"},
+            {309, nullptr, "ListApplicationInfoForDebug"},
+            {310, nullptr, "SetApplicationDataForDebug"},
+            {400, nullptr, "GetNetworkUserId"},
+            {401, nullptr, "DeleteNetworkUserId"},
+        };
+        RegisterHandlers(functions);
+    }
+};
+
+// Session returned by chat:u 0. Command 1 hands back a handle the title waits on, so it gets an
+// event that is never signalled; everything else falls through to the nx2 auto stub.
+class IChatSession final : public ServiceFramework<IChatSession> {
+public:
+    explicit IChatSession(Core::System& system_)
+        : ServiceFramework{system_, "nx2:chat:u::0"}, service_context{system_, "IChatSession"} {
+        static const FunctionInfo functions[] = {
+            {1, &IChatSession::GetEvent, "GetEvent (guessed)"},
+        };
+        RegisterHandlers(functions);
+        event = service_context.CreateEvent("IChatSession:Event");
+    }
+
+    ~IChatSession() override {
+        service_context.CloseEvent(event);
+    }
+
+private:
+    void GetEvent(HLERequestContext& ctx) {
+        LOG_WARNING(Service_Friend, "(STUBBED) chat:u::0 1 [5]={:#x}", ctx.CommandBuffer()[5]);
+        IPC::ResponseBuilder rb{ctx, 2, 1};
+        rb.Push(ResultSuccess);
+        rb.PushCopyObjects(ctx, event->GetReadableEvent());
+    }
+
+    KernelHelpers::ServiceContext service_context;
+    Kernel::KEvent* event;
+};
+
+// Switch 2 GameChat (chat:u). Command 0 opens a session the title keeps using, so it has to
+// return an interface; everything else falls through to the nx2 auto stub.
+class IChatService final : public ServiceFramework<IChatService> {
+public:
+    explicit IChatService(Core::System& system_) : ServiceFramework{system_, "nx2:chat:u"} {
+        static const FunctionInfo functions[] = {
+            {0, &IChatService::OpenSession, "OpenSession"},
+        };
+        RegisterHandlers(functions);
+    }
+
+private:
+    void OpenSession(HLERequestContext& ctx) {
+        LOG_WARNING(Service_Friend, "(STUBBED) chat:u 0, returning a chat session");
+        IPC::ResponseBuilder rb{ctx, 2, 0, 1};
+        rb.Push(ResultSuccess);
+        rb.PushIpcInterface<IChatSession>(ctx, system);
+    }
+};
+
 void LoopProcess(Core::System& system) {
     auto server_manager = std::make_unique<ServerManager>(system);
     auto module = std::make_shared<Module>();
 
-    server_manager->RegisterNamedService("friend:a",
-                                         std::make_shared<Friend>(module, system, "friend:a"));
-    server_manager->RegisterNamedService("friend:m",
-                                         std::make_shared<Friend>(module, system, "friend:m"));
-    server_manager->RegisterNamedService("friend:s",
-                                         std::make_shared<Friend>(module, system, "friend:s"));
-    server_manager->RegisterNamedService("friend:u",
-                                         std::make_shared<Friend>(module, system, "friend:u"));
-    server_manager->RegisterNamedService("friend:v",
-                                         std::make_shared<Friend>(module, system, "friend:v"));
+    server_manager->RegisterNamedService("nd:app", std::make_shared<IServiceForApplication>(system));
+    server_manager->RegisterNamedService("nd:sys", std::make_shared<IServiceForSystem>(system));
+
+    server_manager->RegisterNamedService("friend:a", std::make_shared<Friend>(module, system, "friend:a"));
+    server_manager->RegisterNamedService("friend:m", std::make_shared<Friend>(module, system, "friend:m"));
+    server_manager->RegisterNamedService("friend:s", std::make_shared<Friend>(module, system, "friend:s"));
+    server_manager->RegisterNamedService("friend:u", std::make_shared<Friend>(module, system, "friend:u"));
+    server_manager->RegisterNamedService("friend:v", std::make_shared<Friend>(module, system, "friend:v"));
+
+    // Switch 2 GameChat. Titles block in sm until it exists, so register a stub for now.
+    server_manager->RegisterNamedService("chat:u", std::make_shared<IChatService>(system));
 
     ServerManager::RunServer(std::move(server_manager));
 }

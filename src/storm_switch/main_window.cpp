@@ -22863,6 +22863,53 @@ void MainWindow::UpdateStatusBar() {
 
     }
 
+
+    if (qEnvironmentVariableIsSet("STORM_AUTO_SCREENSHOT_PATH")) {
+        const QString sc_path = qEnvironmentVariable("STORM_AUTO_SCREENSHOT_PATH");
+        const u32 target_ticks = qEnvironmentVariableIsSet("STORM_AUTO_SCREENSHOT_TICKS")
+                                     ? qEnvironmentVariable("STORM_AUTO_SCREENSHOT_TICKS").toUInt()
+                                     : 28u;
+        static u32 s_sc_ticks = 0;
+        static u32 s_post_sc_ticks = 0;
+        static bool s_sc_captured = false;
+        static bool s_slot_loaded = false;
+        if (display_fps >= 1.0) {
+            ++s_sc_ticks;
+            LOG_INFO(Frontend, "AutoScreenshot: tick={}/{} display_fps={:.1f}", s_sc_ticks, target_ticks, display_fps);
+            if (qEnvironmentVariableIsSet("STORM_AUTO_LOAD_SLOT") && !s_slot_loaded && s_sc_ticks >= 4) {
+                s_slot_loaded = true;
+                OnLoadStateSlot(qEnvironmentVariable("STORM_AUTO_LOAD_SLOT").toInt());
+            }
+            if (qEnvironmentVariableIsSet("STORM_AUTO_PRESS_A") && render_window) {
+                if (s_sc_ticks % 4 == 0) {
+                    QKeyEvent p1(QEvent::KeyPress, Qt::Key_X, Qt::NoModifier);
+                    QKeyEvent p2(QEvent::KeyPress, Qt::Key_M, Qt::NoModifier);
+                    QKeyEvent p3(QEvent::KeyPress, Qt::Key_Return, Qt::NoModifier);
+                    QCoreApplication::sendEvent(render_window, &p1);
+                    QCoreApplication::sendEvent(render_window, &p2);
+                    QCoreApplication::sendEvent(render_window, &p3);
+                } else if (s_sc_ticks % 4 == 1) {
+                    QKeyEvent r1(QEvent::KeyRelease, Qt::Key_X, Qt::NoModifier);
+                    QKeyEvent r2(QEvent::KeyRelease, Qt::Key_M, Qt::NoModifier);
+                    QKeyEvent r3(QEvent::KeyRelease, Qt::Key_Return, Qt::NoModifier);
+                    QCoreApplication::sendEvent(render_window, &r1);
+                    QCoreApplication::sendEvent(render_window, &r2);
+                    QCoreApplication::sendEvent(render_window, &r3);
+                }
+            }
+            if (!s_sc_captured && s_sc_ticks >= target_ticks && render_window) {
+                s_sc_captured = true;
+                LOG_INFO(Frontend, "AutoScreenshot: Capturing screenshot to {} at {:.1f} FPS", sc_path.toStdString(), display_fps);
+                render_window->CaptureScreenshot(sc_path);
+            }
+        }
+        if (s_sc_captured) {
+            if (++s_post_sc_ticks >= 6) {
+                LOG_INFO(Frontend, "AutoScreenshot: Done, exiting.");
+                std::_Exit(0);
+            }
+        }
+    }
 }
 
 

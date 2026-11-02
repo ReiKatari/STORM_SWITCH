@@ -3,18 +3,28 @@
 
 #pragma once
 
-#include <array>
 #include <atomic>
+#include <condition_variable>
+#include <deque>
 #include <functional>
-#include <memory>
+#include <mutex>
 #include <thread>
+#include <unordered_map>
+#include <vector>
 
 #include "common/common_types.h"
-#include "core/arm/dynarmic/storm_tier2_compiler.h"
 
 namespace Core::Arm {
 
 constexpr u32 TIER2_RECOMPILATION_THRESHOLD = 10000;
+
+struct BasicBlockProfile {
+    u64 guest_vaddr{0};
+    size_t code_size{0};
+    u32 execution_count{0};
+    u32 tier_level{1};
+    void* compiled_func_ptr{nullptr};
+};
 
 class TieredRecompiler {
 public:
@@ -24,7 +34,7 @@ public:
     void Initialize();
     void Shutdown();
 
-    /// Track execution of a JIT basic block (100% lock-free). Returns updated func pointer if Tier-2 is ready
+    /// Track execution of a JIT basic block. Returns updated func pointer if Tier-2 is ready
     void* ReportExecution(u64 guest_vaddr, size_t code_size, void* current_ptr);
 
     /// Register a custom Tier-2 recompiler callback
@@ -36,25 +46,16 @@ public:
 private:
     void BackgroundCompilationLoop();
 
-    struct PendingRecompile {
-        u64 vaddr{0};
-        size_t size{0};
-    };
-
-    static constexpr size_t RING_SIZE = 1024;
-    static constexpr size_t RING_MASK = RING_SIZE - 1;
-
-    std::array<PendingRecompile, RING_SIZE> ring_buffer{};
-    std::atomic<size_t> ring_write_idx{0};
-    std::atomic<size_t> ring_read_idx{0};
-
-    HotBlockTable hot_table;
+    mutable std::mutex mutex;
+    std::condition_variable cv;
     std::atomic<bool> is_running{false};
-    std::atomic<size_t> hot_block_count{0};
-    std::atomic<size_t> tier2_optimized_count{0};
 
+    std::unordered_map<u64, BasicBlockProfile> block_map;
+    std::deque<u64> pending_recompile_queue;
     std::function<void*(u64, size_t)> tier2_callback;
     std::thread background_thread;
+
+    std::atomic<size_t> tier2_optimized_count{0};
 };
 
 } // namespace Core::Arm

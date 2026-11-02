@@ -64,6 +64,15 @@ public:
 
     u64 GetDeviceMemoryUsage() const;
 
+    u64 GetDeviceMemoryBudget() const;
+
+    u64 GetDeviceMemorySlack() const;
+
+    /// Images that did not fit the device memory budget so far (see MemoryAllocator).
+    u32 MemoryPressureEvents() const noexcept {
+        return memory_allocator.MemoryPressureEvents();
+    }
+
     bool CanReportMemoryUsage() const;
 
     bool CanDownloadMsaa(const VideoCommon::ImageInfo& info) const;

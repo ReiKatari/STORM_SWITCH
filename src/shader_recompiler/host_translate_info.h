@@ -40,6 +40,8 @@ struct HostTranslateInfo {
                                         ///< control flow
     bool support_attribute_texture_handle{}; ///< True when the host binds texture handles that
                                              ///< arrive as vertex attributes
+    bool support_viewport_mask{}; ///< True when the host supports viewport mask
+    bool single_lane_geometry_subgroups{};
 
     void ApplyDescriptorLimitPolicy() noexcept {
         if (min_ssbo_alignment == 0) {

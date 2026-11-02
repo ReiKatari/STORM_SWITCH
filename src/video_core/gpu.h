@@ -1,3 +1,4 @@
+#include <functional>
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -166,6 +167,11 @@ public:
     /// Request a host GPU memory flush from the CPU.
     [[nodiscard]] u64 RequestFlush(DAddr addr, std::size_t size);
 
+    /// Runs an action on the GPU thread between command lists (returns its sync fence).
+    u64 RunOnGpuThread(std::function<void()>&& action);
+
+    void WaitForIdle();
+
     /// Obtains current flush request fence id.
     [[nodiscard]] u64 CurrentSyncRequestFence() const;
 
@@ -251,7 +257,11 @@ public:
     void FlushRegion(DAddr addr, u64 size);
 
     /// Notify rasterizer that any caches of the specified region should be invalidated
-    void InvalidateRegion(DAddr addr, u64 size);
+    /// Runs func on the GPU thread after the command lists submitted so far.
+    void RunInOrder(std::function<void()>&& func);
+
+    /// Notify rasterizer that any caches of the specified region should be invalidated
+    void InvalidateRegion(DAddr addr, u64 size, bool preserve_gpu_writes = false);
 
     /// Notify rasterizer that CPU is trying to write this area. It returns true if the area is
     /// sensible, false otherwise, addr and size must be a valid combination

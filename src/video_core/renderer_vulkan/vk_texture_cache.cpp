@@ -1799,6 +1799,43 @@ u64 TextureCacheRuntime::GetDeviceMemoryUsage() const {
     return device.GetDeviceMemoryUsage();
 }
 
+u64 TextureCacheRuntime::GetDeviceMemoryBudget() const {
+    return device.GetDeviceMemoryBudget();
+}
+
+u64 TextureCacheRuntime::GetDeviceMemorySlack() const {
+    return memory_allocator.GetDeviceMemorySlack();
+}
+
+// Vulkan's standard sparse block shape for single-sampled 2D images (64 KiB blocks), in texel
+// blocks, for a texel block of `block_bytes`. Only valid when the device reports
+// residencyStandard2DBlockShape.
+[[nodiscard]] bool StandardSparseBlockShape(const Device& device, u64 block_bytes,
+                                            VkExtent3D& shape) {
+    if (!device.GetPhysical().GetProperties().sparseProperties.residencyStandard2DBlockShape) {
+        return false;
+    }
+    switch (block_bytes) {
+    case 1:
+        shape = {256, 256, 1};
+        return true;
+    case 2:
+        shape = {256, 128, 1};
+        return true;
+    case 4:
+        shape = {128, 128, 1};
+        return true;
+    case 8:
+        shape = {128, 64, 1};
+        return true;
+    case 16:
+        shape = {64, 64, 1};
+        return true;
+    default:
+        return false;
+    }
+}
+
 bool TextureCacheRuntime::CanReportMemoryUsage() const {
     return device.CanReportMemoryUsage();
 }

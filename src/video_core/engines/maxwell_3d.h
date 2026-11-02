@@ -9,7 +9,9 @@
 #include <array>
 #include <bitset>
 #include <cmath>
+#include <cstdlib>
 #include <limits>
+#include <span>
 #include <optional>
 #include <type_traits>
 #include <vector>
@@ -3145,6 +3147,18 @@ public:
     std::span<u32> GetNativeMacroPositions() { return native_macro_context ? std::span<u32>{native_macro_context->positions} : std::span<u32>{macro_positions}; }
 
 
+    /// Root tables: eight 256-byte tables written inline (method 0x504 selects a table, bits 0-2,
+    /// and a byte offset, bits 8-15; each 0x508 writes the next word) that shaders read as constant
+    /// banks 24-31. NVN2 keeps push constants in bank 24, which the Ampere lowering reads as bank 17.
+    struct RootTables {
+        static constexpr u32 SelectMethod = 0x504 / 4;
+        static constexpr u32 LoadMethod = 0x508 / 4;
+        std::array<std::array<u32, 64>, 8> tables{};
+        u32 selected{};
+        u32 offset{};
+        bool loaded{};
+    } root_tables;
+
     /// Write the value to the register identified by method.
     void CallMethod(Core::System& system, u32 method, u32 method_argument, bool is_last_call) override;
 
@@ -3237,7 +3251,16 @@ private:
      * @param method Method to call
      * @param parameters Arguments to the method call
      */
-    void CallMacroMethod(Core::System& system, u32 method, const std::vector<u32>& parameters);
+    void CallMacroMethod(Core::System& system, u32 method, std::span<const u32> parameters);
+
+    /// Whether state register writes that keep the register's value are dropped (CallMethod).
+    static bool SkipSameValueWrites() {
+        static const bool skip = [] {
+            const char* value = std::getenv("EDEN_NX2_SKIP_SAME");
+            return value == nullptr || value[0] != '0';
+        }();
+        return skip;
+    }
 
     /// Handles writes to the macro uploading register.
     void ProcessMacroUpload(u32 data);

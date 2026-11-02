@@ -42,4 +42,15 @@ namespace Common::Compression {
  */
 [[nodiscard]] std::vector<u8> DecompressDataZSTD(std::span<const u8> compressed);
 
+/**
+ * Decompresses a source memory region with Zstandard into a provided buffer.
+ *
+ * @param compressed   The compressed source memory region.
+ * @param uncompressed The buffer to receive decompressed data.
+ *
+ * @return The number of bytes written to uncompressed buffer, or 0 on failure.
+ */
+[[nodiscard]] std::size_t DecompressDataZSTD(std::span<const u8> compressed,
+                                             std::span<u8> uncompressed);
+
 } // namespace Common::Compression

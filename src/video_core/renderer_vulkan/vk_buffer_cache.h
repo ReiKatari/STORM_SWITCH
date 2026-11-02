@@ -100,8 +100,12 @@ public:
     u64 CurrentTick();
 
     u64 KnownGpuTick();
+    [[nodiscard]] bool IsFree(u64 tick) const noexcept;
 
     void Wait(u64 buffer_tick);
+
+    /// Waits for a submitted tick without flushing: safe on threads other than the GPU thread.
+    void WaitSubmittedTick(u64 tick);
 
     void Finish();
 

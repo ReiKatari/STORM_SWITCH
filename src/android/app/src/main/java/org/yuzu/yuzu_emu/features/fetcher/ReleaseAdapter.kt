@@ -365,25 +365,69 @@ class ReleaseAdapter(
                                             .setTitle(R.string.apply_driver_title)
                                             .setMessage(R.string.apply_driver_message)
                                             .setPositiveButton(R.string.apply_driver_globally) { _, _ ->
-                                                org.yuzu.yuzu_emu.features.settings.model.StringSetting.DRIVER_PATH.setString(driverPath)
-                                                val driverFile = File(driverPath)
-                                                if (driverFile.exists()) {
-                                                    GpuDriverHelper.installCustomDriver(driverFile)
+                                                CoroutineScope(Dispatchers.Main).launch {
+                                                    if (org.yuzu.yuzu_emu.utils.NativeConfig.isPerGameConfigLoaded()) {
+                                                        org.yuzu.yuzu_emu.utils.NativeConfig.unloadPerGameConfig()
+                                                    }
+                                                    org.yuzu.yuzu_emu.features.settings.model.StringSetting.DRIVER_PATH.global = true
+                                                    org.yuzu.yuzu_emu.features.settings.model.StringSetting.DRIVER_PATH.setString(driverPath)
+                                                    GpuDriverHelper.applyDriverGloballyToAllCustomConfigs(driverPath)
+                                                    org.yuzu.yuzu_emu.utils.NativeConfig.saveGlobalConfig()
+
+                                                    val driverFile = File(driverPath)
+                                                    if (driverFile.exists()) {
+                                                        withContext(Dispatchers.IO) {
+                                                            GpuDriverHelper.installCustomDriver(driverFile)
+                                                        }
+                                                    }
+                                                    driverViewModel.wipeAllShaders()
+                                                    driverViewModel.reloadDriverData()
+
+                                                    val newPos = driverViewModel.driverList.value.indexOfFirst {
+                                                        it.title == driverData.name || it.version == driverData.version
+                                                    }.takeIf { it != -1 } ?: driverViewModel.driverData.indexOfFirst {
+                                                        it.first.equals(driverPath, ignoreCase = true) ||
+                                                        File(it.first).name.equals(File(driverPath).name, ignoreCase = true)
+                                                    }.let { if (it != -1) it + 1 else -1 }
+
+                                                    if (newPos != -1 && newPos < driverViewModel.driverList.value.size) {
+                                                        driverViewModel.onDriverSelected(newPos, skipShaderWipe = true)
+                                                    }
+                                                    org.yuzu.yuzu_emu.utils.NativeConfig.saveGlobalConfig()
+                                                    notifyDataSetChanged()
                                                 }
-                                                GpuDriverHelper.applyDriverGloballyToAllCustomConfigs()
-                                                driverViewModel.wipeAllShaders()
-                                                driverViewModel.reloadDriverData()
-                                                notifyDataSetChanged()
                                             }
                                             .setNeutralButton(R.string.apply_driver_keep_custom) { _, _ ->
-                                                org.yuzu.yuzu_emu.features.settings.model.StringSetting.DRIVER_PATH.setString(driverPath)
-                                                val driverFile = File(driverPath)
-                                                if (driverFile.exists()) {
-                                                    GpuDriverHelper.installCustomDriver(driverFile)
+                                                CoroutineScope(Dispatchers.Main).launch {
+                                                    if (org.yuzu.yuzu_emu.utils.NativeConfig.isPerGameConfigLoaded()) {
+                                                        org.yuzu.yuzu_emu.utils.NativeConfig.unloadPerGameConfig()
+                                                    }
+                                                    org.yuzu.yuzu_emu.features.settings.model.StringSetting.DRIVER_PATH.global = true
+                                                    org.yuzu.yuzu_emu.features.settings.model.StringSetting.DRIVER_PATH.setString(driverPath)
+                                                    org.yuzu.yuzu_emu.utils.NativeConfig.saveGlobalConfig()
+
+                                                    val driverFile = File(driverPath)
+                                                    if (driverFile.exists()) {
+                                                        withContext(Dispatchers.IO) {
+                                                            GpuDriverHelper.installCustomDriver(driverFile)
+                                                        }
+                                                    }
+                                                    driverViewModel.wipeAllShaders()
+                                                    driverViewModel.reloadDriverData()
+
+                                                    val newPos = driverViewModel.driverList.value.indexOfFirst {
+                                                        it.title == driverData.name || it.version == driverData.version
+                                                    }.takeIf { it != -1 } ?: driverViewModel.driverData.indexOfFirst {
+                                                        it.first.equals(driverPath, ignoreCase = true) ||
+                                                        File(it.first).name.equals(File(driverPath).name, ignoreCase = true)
+                                                    }.let { if (it != -1) it + 1 else -1 }
+
+                                                    if (newPos != -1 && newPos < driverViewModel.driverList.value.size) {
+                                                        driverViewModel.onDriverSelected(newPos, skipShaderWipe = true)
+                                                    }
+                                                    org.yuzu.yuzu_emu.utils.NativeConfig.saveGlobalConfig()
+                                                    notifyDataSetChanged()
                                                 }
-                                                driverViewModel.wipeAllShaders()
-                                                driverViewModel.reloadDriverData()
-                                                notifyDataSetChanged()
                                             }
                                             .setNegativeButton(R.string.close) { _, _ ->
                                                 notifyDataSetChanged()

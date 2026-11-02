@@ -208,6 +208,11 @@ private:
     EventInterface& events_interface;
 
     // Events
+    NvResult Nx2GetEngineInfo(std::span<const u8> input, std::span<u8> output,
+                              std::span<u8> inline_output);
+
+    // Set once a caller asked for the Switch 2 characteristics layout.
+    bool nx2_caller{};
     Kernel::KEvent* error_notifier_event;
     Kernel::KEvent* unknown_event;
 

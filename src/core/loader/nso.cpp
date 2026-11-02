@@ -321,19 +321,15 @@ bool AppLoader_NSO::InstallModule(Kernel::KProcess& process, Core::System& syste
     const auto& nso_header = decompressed.nso_header;
     const bool is_main_module = decompressed.is_main_module;
 
-    const u64 code_segment_offset = GetInteger(decompressed.codeset.CodeSegment().addr);
-    const VAddr real_main_base = load_base + code_segment_offset;
-    const u64 real_image_size = (image_size > code_segment_offset) ? (image_size - code_segment_offset) : image_size;
-
     // Apply cheats if they exist and this is the main game module (or standalone NSO)
     if (is_main_module || system.GetMainNsoBase() == 0) {
-        system.SetMainNsoParameters(real_main_base, real_image_size);
+        system.SetMainNsoParameters(load_base, image_size);
     }
     if (pm) {
         if (is_main_module || system.GetApplicationProcessBuildID() == Core::System::CurrentBuildProcessID{}) {
             system.SetApplicationProcessBuildID(nso_header.build_id);
             const auto cheats = pm->CreateCheatList(nso_header.build_id);
-            system.RegisterCheatList(cheats, nso_header.build_id, real_main_base, real_image_size);
+            system.RegisterCheatList(cheats, nso_header.build_id, load_base, image_size);
         }
     }
 

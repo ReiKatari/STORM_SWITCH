@@ -954,6 +954,7 @@ FN_MAX_LIMIT_LIST
     }
 
     u64 GetDeviceMemoryUsage() const;
+    u64 GetDeviceMemoryBudget() const;
 
     u32 GetSetsPerPool() const {
         return sets_per_pool;

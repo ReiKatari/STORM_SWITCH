@@ -658,4 +658,25 @@ bool IsOpenGL() {
     }
 }
 
+
+static bool current_program_is_switch2 = false;
+
+void SetCurrentProgramIsSwitch2(bool is_switch2) {
+    current_program_is_switch2 = is_switch2;
+}
+
+bool CurrentProgramIsSwitch2() {
+    return current_program_is_switch2;
+}
+
+static std::optional<AstcRecompression> astc_recompression_override;
+
+AstcRecompression GetAstcRecompression() {
+    return astc_recompression_override.value_or(values.astc_recompression.GetValue());
+}
+
+void SetAstcRecompressionOverride(std::optional<AstcRecompression> recompression) {
+    astc_recompression_override = recompression;
+}
+
 } // namespace Settings

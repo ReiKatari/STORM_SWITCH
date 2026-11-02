@@ -1333,6 +1333,15 @@ VirtualFile ManualContentProvider::GetEntryUnparsed(u64 title_id, ContentRecordT
 
 VirtualFile ManualContentProvider::GetEntryRaw(u64 title_id, ContentRecordType type) const {
     std::scoped_lock lock(entries_mutex);
+    const bool is_update_tid = (title_id & 0x800) != 0;
+    const auto target_type = is_update_tid ? TitleType::Update : TitleType::Application;
+
+    // Prefer exact TitleType match
+    auto it = entries.find({target_type, type, title_id});
+    if (it != entries.end() && it->second != nullptr) {
+        return it->second;
+    }
+
     const auto iter =
         std::find_if(entries.begin(), entries.end(), [title_id, type](const auto& entry) {
             const auto content_type = std::get<1>(entry.first);

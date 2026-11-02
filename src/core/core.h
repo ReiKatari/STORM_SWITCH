@@ -115,6 +115,8 @@ class RenderdocAPI;
 
 namespace Core {
 
+extern std::atomic<u64> g_nx2_present_count;
+
 class CpuManager;
 class Debugger;
 class DeviceMemory;

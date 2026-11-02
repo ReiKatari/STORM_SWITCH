@@ -286,7 +286,8 @@ private:
 
     Result CreateAesCtrStorage(VirtualFile* out, VirtualFile base_storage, s64 offset,
                                const NcaAesCtrUpperIv& upper_iv,
-                               AlignmentStorageRequirement alignment_storage_requirement);
+                               AlignmentStorageRequirement alignment_storage_requirement,
+                               bool force_decrypt = false);
     Result CreateAesXtsStorage(VirtualFile* out, VirtualFile base_storage, s64 offset);
 
     Result CreateSparseStorageMetaStorage(VirtualFile* out, VirtualFile base_storage, s64 offset,

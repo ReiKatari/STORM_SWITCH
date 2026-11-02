@@ -417,8 +417,16 @@ u64 BufferCacheRuntime::KnownGpuTick() {
     return scheduler.GetMasterSemaphore().KnownGpuTick();
 }
 
+bool BufferCacheRuntime::IsFree(u64 tick) const noexcept {
+    return scheduler.GetMasterSemaphore().IsFree(tick);
+}
+
 void BufferCacheRuntime::Wait(u64 buffer_tick) {
     scheduler.Wait(buffer_tick);
+}
+
+void BufferCacheRuntime::WaitSubmittedTick(u64 tick) {
+    scheduler.GetMasterSemaphore().Wait(tick);
 }
 
 void BufferCacheRuntime::Finish() {

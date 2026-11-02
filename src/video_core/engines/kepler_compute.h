@@ -7,6 +7,7 @@
 #pragma once
 
 #include <array>
+#include <bitset>
 #include <cstddef>
 #include <optional>
 #include <vector>
@@ -240,6 +241,9 @@ private:
     bool native_compute_uploaded{};
     MacroEngine* native_macro{};
     std::array<u32, 0x1000> native_registers{};
+    /// Native methods that only store their value (no macro, QMD, upload, semaphore or code
+    /// side effect): CallMethod writes those directly.
+    std::bitset<0xe00> native_plain_methods;
     std::span<u32> native_macro_positions;
     std::vector<u32> native_parameters;
     std::optional<u32> native_executing_macro;

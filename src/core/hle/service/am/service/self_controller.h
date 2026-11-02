@@ -11,8 +11,8 @@
 #include "core/hle/service/service.h"
 
 namespace Kernel {
-class KReadableEvent;
 class KClientSession;
+class KReadableEvent;
 }
 
 namespace Service::Capture {
@@ -32,6 +32,7 @@ public:
 
 private:
     void GetGraphicsSupervisor(HLERequestContext& ctx);
+    void GetNx2GraphicsSystemSession(HLERequestContext& ctx);
     Result Exit();
     Result LockExit();
     Result UnlockExit();
@@ -70,10 +71,11 @@ private:
     Result SaveCurrentScreenshot(Capture::AlbumReportOption album_report_option);
     Result SetRecordVolumeMuted(bool muted);
     Result Unknown230(u32 in_val, Out<u16> out_val);
+    Result Unknown240(u32 in_val);
 
-    Kernel::KClientSession* m_graphics_supervisor_session{};
     Kernel::KProcess* const m_process;
     const std::shared_ptr<Applet> m_applet;
+    Kernel::KClientSession* m_graphics_supervisor_session = nullptr;
 };
 
 } // namespace Service::AM

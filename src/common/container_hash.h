@@ -10,11 +10,36 @@
 #include <array>
 #include <climits>
 #include <cstdint>
+#include <functional>
 #include <limits>
+#include <tuple>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 namespace Common {
+
+/// The default hash of Common::unordered_map/set. std::hash of an integer or a pointer is a
+/// byte-wise FNV-1a on MSVC, and boost's flat containers mix a hash that does not say it
+/// avalanches anyway: pass those keys through (the GPU thread's page maps looked keys up
+/// tens of thousands of times a second with it). Other keys keep std::hash.
+template <class Key>
+struct FastHash : std::hash<Key> {};
+
+template <class Key>
+    requires std::is_integral_v<Key>
+struct FastHash<Key> {
+    std::size_t operator()(Key key) const noexcept {
+        return static_cast<std::size_t>(key);
+    }
+};
+
+template <class T>
+struct FastHash<T*> {
+    std::size_t operator()(T* pointer) const noexcept {
+        return reinterpret_cast<std::size_t>(pointer);
+    }
+};
 
 namespace detail {
 
@@ -69,8 +94,15 @@ struct HashCombineImpl<64> {
 } // namespace detail
 
 template <typename T>
+    requires std::is_unsigned_v<T>
 inline void HashCombine(std::size_t& seed, const T& v) {
     seed = detail::HashCombineImpl<sizeof(std::size_t) * CHAR_BIT>::fn(seed, detail::HashValue(v));
+}
+
+template <typename T>
+    requires (!std::is_unsigned_v<T>)
+inline void HashCombine(std::size_t& seed, const T& v) {
+    seed = detail::HashCombineImpl<sizeof(std::size_t) * CHAR_BIT>::fn(seed, std::hash<T>{}(v));
 }
 
 template <typename It>
@@ -95,3 +127,26 @@ std::size_t HashValue(const std::vector<T, Allocator>& v) {
 }
 
 } // namespace Common
+
+namespace std {
+
+template <typename... Args>
+struct hash<std::tuple<Args...>> {
+    std::size_t operator()(const std::tuple<Args...>& t) const noexcept {
+        std::size_t seed = 0;
+        std::apply([&seed](const Args&... args) { (Common::HashCombine(seed, args), ...); }, t);
+        return seed;
+    }
+};
+
+template <class A, class B>
+struct hash<std::pair<A, B>> {
+    std::size_t operator()(const std::pair<A, B>& p) const noexcept {
+        std::size_t seed = 0;
+        Common::HashCombine(seed, p.first);
+        Common::HashCombine(seed, p.second);
+        return seed;
+    }
+};
+
+} // namespace std

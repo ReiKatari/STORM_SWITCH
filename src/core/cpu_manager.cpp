@@ -20,16 +20,6 @@
 #include "core/hle/kernel/physical_core.h"
 #include "video_core/gpu.h"
 
-#ifdef __ANDROID__
-#include <array>
-#include <cstdio>
-#include <cstdlib>
-#include <fcntl.h>
-#include <limits>
-#include <sched.h>
-#include <unistd.h>
-#endif
-
 namespace Core {
 
 CpuManager::CpuManager(System& system_) : system{system_} {}
@@ -189,53 +179,6 @@ void CpuManager::ShutdownThread(Kernel::KernelCore& kernel) {
     LOG_WARNING(Core, "ShutdownThread returned unexpectedly");
 }
 
-#ifdef __ANDROID__
-static void ApplyAndroidGuestCoreAffinity() {
-    u64 min_freq = (std::numeric_limits<u64>::max)();
-    u64 max_freq = 0;
-    std::array<u64, 16> freqs{};
-    int online_count = 0;
-
-    for (int cpu = 0; cpu < 16; ++cpu) {
-        char path[64];
-        std::snprintf(path, sizeof(path), "/sys/devices/system/cpu/cpu%d/cpufreq/cpuinfo_max_freq", cpu);
-        int fd = open(path, O_RDONLY);
-        if (fd < 0) {
-            continue;
-        }
-        char buf[32];
-        ssize_t n = read(fd, buf, sizeof(buf) - 1);
-        close(fd);
-        if (n > 0) {
-            buf[n] = '\0';
-            u64 freq = std::strtoull(buf, nullptr, 10);
-            if (freq > 0) {
-                freqs[cpu] = freq;
-                min_freq = (std::min)(min_freq, freq);
-                max_freq = (std::max)(max_freq, freq);
-                ++online_count;
-            }
-        }
-    }
-
-    if (min_freq >= max_freq || online_count < 4) {
-        return;
-    }
-
-    cpu_set_t mask;
-    CPU_ZERO(&mask);
-    for (int cpu = 0; cpu < 16; ++cpu) {
-        if (freqs[cpu] > min_freq) {
-            CPU_SET(cpu, &mask);
-        }
-    }
-
-    if (CPU_COUNT(&mask) >= 4) {
-        sched_setaffinity(0, sizeof(cpu_set_t), &mask);
-    }
-}
-#endif
-
 void CpuManager::RunThread(std::stop_token token, std::size_t core) {
     /// Initialization
     system.RegisterCoreThread(core);
@@ -243,9 +186,6 @@ void CpuManager::RunThread(std::stop_token token, std::size_t core) {
     Common::SetCurrentThreadName(name.c_str());
     Common::SetCurrentThreadPriority(Common::ThreadPriority::Critical);
     Common::SetCurrentThreadToPerformanceCores();
-#ifdef __ANDROID__
-    ApplyAndroidGuestCoreAffinity();
-#endif
     auto& data = core_data[core];
     data.host_context = Common::Fiber::ThreadToFiber();
 

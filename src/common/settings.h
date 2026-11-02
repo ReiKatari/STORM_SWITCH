@@ -1155,4 +1155,13 @@ void RestoreGlobalState(bool is_powered_on);
 bool IsConfiguringGlobal();
 void SetConfiguringGlobal(bool is_global);
 
+
+void SetCurrentProgramIsSwitch2(bool is_switch2);
+bool CurrentProgramIsSwitch2();
+inline bool IsCurrentProgramSwitch2() {
+    return CurrentProgramIsSwitch2();
+}
+AstcRecompression GetAstcRecompression();
+void SetAstcRecompressionOverride(std::optional<AstcRecompression> recompression);
+
 } // namespace Settings

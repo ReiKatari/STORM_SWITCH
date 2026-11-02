@@ -915,9 +915,6 @@ size_t KProcess::GetTotalNonSystemUserPhysicalMemorySize(KernelCore& kernel) con
 }
 
 Result KProcess::Run(KernelCore& kernel, s32 priority, size_t stack_size) {
-    LOG_INFO(Kernel, "KProcess::Run: starting process entry={:#x} ideal_core={} prio={} stack_size={:#x}",
-             GetInteger(this->GetEntryPoint()), m_ideal_core_id, priority, stack_size);
-
     // Lock ourselves, to prevent concurrent access.
     KScopedLightLock lk(m_state_lock);
 
@@ -1029,6 +1026,9 @@ Result KProcess::Run(KernelCore& kernel, s32 priority, size_t stack_size) {
 
     // Suspend for debug, if we should.
     if (kernel.System().DebuggerEnabled()) {
+        LOG_INFO(Debug_GDBStub,
+                 "GDB stub enabled; suspending guest process until a debugger continues execution on port {}",
+                 Settings::values.gdbstub_port.GetValue());
         main_thread->RequestSuspend(kernel, SuspendType::Debug);
     }
 
@@ -1040,9 +1040,6 @@ Result KProcess::Run(KernelCore& kernel, s32 priority, size_t stack_size) {
 
     // We succeeded! Commit our memory reservation.
     mem_reservation.Commit();
-
-    LOG_INFO(Kernel, "KProcess::Run: main_thread {:p} successfully scheduled on core {}",
-             static_cast<void*>(main_thread), m_ideal_core_id);
 
     R_SUCCEED();
 }
@@ -1268,7 +1265,14 @@ Result KProcess::LoadFromMetadata(KernelCore& kernel, const FileSys::ProgramMeta
 
     // Assign remaining properties.
     m_ideal_core_id = metadata.GetMainThreadCore();
-    m_uses_pauth_returns = metadata.UsesExtendedAcid();
+
+    // Switch 2 applications get more memory than a 64-bit heap region holds (nninitStartup sizes
+    // its heap as total memory minus ~6.3 GiB), so count the alias region as well, bounded by the
+    // pool through the resource limit.
+    if (metadata.IsSwitch2()) {
+        m_is_switch2 = true;
+        m_max_process_memory = m_page_table.GetHeapRegionSize() + m_page_table.GetAliasRegionSize();
+    }
 
     // Set up emulation context.
     this->InitializeInterfaces(kernel);

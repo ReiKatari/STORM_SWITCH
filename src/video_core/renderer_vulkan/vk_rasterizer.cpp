@@ -87,7 +87,12 @@ VkViewport GetViewportState(const Device& device, const Maxwell& regs, size_t in
 
     if (lower_left) {
         // Flip by surface clip height
-        y += conv(static_cast<f32>(regs.surface_clip.height));
+        const float clip_height = conv(static_cast<f32>(regs.surface_clip.height));
+        if (src.scale_y < 0.0f && y >= clip_height) {
+            y = clip_height - y;
+        } else {
+            y += clip_height;
+        }
         height = -height;
     }
 
@@ -782,6 +787,11 @@ void RasterizerVulkan::DispatchCompute() {
         return;
     }
     std::scoped_lock lock{texture_cache.mutex, buffer_cache.mutex};
+    // Command list pages the dispatch writes are copied for the split's front right after it.
+    buffer_cache.Nx2CollectListCopies(true);
+    SCOPE_EXIT {
+        buffer_cache.Nx2CollectListCopies(false);
+    };
     if (!pipeline->Configure(*kepler_compute, *gpu_memory, scheduler, buffer_cache,
                              texture_cache)) {
         if (kepler_compute->IsNativeMode()) throw Shader::RuntimeError("Native compute resources unavailable");
@@ -818,6 +828,7 @@ void RasterizerVulkan::DispatchCompute() {
             }
             cmdbuf.DispatchIndirect(indirect_buffer, indirect_offset);
         });
+        SubmitNx2ListCopies();
         static constexpr VkMemoryBarrier POST_COMPUTE_BARRIER{
             .sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER,
             .pNext = nullptr,
@@ -852,6 +863,7 @@ void RasterizerVulkan::DispatchCompute() {
         }
         cmdbuf.Dispatch(dim[0], dim[1], dim[2]);
     });
+    SubmitNx2ListCopies();
 
     // Log compute dispatch
     if (GPU::Logging::IsActive() &&
@@ -892,6 +904,29 @@ void Vulkan::RasterizerVulkan::DisableGraphicsUniformBuffer(size_t stage, u32 in
 }
 
 void RasterizerVulkan::FlushAll() {}
+
+void RasterizerVulkan::SubmitNx2ListCopies() {
+    if (buffer_cache.Nx2CopyListPages(scheduler.CurrentTick())) {
+        scheduler.Flush();
+    }
+}
+
+VideoCore::RasterizerInterface::GpuWrittenList RasterizerVulkan::ReadGpuWrittenCommandList(
+    DAddr addr, std::span<u8> out) {
+    // No cache lock: the front only reads the copies, under their own lock.
+    switch (buffer_cache.Nx2ReadListCopy(addr, out)) {
+    case BufferCache::Nx2ListRead::Copied:
+        return GpuWrittenList::Copied;
+    case BufferCache::Nx2ListRead::Synced:
+        return GpuWrittenList::Synced;
+    default:
+        return GpuWrittenList::Unknown;
+    }
+}
+
+void RasterizerVulkan::NoteGpuWrittenCommandListSynced(DAddr page) {
+    buffer_cache.Nx2NoteListSynced(page);
+}
 
 void RasterizerVulkan::FlushAndSnapshotForSaveState(
     std::vector<std::pair<DAddr, std::size_t>>& out_surface_ranges) {
@@ -1208,6 +1243,8 @@ void RasterizerVulkan::AccelerateInlineToMemory(GPUVAddr address, size_t copy_si
     gpu_memory->WriteBlockUnsafe(address, memory.data(), copy_size);
     {
         std::unique_lock<std::recursive_mutex> lock{buffer_cache.mutex};
+        // Guest memory has the words now: a command list copy of the page no longer does.
+        buffer_cache.Nx2NoteListHostWrite(*cpu_addr, copy_size);
         if (!buffer_cache.InlineMemory(*cpu_addr, copy_size, memory)) {
             buffer_cache.WriteMemory(*cpu_addr, copy_size);
         }

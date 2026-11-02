@@ -17,6 +17,10 @@ inline u64 NativeProgramKey(std::span<const Instruction> source) {
     return hash;
 }
 
+inline u64 Nx2ProgramKey(std::span<const Instruction> source) {
+    return NativeProgramKey(source);
+}
+
 // Private iteration format: version, lengths, texture bank, exact original
 // instructions, then the newly generated canonical instructions. Source bytes
 // are compared directly; the filename hash is only an index.

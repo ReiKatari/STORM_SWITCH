@@ -538,6 +538,7 @@ PipelineCache::PipelineCache(Tegra::MaxwellDeviceMemoryManager& device_memory_,
         .support_geometry_shader_passthrough = device.IsNvGeometryShaderPassthroughSupported(),
         .support_conditional_barrier = device.SupportsConditionalBarriers(),
         .support_attribute_texture_handle = true,
+        .support_viewport_mask = device.IsNvViewportArray2Supported(),
     };
     host_info.ApplyDescriptorLimitPolicy();
 

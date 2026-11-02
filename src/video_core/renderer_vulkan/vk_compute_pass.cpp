@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <array>
+#include <cstdlib>
 #include <memory>
 #include <numeric>
 #include <optional>
@@ -622,7 +623,17 @@ void ASTCDecoderPass::Assemble(Image& image, const StagingBufferRef& map,
         cmdbuf.PipelineBarrier(VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
                        vk::PIPELINE_STAGE_GRAPHICS_COMPUTE, 0, image_barrier);
     });
-    scheduler.Finish();
+    // Each decode ends with a submit to the host GPU. Measured here
+    // (count and time per 5 s); EDEN_NX2_ASTC_FLUSH=0 waits for the host GPU to go idle instead.
+    static const bool flush_only = [] {
+        const char* value = std::getenv("EDEN_NX2_ASTC_FLUSH");
+        return value == nullptr || value[0] != '0';
+    }();
+    if (flush_only) {
+        scheduler.Flush();
+    } else {
+        scheduler.Finish();
+    }
 }
 
 constexpr u32 BL3D_BINDING_INPUT_BUFFER  = 0;

@@ -54,19 +54,19 @@ NvResult nvmap::Ioctl1(DeviceFD fd, Ioctl command, std::span<const u8> input,
         break;
     }
 
-    LOG_WARNING(Service_NVDRV, "Unimplemented ioctl={:08X}", command.raw);
+    UNIMPLEMENTED_MSG("Unimplemented ioctl={:08X}", command.raw);
     return NvResult::NotImplemented;
 }
 
 NvResult nvmap::Ioctl2(DeviceFD fd, Ioctl command, std::span<const u8> input,
                        std::span<const u8> inline_input, std::span<u8> output) {
-    LOG_WARNING(Service_NVDRV, "Unimplemented ioctl={:08X}", command.raw);
+    UNIMPLEMENTED_MSG("Unimplemented ioctl={:08X}", command.raw);
     return NvResult::NotImplemented;
 }
 
 NvResult nvmap::Ioctl3(DeviceFD fd, Ioctl command, std::span<const u8> input, std::span<u8> output,
                        std::span<u8> inline_output) {
-    LOG_WARNING(Service_NVDRV, "Unimplemented ioctl={:08X}", command.raw);
+    UNIMPLEMENTED_MSG("Unimplemented ioctl={:08X}", command.raw);
     return NvResult::NotImplemented;
 }
 
@@ -134,14 +134,11 @@ NvResult nvmap::IocAlloc(IocAllocParams& params, DeviceFD fd) {
     }
     bool is_out_io{};
     auto process = container.GetSession(sessions[fd])->process;
-    auto map_res = process->GetPageTable()
-                       .LockForMapDeviceAddressSpace(&is_out_io, handle_description->address,
-                                                     handle_description->size,
-                                                     Kernel::KMemoryPermission::None, true, false);
-    if (!map_res.IsSuccess()) {
-        LOG_ERROR(Service_NVDRV, "LockForMapDeviceAddressSpace failed: {:#x}", map_res.raw);
-        return NvResult::BadValue;
-    }
+    ASSERT(process->GetPageTable()
+               .LockForMapDeviceAddressSpace(&is_out_io, handle_description->address,
+                                             handle_description->size,
+                                             Kernel::KMemoryPermission::None, true, false)
+               .IsSuccess());
     return result;
 }
 
@@ -248,11 +245,9 @@ NvResult nvmap::IocFree(IocFreeParams& params, DeviceFD fd) {
     if (auto freeInfo{file.FreeHandle(params.handle, false)}) {
         auto process = container.GetSession(sessions[fd])->process;
         if (freeInfo->can_unlock) {
-            auto unlock_res = process->GetPageTable()
-                                  .UnlockForDeviceAddressSpace(freeInfo->address, freeInfo->size);
-            if (!unlock_res.IsSuccess()) {
-                LOG_ERROR(Service_NVDRV, "UnlockForDeviceAddressSpace failed: {:#x}", unlock_res.raw);
-            }
+            ASSERT(process->GetPageTable()
+                       .UnlockForDeviceAddressSpace(freeInfo->address, freeInfo->size)
+                       .IsSuccess());
         }
         params.address = freeInfo->address;
         params.size = static_cast<u32>(freeInfo->size);

@@ -403,13 +403,8 @@ void ArmDynarmic64::MakeJit(Common::PageTable* page_table, std::size_t address_s
     // Code cache size (Adaptive scaling based on physical RAM)
     const u64 host_ram = Common::GetMemInfo().TotalPhysicalMemory;
 #if defined(ARCHITECTURE_arm64) || defined(__sun__) || defined(__NetBSD__) || defined(__DragonFly__) || defined(__OpenBSD__)
-    if (host_ram >= 12_GiB) {
-        config.code_cache_size = std::uint32_t(256_MiB);
-    } else if (host_ram >= 8_GiB) {
-        config.code_cache_size = std::uint32_t(192_MiB);
-    } else {
-        config.code_cache_size = std::uint32_t(128_MiB);
-    }
+    (void)host_ram;
+    config.code_cache_size = std::uint32_t(128_MiB);
 #else
     if (host_ram >= 16_GiB) {
         config.code_cache_size = std::uint32_t(512_MiB);

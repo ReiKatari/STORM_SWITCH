@@ -154,13 +154,23 @@ add_library(
     net/net.h net/net.cpp)
 
 if(WIN32)
-    target_sources(common PRIVATE windows/timer_resolution.cpp
+    target_sources(common PRIVATE
+    container/unordered_set.h
+    container/unordered_map.h
+    sparse_large_vector.h
+    sparse_large_vector.cpp
+    spin_recursive_mutex.h windows/timer_resolution.cpp
         windows/timer_resolution.h)
     target_link_libraries(common PRIVATE ntdll)
 endif()
 
 if(NOT WIN32)
-    target_sources(common PRIVATE signal_chain.cpp signal_chain.h)
+    target_sources(common PRIVATE
+    container/unordered_set.h
+    container/unordered_map.h
+    sparse_large_vector.h
+    sparse_large_vector.cpp
+    spin_recursive_mutex.h signal_chain.cpp signal_chain.h)
 endif()
 
 if(ANDROID)

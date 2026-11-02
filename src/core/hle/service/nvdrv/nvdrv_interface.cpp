@@ -290,6 +290,18 @@ NVDRV::NVDRV(Core::System& system, std::shared_ptr<Module> module, const char* n
     is_initialized = true;
 }
 
+
+void NVDRV::InitializeForProcess(Kernel::KProcess* process) {
+    if (is_initialized) {
+        return;
+    }
+    session_id = nvdrv->GetContainer().OpenSession(process);
+    if (process) {
+        pid = process->GetProcessId();
+    }
+    is_initialized = true;
+}
+
 NVDRV::~NVDRV() {
     if (is_initialized) {
         auto& container = nvdrv->GetContainer();

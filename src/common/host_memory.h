@@ -10,7 +10,6 @@
 #include <optional>
 #include "common/common_funcs.h"
 #include "common/common_types.h"
-#include "common/virtual_buffer.h"
 
 namespace Common {
 
@@ -55,8 +54,6 @@ public:
 
     void ClearBackingRegion(size_t physical_offset, size_t length, u32 fill_value);
 
-    void HintColdPages(size_t virtual_offset, size_t length);
-
     [[nodiscard]] u8* BackingBasePointer() noexcept {
         return backing_base;
     }
@@ -69,6 +66,10 @@ public:
     }
     [[nodiscard]] const u8* VirtualBasePointer() const noexcept {
         return virtual_base;
+    }
+
+    [[nodiscard]] size_t VirtualSize() const noexcept {
+        return virtual_size;
     }
 
     bool IsInVirtualRange(void* address) const noexcept {
@@ -88,7 +89,7 @@ private:
     u8* virtual_base{};
     size_t virtual_base_offset{};
     // Windows requires it for kernels whom lack proper support for some functions!
-    std::optional<Common::VirtualBuffer<u8>> fallback_buffer;
+    bool fallback_buffer{false};
 };
 
 } // namespace Common

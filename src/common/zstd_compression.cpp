@@ -46,4 +46,14 @@ std::vector<u8> DecompressDataZSTD(std::span<const u8> compressed) {
     return decompressed;
 }
 
+std::size_t DecompressDataZSTD(std::span<const u8> compressed, std::span<u8> uncompressed) {
+    const std::size_t uncompressed_result_size = ZSTD_decompress(
+        uncompressed.data(), uncompressed.size(), compressed.data(), compressed.size());
+
+    if (ZSTD_isError(uncompressed_result_size)) {
+        return 0;
+    }
+    return uncompressed_result_size;
+}
+
 } // namespace Common::Compression

@@ -40,6 +40,9 @@ public:
     NCZVirtualFile* GetNczFilePointer() override;
     bool IsNczFile() const override { return file && file->IsNczFile(); }
     bool HasDecryptedSections() const override { return file && file->HasDecryptedSections(); }
+    std::optional<std::array<u8, 16>> GetEmbeddedCryptoKey() const override {
+        return file ? file->GetEmbeddedCryptoKey() : std::nullopt;
+    }
 
 private:
     std::size_t TrimToFit(std::size_t r_size, std::size_t r_offset) const;

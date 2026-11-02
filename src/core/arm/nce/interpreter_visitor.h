@@ -97,41 +97,6 @@ public:
     bool LDR_reg_fpsimd(Imm<2> size, Imm<1> opc_1, Reg Rm, Imm<3> option, bool S, Reg Rn,
                         Vec Vt) override;
 
-    // Loads and stores - Load/Store Exclusive & Exclusive Pairs
-    bool STXR(Imm<2> size, Reg Rs, Reg Rn, Reg Rt) override;
-    bool STXP(Imm<1> size, Reg Rs, Reg Rt2, Reg Rn, Reg Rt) override;
-    bool STLXP(Imm<1> size, Reg Rs, Reg Rt2, Reg Rn, Reg Rt) override;
-    bool LDXR(Imm<2> size, Reg Rn, Reg Rt) override;
-    bool LDXP(Imm<1> size, Reg Rt2, Reg Rn, Reg Rt) override;
-    bool LDAXP(Imm<1> size, Reg Rt2, Reg Rn, Reg Rt) override;
-
-    // ARMv8.1-A LSE Atomics - Compare and Swap
-    bool CAS(Imm<2> sz, bool L, Reg Rs, bool o0, Reg Rn, Reg Rt) override;
-    bool CASB(bool L, Reg Rs, bool o0, Reg Rn, Reg Rt) override;
-    bool CASH(bool L, Reg Rs, bool o0, Reg Rn, Reg Rt) override;
-    bool CASP(bool sz, bool L, Reg Rs, bool o0, Reg Rn, Reg Rt) override;
-
-    // ARMv8.1-A LSE Atomics - Swap
-    bool SWP(bool sz, bool A, bool R, Reg Rs, Reg Rn, Reg Rt) override;
-    bool SWPB(bool A, bool R, Reg Rs, Reg Rn, Reg Rt) override;
-    bool SWPH(bool A, bool R, Reg Rs, Reg Rn, Reg Rt) override;
-
-    // ARMv8.1-A LSE Atomics - Fetch and Add
-    bool LDADD(bool sz, bool A, bool R, Reg Rs, Reg Rn, Reg Rt) override;
-    bool LDADDB(bool A, bool R, Reg Rs, Reg Rn, Reg Rt) override;
-    bool LDADDH(bool A, bool R, Reg Rs, Reg Rn, Reg Rt) override;
-
-    // ARMv8.1-A LSE Atomics - Bitwise operations
-    bool LDCLR(bool sz, bool A, bool R, Reg Rs, Reg Rn, Reg Rt) override;
-    bool LDCLRB(bool A, bool R, Reg Rs, Reg Rn, Reg Rt) override;
-    bool LDCLRH(bool A, bool R, Reg Rs, Reg Rn, Reg Rt) override;
-    bool LDSET(bool sz, bool A, bool R, Reg Rs, Reg Rn, Reg Rt) override;
-    bool LDSETB(bool A, bool R, Reg Rs, Reg Rn, Reg Rt) override;
-    bool LDSETH(bool A, bool R, Reg Rs, Reg Rn, Reg Rt) override;
-    bool LDEOR(bool A, bool R, Reg Rs, Reg Rn, Reg Rt) override;
-    bool LDEORB(bool A, bool R, Reg Rs, Reg Rn, Reg Rt) override;
-    bool LDEORH(bool A, bool R, Reg Rs, Reg Rn, Reg Rt) override;
-
 private:
     Core::Memory::Memory& m_memory;
     std::span<u64, 31> m_regs;

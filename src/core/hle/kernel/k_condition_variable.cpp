@@ -62,10 +62,6 @@ bool UpdateLockAtomic(KernelCore& kernel, u32* out, KProcessAddress address, u32
         // If the value is zero, use the if_zero value, otherwise use the newly orr'd value.
         if (!expected) {
             value = if_zero;
-        } else if ((expected & new_orr_mask) == new_orr_mask) {
-            // Fast-path: HandleWaitMask (0x40000000) already set, avoid lock contention loop
-            monitor.ClearExclusive(current_core);
-            break;
         }
 
         // Try to store.
@@ -227,11 +223,10 @@ void KConditionVariable::SignalImpl(KernelCore& kernel, KThread* thread) {
         // NOTE: If scheduler lock is not held here, interrupt disable is required.
         // KScopedInterruptDisable di;
 
-        auto* current_process = GetCurrentProcessPointer(kernel);
-        can_access = current_process &&
-                     current_process->GetMemory().IsValidVirtualAddressRange(GetInteger(address), sizeof(u32));
+        // TODO(bunnei): We should call CanAccessAtomic(..) here.
+        can_access = true;
         if (can_access) {
-            can_access = UpdateLockAtomic(kernel, std::addressof(prev_tag), address, own_tag, Svc::HandleWaitMask);
+            UpdateLockAtomic(kernel, std::addressof(prev_tag), address, own_tag, Svc::HandleWaitMask);
         }
     }
 

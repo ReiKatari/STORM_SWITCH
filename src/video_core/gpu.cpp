@@ -148,6 +148,21 @@ struct GPU::Impl {
         sync_request_cv.wait(lck, [this, fence] { return CurrentSyncRequestFence() >= fence; });
     }
 
+    u64 RunOnGpuThread(std::function<void()>&& action) {
+        const u64 fence = RequestSyncOperation(std::move(action));
+        gpu_thread.TickGPU(is_async);
+        return fence;
+    }
+
+    void RunInOrder(std::function<void()>&& func) {
+        static_cast<void>(RequestSyncOperation(std::move(func)));
+        gpu_thread.TickGPU(is_async);
+    }
+
+    void WaitForIdle() {
+        WaitForSyncOperation(CurrentSyncRequestFence());
+    }
+
     /// Tick pending requests within the GPU.
     void TickWork() {
         std::unique_lock lck{sync_request_mutex};
@@ -580,7 +595,19 @@ void GPU::FlushRegion(DAddr addr, u64 size) {
     impl->FlushRegion(addr, size);
 }
 
-void GPU::InvalidateRegion(DAddr addr, u64 size) {
+u64 GPU::RunOnGpuThread(std::function<void()>&& action) {
+    return impl->RunOnGpuThread(std::move(action));
+}
+
+void GPU::RunInOrder(std::function<void()>&& func) {
+    impl->RunInOrder(std::move(func));
+}
+
+void GPU::WaitForIdle() {
+    impl->WaitForIdle();
+}
+
+void GPU::InvalidateRegion(DAddr addr, u64 size, bool preserve_gpu_writes) {
     impl->InvalidateRegion(addr, size);
 }
 

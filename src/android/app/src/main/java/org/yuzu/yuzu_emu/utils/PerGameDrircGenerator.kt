@@ -95,6 +95,7 @@ object PerGameDrircGenerator {
         // 2c. Mario + Rabbids Series (Snowdrop Engine Shadow Maps, Exposure & Fullscreen Quad)
         if (cleanId.startsWith("010067300059A") || // Mario + Rabbids: Kingdom Battle
             cleanId.startsWith("0100760012E4A") || // Mario + Rabbids: Kingdom Battle Gold
+            cleanId.startsWith("010032C00AC58") || // Mario + Rabbids: Sparks of Hope
             cleanId.startsWith("01005CA00F966") || // Mario + Rabbids: Sparks of Hope
             cleanTitle.contains("rabbids")
         ) {
@@ -105,6 +106,7 @@ object PerGameDrircGenerator {
         if (cleanId.startsWith("0100EC9010258") || // Streets of Rage 4
             cleanId.startsWith("010085800E33E") || // Streets of Rage 4 Main
             cleanId.startsWith("0100BA700E340") || // Streets of Rage 4 Alt
+            cleanId.startsWith("0100A83022A22") || // Absolum
             cleanId.startsWith("010063B0077F6") || // Hollow Knight
             cleanId.startsWith("01008EB00B32E") || // Cuphead
             cleanId.startsWith("010006200A526") || // Dead Cells
@@ -125,6 +127,7 @@ object PerGameDrircGenerator {
             cleanId.startsWith("010067901A51A") || // Blasphemous 2
             cleanId.startsWith("010004D00A9C0") || // Aggelos
             cleanId.startsWith("010040F01EC60") || // Aggelos 2
+            cleanTitle.contains("absolum") ||
             cleanTitle.contains("aggelos") ||
             cleanTitle.contains("streets of rage") ||
             cleanTitle.contains("hollow knight") ||
@@ -436,109 +439,11 @@ object PerGameDrircGenerator {
     fun generateXmlContent(profileType: GameProfileType, programIdHex: String, title: String): String {
         val optionsBuilder = StringBuilder()
 
-        // Common baseline options across all profiles:
-        optionsBuilder.append("""
-            <!-- 1. Max Performance Priority - All Thermal Floor / Dynamic Governors Disabled -->
-            <option name="tu_thermal_governor_floor" value="false" />
-            <option name="tu_power_governor_floor" value="false" />
-            <option name="tu_perf_floor_clamp" value="false" />
-            <option name="tu_power_profile_balanced" value="false" />
-            <option name="tu_low_power_vulkan_pipeline" value="false" />
-            <option name="tu_dynamic_thermal_budget" value="false" />
-            <option name="tu_energy_aware_scheduling" value="false" />
-
-            <!-- 2. Native Frame Pacing - All Artificial Downscaling & Smoothing Disabled -->
-            <option name="tu_adaptive_frame_pacing" value="false" />
-            <option name="tu_frame_time_smoothing" value="false" />
-            <option name="tu_timeline_sync" value="true" />
-            <option name="tu_relaxed_frame_pacing" value="false" />
-            <option name="tu_mail_box_vsync_pacing" value="false" />
-
-            <!-- 3. Adreno 830 (Snapdragon 8 Elite) & A8xx Precision Architecture Tuning -->
-            <option name="tu_a830_reg_size_96" value="true" />
-            <option name="tu_a8xx_perfcntrs" value="true" />
-            <option name="tu_a830_ubwc_pitch_clamp" value="true" />
-            <option name="tu_a8xx_concurrent_queue_barrier_fix" value="true" />
-            <option name="tu_a8xx_barycentric_coord_clamp" value="false" />
-            <option name="tu_a8xx_subgroup_ballot_fastpath" value="true" />
-            <option name="tu_a830_concurrent_render_pass_align" value="true" />
-            <option name="tu_shader_spirv_mem_fastpath" value="true" />
-
-            <!-- 4. Samsung OneUI UBWC Framebuffer Compression & Lossless Guard -->
-            <option name="tu_ubwc_oneui_fix" value="true" />
-            <option name="tu_ubwc_5_direct_align" value="true" />
-            <option name="tu_ubwc_5_stride_128_align" value="true" />
-            <option name="tu_ubwc_fallback_guard" value="true" />
-            <option name="tu_ubwc_lossless_fastpath" value="true" />
-            <option name="tu_disable_lossy_ubwc_depth" value="true" />
-
-            <!-- 5. Compute Flush Optimization & Stable GMEM Allocator -->
-            <option name="tu_compute_flush_bits_optimize" value="true" />
-            <option name="tu_optimal_gmem_tile_allocator" value="false" />
-            <option name="tu_lrz_preserve_across_cmdbuf" value="false" />
-            <option name="tu_drop_tile_wfi" value="false" />
-            <option name="tu_autotune_bypass_margin" value="true" />
-
-            <!-- 6. Zero-Overhead ASTC & Direct Display WSI -->
-            <option name="tu_astc_hdr_gmem" value="false" />
-            <option name="tu_fast_astc_decompress_gmem" value="false" />
-            <option name="tu_bindless_textures" value="true" />
-            <option name="tu_zero_copy_subsampled_sampler" value="true" />
-            <option name="tu_direct_surfaceflinger_blit" value="true" />
-            <option name="tu_bypass_gpu_rotator" value="true" />
-            <option name="tu_direct_display_sync" value="true" />
-            <option name="tu_zero_copy_swapchain" value="true" />
-
-            <!-- 7. Subpass Fusion Guard: False for pure transparency & stability -->
-            <option name="tu_subpass_fusion" value="false" />
-            <option name="tu_subpass_fusion_v2" value="false" />
-            <option name="tu_tile_discard" value="false" />
-
-            <!-- 8. Monolithic Pipeline Cache (4GB LZ4) & IR3 Optimization -->
-            <option name="tu_suballocator_pool_512k" value="true" />
-            <option name="tu_pipeline_cache_lz4" value="true" />
-            <option name="tu_shader_cache_size_mb" value="4096" />
-            <option name="tu_huge_heap_8gb_align" value="true" />
-            <option name="tu_gmem_page_alignment_guard" value="true" />
-            <option name="tu_gmem_force_tile_align" value="true" />
-            <option name="tu_gcm" value="1" />
-            <option name="tu_ir3_icache_128b_align" value="true" />
-            <option name="tu_ir3_dead_code_elimination" value="true" />
-            <option name="tu_ir3_constant_folding" value="true" />
-            <option name="tu_ir3_subgroup_merge" value="true" />
-            <option name="tu_ir3_scheduler_hazard_guard" value="true" />
-        """.trimIndent())
-
-        // Specific tailored options per game category:
+        // 100% Real Compiled Mesa Turnip 26.2.0 (STORM DRIVER 8.0.0) Driconf Options:
         when (profileType) {
-            GameProfileType.ZELDA -> {
-                optionsBuilder.append("\n            <!-- ZELDA SERIES RULES (Fixed 30-32+ FPS, Full Hardware LRZ, Fast Clears, GMEM ASTC, Intact Shrines) -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_disable_lrz\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_disable_fast_clears\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_lrz_fast_clear\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_gmem_pinning_zelda\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_direction_fix\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_botw_depth_refract_fix\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_botw_shrine_geometry_fix\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_astc_hdr_gmem\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_fast_astc_decompress_gmem\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_drop_tile_wfi\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_optimal_gmem_tile_allocator\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_adaptive_frame_pacing\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_frame_time_smoothing\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_relaxed_frame_pacing\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_mail_box_vsync_pacing\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_ping_pong_command_submission\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_pso_fuzzy_match\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_subpass_fusion\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_subpass_fusion_v2\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_ir3_texture_prefetch\" value=\"false\" />\n")
-            }
-            GameProfileType.DIABLO -> {
-                optionsBuilder.append("\n            <!-- DIABLO II: RESURRECTED (100% Real Compiled Mesa Turnip Driconf Options) -->\n")
+            GameProfileType.DIABLO,
+            GameProfileType.MARIO_RABBIDS -> {
+                optionsBuilder.append("            <!-- TIER 1 / SNOWDROP & ISOMETRIC ARPGs (100% Real Compiled Mesa Turnip 26.2.0 Options) -->\n")
                 optionsBuilder.append("            <option name=\"tu_allow_concurrent_binning\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"disable_cb\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_dont_care_as_load\" value=\"true\" />\n")
@@ -547,276 +452,54 @@ object PerGameDrircGenerator {
                 optionsBuilder.append("            <option name=\"tu_override_uncached_as_cache_coherent\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"ubwc_coherency_quirk\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_use_tex_coord_round_nearest_even_mode\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_enable_d24s8_border_color_workaround\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_enable_fast_border_color_for_undefined_formats\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_ignore_frag_depth_direction\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"dual_color_blend_by_location\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_allow_oob_indirect_ubo_loads\" value=\"true\" />\n")
             }
-            GameProfileType.STREETS_OF_RAGE_4 -> {
-                optionsBuilder.append("\n            <!-- STREETS OF RAGE 4 & 2D SPRITES (Pristine Pixel Art & Video Cutscenes) -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_bias_control_all_adreno\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_range_unrestricted_a7xx_a8xx\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_dynamic_state_depth_bias_clamp\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_clamp_control_fix\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_a8xx_barycentric_coord_clamp\" value=\"false\" />\n")
-            }
-            GameProfileType.MARIO_RABBIDS -> {
-                optionsBuilder.append("\n            <!-- MARIO + RABBIDS: SNOWDROP ENGINE (Shadow Maps, Exposure & Fullscreen Pass Fix) -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_disable_lrz\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_disable_fast_clears\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_bias_control_all_adreno\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_a8xx_barycentric_coord_clamp\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_barrier_feedback_loops\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_clamp_control_fix\" value=\"true\" />\n")
-            }
-            GameProfileType.XENOBLADE -> {
-                optionsBuilder.append("\n            <!-- XENOBLADE CHRONICLES RULES (Monolith Soft Water & Cloud Depth Stability) -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_clamp_control_fix\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_huge_heap_8gb_align\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_optimal_gmem_tile_allocator\" value=\"true\" />\n")
-            }
-            GameProfileType.RED_DEAD_REDEMPTION -> {
-                optionsBuilder.append("\n            <!-- RED DEAD REDEMPTION RULES (RAGE Engine High Precision Depth) -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_bounds_test\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_dynamic_state_depth_bias_clamp\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_clamp_control_fix\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"true\" />\n")
-            }
-            GameProfileType.SUPER_MARIO_ODYSSEY -> {
-                optionsBuilder.append("\n            <!-- SUPER MARIO ODYSSEY & 3D MARIO (Lossless Fastpath & Ultra Smooth Pacing) -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_ubwc_lossless_fastpath\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_mail_box_vsync_pacing\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_adaptive_frame_pacing\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_bias_control_all_adreno\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_optimal_gmem_tile_allocator\" value=\"true\" />\n")
-            }
-            GameProfileType.SUPER_SMASH_BROS -> {
-                optionsBuilder.append("\n            <!-- SUPER SMASH BROS ULTIMATE (Zero Input Lag & Optimal GMEM Allocation) -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_mail_box_vsync_pacing\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_adaptive_frame_pacing\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_bias_control_all_adreno\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_optimal_gmem_tile_allocator\" value=\"true\" />\n")
-            }
-            GameProfileType.METROID_PRIME -> {
-                optionsBuilder.append("\n            <!-- METROID PRIME & DREAD (Fast ASTC GMEM & Dynamic Depth Bias) -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_fast_astc_decompress_gmem\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_dynamic_state_depth_bias_clamp\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_clamp_control_fix\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"true\" />\n")
-            }
-            GameProfileType.HOGWARTS_LEGACY -> {
-                optionsBuilder.append("\n            <!-- HOGWARTS LEGACY (UE4 Deferred Lighting, Zero Purple/Rainbow Circles, 8GB Huge Heap) -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_disable_fast_clears\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_gmem_pinning_zelda\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_direction_fix\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_huge_heap_8gb_align\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_clamp_control_fix\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_barrier_feedback_loops\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_compute_flush_bits_optimize\" value=\"true\" />\n")
-            }
-            GameProfileType.THE_WITCHER_3 -> {
-                optionsBuilder.append("\n            <!-- THE WITCHER 3 & SKYRIM (REDengine 3 & Creation Engine Precision) -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_huge_heap_8gb_align\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_clamp_control_fix\" value=\"true\" />\n")
-            }
-            GameProfileType.BAYONETTA -> {
-                optionsBuilder.append("\n            <!-- BAYONETTA SERIES (PlatinumGames High Precision Action Flow) -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_bias_control_all_adreno\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_dynamic_state_depth_bias_clamp\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_clamp_control_fix\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_adaptive_frame_pacing\" value=\"true\" />\n")
-            }
-            GameProfileType.MONSTER_HUNTER_RISE -> {
-                optionsBuilder.append("\n            <!-- MONSTER HUNTER RISE & STORIES (Capcom RE Engine Flush Optimization) -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_clamp_control_fix\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_compute_flush_bits_optimize\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_optimal_gmem_tile_allocator\" value=\"true\" />\n")
-            }
-            GameProfileType.POKEMON -> {
-                optionsBuilder.append("\n            <!-- POKEMON SERIES (Game Freak Open World Depth Clamp & LRZ) -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_clamp_control_fix\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_bias_control_all_adreno\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_optimal_gmem_tile_allocator\" value=\"true\" />\n")
-            }
-            GameProfileType.PERSONA_5_ROYAL -> {
-                optionsBuilder.append("\n            <!-- PERSONA & SMT SERIES (Atlus Engine Mailbox Pacing & D32 Depth) -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_bias_control_all_adreno\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_clamp_control_fix\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_adaptive_frame_pacing\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_mail_box_vsync_pacing\" value=\"true\" />\n")
-            }
-            GameProfileType.NIER_AUTOMATA -> {
-                optionsBuilder.append("\n            <!-- NIER: AUTOMATA (PlatinumGames YoRHa GMEM Allocation) -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_clamp_control_fix\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_dynamic_state_depth_bias_clamp\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_optimal_gmem_tile_allocator\" value=\"true\" />\n")
-            }
-            GameProfileType.DOOM_ETERNAL -> {
-                optionsBuilder.append("\n            <!-- DOOM & WOLFENSTEIN (id Tech 6 / 7 Compute Flush & Suballocator) -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_compute_flush_bits_optimize\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_bounds_test\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_suballocator_pool_512k\" value=\"true\" />\n")
-            }
-            GameProfileType.BORDERLANDS -> {
-                optionsBuilder.append("\n            <!-- BORDERLANDS SERIES (Gearbox UE3 / UE4 Flush & Depth Bias) -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_compute_flush_bits_optimize\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_bias_control_all_adreno\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"true\" />\n")
-            }
-            GameProfileType.MORTAL_KOMBAT_1 -> {
-                optionsBuilder.append("\n            <!-- MORTAL KOMBAT 1 & BATMAN ARKHAM (Heavy UE4 Custom Pipelines) -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_compute_flush_bits_optimize\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_a8xx_concurrent_queue_barrier_fix\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_clamp_control_fix\" value=\"true\" />\n")
-            }
-            GameProfileType.MORTAL_KOMBAT_11 -> {
-                optionsBuilder.append("\n            <!-- MORTAL KOMBAT 11 (Stable 60 FPS Pacing, Clean Normal Accuracy, Zero Corruptions) -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_adaptive_frame_pacing\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_a8xx_concurrent_queue_barrier_fix\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"false\" />\n")
-            }
-            GameProfileType.ASSASSINS_CREED -> {
-                optionsBuilder.append("\n            <!-- ASSASSIN'S CREED SERIES (Ubisoft AnvilNext Ocean and Shadows Integrity) -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_clamp_control_fix\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"false\" />\n")
-            }
-            GameProfileType.EA_SPORTS -> {
-                optionsBuilder.append("\n            <!-- EA SPORTS FROSTBITE RULES (Pacing and Command Buffering) -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_adaptive_frame_pacing\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_mail_box_vsync_pacing\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
-            }
-            GameProfileType.ALAN_WAKE -> {
-                optionsBuilder.append("\n            <!-- ALAN WAKE REMASTERED (Pristine White Subtitles, Font Glyph Swizzle and Flashlight HDR) -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_a8_unorm_swizzle_one\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_r8_unorm_swizzle_alpha\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_clamp_control_fix\" value=\"true\" />\n")
-            }
-            GameProfileType.LEGEND_OF_HEROES -> {
-                optionsBuilder.append("\n            <!-- THE LEGEND OF HEROES & FALCOM RULES (LRZ Continuity across CmdBuf) -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_lrz_preserve_across_cmdbuf\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_autotune_bypass_margin\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
-            }
-            GameProfileType.SONIC -> {
-                optionsBuilder.append("\n            <!-- SONIC 3D RULES (Hedgehog Engine 2 Ultra Smooth Pacing) -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_bias_control_all_adreno\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_mail_box_vsync_pacing\" value=\"true\" />\n")
-            }
-            GameProfileType.LITTLE_NIGHTMARES -> {
-                optionsBuilder.append("\n            <!-- LITTLE NIGHTMARES I, II & III (Unreal Engine 4 Bloom & Volumetric Depth Fix) -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_range_unrestricted_a7xx_a8xx\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_clamp_control_fix\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_bounds\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_bounds_test\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_dynamic_state_depth_bias_clamp\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_disable_lossy_ubwc_depth\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_disable_fast_clears\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_subpass_fusion\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_subpass_fusion_v2\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_barrier_feedback_loops\" value=\"true\" />\n")
-            }
+            GameProfileType.STREETS_OF_RAGE_4,
             GameProfileType.DISCO_ELYSIUM -> {
-                optionsBuilder.append("\n            <!-- DISCO ELYSIUM: THE FINAL CUT (Unity Deferred Lighting, Fog Compute & TextMeshPro Swizzle) -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_a8_unorm_swizzle_one\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_r8_unorm_swizzle_alpha\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_barrier_feedback_loops\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_compute_flush_bits_optimize\" value=\"true\" />\n")
+                optionsBuilder.append("            <!-- TIER 6: 2D, INDIE, DOTEMU & SPRITE PRECISION -->\n")
+                optionsBuilder.append("            <option name=\"tu_allow_concurrent_binning\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"disable_cb\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_use_tex_coord_round_nearest_even_mode\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_dont_care_as_load\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"dual_color_blend_by_location\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_allow_oob_indirect_ubo_loads\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"ubwc_coherency_quirk\" value=\"true\" />\n")
             }
-            GameProfileType.UNIVERSAL_DEFAULT -> {
-                optionsBuilder.append("\n            <!-- UNIVERSAL STORM SWITCH DEFAULT ENGINE RULES -->\n")
-                optionsBuilder.append("            <option name=\"tu_tile_discard\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_bias_control_all_adreno\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_range_unrestricted_a7xx_a8xx\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_dynamic_state_depth_bias_clamp\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_bounds\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_depth_clamp_control_fix\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_force_d32_unnormalized\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_indirect_ubo_bounds\" value=\"true\" />\n")
+            GameProfileType.ZELDA,
+            GameProfileType.XENOBLADE,
+            GameProfileType.POKEMON -> {
+                optionsBuilder.append("            <!-- TIER 2: NINTENDO KINGSYSTEM / LUNCHPACK & MONOLITH SOFT -->\n")
+                optionsBuilder.append("            <option name=\"tu_dont_care_as_load\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_allow_concurrent_binning\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"disable_conservative_lrz\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"enable_lrz_fast_clear\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_enable_d24s8_border_color_workaround\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_ignore_frag_depth_direction\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_allow_oob_indirect_ubo_loads\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"ubwc_coherency_quirk\" value=\"true\" />\n")
+            }
+            GameProfileType.SUPER_MARIO_ODYSSEY,
+            GameProfileType.SUPER_SMASH_BROS,
+            GameProfileType.SONIC -> {
+                optionsBuilder.append("            <!-- TIER 5: PURE 3D FIRST-PARTY HIGH-THROUGHPUT ENGINES -->\n")
+                optionsBuilder.append("            <option name=\"tu_allow_concurrent_binning\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_allow_oob_indirect_ubo_loads\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"ubwc_coherency_quirk\" value=\"true\" />\n")
+            }
+            else -> {
+                optionsBuilder.append("            <!-- TIER 3/4/7/0: UNIVERSAL SAFE BASELINE & DEFERRED RENDERERS -->\n")
+                optionsBuilder.append("            <option name=\"tu_dont_care_as_load\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_enable_d24s8_border_color_workaround\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_override_uncached_as_cache_coherent\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"disable_conservative_lrz\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_allow_concurrent_binning\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_use_tex_coord_round_nearest_even_mode\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_allow_oob_indirect_ubo_loads\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"ubwc_coherency_quirk\" value=\"true\" />\n")
             }
         }
 

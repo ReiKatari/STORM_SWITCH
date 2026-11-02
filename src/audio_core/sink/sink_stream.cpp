@@ -4,8 +4,10 @@
 // SPDX-FileCopyrightText: Copyright 2018 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include <algorithm>
 #include <array>
 #include <atomic>
+#include <cstdlib>
 #include <memory>
 #include <span>
 #include <vector>
@@ -109,17 +111,6 @@ void SinkStream::ClearQueue() {
     queued_buffers = 0;
     playing_buffer = {};
     playing_buffer.consumed = true;
-    last_frame.fill(0);
-    drift_ratio = 1.0;
-    drift_integral = 0.0;
-    drift_ema_queue_level = static_cast<f64>(target_queue_size);
-    release_cv.notify_all();
-
-    {
-        std::scoped_lock s_lk{sample_count_lock};
-        last_sample_count_update_time = system.CoreTiming().GetGlobalTimeNs();
-        min_played_sample_count = max_played_sample_count;
-    }
 }
 
 void SinkStream::ProcessAudioIn(std::span<const s16> input_buffer, std::size_t num_frames) {
@@ -193,29 +184,14 @@ void SinkStream::ProcessAudioOutAndRender(std::span<s16> output_buffer, std::siz
         return;
     }
 
-    // Update drift ratio based on queue occupancy
-    {
-        const f64 current_level = static_cast<f64>(queued_buffers.load());
-        drift_ema_queue_level = drift_ema_alpha * current_level + (1.0 - drift_ema_alpha) * drift_ema_queue_level;
-        const f64 error = drift_ema_queue_level - static_cast<f64>(target_queue_size);
-        drift_integral = std::clamp(drift_integral + error * drift_ki, -drift_max, drift_max);
-        drift_ratio = std::clamp(1.0 + error * drift_kp + drift_integral, 1.0 - drift_max, 1.0 + drift_max);
-    }
-
     while (frames_written < num_frames) {
         if (playing_buffer.consumed || playing_buffer.frames == 0) {
             std::unique_lock lk{release_mutex};
 
             if (!queue.TryPop(playing_buffer)) {
                 lk.unlock();
-                // Fade out over remaining frames to avoid popping
-                const size_t fade_frames = num_frames - frames_written;
-                for (size_t i = 0; i < fade_frames; i++) {
-                    const f32 fade = 1.0f - static_cast<f32>(i) / static_cast<f32>(std::max<size_t>(fade_frames, 1));
-                    for (size_t ch = 0; ch < frame_size; ch++) {
-                        output_buffer[(frames_written + i) * frame_size + ch] = static_cast<s16>(last_frame[ch] * fade);
-                    }
-                }
+                for (size_t i = frames_written; i < num_frames; i++)
+                    std::memcpy(&output_buffer[i * frame_size], last_frame.data(), frame_size_bytes);
                 frames_written = num_frames;
                 continue;
             }
@@ -227,56 +203,29 @@ void SinkStream::ProcessAudioOutAndRender(std::span<s16> output_buffer, std::siz
 
         const size_t frames_available = std::min<u64>(playing_buffer.frames - playing_buffer.frames_played, num_frames - frames_written);
 
-        const size_t frames_to_consume = static_cast<size_t>(std::ceil(static_cast<f64>(frames_available) * drift_ratio));
-        const size_t actual_consume = std::min(frames_to_consume, static_cast<size_t>(playing_buffer.frames - playing_buffer.frames_played));
-
-        if (actual_consume == frames_available) {
-            samples_buffer.Pop(&output_buffer[frames_written * frame_size], frames_available * frame_size);
-        } else {
-            // High-fidelity Dynamic Time Stretching with 4-point Hermite interpolation (zero allocation)
-            const size_t required_samples = actual_consume * frame_size;
-            if (resample_scratch.size() < required_samples) {
-                resample_scratch.resize(required_samples);
-            }
-            samples_buffer.Pop(resample_scratch.data(), required_samples);
-
-            const auto Hermite = [](f64 p0, f64 p1, f64 p2, f64 p3, f64 t) -> s16 {
-                const f64 c0 = p1;
-                const f64 c1 = 0.5 * (p2 - p0);
-                const f64 c2 = p0 - 2.5 * p1 + 2.0 * p2 - 0.5 * p3;
-                const f64 c3 = 0.5 * (p3 - p0) + 1.5 * (p1 - p2);
-                const f64 result = ((c3 * t + c2) * t + c1) * t + c0;
-                return static_cast<s16>(std::clamp<f64>(result, -32768.0, 32767.0));
-            };
-
-            for (size_t i = 0; i < frames_available; i++) {
-                const f64 src_idx = static_cast<f64>(i) * drift_ratio;
-                const size_t idx1 = std::min(static_cast<size_t>(src_idx), actual_consume - 1);
-                const size_t idx0 = (idx1 > 0) ? (idx1 - 1) : 0;
-                const size_t idx2 = std::min(idx1 + 1, actual_consume - 1);
-                const size_t idx3 = std::min(idx1 + 2, actual_consume - 1);
-                const f64 t = src_idx - std::floor(src_idx);
-
-                for (size_t ch = 0; ch < frame_size; ch++) {
-                    const f64 p0 = resample_scratch[idx0 * frame_size + ch];
-                    const f64 p1 = resample_scratch[idx1 * frame_size + ch];
-                    const f64 p2 = resample_scratch[idx2 * frame_size + ch];
-                    const f64 p3 = resample_scratch[idx3 * frame_size + ch];
-                    output_buffer[(frames_written + i) * frame_size + ch] = Hermite(p0, p1, p2, p3, t);
-                }
-            }
-        }
+        samples_buffer.Pop(&output_buffer[frames_written * frame_size], frames_available * frame_size);
 
         frames_written += frames_available;
         actual_frames_written += frames_available;
-        playing_buffer.frames_played += actual_consume;
+        playing_buffer.frames_played += frames_available;
 
         if (playing_buffer.frames_played >= playing_buffer.frames)
             playing_buffer.consumed = true;
     }
 
-    if (frames_written > 0) {
-        std::memcpy(last_frame.data(), &output_buffer[(frames_written - 1) * frame_size], frame_size_bytes);
+    std::memcpy(last_frame.data(), &output_buffer[(frames_written - 1) * frame_size], frame_size_bytes);
+
+    // EDEN_NX2_AUDIO_LEVEL: log the output peak about every two seconds (is a game audible?).
+    if (static const bool meter = std::getenv("EDEN_NX2_AUDIO_LEVEL") != nullptr; meter) {
+        for (size_t i = 0; i < num_frames * frame_size; ++i) {
+            level_peak = std::max<s32>(level_peak, std::abs(static_cast<s32>(output_buffer[i])));
+        }
+        level_frames += num_frames;
+        if (level_frames >= TargetSampleRate * 2) {
+            LOG_INFO(Audio, "Audio output peak over {} frames: {} of 32767", level_frames, level_peak);
+            level_frames = 0;
+            level_peak = 0;
+        }
     }
 
     {

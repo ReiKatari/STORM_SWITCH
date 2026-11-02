@@ -27,7 +27,7 @@ vec3 CasFilter(sampler2D tex, vec2 uv) {
     vec3 max_rgb2 = max(max(max(max_rgb, a), max(c, g)), i);
     max_rgb += max_rgb2;
 
-    vec3 rcp_max = 1.0 / max_rgb;
+    vec3 rcp_max = 1.0 / max(max_rgb, vec3(0.0001));
     vec3 amp = clamp(min(min_rgb, 2.0 - max_rgb) * rcp_max, 0.0, 1.0);
     amp = sqrt(amp);
 

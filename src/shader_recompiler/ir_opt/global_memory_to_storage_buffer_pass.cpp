@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <optional>
+#include <unordered_map>
 
 #include <boost/container/flat_set.hpp>
 #include <boost/container/small_vector.hpp>
@@ -54,6 +55,11 @@ struct StorageInfo {
     StorageBufferSet set;
     StorageInstVector to_replace;
     StorageWritesSet writes;
+    /// Track results by the instruction the search starts from, with and without the NVN bias:
+    /// accesses through the same address share them, and a search can walk thousands of
+    /// instructions (the IR does not change while storage buffers are collected).
+    std::unordered_map<const IR::Inst*, std::optional<StorageBufferAddr>> biased_tracks;
+    std::unordered_map<const IR::Inst*, std::optional<StorageBufferAddr>> unbiased_tracks;
 };
 
 /// Returns true when the instruction is a global memory instruction
@@ -388,16 +394,28 @@ void CollectStorageBuffers(IR::Block& block, IR::Inst& inst, StorageInfo& info) 
     }
     // First try to find storage buffers in the NVN address
     const IR::U32 low_addr{low_addr_info->value};
-    std::optional<StorageBufferAddr> storage_buffer{Track(low_addr, &nvn_bias)};
+    const auto cached_track = [&](const Bias* bias, auto& cache) {
+        if (low_addr.IsImmediate()) {
+            return Track(low_addr, bias);
+        }
+        const IR::Inst* const start{low_addr.InstRecursive()};
+        if (const auto it = cache.find(start); it != cache.end()) {
+            return it->second;
+        }
+        const std::optional<StorageBufferAddr> result{Track(low_addr, bias)};
+        cache.emplace(start, result);
+        return result;
+    };
+    std::optional<StorageBufferAddr> storage_buffer{cached_track(&nvn_bias, info.biased_tracks)};
     if (!storage_buffer) {
         // If it fails, track without a bias
-        storage_buffer = Track(low_addr, nullptr);
+        storage_buffer = cached_track(nullptr, info.unbiased_tracks);
         if (!storage_buffer) {
             // If that also fails, use NVN fallbacks
             LOG_WARNING(Shader, "Storage buffer failed to track, using global memory fallbacks");
             return;
         }
-        LOG_WARNING(Shader, "Storage buffer tracked without bias, index {} offset {}",
+        LOG_DEBUG(Shader, "Storage buffer tracked without bias, index {} offset {}",
                     storage_buffer->index, storage_buffer->offset);
     }
     // Collect storage buffer and the instruction
@@ -552,17 +570,6 @@ void GlobalMemoryToStorageBufferPass(IR::Program& program, const HostTranslateIn
             StorageOffset(*block, *inst, storage_buffer, u32(host_info.min_ssbo_alignment))};
         Replace(*block, *inst, index, offset);
     }
-}
-
-template <typename Descriptors, typename Descriptor, typename Func>
-static u32 Add(Descriptors& descriptors, const Descriptor& desc, Func&& pred) {
-    // TODO: Handle arrays
-    const auto it{std::ranges::find_if(descriptors, pred)};
-    if (it != descriptors.end()) {
-        return static_cast<u32>(std::distance(descriptors.begin(), it));
-    }
-    descriptors.push_back(desc);
-    return static_cast<u32>(descriptors.size()) - 1;
 }
 
 void JoinStorageInfo(Info& base, Info& source) {

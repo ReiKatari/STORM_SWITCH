@@ -6,12 +6,16 @@
 
 #include <openssl/evp.h>
 
+#include "common/hex_util.h"
 #include "common/settings.h"
 #include "common/uuid.h"
+#include "core/core.h"
+#include "core/file_sys/common_funcs.h"
 #include "core/file_sys/control_metadata.h"
 #include "core/file_sys/patch_manager.h"
 #include "core/file_sys/registered_cache.h"
 #include "core/file_sys/savedata_factory.h"
+#include "core/hle/kernel/k_process.h"
 #include "core/hle/kernel/k_transfer_memory.h"
 #include "core/hle/result.h"
 #include "core/hle/service/am/am_results.h"
@@ -25,8 +29,30 @@
 #include "core/hle/service/ns/application_manager_interface.h"
 #include "core/hle/service/ns/service_getter_interface.h"
 #include "core/hle/service/sm/sm.h"
+#include "core/loader/loader.h"
 
 namespace Service::AM {
+
+namespace {
+
+FileSys::PatchManager::Metadata GetApplicationMetadata(Core::System& system, u64 program_id) {
+    auto metadata = FileSys::PatchManager::GetMetadataFromBaseOrUpdate(system, program_id);
+    if (metadata.first != nullptr) {
+        return metadata;
+    }
+
+    const auto application_id = FileSys::GetBaseTitleID(program_id);
+    if (application_id == program_id) {
+        return metadata;
+    }
+
+    LOG_DEBUG(Service_AM,
+              "no metadata for program_id={:016X}, falling back to application_id={:016X}",
+              program_id, application_id);
+    return FileSys::PatchManager::GetMetadataFromBaseOrUpdate(system, application_id);
+}
+
+} // Anonymous namespace
 
 IApplicationFunctions::IApplicationFunctions(Core::System& system_, std::shared_ptr<Applet> applet)
     : ServiceFramework{system_, "IApplicationFunctions"}, m_applet{std::move(applet)} {
@@ -54,7 +80,7 @@ IApplicationFunctions::IApplicationFunctions(Core::System& system_, std::shared_
         {32, D<&IApplicationFunctions::BeginBlockingHomeButton>, "BeginBlockingHomeButton"},
         {33, D<&IApplicationFunctions::EndBlockingHomeButton>, "EndBlockingHomeButton"},
         {34, nullptr, "SelectApplicationLicense"},
-        {35, D<&IApplicationFunctions::GetDeviceSaveDataSizeMax>, "GetDeviceSaveDataSizeMax"},
+        {35, nullptr, "GetDeviceSaveDataSizeMax"},
         {36, nullptr, "GetLimitedApplicationLicense"},
         {37, nullptr, "GetLimitedApplicationLicenseUpgradableEvent"},
         {40, D<&IApplicationFunctions::NotifyRunning>, "NotifyRunning"},
@@ -78,31 +104,26 @@ IApplicationFunctions::IApplicationFunctions(Core::System& system_, std::shared_
         {121, D<&IApplicationFunctions::ClearUserChannel>, "ClearUserChannel"},
         {122, D<&IApplicationFunctions::UnpopToUserChannel>, "UnpopToUserChannel"},
         {123, D<&IApplicationFunctions::GetPreviousProgramIndex>, "GetPreviousProgramIndex"},
-        {124, D<&IApplicationFunctions::EnableApplicationAllThreadDumpOnCrash>, "EnableApplicationAllThreadDumpOnCrash"},
+        {124, nullptr, "EnableApplicationAllThreadDumpOnCrash"},
         {130, D<&IApplicationFunctions::GetGpuErrorDetectedSystemEvent>, "GetGpuErrorDetectedSystemEvent"},
-        {131, D<&IApplicationFunctions::SetDelayTimeToAbortOnGpuError>, "SetDelayTimeToAbortOnGpuError"},
+        {131, nullptr, "SetDelayTimeToAbortOnGpuError"},
         {140, D<&IApplicationFunctions::GetFriendInvitationStorageChannelEvent>, "GetFriendInvitationStorageChannelEvent"},
         {141, D<&IApplicationFunctions::TryPopFromFriendInvitationStorageChannel>, "TryPopFromFriendInvitationStorageChannel"},
         {150, D<&IApplicationFunctions::GetNotificationStorageChannelEvent>, "GetNotificationStorageChannelEvent"},
-        {151, D<&IApplicationFunctions::TryPopFromNotificationStorageChannel>, "TryPopFromNotificationStorageChannel"},
+        {151, nullptr, "TryPopFromNotificationStorageChannel"},
         {160, D<&IApplicationFunctions::GetHealthWarningDisappearedSystemEvent>, "GetHealthWarningDisappearedSystemEvent"},
-        {170, D<&IApplicationFunctions::SetHdcpAuthenticationActivated>, "SetHdcpAuthenticationActivated"},
-        {180, D<&IApplicationFunctions::GetLaunchRequiredVersion>, "GetLaunchRequiredVersion"},
-        {181, D<&IApplicationFunctions::UpgradeLaunchRequiredVersion>, "UpgradeLaunchRequiredVersion"},
-        {190, D<&IApplicationFunctions::SendServerMaintenanceOverlayNotification>, "SendServerMaintenanceOverlayNotification"},
-        {200, D<&IApplicationFunctions::GetLastApplicationExitReason>, "GetLastApplicationExitReason"},
-        {210, D<&IApplicationFunctions::GetUnknownEvent210>, "Unknown210"},
-        {220, D<&IApplicationFunctions::Unknown220>, "Unknown220"}, // [20.0.0+]
-        {230, D<&IApplicationFunctions::Unknown220>, "Unknown230"}, // [21.0.0+]
-        {240, D<&IApplicationFunctions::Unknown330>, "Unknown240"}, // [22.0.0+]
-        {250, D<&IApplicationFunctions::Unknown220>, "Unknown250"}, // [23.0.0+]
+        {170, nullptr, "SetHdcpAuthenticationActivated"},
+        {180, nullptr, "GetLaunchRequiredVersion"},
+        {181, nullptr, "UpgradeLaunchRequiredVersion"},
+        {190, nullptr, "SendServerMaintenanceOverlayNotification"},
+        {200, nullptr, "GetLastApplicationExitReason"},
+        {210, D<&IApplicationFunctions::GetOperationModeRefreshEvent>, "GetOperationModeRefreshEvent (guessed)"},
+        {220, nullptr, "Unknown220"}, // [20.0.0+]
         {300, nullptr, "CreateMovieWriter"}, // [19.0.0+]
-        {310, D<&IApplicationFunctions::Unknown310>, "Unknown310"}, // [20.0.0+]
-        {320, D<&IApplicationFunctions::GetScreenShotAndContinuousRecordingInitiallyEnabled>,
-         "GetScreenShotAndContinuousRecordingInitiallyEnabled"},
+        {310, nullptr, "Unknown310"}, // [20.0.0+]
+        {320, D<&IApplicationFunctions::Unknown320>, "Unknown320"}, // [20.0.0+]
+        {321, D<&IApplicationFunctions::Unknown321>, "Unknown321"}, // Switch 2
         {330, D<&IApplicationFunctions::Unknown330>, "Unknown330"}, // [20.0.0+]
-        {340, D<&IApplicationFunctions::Unknown330>, "Unknown340"}, // [22.0.0+]
-        {350, D<&IApplicationFunctions::Unknown310>, "Unknown350"}, // [23.0.0+]
         {500, nullptr, "StartContinuousRecordingFlushForDebug"},
         {1000, nullptr, "CreateMovieMaker"},
         {1001, D<&IApplicationFunctions::PrepareForJit>, "PrepareForJit"},
@@ -145,12 +166,9 @@ Result IApplicationFunctions::EnsureSaveData(Out<u64> out_size, Common::UUID use
     attribute.user_id = user_id.AsU128();
     attribute.type = FileSys::SaveDataType::Account;
 
-    auto controller = system.GetFileSystemController().OpenSaveDataController();
     FileSys::VirtualDir save_data{};
-    auto res = controller->OpenSaveData(&save_data, FileSys::SaveDataSpaceId::User, attribute);
-    if (R_FAILED(res)) {
-        res = controller->CreateSaveData(&save_data, FileSys::SaveDataSpaceId::User, attribute);
-    }
+    R_TRY(system.GetFileSystemController().OpenSaveDataController()->CreateSaveData(
+        &save_data, FileSys::SaveDataSpaceId::User, attribute));
 
     *out_size = 0;
     R_SUCCEED();
@@ -165,7 +183,7 @@ Result IApplicationFunctions::GetDesiredLanguage(Out<u64> out_language_code) {
     // Default to 0 (all languages supported)
     u32 supported_languages = 0;
 
-    const auto res = FileSys::PatchManager::GetMetadataFromBaseOrUpdate(system, m_applet->program_id);
+    const auto res = GetApplicationMetadata(system, m_applet->program_id);
     if (res.first != nullptr) {
         supported_languages = res.first->GetSupportedLanguages();
     }
@@ -189,11 +207,10 @@ Result IApplicationFunctions::GetDesiredLanguage(Out<u64> out_language_code) {
 }
 
 Result IApplicationFunctions::SetTerminateResult(Result terminate_result) {
-    LOG_CRITICAL(Service_AM, "SetTerminateResult: called, result={:#x} ({:04}-{:04})! Backtrace:",
-                 terminate_result.GetInnerValue(),
-                 static_cast<u32>(terminate_result.GetModule()) + 2000,
-                 terminate_result.GetDescription());
-    system.CurrentPhysicalCore().LogBacktrace(system.Kernel());
+    LOG_INFO(Service_AM, "(STUBBED) called, result={:#x} ({:04}-{:04})",
+             terminate_result.GetInnerValue(),
+             static_cast<u32>(terminate_result.GetModule()) + 2000,
+             terminate_result.GetDescription());
 
     std::scoped_lock lk{m_applet->lock};
     m_applet->terminate_result = terminate_result;
@@ -201,18 +218,32 @@ Result IApplicationFunctions::SetTerminateResult(Result terminate_result) {
     R_SUCCEED();
 }
 
+// A loose ExeFS/RomFS dump has no installed control data: its loader's (a control.nacp next to the
+// dump, else the RomFS's version tag). Only for the program it loaded, not for library applets.
+bool IApplicationFunctions::LooseDumpDisplayVersion(std::string& version) {
+    auto& loader = system.GetAppLoader();
+    u64 program_id{};
+    if (loader.ReadProgramId(program_id) != Loader::ResultStatus::Success ||
+        FileSys::GetBaseTitleID(program_id) != FileSys::GetBaseTitleID(m_applet->program_id) ||
+        loader.ReadDisplayVersion(version) != Loader::ResultStatus::Success || version.empty()) {
+        return false;
+    }
+    LOG_INFO(Service_AM, "Display version {} from the dump's files", version);
+    return true;
+}
+
 Result IApplicationFunctions::GetDisplayVersion(Out<DisplayVersion> out_display_version) {
     LOG_DEBUG(Service_AM, "called");
 
-    const auto res = FileSys::PatchManager::GetMetadataFromBaseOrUpdate(system, m_applet->program_id);
+    const auto res = GetApplicationMetadata(system, m_applet->program_id);
+    std::string version;
     if (res.first != nullptr) {
-        const auto& version = res.first->GetVersionString();
-        std::memcpy(out_display_version->string.data(), version.data(),
-                    (std::min)(version.size(), out_display_version->string.size()));
-    } else {
-        static constexpr char default_version[]{"1.0.0"};
-        std::memcpy(out_display_version->string.data(), default_version, sizeof(default_version));
+        version = res.first->GetVersionString();
+    } else if (!LooseDumpDisplayVersion(version)) {
+        version = "1.0.0";
     }
+    std::memcpy(out_display_version->string.data(), version.data(),
+                (std::min)(version.size(), out_display_version->string.size()));
 
     out_display_version->string[out_display_version->string.size() - 1] = '\0';
     R_SUCCEED();
@@ -339,10 +370,11 @@ Result IApplicationFunctions::GetPseudoDeviceId(Out<Common::UUID> out_pseudo_dev
     // This should be hashed with the device specific hash
     // for now this will do
     const auto res = FileSys::PatchManager::GetMetadataFromBaseOrUpdate(system, m_applet->program_id);
-    R_UNLESS(res.first != nullptr, ResultUnknown);
     std::array<u8, EVP_MAX_MD_SIZE> hash;
     unsigned int hash_len = 0;
-    auto const seed = res.first->raw.seed_for_pseudo_device_id;
+    // Loose ExeFS boots have no control.nacp; seed from the program id instead of failing.
+    auto const seed = res.first != nullptr ? res.first->raw.seed_for_pseudo_device_id
+                                           : m_applet->program_id;
     EVP_MD_CTX *ctx = EVP_MD_CTX_new();
     auto const algorithm = EVP_sha1();
     EVP_DigestInit_ex(ctx, algorithm, nullptr);
@@ -442,15 +474,21 @@ Result IApplicationFunctions::ExecuteProgram(ProgramSpecifyKind kind, u64 value)
 
 // https://switchbrew.org/wiki/Applet_Manager_services#CreateApplicationAndRequestToStart
 Result IApplicationFunctions::CreateApplicationAndRequestToStart(u64 application_id) {
-    LOG_INFO(Service_AM, "called, application_id={:016X}", application_id);
+    LOG_INFO(Service_AM, "called, application_id={:016X} current_program_id={:016X}", application_id, m_applet->program_id);
 
-    // If application_id is 0, relaunch the current application
-    const u64 target_application_id =
-        (application_id == 0) ? m_applet->program_id : application_id;
+    if (application_id == 0 ||
+        FileSys::GetBaseTitleID(application_id) == FileSys::GetBaseTitleID(m_applet->program_id)) {
+        const auto program_index = application_id == 0
+                                       ? 0
+                                       : application_id - FileSys::GetBaseTitleID(application_id);
 
-    system.GetUserChannel() = m_applet->user_channel_launch_parameter;
-    system.ExecuteProgram(target_application_id);
-    R_SUCCEED();
+        system.GetUserChannel() = m_applet->user_channel_launch_parameter;
+        system.ExecuteProgram(program_index);
+        R_SUCCEED();
+    }
+
+    LOG_ERROR(Service_AM, "Launching a different application ({:016X}) is not implemented!", application_id);
+    R_THROW(ResultUnknown);
 }
 
 Result IApplicationFunctions::ClearUserChannel() {
@@ -518,82 +556,30 @@ Result IApplicationFunctions::GetHealthWarningDisappearedSystemEvent(
     R_SUCCEED();
 }
 
-Result IApplicationFunctions::GetDeviceSaveDataSizeMax(Out<u64> out_max_normal_size,
-                                                        Out<u64> out_max_journal_size) {
-    LOG_WARNING(Service_AM, "(STUBBED) called");
-    *out_max_normal_size = 0xFFFFFFF;
-    *out_max_journal_size = 0xFFFFFFF;
-    R_SUCCEED();
-}
-
-Result IApplicationFunctions::EnableApplicationAllThreadDumpOnCrash() {
-    LOG_WARNING(Service_AM, "(STUBBED) called");
-    R_SUCCEED();
-}
-
-Result IApplicationFunctions::SetDelayTimeToAbortOnGpuError() {
-    LOG_WARNING(Service_AM, "(STUBBED) called");
-    R_SUCCEED();
-}
-
-Result IApplicationFunctions::TryPopFromNotificationStorageChannel(
-    Out<SharedPointer<IStorage>> out_storage) {
-    LOG_DEBUG(Service_AM, "called");
-    return AM::ResultNoDataInChannel;
-}
-
-Result IApplicationFunctions::SetHdcpAuthenticationActivated(bool activated) {
-    LOG_WARNING(Service_AM, "(STUBBED) called, activated={}", activated);
-    R_SUCCEED();
-}
-
-Result IApplicationFunctions::GetLaunchRequiredVersion(Out<u32> out_version) {
-    LOG_WARNING(Service_AM, "(STUBBED) called");
-    *out_version = 0;
-    R_SUCCEED();
-}
-
-Result IApplicationFunctions::UpgradeLaunchRequiredVersion() {
-    LOG_WARNING(Service_AM, "(STUBBED) called");
-    R_SUCCEED();
-}
-
-Result IApplicationFunctions::SendServerMaintenanceOverlayNotification() {
-    LOG_WARNING(Service_AM, "(STUBBED) called");
-    R_SUCCEED();
-}
-
-Result IApplicationFunctions::GetLastApplicationExitReason(Out<s32> out_reason) {
-    LOG_WARNING(Service_AM, "(STUBBED) called");
-    *out_reason = 0;
-    R_SUCCEED();
-}
-
-Result IApplicationFunctions::GetUnknownEvent210(
+// The Switch 2 nn::oe::GetOperationMode caches the mode and only asks ICommonStateGetter again
+// once this event is signaled, so it has to fire on every docked/handheld change. Switch 1 titles
+// keep the event that never fires, as its use there is unknown.
+Result IApplicationFunctions::GetOperationModeRefreshEvent(
     OutCopyHandle<Kernel::KReadableEvent> out_event) {
     LOG_DEBUG(Service_AM, "called");
-    *out_event = m_applet->unknown_event.GetHandle();
+    const auto* process = m_applet->process ? m_applet->process->GetHandle() : nullptr;
+    if (process != nullptr && process->IsSwitch2()) {
+        *out_event = m_applet->lifecycle_manager.GetOperationModeRefreshEvent().GetHandle();
+    } else {
+        *out_event = m_applet->unknown_event.GetHandle();
+    }
     R_SUCCEED();
 }
 
-Result IApplicationFunctions::Unknown220() {
-    LOG_DEBUG(Service_AM, "(STUBBED) called");
+Result IApplicationFunctions::Unknown320() {
+    // Called by Switch 2 titles during nn::oe::Initialize; arguments unknown.
+    LOG_WARNING(Service_AM, "(STUBBED) called");
     R_SUCCEED();
 }
 
-Result IApplicationFunctions::Unknown310() {
-    LOG_DEBUG(Service_AM, "(STUBBED) called");
-    R_SUCCEED();
-}
-
-Result IApplicationFunctions::GetScreenShotAndContinuousRecordingInitiallyEnabled(
-    Out<bool> out_screenshot_enabled, Out<bool> out_recording_enabled) {
-    std::scoped_lock lk{m_applet->lock};
-    *out_screenshot_enabled = m_applet->screenshot_permission != ScreenshotPermission::Disable;
-    *out_recording_enabled = m_applet->game_play_recording_supported &&
-                             m_applet->game_play_recording_state == GamePlayRecordingState::Enabled;
-    LOG_DEBUG(Service_AM, "called, screenshot={}, recording={}", *out_screenshot_enabled,
-              *out_recording_enabled);
+Result IApplicationFunctions::Unknown321() {
+    // Called by Switch 2 titles right after 320; arguments unknown.
+    LOG_WARNING(Service_AM, "(STUBBED) called");
     R_SUCCEED();
 }
 

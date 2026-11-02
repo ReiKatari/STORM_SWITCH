@@ -4,6 +4,8 @@
 // SPDX-FileCopyrightText: Copyright 2018 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include <algorithm>
+#include <array>
 #include <cstring>
 #include <limits>
 #include <optional>
@@ -18,6 +20,7 @@
 #include "video_core/engines/maxwell_3d.h"
 #include "video_core/gpu.h"
 #include "video_core/memory_manager.h"
+#include "video_core/nx2_profile.h"
 #include "video_core/rasterizer_interface.h"
 #include "video_core/textures/texture.h"
 
@@ -157,6 +160,8 @@ bool Maxwell3D::IsMethodExecutable(u32 method) {
     case MAXWELL3D_REG_INDEX(vertex_array_instance_first):
     case MAXWELL3D_REG_INDEX(vertex_array_instance_subsequent):
     case MAXWELL3D_REG_INDEX(draw_texture.src_y0):
+    case RootTables::SelectMethod:
+    case RootTables::LoadMethod:
     case MAXWELL3D_REG_INDEX(wait_for_idle):
     case MAXWELL3D_REG_INDEX(shadow_ram_control):
     case MAXWELL3D_REG_INDEX(load_mme.instruction_ptr):
@@ -221,10 +226,28 @@ void Maxwell3D::ProcessMacro(Core::System& system, u32 method, const u32* base_s
         executing_macro = method;
     }
 
-    macro_params.insert(macro_params.end(), base_start, base_start + amount);
     macro_segments.emplace_back(current_dma_segment, amount);
     current_macro_dirty |= current_dirty;
     current_dirty = false;
+
+    // Nearly every call arrives whole in one method run (title 1 makes ~1,000,000 a second):
+    // copy it to the stack instead of growing the parameter vector. Still a copy: the command
+    // list is often guest memory read in place, which the guest may reuse while the macro runs
+    // (and the macro memo stores the parameters after it ran). Only accurate GPU mode rewrites
+    // the parameters in place (RefreshParameters), so it keeps the vector.
+    // EDEN_NX2_MACRO_COPY=1: always use the vector (for comparisons).
+    static const bool always_copy = std::getenv("EDEN_NX2_MACRO_COPY") != nullptr;
+    if (is_last_call && macro_params.empty() && amount <= 64 && !always_copy &&
+        !Settings::IsGPULevelHigh()) {
+        std::array<u32, 64> parameters;
+        std::copy_n(base_start, amount, parameters.begin());
+        ConsumeSink(system);
+        CallMacroMethod(system, executing_macro, std::span<const u32>{parameters.data(), amount});
+        macro_segments.clear();
+        current_macro_dirty = false;
+        return;
+    }
+    macro_params.insert(macro_params.end(), base_start, base_start + amount);
 
     // Call the macro when there are no more parameters in the command buffer
     if (is_last_call) {
@@ -316,23 +339,31 @@ u32 Maxwell3D::ProcessShadowRam(u32 method, u32 argument) {
 
 void Maxwell3D::ConsumeSinkImpl(Core::System& system) {
     const auto control = shadow_state.shadow_ram_control;
+    // Sunk methods are state writes only (not in execution_mask): skip unchanged values, as
+    // CallMethod does.
+    const bool skip_same = SkipSameValueWrites();
+    const auto process = [&](u32 method, u32 value) {
+        if (!skip_same || regs.reg_array[method] != value) {
+            ProcessDirtyRegisters(method, value);
+        }
+    };
     if (control == Regs::ShadowRamControl::Track || control == Regs::ShadowRamControl::TrackWithFilter) {
         for (auto [method, value] : method_sink) {
             if (method < Regs::NUM_REGS) {
                 shadow_state.reg_array[method] = value;
-                ProcessDirtyRegisters(method, value);
+                process(method, value);
             }
         }
     } else if (control == Regs::ShadowRamControl::Replay) {
         for (auto [method, value] : method_sink) {
             if (method < Regs::NUM_REGS) {
-                ProcessDirtyRegisters(method, shadow_state.reg_array[method]);
+                process(method, shadow_state.reg_array[method]);
             }
         }
     } else {
         for (auto [method, value] : method_sink) {
             if (method < Regs::NUM_REGS) {
-                ProcessDirtyRegisters(method, value);
+                process(method, value);
             }
         }
     }
@@ -353,6 +384,17 @@ void Maxwell3D::ProcessMethodCall(u32 method, u32 argument, u32 nonshadow_argume
         LOG_INFO(HW_GPU, "Native GPU surface clear: value={:#x}", argument);
     }
     switch (method) {
+    case RootTables::SelectMethod:
+        root_tables.selected = argument & 7;
+        root_tables.offset = (argument >> 8) & 0xff;
+        return;
+    case RootTables::LoadMethod:
+        if (root_tables.offset < 256 && root_tables.offset % 4 == 0) {
+            root_tables.tables[root_tables.selected][root_tables.offset / 4] = argument;
+            root_tables.loaded = true;
+        }
+        root_tables.offset += 4;
+        return;
     case MAXWELL3D_REG_INDEX(wait_for_idle):
         return rasterizer->WaitForIdle();
     case MAXWELL3D_REG_INDEX(shadow_ram_control):
@@ -419,7 +461,7 @@ void Maxwell3D::ProcessMethodCall(u32 method, u32 argument, u32 nonshadow_argume
     }
 }
 
-void Maxwell3D::CallMacroMethod(Core::System& system, u32 method, const std::vector<u32>& parameters) {
+void Maxwell3D::CallMacroMethod(Core::System& system, u32 method, std::span<const u32> parameters) {
     // Reset the current macro.
     executing_macro = 0;
 
@@ -455,7 +497,25 @@ void Maxwell3D::CallMethod(Core::System& system, u32 method, u32 method_argument
     if (method >= Regs::NUM_REGS) {
         return;
     }
+    if (VideoCommon::Nx2Profile::Enabled()) [[unlikely]] {
+        VideoCommon::Nx2Profile::Add(VideoCommon::Nx2Profile::Counter::MethodWrites, 1);
+        if (regs.reg_array[method] == method_argument) {
+            VideoCommon::Nx2Profile::Add(VideoCommon::Nx2Profile::Counter::SameValueWrites, 1);
+        }
+    }
     const u32 argument = ProcessShadowRam(method, method_argument);
+    // A state register written with the value it holds changes nothing: no dirty flags (they
+    // would make the next draw re-check that state), no method processing. Title 1 makes ~6
+    // million 3D register writes a second, ~60% of them same-value, most from macro replays.
+    // Methods with side effects (execution_mask: draws, clears, constant buffer data and
+    // binds, semaphores, ...) always run. EDEN_NX2_SKIP_SAME=0 turns it off.
+    if (!execution_mask[method]) {
+        // ProcessMethodCall (and the draw manager behind it) acts only on executable methods.
+        if (!SkipSameValueWrites() || regs.reg_array[method] != argument) {
+            ProcessDirtyRegisters(method, argument);
+        }
+        return;
+    }
     ProcessDirtyRegisters(method, argument);
     ProcessMethodCall(method, argument, method_argument, is_last_call);
 }

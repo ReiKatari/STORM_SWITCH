@@ -17,6 +17,10 @@
 #include "common/string_util.h"
 #include "core/arm/exclusive_monitor.h"
 #include "core/core.h"
+#include <cstdlib>
+#include "common/cpu_features.h"
+#include "core/file_sys/submission_package.h"
+#include "core/file_sys/program_metadata.h"
 
 #include "launch_timestamp_cache.h"
 #include "core/core_timing.h"
@@ -70,6 +74,8 @@
 
 namespace Core {
 
+std::atomic<u64> g_nx2_present_count{};
+
 FileSys::VirtualFile GetGameFileFromPath(const FileSys::VirtualFilesystem& vfs,
                                          const std::string& path) {
     // To account for split 00+01+etc files.
@@ -108,6 +114,45 @@ FileSys::VirtualFile GetGameFileFromPath(const FileSys::VirtualFilesystem& vfs,
 
     return vfs->OpenFile(path, FileSys::OpenMode::Read);
 }
+
+namespace {
+
+// Switch 2 titles boot as a loose ExeFS or packaged NSP/NSZ/XCI/NCA.
+bool IsSwitch2Program(const FileSys::VirtualFile& file) {
+    if (file == nullptr) {
+        return false;
+    }
+    // Check loose ExeFS
+    const auto dir = file->GetContainingDirectory();
+    const auto npdm = dir != nullptr ? dir->GetFile("main.npdm") : nullptr;
+    if (npdm != nullptr) {
+        FileSys::ProgramMetadata metadata;
+        if (metadata.Load(npdm) == Loader::ResultStatus::Success && metadata.IsSwitch2()) {
+            return true;
+        }
+    }
+    // Check packaged NSP/XCI
+    FileSys::NSP nsp(file);
+    if (nsp.GetStatus() == Loader::ResultStatus::Success) {
+        const auto exefs = nsp.GetExeFS();
+        if (exefs != nullptr) {
+            const auto pkg_npdm = exefs->GetFile("main.npdm");
+            if (pkg_npdm != nullptr) {
+                FileSys::ProgramMetadata metadata;
+                if (metadata.Load(pkg_npdm) == Loader::ResultStatus::Success && metadata.IsSwitch2()) {
+                    return true;
+                }
+            }
+        }
+        const u64 title_id = nsp.GetProgramTitleID();
+        if ((title_id >> 48) == 0x0400 || (title_id >> 40) == 0x040000) {
+            return true;
+        }
+    }
+    return Settings::IsCurrentProgramSwitch2();
+}
+
+} // namespace
 
 struct System::Impl {
     explicit Impl(System& system)
@@ -322,6 +367,33 @@ struct System::Impl {
         }
 
         const auto file = GetGameFileFromPath(virtual_filesystem, filepath);
+
+        const bool switch2_program =
+            virtual_filesystem != nullptr &&
+            IsSwitch2Program(file);
+        Settings::SetCurrentProgramIsSwitch2(switch2_program);
+        Settings::SetAstcRecompressionOverride(std::nullopt);
+
+        // Switch 2 titles size their heap from the total memory and need the 12 GiB layout. Set it
+        // as a per-game value, so RestoreGlobalState brings back the configured setting on exit.
+        if (switch2_program &&
+            Settings::values.memory_layout_mode.GetValue() != Settings::MemoryLayout::Memory_12Gb) {
+            LOG_INFO(Core, "Switch 2 program: using the 12 GiB memory layout");
+            Settings::values.memory_layout_mode.SetGlobal(false);
+            Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_12Gb);
+        }
+
+        // Switch 2 games use a 31.25 MHz counter clock instead of the Switch 1 19.2 MHz clock.
+        // EDEN_NX2_CNTFRQ allows forcing a specific frequency for profiling / experiments.
+        static const u64 forced_cntfrq = [] {
+            const char* value = std::getenv("EDEN_NX2_CNTFRQ");
+            return value != nullptr ? std::strtoull(value, nullptr, 10) : 0ULL;
+        }();
+        const u64 cntfrq = forced_cntfrq != 0 ? forced_cntfrq
+                           : switch2_program  ? Common::WallClock::Switch2CNTFRQ
+                                              : Common::WallClock::CNTFRQ;
+        Common::g_wall_clock.SetGuestCNTFRQ(cntfrq);
+        LOG_INFO(Core, "Guest counter frequency: {} Hz", cntfrq);
 
         // Pre-identify program_id before system initialization to configure memory layout
         if (params.program_id == 0 && file != nullptr) {

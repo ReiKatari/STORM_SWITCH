@@ -224,6 +224,15 @@ bool RangeSet<AddressType>::Empty() const {
 }
 
 template <typename AddressType>
+bool RangeSet<AddressType>::Intersects(AddressType base_address, size_t size) const {
+    bool intersects = false;
+    ForEachInRange(base_address, size, [&](AddressType, AddressType) {
+        intersects = true;
+    });
+    return intersects;
+}
+
+template <typename AddressType>
 template <typename Func>
 void RangeSet<AddressType>::ForEach(Func&& func) const {
     m_impl->ForEach(std::move(func));

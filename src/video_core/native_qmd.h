@@ -1,3 +1,4 @@
+#include <functional>
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
@@ -11,6 +12,8 @@ namespace Tegra {
 
 // Native QMD 3.0 dependency scheduling; nonempty grids require a dispatch backend.
 class NativeQmdScheduler {
+public:
+    std::function<void(std::string_view, std::uint64_t, std::int32_t)> trace;
 public:
     using Word = std::uint32_t;
     using Address = std::uint64_t;

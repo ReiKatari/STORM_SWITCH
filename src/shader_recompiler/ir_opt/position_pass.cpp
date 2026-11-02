@@ -3,6 +3,7 @@
 
 #include <boost/container/small_vector.hpp>
 
+#include "common/settings.h"
 #include "shader_recompiler/frontend/ir/basic_block.h"
 #include "shader_recompiler/frontend/ir/ir_emitter.h"
 #include "shader_recompiler/frontend/ir/value.h"
@@ -74,4 +75,73 @@ void PositionPass(Environment& env, IR::Program& program) {
         }
     }
 }
+// Switch 2 fullscreen blit vertex shaders read a parameter block from constant bank 24 (lowered to
+// bank 17, which games never bind) that the console provides itself. For a blit covering the whole
+// render target it holds: texel size (0x0/0x4, again at 0x10/0x14), size (0x8/0xc), a UV scale of
+// 1 (0x18/0x1c), the UV clamp rectangle 0,0..1,1 (0x30-0x3c, read by the fragment shader), a zero
+// dither bias (0x40-0x48) and the integer source rectangle 0,0..W-1,H-1 (0x50-0x5c).
+void BlitConstantsPass(Environment& env, IR::Program& program) {
+    if (!Settings::IsCurrentProgramSwitch2()) {
+        return;
+    }
+    if (env.ShaderStage() != Stage::VertexB && env.ShaderStage() != Stage::Fragment) {
+        return;
+    }
+    bool used{};
+    for (IR::Block* const block : program.post_order_blocks) {
+        for (IR::Inst& inst : block->Instructions()) {
+            const IR::Opcode opcode{inst.GetOpcode()};
+            if (opcode != IR::Opcode::GetCbufU32 && opcode != IR::Opcode::GetCbufF32 &&
+                opcode != IR::Opcode::GetCbufU32x2) {
+                continue;
+            }
+            if (!inst.Arg(0).IsImmediate() || inst.Arg(0).U32() != 17 || !inst.Arg(1).IsImmediate()) {
+                continue;
+            }
+            IR::IREmitter ir{*block, IR::Block::InstructionList::s_iterator_to(inst)};
+            const IR::F32 width{ir.RenderAreaWidth()};
+            const IR::F32 height{ir.RenderAreaHeight()};
+            const auto word = [&](u32 offset) -> IR::U32 {
+                switch (offset) {
+                case 0x0:
+                case 0x10:
+                    return ir.BitCast<IR::U32>(IR::F32{ir.FPRecip(width)});
+                case 0x4:
+                case 0x14:
+                    return ir.BitCast<IR::U32>(IR::F32{ir.FPRecip(height)});
+                case 0x8:
+                    return ir.BitCast<IR::U32>(width);
+                case 0xc:
+                    return ir.BitCast<IR::U32>(height);
+                case 0x18:
+                case 0x1c:
+                case 0x38:
+                case 0x3c:
+                    return ir.Imm32(0x3f800000U);
+                case 0x58:
+                    return IR::U32{ir.ConvertFToU(32, ir.FPAdd(width, ir.Imm32(-1.0f)))};
+                case 0x5c:
+                    return IR::U32{ir.ConvertFToU(32, ir.FPAdd(height, ir.Imm32(-1.0f)))};
+                default:
+                    return ir.Imm32(0U);
+                }
+            };
+            const u32 offset{inst.Arg(1).U32()};
+            IR::Value value;
+            if (opcode == IR::Opcode::GetCbufU32x2) {
+                value = ir.CompositeConstruct(word(offset), word(offset + 4));
+            } else if (opcode == IR::Opcode::GetCbufF32) {
+                value = ir.BitCast<IR::F32>(word(offset));
+            } else {
+                value = word(offset);
+            }
+            inst.ReplaceUsesWith(value);
+            used = true;
+        }
+    }
+    if (used) {
+        program.info.uses_render_area = true;
+    }
+}
+
 } // namespace Shader::Optimization

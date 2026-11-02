@@ -15,6 +15,7 @@
 #include "core/file_sys/nca_metadata.h"
 #include "core/file_sys/patch_manager.h"
 #include "core/file_sys/registered_cache.h"
+#include "core/file_sys/romfs.h"
 #include "core/file_sys/romfs_factory.h"
 #include "core/file_sys/submission_package.h"
 #include "core/hle/kernel/k_process.h"
@@ -91,32 +92,37 @@ AppLoader_NSP::AppLoader_NSP(FileSys::VirtualFile file_,
             }();
         }
 
-        auto program_file = nsp->GetNCAFile(nsp->GetProgramTitleID(), FileSys::ContentRecordType::Program);
-        if (program_file == nullptr && base_tid != 0) {
-            program_file = nsp->GetNCAFile(base_tid, FileSys::ContentRecordType::Program);
+        std::shared_ptr<FileSys::NCA> base_program_nca = nullptr;
+        if (base_tid != 0) {
+            auto cand = nsp->GetNCA(base_tid, FileSys::ContentRecordType::Program);
+            if (cand && cand->GetStatus() == ResultStatus::Success) {
+                base_program_nca = cand;
+            }
         }
-        if (program_file == nullptr) {
+        if (!base_program_nca) {
             for (const auto& nca_item : nsp->GetNCAsCollapsed()) {
                 if (nca_item && nca_item->GetType() == FileSys::NCAContentType::Program &&
                     (nca_item->GetTitleId() & 0x800) == 0 &&
                     nca_item->GetStatus() == ResultStatus::Success) {
-                    program_file = nca_item->GetBaseFile();
+                    base_program_nca = nca_item;
                     break;
                 }
             }
         }
-        if (program_file == nullptr) {
+        if (!base_program_nca) {
             for (const auto& nca_item : nsp->GetNCAsCollapsed()) {
                 if (nca_item && nca_item->GetType() == FileSys::NCAContentType::Program &&
                     nca_item->GetStatus() == ResultStatus::Success) {
-                    program_file = nca_item->GetBaseFile();
+                    base_program_nca = nca_item;
                     break;
                 }
             }
         }
-
-        if (program_file != nullptr) {
-            secondary_loader = std::make_unique<AppLoader_NCA>(program_file);
+        if (!base_program_nca) {
+            base_program_nca = nsp->GetNCA(nsp->GetProgramTitleID(), FileSys::ContentRecordType::Program);
+        }
+        if (base_program_nca != nullptr && base_program_nca->GetBaseFile() != nullptr) {
+            secondary_loader = std::make_unique<AppLoader_NCA>(base_program_nca->GetBaseFile());
         }
     }
 }
@@ -166,12 +172,18 @@ AppLoader_NSP::LoadResult AppLoader_NSP::Load(Kernel::KProcess& process, Core::S
     }
 
     auto title_id = nsp->GetProgramTitleID();
-    if (!nsp->IsExtractedType() && title_id == 0) {
-        for (const auto& nca_item : nsp->GetNCAsCollapsed()) {
-            if (nca_item && nca_item->GetTitleId() != 0) {
-                if ((nca_item->GetTitleId() & 0x800) == 0 && nca_item->GetType() == FileSys::NCAContentType::Program) {
-                    title_id = nca_item->GetTitleId();
-                    break;
+    if (!nsp->IsExtractedType()) {
+        if ((title_id & 0x800) != 0 || (title_id & 0xFFF) != 0) {
+            title_id = title_id & 0xFFFFFFFFFFFFF000ULL;
+        }
+        if (title_id == 0) {
+            for (const auto& nca_item : nsp->GetNCAsCollapsed()) {
+                if (nca_item && nca_item->GetTitleId() != 0) {
+                    if ((nca_item->GetTitleId() & 0xFFF) == 0 && (nca_item->GetTitleId() & 0x800) == 0 &&
+                        nca_item->GetType() == FileSys::NCAContentType::Program) {
+                        title_id = nca_item->GetTitleId();
+                        break;
+                    }
                 }
             }
         }
@@ -211,12 +223,24 @@ AppLoader_NSP::LoadResult AppLoader_NSP::Load(Kernel::KProcess& process, Core::S
 
     if (!nsp->IsExtractedType() && secondary_loader == nullptr) {
         auto program_nca = nsp->GetNCA(title_id, FileSys::ContentRecordType::Program);
-        if (program_nca == nullptr) {
-            // Search across all collapsed NCAs in the merged multi-content container (Base + Update + DLCs)
+        if (program_nca == nullptr || program_nca->GetStatus() != ResultStatus::Success) {
+            // Prefer base program NCA (!IsUpdate() && (tid & 0x800) == 0) with status Success over update NCA
             for (const auto& nca_item : nsp->GetNCAsCollapsed()) {
                 if (nca_item && nca_item->GetType() == FileSys::NCAContentType::Program &&
-                    (nca_item->GetStatus() == ResultStatus::Success ||
-                     nca_item->GetStatus() == ResultStatus::ErrorMissingBKTRBaseRomFS)) {
+                    !nca_item->IsUpdate() &&
+                    (nca_item->GetTitleId() & 0x800) == 0 &&
+                    nca_item->GetStatus() == ResultStatus::Success) {
+                    program_nca = nca_item;
+                    break;
+                }
+            }
+        }
+        if (program_nca == nullptr || program_nca->GetStatus() != ResultStatus::Success) {
+            // Fallback across all collapsed NCAs in the container for any base program NCA with status Success
+            for (const auto& nca_item : nsp->GetNCAsCollapsed()) {
+                if (nca_item && nca_item->GetType() == FileSys::NCAContentType::Program &&
+                    !nca_item->IsUpdate() &&
+                    nca_item->GetStatus() == ResultStatus::Success) {
                     program_nca = nca_item;
                     break;
                 }
@@ -250,6 +274,40 @@ AppLoader_NSP::LoadResult AppLoader_NSP::Load(Kernel::KProcess& process, Core::S
             system.GetContentProviderUnion().GetSlotProvider(FileSys::ContentProviderUnionSlot::FrontendManual));
         auto* manual = static_cast<FileSys::ManualContentProvider*>(manual_provider);
         if (manual) {
+            std::map<u64, u32> versions;
+            std::map<u64, std::string> version_strings;
+            for (const auto& [map_tid, type_map] : nsp->GetNCAs()) {
+                for (const auto& [tt_rec, nca_item] : type_map) {
+                    if (!nca_item) continue;
+                    const auto [t_type, rec_type] = tt_rec;
+                    if (t_type == FileSys::TitleType::Update && rec_type == FileSys::ContentRecordType::Meta) {
+                        const auto subdirs = nca_item->GetSubdirectories();
+                        if (!subdirs.empty()) {
+                            for (const auto& inner_file : subdirs[0]->GetFiles()) {
+                                if (inner_file->GetExtension() == "cnmt") {
+                                    const FileSys::CNMT cnmt(inner_file);
+                                    versions[cnmt.GetTitleID()] = cnmt.GetTitleVersion();
+                                    break;
+                                }
+                            }
+                        }
+                    } else if (t_type == FileSys::TitleType::Update && rec_type == FileSys::ContentRecordType::Control) {
+                        const auto romfs = nca_item->GetRomFS();
+                        if (romfs) {
+                            const auto extracted = FileSys::ExtractRomFS(romfs);
+                            if (extracted) {
+                                auto ctrl_nacp_file = extracted->GetFile("control.nacp");
+                                if (!ctrl_nacp_file) ctrl_nacp_file = extracted->GetFile("Control.nacp");
+                                if (ctrl_nacp_file) {
+                                    const FileSys::NACP nacp(ctrl_nacp_file);
+                                    version_strings[map_tid] = nacp.GetVersionString();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             for (const auto& [map_tid, type_map] : nsp->GetNCAs()) {
                 for (const auto& [tt_rec, nca_item] : type_map) {
                     if (!nca_item || nca_item->GetBaseFile() == nullptr) {
@@ -260,7 +318,15 @@ AppLoader_NSP::LoadResult AppLoader_NSP::Load(Kernel::KProcess& process, Core::S
                         continue;
                     }
                     const auto [t_type, rec_type] = tt_rec;
-                    manual->AddEntry(t_type, rec_type, nca_tid, nca_item->GetBaseFile());
+                    if (t_type == FileSys::TitleType::Update) {
+                        const u64 update_nca_tid = (nca_tid & 0x800) != 0 ? nca_tid : (nca_tid | 0x800ULL);
+                        u32 ver = versions.count(update_nca_tid) ? versions[update_nca_tid] : (versions.count(nca_tid) ? versions[nca_tid] : 0);
+                        const std::string& ver_str = version_strings.count(update_nca_tid) ? version_strings[update_nca_tid] : (version_strings.count(nca_tid) ? version_strings[nca_tid] : "");
+                        manual->AddEntryWithVersion(t_type, rec_type, update_nca_tid, ver, ver_str, nca_item->GetBaseFile());
+                    } else {
+                        const u64 base_nca_tid = nca_tid & 0xFFFFFFFFFFFFF000ULL;
+                        manual->AddEntry(t_type, rec_type, base_nca_tid, nca_item->GetBaseFile());
+                    }
                     LOG_INFO(Loader, "Registered container NCA into ManualContentProvider: tid={:016X}, type={}, rec_type={}",
                              nca_tid, static_cast<int>(t_type), static_cast<int>(rec_type));
                 }
@@ -271,14 +337,32 @@ AppLoader_NSP::LoadResult AppLoader_NSP::Load(Kernel::KProcess& process, Core::S
     auto result = secondary_loader ? secondary_loader->Load(process, system)
                                    : LoadResult{ResultStatus::ErrorNSPMissingProgramNCA, {}};
     if (result.first != ResultStatus::Success) {
+        LOG_WARNING(Loader, "secondary_loader->Load returned {}, trying fallback across all collapsed NCAs...", result.first);
         for (const auto& nca_item : nsp->GetNCAsCollapsed()) {
-            if (nca_item && nca_item->GetExeFS() != nullptr) {
+            if (nca_item && nca_item->GetType() == FileSys::NCAContentType::Program &&
+                (nca_item->GetTitleId() & 0x800) == 0 &&
+                nca_item->GetStatus() == ResultStatus::Success &&
+                nca_item->GetExeFS() != nullptr) {
                 AppLoader_NCA fallback_loader(nca_item->GetBaseFile());
                 const auto fallback_res = fallback_loader.Load(process, system);
                 if (fallback_res.first == ResultStatus::Success) {
                     secondary_loader = std::make_unique<AppLoader_NCA>(nca_item->GetBaseFile());
                     result = fallback_res;
                     break;
+                }
+            }
+        }
+        if (result.first != ResultStatus::Success) {
+            for (const auto& nca_item : nsp->GetNCAsCollapsed()) {
+                if (nca_item && nca_item->GetExeFS() != nullptr &&
+                    nca_item->GetStatus() == ResultStatus::Success) {
+                    AppLoader_NCA fallback_loader(nca_item->GetBaseFile());
+                    const auto fallback_res = fallback_loader.Load(process, system);
+                    if (fallback_res.first == ResultStatus::Success) {
+                        secondary_loader = std::make_unique<AppLoader_NCA>(nca_item->GetBaseFile());
+                        result = fallback_res;
+                        break;
+                    }
                 }
             }
         }
@@ -352,7 +436,7 @@ ResultStatus AppLoader_NSP::ReadRomFS(FileSys::VirtualFile& out_file) {
     }
     // 1. Try base program NCA RomFS
     auto base_nca = nsp->GetNCA(nsp->GetProgramTitleID(), FileSys::ContentRecordType::Program);
-    if (base_nca != nullptr && base_nca->GetRomFS() != nullptr) {
+    if (base_nca != nullptr && base_nca->GetStatus() == ResultStatus::Success && base_nca->GetRomFS() != nullptr) {
         out_file = base_nca->GetRomFS();
         return ResultStatus::Success;
     }
@@ -360,6 +444,7 @@ ResultStatus AppLoader_NSP::ReadRomFS(FileSys::VirtualFile& out_file) {
     for (const auto& nca_item : nsp->GetNCAsCollapsed()) {
         if (nca_item && nca_item->GetType() == FileSys::NCAContentType::Program &&
             (nca_item->GetTitleId() & 0x800) == 0 &&
+            nca_item->GetStatus() == ResultStatus::Success &&
             nca_item->GetRomFS() != nullptr) {
             out_file = nca_item->GetRomFS();
             return ResultStatus::Success;
@@ -368,6 +453,7 @@ ResultStatus AppLoader_NSP::ReadRomFS(FileSys::VirtualFile& out_file) {
     // 3. Try any program NCA with valid RomFS
     for (const auto& nca_item : nsp->GetNCAsCollapsed()) {
         if (nca_item && nca_item->GetType() == FileSys::NCAContentType::Program &&
+            nca_item->GetStatus() == ResultStatus::Success &&
             nca_item->GetRomFS() != nullptr) {
             out_file = nca_item->GetRomFS();
             return ResultStatus::Success;

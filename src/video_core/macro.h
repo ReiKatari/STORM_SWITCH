@@ -8,6 +8,10 @@
 
 #include <memory>
 #include "video_core/macro_turing.h"
+
+namespace Tegra {
+class TuringMacroJit;
+}
 #include <span>
 #include <variant>
 #include <vector>
@@ -226,13 +230,18 @@ struct MacroEngine {
     inline void AddCode(u32 method, u32 data) noexcept {
         if (native_turing) {
             if (native_write_offset < native_code.size()) native_code[native_write_offset++] = data;
+            ++native_code_generation;
             return;
         }
         uploaded_macro_code[method].push_back(data);
     }
     // Clear the code associated with a method.
     inline void ClearCode(u32 method) noexcept {
-        if (native_turing) { native_write_offset = method < 0x1000 ? method * 3 : static_cast<u32>(native_code.size()); return; }
+        if (native_turing) {
+            native_write_offset = method < 0x1000 ? method * 3 : static_cast<u32>(native_code.size());
+            ++native_code_generation;
+            return;
+        }
         macro_cache.erase(method);
         uploaded_macro_code.erase(method);
     }
@@ -251,7 +260,8 @@ struct MacroEngine {
     u32 native_write_offset{};
     std::array<u32, 0x3000> native_code{};
     TuringMacroInterpreter native_interpreter;
-
+    u64 native_code_generation{};
+    std::shared_ptr<TuringMacroJit> native_jit;
 };
 
 struct NativeMacroContext {

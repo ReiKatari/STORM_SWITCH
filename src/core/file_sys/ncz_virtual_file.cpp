@@ -21,8 +21,9 @@
 namespace {
 class DiskVfsFile : public FileSys::VfsFile {
 public:
-    DiskVfsFile(std::filesystem::path path_, std::string name_)
-        : path(std::move(path_)), name(std::move(name_)) {
+    DiskVfsFile(std::filesystem::path path_, std::string name_,
+                std::optional<std::array<u8, 16>> embedded_key_ = std::nullopt)
+        : path(std::move(path_)), name(std::move(name_)), embedded_key(embedded_key_) {
         std::error_code ec;
         std::filesystem::create_directories(path.parent_path(), ec);
         file.Open(path, Common::FS::FileAccessMode::Read, Common::FS::FileType::BinaryFile, Common::FS::FileShareFlag::ShareReadOnly);
@@ -38,6 +39,7 @@ public:
     bool Rename(std::string_view name_) override { return false; }
     bool IsNczFile() const override { return false; }
     bool HasDecryptedSections() const override { return false; }
+    std::optional<std::array<u8, 16>> GetEmbeddedCryptoKey() const override { return embedded_key; }
 
     std::size_t Read(u8* data, std::size_t length, std::size_t offset) const override {
         if (!file.IsOpen()) return 0;
@@ -53,6 +55,7 @@ public:
 private:
     std::filesystem::path path;
     std::string name;
+    std::optional<std::array<u8, 16>> embedded_key;
     mutable Common::FS::IOFile file;
     mutable std::mutex io_mutex;
 };
@@ -594,7 +597,7 @@ std::size_t NCZVirtualFile::Read(u8* data, std::size_t length, std::size_t offse
                 
                 if (cache_valid) {
                     std::filesystem::last_write_time(cache_path, std::filesystem::file_time_type::clock::now(), ec);
-                    disk_cache_file = std::make_shared<DiskVfsFile>(cache_path, GetName());
+                    disk_cache_file = std::make_shared<DiskVfsFile>(cache_path, GetName(), GetEmbeddedCryptoKey());
                     solid_decompressed = true;
                 }
             }
@@ -736,6 +739,18 @@ bool NCZVirtualFile::HasDecryptedSections() const {
     // Only Block-streamed NCZ (NCZBLOCK) returns pre-decrypted plaintext memory blocks.
     // Solid streams (NCZSECTN) are decompressed and re-encrypted back into standard encrypted NCA format on disk.
     return is_valid && !is_raw_nca && !is_solid_stream;
+}
+
+std::optional<std::array<u8, 16>> NCZVirtualFile::GetEmbeddedCryptoKey() const {
+    for (const auto& sec : sections) {
+        if (sec.crypto_type == 3 || sec.crypto_type == 4) {
+            constexpr std::array<u8, 16> zero{};
+            if (sec.crypto_key != zero) {
+                return sec.crypto_key;
+            }
+        }
+    }
+    return std::nullopt;
 }
 
 bool NCZVirtualFile::Rename(std::string_view name) {

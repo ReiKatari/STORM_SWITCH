@@ -309,11 +309,17 @@ bool ArmNce::HandleGuestIllegalInstruction(GuestContext* guest_ctx, void* raw_in
     }
     const u64 guest_pc = (host_ctx.pc >= fastmem_base) ? (host_ctx.pc - fastmem_base) : host_ctx.pc;
 
+    // Try the NCE instruction interpreter first.
+    if (auto next_pc = MatchAndExecuteOneInstruction(memory, &host_ctx, fpctx)) {
+        host_ctx.pc = *next_pc;
+        return true;
+    }
+
     u32 inst = 0;
     std::memcpy(&inst, reinterpret_cast<const void*>(host_ctx.pc), sizeof(u32));
 
-    // Fast-path 1. Emulate unpatched/dynamic MRS Xt, <sysreg> (encoding: 0xD5300000 | (sysreg << 5) | rt)
-    if ((inst & 0xFFF00000U) == 0xD5300000U) [[likely]] {
+    // 1. Emulate unpatched MRS Xt, <sysreg> (encoding: 0xD5300000 | (sysreg << 5) | rt)
+    if ((inst & 0xFFF00000U) == 0xD5300000U) {
         const u32 rt = inst & 0x1FU;
         const u32 sysreg = (inst >> 5) & 0x7FFFU;
         u64 val = 0;
@@ -344,9 +350,6 @@ bool ArmNce::HandleGuestIllegalInstruction(GuestContext* guest_ctx, void* raw_in
         case 0x5921: // RNDRRS
             val = guest_ctx->system->CoreTiming().GetClockTicks() ^ 0x9E3779B97F4A7C15ULL;
             break;
-        case 0x5CE0: // PMCCNTR_EL0
-            val = guest_ctx->system->CoreTiming().GetClockTicks();
-            break;
         default:
             val = 0;
             break;
@@ -354,11 +357,13 @@ bool ArmNce::HandleGuestIllegalInstruction(GuestContext* guest_ctx, void* raw_in
         if (rt < 31) {
             host_ctx.regs[rt] = val;
         }
+        LOG_DEBUG(Core_ARM, "NCE emulated trapped MRS sysreg={:#x} -> X{}={:#x} at pc={:#x}",
+                  sysreg, rt, val, host_ctx.pc);
         host_ctx.pc += 4;
         return true;
     }
 
-    // Fast-path 2. Emulate unpatched MSR <sysreg>, Xt / SYS / HINT / PAC / BTI
+    // 2. Emulate unpatched MSR <sysreg>, Xt / SYS / HINT / PAC / BTI
     if ((inst & 0xFFF00000U) == 0xD5100000U || (inst & 0xFFF80000U) == 0xD5080000U ||
         (inst & 0xFFFFF01FU) == 0xD503201FU) {
         if ((inst & 0xFFF00000U) == 0xD5100000U) {
@@ -369,12 +374,6 @@ bool ArmNce::HandleGuestIllegalInstruction(GuestContext* guest_ctx, void* raw_in
             }
         }
         host_ctx.pc += 4;
-        return true;
-    }
-
-    // Try the NCE instruction interpreter for trapped atomics and memory faults.
-    if (auto next_pc = MatchAndExecuteOneInstruction(memory, &host_ctx, fpctx)) {
-        host_ctx.pc = *next_pc;
         return true;
     }
 
@@ -702,8 +701,8 @@ void ArmNce::SetContext(const Kernel::Svc::ThreadContext& ctx) {
 }
 
 void ArmNce::SignalInterrupt(Kernel::KThread* thread) {
-    // Add break loop condition.
-    m_guest_ctx.esr_el1.fetch_or(static_cast<u64>(HaltReason::BreakLoop));
+    constexpr u64 break_loop = static_cast<u64>(HaltReason::BreakLoop);
+    if ((m_guest_ctx.esr_el1.fetch_or(break_loop) & break_loop) != 0) return;
 
     auto* params = &thread->GetNativeExecutionParameters();
     LockThreadParameters(params);

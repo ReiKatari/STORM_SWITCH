@@ -386,6 +386,10 @@ namespace Vulkan {
         return MemoryCommit(allocator, a, info);
     }
 
-
+    u64 MemoryAllocator::GetDeviceMemorySlack() const {
+        const u64 budget = device.GetDeviceMemoryBudget();
+        const u64 usage = device.GetDeviceMemoryUsage();
+        return budget > usage ? (budget - usage) : 0;
+    }
 
 } // namespace Vulkan

@@ -45,6 +45,9 @@ public:
 public:
     Event& GetSystemEvent();
     Event& GetOperationModeChangedSystemEvent();
+    Event& GetOperationModeRefreshEvent() {
+        return m_operation_mode_changed_system_event;
+    }
     Event& GetHDCPStateChangedEvent();
 
 public:

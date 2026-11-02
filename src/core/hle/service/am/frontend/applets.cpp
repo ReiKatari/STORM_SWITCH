@@ -251,7 +251,7 @@ std::shared_ptr<FrontendApplet> FrontendAppletHolder::GetApplet(std::shared_ptr<
     case AppletId::NetConnect:
         return std::make_shared<NetConnect>(system, applet, mode, *frontend.net_connect);
     case AppletId::None:
-        return std::make_shared<StubApplet>(system, applet, id, mode);
+        return nullptr;
     default:
         LOG_ERROR(Service_AM, "No backend implementation exists for applet_id={:02X} program_id={:016X}, falling back to stub applet",
                   static_cast<u8>(id), applet->program_id);

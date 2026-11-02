@@ -177,6 +177,21 @@ private:
         ClientAppletResourceUserId aruid,
         InArray<Core::HID::VibrationDeviceHandle, BufferAttr_HipcPointer> vibration_handles,
         InArray<Core::HID::VibrationValue, BufferAttr_HipcPointer> vibration_values);
+
+    Result SendNx2VibrationValues(
+        ClientAppletResourceUserId aruid,
+        InArray<Core::HID::VibrationDeviceHandle, BufferAttr_HipcPointer> handles,
+        InArray<Core::HID::VibrationValue, BufferAttr_HipcPointer> values) {
+        return SendVibrationValues(aruid, handles, values);
+    }
+
+    // 213 (32 bytes, aruid): sent per controller every frame by Kirby Air Riders (tens of
+    // thousands of auto stub log lines a run); no reply data. Accepted and dropped like 214.
+    Result Unknown213();
+    // 220 (16 bytes, aruid): replies one byte (meaning unknown); answer 0 instead of leaving it to
+    // the message buffer's leftovers.
+    Result Unknown220(Out<u8> out);
+
     Result SendNativeVibrationValues(
         u16 flags, AppletResourceUserId aruid,
         InArray<Core::HID::VibrationDeviceHandle, BufferAttr_HipcPointer> vibration_handles,

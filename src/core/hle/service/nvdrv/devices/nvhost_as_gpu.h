@@ -13,7 +13,7 @@
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <ankerl/unordered_dense.h>
+#include "common/container/unordered_set.h"
 #include <vector>
 
 #include "common/address_space.h"
@@ -78,6 +78,30 @@ public:
     static_assert(sizeof(VaRegion) == 0x18);
 
 private:
+    bool m_extended_abi{true};
+    bool m_syncpoint_shim_reserved{};
+    DeviceFD m_fd{-1};
+    Kernel::KProcess* m_owner_process{};
+    std::shared_ptr<nvhost_as_gpu> m_shared_parent;
+
+    struct IoctlSyncpointShimInfo {
+        u64_le address;
+        u32_le stride;
+        u32_le count;
+    };
+    static_assert(sizeof(IoctlSyncpointShimInfo) == 16);
+    NvResult GetSyncpointShimInfo(IoctlSyncpointShimInfo& params);
+
+    struct IoctlModifyKind {
+        u16_le compressed_kind;
+        u16_le uncompressed_kind;
+        u32_le reserved;
+        u64_le buffer_offset;
+        u64_le size;
+        u64_le mapping_base;
+    };
+    static_assert(sizeof(IoctlModifyKind) == 32);
+    NvResult ModifyKind(IoctlModifyKind& params);
     struct IoctlAllocAsEx {
         u32_le flags{}; // usually passes 1
         s32_le as_fd{}; // ignored; passes 0
@@ -118,7 +142,7 @@ private:
     };
     static_assert(sizeof(IoctlRemapEntry) == 20, "IoctlRemapEntry is incorrect size");
 
-    ankerl::unordered_dense::set<s64_le> map_buffer_offsets{};
+    ::Common::unordered_set<s64_le> map_buffer_offsets{};
 
     struct IoctlMapBufferEx {
         MappingFlags flags{}; // bit0: fixed_offset, bit2: cacheable
@@ -149,25 +173,6 @@ private:
     };
     static_assert(sizeof(IoctlGetVaRegions) == 16 + sizeof(VaRegion) * 2,
                   "IoctlGetVaRegions is incorrect size");
-
-    struct IoctlSyncpointShimInfo {
-        u64_le address;
-        u32_le stride;
-        u32_le count;
-    };
-    static_assert(sizeof(IoctlSyncpointShimInfo) == 16);
-    NvResult GetSyncpointShimInfo(IoctlSyncpointShimInfo& params);
-
-    struct IoctlModifyKind {
-        u16_le compressed_kind;
-        u16_le uncompressed_kind;
-        u32_le reserved;
-        u64_le buffer_offset;
-        u64_le size;
-        u64_le mapping_base;
-    };
-    static_assert(sizeof(IoctlModifyKind) == 32);
-    NvResult ModifyKind(IoctlModifyKind& params);
 
     NvResult AllocAsEx(IoctlAllocAsEx& params);
     NvResult AllocateSpace(IoctlAllocSpace& params);
@@ -220,12 +225,6 @@ private:
     std::map<u64, Allocation> allocation_map;
     std::mutex mutex; //!< Locks all AS operations
 
-    bool m_extended_abi{};
-    bool m_syncpoint_shim_reserved{};
-    DeviceFD m_fd{-1};
-    Kernel::KProcess* m_owner_process{};
-    std::shared_ptr<nvhost_as_gpu> m_shared_parent;
-
     struct VM {
         static constexpr u32 YUZU_PAGESIZE{0x1000};
         static constexpr u32 PAGE_SIZE_BITS{static_cast<u32>(std::countr_zero<u32>(YUZU_PAGESIZE))};
@@ -248,8 +247,35 @@ private:
         std::optional<Allocator> small_page_allocator; //! Shared as this is also used by nvhost::GpuChannel
 
         bool initialised{};
+        bool absolute_big_page_limit{}; //!< Switch 2 layout: big-page limit is va_range_end
     } vm;
-    std::shared_ptr<Tegra::MemoryManager> gmmu;
+    std::unique_ptr<Tegra::MemoryManager> gmmu;
+
+    struct IoctlNx2SyncpointShimInfo {
+        u64_le address;
+        u32_le stride;
+        u32_le count;
+    };
+    static_assert(sizeof(IoctlNx2SyncpointShimInfo) == 16);
+    NvResult Nx2GetSyncpointShimInfo(IoctlNx2SyncpointShimInfo& params);
+    bool nx2_syncpoint_shim{};
+
+    // Switch 2: maps GPU-accessible process memory (CPU range) at a GPU address.
+    void Nx2Map(u64 gpu_address, u64 cpu_address, u64 size);
+    void Nx2Unmap(u64 gpu_address, u64 size);
+    NvCore::SessionId nx2_session{};
+    struct Nx2DeviceRange {
+        DAddr address;
+        bool heap; ///< Mapped through the session's heap mapper (else an SMMU allocation)
+    };
+    std::map<std::pair<u64, u64>, Nx2DeviceRange> nx2_device_ranges;
+    void Nx2Release(u64 cpu_address, u64 size);
+
+    // Switch 2 sparse regions: a device range per region, mapped for the GPU when it's created;
+    // blocks get memory behind their device pages as the GPU writes them.
+    void Nx2Sparse(u64 gpu_address, u64 size, bool create);
+    void Nx2BackSparse(u64 gpu_address, u64 cpu_address, u64 size);
+    std::map<u64, std::pair<u64, DAddr>> nx2_sparse_ranges; ///< GPU address -> (size, device)
 };
 
 } // namespace Service::Nvidia::Devices

@@ -182,7 +182,7 @@ void Swapchain::Create(
     resource_ticks.resize(image_count);
 }
 
-bool Swapchain::AcquireNextImage() {
+bool Swapchain::AcquireNextImage(bool may_flush) {
     const VkResult result = device.GetLogical().AcquireNextImageKHR(
         *swapchain, (std::numeric_limits<u64>::max)(), *present_semaphores[frame_index],
         VK_NULL_HANDLE, &image_index);
@@ -204,7 +204,7 @@ bool Swapchain::AcquireNextImage() {
         break;
     }
 
-    scheduler.Wait(resource_ticks[image_index]);
+    scheduler.Wait(resource_ticks[image_index], 0.0, may_flush);
 
     resource_ticks[image_index] = scheduler.CurrentTick();
 

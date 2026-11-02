@@ -106,21 +106,21 @@ class AutoCorrectionDialogFragment : DialogFragment() {
 
         binding.btnApplyAutoCorrection.setOnClickListener {
             try {
-                // Apply thermal cooling and FPS boost profile
+                // Apply thermal cooling and FPS boost profile with 100% graphics integrity
                 IntSetting.RENDERER_RESOLUTION.setInt(2) // 0.75X (540p / 810p)
                 IntSetting.ASTC_RECOMPRESSION.setInt(2) // BC3 (Fast)
-                BooleanSetting.RENDERER_REACTIVE_FLUSHING.setBoolean(false)
+                BooleanSetting.RENDERER_REACTIVE_FLUSHING.setBoolean(true)
                 BooleanSetting.FASTMEM.setBoolean(true)
                 BooleanSetting.FASTMEM_EXCLUSIVES.setBoolean(true)
-                BooleanSetting.ECO_THERMAL_MODE.setBoolean(true)
+                BooleanSetting.ECO_THERMAL_MODE.setBoolean(false)
                 BooleanSetting.ECO_FRAME_PACING.setBoolean(true)
                 BooleanSetting.SMART_SHADER_THROTTLE.setBoolean(true)
                 BooleanSetting.CPU_AFFINITY_PINNING.setBoolean(true)
                 BooleanSetting.VULKAN_PIPELINE_CACHE.setBoolean(true)
                 BooleanSetting.VRAM_GARBAGE_COLLECTION.setBoolean(true)
-                BooleanSetting.RENDERER_EARLY_RELEASE_FENCES.setBoolean(true)
+                BooleanSetting.RENDERER_EARLY_RELEASE_FENCES.setBoolean(false)
                 IntSetting.RENDERER_OPTIMIZE_SPIRV_OUTPUT.setInt(1)
-                BooleanSetting.ENABLE_FRAME_SKIPPING.setBoolean(true)
+                BooleanSetting.ENABLE_FRAME_SKIPPING.setBoolean(false)
                 BooleanSetting.RENDERER_ASYNCHRONOUS_GPU_EMULATION.setBoolean(true)
                 BooleanSetting.RENDERER_ASYNC_PRESENTATION.setBoolean(true)
                 IntSetting.RENDERER_NVDEC_EMULATION.setInt(2)
@@ -147,16 +147,16 @@ class AutoCorrectionDialogFragment : DialogFragment() {
                 // Reset thermal cooling profile to standard values
                 IntSetting.RENDERER_RESOLUTION.setInt(3) // 1.0X (720p / 1080p)
                 IntSetting.ASTC_RECOMPRESSION.setInt(0) // Uncompressed
-                BooleanSetting.RENDERER_REACTIVE_FLUSHING.setBoolean(false)
+                BooleanSetting.RENDERER_REACTIVE_FLUSHING.setBoolean(true)
                 BooleanSetting.ECO_THERMAL_MODE.setBoolean(false)
                 BooleanSetting.ECO_FRAME_PACING.setBoolean(false)
                 BooleanSetting.SMART_SHADER_THROTTLE.setBoolean(false)
                 BooleanSetting.CPU_AFFINITY_PINNING.setBoolean(false)
                 BooleanSetting.VULKAN_PIPELINE_CACHE.setBoolean(true)
                 BooleanSetting.VRAM_GARBAGE_COLLECTION.setBoolean(false)
-                BooleanSetting.RENDERER_EARLY_RELEASE_FENCES.setBoolean(true)
+                BooleanSetting.RENDERER_EARLY_RELEASE_FENCES.setBoolean(false)
                 IntSetting.RENDERER_OPTIMIZE_SPIRV_OUTPUT.setInt(1)
-                BooleanSetting.ENABLE_FRAME_SKIPPING.setBoolean(true)
+                BooleanSetting.ENABLE_FRAME_SKIPPING.setBoolean(false)
                 BooleanSetting.RENDERER_ASYNCHRONOUS_GPU_EMULATION.setBoolean(true)
                 BooleanSetting.RENDERER_ASYNC_PRESENTATION.setBoolean(true)
                 IntSetting.RENDERER_NVDEC_EMULATION.setInt(2)

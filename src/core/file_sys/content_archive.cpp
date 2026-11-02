@@ -37,8 +37,9 @@ static u8 MasterKeyIdForKeyGeneration(u8 key_generation) {
 namespace {
 class DiskVfsFile : public VfsFile {
 public:
-    DiskVfsFile(std::filesystem::path path_, std::string name_)
-        : path(std::move(path_)), name(std::move(name_)) {
+    DiskVfsFile(std::filesystem::path path_, std::string name_,
+                std::optional<std::array<u8, 16>> embedded_key_ = std::nullopt)
+        : path(std::move(path_)), name(std::move(name_)), embedded_key(embedded_key_) {
         std::error_code ec;
         std::filesystem::create_directories(path.parent_path(), ec);
         file.Open(path, Common::FS::FileAccessMode::Read, Common::FS::FileType::BinaryFile, Common::FS::FileShareFlag::ShareReadOnly);
@@ -54,6 +55,7 @@ public:
     bool Rename(std::string_view name_) override { return false; }
     bool IsNczFile() const override { return false; }
     bool HasDecryptedSections() const override { return false; }
+    std::optional<std::array<u8, 16>> GetEmbeddedCryptoKey() const override { return embedded_key; }
 
     std::size_t Read(u8* data, std::size_t length, std::size_t offset) const override {
         if (!file.IsOpen()) return 0;
@@ -69,6 +71,7 @@ public:
 private:
     std::filesystem::path path;
     std::string name;
+    std::optional<std::array<u8, 16>> embedded_key;
     mutable Common::FS::IOFile file;
     mutable std::mutex io_mutex;
 };
@@ -77,6 +80,7 @@ static VirtualFile DecompressIfNCZ(VirtualFile file) {
     if (file == nullptr) return nullptr;
     auto ncz_file = file->IsNczFile() ? std::static_pointer_cast<NCZVirtualFile>(file) : nullptr;
     if (ncz_file && ncz_file->is_solid_stream) {
+        auto embedded_key = ncz_file->GetEmbeddedCryptoKey();
         std::filesystem::path temp_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::CacheDir);
         std::error_code ec;
         std::filesystem::create_directories(temp_dir, ec);
@@ -93,7 +97,7 @@ static VirtualFile DecompressIfNCZ(VirtualFile file) {
 
         if (cache_valid) {
             LOG_INFO(Loader, "NCA: Using cached decompressed solid NCA");
-            return std::make_shared<DiskVfsFile>(cache_path, file->GetName());
+            return std::make_shared<DiskVfsFile>(cache_path, file->GetName(), embedded_key);
         }
 
         LOG_INFO(Loader, "NCA: Decompressing solid NCZ NCA ({} bytes) to disk cache...", ncz_file->GetSize());
@@ -103,7 +107,7 @@ static VirtualFile DecompressIfNCZ(VirtualFile file) {
             if (std::FILE* marker = std::fopen(completed_path.string().c_str(), "w")) {
                 std::fclose(marker);
             }
-            return std::make_shared<DiskVfsFile>(cache_path, file->GetName());
+            return std::make_shared<DiskVfsFile>(cache_path, file->GetName(), embedded_key);
         } else {
             LOG_ERROR(Loader, "NCA: Failed to decompress solid NCZ NCA");
             return file;
@@ -126,15 +130,19 @@ NCA::NCA(VirtualFile file_, const NCA* base_nca)
         return;
     }
 
-    // Ensure we have the proper key area keys to continue.
-    const u8 master_key_id = MasterKeyIdForKeyGeneration(reader->GetKeyGeneration());
-    if (!keys.HasKey(Core::Crypto::S128KeyType::KeyArea, master_key_id, reader->GetKeyIndex())) {
-        status = Loader::ResultStatus::ErrorMissingKeyAreaKey;
-        return;
-    }
-
     RightsId rights_id{};
     reader->GetRightsId(rights_id.data(), rights_id.size());
+    const u8 master_key_id = MasterKeyIdForKeyGeneration(reader->GetKeyGeneration());
+
+    // Only NCAs without a rights ID use Key Area Keys!
+    if (rights_id == RightsId{}) {
+        if (!keys.HasKey(Core::Crypto::S128KeyType::KeyArea, master_key_id, reader->GetKeyIndex())) {
+            LOG_ERROR(Loader, "Cannot decrypt {}: keys for gen 0x{:02X}+ required.", file->GetName(), reader->GetKeyGeneration());
+            status = Loader::ResultStatus::ErrorMissingKeyAreaKey;
+            return;
+        }
+    }
+
     Core::Crypto::Key128 raw_titlekey{};
     Core::Crypto::Key128 decrypted_titlekey{};
 
@@ -144,25 +152,33 @@ NCA::NCA(VirtualFile file_, const NCA* base_nca)
 
         auto titlekey =
             keys.GetKey(Core::Crypto::S128KeyType::Titlekey, rights_id_u128[1], rights_id_u128[0]);
-        bool is_fallback_key = false;
 
         if (titlekey == Core::Crypto::Key128{}) {
-            // Fallback: Use rights_id directly as TitleKey when tickets/keys are missing from key db
-            std::memcpy(titlekey.data(), rights_id.data(), rights_id.size());
-            LOG_WARNING(Loader, "TitleKey not found! Falling back to using RightsId as TitleKey for direct dump!");
-            is_fallback_key = true;
-        }
-
-        raw_titlekey = titlekey;
-        decrypted_titlekey = titlekey;
-
-        if (!is_fallback_key) {
-            if (keys.HasKey(Core::Crypto::S128KeyType::Titlekek, master_key_id)) {
-                auto titlekek = keys.GetKey(Core::Crypto::S128KeyType::Titlekek, master_key_id);
-                Core::Crypto::AESCipher<Core::Crypto::Key128> cipher(titlekek, Core::Crypto::Mode::ECB);
-                cipher.Transcode(decrypted_titlekey.data(), decrypted_titlekey.size(), decrypted_titlekey.data(),
-                                 Core::Crypto::Op::Decrypt);
+            const auto embedded_key = file->GetEmbeddedCryptoKey();
+            if (embedded_key && *embedded_key != Core::Crypto::Key128{}) {
+                titlekey = *embedded_key;
+                raw_titlekey = *embedded_key;
+                decrypted_titlekey = *embedded_key;
+                LOG_INFO(Loader, "NCA: Using embedded crypto key from NCZSECTN for rights ID {:016X}{:016X}",
+                         rights_id_u128[1], rights_id_u128[0]);
+            } else {
+                // Fallback: use rights_id as TitleKey for direct dumps without tickets/keys.
+                std::memcpy(titlekey.data(), rights_id.data(), rights_id.size());
+                LOG_DEBUG(Loader, "TitleKey not found for {}, falling back to RightsId.",
+                          file->GetName());
+                raw_titlekey = titlekey;
+                decrypted_titlekey = titlekey;
             }
+        } else if (keys.HasKey(Core::Crypto::S128KeyType::Titlekek, master_key_id)) {
+            raw_titlekey = titlekey;
+            decrypted_titlekey = titlekey;
+            auto titlekek = keys.GetKey(Core::Crypto::S128KeyType::Titlekek, master_key_id);
+            Core::Crypto::AESCipher<Core::Crypto::Key128> cipher(titlekek, Core::Crypto::Mode::ECB);
+            cipher.Transcode(decrypted_titlekey.data(), decrypted_titlekey.size(), decrypted_titlekey.data(),
+                             Core::Crypto::Op::Decrypt);
+        } else {
+            raw_titlekey = titlekey;
+            decrypted_titlekey = titlekey;
         }
     }
 
@@ -181,6 +197,7 @@ NCA::NCA(VirtualFile file_, const NCA* base_nca)
 
         NcaFileSystemDriver fs(base_nca ? base_nca->reader : nullptr, reader);
         std::vector<VirtualFile> filesystems(fs_count);
+        bool has_sparse_layer = false;
         for (s32 i = 0; i < fs_count; i++) {
             NcaFsHeaderReader header_reader;
             Result rc = fs.OpenStorage(&filesystems[i], &header_reader, i);
@@ -188,21 +205,15 @@ NCA::NCA(VirtualFile file_, const NCA* base_nca)
                 continue;
             }
 
+            if (header_reader.ExistsSparseLayer()) {
+                has_sparse_layer = true;
+            }
+
             if (header_reader.GetEncryptionType() == NcaFsHeader::EncryptionType::AesCtrEx) {
                 is_update = true;
             }
 
             if (header_reader.GetFsType() == NcaFsHeader::FsType::RomFs) {
-                if (rights_id != RightsId{} && !is_update && filesystems[i] != nullptr &&
-                    filesystems[i]->GetSize() >= sizeof(u64)) {
-                    u64 romfs_header_size = 0;
-                    if (filesystems[i]->ReadObject(&romfs_header_size, 0) == sizeof(u64)) {
-                        if (romfs_header_size != 0x50 && romfs_header_size != 0x28) {
-                            // Decrypted RomFS header size is invalid; TitleKey is incorrect
-                            continue;
-                        }
-                    }
-                }
                 files.push_back(filesystems[i]);
                 romfs = files.back();
             }
@@ -220,7 +231,7 @@ NCA::NCA(VirtualFile file_, const NCA* base_nca)
                             exefs = dirs.back();
                         }
                     }
-                } else if (rights_id != RightsId{}) {
+                } else if (rights_id != RightsId{} && !header_reader.ExistsSparseLayer()) {
                     // Encrypted PartitionFS (e.g. ExeFS) failed PFS0 magic validation with this TitleKey
                     files.clear();
                     dirs.clear();
@@ -231,7 +242,7 @@ NCA::NCA(VirtualFile file_, const NCA* base_nca)
                 }
             }
         }
-        if (GetType() == NCAContentType::Program && exefs == nullptr && !is_update) {
+        if (GetType() == NCAContentType::Program && exefs == nullptr && !is_update && !has_sparse_layer) {
             return false;
         }
         return !files.empty() || !dirs.empty() || is_update;

@@ -68,7 +68,10 @@ u64 NSP::GetProgramTitleID() const {
     }
 
     auto program_id = expected_program_id;
-    if (program_id == 0) {
+    if ((program_id & 0x800) != 0 || (program_id & 0xFFF) != 0) {
+        program_id = program_id & 0xFFFFFFFFFFFFF000ULL;
+    }
+    if (program_id == 0 || program_status.find(program_id) == program_status.end()) {
         for (const auto& [tid, st] : program_status) {
             if ((tid & 0xFFF) == 0 && (tid & 0x800) == 0) {
                 program_id = tid;
@@ -84,7 +87,15 @@ u64 NSP::GetProgramTitleID() const {
             }
         }
         if (program_id == 0 && !program_status.empty()) {
-            program_id = program_status.begin()->first;
+            for (const auto& [tid, st] : program_status) {
+                if ((tid & 0x800) == 0) {
+                    program_id = tid;
+                    break;
+                }
+            }
+            if (program_id == 0) {
+                program_id = program_status.begin()->first;
+            }
         }
     }
 
@@ -95,8 +106,13 @@ u64 NSP::GetProgramTitleID() const {
 
     const auto ids = GetProgramTitleIDs();
     const auto iter =
+        std::find_if(ids.begin(), ids.end(), [](u64 tid) { return (tid & 0xFFF) == 0 && (tid & 0x800) == 0; });
+    if (iter != ids.end()) {
+        return *iter;
+    }
+    const auto iter2 =
         std::find_if(ids.begin(), ids.end(), [](u64 tid) { return (tid & 0x800) == 0; });
-    return iter == ids.end() ? 0 : *iter;
+    return iter2 == ids.end() ? 0 : *iter2;
 }
 
 u64 NSP::GetExtractedTitleID() const {
@@ -438,15 +454,27 @@ void NSP::ReadNCAs(const std::vector<VirtualFile>& files) {
                         if (!matched_cand_nca) {
                             return true;
                         }
-                        if (!is_base_program_record) {
-                            return false;
-                        }
-                        const bool cur_ok =
-                            (matched_cand_nca->GetStatus() == Loader::ResultStatus::Success);
-                        const bool new_ok =
-                            (cand.nca->GetStatus() == Loader::ResultStatus::Success);
-                        if (new_ok != cur_ok) {
-                            return new_ok;
+                        if (is_base_program_record) {
+                            const bool cur_is_base = !matched_cand_nca->IsUpdate();
+                            const bool new_is_base = !cand.nca->IsUpdate();
+                            if (new_is_base != cur_is_base) {
+                                return new_is_base;
+                            }
+                            const bool cur_ok =
+                                (matched_cand_nca->GetStatus() == Loader::ResultStatus::Success);
+                            const bool new_ok =
+                                (cand.nca->GetStatus() == Loader::ResultStatus::Success);
+                            if (new_ok != cur_ok) {
+                                return new_ok;
+                            }
+                        } else {
+                            const bool cur_is_update = matched_cand_nca->IsUpdate() ||
+                                (matched_cand_nca->GetStatus() == Loader::ResultStatus::ErrorMissingBKTRBaseRomFS);
+                            const bool new_is_update = cand.nca->IsUpdate() ||
+                                (cand.nca->GetStatus() == Loader::ResultStatus::ErrorMissingBKTRBaseRomFS);
+                            if (new_is_update != cur_is_update) {
+                                return new_is_update;
+                            }
                         }
                         const std::size_t cur_sz =
                             matched_file ? matched_file->GetSize() : 0;

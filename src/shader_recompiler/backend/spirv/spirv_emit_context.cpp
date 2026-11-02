@@ -951,6 +951,9 @@ void EmitContext::DefineGlobalMemoryFunctions(const Info& info) {
         AddLabel();
         const size_t num_buffers{info.storage_buffers_descriptors.size()};
         for (size_t index = 0; index < num_buffers; ++index) {
+            if (info.nvn_buffer_used.any() && !info.nvn_buffer_used[index]) {
+                continue;
+            }
             const auto& ssbo{info.storage_buffers_descriptors[index]};
             Id addr_u32x2{};
             Id size_u32{};

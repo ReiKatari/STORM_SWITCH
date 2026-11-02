@@ -118,6 +118,13 @@ public:
     virtual bool HasDecryptedSections() const { return false; }
     virtual std::shared_ptr<VfsFile> GetUnderlyingFile() const { return nullptr; }
     virtual NCZVirtualFile* GetNczFilePointer() { return nullptr; }
+    virtual std::optional<std::array<u8, 16>> GetEmbeddedCryptoKey() const {
+        auto underlying = GetUnderlyingFile();
+        if (underlying) {
+            return underlying->GetEmbeddedCryptoKey();
+        }
+        return std::nullopt;
+    }
 
     // The primary method of reading from the file. Reads length bytes into data starting at offset
     // into file. Returns number of bytes successfully read.

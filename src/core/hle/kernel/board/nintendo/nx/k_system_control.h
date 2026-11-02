@@ -21,6 +21,10 @@ public:
     // This can be overridden as needed.
     static constexpr size_t SecureAppletMemorySize = 4 * 1024 * 1024; // 4_MB
 
+    // Extra DRAM on the 12 GB layout for memory the Switch 2 graphics server keeps itself (nx2:gpu
+    // 214 GPU-only regions). It sits in the non-secure system pool, outside the application pool.
+    static constexpr size_t Nx2GraphicsServerMemorySize = 8ULL * 1024 * 1024 * 1024; // 8_GiB
+
 public:
     class Init {
     public:

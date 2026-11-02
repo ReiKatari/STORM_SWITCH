@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // SPDX-FileCopyrightText: 2021 yuzu Emulator Project
 // SPDX-FileCopyrightText: 2021 Skyline Team and Contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
@@ -15,19 +18,20 @@
 #include "core/hle/service/nvdrv/devices/nvhost_ctrl.h"
 #include "core/hle/service/nvdrv/devices/nvhost_ctrl_gpu.h"
 #include "core/hle/service/nvdrv/devices/nvhost_gpu.h"
-#include "core/hle/service/nvdrv/devices/nvhost_tsg_gpu.h"
-#include "core/hle/kernel/k_process.h"
 #include "core/hle/service/nvdrv/devices/nvhost_nvdec.h"
 #include "core/hle/service/nvdrv/devices/nvhost_nvdec_common.h"
 #include "core/hle/service/nvdrv/devices/nvhost_nvjpg.h"
 #include "core/hle/service/nvdrv/devices/nvhost_vic.h"
 #include "core/hle/service/nvdrv/devices/nvmap.h"
+#include "core/hle/service/nvdrv/devices/nx2_stub_device.h"
 #include "core/hle/service/nvdrv/nvdrv.h"
 #include "core/hle/service/nvdrv/nvdrv_interface.h"
 #include "core/hle/service/nvdrv/nvmemp.h"
 #include "core/hle/service/nvnflinger/nvnflinger.h"
 #include "core/hle/service/server_manager.h"
+#include "frontend_common/firmware_manager.h"
 #include "video_core/gpu.h"
+#include "video_core/nx2.h"
 
 namespace Service::Nvidia {
 
@@ -44,41 +48,105 @@ void EventInterface::FreeEvent(Kernel::KEvent* event) {
     module.service_context.CloseEvent(event);
 }
 
+class NVGEM_C final : public ServiceFramework<NVGEM_C> {
+public:
+    explicit NVGEM_C(Core::System& system_)
+        : ServiceFramework{system_, "nvgem:c"}
+    {
+        static const FunctionInfo functions[] = {
+            {0, nullptr, "Initialize"},
+            {1, nullptr, "GetEventHandle"},
+            {2, nullptr, "ControlNotification"},
+            {3, nullptr, "SetNotificationPerm"},
+            {4, nullptr, "SetCoreDumpPerm"},
+            {5, nullptr, "GetAruid"},
+            {6, nullptr, "Reset"},
+            {7, nullptr, "GetAruid2"},
+        };
+        RegisterHandlers(functions);
+    }
+};
+
+class NVGEM_CD final : public ServiceFramework<NVGEM_CD> {
+public:
+    explicit NVGEM_CD(Core::System& system_)
+        : ServiceFramework{system_, "nvgem:cd"}
+    {
+        static const FunctionInfo functions[] = {
+            {0, nullptr, "Initialize"},
+            {1, nullptr, "GetAruid"},
+            {2, nullptr, "ReadNextBlock"},
+            {3, nullptr, "GetNextBlockSize"},
+            {4, nullptr, "ReadNextBlock2"},
+        };
+        RegisterHandlers(functions);
+    }
+};
+
+class NVDBG_D final : public ServiceFramework<NVDBG_D> {
+public:
+    explicit NVDBG_D(Core::System& system_)
+        : ServiceFramework{system_, "nvdbg:d"}
+    {
+        static const FunctionInfo functions[] = {
+            {0, nullptr, "Open"},
+            {1, nullptr, "Ioctl"},
+            {2, nullptr, "Close"},
+            {4, nullptr, "QueryEvent"},
+            {9, nullptr, "DumpStatus"},
+            {10, nullptr, "InitializeDevtools"},
+            {11, nullptr, "Ioctl2"},
+            {12, nullptr, "Ioctl3"},
+            {13, nullptr, "SetConfiguration"},
+        };
+        RegisterHandlers(functions);
+    }
+};
+
 void LoopProcess(Core::System& system) {
     auto server_manager = std::make_unique<ServerManager>(system);
     auto module = std::make_shared<Module>(system);
-    const auto NvdrvInterfaceFactoryForApplication = [&, module] {
-        return std::make_shared<NVDRV>(system, module, "nvdrv");
-    };
+    server_manager->RegisterNamedService("nvdrv", std::make_shared<NVDRV>(system, module, "nvdrv"));
+
     const auto NvdrvInterfaceFactoryForApplets = [&, module] {
         return std::make_shared<NVDRV>(system, module, "nvdrv:a");
     };
-    const auto NvdrvInterfaceFactoryForSysmodules = [&, module] {
-        return std::make_shared<NVDRV>(system, module, "nvdrv:s");
-    };
-    const auto NvdrvInterfaceFactoryForTesting = [&, module] {
-        return std::make_shared<NVDRV>(system, module, "nvdrv:t");
-    };
-    server_manager->RegisterNamedService("nvdrv", NvdrvInterfaceFactoryForApplication);
+
     server_manager->RegisterNamedService("nvdrv:a", NvdrvInterfaceFactoryForApplets);
-    server_manager->RegisterNamedService("nvdrv:s", NvdrvInterfaceFactoryForSysmodules);
-    server_manager->RegisterNamedService("nvdrv:t", NvdrvInterfaceFactoryForTesting);
+    server_manager->RegisterNamedService("nvdrv:s", std::make_shared<NVDRV>(system, module, "nvdrv:s"));
+    server_manager->RegisterNamedService("nvdrv:t", std::make_shared<NVDRV>(system, module, "nvdrv:t"));
     server_manager->RegisterNamedService("nvmemp", std::make_shared<NVMEMP>(system));
+    server_manager->RegisterNamedService("nvgem:c", std::make_shared<NVGEM_C>(system));
+    server_manager->RegisterNamedService("nvgem:cd", std::make_shared<NVGEM_CD>(system));
+    // +10.0.0
+    if (FirmwareManager::GetFirmwareVersion(system).first.major >= 10) {
+        server_manager->RegisterNamedService("nvdbg:d", std::make_shared<NVDBG_D>(system));
+    }
     ServerManager::RunServer(std::move(server_manager));
 }
 
 Module::Module(Core::System& system)
     : container{system.Host1x()}, service_context{system, "nvdrv"}, events_interface{*this} {
+    // Switch 2 state kept in globals belongs to one emulation session. A game started after another
+    // in the same window inherited the previous game's GPU mappings and queue semaphore regions
+    // (their table filled up, so the new game's GPU waits never completed) and the Switch 2 flags.
+    Devices::Nx2GpuMemoryRegistry::Get().Reset();
+    Tegra::Nx2ClearSemaphoreRegions();
+    Tegra::Nx2ClearSparseRegions();
+    Devices::g_nx2_driver = false;
+    Tegra::g_nx2_ampere = false;
+    Core::g_nx2_present_count = 0;
+    nx2_stub_builder = [this, &system](DeviceFD fd, const std::string& name) {
+        auto device = std::make_shared<Devices::nx2_stub_device>(system, name);
+        open_files.emplace(fd, device);
+        return std::static_pointer_cast<Devices::nvdevice>(device);
+    };
     builders["/dev/nvhost-as-gpu"] = [this, &system](DeviceFD fd) {
         auto device = std::make_shared<Devices::nvhost_as_gpu>(system, *this, container);
         return open_files.emplace(fd, std::move(device)).first;
     };
     builders["/dev/nvhost-gpu"] = [this, &system](DeviceFD fd) {
         auto device = std::make_shared<Devices::nvhost_gpu>(system, events_interface, container);
-        return open_files.emplace(fd, std::move(device)).first;
-    };
-    builders["/dev/nvhost-tsg-gpu"] = [this, &system](DeviceFD fd) {
-        auto device = std::make_shared<Devices::nvhost_tsg_gpu>(system, *this, container);
         return open_files.emplace(fd, std::move(device)).first;
     };
     builders["/dev/nvhost-ctrl-gpu"] = [this, &system](DeviceFD fd) {
@@ -105,18 +173,17 @@ Module::Module(Core::System& system)
         auto device = std::make_shared<Devices::nvhost_nvjpg>(system);
         return open_files.emplace(fd, std::move(device)).first;
     };
+    builders["/dev/nvhost-fde"] = [this, &system](DeviceFD fd) {
+        auto device = std::make_shared<Devices::nx2_stub_device>(system, "/dev/nvhost-fde");
+        return open_files.emplace(fd, std::move(device)).first;
+    };
     builders["/dev/nvhost-vic"] = [this, &system](DeviceFD fd) {
         auto device = std::make_shared<Devices::nvhost_vic>(system, container);
         return open_files.emplace(fd, std::move(device)).first;
     };
 }
 
-Module::~Module() {
-    // Devices (including TSG-retained channels) release events and core state.
-    // Destroy them while those module members are still alive.
-    for (const auto& [fd, device] : open_files) { device->OnClose(fd); }
-    open_files.clear();
-}
+Module::~Module() {}
 
 NvResult Module::VerifyFD(DeviceFD fd) const {
     if (fd < 0) {
@@ -133,13 +200,16 @@ NvResult Module::VerifyFD(DeviceFD fd) const {
 }
 
 DeviceFD Module::Open(const std::string& device_name, NvCore::SessionId session_id) {
-    if (device_name == "/dev/nvhost-tsg-gpu") {
-        const auto* session = container.GetSession(session_id);
-        if (!session || !session->process || !session->process->UsesPAuthReturns()) {
-            return INVALID_NVDRV_FD;
-        }
-    }
     auto it = builders.find(device_name);
+    if (it == builders.end() && device_name.starts_with("/dev/nvhost-")) {
+        // Newer nvgpu nodes used by Switch 2 drivers (e.g. /dev/nvhost-tsg-gpu): serve them with
+        // a logged stub instead of failing the open.
+        LOG_WARNING(Service_NVDRV, "Opening unknown device {} as a Switch 2 stub", device_name);
+        const DeviceFD fd = next_fd++;
+        auto device = nx2_stub_builder(fd, device_name);
+        device->OnOpen(session_id, fd);
+        return fd;
+    }
     if (it == builders.end()) {
         LOG_ERROR(Service_NVDRV, "Trying to open unknown device {}", device_name);
         return INVALID_NVDRV_FD;

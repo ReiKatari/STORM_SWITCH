@@ -24,6 +24,62 @@ public:
         std::string_view error;
     };
 
+    struct Decoded {
+        std::array<Word, 2> imm{};
+        std::array<Word, 2> op{};
+        std::array<Word, 2> dst{};
+        std::array<Word, 2> src_a{};
+        std::array<Word, 2> src_b{};
+        std::array<Word, 2> out_method{};
+        std::array<Word, 2> out_emit{};
+        Word pred_reg{};
+        Word pred_mode{};
+        std::array<bool, 2> load{};
+        bool end{};
+        Word mask_true{};
+        Word mask_false{};
+    };
+
+    static Decoded Decode(std::array<Word, 3> bits) {
+        const auto field = [&](Word low, Word count) {
+            std::uint64_t value = bits[low / 32];
+            if (low / 32 < 2) value |= std::uint64_t{bits[low / 32 + 1]} << 32;
+            return Word((value >> (low % 32)) & ((std::uint64_t{1} << count) - 1));
+        };
+        Decoded d{};
+        d.imm = {field(30, 16), field(66, 16)};
+        d.op = {field(10, 5), field(46, 5)};
+        d.dst = {field(15, 5), field(51, 5)};
+        d.src_a = {field(20, 5), field(56, 5)};
+        d.src_b = {field(25, 5), field(61, 5)};
+        d.out_method = {field(82, 3), field(89, 3)};
+        d.out_emit = {field(85, 4), field(92, 4)};
+        d.pred_reg = field(5, 5);
+        d.pred_mode = field(1, 4);
+        for (Word i = 0; i < 2; ++i) {
+            const Word reg = 28 + i, out = 3 + i;
+            d.load[i] = d.pred_reg == reg || d.src_a[0] == reg || d.src_a[1] == reg ||
+                        d.src_b[0] == reg || d.src_b[1] == reg || d.out_method[0] == out ||
+                        d.out_method[1] == out || d.out_emit[0] == out || d.out_emit[1] == out;
+        }
+        d.end = field(0, 1) != 0;
+        constexpr std::array<std::string_view, 16> predicates{
+            "UUUU", "TTTT", "FFFF", "TTUU", "FFUU", "TFUU", "TUUU", "FUUU",
+            "UUTT", "UUTF", "UUTU", "UUFT", "UUFF", "UUFU", "UUUT", "UUUF"};
+        if (d.pred_mode) {
+            d.mask_true = 0;
+            d.mask_false = 0;
+            for (Word i = 0; i < 4; ++i) {
+                if (predicates[d.pred_mode][i] != 'T') d.mask_true |= 1U << i;
+                if (predicates[d.pred_mode][i] != 'F') d.mask_false |= 1U << i;
+            }
+        } else {
+            d.mask_true = 15;
+            d.mask_false = 15;
+        }
+        return d;
+    }
+
     template <typename Read, typename Emit>
     Result Execute(std::span<const Word> code, Word start,
                    std::span<const Word> parameters, Read read, Emit emit) {

@@ -6,19 +6,13 @@
 
 #include <algorithm>
 #include <mutex>
-#include <stop_token>
 #include <string>
-#include <thread>
 #include <tuple>
 #include "common/cpu_features.h"
 #include "common/cpu_features.h"
 
 #ifdef _WIN32
 #include "common/windows/timer_resolution.h"
-#endif
-
-#if defined(_M_X64) || defined(__x86_64__)
-#include <immintrin.h>
 #endif
 
 #include "common/settings.h"
@@ -28,6 +22,21 @@
 namespace Core::Timing {
 
 constexpr s64 MAX_SLICE_LENGTH = 10000;
+
+constexpr u32 CPU_CLOCK_BASE_MHZ = 1020;
+constexpr u32 CPU_CLOCK_BOOST_MHZ = 1734;
+constexpr u32 CPU_CLOCK_OVERCLOCK_MHZ = 2040;
+
+constexpr u32 CpuClockTargetMhz(Settings::CpuClock clock) {
+    switch (clock) {
+    case Settings::CpuClock::Boost:
+        return CPU_CLOCK_BOOST_MHZ;
+    case Settings::CpuClock::Overclock:
+        return CPU_CLOCK_OVERCLOCK_MHZ;
+    default:
+        return CPU_CLOCK_BASE_MHZ;
+    }
+}
 
 std::shared_ptr<EventType> CreateEvent(std::string name, TimedCallback&& callback) {
     return std::make_shared<EventType>(std::move(callback), std::move(name));
@@ -69,11 +78,6 @@ void CoreTiming::Initialize(std::function<void()>&& on_thread_init_) {
             on_thread_init();
             has_started = true;
 
-            std::stop_callback stop_cb(stop_token, [this] {
-                pause_event.Set();
-                event.Set();
-            });
-
             // base frequency in MHz: 1ns (10^-9) = 1GHz (10^9)
             while (!stop_token.stop_requested()) {
                 while (!paused && !stop_token.stop_requested()) {
@@ -88,17 +92,12 @@ void CoreTiming::Initialize(std::function<void()>&& on_thread_init_) {
                         // Queue is empty, wait until another event is scheduled and signals us to
                         // continue.
                         wait_set = true;
-                        event.WaitFor(std::chrono::milliseconds(50));
+                        event.Wait();
                     }
                     wait_set = false;
                 }
-
-                if (stop_token.stop_requested()) {
-                    break;
-                }
-
                 paused_set = true;
-                pause_event.WaitFor(std::chrono::milliseconds(50));
+                pause_event.Wait();
             }
         });
     }
@@ -130,10 +129,8 @@ void CoreTiming::SyncPause(bool is_paused) {
             pause_event.Set();
         }
         event.Set();
-        int timeout_spins = 100000;
-        while (paused_set != is_paused and --timeout_spins > 0) {
-            std::this_thread::yield();
-        }
+        while (paused_set != is_paused)
+            ;
     }
 
     if (!is_paused) {
@@ -152,39 +149,31 @@ bool CoreTiming::HasPendingEvents() const {
 
 void CoreTiming::ScheduleEvent(std::chrono::nanoseconds ns_into_future,
                                const std::shared_ptr<EventType>& event_type, bool absolute_time) {
-    bool should_wake = false;
     {
         std::scoped_lock scope{basic_lock};
         const auto next_time{absolute_time ? ns_into_future : GetGlobalTimeNs() + ns_into_future};
-        should_wake = event_queue.empty() || next_time.count() < event_queue.top().time;
 
         auto h{event_queue.emplace(Event{next_time.count(), event_fifo_id++, event_type, 0})};
         (*h).handle = h;
     }
 
-    if (should_wake) {
-        event.Set();
-    }
+    event.Set();
 }
 
 void CoreTiming::ScheduleLoopingEvent(std::chrono::nanoseconds start_time,
                                       std::chrono::nanoseconds resched_time,
                                       const std::shared_ptr<EventType>& event_type,
                                       bool absolute_time) {
-    bool should_wake = false;
     {
         std::scoped_lock scope{basic_lock};
         const auto next_time{absolute_time ? start_time : GetGlobalTimeNs() + start_time};
-        should_wake = event_queue.empty() || next_time.count() < event_queue.top().time;
 
         auto h{event_queue.emplace(
             Event{next_time.count(), event_fifo_id++, event_type, resched_time.count()})};
         (*h).handle = h;
     }
 
-    if (should_wake) {
-        event.Set();
-    }
+    event.Set();
 }
 
 void CoreTiming::UnscheduleEvent(const std::shared_ptr<EventType>& event_type,
@@ -228,17 +217,6 @@ void CoreTiming::AddTicks(u64 ticks_to_add) {
 
 void CoreTiming::Idle() {
     AddTicks(1000U);
-#if defined(_M_X64) || defined(__x86_64__)
-    _mm_pause();
-#elif defined(__aarch64__) || defined(_M_ARM64)
-#if defined(__GNUC__) || defined(__clang__)
-    asm volatile("yield" ::: "memory");
-#else
-    __yield();
-#endif
-#else
-    std::this_thread::yield();
-#endif
 }
 
 void CoreTiming::ResetTicks() {
@@ -250,7 +228,7 @@ u64 CoreTiming::GetClockTicks() const {
     // and must NEVER be scaled by CPU core boost frequency, otherwise games waiting 320,000 ticks
     // (16.667 ms) wait 28.33 ms (35 FPS / 30 FPS VSync lock) instead of 60 FPS!
     const u64 fres = is_multicore ? Common::g_wall_clock.GetCNTPCT()
-                                  : Common::WallClock::CPUTickToCNTPCT(cpu_ticks);
+                                  : Common::g_wall_clock.CPUTickToGuestCNTPCT(cpu_ticks);
     if (::Settings::values.sync_core_speed.GetValue()) {
         const u16 limit = Settings::SpeedLimit();
         if (limit > 0 && limit != 100) {
@@ -327,10 +305,15 @@ std::optional<s64> CoreTiming::Advance() {
 
 void CoreTiming::Reset() {
     paused = true;
+    // Request the stop before waking the thread: woken first, it could take the wake-up, see no
+    // stop request yet, and go back to waiting on pause_event for good (the join below then hung
+    // the frontend at boot).
     if (timer_thread.joinable()) {
         timer_thread.request_stop();
-        pause_event.Set();
-        event.Set();
+    }
+    pause_event.Set();
+    event.Set();
+    if (timer_thread.joinable()) {
         timer_thread.join();
     }
     has_started = false;

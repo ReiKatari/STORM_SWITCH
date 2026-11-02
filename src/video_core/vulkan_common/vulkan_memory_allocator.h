@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <memory>
 #include <span>
 #include <vector>
@@ -105,6 +106,14 @@ namespace Vulkan {
 
         vk::Image CreateImage(const VkImageCreateInfo &ci) const;
 
+        /// Counts the images that did not fit the device memory budget (made anyway, in host
+        /// memory or with nothing bound): the texture cache collects harder when it grows.
+        u32 MemoryPressureEvents() const noexcept {
+            return pressure_events.load(std::memory_order_relaxed);
+        }
+
+        u64 GetDeviceMemorySlack() const;
+
         vk::Buffer CreateBuffer(const VkBufferCreateInfo &ci, MemoryUsage usage) const;
 
         /**
@@ -134,6 +143,7 @@ namespace Vulkan {
 
         const Device &device;                              ///< Device handle.
         VmaAllocator allocator;                           ///< VMA allocator.
+        mutable std::atomic<u32> pressure_events{0};
         const VkPhysicalDeviceMemoryProperties properties; ///< Physical device memory properties.
         VkDeviceSize buffer_image_granularity;            ///< Adjacent buffer/image granularity
         u32 valid_memory_types{~0u};

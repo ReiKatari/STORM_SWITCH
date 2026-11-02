@@ -12,7 +12,7 @@
 #include <memory>
 #include <span>
 #include <string>
-#include <ankerl/unordered_dense.h>
+#include "common/container/unordered_map.h"
 
 #include "common/common_types.h"
 #include "core/hle/service/kernel_helpers.h"
@@ -98,12 +98,14 @@ private:
     friend class EventInterface;
 
     /// Manages syncpoints on the host
+    /// Builds a logged stub for nvgpu device nodes only Switch 2 drivers use.
+    std::function<std::shared_ptr<Devices::nvdevice>(DeviceFD, const std::string&)> nx2_stub_builder;
     NvCore::Container container;
 
     /// Id to use for the next open file descriptor.
     DeviceFD next_fd = 1;
 
-    using FilesContainerType = ankerl::unordered_dense::map<DeviceFD, std::shared_ptr<Devices::nvdevice>>;
+    using FilesContainerType = ::Common::unordered_map<DeviceFD, std::shared_ptr<Devices::nvdevice>>;
     /// Mapping of file descriptors to the devices they reference.
     FilesContainerType open_files;
 
@@ -111,7 +113,7 @@ private:
 
     EventInterface events_interface;
 
-    ankerl::unordered_dense::map<std::string, std::function<FilesContainerType::iterator(DeviceFD)>> builders;
+    ::Common::unordered_map<std::string, std::function<FilesContainerType::iterator(DeviceFD)>> builders;
 };
 
 void LoopProcess(Core::System& system);

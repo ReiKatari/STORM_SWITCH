@@ -531,7 +531,7 @@ void PresentManager::CopyToSwapchainImpl(Frame* frame) {
         RecreateSwapchain(frame);
     }
 
-    while (swapchain.AcquireNextImage()) {
+    while (swapchain.AcquireNextImage(!use_present_thread)) {
         RecreateSwapchain(frame);
     }
 

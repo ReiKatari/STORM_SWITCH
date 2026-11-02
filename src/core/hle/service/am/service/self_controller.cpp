@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "common/logging.h"
+#include "common/settings.h"
 #include "core/hle/kernel/k_scoped_resource_reservation.h"
 #include "core/hle/kernel/k_session.h"
 #include "core/hle/kernel/k_client_session.h"
@@ -19,6 +20,7 @@
 #include "core/hle/service/caps/caps_su.h"
 #include "core/hle/service/cmif_serialization.h"
 #include "core/hle/service/nvnflinger/nvnflinger.h"
+#include "core/hle/service/nx2_gsv.h"
 #include "core/hle/service/sm/sm.h"
 #include "core/hle/service/vi/vi_results.h"
 
@@ -78,6 +80,7 @@ ISelfController::ISelfController(Core::System& system_, std::shared_ptr<Applet> 
         {120, D<&ISelfController::SaveCurrentScreenshot>, "SaveCurrentScreenshot"},
         {130, D<&ISelfController::SetRecordVolumeMuted>, "SetRecordVolumeMuted"},
         {230, D<&ISelfController::Unknown230>, "Unknown230"},
+        {240, D<&ISelfController::Unknown240>, "Unknown240"},
         {1000, nullptr, "GetDebugStorageChannel"},
         {2000, &ISelfController::GetGraphicsSupervisor, "GetGraphicsSupervisor"},
     };
@@ -90,17 +93,17 @@ ISelfController::ISelfController(Core::System& system_, std::shared_ptr<Applet> 
                                                m_applet->library_applet_mode);
 }
 
-ISelfController::~ISelfController() {
-    if (m_graphics_supervisor_session != nullptr) {
-        m_graphics_supervisor_session->Close(kernel);
-    }
-    if (m_applet) {
-        std::scoped_lock lk{m_applet->lock};
-        m_applet->display_layer_manager.Finalize();
-    }
+void ISelfController::GetNx2GraphicsSystemSession(HLERequestContext& ctx) {
+    // nn::gsv::BootWithRemoteMemory sends TIPC on the handle this returns.
+    LOG_WARNING(Service_AM, "(STUBBED) Switch 2 ISelfController::2000, returning a nx2:gsv session");
+    ReturnRawSession(system, ctx, std::make_shared<INx2GraphicsSystemSession>(system));
 }
 
 void ISelfController::GetGraphicsSupervisor(HLERequestContext& ctx) {
+    if (Settings::IsCurrentProgramSwitch2()) {
+        GetNx2GraphicsSystemSession(ctx);
+        return;
+    }
     if (m_graphics_supervisor_session != nullptr) {
         IPC::ResponseBuilder rb{ctx, 2, 1};
         rb.Push(ResultSuccess);
@@ -125,13 +128,24 @@ void ISelfController::GetGraphicsSupervisor(HLERequestContext& ctx) {
     Kernel::KSession::Register(kernel, session);
     auto& server = ctx.GetManager()->GetServerManager();
     auto manager = std::make_shared<SessionRequestManager>(kernel, server);
-    manager->SetSessionHandler(std::make_shared<IGraphicsSupervisor>(system, m_process, m_applet->aruid.pid));
+    const u64 pid = m_applet ? m_applet->aruid.pid : 0;
+    manager->SetSessionHandler(std::make_shared<IGraphicsSupervisor>(system, m_process, pid));
     server.RegisterSession(&session->GetServerSession(), std::move(manager));
     LOG_DEBUG(Service_AM, "created graphics-supervisor session");
     m_graphics_supervisor_session = &session->GetClientSession();
     IPC::ResponseBuilder rb{ctx, 2, 1};
     rb.Push(ResultSuccess);
     rb.PushCopyObjects(ctx, m_graphics_supervisor_session);
+}
+
+ISelfController::~ISelfController() {
+    if (m_graphics_supervisor_session != nullptr) {
+        m_graphics_supervisor_session->Close(kernel);
+    }
+    if (m_applet) {
+        std::scoped_lock lk{m_applet->lock};
+        m_applet->display_layer_manager.Finalize();
+    }
 }
 
 Result ISelfController::Exit() {
@@ -473,6 +487,12 @@ Result ISelfController::Unknown230(u32 in_val, Out<u16> out_val) {
     LOG_WARNING(Service_AM, "(STUBBED) called, in_val={}", in_val);
 
     *out_val = 0;
+
+    R_SUCCEED();
+}
+
+Result ISelfController::Unknown240(u32 in_val) {
+    LOG_WARNING(Service_AM, "(STUBBED) called, in_val={}", in_val);
 
     R_SUCCEED();
 }

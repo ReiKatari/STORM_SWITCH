@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
 $baseDir = Split-Path -Parent $PSScriptRoot
-$version = '16.0.6'
+$version = '16.0.7'
 if (Test-Path "$PSScriptRoot\GIT-RELEASE") {
     $v = (Get-Content "$PSScriptRoot\GIT-RELEASE" -Raw).Trim()
     if ($v) { $version = $v }
@@ -66,8 +66,8 @@ function Sign-ApkWithRotation([string]$apkPath) {
             if ($badging -match "versionCode='(\d+)'") {
                 $vc = [int64]$matches[1]
                 Write-Host "Verified $(Split-Path $apkPath -Leaf) versionCode=$vc"
-                if ($vc -le 34186401) {
-                    throw "FATAL UPGRADE GUARD: versionCode ($vc) is not strictly greater than previous release (34186401)! In-place upgrade would fail with INSTALL_FAILED_VERSION_DOWNGRADE."
+                if ($vc -lt 34188413) {
+                    throw "FATAL UPGRADE GUARD: versionCode ($vc) is not strictly greater than or equal to 34188413! In-place upgrade would fail with INSTALL_FAILED_VERSION_DOWNGRADE."
                 }
             }
         }
@@ -81,6 +81,10 @@ if (Test-Path $mainline) {
     Copy-Item $mainline $dst1 -Force
     Sign-ApkWithRotation $dst1
     Copy-Item $dst1 "$assemblingDir\STORM_SWITCH_$version.apk" -Force
+
+    $dstPlay = "$filesDir\STORM_SWITCH_${version}_PlayStore.apk"
+    Copy-Item $dst1 $dstPlay -Force
+    Copy-Item $dst1 "$assemblingDir\STORM_SWITCH_${version}_PlayStore.apk" -Force
 }
 
 if (Test-Path $legacy) {

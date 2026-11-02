@@ -25,6 +25,7 @@ public:
     void Subtract(AddressType base_address, size_t size);
     void Clear();
     bool Empty() const;
+    bool Intersects(AddressType base_address, size_t size) const;
 
     template <typename Func>
     void ForEach(Func&& func) const;

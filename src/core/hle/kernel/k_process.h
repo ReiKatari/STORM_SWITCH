@@ -1,3 +1,4 @@
+#include <ankerl/unordered_dense.h>
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -135,7 +136,7 @@ private:
     bool m_is_signaled : 1 = false;
     bool m_is_initialized : 1 = false;
     bool m_is_application : 1 = false;
-    bool m_uses_pauth_returns : 1 = false;
+    bool m_is_switch2 : 1 = false;
     bool m_is_default_application_system_resource : 1 = false;
     bool m_is_suspended : 1 = false;
     bool m_is_immortal : 1 = false;
@@ -249,8 +250,9 @@ public:
         return m_is_application;
     }
 
-    bool UsesPAuthReturns() const {
-        return m_uses_pauth_returns;
+    bool UsesPAuthReturns() const { return m_is_switch2; }
+    bool IsSwitch2() const {
+        return m_is_switch2;
     }
 
     bool IsDefaultApplicationSystemResource() const {

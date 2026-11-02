@@ -13,6 +13,9 @@
 #include "video_core/engines/kepler_compute.h"
 #include "video_core/engines/maxwell_3d.h"
 #include "video_core/memory_manager.h"
+#ifdef ARCHITECTURE_x86_64
+#include "video_core/macro_turing_jit.h"
+#endif
 #include "video_core/native_query_trace.h"
 #include "video_core/rasterizer_interface.h"
 #include "video_core/textures/decoders.h"
@@ -27,6 +30,20 @@ KeplerCompute::KeplerCompute(MemoryManager& memory_manager_)
     execution_mask[KEPLER_COMPUTE_REG_INDEX(exec_upload)] = true;
     execution_mask[KEPLER_COMPUTE_REG_INDEX(data_upload)] = true;
     execution_mask[KEPLER_COMPUTE_REG_INDEX(launch)] = true;
+    // Everything ProcessNativeMethod acts on besides storing the value; the QMD and 0x5a
+    // trace range too while native draw diagnostics trace it.
+    native_plain_methods.set();
+    for (const u32 method : {0x45U, 0x46U, 0x47U, 0x48U, 0xaeU, 0xafU, 0xb0U, 0x107U, 0x6c3U,
+                             static_cast<u32>(KEPLER_COMPUTE_REG_INDEX(exec_upload)),
+                             static_cast<u32>(KEPLER_COMPUTE_REG_INDEX(data_upload))}) {
+        native_plain_methods[method] = false;
+    }
+    if (std::getenv("EDEN_NATIVE_DRAW_DIAGNOSTICS") != nullptr) {
+        native_plain_methods[0x5a] = false;
+        for (u32 method = 0xc6; method <= 0x108; ++method) {
+            native_plain_methods[method] = false;
+        }
+    }
 }
 
 KeplerCompute::~KeplerCompute() = default;
@@ -64,16 +81,44 @@ bool KeplerCompute::ProcessNativeMethod(Core::System& system, u32 method, u32 ar
         if (!is_last_call) return true;
         const u32 entry = ((*native_executing_macro - 0xe00) / 2) % native_macro_positions.size();
         native_executing_macro.reset();
+        const u32 start = native_macro_positions[entry];
+        const auto emit = [&](u32 address, u32 value) {
+            static u32 diagnostic_writes{};
+            if (diagnostic_writes++ < 4096) LOG_DEBUG(HW_GPU, "Native compute MME emit method={:#x}, value={:#x}", address, value);
+            if (address >= 0xe00) return false;
+            CallMethod(system, address, value, true);
+            return true;
+        };
+#ifdef ARCHITECTURE_x86_64
+        // Compiled macro code, as for 3D macros (macro_turing_jit.h); EDEN_NX2_MME_JIT=0 off.
+        static const bool use_jit = [] {
+            const char* value = std::getenv("EDEN_NX2_MME_JIT");
+            return value == nullptr || value[0] != '0';
+        }();
+        if (use_jit) {
+            if (!native_macro->native_jit) {
+                native_macro->native_jit = std::make_shared<TuringMacroJit>();
+            }
+            native_macro->native_jit->Prepare(native_macro->native_code,
+                                              native_macro->native_code_generation);
+            const auto result = native_macro->native_jit->Execute(
+                start, native_parameters,
+                std::span<u32>{native_macro->native_interpreter.dram},
+                [&](u32 address) { return address < native_registers.size() ? native_registers[address] : 0U; },
+                emit);
+            if (!result.success) {
+                native_macro->native_execution_failed = true;
+                LOG_ERROR(HW_GPU, "Native MME (JIT) failed: compute start={:#x}, consumed={}/{}, error={}",
+                          start, result.consumed, native_parameters.size(), result.error);
+            }
+            native_parameters.clear();
+            return true;
+        }
+#endif
         const auto result = native_macro->native_interpreter.Execute(native_macro->native_code,
-            native_macro_positions[entry], native_parameters,
+            start, native_parameters,
             [&](u32 address) { return address < native_registers.size() ? native_registers[address] : 0U; },
-            [&](u32 address, u32 value) {
-                static u32 diagnostic_writes{};
-                if (diagnostic_writes++ < 4096) LOG_DEBUG(HW_GPU, "Native compute MME emit method={:#x}, value={:#x}", address, value);
-                if (address >= 0xe00) return false;
-                CallMethod(system, address, value, true);
-                return true;
-            });
+            emit);
         if (!result.success) {
             native_macro->native_execution_failed = true;
             std::ofstream dump("native-compute-mme.bin", std::ios::binary);
@@ -207,7 +252,19 @@ bool KeplerCompute::ProcessNativeMethod(Core::System& system, u32 method, u32 ar
 }
 
 void KeplerCompute::CallMethod(Core::System& system, u32 method, u32 method_argument, bool is_last_call) {
-    if (native_mode && ProcessNativeMethod(system, method, method_argument, is_last_call)) return;
+    if (native_mode) {
+        // Most of the compute class's register writes (QMD fields replayed by its macros for
+        // each of thousands of dispatches a second) only store the value: ~4% of title 1's GPU
+        // thread went through ProcessNativeMethod's checks for them.
+        if (method < native_plain_methods.size() && native_plain_methods[method]) {
+            native_registers[method] = method_argument;
+            if (method < Regs::NUM_REGS) {
+                regs.reg_array[method] = method_argument;
+            }
+            return;
+        }
+        if (ProcessNativeMethod(system, method, method_argument, is_last_call)) return;
+    }
     if (method >= Regs::NUM_REGS) {
         LOG_ERROR(HW_GPU, "Compute register out of range: {:#x}", method);
         return;

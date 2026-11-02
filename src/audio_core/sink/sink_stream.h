@@ -245,22 +245,13 @@ private:
     SinkBuffer playing_buffer{};
     /// The last played (or received) frame of audio, used when the callback underruns
     std::array<s16, MaxChannels> last_frame{};
+    /// EDEN_NX2_AUDIO_LEVEL meter state.
+    s32 level_peak{};
+    u64 level_frames{};
     /// Number of buffers waiting to be played
     std::atomic<u32> queued_buffers{};
     /// The ring size for audio out buffers (usually 4, rarely 2 or 8)
     u32 max_queue_size{};
-
-    // Adaptive audio drift compensation
-    f64 drift_ratio{1.0};           // Current playback speed ratio (0.95 - 1.05)
-    f64 drift_integral{0.0};        // PID integral accumulator
-    f64 drift_ema_queue_level{0.0}; // EMA of queue occupancy (in buffers)
-    static constexpr u32 target_queue_size{5}; // Target buffer level for drift control
-    static constexpr f64 drift_kp{0.005};      // Proportional gain
-    static constexpr f64 drift_ki{0.0001};     // Integral gain
-    static constexpr f64 drift_max{0.05};      // Maximum drift ±5%
-    static constexpr f64 drift_ema_alpha{0.1}; // EMA smoothing factor
-    std::vector<s16> resample_scratch;         // Reusable buffer to avoid heap allocations in audio callback
-
     /// Locks access to sample count tracking info
     std::mutex sample_count_lock;
     /// Minimum number of total samples that have been played since the last callback
