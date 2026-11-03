@@ -5,6 +5,8 @@
 
 #include <memory>
 #include <vector>
+#include <deque>
+#include <mutex>
 #include <QDialog>
 #include <QImage>
 #include <QString>
@@ -104,6 +106,18 @@ private:
     bool m_dragging{false};
 };
 
+
+struct DialogueBacklogEntry {
+    QString id;
+    qint64 timestamp_ms{0};
+    QString formatted_time;
+    QString source_text;
+    QString translated_text;
+    QString source_lang;
+    QString target_lang;
+    QString speaker_name;
+};
+
 struct SpeechSegment {
     enum class Role {
         Default,
@@ -169,11 +183,25 @@ public:
     void DismissOverlay();
     void ToggleHUD();
 
+    // Dialogue Backlog & Anti-Duplicate Context Filter API (Ported from STORM DS)
+    static constexpr size_t BACKLOG_MAX_CAPACITY = 100;
+    bool AddOrUpdateBacklog(const QString& source_text, const QString& translated_text,
+                            const QString& source_lang, const QString& target_lang,
+                            const QString& speaker_name = QString());
+    std::vector<DialogueBacklogEntry> GetBacklogEntries() const;
+    void ClearBacklog();
+    bool IsDuplicateDialogue(const QString& new_source, double similarity_threshold = 0.85) const;
+    static int ComputeLevenshteinDistance(const QString& s1, const QString& s2);
+    static double ComputeJaccardSimilarity(const QString& s1, const QString& s2);
+
 private slots:
     void OnTranslateClicked();
     void OnSpeakClicked();
     void OnCopyClicked();
     void OnClearClicked();
+    void OnCopyBacklogClicked();
+    void OnClearBacklogClicked();
+    void OnBacklogItemDoubleClicked(class QListWidgetItem* item);
     void OnProviderChanged(int index);
     void OnTestTTSClicked();
     void OnToggleHUDClicked(bool checked);
@@ -277,6 +305,17 @@ private:
     QSlider* m_tts_volume_slider{nullptr};
     QSlider* m_tts_rate_slider{nullptr};
     QPushButton* m_test_tts_btn{nullptr};
+
+    // Dialogue Backlog Storage & Deduplication Filter (STORM DS)
+    mutable std::mutex m_backlog_mutex;
+    std::deque<DialogueBacklogEntry> m_dialogue_backlog;
+
+    // Tab 5: Dialogue Backlog UI
+    QListWidget* m_backlog_list{nullptr};
+    QLabel* m_backlog_count_label{nullptr};
+    QPushButton* m_copy_backlog_btn{nullptr};
+    QPushButton* m_clear_backlog_btn{nullptr};
+    void RefreshBacklogUI();
 
 #ifdef _WIN32
     struct ISpVoice* m_sapi_voice{nullptr};

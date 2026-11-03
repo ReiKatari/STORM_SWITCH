@@ -237,12 +237,18 @@ void Maxwell3D::ProcessMacro(Core::System& system, u32 method, const u32* base_s
     // the parameters in place (RefreshParameters), so it keeps the vector.
     // EDEN_NX2_MACRO_COPY=1: always use the vector (for comparisons).
     static const bool always_copy = std::getenv("EDEN_NX2_MACRO_COPY") != nullptr;
-    if (is_last_call && macro_params.empty() && amount <= 64 && !always_copy &&
-        !Settings::IsGPULevelHigh()) {
-        std::array<u32, 64> parameters;
-        std::copy_n(base_start, amount, parameters.begin());
-        ConsumeSink(system);
-        CallMacroMethod(system, executing_macro, std::span<const u32>{parameters.data(), amount});
+    if (is_last_call && macro_params.empty() && !always_copy && !Settings::IsGPULevelHigh()) {
+        if (amount <= 64) {
+            std::array<u32, 64> parameters;
+            std::copy_n(base_start, amount, parameters.begin());
+            ConsumeSink(system);
+            CallMacroMethod(system, executing_macro, std::span<const u32>{parameters.data(), amount});
+        } else {
+            // Dynamic std::vector fallback for macros receiving > 64 parameters (prevents truncation)
+            std::vector<u32> parameters(base_start, base_start + amount);
+            ConsumeSink(system);
+            CallMacroMethod(system, executing_macro, parameters);
+        }
         macro_segments.clear();
         current_macro_dirty = false;
         return;
@@ -341,11 +347,10 @@ void Maxwell3D::ConsumeSinkImpl(Core::System& system) {
     const auto control = shadow_state.shadow_ram_control;
     // Sunk methods are state writes only (not in execution_mask): skip unchanged values, as
     // CallMethod does.
-    const bool skip_same = SkipSameValueWrites();
+    // ProcessDirtyRegisters MUST ALWAYS be called for every register write (and during
+    // ShadowRamControl::Replay), because StateTracker clears dirty.flags after each draw call.
     const auto process = [&](u32 method, u32 value) {
-        if (!skip_same || regs.reg_array[method] != value) {
-            ProcessDirtyRegisters(method, value);
-        }
+        ProcessDirtyRegisters(method, value);
     };
     if (control == Regs::ShadowRamControl::Track || control == Regs::ShadowRamControl::TrackWithFilter) {
         for (auto [method, value] : method_sink) {
@@ -511,9 +516,11 @@ void Maxwell3D::CallMethod(Core::System& system, u32 method, u32 method_argument
     // binds, semaphores, ...) always run. EDEN_NX2_SKIP_SAME=0 turns it off.
     if (!execution_mask[method]) {
         // ProcessMethodCall (and the draw manager behind it) acts only on executable methods.
-        if (!SkipSameValueWrites() || regs.reg_array[method] != argument) {
-            ProcessDirtyRegisters(method, argument);
-        }
+        // ProcessDirtyRegisters MUST ALWAYS be called for every non-executable register write
+        // (and during ShadowRamControl::Replay), because StateTracker clears dirty.flags after
+        // each draw call, and skipping ProcessDirtyRegisters when regs.reg_array[method] == argument
+        // leaves vertex buffers, viewports, scissors, and descriptors unbound.
+        ProcessDirtyRegisters(method, argument);
         return;
     }
     ProcessDirtyRegisters(method, argument);

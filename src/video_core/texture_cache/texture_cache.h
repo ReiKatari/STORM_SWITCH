@@ -144,22 +144,41 @@ void TextureCache<P>::RunGarbageCollector() {
             return false;
         }
         // Protect active recently-used 2D Color Render Targets / dynamic font atlases from GC eviction
+        const bool is_font_glyph_format =
+            image.info.format == PixelFormat::R8_UNORM ||
+            image.info.format == PixelFormat::R8_SNORM ||
+            image.info.format == PixelFormat::R8_UINT ||
+            image.info.format == PixelFormat::R8_SINT ||
+            image.info.format == PixelFormat::R8G8_UNORM ||
+            image.info.format == PixelFormat::R8G8_SNORM ||
+            image.info.format == PixelFormat::R8G8_UINT ||
+            image.info.format == PixelFormat::R8G8_SINT ||
+            image.info.format == PixelFormat::BC4_UNORM ||
+            image.info.format == PixelFormat::BC4_SNORM ||
+            image.info.format == PixelFormat::BC5_UNORM ||
+            image.info.format == PixelFormat::BC5_SNORM;
+        const bool is_atlas_or_glyph = image.info.type == ImageType::e2D && is_font_glyph_format;
         const bool is_color_2d = image.info.type == ImageType::e2D &&
                                  image.info.num_samples == 1 &&
-                                 image.info.size.width <= 4096 &&
-                                 image.info.size.height <= 4096 &&
                                  image.info.format < PixelFormat::MaxColorFormat;
         const u64 cur_pid = Settings::GetCurrentProgramID() & ~0x1FFFULL;
+        const u64 val_pid = Settings::values.current_program_id.GetValue() & ~0x1FFFULL;
         const bool is_d2r_game = (cur_pid == 0x0100726014352000ULL ||
                                   cur_pid == 0x01002A801458A000ULL ||
-                                  cur_pid == 0x0100916014D8C000ULL);
-        if (is_color_2d && is_d2r_game) {
+                                  cur_pid == 0x0100916014D8C000ULL ||
+                                  val_pid == 0x0100726014352000ULL ||
+                                  val_pid == 0x01002A801458A000ULL ||
+                                  val_pid == 0x0100916014D8C000ULL);
+        if (is_atlas_or_glyph || (is_color_2d && is_d2r_game)) {
             lru_cache.Touch(image.lru_index, frame_tick);
             return false;
         }
         constexpr u64 RT_PROTECTION_WINDOW = 720;
         const bool is_modified = True(image.flags & (ImageFlagBits::GpuModified | ImageFlagBits::CpuModified));
-        const bool is_recent_rt = is_color_2d && is_modified &&
+        const bool is_recent_rt = is_color_2d &&
+                                  image.info.size.width <= 4096 &&
+                                  image.info.size.height <= 4096 &&
+                                  is_modified &&
                                   (frame_tick < image.last_frame_tick + RT_PROTECTION_WINDOW);
         if (is_recent_rt) {
             lru_cache.Touch(image.lru_index, frame_tick);

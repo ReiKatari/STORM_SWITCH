@@ -550,7 +550,7 @@ private:
             return forced == 1;
         }
         if (!VideoCore::Nx2IsActive()) {
-            return true;
+            return false;
         }
         return gpu_memory == nullptr || !gpu_memory->UsesNativeTiling();
     }

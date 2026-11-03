@@ -41,11 +41,20 @@ object PerGameDrircGenerator {
         LITTLE_NIGHTMARES,
         DISCO_ELYSIUM,
         MARIO_RABBIDS,
+        MARIO_WONDER_JAMBOREE,
         UNIVERSAL_DEFAULT
     }
 
     fun detectProfileType(programIdHex: String, title: String): GameProfileType {
-        val cleanId = programIdHex.trim().uppercase()
+        var rawId = programIdHex.trim().uppercase()
+        if (rawId.startsWith("0X")) {
+            rawId = rawId.substring(2)
+        }
+        val cleanId = if (rawId.length == 16) {
+            rawId.substring(0, 13) + "000"
+        } else {
+            rawId
+        }
         val cleanTitle = title.trim().lowercase()
 
         // 1. Zelda Series (LunchPack / KingSystem - Zero strobing, crystal water, intact shrines)
@@ -383,6 +392,17 @@ object PerGameDrircGenerator {
             return GameProfileType.LEGEND_OF_HEROES
         }
 
+        // 21b. Mario Wonder & Jamboree (Anti-Flicker & Concurrent Binning Off)
+        if (cleanId == "010015100B514000" || cleanId.startsWith("010015100B514") || // Mario Wonder
+            cleanId.startsWith("010015100B5C4") ||
+            cleanId.startsWith("010015100B5B4") ||
+            cleanId == "010036601D380000" || cleanId.startsWith("010036601D380") || // Party Jamboree
+            cleanTitle.contains("wonder") ||
+            cleanTitle.contains("jamboree")
+        ) {
+            return GameProfileType.MARIO_WONDER_JAMBOREE
+        }
+
         // 22. Mario Series (Odyssey, Wonder, 3D World, Kart, RPG, etc.)
         if (cleanId.startsWith("0100000000010") || // Odyssey
             cleanId.startsWith("010015100B5C4") || // Wonder
@@ -482,6 +502,15 @@ object PerGameDrircGenerator {
                 optionsBuilder.append("            <option name=\"tu_allow_oob_indirect_ubo_loads\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"ubwc_coherency_quirk\" value=\"true\" />\n")
             }
+            GameProfileType.MARIO_WONDER_JAMBOREE -> {
+                optionsBuilder.append("            <!-- TIER 2b: MARIO WONDER & JAMBOREE (Anti-Flicker & Stable LRZ) -->\n")
+                optionsBuilder.append("            <option name=\"tu_dont_care_as_load\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_allow_concurrent_binning\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"disable_conservative_lrz\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"enable_lrz_fast_clear\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"ubwc_coherency_quirk\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_allow_oob_indirect_ubo_loads\" value=\"true\" />\n")
+            }
             GameProfileType.SUPER_MARIO_ODYSSEY,
             GameProfileType.SUPER_SMASH_BROS,
             GameProfileType.SONIC -> {
@@ -541,8 +570,17 @@ $optionsBuilder
     private var lastWrittenXml: String? = null
 
     fun generateForGame(programIdHex: String, title: String): File {
-        val profileType = detectProfileType(programIdHex, title)
-        val xml = generateXmlContent(profileType, programIdHex, title)
+        var rawId = programIdHex.trim().uppercase()
+        if (rawId.startsWith("0X")) {
+            rawId = rawId.substring(2)
+        }
+        val cleanId = if (rawId.length == 16) {
+            rawId.substring(0, 13) + "000"
+        } else {
+            rawId
+        }
+        val profileType = detectProfileType(cleanId, title)
+        val xml = generateXmlContent(profileType, cleanId, title)
 
         val targetDir = File(YuzuApplication.appContext.filesDir, "per_game_drirc")
         if (!targetDir.exists()) {

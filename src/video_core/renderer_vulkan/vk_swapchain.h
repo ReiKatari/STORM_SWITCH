@@ -44,9 +44,14 @@ public:
     /// Presents the rendered image to the swapchain.
     void Present(VkSemaphore render_semaphore);
 
-    /// Returns true when the swapchain needs to be recreated.
+    /// Returns true when the swapchain is valid and ready for presentation.
+    bool IsValid() const {
+        return bool(swapchain) && image_count > 0 && !images.empty();
+    }
+
+    /// Returns true when the swapchain needs to be recreated or created after deferral.
     bool NeedsRecreation() const {
-        return IsSubOptimal() || NeedsPresentModeUpdate();
+        return !swapchain || image_count == 0 || images.empty() || IsSubOptimal() || NeedsPresentModeUpdate();
     }
 
     /// Returns true when the swapchain is outdated.
@@ -80,7 +85,7 @@ public:
     }
 
     VkImage CurrentImage() const {
-        return images[image_index];
+        return (images.empty() || image_index >= images.size()) ? VK_NULL_HANDLE : images[image_index];
     }
 
     VkFormat GetImageViewFormat() const {
@@ -92,11 +97,13 @@ public:
     }
 
     VkSemaphore CurrentPresentSemaphore() const {
-        return *present_semaphores[frame_index];
+        return (present_semaphores.empty() || frame_index >= present_semaphores.size())
+            ? VK_NULL_HANDLE : *present_semaphores[frame_index];
     }
 
     VkSemaphore CurrentRenderSemaphore() const {
-        return *render_semaphores[image_index];
+        return (render_semaphores.empty() || image_index >= render_semaphores.size())
+            ? VK_NULL_HANDLE : *render_semaphores[image_index];
     }
 
     u32 GetWidth() const {

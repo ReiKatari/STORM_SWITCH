@@ -150,27 +150,38 @@ public:
                                                             VAddr framebuffer_addr,
                                                             u32 pixel_stride);
 
-    [[nodiscard]] bool IsDiablo2Resurrected() const noexcept {
-        const u64 base_tid = current_title_id & ~0x1FFFULL;
-        if (base_tid == 0x0100726014352000ULL ||
-            base_tid == 0x01002A801458A000ULL ||
-            base_tid == 0x0100916014D8C000ULL) {
-            return true;
+    [[nodiscard]] bool IsDiablo2Resurrected(u64 title_id = 0) const noexcept {
+        if (title_id == 0) {
+            title_id = current_title_id != 0 ? current_title_id : Settings::GetCurrentProgramID();
+            if (title_id == 0) {
+                title_id = Settings::values.current_program_id.GetValue();
+            }
         }
-        const u64 current_pid = Settings::GetCurrentProgramID() & ~0x1FFFULL;
-        if (current_pid == 0x0100726014352000ULL ||
-            current_pid == 0x01002A801458A000ULL ||
-            current_pid == 0x0100916014D8C000ULL) {
-            return true;
+        const u64 base_tid = title_id & ~0x1FFFULL;
+        return (base_tid == 0x0100726014352000ULL ||
+                base_tid == 0x01002A801458A000ULL ||
+                base_tid == 0x0100916014D8C000ULL);
+    }
+
+    [[nodiscard]] bool NeedsD24DepthFormat(u64 title_id = 0) const noexcept {
+        if (title_id == 0) {
+            title_id = current_title_id != 0 ? current_title_id : Settings::GetCurrentProgramID();
+            if (title_id == 0) {
+                title_id = Settings::values.current_program_id.GetValue();
+            }
         }
-        const u64 val_pid = Settings::values.current_program_id.GetValue() & ~0x1FFFULL;
-        return (val_pid == 0x0100726014352000ULL ||
-                val_pid == 0x01002A801458A000ULL ||
-                val_pid == 0x0100916014D8C000ULL);
+        const u64 base_id = title_id & ~0x1FFFULL;
+        for (const u64 id : NEEDS_D24) {
+            if (base_id == (id & ~0x1FFFULL)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 private:
     static constexpr const u64 NEEDS_D24[] = {
+        0x01007EF00011E000ULL, // The Legend of Zelda: Breath of the Wild
         0x01006A800016E000ULL, // SSBU
         0x0100E95004038000ULL, // XC2
         0x0100A6301214E000ULL, // FE:Engage

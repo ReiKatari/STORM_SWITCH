@@ -1134,14 +1134,18 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Super Mario Bros. Wonder",
         "• Вылет при переходе уровней и активации Чудо-цветка (нехватка стандартной памяти 4GB)\n• Микрофризы при компиляции анимаций персонажей",
         "• Crash on stage transitions and Wonder Flower effects (4GB memory limit)\n• Shader compilation stutter on character animations",
-        "✓ Конфигурация памяти: 6 ГБ DRAM (предотвращение переполнения памяти)\n✓ Точность ГПУ: Обычная (Normal 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
-        "✓ Memory Layout: 6GB DRAM (Prevents memory overflow)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+        "✓ Конфигурация памяти: 6 ГБ DRAM (предотвращение переполнения памяти)\n✓ Точность ГПУ: Обычная (Normal 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Сжатие ASTC: Отключено\n✓ Барьеры обратной связи: Включено",
+        "✓ Memory Layout: 6GB DRAM (Prevents memory overflow)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Barrier Feedback Loops: Enabled",
         {
+            {"Core\\memory_layout_mode", "1"},
             {"System\\memory_layout_mode", "1"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\use_fast_gpu_time", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Cpu\\cpuopt_fastmem", "true"}
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\barrier_feedback_loops", "true"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"}
         }
     },
 
@@ -2434,14 +2438,20 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Super Mario Party Jamboree",
         "• Микрофризы в мини-играх на 20 игроков Koopathlon\n• Рассинхронизация счетчика очков",
         "• 20-player Koopathlon minigame stutters\n• Live board score counter desync",
-        "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Реактивная очистка: Включено",
-        "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Reactive Flushing: Enabled",
+        "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Реактивная очистка: Включено\n✓ Барьеры обратной связи: Включено\n✓ Сжатие ASTC: Отключено",
+        "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Reactive Flushing: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ ASTC Recompression: Uncompressed",
         {
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "2"},
+            {"System\\memory_layout_mode", "2"},
             {"Renderer\\gpu_accuracy", "2"},
             {"Renderer\\use_asynchronous_shaders", "true"},
-            {"Renderer\\use_reactive_flushing", "true"}
-        }
+            {"Renderer\\use_reactive_flushing", "true"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\barrier_feedback_loops", "true"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"}
+        },
+        {0x0100C9D013F0E000ULL, 0x0100965017338000ULL}
     },
     {
         0x010091801E8B2000ULL,

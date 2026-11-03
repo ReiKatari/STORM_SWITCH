@@ -33,6 +33,7 @@
 #include <QProcess>
 #include <QPushButton>
 #include <QRegularExpression>
+#include <QSet>
 #include <QScrollArea>
 #include <QSlider>
 #include <QSpinBox>
@@ -805,7 +806,49 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
     t4_layout->addWidget(tts_info);
     t4_layout->addStretch(1);
 
-    m_tab_widget->addTab(tab_tts, tr("🔊 Синтез речи (TTS)"));
+        m_tab_widget->addTab(tab_tts, tr("🔊 Синтез речи (TTS)"));
+
+    // Tab 5: Dialogue Backlog & History (Ported from STORM DS)
+    auto* tab_backlog = new QWidget();
+    auto* t5_layout = new QVBoxLayout(tab_backlog);
+
+    auto* t5_top_row = new QHBoxLayout();
+    m_backlog_count_label = new QLabel(tr("Записей в истории: 0 / 100"), tab_backlog);
+    m_backlog_count_label->setStyleSheet(QStringLiteral("color: #00F0FF; font-weight: bold; font-size: 13px;"));
+    t5_top_row->addWidget(m_backlog_count_label);
+    t5_top_row->addStretch(1);
+
+    m_copy_backlog_btn = new QPushButton(tr("📋 Скопировать всю историю"), tab_backlog);
+    m_copy_backlog_btn->setStyleSheet(QStringLiteral(
+        "QPushButton { background-color: #1E293B; color: #38BDF8; border: 1px solid #38BDF8; border-radius: 6px; padding: 6px 14px; font-weight: bold; }"
+        "QPushButton:hover { background-color: #0284C7; color: #FFFFFF; }"
+    ));
+    t5_top_row->addWidget(m_copy_backlog_btn);
+
+    m_clear_backlog_btn = new QPushButton(tr("🗑️ Очистить"), tab_backlog);
+    m_clear_backlog_btn->setStyleSheet(QStringLiteral(
+        "QPushButton { background-color: #1E293B; color: #F87171; border: 1px solid #F87171; border-radius: 6px; padding: 6px 14px; font-weight: bold; }"
+        "QPushButton:hover { background-color: #EF4444; color: #FFFFFF; }"
+    ));
+    t5_top_row->addWidget(m_clear_backlog_btn);
+
+    t5_layout->addLayout(t5_top_row);
+
+    m_backlog_list = new QListWidget(tab_backlog);
+    m_backlog_list->setSelectionMode(QAbstractItemView::SingleSelection);
+    m_backlog_list->setStyleSheet(QStringLiteral(
+        "QListWidget { background-color: #0B1325; border: 1px solid #1E293B; border-radius: 8px; color: #E2E8F0; padding: 6px; font-size: 13px; }"
+        "QListWidget::item { background: #131E35; border: 1px solid #1E2E4E; border-radius: 6px; margin-bottom: 6px; padding: 8px; }"
+        "QListWidget::item:hover { background: #1A2846; border-color: #00F0FF; }"
+        "QListWidget::item:selected { background: #20355A; border-color: #38BDF8; }"
+    ));
+    t5_layout->addWidget(m_backlog_list, 1);
+
+    auto* t5_hint = new QLabel(tr("💡 Двойной клик по реплике копирует её перевод. Система автоматически объединяет повторные и мерцающие кадры OCR (фильтр Левенштейна и Жаккара)."), tab_backlog);
+    t5_hint->setStyleSheet(QStringLiteral("color: #94A3B8; font-size: 11px;"));
+    t5_layout->addWidget(t5_hint);
+
+    m_tab_widget->addTab(tab_backlog, tr("📜 История диалогов"));
 
     root_layout->addWidget(m_tab_widget, 1);
 
@@ -829,6 +872,9 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
     connect(m_show_hud_check, &QCheckBox::toggled, this, &GameTranslator::OnToggleHUDClicked);
     connect(m_auto_interval_check, &QCheckBox::toggled, this, &GameTranslator::OnAutoIntervalToggled);
     connect(m_roi_preview, &ROIPreviewWidget::ZonesChanged, this, &GameTranslator::OnZonesUpdatedInPreview);
+    connect(m_copy_backlog_btn, &QPushButton::clicked, this, &GameTranslator::OnCopyBacklogClicked);
+    connect(m_clear_backlog_btn, &QPushButton::clicked, this, &GameTranslator::OnClearBacklogClicked);
+    connect(m_backlog_list, &QListWidget::itemDoubleClicked, this, &GameTranslator::OnBacklogItemDoubleClicked);
 
     LoadSettings();
     LoadCache();
@@ -1263,6 +1309,19 @@ void GameTranslator::ExtractTextFromImageAndTranslate(const QImage& frame) {
 
         m_original_edit->setPlainText(cleaned_text);
 
+        // Anti-Duplicate & Flicker Filter: Check dialogue similarity against recent dialogue turns (STORM DS)
+        if (IsDuplicateDialogue(cleaned_text)) {
+            m_status_label->setText(tr("⚡ 0 мс (Анти-дубликат / фильтр кадров)"));
+            if (!m_last_translated_output.isEmpty()) {
+                m_translated_edit->setPlainText(m_last_translated_output);
+                if (m_hud_overlay && m_show_hud_check->isChecked()) {
+                    m_hud_overlay->SetSubtitleText(m_last_translated_output);
+                    m_hud_overlay->show();
+                }
+            }
+            return;
+        }
+
         // Step 3: Check Title ID translation cache
         const QString cache_key = QStringLiteral("%1:%2:%3").arg(src_lang, tgt_lang, cleaned_text);
         if (m_translation_cache.contains(cache_key)) {
@@ -1271,6 +1330,7 @@ void GameTranslator::ExtractTextFromImageAndTranslate(const QImage& frame) {
             m_last_translated_input = cleaned_text;
             m_last_translated_output = cached_trans;
             m_status_label->setText(tr("⚡ 0 мс (Мгновенный перевод из кэша)"));
+            AddOrUpdateBacklog(cleaned_text, cached_trans, src_lang, tgt_lang);
 
             if (m_hud_overlay && m_show_hud_check->isChecked()) {
                 m_hud_overlay->SetSubtitleText(cached_trans);
@@ -1458,6 +1518,7 @@ void GameTranslator::ExecuteTranslationRequest(int endpoint_index, const QString
                     m_hud_overlay->SetSubtitleText(translated_result);
                     if (m_show_hud_check && m_show_hud_check->isChecked()) m_hud_overlay->show();
                     m_status_label->setText(tr("✅ Перевод завершён (DeepL)"));
+                    AddOrUpdateBacklog(text, translated_result, src_lang, tgt_lang);
                     SaveCache();
                     if (m_auto_speak_check->isChecked()) SpeakText(translated_result);
                 } else {
@@ -1509,6 +1570,7 @@ void GameTranslator::ExecuteTranslationRequest(int endpoint_index, const QString
                     m_hud_overlay->SetSubtitleText(translated_result);
                     if (m_show_hud_check && m_show_hud_check->isChecked()) m_hud_overlay->show();
                     m_status_label->setText(tr("✅ Перевод завершён (AI LLM)"));
+                    AddOrUpdateBacklog(text, translated_result, src_lang, tgt_lang);
                     SaveCache();
                     if (m_auto_speak_check->isChecked()) SpeakText(translated_result);
                 } else {
@@ -1548,6 +1610,7 @@ void GameTranslator::ExecuteTranslationRequest(int endpoint_index, const QString
                     m_hud_overlay->SetSubtitleText(translated_result);
                     if (m_show_hud_check && m_show_hud_check->isChecked()) m_hud_overlay->show();
                     m_status_label->setText(tr("✅ Перевод завершён (Gemini)"));
+                    AddOrUpdateBacklog(text, translated_result, src_lang, tgt_lang);
                     SaveCache();
                     if (m_auto_speak_check->isChecked()) SpeakText(translated_result);
                 } else {
@@ -1644,6 +1707,7 @@ void GameTranslator::ExecuteTranslationRequest(int endpoint_index, const QString
                 m_hud_overlay->raise();
             }
             m_status_label->setText(tr("✅ Перевод завершён"));
+            AddOrUpdateBacklog(text, translated_result, src_lang, tgt_lang);
             SaveCache();
 
             if (m_auto_speak_check->isChecked()) {
@@ -1779,7 +1843,7 @@ SpeechSegment::Persona GameTranslator::InferCharacterPersona(const QString& name
                key.contains(QStringLiteral("юни")) || key.contains(QStringLiteral("eunie")) ||
                key.contains(QStringLiteral("сена")) || key.contains(QStringLiteral("sena")) ||
                key.contains(QStringLiteral("хару")) || key.contains(QStringLiteral("haru")) ||
-               key.endsWith(QLatin1Char('а')) || key.endsWith(QLatin1Char('я'))) {
+               key.endsWith(QChar(u'а')) || key.endsWith(QChar(u'я'))) {
         result = P::YoungGirl;
     } else if (key.contains(QStringLiteral("тулин")) || key.contains(QStringLiteral("tulin")) ||
                key.contains(QStringLiteral("рекс")) || key.contains(QStringLiteral("rex")) ||
@@ -2369,5 +2433,224 @@ void GameTranslator::SaveSettings() {
     if (f_out.open(QIODevice::WriteOnly)) {
         f_out.write(QJsonDocument(root).toJson());
         f_out.close();
+    }
+}
+
+
+// =============================================================================
+// Dialogue Backlog Store & Anti-Duplicate Deduplication Filter (STORM DS)
+// =============================================================================
+
+int GameTranslator::ComputeLevenshteinDistance(const QString& s1, const QString& s2) {
+    const int len1 = s1.length();
+    const int len2 = s2.length();
+    if (len1 == 0) return len2;
+    if (len2 == 0) return len1;
+
+    std::vector<int> prev_row(len2 + 1);
+    std::vector<int> curr_row(len2 + 1);
+
+    for (int j = 0; j <= len2; ++j) {
+        prev_row[j] = j;
+    }
+
+    for (int i = 0; i < len1; ++i) {
+        curr_row[0] = i + 1;
+        const QChar c1 = s1.at(i).toLower();
+        for (int j = 0; j < len2; ++j) {
+            const QChar c2 = s2.at(j).toLower();
+            const int cost = (c1 == c2) ? 0 : 1;
+            curr_row[j + 1] = std::min({
+                curr_row[j] + 1,       // insertion
+                prev_row[j + 1] + 1,   // deletion
+                prev_row[j] + cost     // substitution
+            });
+        }
+        prev_row = curr_row;
+    }
+
+    return prev_row[len2];
+}
+
+double GameTranslator::ComputeJaccardSimilarity(const QString& s1, const QString& s2) {
+    static const QRegularExpression word_regex(QStringLiteral("[\\s,.;:!?\"'()\[\]{}\-—_]+"));
+    const QStringList tokens1 = s1.toLower().split(word_regex, Qt::SkipEmptyParts);
+    const QStringList tokens2 = s2.toLower().split(word_regex, Qt::SkipEmptyParts);
+
+    if (tokens1.isEmpty() && tokens2.isEmpty()) return 1.0;
+    if (tokens1.isEmpty() || tokens2.isEmpty()) return 0.0;
+
+    QSet<QString> set1(tokens1.begin(), tokens1.end());
+    QSet<QString> set2(tokens2.begin(), tokens2.end());
+
+    int intersection_size = 0;
+    for (const auto& token : set1) {
+        if (set2.contains(token)) {
+            intersection_size++;
+        }
+    }
+
+    int union_size = set1.size() + set2.size() - intersection_size;
+    if (union_size <= 0) return 0.0;
+
+    return static_cast<double>(intersection_size) / static_cast<double>(union_size);
+}
+
+bool GameTranslator::IsDuplicateDialogue(const QString& new_source, double similarity_threshold) const {
+    const QString clean = new_source.trimmed();
+    if (clean.isEmpty()) return true;
+
+    std::lock_guard<std::mutex> lock(m_backlog_mutex);
+    if (m_dialogue_backlog.empty()) {
+        return false;
+    }
+
+    const size_t check_count = std::min<size_t>(3, m_dialogue_backlog.size());
+    for (size_t i = 0; i < check_count; ++i) {
+        const auto& prev = m_dialogue_backlog[i];
+        if (clean.compare(prev.source_text, Qt::CaseInsensitive) == 0) {
+            return true;
+        }
+
+        const int max_len = std::max(clean.length(), prev.source_text.length());
+        if (max_len == 0) return true;
+
+        const int lev = ComputeLevenshteinDistance(clean, prev.source_text);
+        if (lev <= 2 && std::abs(clean.length() - prev.source_text.length()) <= 2) {
+            return true;
+        }
+
+        const double lev_sim = 1.0 - (static_cast<double>(lev) / static_cast<double>(max_len));
+        const double jaccard_sim = ComputeJaccardSimilarity(clean, prev.source_text);
+
+        if (lev_sim >= similarity_threshold || jaccard_sim >= 0.82) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool GameTranslator::AddOrUpdateBacklog(const QString& source_text, const QString& translated_text,
+                                        const QString& source_lang, const QString& target_lang,
+                                        const QString& speaker_name) {
+    const QString clean_src = source_text.trimmed();
+    const QString clean_trans = translated_text.trimmed();
+    if (clean_src.isEmpty() || clean_trans.isEmpty()) {
+        return false;
+    }
+
+    std::lock_guard<std::mutex> lock(m_backlog_mutex);
+    const qint64 now_ms = QDateTime::currentMSecsSinceEpoch();
+    const QString time_str = QDateTime::currentDateTime().toString(QStringLiteral("HH:mm:ss"));
+
+    if (!m_dialogue_backlog.empty()) {
+        auto& top = m_dialogue_backlog.front();
+        const int lev = ComputeLevenshteinDistance(clean_src, top.source_text);
+        const double jaccard = ComputeJaccardSimilarity(clean_src, top.source_text);
+        const bool is_sim = (lev <= 2) || (jaccard >= 0.80) ||
+                            (clean_src.startsWith(top.source_text, Qt::CaseInsensitive) && clean_src.length() <= top.source_text.length() + 8);
+
+        if (is_sim) {
+            if (clean_src.length() >= top.source_text.length()) {
+                top.source_text = clean_src;
+                top.translated_text = clean_trans;
+            }
+            top.timestamp_ms = now_ms;
+            top.formatted_time = time_str;
+            if (!speaker_name.isEmpty()) {
+                top.speaker_name = speaker_name;
+            }
+            QMetaObject::invokeMethod(this, &GameTranslator::RefreshBacklogUI, Qt::QueuedConnection);
+            return false;
+        }
+    }
+
+    DialogueBacklogEntry entry;
+    entry.id = QString::number(now_ms);
+    entry.timestamp_ms = now_ms;
+    entry.formatted_time = time_str;
+    entry.source_text = clean_src;
+    entry.translated_text = clean_trans;
+    entry.source_lang = source_lang;
+    entry.target_lang = target_lang;
+    entry.speaker_name = speaker_name;
+
+    m_dialogue_backlog.push_front(entry);
+    while (m_dialogue_backlog.size() > BACKLOG_MAX_CAPACITY) {
+        m_dialogue_backlog.pop_back();
+    }
+
+    QMetaObject::invokeMethod(this, &GameTranslator::RefreshBacklogUI, Qt::QueuedConnection);
+    return true;
+}
+
+std::vector<DialogueBacklogEntry> GameTranslator::GetBacklogEntries() const {
+    std::lock_guard<std::mutex> lock(m_backlog_mutex);
+    return std::vector<DialogueBacklogEntry>(m_dialogue_backlog.begin(), m_dialogue_backlog.end());
+}
+
+void GameTranslator::ClearBacklog() {
+    std::lock_guard<std::mutex> lock(m_backlog_mutex);
+    m_dialogue_backlog.clear();
+    QMetaObject::invokeMethod(this, &GameTranslator::RefreshBacklogUI, Qt::QueuedConnection);
+}
+
+void GameTranslator::RefreshBacklogUI() {
+    if (!m_backlog_list || !m_backlog_count_label) return;
+
+    std::vector<DialogueBacklogEntry> entries = GetBacklogEntries();
+    m_backlog_count_label->setText(tr("Записей в истории: %1 / %2")
+        .arg(entries.size()).arg(BACKLOG_MAX_CAPACITY));
+
+    m_backlog_list->clear();
+    for (const auto& entry : entries) {
+        QString display;
+        if (!entry.speaker_name.isEmpty()) {
+            display = QStringLiteral("[%1] 👤 %2: %3\n      ↳ %4")
+                          .arg(entry.formatted_time, entry.speaker_name, entry.source_text, entry.translated_text);
+        } else {
+            display = QStringLiteral("[%1] %2\n      ↳ %3")
+                          .arg(entry.formatted_time, entry.source_text, entry.translated_text);
+        }
+        auto* item = new QListWidgetItem(display, m_backlog_list);
+        item->setData(Qt::UserRole, entry.translated_text);
+        item->setData(Qt::UserRole + 1, entry.source_text);
+    }
+}
+
+void GameTranslator::OnCopyBacklogClicked() {
+    std::vector<DialogueBacklogEntry> entries = GetBacklogEntries();
+    if (entries.empty()) {
+        m_status_label->setText(tr("История диалогов пуста"));
+        return;
+    }
+
+    QString full_text;
+    for (auto it = entries.rbegin(); it != entries.rend(); ++it) {
+        if (!it->speaker_name.isEmpty()) {
+            full_text += QStringLiteral("[%1] %2: %3\n      ↳ %4\n\n")
+                             .arg(it->formatted_time, it->speaker_name, it->source_text, it->translated_text);
+        } else {
+            full_text += QStringLiteral("[%1] %2\n      ↳ %3\n\n")
+                             .arg(it->formatted_time, it->source_text, it->translated_text);
+        }
+    }
+
+    QApplication::clipboard()->setText(full_text.trimmed());
+    m_status_label->setText(tr("📋 История диалогов скопирована в буфер обмена (%1 реплик)").arg(entries.size()));
+}
+
+void GameTranslator::OnClearBacklogClicked() {
+    ClearBacklog();
+    m_status_label->setText(tr("🗑️ История диалогов очищена"));
+}
+
+void GameTranslator::OnBacklogItemDoubleClicked(QListWidgetItem* item) {
+    if (!item) return;
+    const QString trans = item->data(Qt::UserRole).toString();
+    if (!trans.isEmpty()) {
+        QApplication::clipboard()->setText(trans);
+        m_status_label->setText(tr("📋 Реплика скопирована в буфер обмена: %1").arg(trans.left(40)));
     }
 }

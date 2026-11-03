@@ -136,7 +136,7 @@ static u32 DecodeAdpcm(Core::Memory::Memory& memory, std::span<s16> out_buffer, 
     auto context = req.adpcm_context;
     auto header = context->header;
     u8 scale = u8(header & 0xfU);
-    u8 coeff_index = u8((header >> 4U) & 0x7u);
+    u8 coeff_index = u8(std::clamp<size_t>((header >> 4U) & 0x7u, 0, (req.coefficients.size() / 2) - 1));
     s32 coeff0 = req.coefficients[coeff_index * 2 + 0];
     s32 coeff1 = req.coefficients[coeff_index * 2 + 1];
 
@@ -165,7 +165,7 @@ static u32 DecodeAdpcm(Core::Memory::Memory& memory, std::span<s16> out_buffer, 
         if ((position_in_frame % NibblesPerFrame) == 0) {
             header = wavebuffer[read_index++];
             scale = header & 0xFu;
-            coeff_index = (header >> 4) & 0x7u;
+            coeff_index = u8(std::clamp<size_t>((header >> 4U) & 0x7u, 0, (req.coefficients.size() / 2) - 1));
             coeff0 = req.coefficients[coeff_index * 2 + 0];
             coeff1 = req.coefficients[coeff_index * 2 + 1];
             position_in_frame += 2;
@@ -326,7 +326,7 @@ void DecodeFromWaveBuffers(Core::Memory::Memory& memory, const DecodeFromWaveBuf
 
             case SampleFormat::Adpcm: {
                 decode_arg.adpcm_context = &voice_state.adpcm_context;
-                memory.ReadBlockUnsafe(args.data_address, &decode_arg.coefficients, args.data_size);
+                memory.ReadBlockUnsafe(args.data_address, &decode_arg.coefficients, (std::min)(args.data_size, static_cast<u64>(sizeof(decode_arg.coefficients))));
                 samples_decoded = DecodeAdpcm( memory, {&temp_buffer[temp_buffer_pos], TempBufferSize - temp_buffer_pos}, decode_arg);
             } break;
 

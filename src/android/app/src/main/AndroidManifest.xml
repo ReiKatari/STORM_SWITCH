@@ -241,6 +241,17 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
         </service>
 
+        <service
+            android:name="org.yuzu.yuzu_emu.features.quickresume.QuickResumeTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_play"
+            android:label="STORM SWITCH — Quick Resume"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
 
 
         <provider

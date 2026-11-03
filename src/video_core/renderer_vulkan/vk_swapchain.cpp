@@ -167,15 +167,30 @@ void Swapchain::Create(
     height = height_;
     surface = surface_;
 
+    // Deferred Swapchain Surface Safety: Minimized window or folded/locked screen (0x0 extent)
+    if (!surface || width == 0 || height == 0) {
+        LOG_INFO(Render_Vulkan, "Deferred swapchain creation: surface is null or zero extent ({}x{})", width, height);
+        Destroy();
+        return;
+    }
+
     const auto physical_device = device.GetPhysical();
     const auto capabilities{physical_device.GetSurfaceCapabilitiesKHR(VkSurfaceKHR(surface))};
-    if (capabilities.maxImageExtent.width == 0 || capabilities.maxImageExtent.height == 0) {
+    if (capabilities.maxImageExtent.width == 0 || capabilities.maxImageExtent.height == 0 ||
+        capabilities.currentExtent.width == 0 || capabilities.currentExtent.height == 0) {
+        LOG_INFO(Render_Vulkan, "Deferred swapchain creation: surface capabilities zero extent (current: {}x{}, max: {}x{})",
+                 capabilities.currentExtent.width, capabilities.currentExtent.height,
+                 capabilities.maxImageExtent.width, capabilities.maxImageExtent.height);
+        Destroy();
         return;
     }
 
     Destroy();
 
     CreateSwapchain(capabilities);
+    if (!swapchain) {
+        return;
+    }
     CreateSemaphores();
 
     resource_ticks.clear();
@@ -183,6 +198,9 @@ void Swapchain::Create(
 }
 
 bool Swapchain::AcquireNextImage(bool may_flush) {
+    if (!swapchain || image_count == 0 || images.empty()) {
+        return true;
+    }
     const VkResult result = device.GetLogical().AcquireNextImageKHR(
         *swapchain, (std::numeric_limits<u64>::max)(), *present_semaphores[frame_index],
         VK_NULL_HANDLE, &image_index);
@@ -212,6 +230,9 @@ bool Swapchain::AcquireNextImage(bool may_flush) {
 }
 
 void Swapchain::Present(VkSemaphore render_semaphore) {
+    if (!swapchain || image_count == 0 || images.empty()) {
+        return;
+    }
     const auto present_queue{device.GetPresentQueue()};
     const VkPresentInfoKHR present_info{
         .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
@@ -346,6 +367,10 @@ void Swapchain::CreateSwapchain(const VkSurfaceCapabilitiesKHR& capabilities) {
     // Request the size again to reduce the possibility of a TOCTOU race condition.
     const auto updated_capabilities = physical_device.GetSurfaceCapabilitiesKHR(VkSurfaceKHR(surface));
     swapchain_ci.imageExtent = ChooseSwapExtent(updated_capabilities, width, height);
+    if (swapchain_ci.imageExtent.width == 0 || swapchain_ci.imageExtent.height == 0) {
+        LOG_INFO(Render_Vulkan, "Deferred swapchain creation: chosen image extent is 0x0");
+        return;
+    }
     // Don't add code within this and the swapchain creation.
     swapchain = device.GetLogical().CreateSwapchainKHR(swapchain_ci);
 
@@ -374,6 +399,10 @@ void Swapchain::CreateSemaphores() {
 
 void Swapchain::Destroy() {
     frame_index = 0;
+    image_index = 0;
+    image_count = 0;
+    images.clear();
+    resource_ticks.clear();
     present_semaphores.clear();
     render_semaphores.clear();
     swapchain.reset();

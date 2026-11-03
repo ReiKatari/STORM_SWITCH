@@ -290,7 +290,7 @@ static void ResampleNormalQuality(std::span<s32> output, std::span<const s16> in
     auto lut{get_lut()};
     u32 read_index{0};
     for (u32 i = 0; i < samples_to_write; i++) {
-        const auto lut_index = ((fraction.get_frac() >> 8) << 2) & 511;
+        const auto lut_index = std::clamp<size_t>(((fraction.get_frac() >> 8) << 2) & 511, 0, lut.size() >= 4 ? lut.size() - 4 : 0);
         const Common::FixedPoint<56, 8> sample0{input[read_index + 0] * lut[lut_index + 0]};
         const Common::FixedPoint<56, 8> sample1{input[read_index + 1] * lut[lut_index + 1]};
         const Common::FixedPoint<56, 8> sample2{input[read_index + 2] * lut[lut_index + 2]};
@@ -840,7 +840,7 @@ static void ResampleHighQuality(std::span<s32> output, std::span<const s16> inpu
     auto lut{get_lut()};
     u32 read_index{0};
     for (u32 i = 0; i < samples_to_write; i++) {
-        const auto lut_index = ((fraction.get_frac() >> 8) << 3) & 1023;
+        const auto lut_index = std::clamp<size_t>(((fraction.get_frac() >> 8) << 3) & 1023, 0, lut.size() >= 8 ? lut.size() - 8 : 0);
         const Common::FixedPoint<56, 8> sample0{input[read_index + 0] * lut[lut_index + 0]};
         const Common::FixedPoint<56, 8> sample1{input[read_index + 1] * lut[lut_index + 1]};
         const Common::FixedPoint<56, 8> sample2{input[read_index + 2] * lut[lut_index + 2]};
