@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <QDir>
+#include <QFileInfo>
+#include <unordered_set>
 #include <QLocale>
 #include <QIcon>
 #include <QJsonArray>
@@ -55,6 +57,9 @@ bool GameListModel::LoadFromCache(const QVector<UISettings::GameDir>& game_dirs)
     if (!UISettings::values.cache_game_list) {
         return false;
     }
+    if (!m_flat) {
+        return false;
+    }
     const auto cache_path = Common::FS::PathToUTF8String(
         Common::FS::GetEdenPath(Common::FS::EdenPath::CacheDir) / "game_list" / "file_metadata_cache.json");
     QFile file(QString::fromStdString(cache_path));
@@ -74,12 +79,53 @@ bool GameListModel::LoadFromCache(const QVector<UISettings::GameDir>& game_dirs)
         return false;
     }
 
+    struct ValidGameDir {
+        QString path;
+        bool deep_scan;
+    };
+    QVector<ValidGameDir> valid_dirs;
+    for (const auto& gd : game_dirs) {
+        if (gd.path.empty() || gd.path == "SDMC" || gd.path == "UserNAND" || gd.path == "SysNAND") {
+            continue;
+        }
+        QDir dir(QString::fromStdString(gd.path));
+        if (dir.exists()) {
+            valid_dirs.append({QDir::cleanPath(dir.canonicalPath()), gd.deep_scan});
+        }
+    }
+
+    std::unordered_set<std::string> seen_keys;
     int loaded_count = 0;
     for (auto it = root.begin(); it != root.end(); ++it) {
         const QString qpath = it.key();
-        const std::string path = qpath.toStdString();
-        const auto obj = it.value().toObject();
+        QFileInfo fi(qpath);
+        if (!fi.exists() || !fi.isFile()) {
+            continue;
+        }
 
+        const QString canonical_file_path = QDir::cleanPath(fi.canonicalFilePath());
+        const QString parent_path = QDir::cleanPath(fi.canonicalPath());
+
+        bool in_active_dir = false;
+        for (const auto& vd : valid_dirs) {
+            if (vd.deep_scan) {
+                if (canonical_file_path.startsWith(vd.path + QLatin1Char('/'), Qt::CaseInsensitive) ||
+                    parent_path.compare(vd.path, Qt::CaseInsensitive) == 0) {
+                    in_active_dir = true;
+                    break;
+                }
+            } else {
+                if (parent_path.compare(vd.path, Qt::CaseInsensitive) == 0) {
+                    in_active_dir = true;
+                    break;
+                }
+            }
+        }
+        if (!in_active_dir) {
+            continue;
+        }
+
+        const auto obj = it.value().toObject();
         const bool is_bootable = obj.value(QStringLiteral("bootable")).toBool(true);
         if (!is_bootable) {
             continue;
@@ -90,14 +136,20 @@ bool GameListModel::LoadFromCache(const QVector<UISettings::GameDir>& game_dirs)
             continue;
         }
 
+        const QString file_type = obj.value(QStringLiteral("type")).toString();
+        const std::string dedup_key = fmt::format("{:016X}_{}", program_id & 0xFFFFFFFFFFFFE000ULL, file_type.toStdString());
+        if (seen_keys.contains(dedup_key)) {
+            continue;
+        }
+        seen_keys.insert(dedup_key);
+
         const u64 file_size = static_cast<u64>(obj.value(QStringLiteral("size")).toVariant().toULongLong());
         const std::string name = obj.value(QStringLiteral("name")).toString().toStdString();
-        const QString file_type = obj.value(QStringLiteral("type")).toString();
         const QString patches = obj.value(QStringLiteral("patches")).toString();
         const QString version = obj.value(QStringLiteral("version")).toString();
         const QString addons = obj.value(QStringLiteral("addons")).toString();
 
-        const auto entry = MakeCachedGameListEntry(path, name, file_size, {}, file_type,
+        const auto entry = MakeCachedGameListEntry(qpath.toStdString(), name, file_size, {}, file_type,
                                                    program_id, play_time_manager, patches, version, addons);
         invisibleRootItem()->appendRow(entry);
         loaded_count++;
@@ -214,6 +266,16 @@ void GameListModel::DonePopulating(const QStringList& watch_list) {
 
         for (const auto id : std::as_const(UISettings::values.favorited_ids)) {
             AddFavorite(id);
+        }
+    } else {
+        for (int i = invisibleRootItem()->rowCount() - 1; i >= 0; --i) {
+            auto* item = invisibleRootItem()->child(i);
+            if (item) {
+                const QString full_path = item->data(GameListItemPath::FullPathRole).toString();
+                if (!full_path.isEmpty() && (!QFileInfo::exists(full_path) || !QFileInfo(full_path).isFile())) {
+                    invisibleRootItem()->removeRow(i);
+                }
+            }
         }
     }
 

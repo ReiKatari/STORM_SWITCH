@@ -150,20 +150,24 @@ void ConfigureCpu::UpdateGroup() {
 
     ui->unsafe_group->setVisible(true);
     ui->unsafe_widget->setEnabled(is_unsafe);
+    ui->unsafe_widget->setStyleSheet(is_unsafe ? QString{} : QStringLiteral(
+        "QCheckBox { color: #64748b; } "
+        "QCheckBox::indicator:checked { background-color: #334155; border: 1px solid #475569; } "
+        "QCheckBox::indicator:unchecked { background-color: #1e293b; border: 1px solid #334155; }"));
 
     if (m_unsafe_explanation_label) {
         if (is_unsafe) {
             m_unsafe_explanation_label->setStyleSheet(QStringLiteral(
                 "color: #55ff99; background: rgba(85, 255, 153, 0.12); padding: 8px; border-radius: 6px; border: 1px solid rgba(85, 255, 153, 0.3); font-size: 11px;"));
             m_unsafe_explanation_label->setText(StormLang(
-                QStringLiteral("✓ Точность «Небезопасно» активна: включённые оптимизации применяются напрямую в Dynarmic JIT."),
-                QStringLiteral("✓ Unsafe accuracy is active: selected optimizations are applied directly in Dynarmic JIT.")));
+                QStringLiteral("Режим «Небезопасно» активен: выбранные оптимизации процессора задействованы."),
+                QStringLiteral("Unsafe mode is active: selected CPU optimizations are enabled.")));
         } else {
             m_unsafe_explanation_label->setStyleSheet(QStringLiteral(
                 "color: #e0b040; background: rgba(224, 176, 64, 0.12); padding: 8px; border-radius: 6px; border: 1px solid rgba(224, 176, 64, 0.3); font-size: 11px;"));
             m_unsafe_explanation_label->setText(StormLang(
-                QStringLiteral("⚠️ Опции ниже отключены и будут проигнорированы движком Dynarmic, так как точность процессора установлена в «Авто/Точно». Для активации выберите точность «Небезопасно»."),
-                QStringLiteral("⚠️ The options below are disabled and ignored by Dynarmic because CPU accuracy is set to Auto/Accurate. Select 'Unsafe' accuracy to enable.")));
+                QStringLiteral("Параметры этого раздела не задействованы, так как выбрана точность процессора «Автоматически» или «Точно». Чтобы активировать их, выберите точность «Небезопасно»."),
+                QStringLiteral("Options in this section are inactive because CPU accuracy is set to Auto or Accurate. Select 'Unsafe' accuracy to enable them.")));
         }
     }
 }

@@ -57,7 +57,7 @@ std::vector<SettingConflict> SettingConflicts::DetectConflicts(bool is_per_game,
         conflicts.push_back({
             "frame_gen_pacing_mismatch",
             StormLang11(
-                QStringLiteral("Конфликт генерации кадров (LSFG)"),
+                QStringLiteral("Конфликт генерации кадров"),
                 QStringLiteral("Frame Generation Pacing Conflict"),
                 QStringLiteral("Bildratengenerierungs-Konflikt"),
                 QStringLiteral("Conflit de génération d'images"),
@@ -70,7 +70,7 @@ std::vector<SettingConflict> SettingConflicts::DetectConflicts(bool is_per_game,
                 QStringLiteral("تعارض توليد الإطارات"),
                 QStringLiteral("फ्रेम जनरेशन पेसिंग टकराव")),
             StormLang11(
-                QStringLiteral("Генерация кадров активна с выключенным VSync или снятым лимитом FPS: нарушается расчет векторов движения."),
+                QStringLiteral("Генерация кадров активна с выключенной вертикальной синхронизацией или снятым лимитом частоты кадров: нарушается расчёт векторов движения."),
                 QStringLiteral("Frame generation is active with VSync off or unlocked FPS: optical flow vector estimation becomes erratic."),
                 QStringLiteral("Frame-Generierung ist aktiv mit VSync AUS oder unbegrenzten FPS: Optical-Flow-Vektorberechnung wird ungenau."),
                 QStringLiteral("Génération d'images active avec VSync désactivé ou FPS débloqué : le calcul des vecteurs optiques devient instable."),
@@ -89,57 +89,12 @@ std::vector<SettingConflict> SettingConflicts::DetectConflicts(bool is_per_game,
         });
     }
 
-    // Rule 3: Unsafe CPU flags enabled when CPU accuracy is not Unsafe
-    if (Settings::values.cpu_accuracy.GetValue() != Settings::CpuAccuracy::Unsafe) {
-        const bool has_unsafe_flags =
-            Settings::values.cpuopt_unsafe_unfuse_fma.GetValue() ||
-            Settings::values.cpuopt_unsafe_reduce_fp_error.GetValue() ||
-            Settings::values.cpuopt_unsafe_ignore_standard_fpcr.GetValue() ||
-            Settings::values.cpuopt_unsafe_inaccurate_nan.GetValue() ||
-            Settings::values.cpuopt_unsafe_fastmem_check.GetValue();
-
-        if (has_unsafe_flags) {
-            conflicts.push_back({
-                "cpu_unsafe_flags_ignored",
-                StormLang11(
-                    QStringLiteral("Игнорирование флагов процессора"),
-                    QStringLiteral("CPU Unsafe Flags Ignored"),
-                    QStringLiteral("Unsichere CPU-Flags ignoriert"),
-                    QStringLiteral("Drapeaux CPU non sécurisés ignorés"),
-                    QStringLiteral("Opciones no seguras de CPU ignoradas"),
-                    QStringLiteral("Flag CPU non sicuri ignorati"),
-                    QStringLiteral("Sinalizadores inseguros de CPU ignorados"),
-                    QStringLiteral("不安全 CPU 标记被忽略"),
-                    QStringLiteral("非安全な CPU フラグが無視されています"),
-                    QStringLiteral("안전하지 않은 CPU 플래그 무시됨"),
-                    QStringLiteral("تم تجاهل علامات المعالج غير الآمنة"),
-                    QStringLiteral("असुरक्षित CPU फ़्लैग अनदेखे किए गए")),
-                StormLang11(
-                    QStringLiteral("Флаги «Небезопасно» включены, но точность ЦП не Unsafe: движок Dynarmic игнорирует их в режиме Авто/Точно."),
-                    QStringLiteral("Unsafe CPU flags are active but CPU accuracy is not Unsafe: Dynarmic ignores these flags in Auto/Accurate mode."),
-                    QStringLiteral("Unsichere CPU-Flags sind aktiv, aber die CPU-Genauigkeit ist nicht 'Unsicher': Dynarmic ignoriert sie im Auto/Genau-Modus."),
-                    QStringLiteral("Les options CPU non sécurisées sont actives mais la précision n'est pas 'Non sécurisée' : Dynarmic les ignore en mode Auto/Précis."),
-                    QStringLiteral("Opciones no seguras de CPU activadas pero precisión no es 'No seguro': Dynarmic las ignora en modo Auto/Preciso."),
-                    QStringLiteral("I flag CPU non sicuri sono attivi ma la precisione non è 'Non sicuro': Dynarmic li ignora in modalità Auto/Preciso."),
-                    QStringLiteral("Sinalizadores de CPU inseguros ativos mas a precisão não é 'Inseguro': Dynarmic os ignora no modo Auto/Preciso."),
-                    QStringLiteral("已勾选不安全 CPU 选项但 CPU 精度并非“不安全”：Dynarmic 引擎在自动/准确模式下将忽略这些标记。"),
-                    QStringLiteral("非安全な CPU フラグが有効ですが精度が「非安全」ではありません: Dynarmic は自動/高精度モードでこれらを無視します。"),
-                    QStringLiteral("안전하지 않은 CPU 플래그가 켜져 있지만 정확도가 '안전하지 않음'이 아닙니다: Dynarmic은 자동/정확 모드에서 이를 무시합니다."),
-                    QStringLiteral("علامات المعالج غير الآمنة نشطة لكن الدقة ليست 'غير آمن': يتجاهلها محرك Dynarmic في الوضع التلقائي/الدقيق."),
-                    QStringLiteral("असुरक्षित CPU फ़्लैग सक्रिय हैं लेकिन CPU सटीकता 'असुरक्षित' नहीं है: Dynarmic ऑटो/सटीक मोड में इन्हें अनदेखा करता है।")),
-                []() {
-                    Settings::values.cpu_accuracy.SetValue(Settings::CpuAccuracy::Unsafe);
-                }
-            });
-        }
-    }
-
     // Rule 4: Memory layout > 4GB on standard Switch 1 title
     if (Settings::values.memory_layout_mode.GetValue() != Settings::MemoryLayout::Memory_4Gb) {
         conflicts.push_back({
             "switch1_memory_layout_oversize",
             StormLang11(
-                QStringLiteral("Предупреждение размера DRAM гостя"),
+                QStringLiteral("Предупреждение о размере ОЗУ гостя"),
                 QStringLiteral("Guest DRAM Size Warning"),
                 QStringLiteral("Warnung zur Gast-DRAM-Größe"),
                 QStringLiteral("Avertissement de taille DRAM invitée"),
@@ -152,7 +107,7 @@ std::vector<SettingConflict> SettingConflicts::DetectConflicts(bool is_per_game,
                 QStringLiteral("تحذير حجم ذاكرة DRAM للضيف"),
                 QStringLiteral("गेस्ट DRAM आकार चेतावनी")),
             StormLang11(
-                QStringLiteral("Выделение памяти > 4 ГБ может вызывать падение игр Switch 1 при старте (используйте только с модами на память)."),
+                QStringLiteral("Выделение памяти > 4 ГБ может вызывать падение игр Switch 1 при старте (используйте только с модификациями на расширение памяти)."),
                 QStringLiteral("Allocating >4GB guest RAM may crash standard Switch 1 games on launch (use only with memory-expanding mods)."),
                 QStringLiteral("Zuweisung von >4 GB Gast-RAM kann Standard-Spiele der Switch 1 beim Start zum Absturz bringen."),
                 QStringLiteral("Allouer >4 Go de RAM invitée peut faire planter les jeux Switch 1 standard au lancement."),
@@ -176,7 +131,7 @@ std::vector<SettingConflict> SettingConflicts::DetectConflicts(bool is_per_game,
         conflicts.push_back({
             "extreme_resolution_scale",
             StormLang11(
-                QStringLiteral("Высокая нагрузка по видеопамяти"),
+                QStringLiteral("Высокая нагрузка на видеопамять"),
                 QStringLiteral("Extreme VRAM Workload"),
                 QStringLiteral("Extreme VRAM-Auslastung"),
                 QStringLiteral("Charge VRAM extrême"),
@@ -189,7 +144,7 @@ std::vector<SettingConflict> SettingConflicts::DetectConflicts(bool is_per_game,
                 QStringLiteral("حمولة ذاكرة VRAM شديدة"),
                 QStringLiteral("अत्यधिक VRAM कार्यभार")),
             StormLang11(
-                QStringLiteral("Масштаб разрешения 3x и выше требует от 8 ГБ VRAM и может приводить к сбросу видеодрайвера на слабых GPU."),
+                QStringLiteral("Масштаб разрешения 3x и выше требует от 8 ГБ видеопамяти и может приводить к сбросу видеодрайвера на слабых графических процессорах."),
                 QStringLiteral("Resolution scale 3x or higher requires >=8GB VRAM and may cause GPU driver resets on modest hardware."),
                 QStringLiteral("Auflösungsskalierung 3x oder höher erfordert >=8 GB VRAM und kann zu Treiberabstürzen auf schwächeren GPUs führen."),
                 QStringLiteral("Une échelle de résolution de 3x ou plus nécessite >=8 Go de VRAM et peut causer un plantage du pilote graphique."),

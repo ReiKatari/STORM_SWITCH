@@ -623,13 +623,13 @@
                     <widget class="QSpinBox" name="spinboxLStickRange">
                      <property name="minimumSize">
                       <size>
-                       <width>68</width>
-                       <height>21</height>
+                       <width>88</width>
+                       <height>26</height>
                       </size>
                      </property>
                      <property name="maximumSize">
                       <size>
-                       <width>68</width>
+                       <width>120</width>
                        <height>16777215</height>
                       </size>
                      </property>
@@ -2697,13 +2697,13 @@
                     <widget class="QSpinBox" name="spinboxRStickRange">
                      <property name="minimumSize">
                       <size>
-                       <width>68</width>
-                       <height>21</height>
+                       <width>88</width>
+                       <height>26</height>
                       </size>
                      </property>
                      <property name="maximumSize">
                       <size>
-                       <width>68</width>
+                       <width>120</width>
                        <height>16777215</height>
                       </size>
                      </property>

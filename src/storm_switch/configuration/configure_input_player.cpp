@@ -205,7 +205,11 @@ QString ConfigureInputPlayer::ButtonToText(const Common::ParamPackage& param) {
     }
 
     if (common_button_name == Common::Input::ButtonNames::Engine) {
-        return QString::fromStdString(param.Get("engine", ""));
+        const auto engine = param.Get("engine", "");
+        if (engine == "sdl") {
+            return QStringLiteral("SDL");
+        }
+        return QString::fromStdString(engine);
     }
 
     if (common_button_name == Common::Input::ButtonNames::Value) {
@@ -392,6 +396,12 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
     analog_map_modifier_slider = {ui->sliderLStickModifierRange, ui->sliderRStickModifierRange};
     analog_map_range_groupbox = {ui->buttonLStickRangeGroup, ui->buttonRStickRangeGroup};
     analog_map_range_spinbox = {ui->spinboxLStickRange, ui->spinboxRStickRange};
+    for (auto* sb : analog_map_range_spinbox) {
+        sb->setMinimumSize(88, 26);
+        sb->setMaximumWidth(120);
+        sb->setAlignment(Qt::AlignCenter);
+        sb->setStyleSheet(QStringLiteral("QSpinBox { padding: 2px 18px 2px 6px; font-weight: 600; font-size: 9pt; }"));
+    }
 
     ui->controllerFrame->SetController(emulated_controller);
 
@@ -484,9 +494,9 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
         const QString compact_btn_style = QStringLiteral("padding: 3px 8px; font-size: 11px;");
 
         auto* const btn_iso_view = new QPushButton(ctrl_lang(
-            QStringLiteral("📐 3D Вид"), QStringLiteral("📐 3D View"), QStringLiteral("📐 3D 视角"),
-            QStringLiteral("📐 3D表示"), QStringLiteral("📐 3D 뷰"), QStringLiteral("📐 3D-Ansicht"),
-            QStringLiteral("📐 Vue 3D"), QStringLiteral("📐 Vista 3D"), QStringLiteral("📐 عرض ثلاثي الأبعاد")), this);
+            QStringLiteral("3D Вид"), QStringLiteral("3D View"), QStringLiteral("3D 视角"),
+            QStringLiteral("3D表示"), QStringLiteral("3D 뷰"), QStringLiteral("3D-Ansicht"),
+            QStringLiteral("Vue 3D"), QStringLiteral("Vista 3D"), QStringLiteral("عرض ثلاثي الأبعاد")), this);
         btn_iso_view->setStyleSheet(compact_btn_style);
         btn_iso_view->setToolTip(ctrl_lang(
             QStringLiteral("Изометрический объемный 3D-ракурс геймпада"),
@@ -503,9 +513,9 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
         });
 
         auto* const btn_top_view = new QPushButton(ctrl_lang(
-            QStringLiteral("⬆️ Торцы"), QStringLiteral("⬆️ Top / Triggers"), QStringLiteral("⬆️ 顶部肩键"),
-            QStringLiteral("⬆️ 上面 / トリガー"), QStringLiteral("⬆️ 상단 / 트리거"), QStringLiteral("⬆️ Schultertasten"),
-            QStringLiteral("⬆️ Gâchettes"), QStringLiteral("⬆️ Gatillos"), QStringLiteral("⬆️ الأزرار العلوية")), this);
+            QStringLiteral("Торцы"), QStringLiteral("Top / Triggers"), QStringLiteral("顶部肩键"),
+            QStringLiteral("上面 / トリガー"), QStringLiteral("상단 / 트리거"), QStringLiteral("Schultertasten"),
+            QStringLiteral("Gâchettes"), QStringLiteral("Gatillos"), QStringLiteral("الأزرار العلوية")), this);
         btn_top_view->setStyleSheet(compact_btn_style);
         btn_top_view->setToolTip(ctrl_lang(
             QStringLiteral("Вид сверху на курки ZL/ZR, бамперы L/R и разъем USB-C"),
@@ -521,7 +531,7 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
             ui->controllerFrame->SetRotation(-62.0f, 0.0f);
         });
 
-        auto* const btn_flip_view = new QPushButton(QStringLiteral("🔄 180°"), this);
+        auto* const btn_flip_view = new QPushButton(QStringLiteral("180°"), this);
         btn_flip_view->setStyleSheet(compact_btn_style);
         btn_flip_view->setToolTip(ctrl_lang(
             QStringLiteral("Перевернуть геймпад на 180°: вид спереди или сзади"),

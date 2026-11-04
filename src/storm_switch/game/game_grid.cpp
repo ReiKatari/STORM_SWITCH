@@ -37,7 +37,7 @@ GameGrid::GameGrid(QWidget* parent) : QListView{parent} {
     setFlow(QListView::LeftToRight);
     setWrapping(true);
 
-    setLayoutMode(QListView::Batched);
+    setLayoutMode(QListView::SinglePass);
     setBatchSize(50);
 
     // Enable hover tracking for responsive highlights
@@ -106,13 +106,14 @@ void GameGrid::UpdateIconSize() {
         heightMargin = 24;
     }
 
-    const int view_width = viewport()->width();
+    const int sb_width = style() ? style()->pixelMetric(QStyle::PM_ScrollBarExtent, nullptr, this) : 14;
+    const int view_width = std::max(100, this->width() - sb_width - 8);
 
     const double spacing = 0.01;
     const int min_item_width = icon_size + widthMargin;
 
     int columns = std::max(1, (view_width - 16) / min_item_width);
-    int stretched_width = ((view_width) - (spacing * (columns - 1))) / columns;
+    int stretched_width = std::min(min_item_width + 28, (view_width - static_cast<int>(spacing * (columns - 1))) / columns);
 
     QSize grid_size(stretched_width, icon_size + heightMargin);
     if (gridSize() != grid_size) {

@@ -508,6 +508,9 @@ void GameListWorker::SaveMetadataCache() {
     const auto cache_path = Common::FS::PathToUTF8String(cache_dir / "file_metadata_cache.json");
     QJsonObject root;
     for (const auto& [path, meta] : metadata_cache) {
+        if (!Common::FS::Exists(path)) {
+            continue;
+        }
         QJsonObject obj;
         obj.insert(QStringLiteral("size"), static_cast<qint64>(meta.file_size));
         obj.insert(QStringLiteral("mtime"), static_cast<qint64>(meta.mtime));

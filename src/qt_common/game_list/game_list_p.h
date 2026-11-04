@@ -283,17 +283,21 @@ public:
         // Path to cached icon
         const auto cache_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::CacheDir) / "game_list";
         const auto icon_file = cache_dir / "icons" / fmt::format("{:016X}.png", program_id);
+        const auto jpeg_file = cache_dir / fmt::format("{:016X}.jpeg", program_id);
         if (Common::FS::Exists(icon_file)) {
             setData(QString::fromStdString(Common::FS::PathToUTF8String(icon_file)), IconPathRole);
-        } else {
-            const auto jpeg_file = cache_dir / fmt::format("{:016X}.jpeg", program_id);
-            if (Common::FS::Exists(jpeg_file)) {
-                setData(QString::fromStdString(Common::FS::PathToUTF8String(jpeg_file)), IconPathRole);
-            }
+        } else if (Common::FS::Exists(jpeg_file)) {
+            setData(QString::fromStdString(Common::FS::PathToUTF8String(jpeg_file)), IconPathRole);
         }
 
         if (!picture_data.empty()) {
             m_image.loadFromData(picture_data.data(), static_cast<u32>(picture_data.size()));
+        } else {
+            if (Common::FS::Exists(icon_file)) {
+                m_image.load(QString::fromStdString(Common::FS::PathToUTF8String(icon_file)));
+            } else if (Common::FS::Exists(jpeg_file)) {
+                m_image.load(QString::fromStdString(Common::FS::PathToUTF8String(jpeg_file)));
+            }
         }
     }
 

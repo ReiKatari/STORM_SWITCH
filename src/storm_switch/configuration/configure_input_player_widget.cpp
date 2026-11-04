@@ -16,6 +16,7 @@
 #include <QWheelEvent>
 
 #include "hid_core/frontend/emulated_controller.h"
+#include "storm_switch/common/storm_lang.h"
 #include "storm_switch/configuration/configure_input_player_widget.h"
 
 namespace {
@@ -1460,7 +1461,7 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         p.setPen(QColor(150, 160, 175));
         const QRectF sub_rect(bat_pos.x() + 52.0f, bat_pos.y() + 24.0f, 68.0f, 15.0f);
         p.drawText(sub_rect, Qt::AlignVCenter | Qt::AlignLeft,
-                   is_charging ? tr("Charging") : tr("Battery"));
+                   is_charging ? StormLang(QStringLiteral("Зарядка"), QStringLiteral("Charging")) : StormLang(QStringLiteral("Батарея"), QStringLiteral("Battery")));
     };
 
     // =========================================================================
@@ -1552,7 +1553,7 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         p.setFont(font_hdr);
         p.setPen(colors.indicator);
         const QRectF hdr_rect(gyro_c.x() - 50.0f, gyro_c.y() - 54.0f, 100.0f, 16.0f);
-        p.drawText(hdr_rect, Qt::AlignCenter, tr("GYROSCOPE"));
+        p.drawText(hdr_rect, Qt::AlignCenter, StormLang(QStringLiteral("ГИРОСКОП"), QStringLiteral("GYROSCOPE")));
 
         // Angles text badge with clear, visible degree values
         const float pitch_deg = euler.x * 180.0f / PI_CONST;

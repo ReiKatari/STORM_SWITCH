@@ -45,31 +45,13 @@ object SettingConflicts {
             list.add(
                 AndroidSettingConflict(
                     "frame_gen_pacing",
-                    "Конфликт генерации кадров (LSFG)",
+                    "Конфликт генерации кадров",
                     "Frame Generation Pacing Conflict",
-                    "Генерация кадров активна с выключенным VSync или снятым лимитом FPS: нарушается расчет векторов движения.",
+                    "Генерация кадров активна с выключенной вертикальной синхронизацией или снятым лимитом частоты кадров: нарушается расчёт векторов движения.",
                     "Frame generation is active with VSync off or unlocked FPS: optical flow vector estimation becomes erratic.",
                     applyFix = {
                         IntSetting.RENDERER_VSYNC.setInt(2) // FIFO
                         BooleanSetting.RENDERER_USE_SPEED_LIMIT.setBoolean(true)
-                    }
-                )
-            )
-        }
-
-        // 3. Unsafe CPU flags enabled when accuracy is not Unsafe
-        val cpuAccuracy = IntSetting.CPU_ACCURACY.getInt()
-        val unsafeMmu = BooleanSetting.CPUOPT_UNSAFE_HOST_MMU.getBoolean()
-        if (cpuAccuracy != 2 && unsafeMmu) {
-            list.add(
-                AndroidSettingConflict(
-                    "cpu_unsafe_flags",
-                    "Игнорирование флагов процессора",
-                    "CPU Unsafe Flags Ignored",
-                    "Флаги «Небезопасно» включены, но точность ЦП не Unsafe: движок Dynarmic игнорирует их в режиме Авто/Точно.",
-                    "Unsafe CPU flags are active but CPU accuracy is not Unsafe: Dynarmic ignores these flags in Auto/Accurate mode.",
-                    applyFix = {
-                        IntSetting.CPU_ACCURACY.setInt(2) // Unsafe
                     }
                 )
             )
@@ -81,9 +63,9 @@ object SettingConflicts {
             list.add(
                 AndroidSettingConflict(
                     "high_resolution_mobile",
-                    "Высокая нагрузка по видеопамяти",
+                    "Высокая нагрузка на видеопамять",
                     "Extreme Mobile VRAM Workload",
-                    "Масштаб разрешения 3x и выше на мобильном устройстве приводит к перегреву, троттлингу и крашам по нехватке памяти.",
+                    "Масштаб разрешения 3x и выше на мобильном устройстве приводит к перегреву, троттлингу и вылетам из-за нехватки памяти.",
                     "Resolution scale 3x or higher on mobile devices causes overheating, thermal throttling, and out-of-memory crashes.",
                     applyFix = {
                         IntSetting.RENDERER_RESOLUTION.setInt(3) // 1x

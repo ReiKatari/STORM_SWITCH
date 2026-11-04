@@ -1119,10 +1119,7 @@ bool GameList::eventFilter(QObject* obj, QEvent* event) {
         }
     }
 
-    if (obj == grid_view->viewport() && event->type() == QEvent::Resize) {
-        grid_view->UpdateIconSize();
-        return true;
-    }
+
 
     if (obj == carousel_view->viewport() && event->type() == QEvent::Resize) {
         carousel_view->UpdateIconSize();

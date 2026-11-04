@@ -56,9 +56,6 @@ void GameCard::paint(QPainter* painter, const QStyleOptionViewItem& option,
 
     // 2. Cover pixmap - zero computation in paint()!
     QPixmap icon_pixmap = index.data(GameListItemPath::ScaledPixmapRole).value<QPixmap>();
-    if (icon_pixmap.isNull()) {
-        icon_pixmap = index.data(Qt::DecorationRole).value<QPixmap>();
-    }
 
     // Lazy async cover loading if not yet loaded
     if (icon_pixmap.isNull() && program_id != 0) {
@@ -66,6 +63,10 @@ void GameCard::paint(QPainter* painter, const QStyleOptionViewItem& option,
         GameCoverLoader::Instance().RequestCover(
             program_id, icon_path, static_cast<int>(icon_size),
             QPersistentModelIndex(index), const_cast<QAbstractItemModel*>(index.model()));
+    }
+
+    if (icon_pixmap.isNull()) {
+        icon_pixmap = index.data(Qt::DecorationRole).value<QPixmap>();
     }
 
     const int cover_w = static_cast<int>(icon_size);
