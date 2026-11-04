@@ -77,6 +77,14 @@ constexpr SinkDetails sink_details[] = {
 };
 
 const SinkDetails& GetOutputSinkDetails(Settings::AudioEngine sink_id) {
+#if defined(__ANDROID__)
+    if (sink_id == Settings::AudioEngine::Sdl3) {
+#if defined(HAVE_CUBEB)
+        LOG_INFO(Service_Audio, "Android non-SDLActivity detected: routing SDL3 audio engine request to native Cubeb/AAudio backend");
+        sink_id = Settings::AudioEngine::Cubeb;
+#endif
+    }
+#endif
     const auto find_backend{[](Settings::AudioEngine id) {
         return std::find_if(std::begin(sink_details), std::end(sink_details),
                             [&id](const auto& sink_detail) { return sink_detail.id == id; });
@@ -179,6 +187,14 @@ std::vector<std::string> GetDeviceListForSink(Settings::AudioEngine sink_id, boo
 }
 
 std::unique_ptr<Sink> CreateSinkFromID(Settings::AudioEngine sink_id, std::string_view device_id) {
+#if defined(__ANDROID__)
+    if (sink_id == Settings::AudioEngine::Sdl3) {
+#if defined(HAVE_CUBEB)
+        LOG_INFO(Service_Audio, "Android non-SDLActivity detected: routing SDL3 audio engine request to native Cubeb/AAudio backend");
+        sink_id = Settings::AudioEngine::Cubeb;
+#endif
+    }
+#endif
     return GetOutputSinkDetails(sink_id).factory(device_id);
 }
 

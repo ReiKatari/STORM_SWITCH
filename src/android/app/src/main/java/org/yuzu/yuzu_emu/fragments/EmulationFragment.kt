@@ -6,6 +6,8 @@
 
 package org.yuzu.yuzu_emu.fragments
 
+import org.yuzu.yuzu_emu.utils.GameMetadata
+
 import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.app.AlertDialog
@@ -757,7 +759,11 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         fwVersion = NativeLibrary.firmwareVersion()
 
         val buildVersion = NativeLibrary.getBuildVersion()
-        buildId = "STORM SWITCH $buildVersion"
+        val emuBid = try { NativeLibrary.getEmulationBuildId().trim().uppercase() } catch (_: Throwable) { "" }
+        val bid = if (emuBid.isNotEmpty()) emuBid else {
+            try { GameMetadata.getBuildId(game!!.path).trim().uppercase() } catch (_: Throwable) { "" }
+        }
+        buildId = if (bid.isNotEmpty()) "BID: $bid" else "STORM SWITCH $buildVersion"
         val driverTitle = driverViewModel.selectedDriverTitle.value
         driverInUse = if (driverTitle.isNotEmpty()) driverTitle else driverViewModel.selectedDriverVersion.value
 
@@ -1132,7 +1138,6 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 if (newState == BottomSheetBehavior.STATE_EXPANDED || newState == BottomSheetBehavior.STATE_HALF_EXPANDED) {
                     isQuickSettingsMenuOpen = true
-                    addQuickSettings()
                 } else if (newState == BottomSheetBehavior.STATE_HIDDEN) {
                     isQuickSettingsMenuOpen = false
                 }
@@ -1457,7 +1462,9 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 IntSetting.RENDERER_ASPECT_RATIO,
                 R.array.rendererAspectRatioNames,
                 R.array.rendererAspectRatioValues
-            )
+            ) {
+                onAspectRatioChanged()
+            }
 
             var fsrSliderView: View? = null
             var fsr2QualityView: View? = null
@@ -1565,6 +1572,11 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 R.string.renderer_reactive_flushing,
                 container,
                 BooleanSetting.RENDERER_REACTIVE_FLUSHING
+            )
+            quickSettings.addBooleanSetting(
+                R.string.barrier_feedback_loops,
+                container,
+                BooleanSetting.RENDERER_BARRIER_FEEDBACK_LOOPS
             )
 
             quickSettings.addBooleanSetting(
@@ -2780,6 +2792,12 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                     sb.setLength(0)
 
                     if (BooleanSetting.SHOW_BUILD_ID.getBoolean()) {
+                        if (buildId.startsWith("STORM SWITCH")) {
+                            val liveBid = try { NativeLibrary.getEmulationBuildId().trim().uppercase() } catch (_: Throwable) { "" }
+                            if (liveBid.isNotEmpty()) {
+                                buildId = "BID: $liveBid"
+                            }
+                        }
                         appendWithPipe(buildId)
                     }
 
@@ -3033,7 +3051,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         }
     }
 
-    private fun updateScreenLayout() {
+    fun updateScreenLayout() {
         val b = _binding ?: return
         val verticalAlignment =
             EmulationVerticalAlignment.from(IntSetting.VERTICAL_ALIGNMENT.getInt())
@@ -3042,7 +3060,20 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
             1 -> Rational(4, 3)
             2 -> Rational(21, 9)
             3 -> Rational(16, 10)
-            else -> null // Best fit
+            4 -> null // Stretch to fit screen
+            5 -> Rational(32, 9)
+            6 -> Rational(1, 1)
+            7 -> Rational(3, 2)
+            8 -> Rational(5, 4)
+            9 -> Rational(18, 9)
+            10 -> Rational(39, 18) // 19.5:9
+            11 -> Rational(20, 9)
+            12 -> Rational(21, 10)
+            13 -> Rational(24, 10)
+            14 -> Rational(32, 10)
+            15 -> Rational(48, 9)
+            16 -> null // Auto Window
+            else -> Rational(16, 9)
         }
         when (verticalAlignment) {
             EmulationVerticalAlignment.Top -> {
@@ -3056,20 +3087,21 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
             }
 
             EmulationVerticalAlignment.Center -> {
-                b.surfaceEmulation.setAspectRatio(null)
-                b.surfaceEmulation.updateLayoutParams {
-                    width = ViewGroup.LayoutParams.MATCH_PARENT
-                    height = ViewGroup.LayoutParams.MATCH_PARENT
-                }
+                b.surfaceEmulation.setAspectRatio(aspectRatio)
+                val params = FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+                params.gravity = Gravity.CENTER
+                b.surfaceEmulation.layoutParams = params
             }
 
             EmulationVerticalAlignment.Bottom -> {
                 b.surfaceEmulation.setAspectRatio(aspectRatio)
-                val params =
-                    FrameLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT
-                    )
+                val params = FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
                 params.gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
                 b.surfaceEmulation.layoutParams = params
             }
@@ -3080,6 +3112,17 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         emulationActivity?.buildPictureInPictureParams()
         updateOrientation()
     }
+
+    fun onAspectRatioChanged() {
+        NativeLibrary.applySettings()
+        updateScreenLayout()
+        _binding?.surfaceEmulation?.holder?.surface?.let { s ->
+            if (s.isValid) {
+                NativeLibrary.surfaceChanged(s)
+            }
+        }
+    }
+
 
     private fun updateFoldableLayout(
         emulationActivity: EmulationActivity,

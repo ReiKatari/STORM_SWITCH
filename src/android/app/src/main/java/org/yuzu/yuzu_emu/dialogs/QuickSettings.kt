@@ -117,6 +117,11 @@ class QuickSettings(val emulationFragment: EmulationFragment) {
                     valueView.text = optionName
                     onValueChanged?.invoke(values[index])
 
+                    if (setting == IntSetting.RENDERER_ASPECT_RATIO) {
+                        try {
+                            emulationFragment.onAspectRatioChanged()
+                        } catch (_: Throwable) {}
+                    }
                     if (setting == IntSetting.RENDERER_RESOLUTION) {
                         Toast.makeText(
                             emulationFragment.requireContext(),

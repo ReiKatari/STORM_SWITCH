@@ -180,6 +180,7 @@ public:
 #endif
         if (stream == nullptr) {
             LOG_CRITICAL(Audio_Sink, "Error opening SDL audio device: {}", SDL_GetError());
+            device_channels = 0;
             return;
         }
 
@@ -317,12 +318,27 @@ private:
 
 SDLSink::SDLSink(std::string_view target_device_name) {
     if (InitializeAudio()) {
+#ifdef __ANDROID__
+        SDL_AudioSpec spec{};
+        spec.freq = TargetSampleRate;
+        spec.channels = 2;
+        spec.format = SDL_AUDIO_S16;
+        SDL_AudioStream* test_stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, nullptr, nullptr);
+        if (test_stream != nullptr) {
+            SDL_DestroyAudioStream(test_stream);
+            device_channels = 2;
+        } else {
+            LOG_WARNING(Audio_Sink, "SDL audio device stream probe failed on Android: {}", SDL_GetError());
+            device_channels = 0;
+        }
+#else
+        device_channels = 2;
+#endif
         if (target_device_name != auto_device_name && !target_device_name.empty()) {
             output_device = target_device_name;
         } else {
             output_device.clear();
         }
-        device_channels = 2;
     }
 }
 

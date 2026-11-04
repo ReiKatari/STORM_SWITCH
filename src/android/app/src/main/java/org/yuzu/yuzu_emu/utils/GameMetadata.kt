@@ -8,6 +8,8 @@ object GameMetadata {
 
     external fun isBaseGame(path: String): Boolean
 
+    external fun getBuildId(path: String): String
+
     external fun getTitle(path: String): String
 
     external fun getProgramId(path: String): String

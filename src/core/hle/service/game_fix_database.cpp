@@ -431,16 +431,17 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x01008C3005A32000ULL,
         "Unravel Two",
-        "• Зависание на вступительных видеороликах (дедлок видеодекодера NVDEC)\n• Графические артефакты освещения и искажение шейдеров",
-        "• Freeze during intro cutscenes (NVDEC video decoder deadlock)\n• Lighting rendering artifacts and shader corruption",
-        "✓ Программный декодер видео (NVDEC CPU: устранение зависания заставок)\n✓ Точность ГПУ: Высокая (устранение графических артефактов)\n✓ Асинхронная эмуляция ГПУ: Включено\n✓ Обратные циклы барьеров: Включено",
-        "✓ CPU NVDEC Video Decoding (Fixes intro video hang)\n✓ GPU Accuracy: High (Fixes lighting artifacts)\n✓ Asynchronous GPU Emulation: Enabled\n✓ Barrier Feedback Loops: Enabled",
+        "• Зависание на вступительных видеороликах (дедлок видеодекодера NVDEC)\n• Графические артефакты освещения, прозрачности воды и искажение шейдеров",
+        "• Freeze during intro cutscenes (NVDEC video decoder deadlock)\n• Lighting, water transparency and shader corruption artifacts",
+        "✓ Программный декодер видео (NVDEC CPU: устранение зависания заставок)\n✓ Точность ГПУ: Обычная (Normal)\n✓ Обратные циклы барьеров: Включено\n✓ Реактивная очистка: Включено",
+        "✓ CPU NVDEC Video Decoding (Fixes intro video hang)\n✓ GPU Accuracy: Normal\n✓ Barrier Feedback Loops: Enabled\n✓ Reactive Flushing: Enabled",
         {
             {"Renderer\\nvdec_emulation", "1"},
-            {"Renderer\\gpu_accuracy", "2"},
+            {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\barrier_feedback_loops", "true"},
-            {"Renderer\\use_asynchronous_gpu_emulation", "true"}
-        }
+            {"Renderer\\use_reactive_flushing", "true"}
+        },
+        {0x0100E5D00CC0C000ULL, 0x010099900B22E000ULL}
     },
     {
         0x0100EC9010258000ULL,
@@ -6011,15 +6012,65 @@ static const std::vector<GameFixProfile> s_profiles = {
         }
     },
     {
-        0x0100535012974000ULL,
+        0x010090C022978000ULL,
         "Kingdom Hearts - HD 1.5+2.5 ReMIX",
         "• Зависание видеороликов при аппаратном декодировании NVDEC\n• Артефакты текстур меню и интерфейса при сжатии ASTC",
         "• Video playback freezes under hardware NVDEC decoding\n• Menu and UI texture compression artifacts under ASTC recompression",
-        "✓ Программный декодер видео (NVDEC CPU: устранение зависания роликов)\n✓ Сжатие ASTC: Отключено (максимальная четкость интерфейса)",
-        "✓ CPU NVDEC Video Decoding (Fixes cutscene freezes)\n✓ ASTC Recompression: Uncompressed (Max UI clarity)",
+        "✓ Программный декодер видео (NVDEC CPU: устранение зависания роликов)\n✓ Сжатие ASTC: Отключено (максимальная четкость интерфейса)\n✓ Точность ГПУ: Обычная (Normal)\n✓ Реактивная очистка: Включено",
+        "✓ CPU NVDEC Video Decoding (Fixes cutscene freezes)\n✓ ASTC Recompression: Uncompressed (Max UI clarity)\n✓ GPU Accuracy: Normal\n✓ Reactive Flushing: Enabled",
         {
             {"Renderer\\nvdec_emulation", "1"},
-            {"Renderer\\astc_recompression", "0"}
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\use_reactive_flushing", "true"}
+        },
+        {0x010067B01CD68000ULL, 0x0100826003994000ULL, 0x01001B301CD6A000ULL, 0x010045801CD6C000ULL}
+    },
+    {
+        0x0100535012974000ULL,
+        "Hades",
+        "• Микрофризы в комнатах с интенсивными снарядами и частицами\n• Задержка синхронизации памяти при вызове богов",
+        "• Micro-stutters during heavy projectile and particle chambers\n• Memory sync stalls during god boon animations",
+        "✓ Быстрая память (Fastmem): Включено\n✓ Точность ГПУ: Обычная (Normal)\n✓ Быстрое время ГПУ: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование сбоев памяти: Включено",
+        "✓ Fastmem: Enabled\n✓ GPU Accuracy: Normal\n✓ Fast GPU Time: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled",
+        {
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Cpu\\cpu_accuracy", "0"}
+        },
+        {0x0100735010B46000ULL}
+    },
+    {
+        0x01007B600D338000ULL,
+        "Trine 3: The Artifacts of Power",
+        "• Падение FPS и зависание на черном экране при синхронных вызовах DMA fence на GPU Mali/TBDR\n• Нестабильный кадровый темп",
+        "• Framerate drops and black screen hang from synchronous DMA fence stalls on Mali/TBDR GPUs\n• Unstable frame pacing",
+        "✓ Точность ГПУ: Обычная (Normal / устранение зависаний очереди)\n✓ Реактивная очистка: Отключено (стабильный FPS на Mali)\n✓ Асинхронные шейдеры: Включено\n✓ Масштабирование: Bilinear\n✓ Разрешение: 1X (720p/1080p)",
+        "✓ GPU Accuracy: Normal (Eliminates queue stalls)\n✓ Reactive Flushing: Disabled (Stable FPS on Mali)\n✓ Asynchronous Shaders: Enabled\n✓ Scaling: Bilinear\n✓ Resolution: 1X (720p/1080p)",
+        {
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\resolution_setup", "2"},
+            {"Renderer\\scaling_filter", "1"}
+        }
+    },
+    {
+        0x0100E66010978000ULL,
+        "Little Orpheus",
+        "• Размытие экрана, мерцание и пропажа геометрии головы/лица персонажей Unity\n• Зависание при выходе из игры",
+        "• Blurry screen, flickering and missing head/facial submesh geometry in Unity\n• Application hang when quitting the game",
+        "✓ Буфер индексов: Адаптивная выборка подсеток (устранение пропажи лиц)\n✓ Точность ГПУ: Обычная (Normal)\n✓ Реактивная очистка: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Масштабирование: Bilinear",
+        "✓ Index Buffer: Adaptive submesh bounds (Restores facial meshes)\n✓ GPU Accuracy: Normal\n✓ Reactive Flushing: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Scaling: Bilinear",
+        {
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\resolution_setup", "2"},
+            {"Renderer\\scaling_filter", "1"}
         }
     },
     {
@@ -6056,22 +6107,22 @@ static const std::vector<GameFixProfile> s_profiles = {
         {0x01005A300BFD6000ULL, 0x0100B1A00C9BC000ULL}
     },
     {
-        0x0100C4000FC1A000ULL,
+        0x010046E00B51E000ULL,
         "Jump Force",
-        "• Просадки FPS и фризы при переключении персонажей и суперударах UE4\n• Задержка ввода из-за синхронной компиляции шейдеров частиц",
-        "• Framerate drops during UE4 character switches and ultimate awakenings\n• Input latency from synchronous particle shader compilation",
-        "✓ Точность ГПУ: Обычная (Normal / устранение задержек)\n✓ Сжатие ASTC: BC1/BC3 (оптимизация VRAM для Mali/Adreno)\n✓ Быстрое время ГПУ: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено",
-        "✓ GPU Accuracy: Normal (Eliminates sync stalls)\n✓ ASTC Recompression: BC1/BC3 (VRAM optimization for Mali/Adreno)\n✓ Fast GPU Time: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
+        "• Просадки FPS и фризы при переключении персонажей и суперударах UE4\n• Искажение/сбои текстур на видеочипах Mali/PanVK без BC1/BC3 декомпрессии",
+        "• Framerate drops during UE4 character switches and ultimate awakenings\n• Texture corruption on Mali/PanVK GPUs lacking BC1/BC3 hardware decompression",
+        "✓ Точность ГПУ: Обычная (Normal / устранение задержек)\n✓ Сжатие ASTC: Отключено (Uncompressed / исправление текстур на Mali)\n✓ Быстрое время ГПУ: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено",
+        "✓ GPU Accuracy: Normal (Eliminates sync stalls)\n✓ ASTC Recompression: Uncompressed (Fixes textures on Mali)\n✓ Fast GPU Time: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
         {
             {"Renderer\\gpu_accuracy", "1"},
-            {"Renderer\\astc_recompression", "1"},
+            {"Renderer\\astc_recompression", "0"},
             {"Renderer\\use_fast_gpu_time", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"}
         },
-        {0x010091600E5BC000ULL}
+        {0x0100C4000FC1A000ULL, 0x010091600E5BC000ULL}
     },
     {
         0x0100412019772000ULL,

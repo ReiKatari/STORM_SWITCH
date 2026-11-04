@@ -37,6 +37,9 @@ GameGrid::GameGrid(QWidget* parent) : QListView{parent} {
     setFlow(QListView::LeftToRight);
     setWrapping(true);
 
+    setLayoutMode(QListView::Batched);
+    setBatchSize(50);
+
     // Enable hover tracking for responsive highlights
     setMouseTracking(true);
     if (viewport()) {

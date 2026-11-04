@@ -210,6 +210,8 @@ class GamesFragment : Fragment() {
             //This prevents Grid/List views from reusing scaled or otherwise modified ViewHolders left over from the carousel.
             adapter = null
             recycledViewPool.clear()
+            setHasFixedSize(true)
+            setItemViewCacheSize(24)
 
             gameAdapter.setViewType(savedViewType)
             currentFilter = preferences.getInt(PREF_SORT_TYPE, View.NO_ID)

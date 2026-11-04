@@ -266,6 +266,7 @@ object NativeLibrary {
      */
     external fun getGpuDriver(): String
 
+    external fun getEmulationBuildId(): String
     external fun applySettings()
 
     external fun logSettings()

@@ -1032,16 +1032,17 @@ GameFixProfile(
         GameFixProfile(
             0x01008C3005A32000L,
             "Unravel Two",
-            "• Зависание на вступительных видеороликах (дедлок видеодекодера NVDEC)\n• Графические артефакты освещения и искажение шейдеров",
-            "• Freeze during intro cutscenes (NVDEC video decoder deadlock)\n• Lighting rendering artifacts and shader corruption",
-            "✓ Программный декодер видео (NVDEC CPU: устранение зависания заставок)\n✓ Точность ГПУ: Высокая (устранение графических артефактов)\n✓ Асинхронная эмуляция ГПУ: Включено\n✓ Обратные циклы барьеров: Включено",
-            "✓ CPU NVDEC Video Decoding (Fixes intro video hang)\n✓ GPU Accuracy: High (Fixes lighting artifacts)\n✓ Asynchronous GPU Emulation: Enabled\n✓ Barrier Feedback Loops: Enabled",
+            "• Зависание на вступительных видеороликах (дедлок видеодекодера NVDEC)\n• Графические артефакты освещения, прозрачности воды и искажение шейдеров",
+            "• Freeze during intro cutscenes (NVDEC video decoder deadlock)\n• Lighting, water transparency and shader corruption artifacts",
+            "✓ Программный декодер видео (NVDEC CPU: устранение зависания заставок)\n✓ Точность ГПУ: Обычная (Normal)\n✓ Обратные циклы барьеров: Включено\n✓ Реактивная очистка: Включено",
+            "✓ CPU NVDEC Video Decoding (Fixes intro video hang)\n✓ GPU Accuracy: Normal\n✓ Barrier Feedback Loops: Enabled\n✓ Reactive Flushing: Enabled",
             mapOf(
                 "Renderer\\nvdec_emulation" to "1",
-                "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\barrier_feedback_loops" to "true",
-                "Renderer\\use_asynchronous_gpu_emulation" to "true"
-            )
+                "Renderer\\use_reactive_flushing" to "true"
+            ),
+            listOf(0x0100E5D00CC0C000L, 0x010099900B22E000L)
         ),
  GameFixProfile(
             0x01FF434243555253L, // Castlevania: Belmont's Curse (Deterministic Homebrew ID)
@@ -2548,7 +2549,8 @@ GameFixProfile(
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\max_anisotropy" to "5"
-            )
+            ),
+            listOf(0x0100535012974000L)
         ),
         GameFixProfile(
             0x010041B01211E000L,
@@ -6607,15 +6609,66 @@ GameFixProfile(
             )
         ),
         GameFixProfile(
-            0x0100535012974000L,
+            0x010090C022978000L,
             "Kingdom Hearts - HD 1.5+2.5 ReMIX",
             "• Зависание видеороликов при аппаратном декодировании NVDEC\n• Артефакты текстур меню и интерфейса при сжатии ASTC",
             "• Video playback freezes under hardware NVDEC decoding\n• Menu and UI texture compression artifacts under ASTC recompression",
-            "✓ Программный декодер видео (NVDEC CPU: устранение зависания роликов)\n✓ Сжатие ASTC: Отключено (максимальная четкость интерфейса)",
-            "✓ CPU NVDEC Video Decoding (Fixes cutscene freezes)\n✓ ASTC Recompression: Uncompressed (Max UI clarity)",
+            "✓ Программный декодер видео (NVDEC CPU: устранение зависания роликов)\n✓ Сжатие ASTC: Отключено (максимальная четкость интерфейса)\n✓ Точность ГПУ: Обычная (Normal)\n✓ Реактивная очистка: Включено",
+            "✓ CPU NVDEC Video Decoding (Fixes cutscene freezes)\n✓ ASTC Recompression: Uncompressed (Max UI clarity)\n✓ GPU Accuracy: Normal\n✓ Reactive Flushing: Enabled",
             mapOf(
                 "Renderer\\nvdec_emulation" to "1",
-                "Renderer\\astc_recompression" to "0"
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_reactive_flushing" to "true"
+            ),
+            listOf(0x010067B01CD68000L, 0x0100826003994000L, 0x01001B301CD6A000L, 0x010045801CD6C000L)
+        ),
+        GameFixProfile(
+            0x010046E00B51E000L,
+            "Jump Force",
+            "• Просадки FPS и фризы при переключении персонажей и суперударах UE4\n• Искажение/сбои текстур на видеочипах Mali/PanVK без BC1/BC3 декомпрессии",
+            "• Framerate drops during UE4 character switches and ultimate awakenings\n• Texture corruption on Mali/PanVK GPUs lacking BC1/BC3 hardware decompression",
+            "✓ Точность ГПУ: Обычная (Normal / устранение задержек)\n✓ Сжатие ASTC: Отключено (Uncompressed / исправление текстур на Mali)\n✓ Быстрое время ГПУ: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено",
+            "✓ GPU Accuracy: Normal (Eliminates sync stalls)\n✓ ASTC Recompression: Uncompressed (Fixes textures on Mali)\n✓ Fast GPU Time: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "Cpu\\cpu_accuracy" to "0"
+            ),
+            listOf(0x0100C4000FC1A000L, 0x010091600E5BC000L)
+        ),
+        GameFixProfile(
+            0x01007B600D338000L,
+            "Trine 3: The Artifacts of Power",
+            "• Падение FPS и зависание на черном экране при синхронных вызовах DMA fence на GPU Mali/TBDR\n• Нестабильный кадровый темп",
+            "• Framerate drops and black screen hang from synchronous DMA fence stalls on Mali/TBDR GPUs\n• Unstable frame pacing",
+            "✓ Точность ГПУ: Обычная (Normal / устранение зависаний очереди)\n✓ Реактивная очистка: Отключено (стабильный FPS на Mali)\n✓ Асинхронные шейдеры: Включено\n✓ Масштабирование: Bilinear\n✓ Разрешение: 1X (720p/1080p)",
+            "✓ GPU Accuracy: Normal (Eliminates queue stalls)\n✓ Reactive Flushing: Disabled (Stable FPS on Mali)\n✓ Asynchronous Shaders: Enabled\n✓ Scaling: Bilinear\n✓ Resolution: 1X (720p/1080p)",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\resolution_setup" to "2",
+                "Renderer\\scaling_filter" to "1"
+            )
+        ),
+        GameFixProfile(
+            0x0100E66010978000L,
+            "Little Orpheus",
+            "• Размытие экрана, мерцание и пропажа геометрии головы/лица персонажей Unity\n• Зависание при выходе из игры",
+            "• Blurry screen, flickering and missing head/facial submesh geometry in Unity\n• Application hang when quitting the game",
+            "✓ Буфер индексов: Адаптивная выборка подсеток (устранение пропажи лиц)\n✓ Точность ГПУ: Обычная (Normal)\n✓ Реактивная очистка: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Масштабирование: Bilinear",
+            "✓ Index Buffer: Adaptive submesh bounds (Restores facial meshes)\n✓ GPU Accuracy: Normal\n✓ Reactive Flushing: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Scaling: Bilinear",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\resolution_setup" to "2",
+                "Renderer\\scaling_filter" to "1"
             )
         ),
         )

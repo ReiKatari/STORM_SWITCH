@@ -16,6 +16,8 @@
 #include "core/file_sys/patch_manager.h"
 #include "core/loader/loader.h"
 #include "core/loader/nro.h"
+#include "core/loader/nso.h"
+#include "common/hex_util.h"
 #include "native.h"
 #include <fstream>
 #include "common/fs/fs.h"
@@ -31,6 +33,7 @@ inline const std::filesystem::path& GetYuzuPath(EdenPath p) {
 } // namespace Common::FS
 
 struct RomMetadata {
+    std::string build_id;
     std::string title;
     u64 programId{0};
     u64 raw_program_id{0};
@@ -76,7 +79,7 @@ static void LoadDiskCache() {
 
         u32 ver = 0;
         file.read(reinterpret_cast<char*>(&ver), sizeof(ver));
-        if (ver != 2) {
+        if (ver != 2 && ver != 3) {
             return;
         }
 
@@ -141,6 +144,33 @@ static void LoadDiskCache() {
                 file.read(reinterpret_cast<char*>(meta.icon.data()), icon_len);
             }
 
+            if (ver >= 3) {
+                u32 bid_len = 0;
+                file.read(reinterpret_cast<char*>(&bid_len), sizeof(bid_len));
+                if (bid_len > 0 && bid_len <= 128) {
+                    meta.build_id.resize(bid_len);
+                    file.read(meta.build_id.data(), bid_len);
+                }
+            }
+
+            if (ver >= 3) {
+                u32 bid_len = 0;
+                file.read(reinterpret_cast<char*>(&bid_len), sizeof(bid_len));
+                if (bid_len > 0 && bid_len <= 128) {
+                    meta.build_id.resize(bid_len);
+                    file.read(meta.build_id.data(), bid_len);
+                }
+            }
+
+            if (ver >= 3) {
+                u32 bid_len = 0;
+                file.read(reinterpret_cast<char*>(&bid_len), sizeof(bid_len));
+                if (bid_len > 0 && bid_len <= 128) {
+                    meta.build_id.resize(bid_len);
+                    file.read(meta.build_id.data(), bid_len);
+                }
+            }
+
             if (file.good()) {
                 m_rom_metadata_cache[entry_path] = std::move(meta);
             }
@@ -161,7 +191,7 @@ static void SaveDiskCache() {
         }
 
         u32 magic = 0x53574D44; // 'SWMD'
-        u32 ver = 2;
+        u32 ver = 3;
         u32 count = static_cast<u32>(m_rom_metadata_cache.size());
 
         file.write(reinterpret_cast<const char*>(&magic), sizeof(magic));
@@ -213,6 +243,12 @@ static void SaveDiskCache() {
             file.write(reinterpret_cast<const char*>(&icon_len), sizeof(icon_len));
             if (icon_len > 0) {
                 file.write(reinterpret_cast<const char*>(meta.icon.data()), icon_len);
+            }
+
+            u32 bid_len = static_cast<u32>(meta.build_id.size());
+            file.write(reinterpret_cast<const char*>(&bid_len), sizeof(bid_len));
+            if (bid_len > 0) {
+                file.write(meta.build_id.data(), bid_len);
             }
         }
         s_disk_cache_dirty = false;
@@ -509,6 +545,36 @@ static RomMetadata CacheRomMetadata(const std::string& raw_path) {
         }
         entry.addon_count = aoc_count;
 
+        // Extract 16-hex-char Build ID from game's main NSO header (including update from PatchManager)
+        try {
+            FileSys::VirtualDir exefs = nullptr;
+            if (auto nca = loader->GetNCA(); nca != nullptr) {
+                exefs = nca->GetExeFS();
+            }
+            auto patched_exefs = pm.PatchExeFS(exefs);
+            if (patched_exefs == nullptr) {
+                const auto update_nca = instance.System().GetContentProvider().GetEntry(
+                    update_tid, FileSys::ContentRecordType::Program);
+                if (update_nca != nullptr) {
+                    patched_exefs = update_nca->GetExeFS();
+                }
+            }
+            if (patched_exefs != nullptr) {
+                auto main_file = patched_exefs->GetFile("main");
+                if (main_file == nullptr) {
+                    main_file = patched_exefs->GetFile("main.nso");
+                }
+                if (main_file != nullptr && main_file->GetSize() >= sizeof(Loader::NSOHeader)) {
+                    Loader::NSOHeader header{};
+                    if (main_file->ReadObject(&header, 0) == sizeof(Loader::NSOHeader)) {
+                        if (header.magic == Common::MakeMagic('N', 'S', 'O', '0')) {
+                            entry.build_id = Common::HexToString(header.build_id, true).substr(0, 16);
+                        }
+                    }
+                }
+            }
+        } catch (...) {}
+
         if (loader->GetFileType() == Loader::FileType::NRO) {
             auto loader_nro = reinterpret_cast<Loader::AppLoader_NRO*>(loader.get());
             entry.isHomebrew = loader_nro->IsHomebrew();
@@ -639,6 +705,11 @@ jboolean Java_org_yuzu_yuzu_1emu_utils_GameMetadata_getIsValid(JNIEnv* env, jobj
         }
     }
     return false;
+}
+
+jstring Java_org_yuzu_yuzu_1emu_utils_GameMetadata_getBuildId(JNIEnv* env, jobject obj, jstring jpath) {
+    const auto meta = GetRomMetadata(Common::Android::GetJString(env, jpath));
+    return Common::Android::ToJString(env, meta.build_id);
 }
 
 jstring Java_org_yuzu_yuzu_1emu_utils_GameMetadata_getTitle(JNIEnv* env, jobject obj, jstring jpath) {

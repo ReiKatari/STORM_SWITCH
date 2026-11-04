@@ -227,6 +227,10 @@ class GameInfoFragment : Fragment() {
     }
 
     private fun getGameBuildId(game: org.yuzu.yuzu_emu.model.Game): String {
+        val nativeBid = try { GameMetadata.getBuildId(game.path).trim().uppercase() } catch (_: Throwable) { "" }
+        if (nativeBid.length >= 16) {
+            return nativeBid.take(16)
+        }
         val tid = game.programIdHex
         // 1. Check cheats directory: userDirectory/cheats/<TID>/
         try {

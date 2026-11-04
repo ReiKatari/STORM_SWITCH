@@ -334,10 +334,6 @@ bool BufferCache<P>::DMACopy(GPUVAddr src_address, GPUVAddr dest_address, u64 am
     runtime.CopyBuffer(dest_buffer, src_buffer, copies, true);
     if (has_new_downloads) {
         memory_tracker.MarkRegionAsGpuModified(*cpu_dest_address, amount);
-        const bool should_sync = Settings::IsGPUFenceBehaviorBalanced() || Settings::IsGPUFenceBehaviorAccurate();
-        if (should_sync) {
-            runtime.Finish();
-        }
     }
 
     Tegra::Memory::DeviceGuestMemoryScoped<u8, Tegra::Memory::GuestMemoryFlags::UnsafeReadWrite>
@@ -1375,19 +1371,20 @@ void BufferCache<P>::UpdateIndexBuffer() {
 
     const GPUVAddr gpu_addr_begin = index_buffer_ref.StartAddress();
     const GPUVAddr gpu_addr_end = index_buffer_ref.EndAddress();
-    if (gpu_addr_end <= gpu_addr_begin || index_buffer_ref.count == 0) {
+    if (index_buffer_ref.count == 0) {
         channel_state->index_buffer = NULL_BINDING;
         return;
     }
 
     const std::optional<DAddr> device_addr = gpu_memory->GpuToCpuAddress(gpu_addr_begin);
-    const u64 address_size = gpu_addr_end - gpu_addr_begin;
+    const bool has_valid_limit = gpu_addr_end > gpu_addr_begin;
+    const u64 address_size = has_valid_limit ? (gpu_addr_end - gpu_addr_begin) : 0ULL;
     const u64 total_indices = static_cast<u64>(index_buffer_ref.count) + static_cast<u64>(index_buffer_ref.first);
     const u64 draw_size = total_indices * static_cast<u64>(index_buffer_ref.FormatSizeInBytes());
-    u64 size = (std::min)(address_size, draw_size);
+    u64 size = has_valid_limit ? (std::min)(address_size, draw_size) : draw_size;
 
     constexpr u64 MAX_INDEX_BUFFER_SIZE = 64_MiB;
-    if (!gpu_memory->IsWithinGPUAddressRange(gpu_addr_end) || size >= MAX_INDEX_BUFFER_SIZE) {
+    if ((has_valid_limit && !gpu_memory->IsWithinGPUAddressRange(gpu_addr_end)) || size >= MAX_INDEX_BUFFER_SIZE) {
         size = static_cast<u64>(gpu_memory->MaxContinuousRange(gpu_addr_begin, size));
     }
     size = (std::min)(size, MAX_INDEX_BUFFER_SIZE);

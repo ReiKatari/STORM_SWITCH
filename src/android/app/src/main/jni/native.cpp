@@ -45,6 +45,7 @@ extern "C" {
 #include "common/android/id_cache.h"
 #include "common/dynamic_library.h"
 #include "common/fs/fs_util.h"
+#include "common/hex_util.h"
 #include "common/fs/path_util.h"
 #include "common/logging.h"
 #include "common/scm_rev.h"
@@ -1504,11 +1505,18 @@ jstring Java_org_yuzu_yuzu_1emu_NativeLibrary_getGpuModel(JNIEnv* env, jobject j
     }
 }
 
+jstring Java_org_yuzu_yuzu_1emu_NativeLibrary_getEmulationBuildId(JNIEnv* env, jclass clazz) {
+    const auto build_id = EmulationSession::GetInstance().System().GetApplicationProcessBuildID();
+    const auto bid_str = Common::HexToString(build_id, true);
+    return Common::Android::ToJString(env, bid_str.size() >= 16 ? bid_str.substr(0, 16) : bid_str);
+}
+
 void Java_org_yuzu_yuzu_1emu_NativeLibrary_applySettings(JNIEnv* env, jobject jobj) {
     Settings::UpdateGPUAccuracy();
     Settings::UpdateRescalingInfo();
     EmulationSession::GetInstance().System().ApplySettings();
     EmulationSession::GetInstance().System().HIDCore().ReloadInputDevices();
+    EmulationSession::GetInstance().SurfaceChanged();
 }
 
 void Java_org_yuzu_yuzu_1emu_NativeLibrary_logSettings(JNIEnv* env, jobject jobj) {

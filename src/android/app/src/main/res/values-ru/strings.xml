@@ -2396,4 +2396,6 @@
     <string name="profile_override_badge">задано профилем игры</string>
     <string name="profile_override_revert">Сбросить к глобальным</string>
     <string name="cpu_unsafe_disabled_explanation">Небезопасные флаги процессора активны только при выбранной точности ЦП «Небезопасно».</string>
+    <string name="barrier_feedback_loops">Обратная связь барьеров (Barrier Feedback Loops)</string>
+    <string name="barrier_feedback_loops_description">Исправляет прозрачность, воду и глубину резкости в играх вроде Unravel Two</string>
 </resources>
