@@ -2212,4 +2212,13 @@ Starte ein Spiel oder verbinde dich mit einem anderen Gerät.</string>
     <string name="button_zr">ZR</string>
     <string name="enable_fast_gpu_time">Schnelle GPU-Zeit aktivieren</string>
     <string name="enable_fast_gpu_time_description">Beschleunigt GPU-Timer-Abfragen zur Leistungssteigerung bei hoher CPU-GPU-Synchronisierung, kann jedoch bei manchen Titeln Timing-Fehler verursachen.</string>
+
+    <string name="save_states_mode">Schnellspeicher-Modus</string>
+    <string name="save_states_mode_description">Steuert Schnellspeichern und Schnellladen. Reine RAM/CPU-Zustände können ungetestete Spiele abstürzen lassen.</string>
+    <string name="save_states_mode_off">Aus</string>
+    <string name="save_states_mode_verified_only">Nur verifizierte Spiele (Empfohlen)</string>
+    <string name="save_states_mode_all_games">Alle Spiele (experimentell)</string>
+    <string name="save_state_unsupported_toast">Schnellspeichern wird für dieses Spiel nicht unterstützt. Bitte im Spiel speichern. Experimenteller Modus unter Einstellungen → System.</string>
+    <string name="save_state_experimental_warning">Schnellspeichern ist experimentell: Das Laden kann zum Einfrieren führen. Regulär speichern.</string>
+    <string name="save_states_mode_disabled_toast">Schnellspeichern ist unter Einstellungen → System deaktiviert.</string>
 </resources>

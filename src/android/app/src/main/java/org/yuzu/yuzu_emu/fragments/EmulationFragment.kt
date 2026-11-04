@@ -2159,6 +2159,10 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                         androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext())
                             .edit().putInt("last_active_save_slot", slot).apply()
                         showEdenSnackbar(getString(R.string.save_state_saved_toast, slot), true)
+                    } else if (res == 9) {
+                        showEdenSnackbar(getString(R.string.save_state_unsupported_toast), false)
+                    } else if (res == 10) {
+                        showEdenSnackbar(getString(R.string.save_states_mode_disabled_toast), false)
                     } else {
                         showEdenSnackbar(getString(R.string.save_state_save_failed, slot), false)
                     }
@@ -2225,10 +2229,21 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                     }
                     return@launch
                 }
+                val saveMode = org.yuzu.yuzu_emu.features.settings.model.IntSetting.SAVE_STATES_MODE.getInt()
+                if (saveMode == 2 && !sWarnedExperimentalLoad) {
+                    sWarnedExperimentalLoad = true
+                    withContext(Dispatchers.Main) {
+                        showEdenSnackbar(getString(R.string.save_state_experimental_warning), false)
+                    }
+                }
                 val res = NativeLibrary.loadStateSlot(targetSlot)
                 withContext(Dispatchers.Main) {
                     if (res == 0) {
                         showEdenSnackbar(getString(R.string.save_state_loaded_toast, targetSlot), true)
+                    } else if (res == 9) {
+                        showEdenSnackbar(getString(R.string.save_state_unsupported_toast), false)
+                    } else if (res == 10) {
+                        showEdenSnackbar(getString(R.string.save_states_mode_disabled_toast), false)
                     } else {
                         showEdenSnackbar(getString(R.string.save_state_load_failed, targetSlot), false)
                     }
@@ -3689,6 +3704,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
     }
 
     companion object {
+        private var sWarnedExperimentalLoad = false
         private val AMIIBO_MIME_TYPES =
             arrayOf("application/octet-stream", "application/x-binary", "*/*")
         private val perfStatsUpdateHandler = Handler(Looper.myLooper()!!)

@@ -2905,4 +2905,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="per_game_custom_badge">CUSTOM</string>
     <string name="vulkan_legacy_driver_warning">System Vulkan %1$s detected on %2$s. Many Switch titles require Vulkan 1.3 features. It is recommended to install a Mesa Turnip driver in Settings -> GPU Driver Manager.</string>
     <string name="profile_empty_state">No saved setting profiles\nTap \'Save Profile\' to create one</string>
+
+    <string name="save_states_mode">Save States Mode</string>
+    <string name="save_states_mode_description">Controls quick save and load behavior. RAM/CPU states may freeze unverified games.</string>
+    <string name="save_states_mode_off">Off</string>
+    <string name="save_states_mode_verified_only">Verified games only (Recommended)</string>
+    <string name="save_states_mode_all_games">All games (experimental, risky)</string>
+    <string name="save_state_unsupported_toast">Save states are not supported for this game. Use in-game saves. Experimental mode can be enabled in Settings → System.</string>
+    <string name="save_state_experimental_warning">Save states are experimental: loading may freeze the game. Keep in-game saves.</string>
+    <string name="save_states_mode_disabled_toast">Save states are disabled in Settings → System.</string>
 </resources>

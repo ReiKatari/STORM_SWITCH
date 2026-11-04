@@ -2099,4 +2099,13 @@
     <string name="button_zr">ZR</string>
     <string name="enable_fast_gpu_time">Abilita tempo GPU rapido</string>
     <string name="enable_fast_gpu_time_description">Accelera le query del timer GPU per migliorare le prestazioni nei giochi con forte sincronizzazione CPU-GPU.</string>
+
+    <string name="save_states_mode">Modalità salvataggi rapidi</string>
+    <string name="save_states_mode_description">Comportamento di salvataggio e caricamento rapido. Gli stati di memoria possono bloccare i giochi non verificati.</string>
+    <string name="save_states_mode_off">Disattivato</string>
+    <string name="save_states_mode_verified_only">Solo giochi verificati (Consigliato)</string>
+    <string name="save_states_mode_all_games">Tutti i giochi (sperimentale)</string>
+    <string name="save_state_unsupported_toast">Salvataggi rapidi non supportati per questo gioco. Usa i salvataggi di gioco. Modalità sperimentale in Impostazioni → Sistema.</string>
+    <string name="save_state_experimental_warning">Salvataggi rapidi sperimentali: il caricamento può bloccare il gioco. Salva normalmente.</string>
+    <string name="save_states_mode_disabled_toast">Salvataggi rapidi disattivati in Impostazioni → Sistema.</string>
 </resources>

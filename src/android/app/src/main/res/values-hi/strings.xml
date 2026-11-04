@@ -2901,4 +2901,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="home_cat_diagnostics_about">निदान, लॉग और जानकारी</string>
     <string name="per_game_custom_badge">कस्टम</string>
     <string name="vulkan_legacy_driver_warning">%2$s पर सिस्टम Vulkan %1$s का पता चला। कई Switch शीर्षकों के लिए Vulkan 1.3 सुविधाओं की आवश्यकता होती है। सेटिंग्स -> GPU ड्राइवर मैनेजर में Mesa Turnip ड्राइवर स्थापित करने की अनुशंसा की जाती है।</string>
+
+    <string name="save_states_mode">Save States Mode</string>
+    <string name="save_states_mode_description">Controls quick save and load behavior. RAM/CPU states may freeze unverified games.</string>
+    <string name="save_states_mode_off">Off</string>
+    <string name="save_states_mode_verified_only">Verified games only (Recommended)</string>
+    <string name="save_states_mode_all_games">All games (experimental, risky)</string>
+    <string name="save_state_unsupported_toast">Save states are not supported for this game. Use in-game saves. Experimental mode can be enabled in Settings → System.</string>
+    <string name="save_state_experimental_warning">Save states are experimental: loading may freeze the game. Keep in-game saves.</string>
+    <string name="save_states_mode_disabled_toast">Save states are disabled in Settings → System.</string>
 </resources>

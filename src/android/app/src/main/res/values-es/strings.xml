@@ -2221,4 +2221,13 @@ Inicia un juego o conéctate a otro dispositivo.</string>
     <string name="button_zr">ZR</string>
     <string name="enable_fast_gpu_time">Activar tiempo de GPU rápido</string>
     <string name="enable_fast_gpu_time_description">Acelera las consultas del temporizador de GPU para mejorar el rendimiento en juegos con alta sincronización CPU-GPU, pero puede causar fallos de sincronización en algunos títulos.</string>
+
+    <string name="save_states_mode">Modo de guardados rápidos</string>
+    <string name="save_states_mode_description">Comportamiento de guardado y carga rápidos. Los estados de memoria pueden congelar juegos no verificados.</string>
+    <string name="save_states_mode_off">Desactivado</string>
+    <string name="save_states_mode_verified_only">Solo juegos verificados (Recomendado)</string>
+    <string name="save_states_mode_all_games">Todos los juegos (experimental)</string>
+    <string name="save_state_unsupported_toast">Guardado rápido no compatible con este juego. Usa el guardado en el juego. Modo experimental en Ajustes → Sistema.</string>
+    <string name="save_state_experimental_warning">Guardado rápido experimental: cargar puede congelar el juego. Guarda dentro del juego.</string>
+    <string name="save_states_mode_disabled_toast">Guardado rápido desactivado en Ajustes → Sistema.</string>
 </resources>

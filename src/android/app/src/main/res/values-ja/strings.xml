@@ -2269,4 +2269,13 @@
     <string name="button_zr">ZR</string>
     <string name="enable_fast_gpu_time">Enable Fast GPU Time</string>
     <string name="enable_fast_gpu_time_description">Speeds up GPU timer queries to boost performance in games with heavy CPU-GPU synchronization, but may cause visual timing glitches in some titles.</string>
+
+    <string name="save_states_mode">クイックセーブモード</string>
+    <string name="save_states_mode_description">クイックセーブ・ロードの挙動を設定します。未検証ゲームではフリーズする可能性があります。</string>
+    <string name="save_states_mode_off">オフ</string>
+    <string name="save_states_mode_verified_only">検証済みゲームのみ (推奨)</string>
+    <string name="save_states_mode_all_games">すべてのゲーム (実験的)</string>
+    <string name="save_state_unsupported_toast">このゲームはクイックセーブに対応していません。ゲーム内セーブをご利用ください。「設定 → システム」で実験的モードを有効化できます。</string>
+    <string name="save_state_experimental_warning">クイックセーブは実験的機能です。ロード時にフリーズする可能性があります。</string>
+    <string name="save_states_mode_disabled_toast">クイックセーブは「設定 → システム」で無効化されています。</string>
 </resources>

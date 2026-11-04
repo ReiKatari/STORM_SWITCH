@@ -1307,10 +1307,10 @@ void StormGamesWorldDialog::SetupUI() {
     download_btn->setCursor(Qt::PointingHandCursor);
     download_btn->setEnabled(false);
     download_btn->setStyleSheet(QStringLiteral(
-        "QPushButton { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00D2FF, stop:1 #0072FF); color: #000000; font-weight: bold; padding: 8px 22px; border-radius: 6px; font-size: 13px; }"
-        "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #33E0FF, stop:1 #338BFF); }"
-        "QPushButton:pressed { background: #0056b3; color: #FFFFFF; }"
-        "QPushButton:disabled { background: #2A3040; color: #FFFFFF; border: none; }"
+        "QPushButton { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00D2FF, stop:1 #0072FF); color: #000000; font-weight: bold; padding: 8px 22px; border: 1px solid #0099FF; border-radius: 6px; font-size: 13px; }"
+        "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #33E0FF, stop:1 #338BFF); border: 1px solid #00D2FF; }"
+        "QPushButton:pressed { background: #0056b3; color: #FFFFFF; border: 1px solid #003d80; }"
+        "QPushButton:disabled { background: #2A3040; color: #FFFFFF; border: 1px solid #3A4454; }"
     ));
     dl_buttons->addWidget(download_btn, 1);
 

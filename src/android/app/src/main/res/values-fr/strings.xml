@@ -2217,4 +2217,13 @@ Lancez un jeu ou connectez-vous à un autre appareil.</string>
     <string name="button_zr">ZR</string>
     <string name="enable_fast_gpu_time">Activer le temps GPU rapide</string>
     <string name="enable_fast_gpu_time_description">Accélère les requêtes de minuterie GPU pour améliorer les performances dans les jeux avec une forte synchronisation CPU-GPU, mais peut provoquer des problèmes de synchronisation.</string>
+
+    <string name="save_states_mode">Mode de sauvegardes rapides</string>
+    <string name="save_states_mode_description">Contrôle le comportement de sauvegarde rapide. Les états mémoire peuvent figer les jeux non vérifiés.</string>
+    <string name="save_states_mode_off">Désactivé</string>
+    <string name="save_states_mode_verified_only">Jeux vérifiés uniquement (Recommandé)</string>
+    <string name="save_states_mode_all_games">Tous les jeux (expérimental)</string>
+    <string name="save_state_unsupported_toast">Sauvegardes rapides non prises en charge pour ce jeu. Utilisez les sauvegardes en jeu. Activez le mode expérimental dans Paramètres → Système.</string>
+    <string name="save_state_experimental_warning">Sauvegardes rapides expérimentales : le chargement peut figer le jeu. Gardez vos sauvegardes en jeu.</string>
+    <string name="save_states_mode_disabled_toast">Les sauvegardes rapides sont désactivées dans Paramètres → Système.</string>
 </resources>

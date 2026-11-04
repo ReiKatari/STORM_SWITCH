@@ -2219,4 +2219,13 @@
     <string name="enable_fast_gpu_time_description">Speeds up GPU timer queries to boost performance in games with heavy CPU-GPU synchronization, but may cause visual timing glitches in some titles.</string>
     <string name="storm_check_updates_now">Check for Updates Now</string>
     <string name="storm_check_updates_now_desc">Check GitHub and STORM GAMES WORLD for a newer release and install it in place</string>
+
+    <string name="save_states_mode">快速保存模式</string>
+    <string name="save_states_mode_description">控制快速保存与读取行为。内存快照可能导致未验证游戏卡死。</string>
+    <string name="save_states_mode_off">关闭</string>
+    <string name="save_states_mode_verified_only">仅限已验证游戏 (推荐)</string>
+    <string name="save_states_mode_all_games">所有游戏 (实验性)</string>
+    <string name="save_state_unsupported_toast">此游戏不支持快速保存。请使用游戏内存档。可在“设置 → 系统”中开启实验性模式。</string>
+    <string name="save_state_experimental_warning">快速保存为实验性功能：读取可能导致游戏卡死。请保持常规存档。</string>
+    <string name="save_states_mode_disabled_toast">快速保存在“设置 → 系统”中已禁用。</string>
 </resources>

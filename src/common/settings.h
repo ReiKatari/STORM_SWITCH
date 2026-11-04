@@ -1090,6 +1090,15 @@ struct Values {
                                                        true,
                                                        true};
 
+    // Quick Save/Load state mode (Off, VerifiedOnly, AllGames)
+    SwitchableSetting<SaveStatesMode> save_states_mode{linkage,
+                                                       SaveStatesMode::VerifiedOnly,
+                                                       "save_states_mode",
+                                                       Category::System,
+                                                       Specialization::Default,
+                                                       true,
+                                                       true};
+
     // Current Program ID for runtime per-game quirks
     Setting<u64> current_program_id{linkage, 0, "current_program_id", Category::Core};
 };

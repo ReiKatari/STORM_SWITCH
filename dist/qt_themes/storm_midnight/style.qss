@@ -153,63 +153,131 @@ QToolBar {
 }
 
 /* Clean 1px Faceted Buttons (STORM Standard) */
-QPushButton, QDialogButtonBox QPushButton, QToolButton {
+QPushButton,
+QDialogButtonBox QPushButton,
+QToolButton,
+QCommandLinkButton,
+QWizard QPushButton,
+QMessageBox QPushButton,
+QPushButton[flat="true"],
+QToolButton[flat="true"] {
     background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #2b204e, stop:1 #140e2b);
     color: #FFFFFF;
     border: 1px solid #3b2d6a;
-    border-radius: 7px;
+    border-radius: 6px;
     padding: 6px 16px;
     font-weight: 600;
     min-height: 22px;
 }
 
-QPushButton:hover, QDialogButtonBox QPushButton:hover, QToolButton:hover {
+QPushButton:hover,
+QDialogButtonBox QPushButton:hover,
+QToolButton:hover,
+QCommandLinkButton:hover,
+QWizard QPushButton:hover,
+QMessageBox QPushButton:hover,
+QPushButton[flat="true"]:hover,
+QToolButton[flat="true"]:hover {
     background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #3c2f6d, stop:1 #1f1642);
     border: 1px solid #b388ff;
     color: #b388ff;
 }
 
-QPushButton:pressed, QDialogButtonBox QPushButton:pressed, QToolButton:pressed {
-    background-color: #0f0a1e;
+QPushButton:pressed,
+QDialogButtonBox QPushButton:pressed,
+QToolButton:pressed,
+QCommandLinkButton:pressed,
+QWizard QPushButton:pressed,
+QMessageBox QPushButton:pressed,
+QPushButton[flat="true"]:pressed,
+QToolButton[flat="true"]:pressed {
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #0f0a1e, stop:1 #231a40);
     border: 1px solid #9d71fa;
-    padding: 6px 16px;
+    padding: 7px 15px 5px 17px;
     color: #FFFFFF;
 }
 
-QPushButton:disabled, QDialogButtonBox QPushButton:disabled, QToolButton:disabled {
+QPushButton:checked,
+QDialogButtonBox QPushButton:checked,
+QToolButton:checked,
+QCommandLinkButton:checked,
+QWizard QPushButton:checked,
+QMessageBox QPushButton:checked,
+QPushButton[flat="true"]:checked,
+QToolButton[flat="true"]:checked {
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #3c2f6d, stop:1 #1f1642);
+    border: 1px solid #b388ff;
+    color: #FFFFFF;
+}
+
+QPushButton:focus,
+QDialogButtonBox QPushButton:focus,
+QToolButton:focus,
+QCommandLinkButton:focus,
+QWizard QPushButton:focus,
+QMessageBox QPushButton:focus {
+    border: 1px solid #b388ff;
+}
+
+QPushButton:disabled,
+QDialogButtonBox QPushButton:disabled,
+QToolButton:disabled,
+QCommandLinkButton:disabled,
+QWizard QPushButton:disabled,
+QMessageBox QPushButton:disabled,
+QPushButton[flat="true"]:disabled,
+QToolButton[flat="true"]:disabled {
     background-color: #0d0a17;
     color: rgba(255, 255, 255, 0.35);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 7px;
+    border-radius: 6px;
     padding: 6px 16px;
 }
 
-QPushButton:default, QDialogButtonBox QPushButton:default {
+QPushButton:default,
+QDialogButtonBox QPushButton:default,
+QToolButton:default,
+QCommandLinkButton:default,
+QWizard QPushButton:default,
+QMessageBox QPushButton:default,
+QPushButton[primary="true"],
+QToolButton[primary="true"] {
     background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #9d71fa, stop:1 #6d28d9);
     color: #FFFFFF;
     border: 1px solid #7c3aed;
-    border-radius: 7px;
+    border-radius: 6px;
     padding: 6px 16px;
     font-weight: 700;
     min-height: 22px;
 }
 
-QPushButton:default:hover, QDialogButtonBox QPushButton:default:hover {
+QPushButton:default:hover,
+QDialogButtonBox QPushButton:default:hover,
+QToolButton:default:hover,
+QCommandLinkButton:default:hover,
+QWizard QPushButton:default:hover,
+QMessageBox QPushButton:default:hover,
+QPushButton[primary="true"]:hover,
+QToolButton[primary="true"]:hover {
     background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #b493fc, stop:1 #7c3aed);
     border: 1px solid #b493fc;
+    color: #FFFFFF;
 }
 
-QPushButton:default:pressed, QDialogButtonBox QPushButton:default:pressed {
+QPushButton:default:pressed,
+QDialogButtonBox QPushButton:default:pressed,
+QToolButton:default:pressed,
+QCommandLinkButton:default:pressed,
+QWizard QPushButton:default:pressed,
+QMessageBox QPushButton:default:pressed,
+QPushButton[primary="true"]:pressed,
+QToolButton[primary="true"]:pressed {
     background-color: #5b21b6;
     border: 1px solid #4c1d95;
-    padding: 6px 16px;
+    padding: 7px 15px 5px 17px;
+    color: #FFFFFF;
 }
 
-QPushButton:disabled {
-    background-color: #0d0a17;
-    color: rgba(255, 255, 255, 0.35);
-    border: 1px solid #1c1533;
-}
 
 /* Line Edits & Text Inputs */
 QLineEdit, QTextEdit, QPlainTextEdit, QSpinBox, QDoubleSpinBox {
@@ -396,46 +464,76 @@ QPushButton#GPUStatusBarButton,
 QPushButton#DockingStatusBarButton,
 QPushButton#RefreshButton,
 QPushButton#VolumeButton,
-QStatusBar QPushButton {
-    background-color: #140f26;
-    color: #ffffff;
-    border: 1px solid #2c204d;
-    border-radius: 5px;
+QStatusBar QPushButton,
+QPushButton#StatusBarGroupLabel {
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #231a40, stop:1 #140f26);
+    color: #FFFFFF;
+    border: 1px solid #3b2d6a;
+    border-radius: 6px;
     padding: 3px 8px;
     font-size: 8pt;
     font-weight: 800;
-    min-height: 30px;
+    min-height: 26px;
 }
 
 QPushButton#TogglableStatusBarButton:hover,
 QPushButton#RendererStatusBarButton:hover,
 QPushButton#GPUStatusBarButton:hover,
 QPushButton#DockingStatusBarButton:hover,
-QPushButton#RefreshButton:hover,
 QPushButton#VolumeButton:hover,
-QStatusBar QPushButton:hover {
-    background-color: #221840;
+QStatusBar QPushButton:hover,
+QPushButton#StatusBarGroupLabel:hover {
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #3c2f6d, stop:1 #1f1642);
     border-color: #b388ff;
     color: #b388ff;
+}
+
+QPushButton#TogglableStatusBarButton:pressed,
+QPushButton#RendererStatusBarButton:pressed,
+QPushButton#GPUStatusBarButton:pressed,
+QPushButton#DockingStatusBarButton:pressed,
+QPushButton#VolumeButton:pressed,
+QStatusBar QPushButton:pressed,
+QPushButton#StatusBarGroupLabel:pressed {
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #0f0a1e, stop:1 #231a40);
+    border-color: #b388ff;
+    padding: 4px 7px 2px 9px;
+    color: #FFFFFF;
 }
 
 QPushButton#TogglableStatusBarButton:checked,
 QPushButton#RendererStatusBarButton:checked,
 QPushButton#GPUStatusBarButton:checked,
-QPushButton#DockingStatusBarButton:checked {
-    background-color: rgba(179, 136, 255, 0.22);
+QPushButton#DockingStatusBarButton:checked,
+QPushButton#VolumeButton:checked,
+QStatusBar QPushButton:checked,
+QPushButton#StatusBarGroupLabel:checked {
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #3c2f6d, stop:1 #1f1642);
     border-color: #b388ff;
-    color: #b388ff;
+    color: #FFFFFF;
 }
 
 QPushButton#RefreshButton {
-    background-color: rgba(0, 230, 118, 0.15);
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(0, 230, 118, 0.25), stop:1 rgba(0, 200, 83, 0.15));
     color: #00e676;
-    border-color: #00e676;
+    border: 1px solid #00e676;
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 8pt;
+    font-weight: 800;
+    min-height: 26px;
 }
 
 QPushButton#RefreshButton:hover {
-    background-color: #00e676;
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #00e676, stop:1 #00c853);
+    border: 1px solid #69f0ae;
+    color: #FFFFFF;
+}
+
+QPushButton#RefreshButton:pressed {
+    background-color: #00a844;
+    border: 1px solid #008f3a;
+    padding: 4px 7px 2px 9px;
     color: #FFFFFF;
 }
 

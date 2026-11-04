@@ -29,6 +29,7 @@
 #include "core/hle/service/game_fix_database.h"
 #include "qt_common/config/uisettings.h"
 #include "storm_switch/common/storm_lang.h"
+#include "storm_switch/common/storm_theme.h"
 #include "storm_switch/configuration/storm_ui_structure_helper.h"
 
 GameFixDialog::GameFixDialog(QWidget* parent, u64 title_id_, const QString& game_path_,
@@ -139,6 +140,7 @@ QString GameFixDialog::FormatSettingValue(const std::string& key, const std::str
 }
 
 void GameFixDialog::SetupUI() {
+    setStyleSheet(StormTheme::GetDialogStyle() + StormCancelButtonQssRule());
     auto* root_lay = new QVBoxLayout(this);
     root_lay->setContentsMargins(16, 16, 16, 16);
     root_lay->setSpacing(12);
@@ -341,13 +343,8 @@ void GameFixDialog::SetupUI() {
         QStringLiteral("Применить и запустить"),
         QStringLiteral("Apply & Launch")), btn_row);
     apply_and_launch_btn->setCursor(Qt::PointingHandCursor);
-    apply_and_launch_btn->setStyleSheet(QStringLiteral(
-        "QPushButton {"
-        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #00F0FF, stop:1 #0099FF);"
-        "    color: #000000; font-weight: bold; padding: 7px 18px; border-radius: 6px; font-size: 9.5pt;"
-        "}"
-        "QPushButton:hover { background: #38BDF8; }"
-    ));
+    apply_and_launch_btn->setDefault(true);
+    apply_and_launch_btn->setProperty("primary", true);
     connect(apply_and_launch_btn, &QPushButton::clicked, this, [this]() {
         m_apply_fixes = true;
         m_save_to_ini = true;

@@ -444,7 +444,7 @@ private:
 
     void UpdateComputeTextureBuffers();
 
-    void MarkWrittenBuffer(BufferId buffer_id, DAddr device_addr, u32 size);
+    void MarkWrittenBuffer(BufferId buffer_id, DAddr device_addr, u32 size, bool needs_sync = false);
 
     /// Counts a GPU write to the command list pages in the range (invalidating their copies) and,
     /// while collecting, asks for new copies.
@@ -452,7 +452,7 @@ private:
 
     [[nodiscard]] BufferId FindBuffer(DAddr device_addr, u32 size);
 
-    void WaitForGpuFenceIfNeeded(Buffer& buffer);
+    void SynchronizeBufferWrites(Buffer& buffer);
 
     [[nodiscard]] OverlapResult ResolveOverlaps(DAddr device_addr, u32 wanted_size);
 

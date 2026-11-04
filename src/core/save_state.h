@@ -65,6 +65,8 @@ enum class SaveStateResult {
     ErrorVersionMismatch,
     ErrorCorruptedFile,
     ErrorInvalidMagic,
+    ErrorUnsupportedGame,
+    ErrorDisabled,
 };
 
 /// Create a save state from the current emulation state (instant in-RAM snapshot + async disk flush)

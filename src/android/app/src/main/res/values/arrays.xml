@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <string-array name="saveStatesModeNames">
+        <item>@string/save_states_mode_off</item>
+        <item>@string/save_states_mode_verified_only</item>
+        <item>@string/save_states_mode_all_games</item>
+    </string-array>
+
+    <integer-array name="saveStatesModeValues">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </integer-array>
+
+
     <string-array name="regionNames">
         <item>@string/region_australia</item>
         <item>@string/region_china</item>

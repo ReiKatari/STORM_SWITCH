@@ -34,6 +34,16 @@ struct MultiLangEntry {
 
 inline const std::unordered_map<std::string_view, const char*>& GetRuToEnSvMap() {
     static constexpr StrPair kTable[] = {
+        {"Режим быстрых сохранений:", "Save States Mode:"},
+        {"Режим быстрых сохранений", "Save States Mode"},
+        {"Только проверенные игры", "Verified games only"},
+        {"Все игры (экспериментально)", "All games (experimental)"},
+        {"Быстрое сохранение (эксперимент.)", "Quick Save (Experimental)"},
+        {"Быстрая загрузка (эксперимент.)", "Quick Load (Experimental)"},
+        {"Быстрое сохранение (Слот 1) (эксперимент.)", "Quick Save (Slot 1) (experimental)"},
+        {"Быстрая загрузка (Слот 1) (эксперимент.)", "Quick Load (Slot 1) (experimental)"},
+        {"Сохранить состояние в слот (эксперимент.)", "Save State to Slot (experimental)"},
+        {"Загрузить состояние из слота (эксперимент.)", "Load State from Slot (experimental)"},
         {" (+%1 строк)", " (+%1 lines)"},
         {" (Пусто)", " (Empty)"},
         {" мс", " ms"},
@@ -1898,6 +1908,16 @@ inline const std::unordered_map<std::string_view, const char*>& GetRuToEnSvMap()
 
 inline const std::unordered_map<std::string_view, const char*>& GetEnToRuSvMap() {
     static constexpr StrPair kTable[] = {
+        {"Save States Mode:", "Режим быстрых сохранений:"},
+        {"Save States Mode", "Режим быстрых сохранений"},
+        {"Verified games only", "Только проверенные игры"},
+        {"All games (experimental)", "Все игры (экспериментально)"},
+        {"Quick Save (Experimental)", "Быстрое сохранение (эксперимент.)"},
+        {"Quick Load (Experimental)", "Быстрая загрузка (эксперимент.)"},
+        {"Quick Save (Slot 1) (experimental)", "Быстрое сохранение (Слот 1) (эксперимент.)"},
+        {"Quick Load (Slot 1) (experimental)", "Быстрая загрузка (Слот 1) (эксперимент.)"},
+        {"Save State to Slot (experimental)", "Сохранить состояние в слот (эксперимент.)"},
+        {"Load State from Slot (experimental)", "Загрузить состояние из слота (эксперимент.)"},
         {" (+%1 lines)", " (+%1 строк)"},
         {" (Empty)", " (Пусто)"},
         {" ms", " мс"},

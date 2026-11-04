@@ -2375,4 +2375,13 @@
     <string name="button_z">Z</string>
     <string name="button_zl">ZL</string>
     <string name="button_zr">ZR</string>
+
+    <string name="save_states_mode">Режим быстрых сохранений</string>
+    <string name="save_states_mode_description">Поведение быстрых сохранений и загрузок. Снимки памяти могут приводить к зависаниям в непроверенных играх.</string>
+    <string name="save_states_mode_off">Выключено</string>
+    <string name="save_states_mode_verified_only">Только проверенные игры (Рекомендуется)</string>
+    <string name="save_states_mode_all_games">Все игры (экспериментально)</string>
+    <string name="save_state_unsupported_toast">Быстрые сохранения для этой игры не поддерживаются. Используйте сохранения внутри игры. Включить экспериментальный режим можно в Настройки → Система.</string>
+    <string name="save_state_experimental_warning">Быстрые сохранения экспериментальны: загрузка может вызвать зависание игры. Сохраняйтесь внутри игры.</string>
+    <string name="save_states_mode_disabled_toast">Быстрые сохранения отключены в Настройки → Система.</string>
 </resources>

@@ -301,16 +301,28 @@ class SaveStateManagerDialogFragment : DialogFragment() {
                 androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext()).edit().putInt("last_active_save_slot", slot).apply()
                 refreshAllSlots()
                 showUndoSnackbar(slot, getString(R.string.save_state_saved_toast, slot))
+            } else if (res == 9) {
+                Toast.makeText(requireContext(), getString(R.string.save_state_unsupported_toast), Toast.LENGTH_LONG).show()
+            } else if (res == 10) {
+                Toast.makeText(requireContext(), getString(R.string.save_states_mode_disabled_toast), Toast.LENGTH_LONG).show()
             } else {
                 Toast.makeText(requireContext(), getString(R.string.save_state_save_failed, slot), Toast.LENGTH_LONG).show()
             }
         }
 
         slotBinding.btnLoad.setOnClickListener {
+            val saveMode = org.yuzu.yuzu_emu.features.settings.model.IntSetting.SAVE_STATES_MODE.getInt()
+            if (saveMode == 2) {
+                Toast.makeText(requireContext(), getString(R.string.save_state_experimental_warning), Toast.LENGTH_LONG).show()
+            }
             val res = NativeLibrary.loadStateSlot(slot)
             if (res == 0) {
                 Toast.makeText(requireContext(), getString(R.string.save_state_loaded_toast, slot), Toast.LENGTH_SHORT).show()
                 dismiss()
+            } else if (res == 9) {
+                Toast.makeText(requireContext(), getString(R.string.save_state_unsupported_toast), Toast.LENGTH_LONG).show()
+            } else if (res == 10) {
+                Toast.makeText(requireContext(), getString(R.string.save_states_mode_disabled_toast), Toast.LENGTH_LONG).show()
             } else {
                 Toast.makeText(requireContext(), getString(R.string.save_state_load_failed, slot), Toast.LENGTH_LONG).show()
             }

@@ -1003,21 +1003,20 @@ void RasterizerVulkan::FlushRegion(DAddr addr, u64 size, VideoCommon::CacheType 
 }
 
 bool RasterizerVulkan::MustFlushRegion(DAddr addr, u64 size, VideoCommon::CacheType which) {
-    if (IsDiablo2Resurrected()) {
-        return true;
-    }
     if ((True(which & VideoCommon::CacheType::BufferCache))) {
         std::scoped_lock lock{buffer_cache.mutex};
         if (buffer_cache.IsRegionGpuModified(addr, size)) {
             return true;
         }
     }
-    if (!Settings::IsGPULevelHigh() && !Settings::values.use_reactive_flushing.GetValue()) {
-        return false;
-    }
     if (True(which & VideoCommon::CacheType::TextureCache)) {
-        std::scoped_lock lock{texture_cache.mutex};
-        return texture_cache.IsRegionGpuModified(addr, size);
+        // Diablo II: Resurrected requires texture flushes even on Normal accuracy / without reactive flushing,
+        // but only for regions that are actually GPU-modified to prevent severe 4 FPS stalls.
+        if (Settings::IsGPULevelHigh() || Settings::values.use_reactive_flushing.GetValue() ||
+            IsDiablo2Resurrected()) {
+            std::scoped_lock lock{texture_cache.mutex};
+            return texture_cache.IsRegionGpuModified(addr, size);
+        }
     }
     return false;
 }
@@ -1645,10 +1644,25 @@ void RasterizerVulkan::UpdateDepthBias(Tegra::Engines::Maxwell3D::Regs& regs) {
                                regs.zeta.format == Tegra::DepthFormat::V8Z24_UNORM;
     const bool is_d24 = is_d24_format || NeedsD24DepthFormat(current_title_id);
 
-    if (is_d24 && device.IsExtDepthBiasControlSupported()) {
-        const bool exact = device.HasExactDepthBiasControl();
-        scheduler.Record([constant = units, clamp = regs.depth_bias_clamp,
-                          factor = regs.slope_scale_depth_bias, exact](vk::CommandBuffer cmdbuf) {
+    const bool force_unorm = ([&] {
+        if (!is_d24 || device.SupportsD24DepthBuffer()) {
+            return false;
+        }
+        if (device.IsExtDepthBiasControlSupported()) {
+            return true;
+        }
+        // Base formulas from Direct3D 10 / Vulkan specification:
+        // https://docs.microsoft.com/en-us/windows/win32/direct3d11/d3d10-graphics-programming-guide-output-merger-stage-depth-bias
+        const double rescale_factor =
+            static_cast<double>(1ULL << (32 - 24)) / (static_cast<double>(0x1.ep+127));
+        units = static_cast<float>(static_cast<double>(units) * rescale_factor);
+        return false;
+    })();
+
+    const bool exact = device.HasExactDepthBiasControl();
+    scheduler.Record([constant = units, clamp = regs.depth_bias_clamp,
+                      factor = regs.slope_scale_depth_bias, force_unorm, exact](vk::CommandBuffer cmdbuf) {
+        if (force_unorm) {
             VkDepthBiasRepresentationInfoEXT representation_info{
                 .sType = VK_STRUCTURE_TYPE_DEPTH_BIAS_REPRESENTATION_INFO_EXT,
                 .pNext = nullptr,
@@ -1656,19 +1670,10 @@ void RasterizerVulkan::UpdateDepthBias(Tegra::Engines::Maxwell3D::Regs& regs) {
                 .depthBiasExact = exact ? VK_TRUE : VK_FALSE,
             };
             cmdbuf.SetDepthBias(constant, clamp, factor, &representation_info);
-        });
-    } else {
-        if (is_d24 && (!device.SupportsD24DepthBuffer() || !device.IsExtDepthBiasControlSupported())) {
-            // When depth bias control is unsupported or D24 UNORM is emulated on D32_SFLOAT,
-            // adjust precision difference appropriately.
-            units /= 256.0f;
+            return;
         }
-
-        scheduler.Record([constant = units, clamp = regs.depth_bias_clamp,
-                          factor = regs.slope_scale_depth_bias](vk::CommandBuffer cmdbuf) {
-            cmdbuf.SetDepthBias(constant, clamp, factor);
-        });
-    }
+        cmdbuf.SetDepthBias(constant, clamp, factor);
+    });
 }
 
 void RasterizerVulkan::UpdateBlendConstants(Tegra::Engines::Maxwell3D::Regs& regs) {

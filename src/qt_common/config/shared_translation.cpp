@@ -49,6 +49,21 @@ static QString TranslateConfigText(const char* text, const char* disambiguation 
     };
 
     static const LangItem s_table[] = {
+        // Quick save states mode
+        {"Save States Mode:", "Режим быстрых сохранений:", "وضع الحفظ السريع:", "Schnellspeicher-Modus:", "Mode de sauvegardes rapides :", "快速保存模式:", "クイックセーブモード:", "Modo de guardados rápidos:"},
+        {"Save States Mode", "Режим быстрых сохранений", "وضع الحفظ السريع", "Schnellspeicher-Modus", "Mode de sauvegardes rapides", "快速保存模式", "クイックセーブモード", "Modo de guardados rápidos"},
+        {"Controls quick save and quick load behavior. Guest RAM/CPU-only save states can crash unverified games.",
+         "Управляет поведением быстрых сохранений и загрузок. Сохранения только оперативной памяти и ЦП могут приводить к зависанию непроверенных игр.",
+         "يتحكم في سلوك الحفظ والتحميل السريع. قد يؤدي حفظ الذاكرة والمعالج فقط إلى تعطل الألعاب غير المعتمدة.",
+         "Steuert das Verhalten von Schnellspeichern und Schnellladen. Reine RAM/CPU-Zustände können ungetestete Spiele abstürzen lassen.",
+         "Contrôle le comportement de sauvegarde et chargement rapides. Les sauvegardes mémoire/CPU seules peuvent planter les jeux non vérifiés.",
+         "控制快速保存与快速读取行为。仅保存客户机内存与CPU寄存器的状态可能导致未经测试的游戏卡死或崩溃。",
+         "クイックセーブ・クイックロードの挙動を設定します。ゲストRAM/CPUのみのステート保存は未検証タイトルでクラッシュやフリーズの原因となる場合があります。",
+         "Controla el comportamiento del guardado y carga rápidos. Los guardados de solo RAM/CPU de invitado pueden bloquear juegos no verificados."},
+        {"Verified games only", "Только проверенные игры", "الألعاب المعتمدة فقط", "Nur verifizierte Spiele", "Jeux vérifiés uniquement", "仅限已验证游戏", "検証済みゲームのみ", "Solo juegos verificados"},
+        {"All games (experimental)", "Все игры (экспериментально)", "جميع الألعاب (تجريبي)", "Alle Spiele (experimentell)", "Tous les jeux (expérimental)", "所有游戏 (实验性)", "すべてのゲーム (実験的)", "Todos los juegos (experimental)"},
+        {"Quick Save (Experimental)", "Быстрое сохранение (эксперимент.)", "حفظ سريع (تجريبي)", "Schnellspeichern (experimentell)", "Sauvegarde rapide (expérimental)", "快速保存 (实验性)", "クイックセーブ (実験的)", "Guardado rápido (experimental)"},
+        {"Quick Load (Experimental)", "Быстрая загрузка (эксперимент.)", "تحميل سريع (تجريبي)", "Schnellladen (experimentell)", "Chargement rapide (expérimental)", "快速读取 (实验性)", "クイックロード (実験的)", "Carga rápida (experimental)"},
         // Screenshot 2 & System settings
         {"CPU Clocks", "Частоты ЦП", "ترددات المعالج", "CPU-Takte", "Fréquences CPU", "CPU 时钟", "CPU クロック", "Frecuencias CPU"},
         {"GPU Clocks", "Частоты ГПУ", "ترددات معالج الرسوميات", "GPU-Takte", "Fréquences GPU", "GPU 时钟", "GPU クロック", "Frecuencias GPU"},
@@ -785,6 +800,10 @@ std::unique_ptr<TranslationMap> InitializeTranslations(QObject* parent) {
     INSERT(Settings, dump_audio_commands, QString(), QString());
     INSERT(UISettings, mute_when_in_background, tr("Mute audio when in background"), QString());
 
+    // Quick Save States
+    INSERT(Settings, save_states_mode, tr("Save States Mode:"),
+           tr("Controls quick save and quick load behavior. Guest RAM/CPU-only save states can crash unverified games."));
+
     // Core
     INSERT(Settings, use_multi_core, tr("Multicore CPU Emulation"),
            tr("This option increases CPU emulation thread use from 1 to the maximum of 4.\n"
@@ -1230,6 +1249,13 @@ std::unique_ptr<ComboboxTranslationMap> ComboboxEnumeration(QObject* parent) {
 #define PAIR(ENUM, VALUE, TRANSLATION) {static_cast<u32>(Settings::ENUM::VALUE), (TRANSLATION)}
 
     // Intentionally skipping VSyncMode to let the UI fill that one out
+    translations->insert({Settings::EnumMetadata<Settings::SaveStatesMode>::Index(),
+                          {
+                              PAIR(SaveStatesMode, Off, tr("Off")),
+                              PAIR(SaveStatesMode, VerifiedOnly, tr("Verified games only")),
+                              PAIR(SaveStatesMode, AllGames, tr("All games (experimental)")),
+                          }});
+
     translations->insert({Settings::EnumMetadata<Settings::AppletMode>::Index(),
                           {
                               PAIR(AppletMode, HLE, tr("Custom frontend")),

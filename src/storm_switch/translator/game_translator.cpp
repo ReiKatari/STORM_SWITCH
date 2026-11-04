@@ -482,7 +482,7 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
         "QLineEdit:focus, QTextEdit:focus, QSpinBox:focus { border: 1px solid #00E5FF; }"
         "QComboBox { background: #151D30; color: #FFFFFF; border: 1px solid #27354F; border-radius: 6px; padding: 6px 12px; font-size: 13px; }"
         "QComboBox QAbstractItemView { background: #151D30; color: #FFFFFF; selection-background-color: #2563EB; }"
-        "QPushButton { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #2563EB, stop:1 #00D4FF); color: #FFFFFF; border: none; border-radius: 6px; font-weight: 600; padding: 8px 16px; font-size: 13px; }"
+        "QPushButton { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #2563EB, stop:1 #00D4FF); color: #FFFFFF; border: 1px solid #00D4FF; border-radius: 6px; font-weight: 600; padding: 8px 16px; font-size: 13px; }"
         "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #1D4ED8, stop:1 #00B4D8); }"
         "QPushButton#actionBtn { background: #059669; }"
         "QPushButton#actionBtn:hover { background: #047857; }"

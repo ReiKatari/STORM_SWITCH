@@ -1379,12 +1379,13 @@ bool Device::GetSuitability(bool requires_swapchain) {
 
     // VK_EXT_extended_dynamic_state3 below this will appear drivers that need workarounds.
 
-    // Samsung & Mali: Broken extendedDynamicState3ColorBlendEquation / ColorBlendEnable
+    // Samsung, Qualcomm, & Mali: Broken extendedDynamicState3ColorBlendEquation / ColorBlendEnable
     // Disable blend equation dynamic state, force static pipeline state
     if (extensions.extended_dynamic_state3 &&
-        (driver_id == VK_DRIVER_ID_SAMSUNG_PROPRIETARY || is_mali_suitability)) {
+        (driver_id == VK_DRIVER_ID_SAMSUNG_PROPRIETARY ||
+         driver_id == VK_DRIVER_ID_QUALCOMM_PROPRIETARY || is_mali_suitability)) {
         LOG_WARNING(Render_Vulkan,
-                    "Samsung/Mali: Disabling broken extendedDynamicState3ColorBlendEquation and ColorBlendEnable");
+                    "Samsung/Qualcomm/Mali: Disabling broken extendedDynamicState3ColorBlendEquation and ColorBlendEnable");
         features.extended_dynamic_state3.extendedDynamicState3ColorBlendEnable = false;
         features.extended_dynamic_state3.extendedDynamicState3ColorBlendEquation = false;
     }
@@ -1395,7 +1396,9 @@ bool Device::GetSuitability(bool requires_swapchain) {
         if (driver_id == VK_DRIVER_ID_INTEL_PROPRIETARY_WINDOWS) {
             const u32 version = (properties.properties.driverVersion << 3) >> 3;
             is_broken = version < VK_MAKE_API_VERSION(0, 27, 20, 100);
-        } else if (driver_id == VK_DRIVER_ID_NVIDIA_PROPRIETARY || is_mali_suitability) {
+        } else if (driver_id == VK_DRIVER_ID_NVIDIA_PROPRIETARY ||
+                   driver_id == VK_DRIVER_ID_QUALCOMM_PROPRIETARY ||
+                   driver_id == VK_DRIVER_ID_SAMSUNG_PROPRIETARY || is_mali_suitability) {
             is_broken = true;
         }
         if (is_broken) {
@@ -1430,7 +1433,8 @@ void Device::RemoveUnsuitableExtensions() {
         extensions.custom_border_color =
             features.custom_border_color.customBorderColors &&
             features.custom_border_color.customBorderColorWithoutFormat &&
-            GetDriverID() != VK_DRIVER_ID_QUALCOMM_PROPRIETARY; // Qualcomm proprietary driver has broken custom border color sampler interpolation
+            GetDriverID() != VK_DRIVER_ID_QUALCOMM_PROPRIETARY &&
+            GetDriverID() != VK_DRIVER_ID_ARM_PROPRIETARY; // Qualcomm and Mali proprietary drivers have broken custom border color sampler interpolation
     }
     RemoveExtensionFeatureIfUnsuitable(extensions.custom_border_color, features.custom_border_color,
                                        VK_EXT_CUSTOM_BORDER_COLOR_EXTENSION_NAME);

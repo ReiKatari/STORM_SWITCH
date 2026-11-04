@@ -2082,4 +2082,13 @@
     <string name="button_zr">ZR</string>
     <string name="enable_fast_gpu_time">Enable Fast GPU Time</string>
     <string name="enable_fast_gpu_time_description">Speeds up GPU timer queries to boost performance in games with heavy CPU-GPU synchronization, but may cause visual timing glitches in some titles.</string>
+
+    <string name="save_states_mode">빠른 저장 모드</string>
+    <string name="save_states_mode_description">빠른 저장 및 불러오기 동작을 제어합니다. 메모리 저장은 미검증 게임에서 멈춤을 유발할 수 있습니다.</string>
+    <string name="save_states_mode_off">끄기</string>
+    <string name="save_states_mode_verified_only">검증된 게임만 (권장)</string>
+    <string name="save_states_mode_all_games">모든 게임 (실험적)</string>
+    <string name="save_state_unsupported_toast">이 게임은 빠른 저장을 지원하지 않습니다. 게임 내 저장을 사용하세요. 설정 → 시스템에서 활성화 가능합니다.</string>
+    <string name="save_state_experimental_warning">빠른 저장은 실험적 기능입니다. 불러오기 시 게임이 멈출 수 있습니다.</string>
+    <string name="save_states_mode_disabled_toast">설정 → 시스템에서 빠른 저장이 비활성화되었습니다.</string>
 </resources>

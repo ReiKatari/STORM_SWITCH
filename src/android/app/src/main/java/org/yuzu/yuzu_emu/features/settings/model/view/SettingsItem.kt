@@ -293,6 +293,15 @@ abstract class SettingsItem(
             )
             put(
                 SingleChoiceSetting(
+                    IntSetting.SAVE_STATES_MODE,
+                    titleId = R.string.save_states_mode,
+                    descriptionId = R.string.save_states_mode_description,
+                    choicesId = R.array.saveStatesModeNames,
+                    valuesId = R.array.saveStatesModeValues
+                )
+            )
+            put(
+                SingleChoiceSetting(
                     IntSetting.MEMORY_LAYOUT,
                     titleId = R.string.memory_layout,
                     descriptionId = R.string.memory_layout_description,

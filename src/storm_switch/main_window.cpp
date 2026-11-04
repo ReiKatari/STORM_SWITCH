@@ -48,6 +48,7 @@
 #include "render/performance_overlay.h"
 
 #include "core/save_state.h"
+#include "core/save_state_whitelist.h"
 
 #include "updater/update_dialog.h"
 
@@ -6187,8 +6188,6 @@ void MainWindow::InitializeWidgets() {
 
         headerBtn->setFocusPolicy(Qt::NoFocus);
 
-        headerBtn->setFlat(true);
-
         headerBtn->setToolTip(StormLang(
 
             QStringLiteral("Нажмите для быстрого меню раздела «%1»").arg(title),
@@ -7044,17 +7043,17 @@ void MainWindow::SetupMenuIcons() {
 
         quick_save_action = new QAction(StormLang(
 
-            QStringLiteral("Быстрое сохранение (Слот 1)"),
+            QStringLiteral("Быстрое сохранение (Слот 1) (эксперимент.)"),
 
-            QStringLiteral("Quick Save (Slot 1)"),
+            QStringLiteral("Quick Save (Slot 1) (experimental)"),
 
-            QStringLiteral("Schnellspeichern (Slot 1)"),
+            QStringLiteral("Schnellspeichern (Slot 1) (experimentell)"),
 
-            QStringLiteral("Sauvegarde rapide (Emplacement 1)"),
+            QStringLiteral("Sauvegarde rapide (Emplacement 1) (expérimental)"),
 
-            QStringLiteral("快速保存 (槽位 1)"),
+            QStringLiteral("快速保存 (槽位 1) (实验性)"),
 
-            QStringLiteral("クイックセーブ (スロット 1)")
+            QStringLiteral("クイックセーブ (スロット 1) (実験的)")
 
         ), this);
 
@@ -7066,17 +7065,17 @@ void MainWindow::SetupMenuIcons() {
 
         quick_load_action = new QAction(StormLang(
 
-            QStringLiteral("Быстрая загрузка (Слот 1)"),
+            QStringLiteral("Быстрая загрузка (Слот 1) (эксперимент.)"),
 
-            QStringLiteral("Quick Load (Slot 1)"),
+            QStringLiteral("Quick Load (Slot 1) (experimental)"),
 
-            QStringLiteral("Schnellladen (Slot 1)"),
+            QStringLiteral("Schnellladen (Slot 1) (experimentell)"),
 
-            QStringLiteral("Chargement rapide (Emplacement 1)"),
+            QStringLiteral("Chargement rapide (Emplacement 1) (expérimental)"),
 
-            QStringLiteral("快速读取 (槽位 1)"),
+            QStringLiteral("快速读取 (槽位 1) (实验性)"),
 
-            QStringLiteral("クイックロード (スロット 1)")
+            QStringLiteral("クイックロード (スロット 1) (実験的)")
 
         ), this);
 
@@ -7088,17 +7087,17 @@ void MainWindow::SetupMenuIcons() {
 
         save_state_slots_menu = new QMenu(StormLang(
 
-            QStringLiteral("Сохранить состояние в слот"),
+            QStringLiteral("Сохранить состояние в слот (эксперимент.)"),
 
-            QStringLiteral("Save State to Slot"),
+            QStringLiteral("Save State to Slot (experimental)"),
 
-            QStringLiteral("Status in Slot speichern"),
+            QStringLiteral("Status in Slot speichern (experimentell)"),
 
-            QStringLiteral("Sauvegarder l'état dans l'emplacement"),
+            QStringLiteral("Sauvegarder l'état dans l'emplacement (expérimental)"),
 
-            QStringLiteral("保存状态到槽位"),
+            QStringLiteral("保存状态到槽位 (实验性)"),
 
-            QStringLiteral("スロットにステートを保存")
+            QStringLiteral("スロットにステートを保存 (実験的)")
 
         ), ui->menu_File);
 
@@ -7108,17 +7107,17 @@ void MainWindow::SetupMenuIcons() {
 
         load_state_slots_menu = new QMenu(StormLang(
 
-            QStringLiteral("Загрузить состояние из слота"),
+            QStringLiteral("Загрузить состояние из слота (эксперимент.)"),
 
-            QStringLiteral("Load State from Slot"),
+            QStringLiteral("Load State from Slot (experimental)"),
 
-            QStringLiteral("Status aus Slot laden"),
+            QStringLiteral("Status aus Slot laden (experimentell)"),
 
-            QStringLiteral("Charger l'état depuis l'emplacement"),
+            QStringLiteral("Charger l'état depuis l'emplacement (expérimental)"),
 
-            QStringLiteral("从槽位读取状态"),
+            QStringLiteral("从槽位读取状态 (实验性)"),
 
-            QStringLiteral("スロットからステートをロード")
+            QStringLiteral("スロットからステートをロード (実験的)")
 
         ), ui->menu_File);
 
@@ -7590,13 +7589,13 @@ void MainWindow::InitializeHotkeys() {
 
     if (quick_save_action) {
 
-        LinkActionShortcut(quick_save_action, QStringLiteral("Quick Save"));
+        LinkActionShortcut(quick_save_action, QStringLiteral("Quick Save (Experimental)"));
 
     }
 
     if (quick_load_action) {
 
-        LinkActionShortcut(quick_load_action, QStringLiteral("Quick Load"));
+        LinkActionShortcut(quick_load_action, QStringLiteral("Quick Load (Experimental)"));
 
     }
 
@@ -16634,6 +16633,47 @@ void MainWindow::OnSaveStateSlot(int slot) {
 
     }
 
+    const auto save_mode = Settings::values.save_states_mode.GetValue();
+    if (save_mode == Settings::SaveStatesMode::Off) {
+        const QString off_msg = StormLang11(
+            QStringLiteral("Быстрые сохранения отключены в настройках (Настройки → Система)."),
+            QStringLiteral("Save states are disabled in settings (Configure → System)."),
+            QStringLiteral("Schnellspeichern ist in den Einstellungen deaktiviert (Einstellungen → System)."),
+            QStringLiteral("Les sauvegardes rapides sont désactivées dans les paramètres (Paramètres → Système)."),
+            QStringLiteral("El guardado rápido está desactivado en la configuración (Configuración → Sistema)."),
+            QStringLiteral("I salvataggi rapidi sono disattivati nelle impostazioni (Impostazioni → Sistema)."),
+            QStringLiteral("Os salvamentos rápidos estão desativados nas configurações (Configurações → Sistema)."),
+            QStringLiteral("快速保存在设置中已禁用 (设置 → 系统)。"),
+            QStringLiteral("クイックセーブは設定で無効化されています (設定 → システム)。"),
+            QStringLiteral("설정에서 빠른 저장이 비활성화되었습니다 (설정 → 시스템)."),
+            QStringLiteral("الحفظ السريع معطل في الإعدادات (الإعدادات ← النظام)."));
+        statusBar()->showMessage(off_msg, 4000);
+        if (in_game_notification) {
+            in_game_notification->ShowNotification(QStringLiteral("STORM SWITCH"), off_msg, QColor(245, 158, 11), QString{}, 3000);
+        }
+        return;
+    }
+
+    if (save_mode == Settings::SaveStatesMode::VerifiedOnly && !Core::IsTitleSaveStateVerified(title_id)) {
+        const QString unsupp_msg = StormLang11(
+            QStringLiteral("Быстрые сохранения для этой игры не поддерживаются. Используйте сохранения внутри игры. Включить экспериментальный режим можно в Настройки → Система."),
+            QStringLiteral("Save states are not supported for this game. Use in-game saves. Experimental mode can be enabled in Configure → System."),
+            QStringLiteral("Schnellspeichern wird für dieses Spiel nicht unterstützt. Nutzen Sie Speicherstände im Spiel. Der experimentelle Modus kann unter Einstellungen → System aktiviert werden."),
+            QStringLiteral("Les sauvegardes rapides ne sont pas prises en charge pour ce jeu. Utilisez les sauvegardes en jeu. Le mode expérimental peut être activé dans Paramètres → Système."),
+            QStringLiteral("El guardado rápido no es compatible con este juego. Usa el guardado del juego. El modo experimental se puede activar en Configuración → Sistema."),
+            QStringLiteral("I salvataggi rapidi non sono supportati per questo gioco. Usa i salvataggi in-game. La modalità sperimentale может essere attivata in Impostazioni → Sistema."),
+            QStringLiteral("Os salvamentos rápidos não são suportados para este jogo. Use os salvamentos internos do jogo. O modo experimental pode ser ativado em Configurações → Sistema."),
+            QStringLiteral("此游戏不支持快速保存。请使用游戏内正常存档。可在“设置 → 系统”中启用实验性模式。"),
+            QStringLiteral("このゲームはクイックセーブに対応していません。ゲーム内のセーブ機能をご利用ください。「設定 → システム」で実験的モードを有効化できます。"),
+            QStringLiteral("이 게임은 빠른 저장을 지원하지 않습니다. 게임 내 저장을 사용하세요. 설정 → 시스템에서 실험적 모드를 켤 수 있습니다."),
+            QStringLiteral("الحفظ السريع غير مدعوم لهذه اللعبة. استخدم الحفظ داخل اللعبة. يمكن تفعيل الوضع التجريبي من الإعدادات ← النظام."));
+        statusBar()->showMessage(unsupp_msg, 5000);
+        if (in_game_notification) {
+            in_game_notification->ShowNotification(QStringLiteral("STORM SWITCH"), unsupp_msg, QColor(245, 158, 11), QString{}, 4000);
+        }
+        return;
+    }
+
     {
 
         const auto path = Core::GetSaveStatePath(title_id, static_cast<u32>(slot));
@@ -16644,27 +16684,27 @@ void MainWindow::OnSaveStateSlot(int slot) {
 
             const QString err_title = StormLang11(
 
-                QStringLiteral("❌ ОШИБКА БЫСТРОГО СОХРАНЕНИЯ"),
+                QStringLiteral("ОШИБКА БЫСТРОГО СОХРАНЕНИЯ"),
 
-                QStringLiteral("❌ QUICK SAVE FAILED"),
+                QStringLiteral("QUICK SAVE FAILED"),
 
-                QStringLiteral("❌ FEHLER BEIM SCHNELLSPEICHERN"),
+                QStringLiteral("FEHLER BEIM SCHNELLSPEICHERN"),
 
-                QStringLiteral("❌ ÉCHEC DE LA SAUVEGARDE RAPIDE"),
+                QStringLiteral("ÉCHEC DE LA SAUVEGARDE RAPIDE"),
 
-                QStringLiteral("❌ ERROR DE GUARDADO RÁPIDO"),
+                QStringLiteral("ERROR DE GUARDADO RÁPIDO"),
 
-                QStringLiteral("❌ ERRORE SALVATAGGIO RAPIDO"),
+                QStringLiteral("ERRORE SALVATAGGIO RAPIDO"),
 
-                QStringLiteral("❌ FALHA AO GUARDAR RAPIDAMENTE"),
+                QStringLiteral("FALHA AO GUARDAR RAPIDAMENTE"),
 
-                QStringLiteral("❌ 快速保存失败"),
+                QStringLiteral("快速保存失败"),
 
-                QStringLiteral("❌ クイックセーブ失敗"),
+                QStringLiteral("クイックセーブ失敗"),
 
-                QStringLiteral("❌ 빠른 저장 실패"),
+                QStringLiteral("빠른 저장 실패"),
 
-                QStringLiteral("❌ فشل الحفظ السريع"));
+                QStringLiteral("فشل الحفظ السريع"));
 
             const QString err_msg = StormLang11(
 
@@ -16694,7 +16734,7 @@ void MainWindow::OnSaveStateSlot(int slot) {
 
             if (in_game_notification) {
 
-                in_game_notification->ShowNotification(err_title, err_msg, QColor(239, 68, 68), QStringLiteral("❌"), 3000);
+                in_game_notification->ShowNotification(err_title, err_msg, QColor(239, 68, 68), QString{}, 3000);
 
             }
 
@@ -16712,27 +16752,27 @@ void MainWindow::OnSaveStateSlot(int slot) {
 
     const QString notif_title = StormLang11(
 
-        QStringLiteral("💾 БЫСТРОЕ СОХРАНЕНИЕ — СЛОТ %1"),
+        QStringLiteral("БЫСТРОЕ СОХРАНЕНИЕ — СЛОТ %1"),
 
-        QStringLiteral("💾 QUICK SAVE COMPLETE — SLOT %1"),
+        QStringLiteral("QUICK SAVE COMPLETE — SLOT %1"),
 
-        QStringLiteral("💾 SCHNELLSPEICHERN — SLOT %1"),
+        QStringLiteral("SCHNELLSPEICHERN — SLOT %1"),
 
-        QStringLiteral("💾 SAUVEGARDE RAPIDE — EMPLACEMENT %1"),
+        QStringLiteral("SAUVEGARDE RAPIDE — EMPLACEMENT %1"),
 
-        QStringLiteral("💾 GUARDADO RÁPIDO — RANURA %1"),
+        QStringLiteral("GUARDADO RÁPIDO — RANURA %1"),
 
-        QStringLiteral("💾 SALVATAGGIO RAPIDO — SLOT %1"),
+        QStringLiteral("SALVATAGGIO RAPIDO — SLOT %1"),
 
-        QStringLiteral("💾 GRAVAÇÃO RÁPIDA — ESPAÇO %1"),
+        QStringLiteral("GRAVAÇÃO RÁPIDA — ESPAÇO %1"),
 
-        QStringLiteral("💾 快速保存成功 — 槽位 %1"),
+        QStringLiteral("快速保存成功 — 槽位 %1"),
 
-        QStringLiteral("💾 クイックセーブ完了 — スロット %1"),
+        QStringLiteral("クイックセーブ完了 — スロット %1"),
 
-        QStringLiteral("💾 빠른 저장 완료 — 슬롯 %1"),
+        QStringLiteral("빠른 저장 완료 — 슬롯 %1"),
 
-        QStringLiteral("💾 اكتمل الحفظ السريع — الفتحة %1")).arg(slot);
+        QStringLiteral("اكتمل الحفظ السريع — الفتحة %1")).arg(slot);
 
     const QString notif_sub = StormLang11(
 
@@ -16762,7 +16802,7 @@ void MainWindow::OnSaveStateSlot(int slot) {
 
     if (in_game_notification) {
 
-        in_game_notification->ShowNotification(notif_title, notif_sub, QColor(0, 229, 255), QStringLiteral("💾"), 3000);
+        in_game_notification->ShowNotification(notif_title, notif_sub, QColor(0, 229, 255), QString{}, 3000);
 
     }
 
@@ -16834,33 +16874,95 @@ void MainWindow::OnLoadStateSlot(int slot) {
 
     }
 
+    const auto save_mode = Settings::values.save_states_mode.GetValue();
+    if (save_mode == Settings::SaveStatesMode::Off) {
+        const QString off_msg = StormLang11(
+            QStringLiteral("Быстрые сохранения отключены в настройках (Настройки → Система)."),
+            QStringLiteral("Save states are disabled in settings (Configure → System)."),
+            QStringLiteral("Schnellspeichern ist in den Einstellungen deaktiviert (Einstellungen → System)."),
+            QStringLiteral("Les sauvegardes rapides sont désactivées dans les paramètres (Paramètres → Système)."),
+            QStringLiteral("El guardado rápido está desactivado en la configuración (Configuración → Sistema)."),
+            QStringLiteral("I salvataggi rapidi sono disattivati nelle impostazioni (Impostazioni → Sistema)."),
+            QStringLiteral("Os salvamentos rápidos estão desativados nas configurações (Configurações → Sistema)."),
+            QStringLiteral("快速保存在设置中已禁用 (设置 → 系统)。"),
+            QStringLiteral("クイックセーブは設定で無効化されています (設定 → システム)。"),
+            QStringLiteral("설정에서 빠른 저장이 비활성화되었습니다 (설정 → 시스템)."),
+            QStringLiteral("الحفظ السريع معطل في الإعدادات (الإعدادات ← النظام)."));
+        statusBar()->showMessage(off_msg, 4000);
+        if (in_game_notification) {
+            in_game_notification->ShowNotification(QStringLiteral("STORM SWITCH"), off_msg, QColor(245, 158, 11), QString{}, 3000);
+        }
+        return;
+    }
+
+    if (save_mode == Settings::SaveStatesMode::VerifiedOnly && !Core::IsTitleSaveStateVerified(title_id)) {
+        const QString unsupp_msg = StormLang11(
+            QStringLiteral("Быстрые сохранения для этой игры не поддерживаются. Используйте сохранения внутри игры. Включить экспериментальный режим можно в Настройки → Система."),
+            QStringLiteral("Save states are not supported for this game. Use in-game saves. Experimental mode can be enabled in Configure → System."),
+            QStringLiteral("Schnellspeichern wird für dieses Spiel nicht unterstützt. Nutzen Sie Speicherstände im Spiel. Der experimentelle Modus kann unter Einstellungen → System aktiviert werden."),
+            QStringLiteral("Les sauvegardes rapides ne sont pas prises en charge pour ce jeu. Utilisez les sauvegardes en jeu. Le mode expérimental peut être activé dans Paramètres → Système."),
+            QStringLiteral("El guardado rápido no es compatible con este juego. Usa el guardado del juego. El modo experimental se puede activar en Configuración → Sistema."),
+            QStringLiteral("I salvataggi rapidi non sono supportati per questo gioco. Usa i salvataggi in-game. La modalità sperimentale может essere attivata in Impostazioni → Sistema."),
+            QStringLiteral("Os salvamentos rápidos não são suportados para este jogo. Use os salvamentos internos do jogo. O modo experimental pode ser ativado em Configurações → Sistema."),
+            QStringLiteral("此游戏不支持快速保存。请使用游戏内正常存档。可在“设置 → 系统”中启用实验性模式。"),
+            QStringLiteral("このゲームはクイックセーブに対応していません。ゲーム内のセーブ機能をご利用ください。「設定 → システム」で実験的モードを有効化できます。"),
+            QStringLiteral("이 게임은 빠른 저장을 지원하지 않습니다. 게임 내 저장을 사용하세요. 설정 → 시스템에서 실험적 모드를 켤 수 있습니다."),
+            QStringLiteral("الحفظ السريع غير مدعوم لهذه اللعبة. استخدم الحفظ داخل اللعبة. يمكن تفعيل الوضع التجريبي من الإعدادات ← النظام."));
+        statusBar()->showMessage(unsupp_msg, 5000);
+        if (in_game_notification) {
+            in_game_notification->ShowNotification(QStringLiteral("STORM SWITCH"), unsupp_msg, QColor(245, 158, 11), QString{}, 4000);
+        }
+        return;
+    }
+
+    static bool s_warned_experimental_load = false;
+    if (save_mode == Settings::SaveStatesMode::AllGames && !s_warned_experimental_load) {
+        s_warned_experimental_load = true;
+        const QString warn_msg = StormLang11(
+            QStringLiteral("Внимание: быстрые сохранения экспериментальны! Загрузка может вызвать зависание игры. Сохраняйтесь внутри игры."),
+            QStringLiteral("Warning: Save states are experimental! Loading may freeze or crash the game. Keep regular in-game saves."),
+            QStringLiteral("Warnung: Schnellspeichern ist experimentell! Das Laden kann zum Einfrieren führen. Bitte regulär im Spiel speichern."),
+            QStringLiteral("Attention : les sauvegardes rapides sont expérimentales ! Le chargement peut figer le jeu. Sauvegardez dans le jeu."),
+            QStringLiteral("Advertencia: ¡El guardado rápido es experimental! La carga puede congelar el juego. Guarda dentro del juego."),
+            QStringLiteral("Attenzione: i salvataggi rapidi sono sperimentali! Il caricamento può bloccare il gioco. Salva normalmente nel gioco."),
+            QStringLiteral("Aviso: os salvamentos rápidos são experimentais! O carregamento pode travar o jogo. Salve dentro do jogo."),
+            QStringLiteral("警告：快速保存为实验性功能！读取存档可能导致游戏卡死。请务必使用游戏内存档。"),
+            QStringLiteral("警告: クイックセーブは実験的機能です。ロード時にフリーズする可能性があります。ゲーム内セーブを併用してください。"),
+            QStringLiteral("경고: 빠른 저장은 실험적 기능입니다! 불러오기 시 게임이 멈출 수 있습니다. 게임 내 저장을 권장합니다."),
+            QStringLiteral("تحذير: الحفظ السريع ميزة تجريبية! قد يؤدي التحميل إلى تجميد اللعبة. احفظ دائماً داخل اللعبة."));
+        statusBar()->showMessage(warn_msg, 5000);
+        if (in_game_notification) {
+            in_game_notification->ShowNotification(QStringLiteral("STORM SWITCH"), warn_msg, QColor(239, 68, 68), QString{}, 4000);
+        }
+    }
+
     const auto path = Core::GetSaveStatePath(title_id, static_cast<u32>(slot));
 
     if (!std::filesystem::exists(path)) {
 
         const QString empty_title = StormLang11(
 
-            QStringLiteral("⚠️ СЛОТ %1 ПУСТ"),
+            QStringLiteral("СЛОТ %1 ПУСТ"),
 
-            QStringLiteral("⚠️ SLOT %1 IS EMPTY"),
+            QStringLiteral("SLOT %1 IS EMPTY"),
 
-            QStringLiteral("⚠️ SLOT %1 IST LEER"),
+            QStringLiteral("SLOT %1 IST LEER"),
 
-            QStringLiteral("⚠️ EMPLACEMENT %1 VIDE"),
+            QStringLiteral("EMPLACEMENT %1 VIDE"),
 
-            QStringLiteral("⚠️ RANURA %1 VACÍA"),
+            QStringLiteral("RANURA %1 VACÍA"),
 
-            QStringLiteral("⚠️ SLOT %1 VUOTO"),
+            QStringLiteral("SLOT %1 VUOTO"),
 
-            QStringLiteral("⚠️ ESPAÇO %1 VAZIO"),
+            QStringLiteral("ESPAÇO %1 VAZIO"),
 
-            QStringLiteral("⚠️ 槽位 %1 为空"),
+            QStringLiteral("槽位 %1 为空"),
 
-            QStringLiteral("⚠️ スロット %1 は空です"),
+            QStringLiteral("スロット %1 は空です"),
 
-            QStringLiteral("⚠️ 슬롯 %1 비어 있음"),
+            QStringLiteral("슬롯 %1 비어 있음"),
 
-            QStringLiteral("⚠️ الفتحة %1 فارغة")).arg(slot);
+            QStringLiteral("الفتحة %1 فارغة")).arg(slot);
 
         const QString empty_msg = StormLang11(
 
@@ -16890,7 +16992,7 @@ void MainWindow::OnLoadStateSlot(int slot) {
 
         if (in_game_notification) {
 
-            in_game_notification->ShowNotification(empty_title, empty_msg, QColor(245, 158, 11), QStringLiteral("⚠️"), 3000);
+            in_game_notification->ShowNotification(empty_title, empty_msg, QColor(245, 158, 11), QString{}, 3000);
 
         }
 
@@ -16904,27 +17006,27 @@ void MainWindow::OnLoadStateSlot(int slot) {
 
         const QString err_title = StormLang11(
 
-            QStringLiteral("❌ ОШИБКА БЫСТРОЙ ЗАГРУЗКИ"),
+            QStringLiteral("ОШИБКА БЫСТРОЙ ЗАГРУЗКИ"),
 
-            QStringLiteral("❌ QUICK LOAD FAILED"),
+            QStringLiteral("QUICK LOAD FAILED"),
 
-            QStringLiteral("❌ FEHLER BEIM SCHNELLLADEN"),
+            QStringLiteral("FEHLER BEIM SCHNELLLADEN"),
 
-            QStringLiteral("❌ ÉCHEC DU CHARGEMENT RAPIDE"),
+            QStringLiteral("ÉCHEC DU CHARGEMENT RAPIDE"),
 
-            QStringLiteral("❌ ERROR DE CARGA RÁPIDA"),
+            QStringLiteral("ERROR DE CARGA RÁPIDA"),
 
-            QStringLiteral("❌ ERRORE CARICAMENTO RAPIDO"),
+            QStringLiteral("ERRORE CARICAMENTO RAPIDO"),
 
-            QStringLiteral("❌ FALHA NO CARREGAMENTO RÁPIDO"),
+            QStringLiteral("FALHA NO CARREGAMENTO RÁPIDO"),
 
-            QStringLiteral("❌ 快速读取失败"),
+            QStringLiteral("快速读取失败"),
 
-            QStringLiteral("❌ クイックロード失敗"),
+            QStringLiteral("クイックロード失敗"),
 
-            QStringLiteral("❌ 빠른 불러오기 실패"),
+            QStringLiteral("빠른 불러오기 실패"),
 
-            QStringLiteral("❌ فشل التحميل السريع"));
+            QStringLiteral("فشل التحميل السريع"));
 
         const QString err_msg = StormLang11(
 
@@ -16954,7 +17056,7 @@ void MainWindow::OnLoadStateSlot(int slot) {
 
         if (in_game_notification) {
 
-            in_game_notification->ShowNotification(err_title, err_msg, QColor(239, 68, 68), QStringLiteral("❌"), 3000);
+            in_game_notification->ShowNotification(err_title, err_msg, QColor(239, 68, 68), QString{}, 3000);
 
         }
 
@@ -16970,27 +17072,27 @@ void MainWindow::OnLoadStateSlot(int slot) {
 
     const QString notif_title = StormLang11(
 
-        QStringLiteral("⚡ БЫСТРАЯ ЗАГРУЗКА — СЛОТ %1"),
+        QStringLiteral("БЫСТРАЯ ЗАГРУЗКА — СЛОТ %1"),
 
-        QStringLiteral("⚡ QUICK LOAD COMPLETE — SLOT %1"),
+        QStringLiteral("QUICK LOAD COMPLETE — SLOT %1"),
 
-        QStringLiteral("⚡ SCHNELLLADEN — SLOT %1"),
+        QStringLiteral("SCHNELLLADEN — SLOT %1"),
 
-        QStringLiteral("⚡ CHARGEMENT RAPIDE — EMPLACEMENT %1"),
+        QStringLiteral("CHARGEMENT RAPIDE — EMPLACEMENT %1"),
 
-        QStringLiteral("⚡ CARGA RÁPIDA — RANURA %1"),
+        QStringLiteral("CARGA RÁPIDA — RANURA %1"),
 
-        QStringLiteral("⚡ CARICAMENTO RAPIDO — SLOT %1"),
+        QStringLiteral("CARICAMENTO RAPIDO — SLOT %1"),
 
-        QStringLiteral("⚡ CARREGAMENTO RÁPIDO — ESPAÇO %1"),
+        QStringLiteral("CARREGAMENTO RÁPIDO — ESPAÇO %1"),
 
-        QStringLiteral("⚡ 快速读取成功 — 槽位 %1"),
+        QStringLiteral("快速读取成功 — 槽位 %1"),
 
-        QStringLiteral("⚡ クイックロード完了 — スロット %1"),
+        QStringLiteral("クイックロード完了 — スロット %1"),
 
-        QStringLiteral("⚡ 빠른 불러오기 완료 — 슬롯 %1"),
+        QStringLiteral("빠른 불러오기 완료 — 슬롯 %1"),
 
-        QStringLiteral("⚡ اكتمل التحميل السريع — الفتحة %1")).arg(slot);
+        QStringLiteral("اكتمل التحميل السريع — الفتحة %1")).arg(slot);
 
     const QString notif_sub = StormLang11(
 

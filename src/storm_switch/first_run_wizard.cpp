@@ -19,6 +19,7 @@
 #include "qt_common/config/uisettings.h"
 #include "qt_common/util/content.h"
 #include "storm_switch/common/storm_lang.h"
+#include "storm_switch/common/storm_theme.h"
 #include "storm_switch/configuration/storm_ui_structure_helper.h"
 #include "storm_switch/libqt_common.h"
 
@@ -39,6 +40,8 @@ FirstRunWizard::FirstRunWizard(QWidget* parent, Core::System& system_,
     setOption(QWizard::NoBackButtonOnStartPage, true);
     resize(760, 520);
     setMinimumSize(680, 460);
+
+    setStyleSheet(StormTheme::GetDialogStyle() + StormCancelButtonQssRule());
 
     // ESC dismisses
     StormUI::StructureEngine::InstallEscDismiss(this);

@@ -49,7 +49,8 @@ object GameFixDatabase {
 
     private val profiles: List<GameFixProfile> by lazy {
         listOf(
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/1890
+GameFixProfile(
             0x0100C8000CEAE000L,
             "Crysis Remastered",
             "• Графические искажения и битые кадровые буферы из-за несовпадения макета GENERAL в BlitColor\n• Просадки FPS при включении маскировки и тепловизора нанокостюма (CryEngine SVOGI)\n• Зависания видеороликов при аппаратном декодировании",
@@ -57,21 +58,22 @@ object GameFixDatabase {
             "✓ Точность ГПУ: Обычная (исправлена синхронизация BlitColor и проходов рендеринга)\n✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Режим «В самолете»: Включено",
             "✓ GPU Accuracy: Normal (Fixed BlitColor and renderpass state synchronization)\n✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Airplane Mode: Enabled",
             mapOf(
+                "System\\memory_layout_mode" to "0",
+                "System\\airplane_mode" to "true",
                 "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\vram_garbage_collection" to "false",
-                "Renderer\\gpu_fence_behavior" to "0",
-                "Renderer\\dma_accuracy" to "0",
-                "Renderer\\async_presentation" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
-                "Renderer\\early_release_fences" to "false",
+                "Renderer\\astc_recompression" to "0",
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\nvdec_emulation" to "3",
-                "Cpu\\cpuopt_fastmem" to "true",
-                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "Renderer\\dma_accuracy" to "0",
+                "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\early_release_fences" to "false",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\vram_garbage_collection" to "false",
                 "Cpu\\cpu_accuracy" to "0",
-                "System\\airplane_mode" to "true",
-                "System\\memory_layout_mode" to "0"
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true"
             )
         ),
         GameFixProfile(
@@ -330,7 +332,8 @@ object GameFixDatabase {
             )
         ),
 
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/4640
+GameFixProfile(
             0x01006560184E6000L,
             "Mortal Kombat 1",
             "• Мгновенный вылет при запуске (UE4 TaskGraph / атомики)\n• Зависание на заставке WB Games и вылет по нехватке памяти (OOM)\n• Сбои Extended Dynamic State в шейдерах арены\n• Пропадание текстур персонажей и окружения при длительной игре",
@@ -342,25 +345,25 @@ object GameFixDatabase {
                 "System\\airplane_mode" to "true",
                 "Network\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
-                "Renderer\\use_fast_gpu_time" to "false",
-                "Renderer\\gpu_fence_behavior" to "0",
-                "Renderer\\dma_accuracy" to "3",
-                "Renderer\\accelerate_astc" to "1",
-                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "false",
-                "Renderer\\dyna_state" to "1",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
                 "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\dyna_state" to "1",
                 "Renderer\\nvdec_emulation" to "2",
+                "Renderer\\dma_accuracy" to "3",
+                "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\async_presentation" to "true",
-                "Renderer\\eco_frame_pacing" to "false",
-                "Renderer\\use_video_framerate" to "false",
                 "Cpu\\cpu_accuracy" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
-                "Cpu\\cpuopt_recompile_exclusives" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
-                "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\astc_recompression" to "0",
-                "Renderer\\gpu_accuracy" to "2"
+                "Cpu\\cpuopt_recompile_exclusives" to "true",
+                "Renderer\\eco_frame_pacing" to "false",
+                "Renderer\\use_video_framerate" to "false"
             )
         ),
         GameFixProfile(
@@ -396,7 +399,8 @@ object GameFixDatabase {
                 "Renderer\\gpu_accuracy" to "2"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/320
+GameFixProfile(
             0x0100F2200C984000L,
             "Mortal Kombat 11",
             "• Разлет полигонов, мерцание геометрии и графические баги шейдеров\n• Искажение динамического освещения и эффектов крови\n• Микрофризы рендеринга",
@@ -404,26 +408,28 @@ object GameFixDatabase {
             "✓ Точность ГПУ: Высокая (High / устраняет черные силуэты бойцов на Mali и разлет полигонов)\n✓ Быстрое время ГПУ: Отключено\n✓ Синхронизация памяти ГПУ: Отключено (стабильный конвейер)\n✓ Реактивная очистка: Отключено (исправление освещения)\n✓ Barrier Feedback Loops: Включено (исправление частиц)\n✓ Сжатие ASTC: Без сжатия\n✓ Память: 6 ГБ DRAM",
             "✓ GPU Accuracy: High (Fixes black character silhouettes on Mali and exploding vertices)\n✓ Fast GPU Time: Disabled\n✓ Sync Memory Operations: Disabled\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Memory Layout: 6GB DRAM",
             mapOf(
+                "System\\memory_layout_mode" to "0",
+                "System\\airplane_mode" to "false",
                 "Renderer\\gpu_accuracy" to "2",
-                "Renderer\\use_fast_gpu_time" to "false",
-                "Renderer\\sync_memory_operations" to "false",
-                "Renderer\\use_reactive_flushing" to "false",
-                "Renderer\\barrier_feedback_loops" to "true",
-                "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\use_disk_shader_cache" to "true",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\dyna_state" to "2",
                 "Renderer\\nvdec_emulation" to "2",
+                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\async_presentation" to "true",
+                "Renderer\\use_disk_shader_cache" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
-                "System\\memory_layout_mode" to "0",
-                "System\\airplane_mode" to "false",
                 "System\\language_index" to "10",
                 "System\\region_index" to "2"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/ReiKatari/STORM_SWITCH/issues/62
+GameFixProfile(
             0x0100B1100C4D0000L,
             "Mortal Kombat 11 (Base)",
             "• Разлет полигонов, мерцание геометрии и графические баги шейдеров\n• Искажение динамического освещения и эффектов крови\n• Микрофризы рендеринга",
@@ -431,26 +437,28 @@ object GameFixDatabase {
             "✓ Точность ГПУ: Высокая (High / устраняет черные силуэты бойцов на Mali и разлет полигонов)\n✓ Быстрое время ГПУ: Отключено\n✓ Синхронизация памяти ГПУ: Отключено (стабильный конвейер)\n✓ Реактивная очистка: Отключено (исправление освещения)\n✓ Barrier Feedback Loops: Включено (исправление частиц)\n✓ Сжатие ASTC: Без сжатия\n✓ Память: 6 ГБ DRAM",
             "✓ GPU Accuracy: High (Fixes black character silhouettes on Mali and exploding vertices)\n✓ Fast GPU Time: Disabled\n✓ Sync Memory Operations: Disabled\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Memory Layout: 6GB DRAM",
             mapOf(
+                "System\\memory_layout_mode" to "0",
+                "System\\airplane_mode" to "false",
                 "Renderer\\gpu_accuracy" to "2",
-                "Renderer\\use_fast_gpu_time" to "false",
-                "Renderer\\sync_memory_operations" to "false",
-                "Renderer\\use_reactive_flushing" to "false",
-                "Renderer\\barrier_feedback_loops" to "true",
-                "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\use_disk_shader_cache" to "true",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\accelerate_astc" to "0",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\nvdec_emulation" to "2",
+                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\async_presentation" to "true",
+                "Renderer\\use_disk_shader_cache" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
-                "System\\memory_layout_mode" to "0",
-                "System\\airplane_mode" to "false",
                 "System\\language_index" to "10",
                 "System\\region_index" to "2"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/32
+GameFixProfile(
             0x01007EF00011E000L,
             "The Legend of Zelda: Breath of the Wild",
             "• Вылет игры при загрузке сохранения (исчерпание пула памяти 4GB DRAM)\n• Сбои десериализации акторов и физики Havok\n• Черный силуэт Линка и мерцание освещения",
@@ -459,26 +467,27 @@ object GameFixDatabase {
             "✓ Memory Layout: 8GB DRAM (Prevents save loading OOM)\n✓ Ignore Memory Aborts: Enabled (Havok physics stability)\n✓ GPU Accuracy: Normal\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Enabled\n✓ ASTC Recompression: Uncompressed",
             mapOf(
                 "System\\memory_layout_mode" to "0",
-                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
-                "Cpu\\cpuopt_fastmem" to "true",
-                "Cpu\\cpu_accuracy" to "0",
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\use_reactive_flushing" to "false",
-                "Renderer\\barrier_feedback_loops" to "true",
-                "Renderer\\use_fast_gpu_time" to "false",
-                "Renderer\\astc_recompression" to "0",
-                "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\use_disk_shader_cache" to "true",
-                "Renderer\\nvdec_emulation" to "1",
-                "Renderer\\sync_memory_operations" to "false",
-                "Renderer\\enable_gpu_buffer_readback" to "false",
-                "Renderer\\vram_garbage_collection" to "false",
-                "Renderer\\async_presentation" to "true",
-                "Renderer\\use_vulkan_driver_pipeline_cache" to "true",
-                "Renderer\\enable_compute_pipelines" to "false",
                 "System\\airplane_mode" to "false",
                 "Network\\airplane_mode" to "false",
-                "Services\\airplane_mode" to "false"
+                "Services\\airplane_mode" to "false",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\enable_gpu_buffer_readback" to "false",
+                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\enable_compute_pipelines" to "false",
+                "Renderer\\use_disk_shader_cache" to "true",
+                "Renderer\\use_vulkan_driver_pipeline_cache" to "true",
+                "Cpu\\cpu_accuracy" to "0",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true"
             )
         ),
         GameFixProfile(
@@ -706,7 +715,8 @@ object GameFixDatabase {
                 "System\\memory_layout_mode" to "0"
             )
         ),
-        GameFixProfile(
+                // src: https://reddit.com/r/EmulationOnAndroid/comments/1269q8l/skyrim_switch_turnip_drivers_sky_flicker_fix/
+GameFixProfile(
             0x01000A10041EA000L,
             "The Elder Scrolls V: Skyrim",
             "• Некорректное изображение водной глади и искажения отражений\n• Артефакты сжатия снега и текстур ландшафта",
@@ -714,33 +724,35 @@ object GameFixDatabase {
             "✓ Сжатие ASTC: Отключено (четкие текстуры снега и гор)\n✓ Реактивная очистка: Отключено (исправление отражений воды)\n✓ Точность ГПУ: Высокая\n✓ Быстрое время ГПУ: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
             "✓ ASTC Recompression: Uncompressed (Crisp snow and terrain)\n✓ Reactive Flushing: Disabled (Fixes water reflections)\n✓ GPU Accuracy: High\n✓ Fast GPU Time: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 8GB DRAM",
             mapOf(
+                "System\\memory_layout_mode" to "0",
+                "System\\airplane_mode" to "false",
                 "Renderer\\gpu_accuracy" to "2",
-                "Renderer\\vram_garbage_collection" to "false",
-                "Renderer\\gpu_fence_behavior" to "0",
-                "Renderer\\dma_accuracy" to "3",
-                "Renderer\\async_presentation" to "true",
-                "Renderer\\drs_resolution_lock" to "false",
-                "Renderer\\barrier_feedback_loops" to "true",
-                "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\scaling_filter" to "1",
-                "Renderer\\anti_aliasing" to "0",
-                "Renderer\\dyna_state" to "1",
-                "Renderer\\enable_gpu_buffer_readback" to "false",
-                "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
-                "Renderer\\early_release_fences" to "false",
+                "Renderer\\accelerate_astc" to "1",
                 "Renderer\\astc_recompression" to "0",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\enable_gpu_buffer_readback" to "false",
+                "Renderer\\dyna_state" to "1",
+                "Renderer\\dma_accuracy" to "3",
+                "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\early_release_fences" to "false",
+                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\enable_compute_pipelines" to "true",
+                "Cpu\\cpu_accuracy" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
-                "Cpu\\cpu_accuracy" to "0",
-                "System\\airplane_mode" to "false",
-                "System\\memory_layout_mode" to "0"
+                "Renderer\\drs_resolution_lock" to "false",
+                "Renderer\\scaling_filter" to "1",
+                "Renderer\\anti_aliasing" to "0"
             )
         ),
 
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/4711
+GameFixProfile(
             0x0100BCB0176D0000L,
             "Hogwarts Legacy",
             "• Некорректное изображение, сбои освещения и геометрии\n• Вылет при переходе между локациями Хогвартса из-за нехватки памяти",
@@ -749,16 +761,20 @@ object GameFixDatabase {
             "✓ Memory Layout: 8GB DRAM (Critical for stability)\n✓ Fix Bloom Effects: Enabled\n✓ GPU Accuracy: High\n✓ Dynamic State: EDS1\n✓ Reactive Flushing: Disabled (Fixes castle lighting)\n✓ Barrier Feedback Loops: Enabled\n✓ ASTC Recompression: Uncompressed",
             mapOf(
                 "System\\memory_layout_mode" to "0",
-                "Renderer\\fix_bloom_effects" to "true",
-                "Renderer\\use_reactive_flushing" to "false",
-                "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\use_asynchronous_shaders" to "false",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\dyna_state" to "1",
-                "Renderer\\astc_recompression" to "0"
+                "Renderer\\fix_bloom_effects" to "true"
             )
         ),
 
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/4508
+GameFixProfile(
             0x0100F2C0115B6000L,
             "The Legend of Zelda: Tears of the Kingdom",
             "• Черный силуэт персонажей и тени в Кавернах\n• Бирюзовая сетка и артефакты Z-буфера на водных поверхностях\n• Утечки VRAM в конструкторе Ультраруки",
@@ -766,33 +782,35 @@ object GameFixDatabase {
             "✓ Точность ГПУ: Высокая (исправление теней и освещения)\n✓ Реактивная очистка: Включено (устранение мерцания магии Ультраруки и рун)\n✓ Сжатие ASTC: Отключено (прозрачная чистая вода)\n✓ Быстрое время ГПУ: Отключено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
             "✓ GPU Accuracy: High (Fixes character shadows and lighting)\n✓ Reactive Flushing: Enabled (Fixes Ultrahand and rune magic flickering)\n✓ ASTC Recompression: Uncompressed\n✓ Fast GPU Time: Disabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 8GB DRAM",
             mapOf(
+                "System\\memory_layout_mode" to "0",
+                "System\\airplane_mode" to "false",
                 "Renderer\\gpu_accuracy" to "2",
-                "Renderer\\vram_garbage_collection" to "false",
-                "Renderer\\gpu_fence_behavior" to "0",
-                "Renderer\\dma_accuracy" to "3",
-                "Renderer\\async_presentation" to "true",
-                "Renderer\\drs_resolution_lock" to "false",
-                "Renderer\\barrier_feedback_loops" to "true",
-                "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\scaling_filter" to "1",
-                "Renderer\\anti_aliasing" to "0",
-                "Renderer\\dyna_state" to "1",
-                "Renderer\\enable_gpu_buffer_readback" to "false",
-                "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
-                "Renderer\\early_release_fences" to "false",
+                "Renderer\\accelerate_astc" to "1",
                 "Renderer\\astc_recompression" to "0",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\enable_gpu_buffer_readback" to "false",
+                "Renderer\\dyna_state" to "1",
+                "Renderer\\dma_accuracy" to "3",
+                "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\early_release_fences" to "false",
+                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\enable_compute_pipelines" to "true",
+                "Cpu\\cpu_accuracy" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
-                "Cpu\\cpu_accuracy" to "0",
-                "System\\airplane_mode" to "false",
-                "System\\memory_layout_mode" to "0"
+                "Renderer\\drs_resolution_lock" to "false",
+                "Renderer\\scaling_filter" to "1",
+                "Renderer\\anti_aliasing" to "0"
             )
         ),
 
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/4812
+GameFixProfile(
             0x01004D701742A000L,
             "Paper Mario: The Thousand-Year Door",
             "• Черный экран на катсценах в прологе\n• Сбои 2D-шрифтов диалогов и мерцание текстур",
@@ -801,8 +819,10 @@ object GameFixDatabase {
             "✓ GPU Accuracy: High\n✓ ASTC Recompression: Uncompressed\n✓ Reactive Flushing: Enabled",
             mapOf(
                 "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\use_reactive_flushing" to "true"
+                "Renderer\\barrier_feedback_loops" to "true"
             )
         ),
         GameFixProfile(
@@ -841,7 +861,8 @@ object GameFixDatabase {
                 "Renderer\\fsr_sharpening_slider" to "80"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/3673
+GameFixProfile(
             0x01002A801458A000L,
             "Diablo II: Resurrected",
             "• Вылет при продолжении игры / загрузке персонажа (OOM)\n• Пропадание букв и текста интерфейса (включая переход во II Акт)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя и графические артефакты\n• Просадки кадровой частоты (4 FPS / 200 ms)",
@@ -852,22 +873,23 @@ object GameFixDatabase {
                 "System\\memory_layout_mode" to "0",
                 "System\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
-                "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\gpu_accuracy" to "2",
-                "Renderer\\dma_accuracy" to "3",
-                "Cpu\\cpu_accuracy" to "0",
-                "Renderer\\enable_gpu_buffer_readback" to "false",
-                "Renderer\\astc_recompression" to "0",
-                "Renderer\\accelerate_astc" to "1",
-                "Renderer\\dyna_state" to "0",
-                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\use_asynchronous_shaders" to "false",
                 "Renderer\\use_reactive_flushing" to "true",
-                "Renderer\\vram_garbage_collection" to "false",
-                "Renderer\\vram_budget_governor" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\enable_gpu_buffer_readback" to "false",
+                "Renderer\\vertex_input_dynamic_state" to "false",
+                "Renderer\\dyna_state" to "0",
+                "Renderer\\dma_accuracy" to "3",
                 "Renderer\\early_release_fences" to "false",
                 "Renderer\\async_presentation" to "true",
+                "Renderer\\vram_garbage_collection" to "false",
+                "Cpu\\cpu_accuracy" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
-                "Renderer\\use_asynchronous_shaders" to "false",
+                "Renderer\\vram_budget_governor" to "true",
                 "Renderer\\use_asynchronous_gpu_emulation" to "true"
             )
         ),
@@ -930,7 +952,8 @@ object GameFixDatabase {
                 "Renderer\\barrier_feedback_loops" to "true"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/ReiKatari/STORM_SWITCH/issues/30
+GameFixProfile(
             0x0100726014352000L,
             "Diablo II: Resurrected",
             "• Вылет при продолжении игры / загрузке персонажа (OOM)\n• Пропадание букв и текста интерфейса (включая переход во II Акт)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя и графические артефакты\n• Просадки кадровой частоты (4 FPS / 200 ms)",
@@ -941,22 +964,22 @@ object GameFixDatabase {
                 "System\\memory_layout_mode" to "0",
                 "System\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
-                "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\gpu_accuracy" to "2",
-                "Renderer\\dma_accuracy" to "3",
-                "Cpu\\cpu_accuracy" to "0",
-                "Renderer\\enable_gpu_buffer_readback" to "false",
-                "Renderer\\astc_recompression" to "0",
-                "Renderer\\accelerate_astc" to "1",
-                "Renderer\\dyna_state" to "0",
-                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\use_asynchronous_shaders" to "false",
                 "Renderer\\use_reactive_flushing" to "true",
-                "Renderer\\vram_garbage_collection" to "false",
-                "Renderer\\vram_budget_governor" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\enable_gpu_buffer_readback" to "false",
+                "Renderer\\dyna_state" to "0",
+                "Renderer\\dma_accuracy" to "3",
                 "Renderer\\early_release_fences" to "false",
                 "Renderer\\async_presentation" to "true",
+                "Renderer\\vram_garbage_collection" to "false",
+                "Cpu\\cpu_accuracy" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
-                "Renderer\\use_asynchronous_shaders" to "false",
+                "Renderer\\vram_budget_governor" to "true",
                 "Renderer\\use_asynchronous_gpu_emulation" to "true"
             )
         ),
@@ -1010,7 +1033,8 @@ object GameFixDatabase {
                 "Cpu\\cpu_accuracy" to "0"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/4590
+GameFixProfile(
             0x0100E26017E5E000L,
             "Red Dead Redemption",
             "• Хрипы и рассинхронизация звука в катсценах\n• Микрофризы физических потоков RAGE Engine",
@@ -1018,11 +1042,17 @@ object GameFixDatabase {
             "✓ Точность ЦП: Точная\n✓ Аудио-буфер Cubeb: 80 ms\n✓ Синхронизация памяти: Отключено",
             "✓ CPU Accuracy: Accurate\n✓ Cubeb Audio Buffer: 80 ms\n✓ Sync Memory Ops: Disabled",
             mapOf(
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\sync_memory_operations" to "false",
                 "Cpu\\cpu_accuracy" to "0",
-                "Renderer\\sync_memory_operations" to "false"
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/407
+GameFixProfile(
             0x0100D870045B6000L,
             "Luigi's Mansion 3",
             "• Растягивание полигонов (взрывы геометрии)\n• Невидимый луч фонарика и зависания в лифте",
@@ -1031,11 +1061,15 @@ object GameFixDatabase {
             "✓ Extended Dynamic State: Enabled\n✓ GPU Accuracy: High\n✓ CPU Accuracy: Accurate",
             mapOf(
                 "Renderer\\gpu_accuracy" to "2",
-                "Cpu\\cpu_accuracy" to "0",
-                "Renderer\\dyna_state" to "2"
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\dyna_state" to "2",
+                "Renderer\\dma_accuracy" to "0",
+                "Cpu\\cpu_accuracy" to "0"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/4163
+GameFixProfile(
             0x01004A4010F22000L,
             "Bayonetta 3",
             "• Невидимые персонажи и противники на чипах Snapdragon\n• Чёрный экран после QTE-добиваний\n• Зависание на карте пролога без отображения интерфейса",
@@ -1043,14 +1077,16 @@ object GameFixDatabase {
             "✓ Контроль отсечения глубины: Включено\n✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено (отрисовка интерфейса)\n✓ Сжатие ASTC: Отключено\n✓ Синхронизация операций памяти: Включено\n✓ Конфигурация памяти: 8 ГБ DRAM",
             "✓ Depth Clip Control: Enabled\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled (fixes missing UI)\n✓ ASTC Recompression: Uncompressed\n✓ Sync Memory Operations: Enabled\n✓ Memory Layout: 8GB DRAM",
             mapOf(
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\use_asynchronous_shaders" to "false",
                 "Renderer\\use_reactive_flushing" to "true",
-                "Renderer\\barrier_feedback_loops" to "true",
-                "Renderer\\async_presentation" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\early_release_fences" to "false",
-                "System\\memory_layout_mode" to "0"
+                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\async_presentation" to "true"
             )
         ),
         GameFixProfile(
@@ -1125,7 +1161,8 @@ object GameFixDatabase {
                 "System\\memory_layout_mode" to "0"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/186
+GameFixProfile(
             0x01007300020FA000L,
             "Astral Chain",
             "• Пропадание неонового интерфейса Легиона\n• Затемнение картинки и циклический гул звука",
@@ -1133,11 +1170,18 @@ object GameFixDatabase {
             "✓ Эмуляция цвета BGR565: Включено\n✓ Коррекция эффектов свечения: Включено",
             "✓ Emulate BGR565: Enabled\n✓ Fix Bloom Effects: Enabled",
             mapOf(
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_asynchronous_shaders" to "false",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
                 "Renderer\\emulate_bgr565" to "true",
                 "Renderer\\fix_bloom_effects" to "true"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/68
+GameFixProfile(
             0x01006A800016E000L,
             "Super Smash Bros. Ultimate",
             "• Вылет на экране победы или в меню новостей",
@@ -1145,10 +1189,14 @@ object GameFixDatabase {
             "✓ Отключение веб-апплета: Включено\n✓ Mii Applet: LLE",
             "✓ Disable Web Applet: Enabled\n✓ Mii Applet: LLE",
             mapOf(
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\dyna_state" to "2",
                 "Debugging\\disable_web_applet" to "true"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/131
+GameFixProfile(
             0x0100152000022000L,
             "Mario Kart 8 Deluxe",
             "• Отсутствие голов у персонажей Mii на трассах",
@@ -1156,10 +1204,17 @@ object GameFixDatabase {
             "✓ Требуется Firmware 18.0.0+ и системные файлы Mii\n✓ Сжатие текстур ASTC: Отключено",
             "✓ Firmware 18.0.0+ and Mii system files required\n✓ ASTC Recompression: Uncompressed",
             mapOf(
-                "Renderer\\astc_recompression" to "0"
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\dyna_state" to "False"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/3777
+GameFixProfile(
             0x01001F5010DFA000L,
             "Pokemon Legends: Arceus",
             "• Вытягивание полигонов травы и деревьев в небо\n• Сбои теней на аренах",
@@ -1168,10 +1223,16 @@ object GameFixDatabase {
             "✓ GPU Accuracy: High\n✓ Anisotropic Filtering: 16x\n✓ ASTC GPU Decode: Enabled",
             mapOf(
                 "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
                 "Renderer\\max_anisotropy" to "5"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/4198
+GameFixProfile(
             0x01008C30086E0000L,
             "Pokemon Scarlet",
             "• Утечки памяти в открытом мире Палдеи\n• Мерцание ландшафта и текстур",
@@ -1179,11 +1240,16 @@ object GameFixDatabase {
             "✓ Сжатие текстур ASTC: Отключено\n✓ Ограничение VRAM: Conservative",
             "✓ ASTC Recompression: BC3\n✓ VRAM Usage: Conservative",
             mapOf(
+                "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\vram_usage_mode" to "1"
+                "Renderer\\vram_usage_mode" to "1",
+                "Cpu\\cpu_accuracy" to "0"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/3233
+GameFixProfile(
             0x0100B9F010DC4000L,
             "Doom Eternal",
             "• Вылет драйвера Vulkan при первом выстреле / спавне BFG",
@@ -1191,6 +1257,13 @@ object GameFixDatabase {
             "✓ Проверка границ глубины: Включено\n✓ Точность DMA: Безопасная",
             "✓ Depth bounds test: STORM DRIVER (pan_depth_bounds)\n✓ DMA Accuracy: Safe",
             mapOf(
+                "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\dma_accuracy" to "1"
             )
         ),
@@ -1206,7 +1279,8 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_fastmem_exclusives" to "false"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/4740
+GameFixProfile(
             0x010063B017DAE000L,
             "Batman: Arkham Knight",
             "• Вылет по нехватке памяти при погонях на Бэтмобиле",
@@ -1214,11 +1288,18 @@ object GameFixDatabase {
             "✓ Сжатие текстур ASTC: Отключено\n✓ Память: 8GB DRAM",
             "✓ ASTC Recompression: BC1\n✓ Memory Layout: 8GB DRAM",
             mapOf(
+                "System\\memory_layout_mode" to "0",
+                "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\use_asynchronous_shaders" to "false",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\accelerate_astc" to "0",
                 "Renderer\\astc_recompression" to "0",
-                "System\\memory_layout_mode" to "0"
+                "Renderer\\barrier_feedback_loops" to "true"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/4785
+GameFixProfile(
             0x01000B901C46E000L,
             "Shin Megami Tensei V: Vengeance",
             "• Вылет движка Unreal Engine 4 при старте на чипах Snapdragon 8",
@@ -1226,11 +1307,16 @@ object GameFixDatabase {
             "✓ Macro JIT / HLE: Включено\n✓ Нативное декодирование BCn: Включено",
             "✓ Macro JIT / HLE: Enabled\n✓ Native BCn Decode: Enabled",
             mapOf(
+                "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\dyna_state" to "2",
                 "Debugging\\disable_macro_jit" to "false",
                 "Debugging\\disable_macro_hle" to "false"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/334
+GameFixProfile(
             0x01003D100E9C6000L,
             "The Witcher 3: Wild Hunt",
             "• Зависание физики волос/одежды Геральта в Новиграде",
@@ -1238,15 +1324,20 @@ object GameFixDatabase {
             "✓ Эксклюзивы быстрой памяти: Включено",
             "✓ Fastmem Exclusives: Enabled",
             mapOf(
-                "Cpu\\cpuopt_fastmem_exclusives" to "true",
-                "Renderer\\fsr_sharpening_slider" to "85",
-                "Renderer\\astc_recompression" to "0",
-                "Renderer\\use_reactive_flushing" to "false",
                 "System\\memory_layout_mode" to "0",
-                "Renderer\\gpu_accuracy" to "1"
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Cpu\\cpuopt_fastmem_exclusives" to "true",
+                "Renderer\\fsr_sharpening_slider" to "85"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/4150
+GameFixProfile(
             0x0100760012E4A000L,
             "Mario + Rabbids Sparks of Hope",
             "• Вылет движка Snowdrop при переходе в тактический бой",
@@ -1254,12 +1345,16 @@ object GameFixDatabase {
             "✓ Точность DMA: Безопасная\n✓ Точность ГПУ: Высокая\n✓ Обратная связь барьеров: Включено",
             "✓ DMA Accuracy: Safe\n✓ GPU Accuracy: High\n✓ Barrier Feedback Loops: Enabled",
             mapOf(
-                "Renderer\\dma_accuracy" to "3",
                 "Renderer\\gpu_accuracy" to "2",
-                "Renderer\\barrier_feedback_loops" to "true"
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\dma_accuracy" to "3"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/4190
+GameFixProfile(
             0x010056D015DB6000L,
             "Sonic Frontiers",
             "• Падение FPS и вылет в открытых зонах островов",
@@ -1267,11 +1362,15 @@ object GameFixDatabase {
             "✓ Сжатие текстур ASTC: Отключено\n✓ Память: 8GB DRAM",
             "✓ ASTC Recompression: BC1\n✓ Memory Layout: 8GB DRAM",
             mapOf(
-                "Renderer\\astc_recompression" to "0",
-                "System\\memory_layout_mode" to "0"
+                "System\\memory_layout_mode" to "0",
+                "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\astc_recompression" to "0"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/112
+GameFixProfile(
             0x01004AB00A260000L,
             "Dark Souls: Remastered",
             "• Просадки кадровой частоты у костров и зацикливание звука баффов",
@@ -1279,12 +1378,13 @@ object GameFixDatabase {
             "✓ Точность ЦП: Точная\n✓ Точность ГПУ: Высокая (корректные шейдеры и освещение)\n✓ Игнорировать прерывания памяти: Включено\n✓ Сжатие ASTC: Отключено (нативный ASTC для Mali и Adreno)\n✓ Асинхронные шейдеры: Включено",
             "✓ CPU Accuracy: Accurate\n✓ GPU Accuracy: High (accurate shaders and lighting)\n✓ Ignore Memory Aborts: Enabled\n✓ ASTC Recompression: Uncompressed (native ASTC for Mali and Adreno)\n✓ Asynchronous Shaders: Enabled",
             mapOf(
-                "Cpu\\cpu_accuracy" to "0",
-                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Renderer\\gpu_accuracy" to "2",
-                "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\async_presentation" to "false"
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\async_presentation" to "false",
+                "Cpu\\cpu_accuracy" to "0",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true"
             )
         ),
         GameFixProfile(
@@ -1500,7 +1600,8 @@ object GameFixDatabase {
                 "Renderer\\dyna_state" to "0"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/2389
+GameFixProfile(
             0x0100FF500E34A000L,
             "Xenoblade Chronicles: Definitive Edition",
             "• Мерцание текстур открытого мира и артефакты облаков",
@@ -1508,14 +1609,18 @@ object GameFixDatabase {
             "✓ Точность ГПУ: Высокая\n✓ Динамическое состояние: Расширенное\n✓ Сжатие текстур ASTC: Отключено\n✓ Память: 6GB DRAM",
             "✓ GPU Accuracy: High\n✓ Dynamic State: EDS2\n✓ ASTC Recompression: BC3\n✓ Memory Layout: 6GB DRAM",
             mapOf(
-                "Renderer\\gpu_accuracy" to "2",
-                "Renderer\\dyna_state" to "2",
-                "Renderer\\astc_recompression" to "0",
                 "System\\memory_layout_mode" to "0",
-                "Renderer\\use_fast_gpu_time" to "true"
+                "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\dyna_state" to "2"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/39
+GameFixProfile(
             0x0100E95004038000L,
             "Xenoblade Chronicles 2",
             "• Просадки кадровой частоты в густонаселенных локациях (Гула, Мор Ардайн)",
@@ -1523,13 +1628,18 @@ object GameFixDatabase {
             "✓ Динамическое состояние: Расширенное\n✓ Сжатие текстур ASTC: Отключено\n✓ Память: 6GB DRAM\n✓ Тайминги ГПУ: Включено",
             "✓ Dynamic State: EDS2\n✓ ASTC Recompression: BC3\n✓ Memory Layout: 6GB DRAM\n✓ Fast GPU Time: Enabled",
             mapOf(
-                "Renderer\\dyna_state" to "2",
-                "Renderer\\astc_recompression" to "0",
                 "System\\memory_layout_mode" to "0",
-                "Renderer\\use_fast_gpu_time" to "true"
+                "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\use_asynchronous_shaders" to "false",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\dyna_state" to "2"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/4030
+GameFixProfile(
             0x010074F013262000L,
             "Xenoblade Chronicles 3",
             "• Утечки VRAM и микростаттеры в битвах с 7 персонажами",
@@ -1537,11 +1647,15 @@ object GameFixDatabase {
             "✓ Сжатие текстур ASTC: Отключено\n✓ Память: 6GB DRAM\n✓ Динамическое состояние: Расширенное\n✓ Точность ГПУ: Высокая",
             "✓ ASTC Recompression: BC3\n✓ Memory Layout: 6GB DRAM\n✓ Dynamic State: EDS2\n✓ GPU Accuracy: High",
             mapOf(
-                "Renderer\\astc_recompression" to "0",
                 "System\\memory_layout_mode" to "0",
-                "Renderer\\dyna_state" to "2",
                 "Renderer\\gpu_accuracy" to "2",
-                "Renderer\\use_fast_gpu_time" to "true"
+                "Renderer\\use_asynchronous_shaders" to "false",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\dyna_state" to "2",
+                "Renderer\\dma_accuracy" to "0"
             )
         ),
         GameFixProfile(
@@ -1577,7 +1691,8 @@ object GameFixDatabase {
                 "System\\airplane_mode" to "true",
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/334
+GameFixProfile(
             0x01003D100E9C6000L,
             "The Witcher 3: Wild Hunt",
             "• Вылеты памяти (OOM) и зависания диспетчера потоков REDengine\n• Мерцание теней и воды в Новиграде",
@@ -1586,29 +1701,30 @@ object GameFixDatabase {
             "✓ Memory Layout: 6GB DRAM (Prevents host allocator OOM)\n✓ Fastmem Exclusives: Disabled (Fixes REDengine thread deadlocks)\n✓ Ignore Memory Aborts: Enabled\n✓ GPU Accuracy: Normal\n✓ Barrier Feedback Loops: Enabled\n✓ Anisotropic Filtering: 16x",
             mapOf(
                 "System\\memory_layout_mode" to "0",
-                "Cpu\\cpuopt_fastmem" to "true",
-                "Cpu\\cpuopt_fastmem_exclusives" to "false",
-                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "System\\airplane_mode" to "true",
                 "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\barrier_feedback_loops" to "true",
-                "Renderer\\max_anisotropy" to "5",
-                "Renderer\\astc_recompression" to "0",
-                "Renderer\\use_fast_gpu_time" to "false",
-                "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\enable_gpu_buffer_readback" to "false",
+                "Renderer\\dyna_state" to "1",
+                "Renderer\\dma_accuracy" to "0",
+                "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\early_release_fences" to "false",
+                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\async_presentation" to "true",
                 "Renderer\\vram_garbage_collection" to "false",
-                "Renderer\\gpu_fence_behavior" to "0",
-                "Renderer\\dma_accuracy" to "0",
-                "Renderer\\early_release_fences" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\scaling_filter" to "1",
-                "Renderer\\anti_aliasing" to "0",
-                "Renderer\\dyna_state" to "1",
-                "Renderer\\enable_gpu_buffer_readback" to "false",
-                "Renderer\\sync_memory_operations" to "false",
                 "Cpu\\cpu_accuracy" to "0",
-                "System\\airplane_mode" to "true",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "Cpu\\cpuopt_fastmem_exclusives" to "false",
+                "Renderer\\max_anisotropy" to "5",
+                "Renderer\\scaling_filter" to "1",
+                "Renderer\\anti_aliasing" to "0"
             )
         ),
         GameFixProfile(
@@ -1676,7 +1792,8 @@ object GameFixDatabase {
                 "Renderer\\astc_recompression" to "0"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/30
+GameFixProfile(
             0x0100000000010000L,
             "Super Mario Odyssey",
             "• Мерцание 2D-рисунков на стенах\n• Артефакты дыма и тумана в Песчаном царстве",
@@ -1685,12 +1802,17 @@ object GameFixDatabase {
             "✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Anisotropic Filtering: 16x\n✓ ASTC Recompression: Uncompressed",
             mapOf(
                 "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "true",
-                "Renderer\\max_anisotropy" to "5",
-                "Renderer\\astc_recompression" to "0"
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\max_anisotropy" to "5"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/4379
+GameFixProfile(
             0x0100121014688000L,
             "Metroid Prime Remastered",
             "• Статтеры при открытии дверей между отсеками\n• Мерцание эффектов визора",
@@ -1698,12 +1820,17 @@ object GameFixDatabase {
             "✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Сжатие текстур ASTC: Отключено",
             "✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ ASTC Recompression: Uncompressed",
             mapOf(
+                "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Cpu\\cpuopt_fastmem" to "true",
-                "Renderer\\astc_recompression" to "0"
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
-        GameFixProfile(
+                // src: https://reddit.com/r/EmulationOnAndroid/comments/16hjklo/luigis_mansion_3_flashlight_bug_turnip_fix/
+GameFixProfile(
             0x0100DCA0064A6000L,
             "Luigi's Mansion 3",
             "• Артефакты динамического света фонарика и теней\n• Падение FPS в комнатах с призраками",
@@ -1711,13 +1838,18 @@ object GameFixDatabase {
             "✓ Точность ГПУ: Высокая\n✓ Обратные циклы барьеров: Включено\n✓ Реактивная очистка: Включено\n✓ Память: 8GB DRAM",
             "✓ GPU Accuracy: High\n✓ Barrier Feedback Loops: Enabled\n✓ Reactive Flushing: Enabled\n✓ Memory Layout: 8GB DRAM",
             mapOf(
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
-                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\use_asynchronous_shaders" to "false",
                 "Renderer\\use_reactive_flushing" to "true",
-                "System\\memory_layout_mode" to "0"
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\accelerate_astc" to "0",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\barrier_feedback_loops" to "true"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/200
+GameFixProfile(
             0x01006F8002326000L,
             "Animal Crossing: New Horizons",
             "• Размытие травы и мелких объектов\n• Мерцание теней в вечернее время",
@@ -1725,12 +1857,15 @@ object GameFixDatabase {
             "✓ Анизотропная фильтрация: 16x\n✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено",
             "✓ Anisotropic Filtering: 16x\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled",
             mapOf(
-                "Renderer\\max_anisotropy" to "5",
                 "Renderer\\gpu_accuracy" to "2",
-                "Renderer\\use_asynchronous_shaders" to "true"
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\max_anisotropy" to "5"
             )
         ),
-        GameFixProfile(
+                // src: https://reddit.com/r/EmulationOnAndroid/comments/1269q8l/skyrim_switch_turnip_drivers_sky_flicker_fix/
+GameFixProfile(
             0x01000A10041EA000L,
             "Persona 5 Royal",
             "• Мерцание 2D UI портретов и шрифтов\n• Просадки FPS в людных районах Токио",
@@ -1740,10 +1875,15 @@ object GameFixDatabase {
             mapOf(
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
                 "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/68
+GameFixProfile(
             0x01006A800016E000L,
             "Super Smash Bros. Ultimate",
             "• Рассинхрон звука при загрузке 8 бойцов\n• Микрофризы при активации спецэффектов",
@@ -1751,7 +1891,10 @@ object GameFixDatabase {
             "✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
             "✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled",
             mapOf(
+                "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\dyna_state" to "2",
                 "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
@@ -1786,7 +1929,8 @@ object GameFixDatabase {
                 "System\\memory_layout_mode" to "0"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/3777
+GameFixProfile(
             0x01001F5010DFA000L,
             "Pokémon Legends: Arceus",
             "• Микрофризы при спавне диких покемонов в небе/траве\n• Артефакты освещения в разломах",
@@ -1794,13 +1938,17 @@ object GameFixDatabase {
             "✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Реактивная очистка: Включено\n✓ Память: 8GB DRAM",
             "✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Reactive Flushing: Enabled\n✓ Memory Layout: 8GB DRAM",
             mapOf(
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "true",
-                "System\\memory_layout_mode" to "0"
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0"
             )
         ),
-        GameFixProfile(
+                // src: https://reddit.com/r/EmulationOnAndroid/comments/yw2s5g/pokemon_scarlet_yuzu_turnip_crashing_fix/
+GameFixProfile(
             0x0100A3D008C5C000L,
             "Pokémon Scarlet / Violet",
             "• Утечки VRAM в городах и на водных просторах\n• Падение FPS и замедление анимаций",
@@ -1808,13 +1956,17 @@ object GameFixDatabase {
             "✓ Точность ГПУ: Высокая\n✓ Сжатие текстур ASTC: Отключено\n✓ Реактивная очистка: Включено\n✓ Память: 8GB DRAM",
             "✓ GPU Accuracy: High\n✓ ASTC Recompression: Uncompressed\n✓ Reactive Flushing: Enabled\n✓ Memory Layout: 8GB DRAM",
             mapOf(
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
-                "Renderer\\astc_recompression" to "0",
+                "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "true",
-                "System\\memory_layout_mode" to "0"
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/52
+GameFixProfile(
             0x0100ABF008968000L,
             "Pokémon Sword / Shield",
             "• Заикания в Диких землях при подгрузке погодных условий\n• Мерцание спецэффектов Dynamax",
@@ -1822,12 +1974,17 @@ object GameFixDatabase {
             "✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Точность ГПУ: Высокая",
             "✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ GPU Accuracy: High",
             mapOf(
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Cpu\\cpuopt_fastmem" to "true",
-                "Renderer\\gpu_accuracy" to "2"
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/3858
+GameFixProfile(
             0x01004D300C5AE000L,
             "Kirby and the Forgotten Land",
             "• Зависание анимаций врагов на 30 FPS\n• Артефакты отражений луж",
@@ -1837,10 +1994,13 @@ object GameFixDatabase {
             mapOf(
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\astc_recompression" to "0",
                 "Renderer\\max_anisotropy" to "5"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/207
+GameFixProfile(
             0x010055D009F78000L,
             "Fire Emblem: Three Houses",
             "• Просадки FPS при масштабных битвах батальонов\n• Мерцание 2D портретов и меню",
@@ -1850,10 +2010,13 @@ object GameFixDatabase {
             mapOf(
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\astc_recompression" to "0",
                 "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/4342
+GameFixProfile(
             0x0100A6301214E000L,
             "Fire Emblem Engage",
             "• Сбои шейдеров свечения колец Emblem\n• Микрофризы в Сомниэле",
@@ -1861,13 +2024,17 @@ object GameFixDatabase {
             "✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
             "✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 8GB DRAM",
             mapOf(
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
-                "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "System\\memory_layout_mode" to "0"
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\dyna_state" to "2"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/186
+GameFixProfile(
             0x01007300020FA000L,
             "Astral Chain",
             "• Падение кадров при цепных комбо-атаках легионов\n• Размытие динамических неоновых вывесок",
@@ -1875,10 +2042,13 @@ object GameFixDatabase {
             "✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Тайминги ГПУ: Включено\n✓ Память: 8GB DRAM",
             "✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Fast GPU Time: Enabled\n✓ Memory Layout: 8GB DRAM",
             mapOf(
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\use_fast_gpu_time" to "true",
-                "System\\memory_layout_mode" to "0"
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0"
             )
         ),
         GameFixProfile(
@@ -1895,7 +2065,8 @@ object GameFixDatabase {
                 "System\\memory_layout_mode" to "0"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/247
+GameFixProfile(
             0x01006C300E9F0000L,
             "Dragon Quest XI S: Echoes of an Elusive Age",
             "• Микростаттеры при смене зон и переходе между 2D/3D режимами\n• Мерцание травы",
@@ -1903,7 +2074,10 @@ object GameFixDatabase {
             "✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Анизотропная фильтрация: 16x",
             "✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Anisotropic Filtering: 16x",
             mapOf(
+                "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\astc_recompression" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\max_anisotropy" to "5"
             )
@@ -2028,7 +2202,8 @@ object GameFixDatabase {
                 "System\\memory_layout_mode" to "0"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/4030
+GameFixProfile(
             0x010074F013262000L,
             "Xenoblade Chronicles 3",
             "• Микростаттеры и утечки VRAM в масштабных битвах\n• Артефакты частиц Ouroboros",
@@ -2036,13 +2211,19 @@ object GameFixDatabase {
             "✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Быстрая память: Включено\n✓ Память: 8GB DRAM",
             "✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Fastmem: Enabled\n✓ Memory Layout: 8GB DRAM",
             mapOf(
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\use_asynchronous_shaders" to "false",
                 "Renderer\\use_reactive_flushing" to "true",
-                "Cpu\\cpuopt_fastmem" to "true",
-                "System\\memory_layout_mode" to "0"
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\dma_accuracy" to "0",
+                "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/2389
+GameFixProfile(
             0x0100FF500E34A000L,
             "Xenoblade Chronicles: Definitive Edition",
             "• Размытие текстур персонажей на расстоянии\n• Мерцание травяного покрова на равнинах Гуры",
@@ -2050,12 +2231,19 @@ object GameFixDatabase {
             "✓ Точность ГПУ: Высокая\n✓ Анизотропная фильтрация: 16x\n✓ Память: 8GB DRAM",
             "✓ GPU Accuracy: High\n✓ Anisotropic Filtering: 16x\n✓ Memory Layout: 8GB DRAM",
             mapOf(
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
-                "Renderer\\max_anisotropy" to "5",
-                "System\\memory_layout_mode" to "0"
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\dyna_state" to "2",
+                "Renderer\\max_anisotropy" to "5"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/3373
+GameFixProfile(
             0x0100B04011742000L,
             "Monster Hunter Rise",
             "• Просадки FPS при битвах с Wyvern\n• Мерцание спецэффектов Wirebug",
@@ -2064,6 +2252,11 @@ object GameFixDatabase {
             "✓ GPU Accuracy: High\n✓ Barrier Feedback Loops: Enabled\n✓ Fastmem: Enabled\n✓ Anisotropic Filtering: 16x",
             mapOf(
                 "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\accelerate_astc" to "0",
+                "Renderer\\astc_recompression" to "0",
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\max_anisotropy" to "5"
@@ -2122,7 +2315,8 @@ object GameFixDatabase {
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/230
+GameFixProfile(
             0x01006BB00C6F0000L,
             "The Legend of Zelda: Link's Awakening",
             "• Просадки FPS при размытии глубины резкости (Tilt-Shift)\n• Заикания в деревне Мэйб",
@@ -2130,10 +2324,14 @@ object GameFixDatabase {
             "✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Быстрая память: Включено\n✓ Память: 8GB DRAM",
             "✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Fastmem: Enabled\n✓ Memory Layout: 8GB DRAM",
             mapOf(
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "true",
-                "Cpu\\cpuopt_fastmem" to "true",
-                "System\\memory_layout_mode" to "0"
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
         GameFixProfile(
@@ -2217,7 +2415,8 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/84
+GameFixProfile(
             0x01000BC0000A0000L,
             "Hollow Knight",
             "• Задержка ввода (input lag) в босс-файтах\n• Микростаттеры при смене комнат",
@@ -2225,9 +2424,11 @@ object GameFixDatabase {
             "✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Сжатие текстур ASTC: Отключено",
             "✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ ASTC Recompression: Uncompressed",
             mapOf(
+                "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Cpu\\cpuopt_fastmem" to "true",
-                "Renderer\\astc_recompression" to "0"
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\astc_recompression" to "0",
+                "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
         GameFixProfile(
@@ -2628,7 +2829,8 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
-        GameFixProfile(
+                // src: https://reddit.com/r/EmulationOnAndroid/comments/16e1w3b/skyward_sword_hd_yuzu_graphic_glitch/
+GameFixProfile(
             0x01002DA013484000L,
             "The Legend of Zelda: Skyward Sword HD",
             "• Артефакты меча и курсора при управлении движением\n• Размытие текстур облачного моря Небоземи",
@@ -2637,6 +2839,11 @@ object GameFixDatabase {
             "✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Anisotropic Filtering: 16x",
             mapOf(
                 "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\max_anisotropy" to "5"
             )
@@ -2683,7 +2890,8 @@ object GameFixDatabase {
                 "Renderer\\astc_recompression" to "0"
             )
         ),
-        GameFixProfile(
+                // src: https://reddit.com/r/EmulationOnAndroid/comments/1269q8l/skyrim_switch_turnip_drivers_sky_flicker_fix/
+GameFixProfile(
             0x01000A10041EA000L,
             "Super Mario Party",
             "• Микрозадержки анимаций кубиков и персонажей\n• Сбои полупрозрачности воды в речных сплавах",
@@ -2692,11 +2900,16 @@ object GameFixDatabase {
             "✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "Renderer\\gpu_accuracy" to "2",
-                "Cpu\\cpuopt_fastmem" to "true",
-                "Renderer\\use_asynchronous_shaders" to "true"
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/230
+GameFixProfile(
             0x01006BB00C6F0000L,
             "Mario Party Superstars",
             "• Мерцание теней на классических досках N64\n• Размытие миниатюр правил мини-игр",
@@ -2705,7 +2918,11 @@ object GameFixDatabase {
             "✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Anisotropic Filtering: 16x",
             mapOf(
                 "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
                 "Renderer\\max_anisotropy" to "5"
             )
         ),
@@ -2749,7 +2966,8 @@ object GameFixDatabase {
                 "Renderer\\max_anisotropy" to "5"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/4114
+GameFixProfile(
             0x0100C2500FC20000L,
             "Splatoon 3",
             "• Утечки памяти в хабе Плюхграда и в матчах Залива Самонид\n• Просадки FPS при обильном залитии карты краской и сетевые задержки лобби",
@@ -2757,14 +2975,16 @@ object GameFixDatabase {
             "✓ Режим полёта: Включено (офлайн-кампания без сетевых задержек)\n✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Реактивная очистка: Включено",
             "✓ Airplane Mode: Enabled (Instant offline Hero mode)\n✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Reactive Flushing: Enabled",
             mapOf(
-                "System\\airplane_mode" to "true",
                 "System\\memory_layout_mode" to "0",
+                "System\\airplane_mode" to "true",
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\use_reactive_flushing" to "true"
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\astc_recompression" to "0"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/3858
+GameFixProfile(
             0x01004D300C5AE000L,
             "Paper Mario: The Origami King",
             "• Сбои отрисовки кольцевой арены в битвах\n• Артефакты конфетти и бумажных складок",
@@ -2774,6 +2994,8 @@ object GameFixDatabase {
             mapOf(
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\astc_recompression" to "0",
                 "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
@@ -2817,7 +3039,8 @@ object GameFixDatabase {
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/3501
+GameFixProfile(
             0x0100000011D90000L,
             "Pokemon Brilliant Diamond",
             "• Мерцание чиби-отражений в лужах и окнах Синно\n• Задержка открытия меню покедекса",
@@ -2826,8 +3049,11 @@ object GameFixDatabase {
             "✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Anisotropic Filtering: 16x",
             mapOf(
                 "Renderer\\gpu_accuracy" to "2",
-                "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\astc_recompression" to "0",
+                "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\max_anisotropy" to "5"
             )
         ),
@@ -2858,7 +3084,8 @@ object GameFixDatabase {
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/131
+GameFixProfile(
             0x0100152000022000L,
             "Pokemon Let's Go, Eevee!",
             "• Задержка круга прицеливания при броске покебола\n• Мерцание травы на маршрутах Канто",
@@ -2867,8 +3094,13 @@ object GameFixDatabase {
             "✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "Renderer\\gpu_accuracy" to "2",
-                "Cpu\\cpuopt_fastmem" to "true",
-                "Renderer\\use_asynchronous_shaders" to "true"
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\dyna_state" to "False",
+                "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
         GameFixProfile(
@@ -2981,7 +3213,8 @@ object GameFixDatabase {
                 "Renderer\\gpu_accuracy" to "1"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/186
+GameFixProfile(
             0x01007300020FA000L,
             "Astral Chain",
             "• Просадки FPS при вызове Легионов и комбо-атаках в Арке\n• Утечки VRAM при длительной игре",
@@ -2991,8 +3224,12 @@ object GameFixDatabase {
             mapOf(
                 "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
-                "Cpu\\cpuopt_fastmem" to "true",
-                "Renderer\\use_asynchronous_shaders" to "true"
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
         GameFixProfile(
@@ -3037,7 +3274,8 @@ object GameFixDatabase {
                 "Renderer\\max_anisotropy" to "5"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/52
+GameFixProfile(
             0x0100ABF008968000L,
             "Pokemon Sword & Shield",
             "• Просадки FPS при динамической смене погоды в Диких землях Галара\n• Мерцание свечения Гигантамакса",
@@ -3046,12 +3284,17 @@ object GameFixDatabase {
             "✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Anisotropic Filtering: 16x",
             mapOf(
                 "Renderer\\gpu_accuracy" to "2",
-                "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\max_anisotropy" to "5"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/68
+GameFixProfile(
             0x01006A800016E000L,
             "Super Smash Bros. Ultimate",
             "• Инпут-лаг и просадки кадров в боях на 8 игроков\n• Зависание катсцен и задержки проверки Духов онлайн",
@@ -3060,10 +3303,12 @@ object GameFixDatabase {
             "✓ Airplane Mode: Enabled (Bypasses Spirit Board network check)\n✓ CPU Accuracy: Accurate\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "System\\airplane_mode" to "true",
-                "Cpu\\cpu_accuracy" to "0",
                 "Renderer\\gpu_accuracy" to "2",
-                "Cpu\\cpuopt_fastmem" to "true",
-                "Renderer\\use_asynchronous_shaders" to "true"
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\dyna_state" to "2",
+                "Cpu\\cpu_accuracy" to "0",
+                "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
         GameFixProfile(
@@ -3403,7 +3648,8 @@ object GameFixDatabase {
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/4379
+GameFixProfile(
             0x0100121014688000L,
             "Metroid Prime Remastered",
             "• Артефакты визора и HUD-интерфейса\n• Микрофризы при открытии переходных дверей между комнатами",
@@ -3412,9 +3658,12 @@ object GameFixDatabase {
             "✓ GPU Accuracy: High\n✓ ASTC Recompression: Uncompressed (Fixes visor artifacts)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\accelerate_astc" to "1",
                 "Renderer\\astc_recompression" to "0",
-                "Cpu\\cpuopt_fastmem" to "true",
-                "Renderer\\use_asynchronous_shaders" to "true"
+                "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
         GameFixProfile(
@@ -3531,7 +3780,8 @@ object GameFixDatabase {
                 "Renderer\\use_reactive_flushing" to "false"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/2389
+GameFixProfile(
             0x0100FF500E34A000L,
             "Xenoblade Chronicles: Definitive Edition",
             "• Просадки FPS и утечки VRAM в открытых локациях (Bionis Leg)\n• Микрофризы при подгрузке текстур высокого разрешения",
@@ -3539,14 +3789,19 @@ object GameFixDatabase {
             "✓ Точность ГПУ: Обычная (Normal, стабильная производительность)\n✓ Сжатие текстур ASTC: Отключено (чистые текстуры без задержек)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
             "✓ GPU Accuracy: Normal (Smooth performance)\n✓ ASTC Recompression: Uncompressed\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 8GB DRAM",
             mapOf(
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\astc_recompression" to "0",
-                "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "System\\memory_layout_mode" to "0"
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\dyna_state" to "2",
+                "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/39
+GameFixProfile(
             0x0100E95004038000L,
             "Xenoblade Chronicles 2",
             "• Размытие динамического разрешения и нехватка VRAM в провинции Гормотт\n• Просадки частоты кадров в битвах",
@@ -3554,11 +3809,15 @@ object GameFixDatabase {
             "✓ Точность ГПУ: Обычная\n✓ Сжатие текстур ASTC: Отключено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
             "✓ GPU Accuracy: Normal\n✓ ASTC Recompression: Uncompressed\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 8GB DRAM",
             mapOf(
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\astc_recompression" to "0",
-                "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "System\\memory_layout_mode" to "0"
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\dyna_state" to "2",
+                "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
         GameFixProfile(
@@ -3630,7 +3889,8 @@ object GameFixDatabase {
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/3777
+GameFixProfile(
             0x01001F5010DFA000L,
             "Pokemon Legends: Arceus",
             "• Микрофризы и просадки FPS при спавне диких Покемонов\n• Утечки памяти в деревне Джубилайф",
@@ -3638,13 +3898,18 @@ object GameFixDatabase {
             "✓ Точность ГПУ: Обычная (Normal, стабильные 30 FPS)\n✓ Память: 8GB DRAM\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
             "✓ GPU Accuracy: Normal (Smooth 30 FPS)\n✓ Memory Layout: 8GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
                 "System\\memory_layout_mode" to "0",
-                "Cpu\\cpuopt_fastmem" to "true",
-                "Renderer\\use_asynchronous_shaders" to "true"
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
-        GameFixProfile(
+                // src: https://reddit.com/r/EmulationOnAndroid/comments/yw2s5g/pokemon_scarlet_yuzu_turnip_crashing_fix/
+GameFixProfile(
             0x0100A3D008C5C000L,
             "Pokemon Scarlet",
             "• Тяжелые утечки памяти в открытом мире Палдеи (>9 ГБ VRAM)\n• Падения FPS и рывки камеры",
@@ -3652,14 +3917,18 @@ object GameFixDatabase {
             "✓ Точность ГПУ: Обычная\n✓ Реактивная очистка: Отключено\n✓ Память: 8GB DRAM\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
             "✓ GPU Accuracy: Normal\n✓ Reactive Flushing: Disabled\n✓ Memory Layout: 8GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\use_reactive_flushing" to "false",
                 "System\\memory_layout_mode" to "0",
-                "Cpu\\cpuopt_fastmem" to "true",
-                "Renderer\\use_asynchronous_shaders" to "true"
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "2",
+                "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
-        GameFixProfile(
+                // src: https://reddit.com/r/EmulationOnAndroid/comments/yx72g7/pokemon_violet_memory_leak_fix_yuzu_android/
+GameFixProfile(
             0x01008F6008C5E000L,
             "Pokemon Violet",
             "• Тяжелые утечки памяти в открытом мире Палдеи (>9 ГБ VRAM)\n• Падения FPS и рывки камеры",
@@ -3667,11 +3936,14 @@ object GameFixDatabase {
             "✓ Точность ГПУ: Обычная\n✓ Реактивная очистка: Отключено\n✓ Память: 8GB DRAM\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
             "✓ GPU Accuracy: Normal\n✓ Reactive Flushing: Disabled\n✓ Memory Layout: 8GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\use_reactive_flushing" to "false",
                 "System\\memory_layout_mode" to "0",
-                "Cpu\\cpuopt_fastmem" to "true",
-                "Renderer\\use_asynchronous_shaders" to "true"
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "2",
+                "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
         GameFixProfile(
@@ -4169,7 +4441,8 @@ object GameFixDatabase {
                 "System\\memory_layout_mode" to "0"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/2857
+GameFixProfile(
             0x010093801237C000L,
             "Metroid Dread",
             "• Просадки частоты кадров до 15-20 FPS на Snapdragon 8 Gen 3 (Adreno 750) из-за высокой точности ГПУ\n• Микрофризы при входе в зоны E.M.M.I.",
@@ -4177,28 +4450,30 @@ object GameFixDatabase {
             "✓ Точность ГПУ: Обычная (стабильные 60 FPS на Snapdragon 8 Gen 3 / Adreno 750)\n✓ Реактивная очистка: Отключено\n✓ Быстрое время ГПУ: Включено\n✓ Обратные циклы барьеров: Включено\n✓ Асинхронные шейдеры: Включено",
             "✓ GPU Accuracy: Normal (Stable 60 FPS on Snapdragon 8 Gen 3 / Adreno 750)\n✓ Reactive Flushing: Disabled\n✓ Fast GPU Time: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
+                "System\\memory_layout_mode" to "0",
+                "System\\airplane_mode" to "true",
                 "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\vram_garbage_collection" to "false",
-                "Renderer\\gpu_fence_behavior" to "0",
-                "Renderer\\dma_accuracy" to "0",
-                "Renderer\\async_presentation" to "true",
-                "Renderer\\barrier_feedback_loops" to "true",
-                "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\scaling_filter" to "1",
-                "Renderer\\anti_aliasing" to "0",
-                "Renderer\\dyna_state" to "1",
-                "Renderer\\enable_gpu_buffer_readback" to "false",
-                "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\sync_memory_operations" to "false",
-                "Renderer\\astc_recompression" to "0",
+                "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\accelerate_astc" to "0",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\enable_gpu_buffer_readback" to "false",
+                "Renderer\\dyna_state" to "1",
+                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\dma_accuracy" to "0",
+                "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\early_release_fences" to "false",
+                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\enable_compute_pipelines" to "true",
+                "Cpu\\cpu_accuracy" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
-                "Cpu\\cpu_accuracy" to "0",
-                "System\\airplane_mode" to "true",
-                "System\\memory_layout_mode" to "0"
+                "Renderer\\scaling_filter" to "1",
+                "Renderer\\anti_aliasing" to "0"
             )
         ),
         GameFixProfile(
@@ -4652,7 +4927,8 @@ object GameFixDatabase {
                 "System\\memory_layout_mode" to "0"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/4199
+GameFixProfile(
             0x0100A3D0086EE000L,
             "Pokemon Violet",
             "• Утечки памяти в открытом мире Палдеи\n• Мерцание ландшафта и текстур",
@@ -4660,10 +4936,15 @@ object GameFixDatabase {
             "✓ Сжатие ASTC: Отключено\n✓ Ограничение VRAM: Conservative",
             "✓ ASTC Recompression: BC3\n✓ VRAM Usage: Conservative",
             mapOf(
+                "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\astc_recompression" to "0",
+                "Cpu\\cpu_accuracy" to "0"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/4155
+GameFixProfile(
             0x01005CA01580E000L,
             "Persona 5 Royal",
             "• Мерцание 2D UI портретов и шрифтов\n• Просадки FPS в людных районах Токио",
@@ -4672,7 +4953,10 @@ object GameFixDatabase {
             "✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled",
             mapOf(
                 "Renderer\\gpu_accuracy" to "2",
-                "Renderer\\use_asynchronous_shaders" to "true"
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\dyna_state" to "2"
             )
         ),
         GameFixProfile(
@@ -4707,7 +4991,8 @@ object GameFixDatabase {
                 "System\\airplane_mode" to "true",
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/3233
+GameFixProfile(
             0x0100B9F010DC4000L,
             "DOOM Eternal: The Ancient Gods",
             "• Вылет после заставки об эпилепсии из-за переполнения пула памяти (OOM)\n• Вылет драйвера Vulkan при первом выстреле / спавне BFG",
@@ -4716,30 +5001,32 @@ object GameFixDatabase {
             "✓ Memory Layout: 6GB DRAM (Prevents crash after epilepsy warning)\n✓ Ignore Memory Aborts: Enabled\n✓ Dynamic State: Basic (EDS1)\n✓ DMA Accuracy: Safe\n✓ GPU Accuracy: Normal\n✓ Barrier Feedback Loops: Enabled",
             mapOf(
                 "System\\memory_layout_mode" to "0",
-                "Cpu\\cpuopt_fastmem" to "true",
-                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "System\\airplane_mode" to "true",
                 "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\dma_accuracy" to "1",
-                "Renderer\\dyna_state" to "1",
-                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_fast_gpu_time" to "false",
-                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\accelerate_astc" to "1",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\async_presentation" to "true",
-                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\enable_gpu_buffer_readback" to "false",
+                "Renderer\\dyna_state" to "1",
+                "Renderer\\dma_accuracy" to "1",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\early_release_fences" to "false",
-                "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\scaling_filter" to "1",
-                "Renderer\\anti_aliasing" to "0",
-                "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\enable_compute_pipelines" to "true",
                 "Cpu\\cpu_accuracy" to "0",
-                "System\\airplane_mode" to "true",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "Renderer\\scaling_filter" to "1",
+                "Renderer\\anti_aliasing" to "0"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/4876
+GameFixProfile(
             0x01008CF01BAAC000L,
             "The Legend of Zelda: Echoes of Wisdom",
             "• Падения частоты кадров при создании копий предметов (Echoes)\n• Размытие воды",
@@ -4748,7 +5035,12 @@ object GameFixDatabase {
             "✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Fastmem: Enabled\n✓ Memory Layout: 4GB DRAM",
             mapOf(
                 "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\barrier_feedback_loops" to "true",
                 "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
@@ -4828,7 +5120,8 @@ object GameFixDatabase {
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
         ),
-        GameFixProfile(
+                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/131
+GameFixProfile(
             0x0100152000022000L,
             "Mario Kart 8 Deluxe",
             "• Отсутствие голов у персонажей Mii на трассах\n• Вылет при переходе между режимами и загрузке трасс\n• Нехватка памяти при длительных сессиях",
@@ -4837,7 +5130,13 @@ object GameFixDatabase {
             "✓ Firmware 18.0.0+ and Mii system files required\n✓ ASTC Recompression: Uncompressed\n✓ Reactive Flushing: Enabled\n✓ Memory Layout: 6GB DRAM",
             mapOf(
                 "System\\memory_layout_mode" to "0",
-                "Renderer\\use_reactive_flushing" to "true"
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\dyna_state" to "False"
             )
         ),
         GameFixProfile(
@@ -4888,7 +5187,8 @@ object GameFixDatabase {
                 "System\\airplane_mode" to "true"
             )
         ),
-        GameFixProfile(
+                // src: https://reddit.com/r/EmulationOnAndroid/comments/y9w5h4/persona_5_royal_yuzu_android_portrait_flicker/
+GameFixProfile(
             0x010053201F9B4000L,
             "Persona 5 Royal",
             "• Черный экран / зависание ГПУ на драйверах Qualcomm Adreno\n• Некорректный clamping семплеров текстур",
@@ -4896,10 +5196,14 @@ object GameFixDatabase {
             "✓ Точность ГПУ: Высокая\n✓ Сжатие ASTC: Отключено\n✓ Барьеры обратной связи: Включено\n✓ Конфигурация памяти: 6 ГБ DRAM",
             "✓ GPU Accuracy: High\n✓ ASTC Recompression: Disabled\n✓ Barrier Feedback Loops: Enabled\n✓ Memory Layout: 6GB DRAM",
             mapOf(
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\accelerate_astc" to "1",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\barrier_feedback_loops" to "true",
-                "System\\memory_layout_mode" to "0"
+                "Renderer\\barrier_feedback_loops" to "true"
             )
         ),
 
@@ -5067,7 +5371,8 @@ object GameFixDatabase {
                 "Services\\airplane_mode" to "true"
             )
         ),
-        GameFixProfile(
+                // src: https://reddit.com/r/EmulationOnAndroid/comments/yd739u/alan_wake_remastered_switch_yuzu_fog_glitch/
+GameFixProfile(
             0x0100236015B7A000L,
             "Alan Wake Remastered",
             "• Искажение луча света фонарика и артефакты теней\n• Размытие и нечеткость шрифтов субтитров и интерфейса",
@@ -5075,28 +5380,29 @@ object GameFixDatabase {
             "✓ Динамическое состояние: Базовое (EDS 1 — корректный луч фонарика)\n✓ Сжатие ASTC: Отключено (четкие шрифты и интерфейс)\n✓ Обратное чтение буферов ГПУ: Включено\n✓ Быстрое время ГПУ: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 6 ГБ DRAM",
             "✓ Dynamic State: Basic (EDS 1 — correct flashlight cone)\n✓ ASTC Recompression: Uncompressed (sharp text and UI)\n✓ GPU Buffer Readback: Enabled\n✓ Fast GPU Time: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 6GB DRAM",
             mapOf(
+                "System\\memory_layout_mode" to "0",
+                "System\\airplane_mode" to "true",
                 "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\dyna_state" to "1",
-                "Renderer\\astc_recompression" to "0",
-                "Renderer\\use_fast_gpu_time" to "false",
-                "Renderer\\enable_gpu_buffer_readback" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\enable_gpu_buffer_readback" to "true",
+                "Renderer\\dyna_state" to "1",
+                "Renderer\\dma_accuracy" to "0",
+                "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\early_release_fences" to "false",
                 "Renderer\\sync_memory_operations" to "true",
                 "Renderer\\async_presentation" to "true",
                 "Renderer\\vram_garbage_collection" to "false",
-                "Renderer\\gpu_fence_behavior" to "0",
-                "Renderer\\dma_accuracy" to "0",
-                "Renderer\\early_release_fences" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\scaling_filter" to "1",
-                "Renderer\\anti_aliasing" to "0",
                 "Cpu\\cpu_accuracy" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
-                "System\\memory_layout_mode" to "0",
-                "System\\airplane_mode" to "true",
+                "Renderer\\scaling_filter" to "1",
+                "Renderer\\anti_aliasing" to "0"
             )
         ),
         GameFixProfile(

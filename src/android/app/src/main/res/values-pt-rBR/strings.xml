@@ -2111,4 +2111,13 @@
     <string name="button_zr">ZR</string>
     <string name="enable_fast_gpu_time">Enable Fast GPU Time</string>
     <string name="enable_fast_gpu_time_description">Speeds up GPU timer queries to boost performance in games with heavy CPU-GPU synchronization, but may cause visual timing glitches in some titles.</string>
+
+    <string name="save_states_mode">Modo de salvamentos rápidos</string>
+    <string name="save_states_mode_description">Comportamento de gravação e carregamento rápidos. Estados de memória podem travar jogos não verificados.</string>
+    <string name="save_states_mode_off">Desativado</string>
+    <string name="save_states_mode_verified_only">Apenas jogos verificados (Recomendado)</string>
+    <string name="save_states_mode_all_games">Todos os jogos (experimental)</string>
+    <string name="save_state_unsupported_toast">Salvamento rápido não suportado para este jogo. Salve no jogo. Ative o modo experimental em Configurações → Sistema.</string>
+    <string name="save_state_experimental_warning">Salvamento rápido experimental: carregar pode travar o jogo. Mantenha salvamentos no jogo.</string>
+    <string name="save_states_mode_disabled_toast">Salvamento rápido desativado em Configurações → Sistema.</string>
 </resources>

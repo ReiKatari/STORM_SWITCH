@@ -2044,4 +2044,13 @@
     <string name="scaling_filter_fsr">AMD FSR 2.0 (FidelityFX Super Resolution)</string>
     <string name="storm_check_updates_now">Check for Updates Now</string>
     <string name="storm_check_updates_now_desc">Check GitHub and STORM GAMES WORLD for a newer release and install it in place</string>
+
+    <string name="save_states_mode">Save States Mode</string>
+    <string name="save_states_mode_description">Controls quick save and load behavior. RAM/CPU states may freeze unverified games.</string>
+    <string name="save_states_mode_off">Off</string>
+    <string name="save_states_mode_verified_only">Verified games only (Recommended)</string>
+    <string name="save_states_mode_all_games">All games (experimental, risky)</string>
+    <string name="save_state_unsupported_toast">Save states are not supported for this game. Use in-game saves. Experimental mode can be enabled in Settings → System.</string>
+    <string name="save_state_experimental_warning">Save states are experimental: loading may freeze the game. Keep in-game saves.</string>
+    <string name="save_states_mode_disabled_toast">Save states are disabled in Settings → System.</string>
 </resources>

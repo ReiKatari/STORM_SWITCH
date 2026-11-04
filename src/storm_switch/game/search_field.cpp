@@ -101,11 +101,11 @@ GameListSearchField::GameListSearchField(GameList* parent) : QWidget{parent} {
     connect(view_mode_toggle, &QToolButton::clicked, this, &GameListSearchField::ToggleViewModeRequested);
 
     button_filter_close = new QToolButton(this);
-    button_filter_close->setText(QStringLiteral("X"));
+    button_filter_close->setObjectName(QStringLiteral("FilterCloseButton"));
+    button_filter_close->setText(QStringLiteral("✕"));
     button_filter_close->setCursor(Qt::PointingHandCursor);
     button_filter_close->setStyleSheet(
-        QStringLiteral("QToolButton{ border: none; border-radius: 4px; padding: 2px 6px; color: #94A3B8; font-weight: bold; background: transparent; }"
-                       "QToolButton:hover{ color: #FFFFFF; background: #EF4444; }"));
+        QStringLiteral("QToolButton#FilterCloseButton:hover { color: #FFFFFF; border: 1px solid #EF4444; background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #EF4444, stop:1 #B91C1C); }"));
     connect(button_filter_close, &QToolButton::clicked, parent, &GameList::OnFilterCloseClicked);
 
     layout_filter->addWidget(label_filter);

@@ -56,6 +56,7 @@ extern "C" {
 #include "core/constants.h"
 #include "core/core.h"
 #include "core/save_state.h"
+#include "core/save_state_whitelist.h"
 #include "core/cpu_manager.h"
 #include "core/crypto/key_manager.h"
 #include "core/file_sys/card_image.h"
@@ -2607,6 +2608,13 @@ JNIEXPORT jint JNICALL Java_org_yuzu_yuzu_1emu_NativeLibrary_saveStateSlot(
     if (title_id == 0) {
         return static_cast<jint>(Core::SaveStateResult::ErrorSystemNotRunning);
     }
+    const auto save_mode = Settings::values.save_states_mode.GetValue();
+    if (save_mode == Settings::SaveStatesMode::Off) {
+        return static_cast<jint>(Core::SaveStateResult::ErrorDisabled);
+    }
+    if (save_mode == Settings::SaveStatesMode::VerifiedOnly && !Core::IsTitleSaveStateVerified(title_id)) {
+        return static_cast<jint>(Core::SaveStateResult::ErrorUnsupportedGame);
+    }
     const auto path = Core::GetSaveStatePath(title_id, static_cast<u32>(slot));
     const auto res = Core::CreateSaveState(system, path);
     if (res == Core::SaveStateResult::Success) {
@@ -2643,6 +2651,13 @@ JNIEXPORT jint JNICALL Java_org_yuzu_yuzu_1emu_NativeLibrary_loadStateSlot(
     const u64 title_id = system.GetApplicationProcessProgramID();
     if (title_id == 0) {
         return static_cast<jint>(Core::SaveStateResult::ErrorSystemNotRunning);
+    }
+    const auto save_mode = Settings::values.save_states_mode.GetValue();
+    if (save_mode == Settings::SaveStatesMode::Off) {
+        return static_cast<jint>(Core::SaveStateResult::ErrorDisabled);
+    }
+    if (save_mode == Settings::SaveStatesMode::VerifiedOnly && !Core::IsTitleSaveStateVerified(title_id)) {
+        return static_cast<jint>(Core::SaveStateResult::ErrorUnsupportedGame);
     }
     const auto path = Core::GetSaveStatePath(title_id, static_cast<u32>(slot));
     std::error_code ec;

@@ -667,6 +667,8 @@ class SettingsFragmentPresenter(
 
             add(BooleanSetting.USE_DOCKED_MODE.key)
 
+            add(IntSetting.SAVE_STATES_MODE.key)
+
             add(IntSetting.REGION_INDEX.key)
 
             add(IntSetting.LANGUAGE_INDEX.key)

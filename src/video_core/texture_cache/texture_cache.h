@@ -137,7 +137,6 @@ void TextureCache<P>::RunGarbageCollector() {
         if (num_iterations == 0) {
             return true;
         }
-        --num_iterations;
         auto& image = slot_images[image_id];
         if (True(image.flags & ImageFlagBits::IsDecoding)) {
             lru_cache.Touch(image.lru_index, frame_tick);
@@ -173,6 +172,7 @@ void TextureCache<P>::RunGarbageCollector() {
             lru_cache.Touch(image.lru_index, frame_tick);
             return false;
         }
+        --num_iterations;
         constexpr u64 RT_PROTECTION_WINDOW = 720;
         const bool is_modified = True(image.flags & (ImageFlagBits::GpuModified | ImageFlagBits::CpuModified));
         const bool is_recent_rt = is_color_2d &&
@@ -2233,6 +2233,9 @@ ImageViewId TextureCache<P>::FindRenderTargetView(const ImageInfo& info, GPUVAdd
 template <class P>
 template <typename Func>
 void TextureCache<P>::ForEachImageInRegion(DAddr cpu_addr, size_t size, Func&& func) {
+    if (size == 0) {
+        return;
+    }
     using FuncReturn = typename std::invoke_result<Func, ImageId, Image&>::type;
     constexpr bool BOOL_BREAK = std::is_same_v<FuncReturn, bool>;
     boost::container::small_vector<ImageId, 32> images;

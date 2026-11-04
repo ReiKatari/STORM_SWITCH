@@ -2178,4 +2178,13 @@
     <string name="scaling_filter_fsr">AMD FSR 2.0 (FidelityFX Super Resolution)</string>
     <string name="storm_check_updates_now">Check for Updates Now</string>
     <string name="storm_check_updates_now_desc">Check GitHub and STORM GAMES WORLD for a newer release and install it in place</string>
+
+    <string name="save_states_mode">وضع الحفظ السريع</string>
+    <string name="save_states_mode_description">التحكم في سلوك الحفظ والتحميل السريع. قد تؤدي لقطات الذاكرة إلى تعطل الألعاب غير المعتمدة.</string>
+    <string name="save_states_mode_off">معطل</string>
+    <string name="save_states_mode_verified_only">الألعاب المعتمدة فقط (موصى به)</string>
+    <string name="save_states_mode_all_games">جميع الألعاب (تجريبي)</string>
+    <string name="save_state_unsupported_toast">الحفظ السريع غير مدعوم لهذه اللعبة. استخدم الحفظ داخل اللعبة. يمكن تفعيل الوضع التجريبي في الإعدادات ← النظام.</string>
+    <string name="save_state_experimental_warning">الحفظ السريع ميزة تجريبية: قد يؤدي التحميل إلى تجميد اللعبة. احتفظ بنسخ حفظ عادية.</string>
+    <string name="save_states_mode_disabled_toast">الحفظ السريع معطل في الإعدادات ← النظام.</string>
 </resources>
