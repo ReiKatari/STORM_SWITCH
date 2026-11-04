@@ -37,6 +37,10 @@ class ConfigureWeb;
 
 class HotkeyRegistry;
 
+namespace StormUI {
+class LiveFilterEngine;
+}
+
 namespace InputCommon {
 class InputSubsystem;
 }
@@ -106,6 +110,7 @@ private:
     std::vector<VkDeviceInfo::Record>& vk_records;
     bool m_is_changing_language{false};
     QPushButton* m_restore_defaults_btn{nullptr};
+    StormUI::LiveFilterEngine* m_live_filter_engine{nullptr};
     class QLineEdit* m_search_edit{nullptr};
     class QListWidget* m_search_results_list{nullptr};
     QWidget* m_highlighted_widget{nullptr};

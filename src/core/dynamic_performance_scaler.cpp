@@ -56,44 +56,45 @@ int DynamicPerformanceScaler::LevelToIndex(Settings::ResolutionSetup level) {
 
 void DynamicPerformanceScaler::Initialize(Settings::ResolutionSetup user_resolution,
                                           float target_fps) {
-    std::lock_guard lock(mutex_);
-
     if (target_fps <= 0.0f) {
         target_fps = 60.0f;
     }
-    target_frame_time_ms = 1000.0 / static_cast<double>(target_fps);
+    const double frame_time = 1000.0 / static_cast<double>(target_fps);
+    target_frame_time_ms.store(frame_time, std::memory_order_relaxed);
 
-    max_level_index = LevelToIndex(user_resolution);
-    current_level_index = max_level_index;
-    min_level_index = 0; // Res1_4X absolute floor
+    const int max_lvl = LevelToIndex(user_resolution);
+    max_level_index.store(max_lvl, std::memory_order_relaxed);
+    current_level_index.store(max_lvl, std::memory_order_relaxed);
+    int min_lvl = 0; // Res1_4X absolute floor
 
     // Don't go below native (1x = index 3) unless already below it
-    if (max_level_index >= 3) {
-        min_level_index = 3; // floor at native 1x when user is at 1x or above
+    if (max_lvl >= 3) {
+        min_lvl = 3; // floor at native 1x when user is at 1x or above
     }
+    min_level_index.store(min_lvl, std::memory_order_relaxed);
 
-    smoothed_frametime.store(target_frame_time_ms);
+    smoothed_frametime.store(frame_time, std::memory_order_relaxed);
     consecutive_overbudget = 0;
     consecutive_underbudget = 0;
     startup_frames = 0;
-    s_effective_scale.store(LevelToScaleMultiplier(kLevelOrder[current_level_index]),
+    s_effective_scale.store(LevelToScaleMultiplier(kLevelOrder[max_lvl]),
                             std::memory_order_relaxed);
 
     LOG_INFO(Core, "DynamicPerformanceScaler: Initialized — target {:.1f} FPS ({:.2f} ms), "
                    "max level index {} ({}x), min level index {}",
-             target_fps, target_frame_time_ms, max_level_index,
+             target_fps, frame_time, max_lvl,
              static_cast<float>(Settings::values.resolution_info.up_scale) /
                  (1U << Settings::values.resolution_info.down_shift),
-             min_level_index);
+             min_lvl);
 }
 
 bool DynamicPerformanceScaler::ReportFrameTime(double frame_time_ms) {
-    std::lock_guard lock(mutex_);
+    const double target_time = target_frame_time_ms.load(std::memory_order_relaxed);
 
     // Startup grace period: ignore warmup frames to allow disk loading / pipeline creation
     if (startup_frames < kStartupGraceFrames) {
         startup_frames++;
-        smoothed_frametime.store(target_frame_time_ms, std::memory_order_relaxed);
+        smoothed_frametime.store(target_time, std::memory_order_relaxed);
         return false;
     }
 
@@ -116,48 +117,53 @@ bool DynamicPerformanceScaler::ReportFrameTime(double frame_time_ms) {
     const double overbudget_margin = thermal_active ? 1.08 : kOverbudgetMargin;
     const u32 overbudget_threshold =
         thermal_active ? (std::max)(1U, kOverbudgetThreshold / 2) : kOverbudgetThreshold;
+    const int min_lvl = min_level_index.load(std::memory_order_relaxed);
     const int effective_min_level =
-        (eco_thermal && min_level_index >= 3) ? 2 : min_level_index;
+        (eco_thermal && min_lvl >= 3) ? 2 : min_lvl;
+    const int max_lvl = max_level_index.load(std::memory_order_relaxed);
+    int current_lvl = current_level_index.load(std::memory_order_relaxed);
 
-    if (new_avg > target_frame_time_ms * overbudget_margin) {
+    if (new_avg > target_time * overbudget_margin) {
         // Frame is too slow
         consecutive_overbudget++;
         consecutive_underbudget = 0;
 
         if (consecutive_overbudget >= overbudget_threshold &&
-            current_level_index > effective_min_level) {
+            current_lvl > effective_min_level) {
             // Under load: record level drop without mutating resolution_setup mid-game
             // Mutating resolution_setup dynamically breaks compiled Maxwell shaders and allocated VkImage dimensions
-            const int step = (eco_thermal && new_avg > target_frame_time_ms * 1.35) ? 2 : 1;
-            current_level_index = (std::max)(effective_min_level, current_level_index - step);
+            const int step = (eco_thermal && new_avg > target_time * 1.35) ? 2 : 1;
+            current_lvl = (std::max)(effective_min_level, current_lvl - step);
+            current_level_index.store(current_lvl, std::memory_order_relaxed);
             consecutive_overbudget = 0;
             changed = true;
-            s_effective_scale.store(LevelToScaleMultiplier(kLevelOrder[current_level_index]),
+            s_effective_scale.store(LevelToScaleMultiplier(kLevelOrder[current_lvl]),
                                     std::memory_order_relaxed);
             // Do not mutate global smart_shader_throttle setting from scaler
 
             LOG_DEBUG(Core,
                       "DynamicPerformanceScaler: Under load (avg {:.2f} ms > budget {:.2f} ms), "
                       "stepped down to level index {}",
-                      new_avg, target_frame_time_ms, current_level_index);
+                      new_avg, target_time, current_lvl);
         }
-    } else if (new_avg < target_frame_time_ms * kUnderbudgetMargin) {
+    } else if (new_avg < target_time * kUnderbudgetMargin) {
         // Frame is fast — room to increase quality
         consecutive_underbudget++;
         consecutive_overbudget = 0;
 
         if (consecutive_underbudget >= kUnderbudgetThreshold &&
-            current_level_index < max_level_index) {
-            current_level_index++;
+            current_lvl < max_lvl) {
+            current_lvl++;
+            current_level_index.store(current_lvl, std::memory_order_relaxed);
             consecutive_underbudget = 0;
             changed = true;
-            s_effective_scale.store(LevelToScaleMultiplier(kLevelOrder[current_level_index]),
+            s_effective_scale.store(LevelToScaleMultiplier(kLevelOrder[current_lvl]),
                                     std::memory_order_relaxed);
 
             LOG_DEBUG(Core,
                       "DynamicPerformanceScaler: Frame stable (avg {:.2f} ms < {:.2f} ms), "
                       "stepped up to level index {}",
-                      new_avg, target_frame_time_ms * kUnderbudgetMargin, current_level_index);
+                      new_avg, target_time * kUnderbudgetMargin, current_lvl);
         }
     } else {
         // Within budget — reset both counters
@@ -169,13 +175,13 @@ bool DynamicPerformanceScaler::ReportFrameTime(double frame_time_ms) {
 }
 
 Settings::ResolutionSetup DynamicPerformanceScaler::GetCurrentLevel() const {
-    std::lock_guard lock(mutex_);
-    return kLevelOrder[current_level_index];
+    const int idx = std::clamp(current_level_index.load(std::memory_order_relaxed), 0, static_cast<int>(kNumLevels - 1));
+    return kLevelOrder[idx];
 }
 
 Settings::ResolutionSetup DynamicPerformanceScaler::GetMaxLevel() const {
-    std::lock_guard lock(mutex_);
-    return kLevelOrder[max_level_index];
+    const int idx = std::clamp(max_level_index.load(std::memory_order_relaxed), 0, static_cast<int>(kNumLevels - 1));
+    return kLevelOrder[idx];
 }
 
 double DynamicPerformanceScaler::GetSmoothedFrameTime() const {
@@ -183,25 +189,24 @@ double DynamicPerformanceScaler::GetSmoothedFrameTime() const {
 }
 
 double DynamicPerformanceScaler::GetTargetFrameTime() const {
-    std::lock_guard lock(mutex_);
-    return target_frame_time_ms;
+    return target_frame_time_ms.load(std::memory_order_relaxed);
 }
 
 bool DynamicPerformanceScaler::IsScalingDown() const {
-    std::lock_guard lock(mutex_);
-    return current_level_index < max_level_index;
+    return current_level_index.load(std::memory_order_relaxed) < max_level_index.load(std::memory_order_relaxed);
 }
 
 void DynamicPerformanceScaler::Reset() {
-    std::lock_guard lock(mutex_);
-    current_level_index = max_level_index;
+    const int max_lvl = max_level_index.load(std::memory_order_relaxed);
+    current_level_index.store(max_lvl, std::memory_order_relaxed);
     consecutive_overbudget = 0;
     consecutive_underbudget = 0;
     startup_frames = 0;
-    smoothed_frametime.store(target_frame_time_ms, std::memory_order_relaxed);
+    const double target_time = target_frame_time_ms.load(std::memory_order_relaxed);
+    smoothed_frametime.store(target_time, std::memory_order_relaxed);
 
     // Restore user's resolution
-    const auto user_level = kLevelOrder[max_level_index];
+    const auto user_level = kLevelOrder[max_lvl];
     s_effective_scale.store(LevelToScaleMultiplier(user_level), std::memory_order_relaxed);
     Settings::values.resolution_setup.SetValue(user_level);
     Settings::UpdateRescalingInfo();

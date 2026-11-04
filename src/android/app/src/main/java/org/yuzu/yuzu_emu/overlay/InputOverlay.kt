@@ -278,7 +278,7 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
                     if (!found) {
                         j.trackId = -1
                         NativeInput.onOverlayJoystickEvent(playerIndex, j.joystick, 0f, 0f)
-                        shouldUpdateView = true
+                        invalidate(j.bounds)
                     }
                 }
             }
@@ -296,7 +296,7 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
                 button.status
             )
             playHaptics(event)
-            shouldUpdateView = true
+            invalidate(button.bounds)
         }
 
         val dpadCount = overlayDpads.size
@@ -326,7 +326,7 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
                 dpad.rightStatus
             )
             playHaptics(event)
-            shouldUpdateView = true
+            invalidate(dpad.bounds)
         }
 
         val pointerIndex = event.actionIndex
@@ -354,11 +354,7 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
                 joystick.buttonStatus
             )
             playHaptics(event)
-            shouldUpdateView = true
-        }
-
-        if (shouldUpdateView) {
-            invalidate()
+            invalidate(joystick.bounds)
         }
 
         if (!BooleanSetting.TOUCHSCREEN.getBoolean()) {
@@ -477,7 +473,7 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
                     if (moveDistance > moveThreshold) {
                         hasMoved = true
                         buttonBeingConfigured!!.onConfigureTouch(event)
-                        invalidate()
+                        invalidate(buttonBeingConfigured!!.bounds)
                         return true
                     }
                 }
@@ -531,7 +527,7 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
                     if (moveDistance > moveThreshold) {
                         hasMoved = true
                         dpadBeingConfigured!!.onConfigureTouch(event)
-                        invalidate()
+                        invalidate(dpadBeingConfigured!!.bounds)
                         return true
                     }
                 }
@@ -584,7 +580,7 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
                     if (moveDistance > moveThreshold) {
                         hasMoved = true
                         joystickBeingConfigured!!.onConfigureTouch(event)
-                        invalidate()
+                        invalidate(joystickBeingConfigured!!.bounds)
                     }
                 }
 

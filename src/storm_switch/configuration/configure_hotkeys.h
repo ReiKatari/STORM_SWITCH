@@ -23,6 +23,8 @@ class ConfigureHotkeys;
 
 class HotkeyRegistry;
 class QStandardItemModel;
+class QSortFilterProxyModel;
+class QLineEdit;
 
 class ConfigureHotkeys : public QWidget {
     Q_OBJECT
@@ -61,6 +63,8 @@ private:
     std::unique_ptr<Ui::ConfigureHotkeys> ui;
 
     QStandardItemModel* model;
+    QSortFilterProxyModel* proxy_model{nullptr};
+    QLineEdit* search_edit{nullptr};
 
     bool pressed_home_button;
     bool pressed_capture_button;

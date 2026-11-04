@@ -18,9 +18,12 @@ void TieredRecompiler::Initialize() {
     block_map.clear();
     pending_recompile_queue.clear();
     tier2_optimized_count = 0;
-    for (auto& entry : fast_tier3_cache) {
+    for (auto& entry : fast_tier_cache) {
         entry.vaddr.store(0, std::memory_order_relaxed);
         entry.ptr.store(nullptr, std::memory_order_relaxed);
+        entry.count.store(0, std::memory_order_relaxed);
+        entry.tier.store(0, std::memory_order_relaxed);
+        entry.code_size.store(0, std::memory_order_relaxed);
     }
 
     background_thread = std::thread(&TieredRecompiler::BackgroundCompilationLoop, this);
@@ -45,14 +48,61 @@ void* TieredRecompiler::ReportExecution(u64 guest_vaddr, size_t code_size, void*
         return current_ptr;
     }
 
-    const size_t cache_idx = (guest_vaddr ^ (guest_vaddr >> 12)) & (FAST_TIER3_CACHE_SIZE - 1);
-    if (fast_tier3_cache[cache_idx].vaddr.load(std::memory_order_relaxed) == guest_vaddr) {
-        void* cached_ptr = fast_tier3_cache[cache_idx].ptr.load(std::memory_order_relaxed);
-        if (cached_ptr != nullptr) {
-            return cached_ptr;
+    const size_t base_idx = (guest_vaddr ^ (guest_vaddr >> 12)) & (FAST_TIER_CACHE_SIZE - 1);
+
+    // Lock-free 4-way probing in fast tier cache
+    for (size_t way = 0; way < 4; ++way) {
+        const size_t cache_idx = (base_idx + way) & (FAST_TIER_CACHE_SIZE - 1);
+        auto& entry = fast_tier_cache[cache_idx];
+        const u64 cached_vaddr = entry.vaddr.load(std::memory_order_relaxed);
+
+        if (cached_vaddr == guest_vaddr) {
+            const u32 tier = entry.tier.load(std::memory_order_relaxed);
+            if (tier == 3) {
+                void* const opt_ptr = entry.ptr.load(std::memory_order_relaxed);
+                return opt_ptr ? opt_ptr : current_ptr;
+            }
+            if (tier == 2) {
+                return current_ptr;
+            }
+            // Tier 1 hot path: lock-free atomic execution counter
+            const u32 count = entry.count.fetch_add(1, std::memory_order_relaxed) + 1;
+            if (count >= TIER2_RECOMPILATION_THRESHOLD) {
+                u32 expected_tier = 1;
+                if (entry.tier.compare_exchange_strong(expected_tier, 2, std::memory_order_acq_rel)) {
+                    // Lock only when promoting block to higher tier
+                    std::unique_lock lock(mutex);
+                    auto& profile = block_map[guest_vaddr];
+                    profile.guest_vaddr = guest_vaddr;
+                    profile.code_size = code_size;
+                    profile.execution_count = count;
+                    profile.tier_level = 2;
+                    profile.compiled_func_ptr = current_ptr;
+                    pending_recompile_queue.push_back(guest_vaddr);
+                    cv.notify_one();
+                }
+            }
+            return current_ptr;
+        }
+
+        // Empty slot: claim lock-free
+        if (cached_vaddr == 0) {
+            u64 expected_zero = 0;
+            if (entry.vaddr.compare_exchange_strong(expected_zero, guest_vaddr, std::memory_order_acq_rel)) {
+                entry.code_size.store(code_size, std::memory_order_relaxed);
+                entry.ptr.store(current_ptr, std::memory_order_relaxed);
+                entry.count.store(1, std::memory_order_relaxed);
+                entry.tier.store(1, std::memory_order_release);
+                return current_ptr;
+            }
+            if (entry.vaddr.load(std::memory_order_relaxed) == guest_vaddr) {
+                entry.count.fetch_add(1, std::memory_order_relaxed);
+                return current_ptr;
+            }
         }
     }
 
+    // Fallback on 4-way collision: mutex-protected block_map
     std::unique_lock lock(mutex);
     auto& profile = block_map[guest_vaddr];
     if (profile.guest_vaddr == 0) {
@@ -63,8 +113,6 @@ void* TieredRecompiler::ReportExecution(u64 guest_vaddr, size_t code_size, void*
     }
 
     if (profile.tier_level == 3) {
-        fast_tier3_cache[cache_idx].ptr.store(profile.compiled_func_ptr, std::memory_order_relaxed);
-        fast_tier3_cache[cache_idx].vaddr.store(guest_vaddr, std::memory_order_release);
         return profile.compiled_func_ptr;
     }
 
@@ -119,9 +167,15 @@ void TieredRecompiler::BackgroundCompilationLoop() {
                 block_map[vaddr].compiled_func_ptr = new_ptr;
                 block_map[vaddr].tier_level = 3; // Fully Tier-2 Optimized
                 tier2_optimized_count++;
-                const size_t c_idx = (vaddr ^ (vaddr >> 12)) & (FAST_TIER3_CACHE_SIZE - 1);
-                fast_tier3_cache[c_idx].ptr.store(new_ptr, std::memory_order_relaxed);
-                fast_tier3_cache[c_idx].vaddr.store(vaddr, std::memory_order_release);
+                const size_t base_idx = (vaddr ^ (vaddr >> 12)) & (FAST_TIER_CACHE_SIZE - 1);
+                for (size_t way = 0; way < 4; ++way) {
+                    const size_t c_idx = (base_idx + way) & (FAST_TIER_CACHE_SIZE - 1);
+                    if (fast_tier_cache[c_idx].vaddr.load(std::memory_order_relaxed) == vaddr) {
+                        fast_tier_cache[c_idx].ptr.store(new_ptr, std::memory_order_relaxed);
+                        fast_tier_cache[c_idx].tier.store(3, std::memory_order_release);
+                        break;
+                    }
+                }
             }
         }
     }

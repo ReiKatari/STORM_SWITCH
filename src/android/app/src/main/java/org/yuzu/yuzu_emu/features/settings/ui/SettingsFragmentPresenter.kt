@@ -803,8 +803,6 @@ class SettingsFragmentPresenter(
 
             add(BooleanSetting.CPU_AFFINITY_PINNING.key)
 
-            add(BooleanSetting.STORM_TIER2_COMPILER.key)
-
             add(BooleanSetting.VULKAN_PIPELINE_CACHE.key)
 
             add(BooleanSetting.VRAM_GARBAGE_COLLECTION.key)

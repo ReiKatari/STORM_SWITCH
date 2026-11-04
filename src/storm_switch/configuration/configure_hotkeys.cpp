@@ -7,6 +7,9 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QStandardItemModel>
+#include <QSortFilterProxyModel>
+#include <QLineEdit>
+#include "storm_switch/common/storm_lang.h"
 #include <QTimer>
 
 #include "hid_core/frontend/emulated_controller.h"
@@ -32,11 +35,40 @@ ConfigureHotkeys::ConfigureHotkeys(Core::HID::HIDCore& hid_core, QWidget* parent
     model = new QStandardItemModel(this);
     model->setColumnCount(3);
 
+    proxy_model = new QSortFilterProxyModel(this);
+    proxy_model->setSourceModel(model);
+    proxy_model->setRecursiveFilteringEnabled(true);
+    proxy_model->setFilterCaseSensitivity(Qt::CaseInsensitive);
+    proxy_model->setFilterKeyColumn(-1);
+
+    search_edit = new QLineEdit(this);
+    search_edit->setObjectName(QStringLiteral("HotkeysSearchEdit"));
+    search_edit->setProperty("stormSearchBox", true);
+    search_edit->setClearButtonEnabled(true);
+    search_edit->setPlaceholderText(StormLang(
+        QStringLiteral("🔍 Поиск горячей клавиши..."),
+        QStringLiteral("🔍 Search hotkey..."),
+        QStringLiteral("🔍 Hotkey suchen..."),
+        QStringLiteral("🔍 Rechercher un raccourci..."),
+        QStringLiteral("🔍 搜索快捷键..."),
+        QStringLiteral("🔍 ホットキーを検索..."),
+        QStringLiteral("🔍 بحث عن اختصار..."),
+        QStringLiteral("🔍 Buscar atajo...")));
+    ui->verticalLayout_2->insertWidget(0, search_edit);
+
+    connect(search_edit, &QLineEdit::textChanged, this, [this](const QString& text) {
+        if (!proxy_model) return;
+        proxy_model->setFilterFixedString(text.trimmed());
+        if (!text.trimmed().isEmpty()) {
+            ui->hotkey_list->expandAll();
+        }
+    });
+
     connect(ui->hotkey_list, &QTreeView::doubleClicked, this, &ConfigureHotkeys::Configure);
     connect(ui->hotkey_list, &QTreeView::customContextMenuRequested, this,
             &ConfigureHotkeys::PopupContextMenu);
     ui->hotkey_list->setContextMenuPolicy(Qt::CustomContextMenu);
-    ui->hotkey_list->setModel(model);
+    ui->hotkey_list->setModel(proxy_model);
 
     ui->hotkey_list->header()->setStretchLastSection(false);
     ui->hotkey_list->header()->setSectionResizeMode(name_column, QHeaderView::ResizeMode::Stretch);
@@ -136,6 +168,9 @@ void ConfigureHotkeys::RetranslateUI() {
 }
 
 void ConfigureHotkeys::Configure(QModelIndex index) {
+    if (proxy_model) {
+        index = proxy_model->mapToSource(index);
+    }
     if (!index.parent().isValid()) {
         return;
     }
@@ -380,6 +415,9 @@ void ConfigureHotkeys::ClearAll() {
 
 void ConfigureHotkeys::PopupContextMenu(const QPoint& menu_location) {
     QModelIndex index = ui->hotkey_list->indexAt(menu_location);
+    if (proxy_model) {
+        index = proxy_model->mapToSource(index);
+    }
     if (!index.parent().isValid()) {
         return;
     }

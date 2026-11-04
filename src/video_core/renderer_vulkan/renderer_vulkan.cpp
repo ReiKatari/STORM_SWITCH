@@ -298,28 +298,8 @@ void RendererVulkan::Composite(std::span<const Tegra::FramebufferConfig> framebu
     gpu.RendererFrameEndNotify();
     rasterizer.TickFrame();
 
-    // Never sleep on the main GPUThread during normal VSync / CoreTiming Conductor pacing,
-    // as sleeping inside Composite() blocks GPU command execution and syncpoint signaling,
-    // causing guest games to miss every second VBlank (dropping 60 FPS -> 30 FPS).
-    if (Settings::values.eco_thermal_mode.GetValue() &&
-        Settings::values.vsync_mode.GetValue() == Settings::VSyncMode::Immediate &&
-        !Settings::values.use_speed_limit.GetValue()) {
-        const auto now = std::chrono::steady_clock::now();
-        if (s_last_composite_time.time_since_epoch().count() != 0) {
-            const double elapsed_ms =
-                std::chrono::duration<double, std::milli>(now - s_last_composite_time).count();
-            if (elapsed_ms > 0.3 && elapsed_ms < 16.0) {
-                const double remain_ms = (16.67 - elapsed_ms) * 0.35;
-                if (remain_ms >= 0.5 && remain_ms <= 6.0) {
-                    std::this_thread::sleep_for(
-                        std::chrono::microseconds(static_cast<int64_t>(remain_ms * 1000.0)));
-                }
-            }
-        }
-    }
-
-    // Dynamic Performance Scaler — feed frame time
-    if (s_performance_scaler) {
+    // Dynamic Performance Scaler — feed frame time only when feature is enabled
+    if (Settings::values.dynamic_performance_scaler.GetValue() && s_performance_scaler) {
         const auto end_time = std::chrono::steady_clock::now();
         if (s_last_composite_time.time_since_epoch().count() != 0) {
             const double frame_ms =

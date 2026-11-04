@@ -175,7 +175,7 @@ inline void Nx2AddSparseSpan(u64 gpu_address, u64 size) {
 }
 
 inline void Nx2BackSparseWrite(u64 gpu_address, u64 size) {
-    if (gpu_address + size <= g_nx2_sparse_low.load(std::memory_order_relaxed) ||
+    if (!VideoCore::Nx2IsActive() || gpu_address + size <= g_nx2_sparse_low.load(std::memory_order_relaxed) ||
         gpu_address >= g_nx2_sparse_high.load(std::memory_order_relaxed)) [[likely]] {
         return;
     }
@@ -222,7 +222,7 @@ inline void Nx2SparseBlockWritten(u64 region_address, u64 block) {
 
 /// True when [gpu_address, +size) lies in one sparse region.
 inline bool Nx2InSparseRegion(u64 gpu_address, u64 size) {
-    if (size == 0 || gpu_address + size <= g_nx2_sparse_low.load(std::memory_order_relaxed) ||
+    if (!VideoCore::Nx2IsActive() || size == 0 || gpu_address + size <= g_nx2_sparse_low.load(std::memory_order_relaxed) ||
         gpu_address >= g_nx2_sparse_high.load(std::memory_order_relaxed)) [[likely]] {
         return false;
     }

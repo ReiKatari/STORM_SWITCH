@@ -4,27 +4,25 @@
 #include "game/game_list.h"
 #include "game/search_field.h"
 
+#include <QComboBox>
 #include <QKeyEvent>
 #include <QToolButton>
 
-// TODO: Remove GameList dependence?
+#include "qt_common/config/uisettings.h"
+#include "storm_switch/common/storm_theme.h"
+
 GameListSearchField::KeyReleaseEater::KeyReleaseEater(GameList* gamelist_, QObject* parent)
     : QObject(parent), gamelist{gamelist_} {}
 
-// EventFilter in order to process systemkeys while editing the searchfield
 bool GameListSearchField::KeyReleaseEater::eventFilter(QObject* obj, QEvent* event) {
-    // If it isn't a KeyRelease event then continue with standard event processing
     if (event->type() != QEvent::KeyRelease)
         return QObject::eventFilter(obj, event);
 
     QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
     QString edit_filter_text = gamelist->search_field->edit_filter->text().toLower();
 
-    // If the searchfield's text hasn't changed special function keys get checked
-    // If no function key changes the searchfield's text the filter doesn't need to get reloaded
     if (edit_filter_text == edit_filter_text_old) {
         switch (keyEvent->key()) {
-        // Escape: Resets the searchfield
         case Qt::Key_Escape: {
             if (edit_filter_text_old.isEmpty()) {
                 return QObject::eventFilter(obj, event);
@@ -34,16 +32,10 @@ bool GameListSearchField::KeyReleaseEater::eventFilter(QObject* obj, QEvent* eve
             }
             break;
         }
-        // Return and Enter
-        // If the enter key gets pressed first checks how many and which entry is visible
-        // If there is only one result launch this game
         case Qt::Key_Return:
         case Qt::Key_Enter: {
             if (gamelist->search_field->visible == 1) {
                 const QString file_path = gamelist->GetLastFilterResultItem();
-
-                // To avoid loading error dialog loops while confirming them using enter
-                // Also users usually want to run a different game after closing one
                 gamelist->search_field->edit_filter->clear();
                 edit_filter_text.clear();
                 emit gamelist->GameChosen(file_path);
@@ -64,7 +56,7 @@ void GameListSearchField::setFilterResult(int visible_, int total_) {
     visible = visible_;
     total = total_;
 
-    label_filter_result->setText(tr("%1 of %n result(s)", "", total).arg(visible));
+    label_filter_result->setText(tr("%1 из %2 игр").arg(visible).arg(total));
 }
 
 QString GameListSearchField::filterText() const {
@@ -84,30 +76,59 @@ void GameListSearchField::setFocus() {
 GameListSearchField::GameListSearchField(GameList* parent) : QWidget{parent} {
     auto* const key_release_eater = new KeyReleaseEater(parent, this);
     layout_filter = new QHBoxLayout;
-    layout_filter->setContentsMargins(8, 8, 8, 8);
-    label_filter = new QLabel;
-    edit_filter = new QLineEdit;
+    layout_filter->setContentsMargins(8, 4, 8, 4);
+    layout_filter->setSpacing(8);
+
+    label_filter = new QLabel(this);
+    edit_filter = new QLineEdit(this);
     edit_filter->clear();
     edit_filter->installEventFilter(key_release_eater);
     edit_filter->setClearButtonEnabled(true);
     connect(edit_filter, &QLineEdit::textChanged, parent, &GameList::OnTextChanged);
-    label_filter_result = new QLabel;
+
+    label_filter_result = new QLabel(this);
+    label_filter_result->setStyleSheet(QStringLiteral("color: #94A3B8; font-size: 8.5pt; font-weight: 500;"));
+
+    // Visible sort selector
+    sort_combobox = new QComboBox(this);
+    connect(sort_combobox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int idx) {
+        emit SortModeChanged(idx);
+    });
+
+    // View mode toggle
+    view_mode_toggle = new QToolButton(this);
+    view_mode_toggle->setCursor(Qt::PointingHandCursor);
+    connect(view_mode_toggle, &QToolButton::clicked, this, &GameListSearchField::ToggleViewModeRequested);
+
     button_filter_close = new QToolButton(this);
     button_filter_close->setText(QStringLiteral("X"));
-    button_filter_close->setCursor(Qt::ArrowCursor);
+    button_filter_close->setCursor(Qt::PointingHandCursor);
     button_filter_close->setStyleSheet(
-        QStringLiteral("QToolButton{ border: none; padding: 0px; color: "
-                       "#000000; font-weight: bold; background: #F0F0F0; }"
-                       "QToolButton:hover{ border: none; padding: 0px; color: "
-                       "#EEEEEE; font-weight: bold; background: #E81123}"));
+        QStringLiteral("QToolButton{ border: none; border-radius: 4px; padding: 2px 6px; color: #94A3B8; font-weight: bold; background: transparent; }"
+                       "QToolButton:hover{ color: #FFFFFF; background: #EF4444; }"));
     connect(button_filter_close, &QToolButton::clicked, parent, &GameList::OnFilterCloseClicked);
-    layout_filter->setSpacing(10);
+
     layout_filter->addWidget(label_filter);
-    layout_filter->addWidget(edit_filter);
+    layout_filter->addWidget(edit_filter, 1);
     layout_filter->addWidget(label_filter_result);
+    layout_filter->addWidget(sort_combobox);
+    layout_filter->addWidget(view_mode_toggle);
     layout_filter->addWidget(button_filter_close);
     setLayout(layout_filter);
+
     RetranslateUI();
+}
+
+void GameListSearchField::UpdateViewMode(bool is_grid) {
+    if (view_mode_toggle) {
+        if (is_grid) {
+            view_mode_toggle->setText(tr("Список"));
+            view_mode_toggle->setToolTip(tr("Переключить в режим списка"));
+        } else {
+            view_mode_toggle->setText(tr("Сетка"));
+            view_mode_toggle->setToolTip(tr("Переключить в режим сетки"));
+        }
+    }
 }
 
 void GameListSearchField::changeEvent(QEvent* event) {
@@ -119,6 +140,29 @@ void GameListSearchField::changeEvent(QEvent* event) {
 }
 
 void GameListSearchField::RetranslateUI() {
-    label_filter->setText(tr("Filter:"));
-    edit_filter->setPlaceholderText(tr("Enter pattern to filter"));
+    label_filter->setText(tr("Фильтр:"));
+    edit_filter->setPlaceholderText(tr("Поиск по названию или Title ID..."));
+
+    if (total > 0) {
+        label_filter_result->setText(tr("%1 из %2 игр").arg(visible).arg(total));
+    } else {
+        label_filter_result->clear();
+    }
+
+    if (sort_combobox) {
+        const int cur_idx = sort_combobox->currentIndex();
+        sort_combobox->blockSignals(true);
+        sort_combobox->clear();
+        sort_combobox->addItem(tr("Имя (А–Я)"), 0);
+        sort_combobox->addItem(tr("Имя (Я–А)"), 1);
+        sort_combobox->addItem(tr("Время игры"), 2);
+        sort_combobox->addItem(tr("Размер файла"), 3);
+        sort_combobox->addItem(tr("Switch 2 / 1"), 4);
+        if (cur_idx >= 0 && cur_idx < sort_combobox->count()) {
+            sort_combobox->setCurrentIndex(cur_idx);
+        }
+        sort_combobox->blockSignals(false);
+    }
+
+    UpdateViewMode(UISettings::values.game_list_mode.GetValue() == Settings::GameListMode::GridView);
 }

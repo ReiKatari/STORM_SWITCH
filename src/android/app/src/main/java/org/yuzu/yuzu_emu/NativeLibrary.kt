@@ -760,6 +760,7 @@ object NativeLibrary {
     external fun getFirmwareAvatarImage(index: Int): ByteArray?
     external fun getDefaultAccountBackupJpeg(): ByteArray
     external fun setThermalThrottle(throttle: Boolean)
+    external fun getEmulationTids(): IntArray
     external fun setGameFixesEnabled(enabled: Boolean)
     external fun areGameFixesEnabled(): Boolean
 

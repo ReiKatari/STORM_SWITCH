@@ -1925,6 +1925,27 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
         @Volatile
         private var memoryCachedCatalog: List<StormWorldGameItem>? = null
+        @Volatile
+        private var catalogIndexBySerial: Map<String, StormWorldGameItem>? = null
+
+        fun getCachedCatalogItem(context: Context, serialIdHex: String): StormWorldGameItem? {
+            val key = serialIdHex.trim().uppercase(Locale.ROOT)
+            if (key.isEmpty()) return null
+            var index = catalogIndexBySerial
+            if (index == null) {
+                val list = getCachedCatalog(context)
+                val map = HashMap<String, StormWorldGameItem>(list.size)
+                for (item in list) {
+                    val k = item.serialId.trim().uppercase(Locale.ROOT)
+                    if (k.isNotEmpty() && !map.containsKey(k)) {
+                        map[k] = item
+                    }
+                }
+                catalogIndexBySerial = map
+                index = map
+            }
+            return index[key]
+        }
 
         fun getCachedCatalog(context: Context): List<StormWorldGameItem> {
             memoryCachedCatalog?.let { return it }
@@ -2035,6 +2056,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     "$k|$cleanVer|${item.internalVersion}|$langs|${item.dlcCount}|${item.modCount}|$ext|$rawId"
                 }
                 memoryCachedCatalog = result
+                catalogIndexBySerial = null
                 result
             } catch (e: Exception) {
                 Log.error("[StormGamesWorld] Failed to read cached catalog: ${e.message}")
@@ -2044,6 +2066,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
         fun saveCatalogCache(context: Context, games: List<StormWorldGameItem>) {
             memoryCachedCatalog = games
+            catalogIndexBySerial = null
             try {
                 val jsonArr = JSONArray()
                 for (g in games) {

@@ -2209,4 +2209,16 @@
     <string name="home_cat_diagnostics_about">诊断、日志与关于</string>
     <string name="per_game_custom_badge">自定义</string>
     <string name="vulkan_legacy_driver_warning">在 %2$s 上检测到系统 Vulkan %1$s。许多 Switch 游戏需要 Vulkan 1.3 功能。建议在设置 -> GPU 驱动程序管理器中安装 Mesa Turnip 驱动程序。</string>
+
+    <string name="button_a">A</string>
+    <string name="button_b">B</string>
+    <string name="button_l">L</string>
+    <string name="button_r">R</string>
+    <string name="button_x">X</string>
+    <string name="button_y">Y</string>
+    <string name="button_z">Z</string>
+    <string name="button_zl">ZL</string>
+    <string name="button_zr">ZR</string>
+    <string name="enable_fast_gpu_time">Enable Fast GPU Time</string>
+    <string name="enable_fast_gpu_time_description">Speeds up GPU timer queries to boost performance in games with heavy CPU-GPU synchronization, but may cause visual timing glitches in some titles.</string>
 </resources>

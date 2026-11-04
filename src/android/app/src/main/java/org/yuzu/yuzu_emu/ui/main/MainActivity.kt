@@ -43,6 +43,7 @@ import org.yuzu.yuzu_emu.model.TaskViewModel
 import org.yuzu.yuzu_emu.utils.*
 import org.yuzu.yuzu_emu.utils.ViewUtils.setVisible
 import androidx.core.content.edit
+import androidx.lifecycle.lifecycleScope
 import org.yuzu.yuzu_emu.activities.EmulationActivity
 import kotlin.text.compareTo
 import androidx.core.net.toUri
@@ -156,10 +157,12 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
             checkAllFilesAccessPermission()
         }
 
-        try {
-            NativeLibrary.initMultiplayer()
-        } catch (t: Throwable) {
-            CrashHandler.logError(this, "MainActivity.initMultiplayer", t)
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                NativeLibrary.initMultiplayer()
+            } catch (t: Throwable) {
+                CrashHandler.logError(this@MainActivity, "MainActivity.initMultiplayer", t)
+            }
         }
 
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -176,14 +179,16 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
         }
 
         setContentView(binding.root)
-        StormWordIntegrity.enforce(binding.root)
+        binding.root.post { StormWordIntegrity.enforce(binding.root) }
         // StormButton3dHelper removed
 
         if (savedInstanceState != null) {
             checkedDecryption = savedInstanceState.getBoolean(CHECKED_DECRYPTION)
         }
         if (!checkedDecryption) {
-            StormHardwareCalibrator.autoCalibrate(applicationContext)
+            lifecycleScope.launch(Dispatchers.IO) {
+                StormHardwareCalibrator.autoCalibrate(applicationContext)
+            }
             val firstTimeSetup = PreferenceManager.getDefaultSharedPreferences(applicationContext)
                 .getBoolean(Settings.PREF_FIRST_APP_LAUNCH, true)
             if (!firstTimeSetup) {

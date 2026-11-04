@@ -2365,4 +2365,14 @@
     <string name="per_game_custom_badge">СВОЯ</string>
     <string name="vulkan_legacy_driver_warning">Обнаружен системный драйвер Vulkan %1$s на %2$s. Многим играм Nintendo Switch требуются функции Vulkan 1.3. Рекомендуется установить драйвер Mesa Turnip в Параметры -> Менеджер драйверов GPU.</string>
     <string name="profile_empty_state">Нет сохранённых профилей настроек\nНажмите «Сохранить профиль», чтобы создать новый</string>
+
+    <string name="button_a">A</string>
+    <string name="button_b">B</string>
+    <string name="button_l">L</string>
+    <string name="button_r">R</string>
+    <string name="button_x">X</string>
+    <string name="button_y">Y</string>
+    <string name="button_z">Z</string>
+    <string name="button_zl">ZL</string>
+    <string name="button_zr">ZR</string>
 </resources>

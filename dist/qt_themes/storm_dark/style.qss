@@ -802,3 +802,124 @@ QSpinBox QLineEdit, QDoubleSpinBox QLineEdit {
     border: none;
     background: transparent;
 }
+
+/* --- STORM SWITCH Structured UI & Status Bar Rules --- */
+QLineEdit#SettingsSearchEdit,
+QLineEdit#HotkeysSearchEdit,
+QLineEdit[stormSearchBox="true"] {
+    background-color: #0F172A;
+    border: 1px solid rgba(0, 210, 255, 0.35);
+    border-radius: 7px;
+    padding: 6px 12px;
+    color: #FFFFFF;
+    font-size: 12.5px;
+    margin-bottom: 4px;
+}
+QLineEdit#SettingsSearchEdit:focus,
+QLineEdit#HotkeysSearchEdit:focus,
+QLineEdit[stormSearchBox="true"]:focus {
+    border: 1px solid #00F0FF;
+    background-color: #162032;
+}
+
+QListWidget#SettingsSearchResultsList {
+    background-color: #0B1325;
+    border: 1px solid #00F0FF;
+    border-radius: 7px;
+    padding: 4px;
+    color: #FFFFFF;
+    font-size: 12px;
+    margin-bottom: 6px;
+    outline: none;
+}
+QListWidget#SettingsSearchResultsList::item {
+    padding: 6px 10px;
+    border-radius: 5px;
+    margin: 1px 0px;
+}
+QListWidget#SettingsSearchResultsList::item:hover {
+    background-color: rgba(0, 240, 255, 0.16);
+    color: #FFFFFF;
+}
+QListWidget#SettingsSearchResultsList::item:selected {
+    background-color: rgba(0, 240, 255, 0.26);
+    border-left: 3px solid #00F0FF;
+    color: #FFFFFF;
+    font-weight: 600;
+}
+
+QLabel#ShaderBuildingLabel[compiling="true"] {
+    background-color: rgba(255, 64, 129, 0.12);
+    color: #ff4081;
+    border: 1px solid rgba(255, 64, 129, 0.35);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 7.2pt;
+    font-weight: 700;
+}
+
+QLabel#EmuSpeedLabel {
+    background-color: rgba(0, 230, 118, 0.10);
+    color: #00e676;
+    border: 1px solid rgba(0, 230, 118, 0.30);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 7.2pt;
+    font-weight: 700;
+}
+
+QLabel#GameFpsLabel {
+    background-color: rgba(0, 229, 255, 0.10);
+    color: #00e5ff;
+    border: 1px solid rgba(0, 229, 255, 0.30);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 7.2pt;
+    font-weight: 700;
+}
+
+QLabel#EmuFrametimeLabel {
+    background-color: rgba(255, 202, 40, 0.10);
+    color: #ffca28;
+    border: 1px solid rgba(255, 202, 40, 0.30);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 7.2pt;
+    font-weight: 700;
+}
+
+QListWidget#PerGameSelectorList,
+QListWidget[stormList="true"] {
+    background-color: rgba(15, 23, 42, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 6px;
+    outline: none;
+    padding: 4px;
+}
+QListWidget#PerGameSelectorList::item,
+QListWidget[stormList="true"]::item {
+    padding: 8px 12px;
+    border-radius: 5px;
+    margin: 2px 0px;
+    color: #E2E8F0;
+    font-weight: 600;
+}
+QListWidget#PerGameSelectorList::item:hover,
+QListWidget[stormList="true"]::item:hover {
+    background-color: rgba(0, 240, 255, 0.15);
+    color: #00F0FF;
+}
+QListWidget#PerGameSelectorList::item:selected,
+QListWidget[stormList="true"]::item:selected {
+    background-color: rgba(0, 240, 255, 0.25);
+    border-left: 3px solid #00F0FF;
+    color: #00F0FF;
+}
+
+QGroupBox#BentoGameHeaderCard,
+QGroupBox[stormHeroCard="true"] {
+    background-color: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(0, 240, 255, 0.30);
+    border-radius: 10px;
+    padding: 10px;
+}

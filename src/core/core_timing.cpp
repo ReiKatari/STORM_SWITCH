@@ -81,7 +81,9 @@ void CoreTiming::Initialize(std::function<void()>&& on_thread_init_) {
             // base frequency in MHz: 1ns (10^-9) = 1GHz (10^9)
             while (!stop_token.stop_requested()) {
                 while (!paused && !stop_token.stop_requested()) {
-                    paused_set = false;
+                    if (paused_set.exchange(false)) {
+                        paused_set.notify_all();
+                    }
                     if (auto const next_time = Advance(); next_time) {
                         // There are more events left in the queue, wait until the next event.
                         auto const wait_time = *next_time - GetGlobalTimeNs().count();
@@ -97,6 +99,7 @@ void CoreTiming::Initialize(std::function<void()>&& on_thread_init_) {
                     wait_set = false;
                 }
                 paused_set = true;
+                paused_set.notify_all();
                 pause_event.Wait();
             }
         });
@@ -129,8 +132,9 @@ void CoreTiming::SyncPause(bool is_paused) {
             pause_event.Set();
         }
         event.Set();
-        while (paused_set != is_paused)
-            ;
+        while (paused_set.load() != is_paused) {
+            paused_set.wait(!is_paused);
+        }
     }
 
     if (!is_paused) {

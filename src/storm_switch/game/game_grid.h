@@ -21,6 +21,13 @@ public:
 
     QModelIndex indexAt(const QPoint& point) const override;
 
+signals:
+    void FilterResultReady(int visible, int total);
+
+protected:
+    void keyPressEvent(QKeyEvent* event) override;
+    void resizeEvent(QResizeEvent* event) override;
+
 private:
     GameCard* m_gameCard = nullptr;
 };

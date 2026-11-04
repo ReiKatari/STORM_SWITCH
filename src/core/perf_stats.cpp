@@ -19,6 +19,13 @@
 #include "common/settings.h"
 #include "core/perf_stats.h"
 
+#ifdef _WIN32
+#include <windows.h>
+#if defined(_M_X64) || defined(__x86_64__)
+#include <immintrin.h>
+#endif
+#endif
+
 using namespace std::chrono_literals;
 using DoubleSecs = std::chrono::duration<double, std::chrono::seconds::period>;
 using std::chrono::duration_cast;
@@ -136,14 +143,16 @@ double PerfStats::GetLastFrameTimeScale() const {
 }
 
 void SpeedLimiter::DoSpeedLimiting(microseconds current_system_time_us) {
+    const bool eco_thermal = Settings::values.eco_thermal_mode.GetValue();
     if (Settings::values.use_multi_core.GetValue() ||
-        !Settings::values.use_speed_limit.GetValue()) {
+        (!Settings::values.use_speed_limit.GetValue() && !eco_thermal)) {
         return;
     }
 
     auto now = Clock::now();
 
-    const double sleep_scale = Settings::SpeedLimit() / 100.0;
+    const u16 speed_limit = Settings::SpeedLimit();
+    const double sleep_scale = (speed_limit > 0 ? speed_limit : 100) / 100.0;
 
     // Max lag caused by slow frames. Shouldn't be more than the length of a frame at the current
     // speed percent or it will clamp too much and prevent this from properly limiting to that
@@ -159,7 +168,57 @@ void SpeedLimiter::DoSpeedLimiting(microseconds current_system_time_us) {
         std::clamp(speed_limiting_delta_err, -max_lag_time_us, max_lag_time_us);
 
     if (speed_limiting_delta_err > microseconds::zero()) {
-        std::this_thread::sleep_for(speed_limiting_delta_err);
+#ifdef _WIN32
+        static constexpr auto SPIN_THRESHOLD = std::chrono::milliseconds(1);
+        const auto target_time = now + speed_limiting_delta_err;
+        if (speed_limiting_delta_err > SPIN_THRESHOLD) {
+            const auto sleep_dur = speed_limiting_delta_err - SPIN_THRESHOLD;
+            static const auto get_timer = []() -> HANDLE {
+#ifndef CREATE_WAITABLE_TIMER_HIGH_RESOLUTION
+#define CREATE_WAITABLE_TIMER_HIGH_RESOLUTION 0x00000002
+#endif
+                HANDLE h = CreateWaitableTimerExW(nullptr, nullptr,
+                    CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
+                if (!h) {
+                    h = CreateWaitableTimerExW(nullptr, nullptr, 0, TIMER_ALL_ACCESS);
+                }
+                return h;
+            };
+            thread_local HANDLE timer = get_timer();
+            if (timer) {
+                LARGE_INTEGER due_time;
+                due_time.QuadPart = -static_cast<LONGLONG>(
+                    duration_cast<std::chrono::nanoseconds>(sleep_dur).count() / 100);
+                if (SetWaitableTimer(timer, &due_time, 0, nullptr, nullptr, FALSE)) {
+                    WaitForSingleObject(timer, INFINITE);
+                } else {
+                    std::this_thread::sleep_for(sleep_dur);
+                }
+            } else {
+                std::this_thread::sleep_for(sleep_dur);
+            }
+        }
+        while (Clock::now() < target_time) {
+#if defined(_M_X64) || defined(__x86_64__)
+            _mm_pause();
+#else
+            std::this_thread::yield();
+#endif
+        }
+#else
+        static constexpr auto SPIN_THRESHOLD = std::chrono::milliseconds(1);
+        const auto target_time = now + speed_limiting_delta_err;
+        if (speed_limiting_delta_err > SPIN_THRESHOLD) {
+            std::this_thread::sleep_for(speed_limiting_delta_err - SPIN_THRESHOLD);
+        }
+        while (Clock::now() < target_time) {
+#if defined(__x86_64__)
+            _mm_pause();
+#else
+            std::this_thread::yield();
+#endif
+        }
+#endif
         auto now_after_sleep = Clock::now();
         speed_limiting_delta_err -= duration_cast<microseconds>(now_after_sleep - now);
         now = now_after_sleep;

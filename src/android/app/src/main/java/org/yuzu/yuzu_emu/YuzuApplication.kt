@@ -133,9 +133,15 @@ class YuzuApplication : Application() {
             DirectoryInitialization.start()
             kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
                 try {
-                    org.yuzu.yuzu_emu.model.GameFixDatabase.cleanupAllTemporaryFixes()
+                    org.yuzu.yuzu_emu.model.GameFixSessionState.cleanupAllTemporaryFixes()
                 } catch (t: Throwable) {
                     Log.error("[YuzuApplication] cleanupAllTemporaryFixes error: ${t.message}")
+                }
+                try {
+                    GpuDriverHelper.initializeFreedrenoConfigEarly()
+                    GpuDriverHelper.initializeDriverParameters()
+                } catch (t: Throwable) {
+                    Log.error("[YuzuApplication] GpuDriverHelper async init error: ${t.message}")
                 }
             }
         } catch (t: Throwable) {
@@ -143,21 +149,9 @@ class YuzuApplication : Application() {
         }
 
         try {
-            GpuDriverHelper.initializeFreedrenoConfigEarly()
-        } catch (t: Throwable) {
-            org.yuzu.yuzu_emu.utils.CrashHandler.logError(this, "GpuDriverHelper.initializeFreedrenoConfigEarly", t)
-        }
-
-        try {
             NativeLibrary.playTimeManagerInit()
         } catch (t: Throwable) {
             org.yuzu.yuzu_emu.utils.CrashHandler.logError(this, "NativeLibrary.playTimeManagerInit", t)
-        }
-
-        try {
-            GpuDriverHelper.initializeDriverParameters()
-        } catch (t: Throwable) {
-            org.yuzu.yuzu_emu.utils.CrashHandler.logError(this, "GpuDriverHelper.initializeDriverParameters", t)
         }
 
         try {

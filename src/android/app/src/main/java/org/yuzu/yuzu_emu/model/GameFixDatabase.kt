@@ -25,9 +25,30 @@ data class GameFixProfile(
     val settingsMap: Map<String, String>
 )
 
+object GameFixSessionState {
+    val temporaryFixGames: MutableSet<String> = java.util.Collections.synchronizedSet(mutableSetOf<String>())
+    @Volatile
+    var activeSessionProgramIdHex: String? = null
+    @Volatile
+    var activeSessionFix: GameFixProfile? = null
+    var selectedLaunchMode: GameFixDatabase.LaunchMode? = null
+
+    fun cleanupAllTemporaryFixes() {
+        try {
+            temporaryFixGames.clear()
+            activeSessionProgramIdHex = null
+            activeSessionFix = null
+            selectedLaunchMode = null
+        } catch (e: Exception) {
+            Log.error("[GameFixSessionState] Error cleaning up temporary fixes: ${e.message}")
+        }
+    }
+}
+
 object GameFixDatabase {
 
-    private val profiles = listOf(
+    private val profiles: List<GameFixProfile> by lazy {
+        listOf(
         GameFixProfile(
             0x0100C8000CEAE000L,
             "Crysis Remastered",
@@ -6185,7 +6206,8 @@ object GameFixDatabase {
                 "Renderer\\astc_recompression" to "0"
             )
         ),
-    )
+        )
+    }
 
 
     fun parseProgramId(programIdStr: String): Long {
@@ -6568,13 +6590,15 @@ object GameFixDatabase {
 
     const val TEMPORARY_FIX_HEADER = "# STORM_AUTO_GAME_FIX_TEMPORARY"
 
-    private val temporaryFixGames = java.util.Collections.synchronizedSet(mutableSetOf<String>())
+    val temporaryFixGames get() = GameFixSessionState.temporaryFixGames
 
-    @Volatile
-    private var activeSessionProgramIdHex: String? = null
+    var activeSessionProgramIdHex: String?
+        get() = GameFixSessionState.activeSessionProgramIdHex
+        set(value) { GameFixSessionState.activeSessionProgramIdHex = value }
 
-    @Volatile
-    private var activeSessionFix: GameFixProfile? = null
+    var activeSessionFix: GameFixProfile?
+        get() = GameFixSessionState.activeSessionFix
+        set(value) { GameFixSessionState.activeSessionFix = value }
 
     fun isTemporaryFixFile(file: java.io.File): Boolean {
         if (!file.exists() || !file.isFile) return false
@@ -7065,7 +7089,9 @@ object GameFixDatabase {
         CANCEL
     }
 
-    var selectedLaunchMode: LaunchMode? = null
+    var selectedLaunchMode: LaunchMode?
+        get() = GameFixSessionState.selectedLaunchMode
+        set(value) { GameFixSessionState.selectedLaunchMode = value }
 
     fun getFormattedFixes(profile: GameFixProfile, isRu: Boolean): String {
         val map = getFullSettingsMap(profile)
@@ -7428,13 +7454,6 @@ object GameFixDatabase {
     }
 
     fun cleanupAllTemporaryFixes() {
-        try {
-            temporaryFixGames.clear()
-            activeSessionProgramIdHex = null
-            activeSessionFix = null
-            selectedLaunchMode = null
-        } catch (e: Exception) {
-            Log.error("[GameFixDatabase] Error cleaning up temporary fixes: ${e.message}")
-        }
+        GameFixSessionState.cleanupAllTemporaryFixes()
     }
 }

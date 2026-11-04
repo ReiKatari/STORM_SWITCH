@@ -98,12 +98,23 @@ void nvdisp_disp0::Composite(std::span<const Nvnflinger::HwcLayer> sorted_layers
         }
     }
 
-    const char* capture = std::getenv("EDEN_NATIVE_FRAME_CAPTURE");
-    const bool sequence = std::getenv("EDEN_NATIVE_FRAME_SEQUENCE") != nullptr;
-    const bool on_demand = std::getenv("EDEN_NATIVE_FRAME_ON_DEMAND") != nullptr;
+    static const char* capture = std::getenv("EDEN_NATIVE_FRAME_CAPTURE");
+    static const bool sequence = std::getenv("EDEN_NATIVE_FRAME_SEQUENCE") != nullptr;
+    static const bool on_demand = std::getenv("EDEN_NATIVE_FRAME_ON_DEMAND") != nullptr;
+    static const bool initial_request = [] {
+        if (!on_demand) {
+            return false;
+        }
+        std::error_code ec;
+        const bool exists = std::filesystem::exists("native-frame.request", ec);
+        if (exists) {
+            std::filesystem::remove("native-frame.request", ec);
+        }
+        return exists;
+    }();
+    static std::atomic<bool> s_frame_requested{initial_request};
     const bool requested = on_demand && !output_layers.empty() &&
-        !diagnostic_frame_pending->load() && std::filesystem::exists("native-frame.request");
-    if (requested) std::filesystem::remove("native-frame.request");
+        !diagnostic_frame_pending->load() && s_frame_requested.exchange(false);
     const bool sample_frame = requested || (capture && std::string_view{capture} == "1" && !output_layers.empty() &&
         diagnostic_frame_count < (sequence ? 36000U : 3840U) && ++diagnostic_frame_count != 0 &&
         (sequence ? (diagnostic_frame_count == 1 || diagnostic_frame_count % 120 == 0)
@@ -119,7 +130,7 @@ void nvdisp_disp0::Composite(std::span<const Nvnflinger::HwcLayer> sorted_layers
         const bool first = diagnostic_frame_count == 1;
         auto pending = diagnostic_frame_pending;
         auto visible = diagnostic_visible_frame;
-        system.GPU().Renderer().RequestScreenshot(pixels->data(), [pixels, layout, first, pending, visible, sequence, on_demand](bool invert_y) {
+        system.GPU().Renderer().RequestScreenshot(pixels->data(), [pixels, layout, first, pending, visible](bool invert_y) {
             std::array<u8, 18> header{};
             header[2] = 2;
             header[12] = static_cast<u8>(layout.width & 255);

@@ -1,6 +1,8 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <QKeyEvent>
+#include <QResizeEvent>
 #include <QScroller>
 #include <QScrollerProperties>
 
@@ -18,10 +20,13 @@ GameGrid::GameGrid(QWidget* parent) : QListView{parent} {
     setResizeMode(QListView::Fixed);
     setUniformItemSizes(true);
     setSelectionMode(QAbstractItemView::SingleSelection);
+    setSelectionBehavior(QAbstractItemView::SelectRows);
     setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
     setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
 
-    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    // ScrollBarAsNeeded per plan item 19
+    setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     setEditTriggers(QAbstractItemView::NoEditTriggers);
     setContextMenuPolicy(Qt::CustomContextMenu);
@@ -31,6 +36,12 @@ GameGrid::GameGrid(QWidget* parent) : QListView{parent} {
     setTextElideMode(Qt::ElideNone);
     setFlow(QListView::LeftToRight);
     setWrapping(true);
+
+    // Enable hover tracking for responsive highlights
+    setMouseTracking(true);
+    if (viewport()) {
+        viewport()->setMouseTracking(true);
+    }
 }
 
 void GameGrid::SetModel(GameListModel* model) {
@@ -39,19 +50,29 @@ void GameGrid::SetModel(GameListModel* model) {
 }
 
 void GameGrid::ApplyFilter(const QString& edit_filter_text, GameListModel* model) {
-    int row_count = model->rowCount();
+    if (!model) return;
+
+    setUpdatesEnabled(false);
+    const int row_count = model->rowCount();
+    int visible_count = 0;
+    int total_count = 0;
 
     for (int i = 0; i < row_count; ++i) {
         QStandardItem* item = model->item(i, 0);
         if (!item)
             continue;
 
+        total_count++;
         if (Yuzu::FilterMatches(edit_filter_text, item)) {
             setRowHidden(i, false);
+            visible_count++;
         } else {
             setRowHidden(i, true);
         }
     }
+    setUpdatesEnabled(true);
+
+    emit FilterResultReady(visible_count, total_count);
 }
 
 void GameGrid::UpdateIconSize() {
@@ -108,4 +129,21 @@ QModelIndex GameGrid::indexAt(const QPoint& point) const {
     if (m_gameCard && !m_gameCard->hitTest(point, index, this, visualRect(index)))
         return {};
     return index;
+}
+
+void GameGrid::keyPressEvent(QKeyEvent* event) {
+    if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) {
+        const auto current = currentIndex();
+        if (current.isValid()) {
+            emit activated(current);
+            event->accept();
+            return;
+        }
+    }
+    QListView::keyPressEvent(event);
+}
+
+void GameGrid::resizeEvent(QResizeEvent* event) {
+    QListView::resizeEvent(event);
+    UpdateIconSize();
 }

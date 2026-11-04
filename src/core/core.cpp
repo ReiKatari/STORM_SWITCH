@@ -21,6 +21,7 @@
 #include "common/cpu_features.h"
 #include "core/file_sys/submission_package.h"
 #include "core/file_sys/program_metadata.h"
+#include "core/file_sys/nup_container.h"
 
 #include "launch_timestamp_cache.h"
 #include "core/core_timing.h"
@@ -121,6 +122,10 @@ namespace {
 bool IsSwitch2Program(const FileSys::VirtualFile& file) {
     if (file == nullptr) {
         return false;
+    }
+    // Check packaged NUP (Switch 2 container)
+    if (FileSys::NupContainer::IsNupFile(file)) {
+        return true;
     }
     // Check loose ExeFS
     const auto dir = file->GetContainingDirectory();

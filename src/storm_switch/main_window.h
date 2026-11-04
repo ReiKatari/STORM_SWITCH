@@ -334,9 +334,12 @@ private:
     bool ConfirmForceLockedExit();
     void RequestGameExit();
     void changeEvent(QEvent* event) override;
+    void showEvent(QShowEvent* event) override;
+    void hideEvent(QHideEvent* event) override;
     void closeEvent(QCloseEvent* event) override;
     void resizeEvent(QResizeEvent* event) override;
     void moveEvent(QMoveEvent* event) override;
+    void CheckFirstRunWizard();
 
     std::string CreateTASFramesString(
         std::array<size_t, InputCommon::TasInput::PLAYER_NUMBER> frames) const;

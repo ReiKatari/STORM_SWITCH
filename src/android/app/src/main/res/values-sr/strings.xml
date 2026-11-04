@@ -2019,4 +2019,21 @@
     <string name="home_cat_diagnostics_about">Diagnostics, Logs &amp; About</string>
     <string name="per_game_custom_badge">CUSTOM</string>
     <string name="vulkan_legacy_driver_warning">System Vulkan %1$s detected on %2$s. Many Switch titles require Vulkan 1.3 features. It is recommended to install a Mesa Turnip driver in Settings -> GPU Driver Manager.</string>
+
+    <string name="button_a">A</string>
+    <string name="button_b">B</string>
+    <string name="button_l">L</string>
+    <string name="button_r">R</string>
+    <string name="button_x">X</string>
+    <string name="button_y">Y</string>
+    <string name="button_z">Z</string>
+    <string name="button_zl">ZL</string>
+    <string name="button_zr">ZR</string>
+    <string name="enable_fast_gpu_time">Enable Fast GPU Time</string>
+    <string name="enable_fast_gpu_time_description">Speeds up GPU timer queries to boost performance in games with heavy CPU-GPU synchronization, but may cause visual timing glitches in some titles.</string>
+    <string name="fsr2_quality_mode">FSR 2.0 Quality Mode</string>
+    <string name="fsr2_quality_mode_description">Selects the quality preset for AMD FSR 2.0 Temporal Upscaling</string>
+    <string name="scaling_filter_fsr">AMD FSR 2.0 (FidelityFX Super Resolution)</string>
+    <string name="storm_check_updates_now">Check for Updates Now</string>
+    <string name="storm_check_updates_now_desc">Check GitHub and STORM GAMES WORLD for a newer release and install it in place</string>
 </resources>

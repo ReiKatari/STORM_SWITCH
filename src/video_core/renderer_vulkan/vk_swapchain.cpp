@@ -18,6 +18,11 @@
 #include "common/settings_enums.h"
 #include "video_core/renderer_vulkan/vk_scheduler.h"
 #include "video_core/renderer_vulkan/vk_swapchain.h"
+
+#ifdef __ANDROID__
+#include <unistd.h>
+extern "C" __attribute__((weak)) void SetRenderThreadTid(pid_t tid);
+#endif
 #include "video_core/vulkan_common/vk_enum_string_helper.h"
 #include "video_core/vulkan_common/vulkan_device.h"
 #include "video_core/vulkan_common/vulkan_wrapper.h"
@@ -63,36 +68,22 @@ VkSurfaceFormatKHR ChooseSwapSurfaceFormat(vk::Span<VkSurfaceFormatKHR> formats)
 
 static VkPresentModeKHR ChooseSwapPresentMode(bool has_imm, bool has_mailbox,
                                               bool has_fifo_relaxed) {
-    // Mailbox doesn't lock the application like FIFO (vsync)
-    // FIFO present mode locks the framerate to the monitor's refresh rate
-    Settings::VSyncMode setting = [has_imm, has_mailbox]() {
-        // Choose Mailbox or Immediate if unlocked and those modes are supported
-        const auto mode = Settings::values.vsync_mode.GetValue();
-        if (Settings::values.frame_gen.GetValue()) {
-            return mode == Settings::VSyncMode::FifoRelaxed ? mode : Settings::VSyncMode::Fifo;
-        }
-        if (Settings::values.use_speed_limit.GetValue() &&
-            Settings::values.current_speed_mode.GetValue() != Settings::SpeedMode::Turbo) {
-            return mode;
-        }
-        switch (mode) {
-        case Settings::VSyncMode::Fifo:
-        case Settings::VSyncMode::FifoRelaxed:
-            if (has_mailbox) {
-                return Settings::VSyncMode::Mailbox;
-            } else if (has_imm) {
-                return Settings::VSyncMode::Immediate;
-            }
-            [[fallthrough]];
-        default:
-            return mode;
-        }
-    }();
-    if (setting == Settings::VSyncMode::Immediate && !has_imm) {
-        setting = Settings::VSyncMode::Mailbox;
+#ifdef __ANDROID__
+    // On Android, force FIFO present mode to eliminate frame-pacing judder, tearing, and thermal spikes
+    return VK_PRESENT_MODE_FIFO_KHR;
+#else
+    // Desktop: respect user VSync choice independently of speed limit / turbo mode
+    Settings::VSyncMode setting = Settings::values.vsync_mode.GetValue();
+    if (Settings::values.frame_gen.GetValue()) {
+        setting = setting == Settings::VSyncMode::FifoRelaxed ? setting : Settings::VSyncMode::Fifo;
     }
-    if ((setting == Settings::VSyncMode::Mailbox && !has_mailbox) ||
-        (setting == Settings::VSyncMode::FifoRelaxed && !has_fifo_relaxed)) {
+    if (setting == Settings::VSyncMode::Immediate && !has_imm) {
+        setting = has_mailbox ? Settings::VSyncMode::Mailbox : Settings::VSyncMode::Fifo;
+    }
+    if (setting == Settings::VSyncMode::Mailbox && !has_mailbox) {
+        setting = Settings::VSyncMode::Fifo;
+    }
+    if (setting == Settings::VSyncMode::FifoRelaxed && !has_fifo_relaxed) {
         setting = Settings::VSyncMode::Fifo;
     }
 
@@ -108,6 +99,7 @@ static VkPresentModeKHR ChooseSwapPresentMode(bool has_imm, bool has_mailbox,
     default:
         return VK_PRESENT_MODE_FIFO_KHR;
     }
+#endif
 }
 
 VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, u32 width, u32 height) {
@@ -185,7 +177,13 @@ void Swapchain::Create(
         return;
     }
 
-    Destroy();
+    frame_index = 0;
+    image_index = 0;
+    image_count = 0;
+    images.clear();
+    resource_ticks.clear();
+    present_semaphores.clear();
+    render_semaphores.clear();
 
     CreateSwapchain(capabilities);
     if (!swapchain) {
@@ -201,8 +199,20 @@ bool Swapchain::AcquireNextImage(bool may_flush) {
     if (!swapchain || image_count == 0 || images.empty()) {
         return true;
     }
+#ifdef __ANDROID__
+    static thread_local bool s_registered_tid = false;
+    if (!s_registered_tid) {
+        s_registered_tid = true;
+        if (SetRenderThreadTid) {
+            SetRenderThreadTid(gettid());
+        }
+    }
+    constexpr u64 timeout = 100'000'000ULL; // 100 ms timeout on Android
+#else
+    constexpr u64 timeout = (std::numeric_limits<u64>::max)();
+#endif
     const VkResult result = device.GetLogical().AcquireNextImageKHR(
-        *swapchain, (std::numeric_limits<u64>::max)(), *present_semaphores[frame_index],
+        *swapchain, timeout, *present_semaphores[frame_index],
         VK_NULL_HANDLE, &image_index);
     switch (result) {
     case VK_SUCCESS:
@@ -210,6 +220,12 @@ bool Swapchain::AcquireNextImage(bool may_flush) {
     case VK_SUBOPTIMAL_KHR:
         is_suboptimal = true;
         break;
+    case VK_TIMEOUT:
+    case VK_NOT_READY:
+        // Skip frame safely without deadlocking on unsignaled present semaphore
+        LOG_DEBUG(Render_Vulkan, "vkAcquireNextImageKHR timed out or not ready; skipping frame");
+        is_outdated = true;
+        throw vk::Exception(VK_ERROR_OUT_OF_DATE_KHR);
     case VK_ERROR_OUT_OF_DATE_KHR:
         is_outdated = true;
         break;
@@ -329,7 +345,7 @@ void Swapchain::CreateSwapchain(const VkSurfaceCapabilitiesKHR& capabilities) {
         .compositeAlpha = alpha_flags,
         .presentMode = present_mode,
         .clipped = VK_FALSE,
-        .oldSwapchain = VkSwapchainKHR{},
+        .oldSwapchain = *swapchain,
     };
     const u32 graphics_family{device.GetGraphicsFamily()};
     const u32 present_family{device.GetPresentFamily()};
@@ -372,7 +388,8 @@ void Swapchain::CreateSwapchain(const VkSurfaceCapabilitiesKHR& capabilities) {
         return;
     }
     // Don't add code within this and the swapchain creation.
-    swapchain = device.GetLogical().CreateSwapchainKHR(swapchain_ci);
+    vk::SwapchainKHR new_swapchain = device.GetLogical().CreateSwapchainKHR(swapchain_ci);
+    swapchain = std::move(new_swapchain);
 
     extent = swapchain_ci.imageExtent;
     width = extent.width;

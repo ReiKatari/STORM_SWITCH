@@ -284,7 +284,7 @@ struct FileBackend final : public Backend {
             enabled = false;
         file->Flush();
 #else
-        if (entry.log_level >= Level::Error || write_limit_exceeded) {
+        if (entry.log_level >= Level::Info || write_limit_exceeded) {
             // Stop writing after the write limit is exceeded.
             // Don't close the file so we can print a stacktrace if necessary
             if (write_limit_exceeded)

@@ -2087,4 +2087,16 @@
     <string name="home_cat_diagnostics_about">Diagnostica, registri e informazioni</string>
     <string name="per_game_custom_badge">PERS.</string>
     <string name="vulkan_legacy_driver_warning">Rilevato Vulkan di sistema %1$s su %2$s. Molti giochi per Switch richiedono Vulkan 1.3. Si consiglia di installare un driver Mesa Turnip in Impostazioni -> Gestore driver GPU.</string>
+
+    <string name="button_a">A</string>
+    <string name="button_b">B</string>
+    <string name="button_l">L</string>
+    <string name="button_r">R</string>
+    <string name="button_x">X</string>
+    <string name="button_y">Y</string>
+    <string name="button_z">Z</string>
+    <string name="button_zl">ZL</string>
+    <string name="button_zr">ZR</string>
+    <string name="enable_fast_gpu_time">Abilita tempo GPU rapido</string>
+    <string name="enable_fast_gpu_time_description">Accelera le query del timer GPU per migliorare le prestazioni nei giochi con forte sincronizzazione CPU-GPU.</string>
 </resources>

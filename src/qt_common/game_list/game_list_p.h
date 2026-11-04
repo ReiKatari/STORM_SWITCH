@@ -28,6 +28,8 @@
 #include <QString>
 
 #include "common/common_types.h"
+#include "common/fs/fs.h"
+#include "common/fs/path_util.h"
 #include "common/logging.h"
 #include "common/string_util.h"
 #include "frontend_common/play_time_manager.h"
@@ -183,6 +185,14 @@ public:
     static constexpr int ProgramIdRole = SortRole + 3;
     static constexpr int FileTypeRole = SortRole + 4;
     static constexpr int VersionRole = SortRole + 5;
+    static constexpr int ScaledPixmapRole = SortRole + 6;
+    static constexpr int HasUpdateBadgeRole = SortRole + 7;
+    static constexpr int AddonCountRole = SortRole + 8;
+    static constexpr int HasCustomConfigRole = SortRole + 9;
+    static constexpr int PlatformRole = SortRole + 10;
+    static constexpr int PlayTimeRole = SortRole + 11;
+    static constexpr int FileSizeBytesRole = SortRole + 12;
+    static constexpr int IconPathRole = SortRole + 13;
 
     GameListItemPath() = default;
     GameListItemPath(const QString& game_path, const std::vector<u8>& picture_data,
@@ -253,94 +263,49 @@ public:
         }
 
         setData(version_num, VersionRole);
+        setData(addon_count, AddonCountRole);
+        setData(qulonglong(play_time), PlayTimeRole);
+        setData(qulonglong(size_bytes), FileSizeBytesRole);
 
-        const QString addons_info = addon_count > 0
-                                        ? QStringLiteral("%1").arg(addon_count)
-                                        : QObject::tr("Нет");
+        // Check custom config (item 21)
+        const std::string config_name = program_id == 0
+            ? Common::FS::PathToUTF8String(std::filesystem::path(Common::FS::ToU8String(game_path.toStdString())).filename()).append(".ini")
+            : fmt::format("{:016X}.ini", program_id);
+        const bool has_custom_config = Common::FS::Exists(Common::FS::GetEdenPath(Common::FS::EdenPath::ConfigDir) / "custom" / config_name);
+        setData(has_custom_config, HasCustomConfigRole);
 
-        const u32 size = UISettings::values.game_icon_size.GetValue();
-        static std::unordered_map<u64, QImage> s_game_icon_cache;
-        static std::unordered_map<u64, QString> s_tooltip_b64_cache;
-        static std::mutex s_icon_cache_mutex;
+        // Check platform (Switch 1 vs Switch 2)
+        const bool is_switch2 = (program_id & 0x000F000000000000ULL) != 0 ||
+                                game_path.contains(QStringLiteral("switch2"), Qt::CaseInsensitive) ||
+                                game_path.contains(QStringLiteral("nx2"), Qt::CaseInsensitive);
+        setData(is_switch2 ? 1 : 0, PlatformRole);
 
-        const u64 icon_cache_key = (program_id << 12) ^ static_cast<u64>(size);
-        QImage picture_img;
-        {
-            std::lock_guard<std::mutex> lock(s_icon_cache_mutex);
-            auto icon_it = (program_id != 0) ? s_game_icon_cache.find(icon_cache_key) : s_game_icon_cache.end();
-            if (icon_it != s_game_icon_cache.end()) {
-                picture_img = icon_it->second;
-            } else {
-                if (!picture_img.loadFromData(picture_data.data(), static_cast<u32>(picture_data.size()))) {
-                    picture_img = GetDefaultImage(size);
-                } else {
-                    picture_img = picture_img.scaled(size, size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-                }
-                if (program_id != 0) {
-                    s_game_icon_cache.emplace(icon_cache_key, picture_img);
-                }
-            }
-        }
-        m_image = picture_img;
-
-        QString icon_base64;
-        {
-            std::lock_guard<std::mutex> lock(s_icon_cache_mutex);
-            auto b64_it = (program_id != 0) ? s_tooltip_b64_cache.find(program_id) : s_tooltip_b64_cache.end();
-            if (b64_it != s_tooltip_b64_cache.end()) {
-                icon_base64 = b64_it->second;
-            } else if (!picture_data.empty()) {
-                const QByteArray raw = QByteArray::fromRawData(
-                    reinterpret_cast<const char*>(picture_data.data()),
-                    static_cast<qsizetype>(picture_data.size()));
-                icon_base64 = QString::fromLatin1(raw.toBase64());
-                if (program_id != 0) {
-                    s_tooltip_b64_cache.emplace(program_id, icon_base64);
-                }
-            } else {
-                QByteArray bArray;
-                QBuffer buffer(&bArray);
-                buffer.open(QIODevice::WriteOnly);
-                picture_img.save(&buffer, "PNG", 90);
-                icon_base64 = QString::fromLatin1(bArray.toBase64());
-                if (program_id != 0) {
-                    s_tooltip_b64_cache.emplace(program_id, icon_base64);
-                }
+        // Path to cached icon
+        const auto cache_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::CacheDir) / "game_list";
+        const auto icon_file = cache_dir / "icons" / fmt::format("{:016X}.png", program_id);
+        if (Common::FS::Exists(icon_file)) {
+            setData(QString::fromStdString(Common::FS::PathToUTF8String(icon_file)), IconPathRole);
+        } else {
+            const auto jpeg_file = cache_dir / fmt::format("{:016X}.jpeg", program_id);
+            if (Common::FS::Exists(jpeg_file)) {
+                setData(QString::fromStdString(Common::FS::PathToUTF8String(jpeg_file)), IconPathRole);
             }
         }
 
-        const QString formatted_title_id =
-            QString::fromStdString(fmt::format("{:016X}", program_id));
-        const QString formatted_size =
-            size_bytes > 0 ? QtCommon::ReadableByteSize(size_bytes) : QStringLiteral("-");
+        if (!picture_data.empty()) {
+            m_image.loadFromData(picture_data.data(), static_cast<u32>(picture_data.size()));
+        }
+    }
 
-        const QString rich_tooltip = QObject::tr(
-            R"(<table style="border-collapse: collapse; width: 640px;">)"
-            R"(<tr>)"
-            R"(<td style="vertical-align: middle; width: 110px; padding-right: 14px; text-align: center;">)"
-            R"(<img src="data:image/png;base64,%1" width="96" height="96" style="border-radius: 8px;" />)"
-            R"(</td>)"
-            R"(<td style="vertical-align: middle;">)"
-            R"(<div style="font-size: 11.5pt; font-weight: bold; color: #ffee00; line-height: 1.25; margin-bottom: 2px;">%2</div>)"
-            R"(<div style="font-size: 8.5pt; font-weight: bold; color: #00f0ff; margin-bottom: 6px;">[%3]</div>)"
-            R"(<table style="font-size: 8.5pt; width: 100%%; border-collapse: collapse;">)"
-            R"(<tr><td style="color: #8fa2b8; padding: 1px 6px 1px 0; width: 130px;"><b>ID приложения:</b></td><td style="color: #00f2fe; font-family: monospace;">%4</td></tr>)"
-            R"(<tr><td style="color: #8fa2b8; padding: 1px 6px 1px 0;"><b>Версия:</b></td><td><b style="color: #00ffaa;">%5</b></td></tr>)"
-            R"(<tr><td style="color: #8fa2b8; padding: 1px 6px 1px 0;"><b>Размер:</b></td><td style="color: #ffffff;">%6</td></tr>)"
-            R"(<tr><td style="color: #8fa2b8; padding: 1px 6px 1px 0;"><b>Время игры:</b></td><td style="color: #ffffff;">%7</td></tr>)"
-            R"(<tr><td style="color: #8fa2b8; padding: 1px 6px 1px 0;"><b>Дополнения:</b></td><td style="color: #ffffff;">%8</td></tr>)"
-            R"(</table>)"
-            R"(</td>)"
-            R"(</tr>)"
-            R"(<tr>)"
-            R"(<td colspan="2" style="padding-top: 6px; border-top: 1px solid rgba(255, 255, 255, 0.12); font-size: 8pt; color: #8fa2b8; word-break: break-all;">)"
-            R"(<b>Путь к файлу:</b> <span style="color: #cbd5e1; font-family: monospace;">%9</span>)"
-            R"(</td>)"
-            R"(</tr>)"
-            R"(</table>)"
-        ).arg(icon_base64, game_name.toHtmlEscaped(), game_type.toHtmlEscaped(), formatted_title_id, version_num, formatted_size, readable_play_time, addons_info, game_path.toHtmlEscaped());
-
-        setData(rich_tooltip, Qt::ToolTipRole);
+    void setData(const QVariant& value, int role = Qt::UserRole + 1) override {
+        if (role == ScaledPixmapRole || role == Qt::DecorationRole) {
+            if (value.canConvert<QPixmap>()) {
+                m_pixmap = value.value<QPixmap>();
+                emit emitDataChanged();
+                return;
+            }
+        }
+        GameListItem::setData(value, role);
     }
 
     int type() const override {
@@ -348,13 +313,29 @@ public:
     }
 
     QVariant data(int role) const override {
+        if (role == ScaledPixmapRole) {
+            if (!m_pixmap.isNull()) {
+                return m_pixmap;
+            }
+        }
+
         if (role == Qt::DecorationRole) {
             if (m_pixmap.isNull() && !m_image.isNull()) {
-                m_pixmap = QPixmap::fromImage(m_image);
+                const u32 icon_size = UISettings::values.game_icon_size.GetValue();
+                if (m_image.width() != static_cast<int>(icon_size) || m_image.height() != static_cast<int>(icon_size)) {
+                    m_pixmap = QPixmap::fromImage(m_image.scaled(icon_size, icon_size, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+                } else {
+                    m_pixmap = QPixmap::fromImage(m_image);
+                }
             }
             if (!m_pixmap.isNull()) {
                 return m_pixmap;
             }
+            return GetDefaultImage(UISettings::values.game_icon_size.GetValue());
+        }
+
+        if (role == Qt::ToolTipRole) {
+            return GetLazyToolTip();
         }
 
         if (role == Qt::DisplayRole || role == SortRole) {
@@ -407,6 +388,61 @@ public:
         }
 
         return GameListItem::data(role);
+    }
+
+private:
+    QString GetLazyToolTip() const {
+        const u64 program_id = data(ProgramIdRole).toULongLong();
+        const QString game_name = data(TitleRole).toString();
+        const QString game_type = data(FileTypeRole).toString();
+        const QString game_path = data(FullPathRole).toString();
+        const QString version_num = data(VersionRole).toString();
+        const int addon_count = data(AddonCountRole).toInt();
+        const u64 size_bytes = data(FileSizeBytesRole).toULongLong();
+        const u64 play_time = data(PlayTimeRole).toULongLong();
+
+        const auto readable_play_time =
+            play_time > 0 ? QString::fromStdString(PlayTime::PlayTimeManager::GetReadablePlayTime(play_time))
+                          : QObject::tr("Не запускалась");
+
+        const QString addons_info = addon_count > 0 ? QStringLiteral("%1").arg(addon_count) : QObject::tr("Нет");
+        const QString formatted_title_id = QString::fromStdString(fmt::format("{:016X}", program_id));
+        const QString formatted_size = size_bytes > 0 ? QtCommon::ReadableByteSize(size_bytes) : QStringLiteral("-");
+
+        QString icon_base64;
+        if (!m_image.isNull()) {
+            QByteArray bArray;
+            QBuffer buffer(&bArray);
+            buffer.open(QIODevice::WriteOnly);
+            m_image.save(&buffer, "PNG", 80);
+            icon_base64 = QString::fromLatin1(bArray.toBase64());
+        }
+
+        return QObject::tr(
+            R"(<table style="border-collapse: collapse; width: 640px;">)"
+            R"(<tr>)"
+            R"(<td style="vertical-align: middle; width: 110px; padding-right: 14px; text-align: center;">)"
+            R"(<img src="data:image/png;base64,%1" width="96" height="96" style="border-radius: 8px;" />)"
+            R"(</td>)"
+            R"(<td style="vertical-align: middle;">)"
+            R"(<div style="font-size: 11.5pt; font-weight: bold; color: #ffee00; line-height: 1.25; margin-bottom: 2px;">%2</div>)"
+            R"(<div style="font-size: 8.5pt; font-weight: bold; color: #00f0ff; margin-bottom: 6px;">[%3]</div>)"
+            R"(<table style="font-size: 8.5pt; width: 100%%; border-collapse: collapse;">)"
+            R"(<tr><td style="color: #8fa2b8; padding: 1px 6px 1px 0; width: 130px;"><b>ID приложения:</b></td><td style="color: #00f2fe; font-family: monospace;">%4</td></tr>)"
+            R"(<tr><td style="color: #8fa2b8; padding: 1px 6px 1px 0;"><b>Версия:</b></td><td><b style="color: #00ffaa;">%5</b></td></tr>)"
+            R"(<tr><td style="color: #8fa2b8; padding: 1px 6px 1px 0;"><b>Размер:</b></td><td style="color: #ffffff;">%6</td></tr>)"
+            R"(<tr><td style="color: #8fa2b8; padding: 1px 6px 1px 0;"><b>Время игры:</b></td><td style="color: #ffffff;">%7</td></tr>)"
+            R"(<tr><td style="color: #8fa2b8; padding: 1px 6px 1px 0;"><b>Дополнения:</b></td><td style="color: #ffffff;">%8</td></tr>)"
+            R"(</table>)"
+            R"(</td>)"
+            R"(</tr>)"
+            R"(<tr>)"
+            R"(<td colspan="2" style="padding-top: 6px; border-top: 1px solid rgba(255, 255, 255, 0.12); font-size: 8pt; color: #8fa2b8; word-break: break-all;">)"
+            R"(<b>Путь к файлу:</b> <span style="color: #cbd5e1; font-family: monospace;">%9</span>)"
+            R"(</td>)"
+            R"(</tr>)"
+            R"(</table>)"
+        ).arg(icon_base64, game_name.toHtmlEscaped(), game_type.toHtmlEscaped(), formatted_title_id, version_num, formatted_size, readable_play_time, addons_info, game_path.toHtmlEscaped());
     }
 };
 
@@ -658,3 +694,28 @@ public:
         return false;
     }
 };
+
+inline QString FormatGameName(const std::string& physical_name) {
+    const QString physical_name_as_qstring = QString::fromStdString(physical_name);
+    const QFileInfo file_info(physical_name_as_qstring);
+    if (physical_name.ends_with("/main") || physical_name.ends_with("\\main")) {
+        return file_info.dir().path();
+    }
+    return physical_name_as_qstring;
+}
+
+inline QList<QStandardItem*> MakeCachedGameListEntry(
+    const std::string& path, const std::string& name, const std::size_t size,
+    const std::vector<u8>& icon, const QString& file_type_string, u64 program_id,
+    const PlayTime::PlayTimeManager& play_time_manager,
+    const QString& patch_versions, const QString& file_version, const QString& addons_text) {
+    const u64 play_time = play_time_manager.GetPlayTime(program_id);
+    return QList<QStandardItem*>{
+        new GameListItemPath(FormatGameName(path), icon, QString::fromStdString(name),
+                             file_type_string, program_id, play_time, patch_versions, size, file_version),
+        new GameListItemCentered(file_type_string),
+        new GameListItemSize(size),
+        new GameListItemPlayTime(play_time),
+        new GameListItem(addons_text),
+    };
+}

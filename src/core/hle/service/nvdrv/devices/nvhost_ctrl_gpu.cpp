@@ -278,7 +278,7 @@ NvResult nvhost_ctrl_gpu::GetCharacteristics1(IoctlCharacteristics& params) {
 NvResult nvhost_ctrl_gpu::GetCharacteristics3(
     IoctlCharacteristics& params, std::span<IoctlGpuCharacteristics> gpu_characteristics) {
     LOG_DEBUG(Service_NVDRV, "called, buf_size={:#x}", params.gpu_characteristics_buf_size);
-    const bool nx2 = params.gpu_characteristics_buf_size >= Nx2CharacteristicsSize;
+    const bool nx2 = Settings::IsCurrentProgramSwitch2() && params.gpu_characteristics_buf_size >= Nx2CharacteristicsSize;
 
     params.gc.arch = 0x120;
     params.gc.impl = 0xb;

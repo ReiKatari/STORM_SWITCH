@@ -2205,4 +2205,16 @@ Lancez un jeu ou connectez-vous à un autre appareil.</string>
     <string name="home_cat_diagnostics_about">Diagnostics, Journaux &amp; À propos</string>
     <string name="per_game_custom_badge">PERSO</string>
     <string name="vulkan_legacy_driver_warning">Vulkan système %1$s détecté sur %2$s. De nombreux jeux Switch nécessitent Vulkan 1.3. Il est recommandé d\'installer un pilote Mesa Turnip dans Paramètres → Gestionnaire de pilotes GPU.</string>
+
+    <string name="button_a">A</string>
+    <string name="button_b">B</string>
+    <string name="button_l">L</string>
+    <string name="button_r">R</string>
+    <string name="button_x">X</string>
+    <string name="button_y">Y</string>
+    <string name="button_z">Z</string>
+    <string name="button_zl">ZL</string>
+    <string name="button_zr">ZR</string>
+    <string name="enable_fast_gpu_time">Activer le temps GPU rapide</string>
+    <string name="enable_fast_gpu_time_description">Accélère les requêtes de minuterie GPU pour améliorer les performances dans les jeux avec une forte synchronisation CPU-GPU, mais peut provoquer des problèmes de synchronisation.</string>
 </resources>

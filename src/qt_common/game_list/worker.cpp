@@ -161,16 +161,7 @@ bool IsExtractedNCAMain(const std::string& file_name) {
     return QFileInfo(QString::fromStdString(file_name)).fileName() == QStringLiteral("main");
 }
 
-QString FormatGameName(const std::string& physical_name) {
-    const QString physical_name_as_qstring = QString::fromStdString(physical_name);
-    const QFileInfo file_info(physical_name_as_qstring);
-
-    if (IsExtractedNCAMain(physical_name)) {
-        return file_info.dir().path();
-    }
-
-    return physical_name_as_qstring;
-}
+// FormatGameName is defined inline in game_list_p.h
 
 QString FormatPatchNameVersions(const FileSys::PatchManager& patch_manager,
                                 Loader::AppLoader& loader, bool updatable = true) {
@@ -267,21 +258,7 @@ QString FormatAddonsColumnText(const QString& patch_versions, const QString& bas
     return result;
 }
 
-QList<QStandardItem*> MakeCachedGameListEntry(
-    const std::string& path, const std::string& name, const std::size_t size,
-    const std::vector<u8>& icon, const QString& file_type_string, u64 program_id,
-    const PlayTime::PlayTimeManager& play_time_manager,
-    const QString& patch_versions, const QString& file_version, const QString& addons_text) {
-    const u64 play_time = play_time_manager.GetPlayTime(program_id);
-    return QList<QStandardItem*>{
-        new GameListItemPath(FormatGameName(path), icon, QString::fromStdString(name),
-                             file_type_string, program_id, play_time, patch_versions, size, file_version),
-        new GameListItemCentered(file_type_string),
-        new GameListItemSize(size),
-        new GameListItemPlayTime(play_time),
-        new GameListItem(addons_text),
-    };
-}
+// MakeCachedGameListEntry is defined inline in game_list_p.h
 
 QList<QStandardItem*> MakeGameListEntry(const std::string& path, const std::string& name,
                                         const std::size_t size, const std::vector<u8>& icon,
@@ -498,8 +475,11 @@ void GameListWorker::LoadMetadataCache() {
     if (!file.open(QFile::ReadOnly)) {
         return;
     }
-    const auto doc = QJsonDocument::fromJson(file.readAll());
-    if (!doc.isObject()) {
+    QJsonParseError parse_err{};
+    const auto doc = QJsonDocument::fromJson(file.readAll(), &parse_err);
+    if (parse_err.error != QJsonParseError::NoError || !doc.isObject()) {
+        LOG_WARNING(Frontend, "Game list cache corrupted ({}), falling back to full scan",
+                    parse_err.errorString().toStdString());
         return;
     }
     const auto root = doc.object();
@@ -540,10 +520,21 @@ void GameListWorker::SaveMetadataCache() {
         obj.insert(QStringLiteral("bootable"), meta.is_bootable);
         root.insert(QString::fromStdString(path), obj);
     }
-    QFile file(QString::fromStdString(cache_path));
+    // Atomic write: write to temp file first, flush, close, then atomically rename
+    const auto tmp_path = Common::FS::PathToUTF8String(cache_dir / "file_metadata_cache.json.tmp");
+    const QString q_tmp = QString::fromStdString(tmp_path);
+    const QString q_dest = QString::fromStdString(cache_path);
+    QFile file(q_tmp);
     if (file.open(QFile::WriteOnly)) {
         file.write(QJsonDocument(root).toJson(QJsonDocument::Compact));
-        metadata_cache_dirty = false;
+        file.flush();
+        file.close();
+
+        // Atomically replace target
+        QFile::remove(q_dest);
+        if (QFile::rename(q_tmp, q_dest)) {
+            metadata_cache_dirty = false;
+        }
     }
 }
 
@@ -813,17 +804,8 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
             const std::string dedup_key = fmt::format("{:016X}_{}", cached.program_id & 0xFFFFFFFFFFFFE000ULL, cached.file_type_string);
             if (!emitted_entries.contains(file_info.physical_name) && !emitted_entries.contains(dedup_key) &&
                 cached.program_id != 0 && (cached.program_id & 0xFFF) == 0) {
+                // Do NOT synchronously open/read jpeg here - thumbnails are loaded lazily & async
                 std::vector<u8> icon_bytes;
-                const auto icon_file_path = Common::FS::PathToUTF8String(
-                    cache_dir_base / fmt::format("{:016X}.jpeg", cached.program_id));
-                QFile ifile(QString::fromStdString(icon_file_path));
-                if (ifile.open(QFile::ReadOnly)) {
-                    const qint64 sz = ifile.size();
-                    if (sz > 0) {
-                        icon_bytes.resize(static_cast<std::size_t>(sz));
-                        ifile.read(reinterpret_cast<char*>(icon_bytes.data()), sz);
-                    }
-                }
                 cached_batch.push_back(MakeCachedGameListEntry(
                     file_info.physical_name, cached.name, cached.file_size, icon_bytes,
                     QString::fromStdString(cached.file_type_string), cached.program_id,
@@ -1064,6 +1046,16 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
                     QFile ifile(QString::fromStdString(icon_file_path));
                     if (ifile.open(QFile::WriteOnly)) {
                         ifile.write(reinterpret_cast<const char*>(icon.data()), icon.size());
+                    }
+
+                    const auto thumb_file_path = cache_dir_base / "icons" / fmt::format("{:016X}.png", id);
+                    if (!Common::FS::Exists(thumb_file_path)) {
+                        void(Common::FS::CreateParentDirs(thumb_file_path));
+                        QImage img;
+                        if (img.loadFromData(icon.data(), static_cast<u32>(icon.size()))) {
+                            img = img.scaled(256, 256, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+                            img.save(QString::fromStdString(Common::FS::PathToUTF8String(thumb_file_path)), "PNG", 90);
+                        }
                     }
                 }
 

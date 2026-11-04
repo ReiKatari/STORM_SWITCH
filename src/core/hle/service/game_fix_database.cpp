@@ -418,7 +418,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"System\\language_index", "10"},
             {"System\\region_index", "2"}
         },
-        {0x0100B1100C4D0000ULL}
+        {0x0100B1100C4D0000ULL, 0x0100D76008684000ULL}
     },
     {
         0x01008C3005A32000ULL,
@@ -5660,6 +5660,74 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\astc_recompression", "0"}
         }
     },
+    {
+        0x01000C100DF0C000ULL,
+        "Sniper Elite 4",
+        "• Задержка ввода (input lag) и неравномерность кадрового темпа (frame pacing)\n• Просадки FPS при синхронной компиляции шейдеров Asura engine",
+        "• Input lag and frame pacing stuttering with unoptimized GPU fences\n• Framerate drops during synchronous Asura engine shader compilation",
+        "✓ Точность ГПУ: Обычная (Normal / устранение задержек выборки глубины)\n✓ Быстрое время ГПУ: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено",
+        "✓ GPU Accuracy: Normal (Eliminates depth readback latency)\n✓ Fast GPU Time: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
+        {
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Cpu\\cpu_accuracy", "0"}
+        }
+    },
+    {
+        0x0100C3800B8A0000ULL,
+        "Power Rangers: Battle for the Grid",
+        "• Микрофризы и задержка ввода при блокирующих синхронизациях GPU fence\n• Просадки FPS в динамичных боевых сценах Unity",
+        "• Input lag and frame pacing stuttering with blocking GPU fence waits\n• Framerate drops in fast-paced Unity combat sequences",
+        "✓ Точность ГПУ: Обычная (Normal / неблокирующая синхронизация)\n✓ Быстрое время ГПУ: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено",
+        "✓ GPU Accuracy: Normal (Non-blocking fence pacing)\n✓ Fast GPU Time: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
+        {
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Cpu\\cpu_accuracy", "0"}
+        },
+        {0x01005A300BFD6000ULL, 0x0100B1A00C9BC000ULL}
+    },
+    {
+        0x0100C4000FC1A000ULL,
+        "Jump Force",
+        "• Просадки FPS и фризы при переключении персонажей и суперударах UE4\n• Задержка ввода из-за синхронной компиляции шейдеров частиц",
+        "• Framerate drops during UE4 character switches and ultimate awakenings\n• Input latency from synchronous particle shader compilation",
+        "✓ Точность ГПУ: Обычная (Normal / устранение задержек)\n✓ Сжатие ASTC: BC1/BC3 (оптимизация VRAM для Mali/Adreno)\n✓ Быстрое время ГПУ: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено",
+        "✓ GPU Accuracy: Normal (Eliminates sync stalls)\n✓ ASTC Recompression: BC1/BC3 (VRAM optimization for Mali/Adreno)\n✓ Fast GPU Time: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
+        {
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\astc_recompression", "1"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Cpu\\cpu_accuracy", "0"}
+        },
+        {0x010091600E5BC000ULL}
+    },
+    {
+        0x0100412019772000ULL,
+        "Naruto x Boruto Ultimate Ninja STORM CONNECTIONS",
+        "• Просадки FPS и фризы при динамическом инстансинге вершин в дзюцу\n• Задержка ввода из-за синхронного сброса командных буферов",
+        "• Pipeline stalls during dynamic vertex attribute instancing in jutsu animations\n• Input lag from synchronous command buffer flushes",
+        "✓ Точность ГПУ: Обычная (Normal / оптимизированный конвейер)\n✓ Быстрое время ГПУ: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено",
+        "✓ GPU Accuracy: Normal (Optimized pipeline throughput)\n✓ Fast GPU Time: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
+        {
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Cpu\\cpu_accuracy", "0"}
+        },
+        {0x010014C01A242000ULL}
+    },
 
 };
 
@@ -6995,7 +7063,7 @@ void GameFixDatabase::SanitizeSettingsForHostHardware() {
     };
 
     const auto mem_mode = Settings::values.memory_layout_mode.GetValue();
-    if (!HasAtLeast5GbHostRam()) {
+    if (!Settings::IsCurrentProgramSwitch2() && !HasAtLeast5GbHostRam()) {
         if (mem_mode != Settings::MemoryLayout::Memory_4Gb) {
             apply_session_only(Settings::values.memory_layout_mode, Settings::MemoryLayout::Memory_4Gb);
             LOG_INFO(Frontend, "Hardware Auto-Correction: Clamped memory_layout_mode to 4GB on <=4GB RAM device ({} MB)",
@@ -7132,6 +7200,9 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id, const std::string& name
             } else if (full_key == "System\\airplane_mode" || full_key == "Services\\airplane_mode" || full_key == "Network\\airplane_mode") {
                 apply_setting(Settings::values.airplane_mode, val == "true" || val == "1");
             } else if (full_key == "System\\memory_layout_mode" || full_key == "Core\\memory_layout_mode") {
+                if (Settings::IsCurrentProgramSwitch2()) {
+                    continue;
+                }
                 int mode = safe_stoi(val, 0);
                 if (mode >= 1 && !HasAtLeast5GbHostRam()) {
                     mode = 0;

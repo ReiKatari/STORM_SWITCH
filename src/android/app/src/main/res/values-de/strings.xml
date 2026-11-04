@@ -2200,4 +2200,16 @@ Starte ein Spiel oder verbinde dich mit einem anderen Gerät.</string>
     <string name="home_cat_diagnostics_about">Diagnose, Protokolle &amp; Info</string>
     <string name="per_game_custom_badge">EIGEN</string>
     <string name="vulkan_legacy_driver_warning">System-Vulkan %1$s auf %2$s erkannt. Viele Switch-Titel erfordern Vulkan 1.3-Funktionen. Es wird empfohlen, einen Mesa Turnip-Treiber in Einstellungen -> GPU-Treiber-Manager zu installieren.</string>
+
+    <string name="button_a">A</string>
+    <string name="button_b">B</string>
+    <string name="button_l">L</string>
+    <string name="button_r">R</string>
+    <string name="button_x">X</string>
+    <string name="button_y">Y</string>
+    <string name="button_z">Z</string>
+    <string name="button_zl">ZL</string>
+    <string name="button_zr">ZR</string>
+    <string name="enable_fast_gpu_time">Schnelle GPU-Zeit aktivieren</string>
+    <string name="enable_fast_gpu_time_description">Beschleunigt GPU-Timer-Abfragen zur Leistungssteigerung bei hoher CPU-GPU-Synchronisierung, kann jedoch bei manchen Titeln Timing-Fehler verursachen.</string>
 </resources>

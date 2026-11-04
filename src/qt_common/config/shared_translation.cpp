@@ -698,6 +698,32 @@ static QString TranslateConfigText(const char* text, const char* disambiguation 
         {"All", "Все", "الكل", "Alle", "Tout", "全部", "すべて", "Todo"},
         {"Turbo", "Турбо", "توربو", "Turbo", "Turbo", "加速 (Turbo)", "ターボ", "Turbo"},
         {"Slow", "Замедление", "بطيء", "Langsam", "Lent", "减速 (Slow)", "スロー", "Lento"},
+
+        // CPU Optimization & Debug Settings (Item 18)
+        {"CPU Page Tables", "Таблицы страниц ЦП", "جداول صفحات المعالج", "CPU-Seitentabellen", "Tables de pages CPU", "CPU 页表", "CPU ページテーブル", "Tablas de páginas CPU", "CPU 페이지 테이블", "Tabelle di pagina CPU", "Tabelas de páginas da CPU", "CPU पेज टेबल"},
+        {"CPU Block Linking", "Связывание блоков ЦП", "ربط كتل المعالج", "CPU-Block-Verknüpfung", "Liaison de blocs CPU", "CPU 块链接", "CPU ブロックリンク", "Enlace de bloques CPU", "CPU 블록 연결", "Collegamento blocchi CPU", "Vinculação de blocos de CPU", "CPU ब्लॉक लिंकिंग"},
+        {"CPU Constant Propagation", "Распространение констант ЦП", "نشر الثوابت للمعالج", "CPU-Konstantenweitergabe", "Propagation de constantes CPU", "CPU 常数传播", "CPU 定数伝播", "Propagación de constantes CPU", "CPU 상수 전파", "Propagazione costanti CPU", "Propagação de constantes da CPU", "CPU स्थिरांक प्रसार"},
+        {"CPU Context Elimination", "Исключение мертвого контекста ЦП", "إلغاء سياق المعالج الميت", "CPU-Kontexteliminierung", "Élimination de contexte CPU", "CPU 上下文消除", "CPU コンテキスト削除", "Eliminación de contexto CPU", "CPU 컨텍스트 제거", "Eliminazione contesto CPU", "Eliminação de contexto da CPU", "CPU संदर्भ निष्कासन"},
+        {"CPU Fast Dispatcher", "Быстрый диспетчер ЦП", "موزع المعالج السريع", "CPU-Schnelldispatcher", "Répartiteur rapide CPU", "CPU 快速调度器", "CPU 高速ディスパッチャ", "Despachador rápido CPU", "CPU 고속 디스패처", "Dispatcher veloce CPU", "Despachante rápido da CPU", "CPU तेज़ डिस्पैचर"},
+        {"CPU Fastmem", "Быстрая память ЦП (Fastmem)", "الذاكرة السريعة للمعالج (Fastmem)", "CPU-Fastmem", "Mémoire rapide CPU (Fastmem)", "CPU 快速内存 (Fastmem)", "CPU 高速メモリ (Fastmem)", "Memoria rápida CPU (Fastmem)", "CPU 고속 메모리 (Fastmem)", "Memoria rapida CPU (Fastmem)", "Memória rápida da CPU (Fastmem)", "CPU तेज़ मेमोरी (Fastmem)"},
+        {"CPU Fastmem Exclusives", "Эксклюзивы быстрой памяти", "العمليات الحصرية للذاكرة السريعة", "CPU-Fastmem-Exklusivoperationen", "Exclusives de mémoire rapide CPU", "CPU 快速内存互斥", "CPU Fastmem 排他処理", "Exclusivos de memoria rápida CPU", "CPU Fastmem 전용 연산", "Esclusive memoria rapida CPU", "Exclusivos de memória rápida da CPU", "CPU तेज़ मेमोरी विशिष्ट"},
+        {"CPU Ignore Memory Aborts", "Игнорировать сбои памяти ЦП", "تجاهل أخطاء الذاكرة للمعالج", "CPU-Speicherabbrüche ignorieren", "Ignorer les interruptions mémoire CPU", "CPU 忽略内存异常", "CPU メモリアボートを無視", "Ignorar fallos de memoria CPU", "CPU 메모리 중단 무시", "Ignora interruzioni memoria CPU", "Ignorar abortos de memória da CPU", "CPU मेमोरी निरस्तीकरण अनदेखा करें"},
+        {"CPU Misc IR Optimizations", "Оптимизации промежуточного кода ЦП", "تحسينات IR المتنوعة للمعالج", "CPU-IR-Optimierungen", "Optimisations IR diverses CPU", "CPU 杂项 IR 优化", "CPU 各種 IR 最適化", "Optimizaciones IR diversas CPU", "CPU 기타 IR 최적화", "Ottimizzazioni varie IR CPU", "Otimizações diversas de IR da CPU", "CPU विविध IR अनुकूलन"},
+        {"CPU Recompile Exclusives", "Перекомпиляция эксклюзивов ЦП", "إعادة ترجمة العمليات الحصرية", "CPU-Neuübersetzung von Exklusiven", "Recompilation d'exclusives CPU", "CPU 重新编译互斥指令", "CPU 排他命令の再コンパイル", "Recompilación de exclusivos CPU", "CPU 전용 명령 재컴파일", "Ricompilazione esclusive CPU", "Recompilação de exclusivos da CPU", "CPU विशिष्ट पुनः संकलन"},
+        {"CPU Reduce Misalignment Checks", "Сократить проверки выравнивания ЦП", "تقليل فحوصات عدم المحاذاة", "CPU-Fehlausrichtungsprüfungen reduzieren", "Réduire les vérifications de désalignement", "CPU 减少未对齐检查", "CPU アライメント検証の削減", "Reducir comprobaciones de desalineación CPU", "CPU 정렬되지 않은 검사 감소", "Riduci controlli di disallineamento CPU", "Reduzir verificações de desalinhamento da CPU", "CPU गलत संरेखण जाँच कम करें"},
+        {"CPU Return Stack Buffer", "Буфер стека возвратов ЦП (RSB)", "مخزن مكدس العودة للمعالج", "CPU-Return-Stack-Buffer (RSB)", "Mémoire tampon de pile de retour CPU", "CPU 返回堆栈缓冲区 (RSB)", "CPU リターンスタックバッファ (RSB)", "Búfer de pila de retorno CPU", "CPU 반환 스택 버퍼 (RSB)", "Buffer stack di ritorno CPU", "Buffer de pilha de retorno da CPU (RSB)", "CPU रिटर्न स्टैक बफ़र"},
+        {"Network Interface", "Сетевой интерфейс", "واجهة الشبكة", "Netzwerkschnittstelle", "Interface réseau", "网络接口", "ネットワークインターフェース", "Interfaz de red", "네트워크 인터페이스", "Interfaccia di rete", "Interface de rede", "नेटवर्क इंटरफ़ेस"},
+        {"UDP Input Servers", "UDP-серверы ввода", "خوادم إدخال UDP", "UDP-Eingabeserver", "Serveurs d'entrée UDP", "UDP 输入服务器", "UDP 入力サーバー", "Servidores de entrada UDP", "UDP 입력 서버", "Server di input UDP", "Servidores de entrada UDP", "UDP इनपुट सर्वर"},
+        {"Randomize Amiibo ID", "Случайный ID Amiibo", "معرف Amiibo عشوائي", "Amiibo-ID randomisieren", "ID Amiibo aléatoire", "随机 Amiibo ID", "Amiibo ID をランダム化", "Aleatorizar ID de Amiibo", "Amiibo ID 무작위화", "Randomizza ID Amiibo", "Aleatorizar ID de Amiibo", "Amiibo ID यादृच्छिक करें"},
+        {"Airplane Mode", "Режим «В самолёте»", "وضع الطيران", "Flugmodus", "Mode avion", "飞行模式", "機内モード", "Modo avión", "비행기 모드", "Modalità aereo", "Modo avião", "हवाई जहाज मोड"},
+        {"Disable Buffer Reorder", "Отключить переупорядочивание буферов", "تعطيل إعادة ترتيب المخازن", "Puffer-Neuanordnung deaktivieren", "Désactiver le réordonnancement de tampons", "禁用缓冲区重新排序", "バッファ再順序付けを無効化", "Desactivar reordenación de búferes", "버퍼 재정렬 비활성화", "Disabilita riordino buffer", "Desativar reordenação de buffers", "बफ़र पुनर्गठन अक्षम करें"},
+        {"Disable Macro HLE", "Отключить Macro HLE", "تعطيل Macro HLE", "Macro HLE deaktivieren", "Désactiver Macro HLE", "禁用宏 HLE", "マクロ HLE を無効化", "Desactivar Macro HLE", "매크로 HLE 비활성화", "Disabilita Macro HLE", "Desativar Macro HLE", "मैक्रो HLE अक्षम करें"},
+        {"Disable Macro JIT", "Отключить Macro JIT", "تعطيل Macro JIT", "Macro JIT deaktivieren", "Désactiver Macro JIT", "禁用宏 JIT", "マクロ JIT を無効化", "Desactivar Macro JIT", "매크로 JIT 비활성화", "Disabilita Macro JIT", "Desativar Macro JIT", "मैक्रो JIT अक्षम करें"},
+        {"Disable Shader Loop Safety Checks", "Отключить проверки циклов в шейдерах", "تعطيل فحوصات أمان حلقات المظللات", "Shader-Schleifen-Sicherheitsprüfungen deaktivieren", "Désactiver la sécurité des boucles de nuanceurs", "禁用着色器循环安全检查", "シェーダーループの安全性検査を無効化", "Desactivar comprobaciones de bucles en sombreadores", "셰이더 루프 안전 검사 비활성화", "Disabilita controlli di sicurezza loop shader", "Desativar verificações de segurança de loops de sombreador", "शेडर लूप सुरक्षा जाँच अक्षम करें"},
+        {"Raw Input", "Прямой ввод (Raw Input)", "الإدخال الخام (Raw Input)", "Direkteingabe (Raw Input)", "Entrée brute (Raw Input)", "原始输入 (Raw Input)", "生入力 (Raw Input)", "Entrada directa (Raw Input)", "원시 입력 (Raw Input)", "Input raw (grezzo)", "Entrada bruta (Raw Input)", "कच्चा इनपुट (Raw Input)"},
+        {"Mouse Panning", "Управление камерой мышью", "تحريك الكاميرا بالماوس", "Maus-Kamerabewegung", "Contrôle caméra à la souris", "鼠标视角平移", "マウスによる視点移動", "Control de cámara con ratón", "마우스 시점 이동", "Panoramica con mouse", "Controle de câmera com mouse", "माउस पैनिंग"},
+        {"Enable Vibration", "Включить вибрацию", "تفعيل الاهتزاز", "Vibration aktivieren", "Activer les vibrations", "启用震动", "振動を有効化", "Habilitar vibración", "진동 활성화", "Abilita vibrazione", "Ativar vibração", "कंपन सक्षम करें"},
+        {"Enable Motion", "Включить датчики движения", "تفعيل مستشعرات الحركة", "Bewegungssteuerung aktivieren", "Activer les capteurs de mouvement", "启用体感动作", "モーション操作を有効化", "Habilitar control de movimiento", "모션 제어 활성화", "Abilita sensori di movimento", "Ativar controle por movimento", "मोशन सक्षम करें"},
     };
 
     for (const auto& item : s_table) {
@@ -763,7 +789,47 @@ std::unique_ptr<TranslationMap> InitializeTranslations(QObject* parent) {
     INSERT(Settings, use_multi_core, tr("Multicore CPU Emulation"),
            tr("This option increases CPU emulation thread use from 1 to the maximum of 4.\n"
               "This is mainly a debug option and shouldn't be disabled."));
-    INSERT(Settings, memory_layout_mode, tr("Memory Layout (DRAM)"),
+
+    // CPU Optimizations (Item 18)
+    INSERT(Settings, cpuopt_page_tables, tr("CPU Page Tables"),
+           tr("Optimizes virtual memory translation by utilizing CPU hardware page tables when available."));
+    INSERT(Settings, cpuopt_block_linking, tr("CPU Block Linking"),
+           tr("Links adjacent JIT translation blocks together to eliminate dispatcher roundtrips."));
+    INSERT(Settings, cpuopt_const_prop, tr("CPU Constant Propagation"),
+           tr("Evaluates static arithmetic constants during JIT compilation for faster execution."));
+    INSERT(Settings, cpuopt_context_elimination, tr("CPU Context Elimination"),
+           tr("Removes unnecessary register saves and restores between compatible JIT blocks."));
+    INSERT(Settings, cpuopt_fast_dispatcher, tr("CPU Fast Dispatcher"),
+           tr("Uses direct jump tables for block execution instead of a global hash lookup."));
+    INSERT(Settings, cpuopt_fastmem, tr("CPU Fastmem"),
+           tr("Maps emulated guest Switch memory directly into host address space for near-native speeds."));
+    INSERT(Settings, cpuopt_fastmem_exclusives, tr("CPU Fastmem Exclusives"),
+           tr("Optimizes atomic memory access instructions using host atomic instructions."));
+    INSERT(Settings, cpuopt_ignore_memory_aborts, tr("CPU Ignore Memory Aborts"),
+           tr("Suppresses non-fatal guest memory abort faults to prevent unnecessary game crashes."));
+    INSERT(Settings, cpuopt_misc_ir, tr("CPU Misc IR Optimizations"),
+           tr("Performs dead code elimination and redundant instruction stripping in intermediate code."));
+    INSERT(Settings, cpuopt_recompile_exclusives, tr("CPU Recompile Exclusives"),
+           tr("Recompiles LDREX/STREX synchronization loops for optimal host thread performance."));
+    INSERT(Settings, cpuopt_reduce_misalign_checks, tr("CPU Reduce Misalignment Checks"),
+           tr("Reduces runtime checks for unaligned memory accesses on host architectures supporting them."));
+    INSERT(Settings, cpuopt_return_stack_buffer, tr("CPU Return Stack Buffer"),
+           tr("Optimizes subroutine return predictions in emulated code blocks."));
+
+    // Network & Input & Extra (Item 18)
+    INSERT(Settings, network_interface, tr("Network Interface"), QString());
+    INSERT(Settings, udp_input_servers, tr("UDP Input Servers"), QString());
+    INSERT(Settings, random_amiibo_id, tr("Randomize Amiibo ID"), QString());
+    INSERT(Settings, airplane_mode, tr("Airplane Mode"), QString());
+    INSERT(Settings, disable_buffer_reorder, tr("Disable Buffer Reorder"), QString());
+    INSERT(Settings, disable_macro_hle, tr("Disable Macro HLE"), QString());
+    INSERT(Settings, disable_macro_jit, tr("Disable Macro JIT"), QString());
+    INSERT(Settings, disable_shader_loop_safety_checks, tr("Disable Shader Loop Safety Checks"), QString());
+    INSERT(Settings, enable_raw_input, tr("Raw Input"), QString());
+    INSERT(Settings, mouse_panning, tr("Mouse Panning"), QString());
+    INSERT(Settings, vibration_enabled, tr("Enable Vibration"), QString());
+    INSERT(Settings, motion_enabled, tr("Enable Motion"), QString());
+INSERT(Settings, memory_layout_mode, tr("Memory Layout (DRAM)"),
            tr("Increases the amount of emulated DRAM.\nDoesn't affect performance/stability but may "
               "allow HD texture "
               "mods to load."));
@@ -1135,6 +1201,21 @@ std::unique_ptr<TranslationMap> InitializeTranslations(QObject* parent) {
            tr("Displays floating quick translation overlay button."));
 
 #undef INSERT
+
+
+#ifdef _DEBUG
+    // Item 18: Startup validation that every Setting in linkage has a translation
+    for (const auto& [category, category_settings] : Settings::values.linkage.by_category) {
+        for (const auto* setting : category_settings) {
+            if (setting && !setting->GetLabel().empty()) {
+                if (!translations->contains(setting->Id())) {
+                    LOG_WARNING(Frontend, "Setting '{}' (ID {}) lacks an explicit translation entry!",
+                                setting->GetLabel(), setting->Id());
+                }
+            }
+        }
+    }
+#endif
 
     return translations;
 }

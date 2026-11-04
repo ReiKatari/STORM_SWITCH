@@ -58,12 +58,15 @@ private:
 
     std::atomic<size_t> tier2_optimized_count{0};
 
-    struct FastTier3CacheEntry {
+    struct FastTierEntry {
         std::atomic<u64> vaddr{0};
         std::atomic<void*> ptr{nullptr};
+        std::atomic<u32> count{0};
+        std::atomic<u32> tier{0}; // 0 = empty, 1 = Tier 1, 2 = pending compilation, 3 = Tier 2 optimized
+        std::atomic<size_t> code_size{0};
     };
-    static constexpr size_t FAST_TIER3_CACHE_SIZE = 1024;
-    std::array<FastTier3CacheEntry, FAST_TIER3_CACHE_SIZE> fast_tier3_cache{};
+    static constexpr size_t FAST_TIER_CACHE_SIZE = 16384;
+    std::array<FastTierEntry, FAST_TIER_CACHE_SIZE> fast_tier_cache{};
 };
 
 } // namespace Core::Arm

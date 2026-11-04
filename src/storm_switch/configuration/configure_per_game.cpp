@@ -66,6 +66,8 @@
 #include "storm_switch/configuration/configure_input_per_game.h"
 #include "storm_switch/configuration/configure_network.h"
 #include "storm_switch/configuration/configure_per_game.h"
+#include <QListWidget>
+#include "storm_switch/configuration/storm_ui_structure_helper.h"
 #include "storm_switch/configuration/configure_per_game_addons.h"
 #include "storm_switch/configuration/configure_gamebanana_mods.h"
 #include "storm_switch/configuration/configure_per_game_amiibo.h"
@@ -189,19 +191,35 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
     }
 
 
-        ui->tabWidget->addTab(addons_tab.get(), tr("Add-Ons"));
-    ui->tabWidget->addTab(gamebanana_tab.get(), StormLang(QStringLiteral("Моды GameBanana"), QStringLiteral("GameBanana Mods"), QStringLiteral("GameBanana-Mods"), QStringLiteral("Mods GameBanana"), QStringLiteral("GameBanana 模组"), QStringLiteral("GameBanana Mod"), QStringLiteral("تعديلات GameBanana"), QStringLiteral("Mods de GameBanana")));
-    ui->tabWidget->addTab(amiibo_tab.get(), tr("Amiibo"));
-    ui->tabWidget->addTab(cheats_tab.get(), StormLang(QStringLiteral("Читы"), QStringLiteral("Cheats"), QStringLiteral("Cheats"), QStringLiteral("Triche"), QStringLiteral("作弊码"), QStringLiteral("チート"), QStringLiteral("الغش"), QStringLiteral("Trucos")));
-    ui->tabWidget->addTab(system_tab.get(), tr("System"));
-    ui->tabWidget->addTab(cpu_tab.get(), tr("CPU"));
-    ui->tabWidget->addTab(graphics_tab.get(), tr("Graphics"));
-    ui->tabWidget->addTab(graphics_advanced_tab.get(), tr("Adv. Graphics"));
-    ui->tabWidget->addTab(graphics_extensions_tab.get(), tr("Ext. Graphics"));
-    ui->tabWidget->addTab(audio_tab.get(), tr("Audio"));
-    ui->tabWidget->addTab(input_tab.get(), tr("Input Profiles"));
-    ui->tabWidget->addTab(network_tab.get(), tr("Network"));
-    ui->tabWidget->addTab(applets_tab.get(), tr("Applets"));
+    m_search_edit = new QLineEdit(this);
+    m_search_edit->setObjectName(QStringLiteral("SettingsSearchEdit"));
+    m_search_edit->setProperty("stormSearchBox", true);
+    m_search_edit->setClearButtonEnabled(true);
+    m_search_edit->setPlaceholderText(StormLang(
+        QStringLiteral("🔍 Быстрый поиск настройки игры..."),
+        QStringLiteral("🔍 Quick search game settings..."),
+        QStringLiteral("🔍 Einstellungen schnell suchen..."),
+        QStringLiteral("🔍 Recherche rapide des paramètres..."),
+        QStringLiteral("🔍 快速搜索游戏设置..."),
+        QStringLiteral("🔍 ゲーム設定をクイック検索..."),
+        QStringLiteral("🔍 بحث سريع في إعدادات اللعبة..."),
+        QStringLiteral("🔍 Búsqueda rápida de ajustes del juego...")
+    ));
+    ui->verticalLayout_3->insertWidget(0, m_search_edit);
+
+    m_selector_list = new QListWidget(this);
+    m_selector_list->setObjectName(QStringLiteral("PerGameSelectorList"));
+    m_selector_list->setProperty("stormList", true);
+    m_selector_list->setFixedWidth(200);
+    ui->horizontalLayout->insertWidget(1, m_selector_list);
+
+    PopulateSelectionList();
+    connect(m_selector_list, &QListWidget::currentRowChanged, this, &ConfigurePerGame::UpdateVisibleTabs);
+    m_selector_list->setCurrentRow(0);
+    UpdateVisibleTabs();
+
+    m_live_filter_engine = new StormUI::LiveFilterEngine(m_search_edit, m_selector_list, ui->tabWidget, this);
+    m_live_filter_engine->RebuildIndex();
 
     setFocusPolicy(Qt::ClickFocus);
     setWindowTitle(tr("Properties"));
@@ -1073,5 +1091,77 @@ void ConfigurePerGame::RefreshOverrideBadges() {
         } else {
             ui->tabWidget->setTabText(t, orig_title);
         }
+    }
+}
+
+void ConfigurePerGame::PopulateSelectionList() {
+    const std::array<std::pair<QString, QList<QWidget*>>, 6> items{
+        {{StormLang(QStringLiteral("Общие"), QStringLiteral("General"), QStringLiteral("Allgemein"), QStringLiteral("Général"), QStringLiteral("通用"), QStringLiteral("全般")),
+          {addons_tab.get(), gamebanana_tab.get(), amiibo_tab.get(), cheats_tab.get()}},
+         {StormLang(QStringLiteral("Система"), QStringLiteral("System"), QStringLiteral("System"), QStringLiteral("Système"), QStringLiteral("系统"), QStringLiteral("システム")),
+          {system_tab.get(), cpu_tab.get(), applets_tab.get()}},
+         {StormLang(QStringLiteral("Графика"), QStringLiteral("Graphics"), QStringLiteral("Grafik"), QStringLiteral("Graphismes"), QStringLiteral("图形"), QStringLiteral("グラフィックス")),
+          {graphics_tab.get(), graphics_advanced_tab.get(), graphics_extensions_tab.get()}},
+         {StormLang(QStringLiteral("Звук"), QStringLiteral("Audio"), QStringLiteral("Audio"), QStringLiteral("Audio"), QStringLiteral("音频"), QStringLiteral("オーディオ")),
+          {audio_tab.get()}},
+         {StormLang(QStringLiteral("Управление"), QStringLiteral("Controls"), QStringLiteral("Steuerung"), QStringLiteral("Commandes"), QStringLiteral("控制"), QStringLiteral("操作")),
+          {input_tab.get()}},
+         {StormLang(QStringLiteral("Сеть"), QStringLiteral("Network"), QStringLiteral("Netzwerk"), QStringLiteral("Réseau"), QStringLiteral("网络"), QStringLiteral("ネットワーク")),
+          {network_tab.get()}}},
+    };
+
+    QFont list_font = m_selector_list->font();
+    list_font.setBold(true);
+    m_selector_list->setFont(list_font);
+
+    [[maybe_unused]] const QSignalBlocker blocker(m_selector_list);
+    m_selector_list->clear();
+    for (const auto& entry : items) {
+        auto* const item = new QListWidgetItem(entry.first);
+        item->setFont(list_font);
+        item->setData(Qt::UserRole, QVariant::fromValue(entry.second));
+        m_selector_list->addItem(item);
+    }
+}
+
+void ConfigurePerGame::UpdateVisibleTabs() {
+    const auto items = m_selector_list->selectedItems();
+    if (items.isEmpty()) {
+        return;
+    }
+
+    const auto tabs = qvariant_cast<QList<QWidget*>>(items[0]->data(Qt::UserRole));
+    bool tabs_match = (ui->tabWidget->count() == tabs.size());
+    if (tabs_match) {
+        for (int i = 0; i < tabs.size(); ++i) {
+            if (ui->tabWidget->widget(i) != tabs[i]) {
+                tabs_match = false;
+                break;
+            }
+        }
+    }
+    if (tabs_match) {
+        return;
+    }
+
+    ui->tabWidget->clear();
+    for (auto* const tab : tabs) {
+        QString tab_title = tab->accessibleName();
+        if (tab == addons_tab.get()) tab_title = tr("Add-Ons");
+        else if (tab == gamebanana_tab.get()) tab_title = StormLang(QStringLiteral("Моды GameBanana"), QStringLiteral("GameBanana Mods"));
+        else if (tab == amiibo_tab.get()) tab_title = tr("Amiibo");
+        else if (tab == cheats_tab.get()) tab_title = StormLang(QStringLiteral("Читы"), QStringLiteral("Cheats"));
+        else if (tab == system_tab.get()) tab_title = tr("System");
+        else if (tab == cpu_tab.get()) tab_title = tr("CPU");
+        else if (tab == graphics_tab.get()) tab_title = StormLang(QStringLiteral("Основное"), QStringLiteral("Main"));
+        else if (tab == graphics_advanced_tab.get()) tab_title = StormLang(QStringLiteral("Расширенное"), QStringLiteral("Advanced"));
+        else if (tab == graphics_extensions_tab.get()) tab_title = StormLang(QStringLiteral("Хаки и расширения"), QStringLiteral("Hacks & Extensions"));
+        else if (tab == audio_tab.get()) tab_title = tr("Audio");
+        else if (tab == input_tab.get()) tab_title = tr("Input Profiles");
+        else if (tab == network_tab.get()) tab_title = tr("Network");
+        else if (tab == applets_tab.get()) tab_title = tr("Applets");
+
+        tab->setMinimumSize(200, 160);
+        ui->tabWidget->addTab(tab, tab_title);
     }
 }

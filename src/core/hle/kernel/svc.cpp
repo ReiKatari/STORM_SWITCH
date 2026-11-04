@@ -2551,6 +2551,9 @@ void Call(Core::System& system, u32 imm) {
         LOG_DEBUG(Kernel_SVC, "Switch 2 svc 0x80 addr={:#x} size={:#x} mask={:#x} attr={:#x} -> {:#x}",
                   address, size, mask, attr, result.raw);
         args[0] = result.raw;
+    } else if (process.IsSwitch2() && imm >= 0x81) {
+        LOG_WARNING(Kernel_SVC, "(STUBBED) Switch 2 unhandled SVC {:#x}", imm);
+        args[0] = ResultSuccess.raw;
     } else if (process.Is64Bit()) {
         Call64(system, imm, args);
     } else {

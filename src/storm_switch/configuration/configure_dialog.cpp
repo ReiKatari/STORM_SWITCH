@@ -79,11 +79,11 @@ static QString GetLocalizedTabText(const QString& accessible_name) {
     if (accessible_name == QStringLiteral("CPU"))
         return StormLang(QStringLiteral("ЦП"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("المعالج"), QStringLiteral("CPU"));
     if (accessible_name == QStringLiteral("Graphics"))
-        return StormLang(QStringLiteral("Графика"), QStringLiteral("Graphics"), QStringLiteral("Grafik"), QStringLiteral("Graphismes"), QStringLiteral("图形"), QStringLiteral("グラフィックス"), QStringLiteral("الرسوميات"), QStringLiteral("Gráficos"));
+        return StormLang(QStringLiteral("Основное"), QStringLiteral("Main"), QStringLiteral("Standard"), QStringLiteral("Principal"), QStringLiteral("基础"), QStringLiteral("基本"), QStringLiteral("أساسي"), QStringLiteral("Básico"));
     if (accessible_name == QStringLiteral("Advanced") || accessible_name == QStringLiteral("GraphicsAdvanced"))
-        return StormLang(QStringLiteral("Продвинутые"), QStringLiteral("Advanced"), QStringLiteral("Erweitert"), QStringLiteral("Avancé"), QStringLiteral("高级"), QStringLiteral("高度な設定"), QStringLiteral("متقدم"), QStringLiteral("Avanzado"));
+        return StormLang(QStringLiteral("Расширенное"), QStringLiteral("Advanced"), QStringLiteral("Erweitert"), QStringLiteral("Avancé"), QStringLiteral("高级"), QStringLiteral("高度な設定"), QStringLiteral("متقدم"), QStringLiteral("Avanzado"));
     if (accessible_name == QStringLiteral("Extensions") || accessible_name == QStringLiteral("GraphicsExtra"))
-        return StormLang(QStringLiteral("Дополнительно"), QStringLiteral("Extensions"), QStringLiteral("Erweiterungen"), QStringLiteral("Extensions"), QStringLiteral("扩展"), QStringLiteral("拡張設定"), QStringLiteral("ملحقات"), QStringLiteral("Extensiones"));
+        return StormLang(QStringLiteral("Хаки и расширения"), QStringLiteral("Hacks & Extensions"), QStringLiteral("Hacks & Erweiterungen"), QStringLiteral("Hacks et extensions"), QStringLiteral("Hacks 与扩展"), QStringLiteral("ハックと拡張機能"), QStringLiteral("القرصنة والملحقات"), QStringLiteral("Hacks y extensiones"));
     if (accessible_name == QStringLiteral("Audio"))
         return StormLang(QStringLiteral("Аудио"), QStringLiteral("Audio"), QStringLiteral("Audio"), QStringLiteral("Audio"), QStringLiteral("音频"), QStringLiteral("オーディオ"), QStringLiteral("الصوت"), QStringLiteral("Audio"));
     if (accessible_name == QStringLiteral("Network"))
@@ -182,21 +182,6 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
         QStringLiteral("🔍 بحث سريع في الإعدادات (مثل: Vulkan، FSR، الصوت، الذاكرة، الإطارات)..."),
         QStringLiteral("🔍 Búsqueda rápida de ajustes (ej.: Vulkan, FSR, audio, memoria, FPS)...")
     ));
-    m_search_edit->setStyleSheet(QStringLiteral(
-        "QLineEdit#SettingsSearchEdit {"
-        "    background-color: #0F172A;"
-        "    border: 1px solid rgba(0, 210, 255, 0.35);"
-        "    border-radius: 7px;"
-        "    padding: 6px 12px;"
-        "    color: #FFFFFF;"
-        "    font-size: 12.5px;"
-        "    margin-bottom: 4px;"
-        "}"
-        "QLineEdit#SettingsSearchEdit:focus {"
-        "    border: 1px solid #00F0FF;"
-        "    background-color: #162032;"
-        "}"
-    ));
     ui->verticalLayout->insertWidget(0, m_search_edit);
 
     m_search_results_list = new QListWidget(this);
@@ -205,37 +190,13 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
     m_search_results_list->setMaximumHeight(210);
     m_search_results_list->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_search_results_list->setCursor(Qt::PointingHandCursor);
-    m_search_results_list->setStyleSheet(QStringLiteral(
-        "QListWidget#SettingsSearchResultsList {"
-        "    background-color: #0B1325;"
-        "    border: 1px solid #00F0FF;"
-        "    border-radius: 7px;"
-        "    padding: 4px;"
-        "    color: #FFFFFF;"
-        "    font-size: 12px;"
-        "    margin-bottom: 6px;"
-        "    outline: none;"
-        "}"
-        "QListWidget#SettingsSearchResultsList::item {"
-        "    padding: 6px 10px;"
-        "    border-radius: 5px;"
-        "    margin: 1px 0px;"
-        "}"
-        "QListWidget#SettingsSearchResultsList::item:hover {"
-        "    background-color: rgba(0, 240, 255, 0.16);"
-        "    color: #FFFFFF;"
-        "}"
-        "QListWidget#SettingsSearchResultsList::item:selected {"
-        "    background-color: rgba(0, 240, 255, 0.26);"
-        "    border-left: 3px solid #00F0FF;"
-        "    color: #FFFFFF;"
-        "    font-weight: 600;"
-        "}"
-    ));
     ui->verticalLayout->insertWidget(1, m_search_results_list);
     m_search_edit->installEventFilter(this);
 
     connect(m_search_edit, &QLineEdit::textChanged, this, &ConfigureDialog::OnSearchTextChanged);
+
+    m_live_filter_engine = new StormUI::LiveFilterEngine(m_search_edit, ui->selectorList, ui->tabWidget, this);
+    m_live_filter_engine->RebuildIndex();
     connect(m_search_results_list, &QListWidget::itemClicked, this, &ConfigureDialog::ActivateSearchResult);
     connect(m_search_results_list, &QListWidget::itemActivated, this, &ConfigureDialog::ActivateSearchResult);
 
@@ -881,18 +842,22 @@ void ConfigureDialog::HandleApplyButtonClicked() {
 Q_DECLARE_METATYPE(QList<QWidget*>);
 
 void ConfigureDialog::PopulateSelectionList() {
-    const std::array<std::pair<QString, QList<QWidget*>>, 7> items{
+    QList<QWidget*> input_subtabs = input_tab->GetSubTabs();
+    input_subtabs.append(hotkeys_tab.get());
+
+    const std::array<std::pair<QString, QList<QWidget*>>, 6> items{
         {{StormLang(QStringLiteral("Общие"), QStringLiteral("General"), QStringLiteral("Allgemein"), QStringLiteral("Général"), QStringLiteral("通用"), QStringLiteral("全般")),
-          {general_tab.get(), hotkeys_tab.get(), ui_tab.get(), web_tab.get(), debug_tab_tab.get()}},
+          {general_tab.get(), ui_tab.get(), debug_tab_tab.get()}},
          {StormLang(QStringLiteral("Система"), QStringLiteral("System"), QStringLiteral("System"), QStringLiteral("Système"), QStringLiteral("系统"), QStringLiteral("システム")),
-          {system_tab.get(), profile_tab.get(), filesystem_tab.get(),
-           applets_tab.get()}},
-         {StormLang(QStringLiteral("ЦП"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU")), {cpu_tab.get()}},
+          {system_tab.get(), cpu_tab.get(), filesystem_tab.get(), profile_tab.get(), applets_tab.get()}},
          {StormLang(QStringLiteral("Графика"), QStringLiteral("Graphics"), QStringLiteral("Grafik"), QStringLiteral("Graphismes"), QStringLiteral("图形"), QStringLiteral("グラフィックス")),
           {graphics_tab.get(), graphics_advanced_tab.get(), graphics_extensions_tab.get()}},
-         {StormLang(QStringLiteral("Аудио"), QStringLiteral("Audio"), QStringLiteral("Audio"), QStringLiteral("Audio"), QStringLiteral("音频"), QStringLiteral("オーディオ")), {audio_tab.get()}},
-         {StormLang(QStringLiteral("Сеть"), QStringLiteral("Network"), QStringLiteral("Netzwerk"), QStringLiteral("Réseau"), QStringLiteral("网络"), QStringLiteral("ネットワーク")), {network_tab.get()}},
-         {StormLang(QStringLiteral("Управление"), QStringLiteral("Controls"), QStringLiteral("Steuerung"), QStringLiteral("Commandes"), QStringLiteral("控制"), QStringLiteral("操作")), input_tab->GetSubTabs()}},
+         {StormLang(QStringLiteral("Звук"), QStringLiteral("Audio"), QStringLiteral("Audio"), QStringLiteral("Audio"), QStringLiteral("音频"), QStringLiteral("オーディオ")),
+          {audio_tab.get()}},
+         {StormLang(QStringLiteral("Управление"), QStringLiteral("Controls"), QStringLiteral("Steuerung"), QStringLiteral("Commandes"), QStringLiteral("控制"), QStringLiteral("操作")),
+          input_subtabs},
+         {StormLang(QStringLiteral("Сеть и веб"), QStringLiteral("Network & Web"), QStringLiteral("Netzwerk & Web"), QStringLiteral("Réseau et Web"), QStringLiteral("网络与 Web"), QStringLiteral("ネットワーク & Web")),
+          {network_tab.get(), web_tab.get()}}},
     };
 
     QFont tab_font = ui->tabWidget->tabBar()->font();

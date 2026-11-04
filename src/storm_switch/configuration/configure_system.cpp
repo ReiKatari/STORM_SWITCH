@@ -159,10 +159,7 @@ void ConfigureSystem::Setup(const ConfigurationShared::Builder& builder) {
             continue;
         }
 
-        if (setting->Id() == Settings::values.use_docked_mode.Id() &&
-            Settings::IsConfiguringGlobal()) {
-            continue;
-        }
+        // Item 17: use_docked_mode shown under Система in both global and per-game
 
         if (setting->Id() == Settings::values.current_program_id.Id() ||
             setting->GetLabel() == "current_program_id") {

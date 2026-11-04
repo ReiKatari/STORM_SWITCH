@@ -51,6 +51,95 @@ GameListModel::GameListModel(std::shared_ptr<FileSys::VfsFilesystem> vfs_,
 
 GameListModel::~GameListModel() = default;
 
+bool GameListModel::LoadFromCache(const QVector<UISettings::GameDir>& game_dirs) {
+    if (!UISettings::values.cache_game_list) {
+        return false;
+    }
+    const auto cache_path = Common::FS::PathToUTF8String(
+        Common::FS::GetEdenPath(Common::FS::EdenPath::CacheDir) / "game_list" / "file_metadata_cache.json");
+    QFile file(QString::fromStdString(cache_path));
+    if (!file.open(QFile::ReadOnly)) {
+        return false;
+    }
+    QJsonParseError parse_err{};
+    const auto doc = QJsonDocument::fromJson(file.readAll(), &parse_err);
+    if (parse_err.error != QJsonParseError::NoError || !doc.isObject()) {
+        LOG_WARNING(Frontend, "Game list cache corrupted ({}), falling back to full scan",
+                    parse_err.errorString().toStdString());
+        return false;
+    }
+
+    const auto root = doc.object();
+    if (root.isEmpty()) {
+        return false;
+    }
+
+    int loaded_count = 0;
+    for (auto it = root.begin(); it != root.end(); ++it) {
+        const QString qpath = it.key();
+        const std::string path = qpath.toStdString();
+        const auto obj = it.value().toObject();
+
+        const bool is_bootable = obj.value(QStringLiteral("bootable")).toBool(true);
+        if (!is_bootable) {
+            continue;
+        }
+
+        const u64 program_id = obj.value(QStringLiteral("id")).toString().toULongLong(nullptr, 16);
+        if (program_id == 0 || (program_id & 0xFFF) != 0) {
+            continue;
+        }
+
+        const u64 file_size = static_cast<u64>(obj.value(QStringLiteral("size")).toVariant().toULongLong());
+        const std::string name = obj.value(QStringLiteral("name")).toString().toStdString();
+        const QString file_type = obj.value(QStringLiteral("type")).toString();
+        const QString patches = obj.value(QStringLiteral("patches")).toString();
+        const QString version = obj.value(QStringLiteral("version")).toString();
+        const QString addons = obj.value(QStringLiteral("addons")).toString();
+
+        const auto entry = MakeCachedGameListEntry(path, name, file_size, {}, file_type,
+                                                   program_id, play_time_manager, patches, version, addons);
+        invisibleRootItem()->appendRow(entry);
+        loaded_count++;
+    }
+
+    if (loaded_count > 0) {
+        emit ShowList(true);
+        emit StatusMessage(tr("Обновление списка игр..."));
+        return true;
+    }
+    return false;
+}
+
+void GameListModel::SortGames(int sort_mode) {
+    switch (sort_mode) {
+    case 0: // Name A-Z
+        setSortRole(GameListItemPath::TitleRole);
+        sort(0, Qt::AscendingOrder);
+        break;
+    case 1: // Name Z-A
+        setSortRole(GameListItemPath::TitleRole);
+        sort(0, Qt::DescendingOrder);
+        break;
+    case 2: // Play Time Descending
+        setSortRole(GameListItemPath::PlayTimeRole);
+        sort(0, Qt::DescendingOrder);
+        break;
+    case 3: // File Size Descending
+        setSortRole(GameListItemPath::FileSizeBytesRole);
+        sort(0, Qt::DescendingOrder);
+        break;
+    case 4: // Platform Descending (Switch 2 first)
+        setSortRole(GameListItemPath::PlatformRole);
+        sort(0, Qt::DescendingOrder);
+        break;
+    default:
+        setSortRole(GameListItemPath::SortRole);
+        sort(0, Qt::AscendingOrder);
+        break;
+    }
+}
+
 void GameListModel::PopulateAsync(QVector<UISettings::GameDir>& game_dirs) {
     if (refresh_timer) {
         refresh_timer->stop();
@@ -60,6 +149,10 @@ void GameListModel::PopulateAsync(QVector<UISettings::GameDir>& game_dirs) {
     current_worker.reset();
     removeRows(0, rowCount());
 
+    // 1. Fast Cache Hydration (<= 0.2s): show game cards immediately!
+    LoadFromCache(game_dirs);
+
+    // 2. Incremental Background Rescan
     current_worker = std::make_unique<GameListWorker>(vfs, provider, game_dirs,
                                                       play_time_manager, system);
 
@@ -90,6 +183,20 @@ void GameListModel::AddDirEntry(GameListDir* entry_items) {
 }
 
 void GameListModel::AddEntry(const QList<QStandardItem*>& entry_items, GameListDir* parent) {
+    if (entry_items.isEmpty()) return;
+    const QString new_path = entry_items.first()->data(GameListItemPath::FullPathRole).toString();
+
+    // Check if entry already exists in model (e.g. from fast cache hydration)
+    if (!new_path.isEmpty()) {
+        auto* root = invisibleRootItem();
+        for (int i = 0; i < root->rowCount(); ++i) {
+            auto* existing = root->child(i, 0);
+            if (existing && existing->data(GameListItemPath::FullPathRole).toString() == new_path) {
+                return;
+            }
+        }
+    }
+
     if (m_flat) {
         invisibleRootItem()->appendRow(entry_items);
     } else {
@@ -110,6 +217,7 @@ void GameListModel::DonePopulating(const QStringList& watch_list) {
         }
     }
 
+    emit StatusMessage(QString{});
     emit PopulatingCompleted(watch_list);
 }
 

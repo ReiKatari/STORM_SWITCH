@@ -22,6 +22,7 @@
 #include "common/scope_exit.h"
 #include "common/settings.h"
 #include "video_core/buffer_cache/buffer_cache.h"
+#include "video_core/nx2.h"
 #include "video_core/gpu_logging/gpu_logging.h"
 #include "video_core/control/channel_state.h"
 #include "video_core/native_query_trace.h"
@@ -788,9 +789,14 @@ void RasterizerVulkan::DispatchCompute() {
     }
     std::scoped_lock lock{texture_cache.mutex, buffer_cache.mutex};
     // Command list pages the dispatch writes are copied for the split's front right after it.
-    buffer_cache.Nx2CollectListCopies(true);
+    const bool nx2_active = VideoCore::Nx2IsActive();
+    if (nx2_active) {
+        buffer_cache.Nx2CollectListCopies(true);
+    }
     SCOPE_EXIT {
-        buffer_cache.Nx2CollectListCopies(false);
+        if (nx2_active) {
+            buffer_cache.Nx2CollectListCopies(false);
+        }
     };
     if (!pipeline->Configure(*kepler_compute, *gpu_memory, scheduler, buffer_cache,
                              texture_cache)) {
@@ -828,7 +834,9 @@ void RasterizerVulkan::DispatchCompute() {
             }
             cmdbuf.DispatchIndirect(indirect_buffer, indirect_offset);
         });
-        SubmitNx2ListCopies();
+        if (nx2_active) {
+            SubmitNx2ListCopies();
+        }
         static constexpr VkMemoryBarrier POST_COMPUTE_BARRIER{
             .sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER,
             .pNext = nullptr,
@@ -863,7 +871,9 @@ void RasterizerVulkan::DispatchCompute() {
         }
         cmdbuf.Dispatch(dim[0], dim[1], dim[2]);
     });
-    SubmitNx2ListCopies();
+    if (nx2_active) {
+        SubmitNx2ListCopies();
+    }
 
     // Log compute dispatch
     if (GPU::Logging::IsActive() &&
@@ -906,6 +916,9 @@ void Vulkan::RasterizerVulkan::DisableGraphicsUniformBuffer(size_t stage, u32 in
 void RasterizerVulkan::FlushAll() {}
 
 void RasterizerVulkan::SubmitNx2ListCopies() {
+    if (!VideoCore::Nx2IsActive()) {
+        return;
+    }
     if (buffer_cache.Nx2CopyListPages(scheduler.CurrentTick())) {
         scheduler.Flush();
     }

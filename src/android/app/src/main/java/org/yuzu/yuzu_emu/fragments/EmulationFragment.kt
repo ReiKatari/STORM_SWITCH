@@ -2627,8 +2627,15 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                         ).show()
                     }
                 }
+                loadStatsUpdater?.invoke()
+                val frametimeSec = perfStats[FRAMETIME]
+                if (frametimeSec > 0.0) {
+                    org.yuzu.yuzu_emu.utils.AdpfManager.reportActualWorkDuration((frametimeSec * 1_000_000_000.0).toLong())
+                } else {
+                    context?.let { org.yuzu.yuzu_emu.utils.AdpfManager.initSession(it, 60f) }
+                }
             }
-            perfStatsUpdateHandler.postDelayed(perfStatsRunnable!!, 800)
+            perfStatsUpdateHandler.postDelayed(perfStatsRunnable!!, 1000)
         }
         perfStatsRunnable?.let { perfStatsUpdateHandler.removeCallbacks(it) }
         perfStatsRunnable = Runnable { perfStatsUpdater?.invoke() }
@@ -2982,12 +2989,8 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                     binding.showLoadOverlayText.text = sb.toString()
                 }
 
-                loadStatsUpdateHandler.postDelayed(loadStatsRunnable!!, 1000)
             }
-            loadStatsRunnable = Runnable { loadStatsUpdater?.invoke() }
-            loadStatsUpdateHandler.post(loadStatsRunnable!!)
-        } else {
-            loadStatsRunnable?.let { loadStatsUpdateHandler.removeCallbacks(it) }
+            loadStatsUpdater?.invoke()
         }
     }
 
@@ -3101,22 +3104,17 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
     override fun surfaceCreated(holder: SurfaceHolder) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && holder.surface.isValid) {
             try {
-                val displayMaxRate = activity?.display?.supportedModes?.maxOfOrNull { it.refreshRate }
-                    ?: activity?.display?.refreshRate
-                    ?: 60.0f
                 val targetRate = if (BooleanSetting.RENDERER_FRAME_GEN.getBoolean()) {
                     IntSetting.RENDERER_FRAME_GEN_TARGET_RATE.getInt().toFloat().let { if (it > 0f) it else 120.0f }
-                } else if (displayMaxRate > 60.0f) {
-                    displayMaxRate
                 } else {
                     60.0f
                 }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    holder.surface.setFrameRate(targetRate, Surface.FRAME_RATE_COMPATIBILITY_DEFAULT, Surface.CHANGE_FRAME_RATE_ONLY_IF_SEAMLESS)
+                    holder.surface.setFrameRate(targetRate, Surface.FRAME_RATE_COMPATIBILITY_FIXED_SOURCE, Surface.CHANGE_FRAME_RATE_ONLY_IF_SEAMLESS)
                 } else {
-                    holder.surface.setFrameRate(targetRate, Surface.FRAME_RATE_COMPATIBILITY_DEFAULT)
+                    holder.surface.setFrameRate(targetRate, Surface.FRAME_RATE_COMPATIBILITY_FIXED_SOURCE)
                 }
-                Log.info("[EmulationFragment] Locked surface frame rate to $targetRate FPS (LTPO refresh lock)")
+                Log.info("[EmulationFragment] Locked surface frame rate to $targetRate FPS (FIXED_SOURCE)")
             } catch (e: Exception) {
                 Log.warning("[EmulationFragment] Failed to lock surface frame rate: ${e.message}")
             }
@@ -3127,20 +3125,15 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         Log.debug("[EmulationFragment] Surface changed. Resolution: " + width + "x" + height)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && holder.surface.isValid) {
             try {
-                val displayMaxRate = activity?.display?.supportedModes?.maxOfOrNull { it.refreshRate }
-                    ?: activity?.display?.refreshRate
-                    ?: 60.0f
                 val targetRate = if (BooleanSetting.RENDERER_FRAME_GEN.getBoolean()) {
                     IntSetting.RENDERER_FRAME_GEN_TARGET_RATE.getInt().toFloat().let { if (it > 0f) it else 120.0f }
-                } else if (displayMaxRate > 60.0f) {
-                    displayMaxRate
                 } else {
                     60.0f
                 }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    holder.surface.setFrameRate(targetRate, Surface.FRAME_RATE_COMPATIBILITY_DEFAULT, Surface.CHANGE_FRAME_RATE_ONLY_IF_SEAMLESS)
+                    holder.surface.setFrameRate(targetRate, Surface.FRAME_RATE_COMPATIBILITY_FIXED_SOURCE, Surface.CHANGE_FRAME_RATE_ONLY_IF_SEAMLESS)
                 } else {
-                    holder.surface.setFrameRate(targetRate, Surface.FRAME_RATE_COMPATIBILITY_DEFAULT)
+                    holder.surface.setFrameRate(targetRate, Surface.FRAME_RATE_COMPATIBILITY_FIXED_SOURCE)
                 }
             } catch (e: Exception) {
                 Log.warning("[EmulationFragment] Failed to update surface frame rate: ${e.message}")

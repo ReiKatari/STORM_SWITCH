@@ -187,6 +187,7 @@ AppLoader::LoadResult AppLoader_NUP::Load(Kernel::KProcess& process, Core::Syste
         return result;
     }
 
+    Settings::SetCurrentProgramIsSwitch2(true);
     Settings::values.current_program_id.SetValue(base_title_id);
 
     system.GetFileSystemController().RegisterProcess(

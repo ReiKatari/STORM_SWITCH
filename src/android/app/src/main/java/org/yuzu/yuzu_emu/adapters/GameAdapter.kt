@@ -164,8 +164,7 @@ class GameAdapter(private val activity: AppCompatActivity) :
             var v = model.version.trim().removePrefix("v").removePrefix("V")
             if (v.isEmpty() || v == "1.0.0") {
                 try {
-                    val catalog = org.yuzu.yuzu_emu.fragments.StormGamesWorldDialogFragment.getCachedCatalog(binding.root.context)
-                    val catGame = catalog.firstOrNull { it.serialId.equals(model.programIdHex, ignoreCase = true) }
+                    val catGame = org.yuzu.yuzu_emu.fragments.StormGamesWorldDialogFragment.getCachedCatalogItem(binding.root.context, model.programIdHex)
                     if (catGame != null && catGame.version.isNotEmpty() && catGame.version != "1.0.0") {
                         v = catGame.version.trim().removePrefix("v").removePrefix("V")
                     }
@@ -176,8 +175,7 @@ class GameAdapter(private val activity: AppCompatActivity) :
 
         private fun checkUpdateAvailable(model: Game): Boolean {
             try {
-                val catalog = org.yuzu.yuzu_emu.fragments.StormGamesWorldDialogFragment.getCachedCatalog(binding.root.context)
-                val catGame = catalog.firstOrNull { it.serialId.equals(model.programIdHex, ignoreCase = true) }
+                val catGame = org.yuzu.yuzu_emu.fragments.StormGamesWorldDialogFragment.getCachedCatalogItem(binding.root.context, model.programIdHex)
                 if (catGame != null) {
                     val catVerStr = catGame.version.removePrefix("v").removePrefix("V").trim()
                     val modVerStr = model.version.removePrefix("v").removePrefix("V").trim()
@@ -228,8 +226,7 @@ class GameAdapter(private val activity: AppCompatActivity) :
             var count = model.addonCount
             if (count == 0) {
                 try {
-                    val catalog = org.yuzu.yuzu_emu.fragments.StormGamesWorldDialogFragment.getCachedCatalog(binding.root.context)
-                    val catGame = catalog.firstOrNull { it.serialId.equals(model.programIdHex, ignoreCase = true) }
+                    val catGame = org.yuzu.yuzu_emu.fragments.StormGamesWorldDialogFragment.getCachedCatalogItem(binding.root.context, model.programIdHex)
                     if (catGame != null && catGame.dlcCount > 0) {
                         count = catGame.dlcCount
                     }

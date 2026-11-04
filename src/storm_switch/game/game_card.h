@@ -7,7 +7,7 @@
 
 /**
  * A stylized "card"-like delegate for the game grid view.
- * Adapted from QML
+ * Zero-computation in paint(): all badges and scaled covers come directly from model roles.
  */
 class GameCard : public QStyledItemDelegate {
     Q_OBJECT
@@ -26,10 +26,16 @@ public:
     void setSize(const QSize& newSize, const QSize& contentSize, const int padding, const int columns);
 
 private:
+    void DrawVersionBadge(QPainter* painter, const QRect& iconRect, const QString& version) const;
+    void DrawGearBadge(QPainter* painter, const QRect& iconRect) const;
+    void DrawUpdateBadge(QPainter* painter, const QRect& iconRect) const;
+    void DrawDlcBadge(QPainter* painter, const QRect& iconRect, int dlc_count) const;
+    void DrawSwitch2Badge(QPainter* painter, const QRect& iconRect) const;
+
     static constexpr int cardMargin = 8;
 
     QSize m_size;
     QSize m_contentSize;
-    int m_padding;
-    int m_columns;
+    int m_padding = 0;
+    int m_columns = 1;
 };

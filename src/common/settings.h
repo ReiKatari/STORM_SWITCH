@@ -497,7 +497,7 @@ struct Values {
 #ifdef __ANDROID__
                                                       GpuAccuracy::Low,
 #else
-                                                      GpuAccuracy::High,
+                                                      GpuAccuracy::Normal,
 #endif
                                                       "gpu_accuracy",
                                                       Category::RendererAdvanced,
@@ -508,7 +508,7 @@ struct Values {
 #ifdef __ANDROID__
     GpuAccuracy current_gpu_accuracy{GpuAccuracy::Low};
 #else
-    GpuAccuracy current_gpu_accuracy{GpuAccuracy::High};
+    GpuAccuracy current_gpu_accuracy{GpuAccuracy::Normal};
 #endif
 
     SwitchableSetting<DmaAccuracy, true> dma_accuracy{linkage,

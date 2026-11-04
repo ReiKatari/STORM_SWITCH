@@ -45,6 +45,10 @@ add_executable(yuzu
     mod_manager_dialog.h
     crash_report_dialog.cpp
     crash_report_dialog.h
+    first_run_wizard.cpp
+    first_run_wizard.h
+    game_fix_dialog.cpp
+    game_fix_dialog.h
     nand_manager_dialog.cpp
     nand_manager_dialog.h
     configuration/configuration_shared.cpp
@@ -173,6 +177,7 @@ add_executable(yuzu
 
     game/game_list.cpp game/game_list.h
     game/game_grid.cpp game/game_grid.h
+    game/game_cache.cpp game/game_cache.h
 
     game/game_tree.h game/game_tree.cpp
     game/game_card.h game/game_card.cpp

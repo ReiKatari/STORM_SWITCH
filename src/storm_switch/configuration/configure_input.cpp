@@ -61,6 +61,8 @@ ConfigureInput::ConfigureInput(Core::System& system_, QWidget* parent)
     : QWidget(parent), ui(std::make_unique<Ui::ConfigureInput>()),
       profiles(std::make_unique<InputProfiles>()), system{system_} {
     ui->setupUi(this);
+    // Item 17: use_docked_mode shown exclusively under Система
+    ui->handheldGroup->setVisible(false);
     QFont tab_font = font();
     tab_font.setBold(true);
     ui->tabWidget->tabBar()->setFont(tab_font);
@@ -233,11 +235,13 @@ void ConfigureInput::ApplyConfiguration() {
 
     advanced->ApplyConfiguration();
 
-    const bool pre_docked_mode = Settings::IsDockedMode();
-    const bool docked_mode_selected = ui->radioDocked->isChecked();
-    Settings::values.use_docked_mode.SetValue(
-        docked_mode_selected ? Settings::ConsoleMode::Docked : Settings::ConsoleMode::Handheld);
-    OnDockedModeChanged(pre_docked_mode, docked_mode_selected, system);
+    if (ui->handheldGroup->isVisible()) {
+        const bool pre_docked_mode = Settings::IsDockedMode();
+        const bool docked_mode_selected = ui->radioDocked->isChecked();
+        Settings::values.use_docked_mode.SetValue(
+            docked_mode_selected ? Settings::ConsoleMode::Docked : Settings::ConsoleMode::Handheld);
+        OnDockedModeChanged(pre_docked_mode, docked_mode_selected, system);
+    }
 
     Settings::values.vibration_enabled.SetValue(ui->vibrationGroup->isChecked());
     Settings::values.motion_enabled.SetValue(ui->motionGroup->isChecked());

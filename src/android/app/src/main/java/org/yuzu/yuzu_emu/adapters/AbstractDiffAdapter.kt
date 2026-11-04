@@ -7,6 +7,7 @@ import android.annotation.SuppressLint
 import androidx.recyclerview.widget.AsyncDifferConfig
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
+import org.yuzu.yuzu_emu.model.Game
 import org.yuzu.yuzu_emu.viewholder.AbstractViewHolder
 import androidx.recyclerview.widget.RecyclerView
 
@@ -24,6 +25,15 @@ abstract class AbstractDiffAdapter<Model : Any, Holder : AbstractViewHolder<Mode
 
     private class DiffCallback<Model>(val exact: Boolean) : DiffUtil.ItemCallback<Model>() {
         override fun areItemsTheSame(oldItem: Model & Any, newItem: Model & Any): Boolean {
+            if (oldItem is Game && newItem is Game) {
+                return if (oldItem.path.isNotEmpty() && newItem.path.isNotEmpty()) {
+                    oldItem.path == newItem.path
+                } else if (oldItem.programId.isNotEmpty() && newItem.programId.isNotEmpty()) {
+                    oldItem.programId.equals(newItem.programId, ignoreCase = true)
+                } else {
+                    oldItem == newItem
+                }
+            }
             if (exact) {
                 return oldItem === newItem
             }

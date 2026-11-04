@@ -43,6 +43,10 @@ class ConfigureSystem;
 class ConfigureNetwork;
 class ConfigureApplets;
 
+namespace StormUI {
+class LiveFilterEngine;
+}
+
 class QGraphicsScene;
 class QLineEdit;
 class QStandardItem;
@@ -91,6 +95,10 @@ private:
     std::vector<QString> m_original_tab_titles;
 
     std::unique_ptr<QtConfig> game_config;
+    class QListWidget* m_selector_list{nullptr};
+    StormUI::LiveFilterEngine* m_live_filter_engine{nullptr};
+    void PopulateSelectionList();
+    void UpdateVisibleTabs();
 
     Core::System& system;
     std::unique_ptr<ConfigurationShared::Builder> builder;

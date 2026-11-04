@@ -91,13 +91,13 @@ private:
     /// Map a ResolutionSetup value to its index in kLevelOrder.
     static int LevelToIndex(Settings::ResolutionSetup level);
 
-    // --- State ---
+    // --- State (Lock-Free) ---
     std::atomic<double> smoothed_frametime{16.666};
-    double target_frame_time_ms{16.666};
+    std::atomic<double> target_frame_time_ms{16.666};
 
-    int current_level_index{3};  // default = Res1X
-    int max_level_index{3};      // user ceiling
-    int min_level_index{0};      // absolute floor (Res1_4X)
+    std::atomic<int> current_level_index{3};  // default = Res1X
+    std::atomic<int> max_level_index{3};      // user ceiling
+    std::atomic<int> min_level_index{0};      // absolute floor (Res1_4X)
 
     u32 consecutive_overbudget{0};
     u32 consecutive_underbudget{0};
@@ -109,8 +109,6 @@ private:
     static constexpr u32 kUnderbudgetThreshold = 60; // frames before scale-up
     static constexpr double kOverbudgetMargin = 1.15; // 15% over target = overbudget
     static constexpr double kUnderbudgetMargin = 0.85; // 15% under target = underbudget
-
-    mutable std::mutex mutex_;
 };
 
 } // namespace Core

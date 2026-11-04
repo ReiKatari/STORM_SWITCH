@@ -212,9 +212,14 @@ GameList::GameList(FileSys::VirtualFilesystem vfs_, FileSys::ManualContentProvid
                 }
             });
 
-    // TODO: impl on grid/carousel
     connect(tree_view, &GameTree::FilterResultReady, search_field,
             [this](int visible, int total) { search_field->setFilterResult(visible, total); });
+    connect(grid_view, &GameGrid::FilterResultReady, search_field,
+            [this](int visible, int total) { search_field->setFilterResult(visible, total); });
+    connect(search_field, &GameListSearchField::SortModeChanged, this, &GameList::OnSortChanged);
+    connect(search_field, &GameListSearchField::ToggleViewModeRequested, this, &GameList::OnToggleViewMode);
+    connect(item_model, &GameListModel::StatusMessage, this, &GameList::StatusMessage);
+    connect(grid_view, &QListView::doubleClicked, this, &GameList::ValidateEntry);
 
     qRegisterMetaType<QList<QStandardItem*>>("QList<QStandardItem*>");
 
@@ -373,6 +378,9 @@ void GameList::ResetViewMode() {
     m_currentView->setVisible(true);
     m_currentView->setEnabled(true);
     layout->insertWidget(0, m_currentView);
+    if (search_field) {
+        search_field->UpdateViewMode(mode == Settings::GameListMode::GridView);
+    }
 
     auto view = m_currentView->viewport();
     view->installEventFilter(this);
@@ -396,6 +404,26 @@ void GameList::ResetViewMode() {
         if (was_initialized && !UISettings::values.game_dirs.empty()) {
             item_model->PopulateAsync(UISettings::values.game_dirs);
         }
+    }
+}
+
+void GameList::OnSortChanged(int mode) {
+    if (item_model) {
+        item_model->SortGames(mode);
+    }
+}
+
+void GameList::OnToggleViewMode() {
+    auto current_mode = UISettings::values.game_list_mode.GetValue();
+    if (current_mode == Settings::GameListMode::GridView) {
+        current_mode = Settings::GameListMode::TreeView;
+    } else {
+        current_mode = Settings::GameListMode::GridView;
+    }
+    UISettings::values.game_list_mode.SetValue(current_mode);
+    ResetViewMode();
+    if (search_field) {
+        search_field->UpdateViewMode(current_mode == Settings::GameListMode::GridView);
     }
 }
 
@@ -696,6 +724,7 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
         return en;
     };
 
+    QAction* properties = context_menu.addAction(item_tr(QString(), "Configure Game", QStringLiteral("Настройки игры...")));
     QAction* favorite = context_menu.addAction(item_tr(QStringLiteral("⭐ "), "Favorite", QStringLiteral("Добавить в избранное")));
     context_menu.addSeparator();
     QAction* start_game = context_menu.addAction(item_tr(QStringLiteral("▶️ "), "Start Game", QStringLiteral("Запустить игру")));
@@ -776,7 +805,7 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
             QStringLiteral("🛡️ Corrección automática del juego..."),
             QStringLiteral("🛡️ الإصلاح التلقائي للعبة...")));
     }
-    QAction* properties = context_menu.addAction(item_tr(QStringLiteral("⚙️ "), "Configure Game", QStringLiteral("Свойства / Настройки игры...")));
+    // properties action moved to top of context menu per Item 21
     QAction* reset_game_settings = context_menu.addAction(storm_tr(
         QStringLiteral("🔄 Сбросить настройки игры на стандартные"),
         QStringLiteral("🔄 Reset Per-Game Settings to Defaults"),

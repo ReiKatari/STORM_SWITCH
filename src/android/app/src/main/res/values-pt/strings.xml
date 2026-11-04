@@ -2095,4 +2095,18 @@
     <string name="home_cat_diagnostics_about">Diagnóstico, registros e sobre</string>
     <string name="per_game_custom_badge">PRÓPRIA</string>
     <string name="vulkan_legacy_driver_warning">Vulkan do sistema %1$s detectado em %2$s. Muitos jogos do Switch exigem Vulkan 1.3. Recomenda-se instalar um driver Mesa Turnip em Configurações -> Gerenciador de drivers de GPU.</string>
+
+    <string name="button_a">A</string>
+    <string name="button_b">B</string>
+    <string name="button_l">L</string>
+    <string name="button_r">R</string>
+    <string name="button_x">X</string>
+    <string name="button_y">Y</string>
+    <string name="button_z">Z</string>
+    <string name="button_zl">ZL</string>
+    <string name="button_zr">ZR</string>
+    <string name="enable_fast_gpu_time">Enable Fast GPU Time</string>
+    <string name="enable_fast_gpu_time_description">Speeds up GPU timer queries to boost performance in games with heavy CPU-GPU synchronization, but may cause visual timing glitches in some titles.</string>
+    <string name="storm_check_updates_now">Check for Updates Now</string>
+    <string name="storm_check_updates_now_desc">Check GitHub and STORM GAMES WORLD for a newer release and install it in place</string>
 </resources>

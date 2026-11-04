@@ -130,55 +130,71 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
         scheduleRomSwapStopTimeout()
     }
 
+    private var thermalLevel = 0 // 0: None/Light, 1: Moderate, 2: Severe+
+
+    private fun updateSustainedPerformance(enable: Boolean) {
+        try {
+            val powerManager = getSystemService(Context.POWER_SERVICE) as? PowerManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && powerManager?.isSustainedPerformanceModeSupported == true) {
+                window.setSustainedPerformanceMode(enable)
+                Log.info("[ThermalMonitor] Sustained Performance Mode set to $enable")
+            }
+        } catch (t: Throwable) {
+            Log.warning("[ThermalMonitor] Sustained Performance Mode error: ${t.message}")
+        }
+    }
+
+    private fun handleThermalStatus(status: Int) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            when {
+                status >= PowerManager.THERMAL_STATUS_SEVERE -> {
+                    if (thermalLevel != 2) {
+                        thermalLevel = 2
+                        isThermalThrottled = true
+                        NativeLibrary.setThermalThrottle(true)
+                        NativeLibrary.setSlowSpeedLimit(true)
+                        updateSustainedPerformance(false)
+                        Log.info("[ThermalMonitor] Graduated thermal throttle: SEVERE (status=$status). Eco mode ON, slow speed limit ON, sustained perf OFF")
+                    }
+                }
+                status == PowerManager.THERMAL_STATUS_MODERATE -> {
+                    if (thermalLevel != 1) {
+                        thermalLevel = 1
+                        isThermalThrottled = true
+                        NativeLibrary.setThermalThrottle(false)
+                        NativeLibrary.setSlowSpeedLimit(true)
+                        updateSustainedPerformance(false)
+                        Log.info("[ThermalMonitor] Graduated thermal throttle: MODERATE (status=$status). Slow speed limit ON, sustained perf OFF")
+                    }
+                }
+                else -> {
+                    if (thermalLevel != 0) {
+                        thermalLevel = 0
+                        isThermalThrottled = false
+                        NativeLibrary.setThermalThrottle(false)
+                        NativeLibrary.setStandardSpeedLimit(true)
+                        updateSustainedPerformance(true)
+                        Log.info("[ThermalMonitor] Thermal back-off: Normal performance restored (status=$status)")
+                    }
+                }
+            }
+        }
+    }
+
     private fun startThermalMonitor() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             try {
                 val powerManager = getSystemService(Context.POWER_SERVICE) as? PowerManager
                 if (powerManager != null && thermalListener == null) {
                     val listener = PowerManager.OnThermalStatusChangedListener { status ->
-                        val shouldThrottle = status >= PowerManager.THERMAL_STATUS_SEVERE
-                        if (shouldThrottle != isThermalThrottled) {
-                            isThermalThrottled = shouldThrottle
-                            NativeLibrary.setThermalThrottle(shouldThrottle)
-                            Log.info("[ThermalMonitor] Thermal status changed: status=$status, throttle=$shouldThrottle")
-                        }
+                        handleThermalStatus(status)
                     }
                     powerManager.addThermalStatusListener(listener)
                     thermalListener = listener
-                    Log.info("[ThermalMonitor] Registered PowerManager OnThermalStatusChangedListener")
+                    Log.info("[ThermalMonitor] Registered PowerManager OnThermalStatusChangedListener (graduated)")
                 }
             } catch (e: Exception) {
                 Log.warning("[ThermalMonitor] Failed to register PowerManager thermal listener: ${e.message}")
-            }
-        }
-
-        thermalJob?.cancel()
-        thermalJob = lifecycleScope.launch(Dispatchers.IO) {
-            while (isActive) {
-                try {
-                    val batteryIntent = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-                    val rawBatteryTemp = batteryIntent?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) ?: 0
-                    val batteryTempC = rawBatteryTemp / 10
-
-                    // Trigger eco thermal mitigation at 45°C battery temperature, deactivate at 42°C.
-                    // Do not read raw /sys/class/thermal/thermal_zone*/temp because Android OEMs use
-                    // heterogeneous units (milli-°C, deci-°C, virtual steps 100..900) where values <= 1000
-                    // falsely evaluate as > 78°C immediately on boot!
-                    val shouldThrottle = if (isThermalThrottled) {
-                        batteryTempC >= 42 && batteryTempC > 0
-                    } else {
-                        batteryTempC >= 45 && batteryTempC > 0
-                    }
-
-                    if (shouldThrottle != isThermalThrottled) {
-                        isThermalThrottled = shouldThrottle
-                        NativeLibrary.setThermalThrottle(shouldThrottle)
-                        Log.info("[ThermalMonitor] Battery thermal throttle ${if (shouldThrottle) "ACTIVATED" else "DEACTIVATED"} (battery=${batteryTempC}°C)")
-                    }
-                } catch (_: Exception) {
-                    // Thermal reading not available on all devices
-                }
-                delay(5000)
             }
         }
     }
@@ -329,15 +345,7 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
         }
 
         // Sustained Performance Mode (prevents aggressive thermal throttling drops)
-        try {
-            val powerManager = getSystemService(Context.POWER_SERVICE) as? PowerManager
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && powerManager?.isSustainedPerformanceModeSupported == true) {
-                window.setSustainedPerformanceMode(true)
-                Log.info("[EmulationActivity] Sustained Performance Mode enabled")
-            }
-        } catch (t: Throwable) {
-            Log.warning("[EmulationActivity] Sustained Performance Mode error: ${t.message}")
-        }
+        updateSustainedPerformance(true)
 
         val preferences = PreferenceManager.getDefaultSharedPreferences(YuzuApplication.appContext)
         if (!preferences.getBoolean(Settings.PREF_MEMORY_WARNING_SHOWN, false)) {
@@ -420,13 +428,14 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
             } catch (_: Throwable) {}
         }
         thermalJob?.cancel()
-        if (isThermalThrottled) {
+        if (thermalLevel != 0 || isThermalThrottled) {
+            thermalLevel = 0
             isThermalThrottled = false
             NativeLibrary.setThermalThrottle(false)
+            NativeLibrary.setStandardSpeedLimit(true)
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            window.setSustainedPerformanceMode(false)
-        }
+        updateSustainedPerformance(false)
+        org.yuzu.yuzu_emu.utils.AdpfManager.close()
         nfcReader.stopScanning()
         stopMotionSensorListener()
         super.onPause()

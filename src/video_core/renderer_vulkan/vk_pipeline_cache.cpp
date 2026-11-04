@@ -343,21 +343,14 @@ size_t GetTotalPipelineWorkers() {
     if (user_threads > 0) {
         return std::clamp<size_t>(user_threads, 1ULL, std::max<size_t>(1ULL, hardware_threads));
     }
+    const size_t auto_threads = std::max<size_t>(1ULL, std::min<size_t>(4ULL, hardware_threads / 4ULL));
     if (Settings::values.storm_lowend_turbo.GetValue()) {
         return 1ULL;
     }
-    if (Settings::values.smart_shader_throttle.GetValue()) {
-        const size_t base_workers = hardware_threads > 4 ? (hardware_threads - 2) : max_core_threads;
-        return std::clamp<size_t>(base_workers, 4ULL, 12ULL);
-    }
     if (Settings::values.eco_thermal_mode.GetValue()) {
-        // Reserve at least 2 cores for guest CPU and GPU threads to prevent thermal spikes and micro-stutter
-        return std::clamp<size_t>(max_core_threads > 2 ? max_core_threads - 2 : 1, 1ULL, 8ULL);
+        return std::min<size_t>(auto_threads, 2ULL);
     }
-    // Balanced high-performance mode: reserve cores for host OS and main guest threads
-    // to prevent 100% all-core thermal saturation, micro-stutters and overheating.
-    const size_t balanced_workers = hardware_threads > 4 ? (hardware_threads - 2) : max_core_threads;
-    return std::clamp<size_t>(balanced_workers, 1ULL, 16ULL);
+    return auto_threads;
 #endif
 }
 
@@ -715,7 +708,12 @@ void PipelineCache::LoadDiskResources(u64 title_id, std::stop_token stop_loading
     }
 #else
     if (!device.HasBrokenParallelShaderCompiling()) {
-        preload_thread_count = std::clamp<std::size_t>(static_cast<std::size_t>(std::thread::hardware_concurrency()), 4ULL, 16ULL);
+        const u32 user_threads = Settings::values.pipeline_worker_threads.GetValue();
+        if (user_threads > 0) {
+            preload_thread_count = std::clamp<std::size_t>(user_threads, 1ULL, hw_threads);
+        } else {
+            preload_thread_count = std::max<std::size_t>(1ULL, std::min<std::size_t>(4ULL, hw_threads / 4ULL));
+        }
     }
 #endif
     Common::ThreadWorker preload_workers(preload_thread_count, "VkPipelinePreload");

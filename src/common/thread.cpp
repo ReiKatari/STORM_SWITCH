@@ -855,22 +855,11 @@ bool Event::WaitFor(const std::chrono::nanoseconds time) {
 }
 #else
 bool Event::WaitFor(const std::chrono::nanoseconds time) {
-#ifdef _WIN32
-    auto const end = Common::g_wall_clock.GetTimeNS() + time;
-    while (!is_set.load() && end > Common::g_wall_clock.GetTimeNS())
-        Common::Windows::SleepForOneTick();
-    if (is_set.load()) {
-        Reset();
-        return true;
-    }
-    return false;
-#else
     std::unique_lock lk{mutex};
     if (!condvar.wait_for(lk, time, [this] { return is_set.load(); }))
         return false;
     is_set = false;
     return true;
-#endif
 }
 #endif
 

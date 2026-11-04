@@ -3788,6 +3788,20 @@ inline const std::unordered_map<std::string_view, const char*>& GetEnToRuSvMap()
         {"🧹 All slots for the selected game cleared", "🧹 Все слоты выбранной игры очищены"},
         {"🧹 Clear", "🧹 Очистить"},
         {"🧹 Clear All Game Slots", "🧹 Очистить все слоты игры"},
+        {"Filter:", "Фильтр:"},
+        {"Enter pattern to filter", "Поиск по названию или Title ID..."},
+        {"%1 of %2 games", "%1 из %2 игр"},
+        {"Name (A–Z)", "Имя (А–Я)"},
+        {"Name (Z–A)", "Имя (Я–А)"},
+        {"Play Time", "Время игры"},
+        {"File Size", "Размер файла"},
+        {"Platform (Switch 2/1)", "Платформа (Switch 2/1)"},
+        {"Switch 2 / 1", "Switch 2 / 1"},
+        {"Updating game list...", "Обновление списка игр..."},
+        {"Switch to List View", "Переключить в режим списка"},
+        {"Switch to Grid View", "Переключить в режим сетки"},
+        {"PROFILE", "ПРОФИЛЬ"},
+        {"Game Settings...", "Настройки игры..."},
     };
     static const auto kMap = []() {
         std::unordered_map<std::string_view, const char*> m;

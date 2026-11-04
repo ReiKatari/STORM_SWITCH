@@ -68,8 +68,12 @@ public:
 
     void SetFlat(bool flat);
 
+    bool LoadFromCache(const QVector<UISettings::GameDir>& game_dirs);
+    void SortGames(int sort_mode);
+
 signals:
     void ShowList(bool show);
+    void StatusMessage(const QString& msg);
     void PopulatingCompleted(const QStringList& watch_list);
     void PopulatingStarted();
     void SaveConfig();

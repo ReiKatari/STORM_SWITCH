@@ -2209,4 +2209,16 @@ Inicia un juego o conéctate a otro dispositivo.</string>
     <string name="home_cat_diagnostics_about">Diagnóstico, registros e información</string>
     <string name="per_game_custom_badge">PROPIA</string>
     <string name="vulkan_legacy_driver_warning">Se detectó Vulkan del sistema %1$s en %2$s. Muchos títulos de Switch requieren Vulkan 1.3. Se recomienda instalar un controlador Mesa Turnip en Parámetros -> Administrador de controladores GPU.</string>
+
+    <string name="button_a">A</string>
+    <string name="button_b">B</string>
+    <string name="button_l">L</string>
+    <string name="button_r">R</string>
+    <string name="button_x">X</string>
+    <string name="button_y">Y</string>
+    <string name="button_z">Z</string>
+    <string name="button_zl">ZL</string>
+    <string name="button_zr">ZR</string>
+    <string name="enable_fast_gpu_time">Activar tiempo de GPU rápido</string>
+    <string name="enable_fast_gpu_time_description">Acelera las consultas del temporizador de GPU para mejorar el rendimiento en juegos con alta sincronización CPU-GPU, pero puede causar fallos de sincronización en algunos títulos.</string>
 </resources>

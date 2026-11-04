@@ -280,20 +280,27 @@ void LiveFilterEngine::OnSearchTextChanged(const QString& query) {
 
     int total_matches = 0;
     int matching_tabs_count = 0;
+    int first_matching_row = -1;
 
     for (int r = 0; r < m_selector_list->count(); ++r) {
         auto* item = m_selector_list->item(r);
         const QString orig_name = m_original_tab_names.value(r, item->text());
-        int tab_matches = 0;
+        int cat_matches = 0;
 
         const auto tabs = qvariant_cast<QList<QWidget*>>(item->data(Qt::UserRole));
         for (auto* tab : tabs) {
             if (!tab) continue;
             for (auto* w : tab->findChildren<QWidget*>()) {
+                if (w->objectName() != QStringLiteral("StormSettingRow") && !w->property("stormSettingRow").toBool()) {
+                    continue;
+                }
                 QString text_blob = w->toolTip();
-                if (auto* lbl = qobject_cast<QLabel*>(w)) text_blob += QLatin1Char(' ') + lbl->text();
-                if (auto* cb = qobject_cast<QCheckBox*>(w)) text_blob += QLatin1Char(' ') + cb->text();
-                if (auto* gb = qobject_cast<QGroupBox*>(w)) text_blob += QLatin1Char(' ') + gb->title();
+                for (const auto* lbl : w->findChildren<QLabel*>()) {
+                    text_blob += QLatin1Char(' ') + lbl->text();
+                }
+                for (const auto* cb : w->findChildren<QCheckBox*>()) {
+                    text_blob += QLatin1Char(' ') + cb->text();
+                }
 
                 bool matches = true;
                 for (const auto& tok : tokens) {
@@ -302,19 +309,28 @@ void LiveFilterEngine::OnSearchTextChanged(const QString& query) {
                         break;
                     }
                 }
+                w->setVisible(matches);
                 if (matches) {
-                    tab_matches++;
+                    cat_matches++;
                 }
             }
         }
 
-        if (tab_matches > 0) {
-            item->setText(orig_name + QStringLiteral(" (%1)").arg(tab_matches));
+        if (cat_matches > 0) {
+            item->setText(orig_name + QStringLiteral(" (%1)").arg(cat_matches));
             matching_tabs_count++;
-            total_matches += tab_matches;
+            total_matches += cat_matches;
+            if (first_matching_row == -1) {
+                first_matching_row = r;
+            }
         } else {
             item->setText(orig_name);
         }
+    }
+
+    // Auto-switch to category containing matches per Item 16
+    if (first_matching_row != -1 && m_selector_list->currentRow() != first_matching_row) {
+        m_selector_list->setCurrentRow(first_matching_row);
     }
 
     emit SearchMatchStats(total_matches, matching_tabs_count);
@@ -325,6 +341,15 @@ void LiveFilterEngine::ClearSearch() {
     for (int r = 0; r < m_selector_list->count(); ++r) {
         if (m_original_tab_names.contains(r)) {
             m_selector_list->item(r)->setText(m_original_tab_names.value(r));
+        }
+        const auto tabs = qvariant_cast<QList<QWidget*>>(m_selector_list->item(r)->data(Qt::UserRole));
+        for (auto* tab : tabs) {
+            if (!tab) continue;
+            for (auto* w : tab->findChildren<QWidget*>()) {
+                if (w->objectName() == QStringLiteral("StormSettingRow") || w->property("stormSettingRow").toBool()) {
+                    w->setVisible(true);
+                }
+            }
         }
     }
 }

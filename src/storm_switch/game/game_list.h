@@ -124,6 +124,11 @@ signals:
     void ShowList(bool show);
     void PopulatingCompleted();
     void SaveConfig();
+    void StatusMessage(const QString& msg);
+
+public slots:
+    void OnSortChanged(int mode);
+    void OnToggleViewMode();
 
 private slots:
     void OnTextChanged(const QString& new_text);

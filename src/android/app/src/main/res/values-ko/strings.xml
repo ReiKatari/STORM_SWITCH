@@ -2070,4 +2070,16 @@
     <string name="home_cat_diagnostics_about">진단, 로그 및 정보</string>
     <string name="per_game_custom_badge">사용자 지정</string>
     <string name="vulkan_legacy_driver_warning">%2$s에서 시스템 Vulkan %1$s이(가) 감지되었습니다. 많은 Switch 게임에는 Vulkan 1.3 기능이 필요합니다. 설정 -> GPU 드라이버 관리자에서 Mesa Turnip 드라이버를 설치하는 것이 좋습니다.</string>
+
+    <string name="button_a">A</string>
+    <string name="button_b">B</string>
+    <string name="button_l">L</string>
+    <string name="button_r">R</string>
+    <string name="button_x">X</string>
+    <string name="button_y">Y</string>
+    <string name="button_z">Z</string>
+    <string name="button_zl">ZL</string>
+    <string name="button_zr">ZR</string>
+    <string name="enable_fast_gpu_time">Enable Fast GPU Time</string>
+    <string name="enable_fast_gpu_time_description">Speeds up GPU timer queries to boost performance in games with heavy CPU-GPU synchronization, but may cause visual timing glitches in some titles.</string>
 </resources>

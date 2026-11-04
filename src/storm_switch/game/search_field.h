@@ -10,6 +10,7 @@ class QHBoxLayout;
 class QTreeView;
 class QLabel;
 class QLineEdit;
+class QComboBox;
 class QToolButton;
 
 class GameListSearchField : public QWidget {
@@ -24,6 +25,12 @@ public:
     void clear();
     void setFocus();
 
+    void UpdateViewMode(bool is_grid);
+
+signals:
+    void SortModeChanged(int mode);
+    void ToggleViewModeRequested();
+
 private:
     void changeEvent(QEvent*) override;
     void RetranslateUI();
@@ -37,16 +44,17 @@ private:
         QString edit_filter_text_old;
 
     protected:
-        // EventFilter in order to process systemkeys while editing the searchfield
         bool eventFilter(QObject* obj, QEvent* event) override;
     };
-    int visible;
-    int total;
+    int visible = 0;
+    int total = 0;
 
     QHBoxLayout* layout_filter = nullptr;
     QTreeView* tree_view = nullptr;
     QLabel* label_filter = nullptr;
     QLineEdit* edit_filter = nullptr;
     QLabel* label_filter_result = nullptr;
+    QComboBox* sort_combobox = nullptr;
+    QToolButton* view_mode_toggle = nullptr;
     QToolButton* button_filter_close = nullptr;
 };

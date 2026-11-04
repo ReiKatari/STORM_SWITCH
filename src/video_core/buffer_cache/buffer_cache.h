@@ -7,6 +7,7 @@
 #pragma once
 
 #include <algorithm>
+#include <boost/container/small_vector.hpp>
 #include <memory>
 #include <numeric>
 #include <stdexcept>
@@ -1927,7 +1928,7 @@ void BufferCache<P>::DownloadBuffersMemory(std::span<const BufferId> buffer_ids)
         BufferId buffer_id;
         BufferCopy copy;
     };
-    std::vector<Download> downloads;
+    boost::container::small_vector<Download, 16> downloads;
     u64 total_size_bytes = 0;
     for (const BufferId buffer_id : buffer_ids) {
         Buffer& buffer = slot_buffers[buffer_id];

@@ -622,6 +622,13 @@ u64 EmulationSession::GetProgramId(JNIEnv* env, jstring jprogramId) {
     return 0;
 }
 
+static std::atomic<pid_t> s_emu_tid{0};
+static std::atomic<pid_t> s_render_tid{0};
+
+extern "C" void SetRenderThreadTid(pid_t tid) {
+    s_render_tid.store(tid, std::memory_order_relaxed);
+}
+
 static Core::SystemResultStatus RunEmulation(const std::string& filepath,
                                              const size_t program_index,
                                              const bool frontend_initiated) {
@@ -633,8 +640,11 @@ static Core::SystemResultStatus RunEmulation(const std::string& filepath,
     }
 
     SCOPE_EXIT {
+        s_emu_tid.store(0, std::memory_order_relaxed);
+        s_render_tid.store(0, std::memory_order_relaxed);
         EmulationSession::GetInstance().ShutdownEmulation();
     };
+    s_emu_tid.store(gettid(), std::memory_order_relaxed);
 
     jconst result = EmulationSession::GetInstance().InitializeEmulation(filepath, program_index,
                                                                         frontend_initiated);
@@ -892,6 +902,24 @@ void Java_org_yuzu_yuzu_1emu_NativeLibrary_setThermalThrottle(JNIEnv* env, jclas
     } else {
         LOG_INFO(Frontend, "Thermal Governor: Throttling DEACTIVATED (normal mode restored)");
     }
+}
+
+extern "C" JNIEXPORT jintArray JNICALL
+Java_org_yuzu_yuzu_1emu_NativeLibrary_getEmulationTids(JNIEnv* env, jclass clazz) {
+    std::vector<jint> tids;
+    pid_t emu = s_emu_tid.load(std::memory_order_relaxed);
+    if (emu > 0) {
+        tids.push_back(static_cast<jint>(emu));
+    }
+    pid_t render = s_render_tid.load(std::memory_order_relaxed);
+    if (render > 0 && render != emu) {
+        tids.push_back(static_cast<jint>(render));
+    }
+    jintArray result = env->NewIntArray(static_cast<jsize>(tids.size()));
+    if (result && !tids.empty()) {
+        env->SetIntArrayRegion(result, 0, static_cast<jsize>(tids.size()), tids.data());
+    }
+    return result;
 }
 
 int Java_org_yuzu_yuzu_1emu_NativeLibrary_installFileToNand(JNIEnv* env, jobject instance,
