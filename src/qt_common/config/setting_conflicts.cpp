@@ -89,44 +89,7 @@ std::vector<SettingConflict> SettingConflicts::DetectConflicts(bool is_per_game,
         });
     }
 
-    // Rule 3: GPU accuracy Low without reactive flushing
-    if (Settings::values.gpu_accuracy.GetValue() == Settings::GpuAccuracy::Low &&
-        !Settings::values.use_reactive_flushing.GetValue()) {
-        conflicts.push_back({
-            "gpu_accuracy_low_no_reactive_flushing",
-            StormLang11(
-                QStringLiteral("Риск сбоя синхронизации GPU"),
-                QStringLiteral("GPU Synchronization Risk"),
-                QStringLiteral("GPU-Synchronisationsrisiko"),
-                QStringLiteral("Risque de synchronisation GPU"),
-                QStringLiteral("Riesgo de sincronización GPU"),
-                QStringLiteral("Rischio sincronizzazione GPU"),
-                QStringLiteral("Risco de sincronização da GPU"),
-                QStringLiteral("GPU 同步异常风险"),
-                QStringLiteral("GPU 同期の危険性"),
-                QStringLiteral("GPU 동기화 오류 위험"),
-                QStringLiteral("خطر مزامنة وحدة معالجة الرسوم"),
-                QStringLiteral("GPU सिंक्रोनाइज़ेशन जोखिम")),
-            StormLang11(
-                QStringLiteral("Низкая точность GPU без реактивного сброса кэша вызывает графические артефакты в играх с чтением из GPU."),
-                QStringLiteral("Low GPU accuracy without reactive flushing causes graphical corruption in games requiring GPU readbacks."),
-                QStringLiteral("Niedrige GPU-Genauigkeit ohne reaktives Flushing verursacht Grafikfehler bei Spielen mit GPU-Rücklesungen."),
-                QStringLiteral("Précision GPU faible sans vidage réactif provoquant des corruptions graphiques sur les jeux avec relecture GPU."),
-                QStringLiteral("Baja precisión de GPU sin vaciado reactivo provoca corrupción gráfica en juegos que leen de la GPU."),
-                QStringLiteral("Bassa precisione GPU senza svuotamento reattivo causa artefatti nei giochi con rilettura GPU."),
-                QStringLiteral("Baixa precisão da GPU sem liberação reativa causa corrupção gráfica em jogos que leem da GPU."),
-                QStringLiteral("在未开启被动刷新时使用低 GPU 精度会导致需要 GPU 回读的游戏出现画面渲染损坏。"),
-                QStringLiteral("リアクティブフラッシュなしの低 GPU 精度は、GPU リードバックを必要とするゲームでグラフィック異常を引き起こします。"),
-                QStringLiteral("반응형 플러시 없는 낮은 GPU 정밀도는 GPU 판독이 필요한 게임에서 그래픽 깨짐을 유발합니다."),
-                QStringLiteral("تؤدي دقة GPU المنخفضة دون تفريغ تفاعلي إلى تشوهات رسومية في الألعاب التي تتطلب قراءة من وحدة الرسوم."),
-                QStringLiteral("रिएक्टिव फ्लशिंग के बिना कम GPU सटीकता GPU रीडबैक वाले गेम्स में ग्राफिकल विकृति का कारण बनती है।")),
-            []() {
-                Settings::values.use_reactive_flushing.SetValue(true);
-            }
-        });
-    }
-
-    // Rule 4: Unsafe CPU flags enabled when CPU accuracy is not Unsafe
+    // Rule 3: Unsafe CPU flags enabled when CPU accuracy is not Unsafe
     if (Settings::values.cpu_accuracy.GetValue() != Settings::CpuAccuracy::Unsafe) {
         const bool has_unsafe_flags =
             Settings::values.cpuopt_unsafe_unfuse_fma.GetValue() ||
@@ -171,7 +134,7 @@ std::vector<SettingConflict> SettingConflicts::DetectConflicts(bool is_per_game,
         }
     }
 
-    // Rule 5: Memory layout > 4GB on standard Switch 1 title
+    // Rule 4: Memory layout > 4GB on standard Switch 1 title
     if (Settings::values.memory_layout_mode.GetValue() != Settings::MemoryLayout::Memory_4Gb) {
         conflicts.push_back({
             "switch1_memory_layout_oversize",
@@ -207,7 +170,7 @@ std::vector<SettingConflict> SettingConflicts::DetectConflicts(bool is_per_game,
         });
     }
 
-    // Rule 6: Extreme resolution scale (>= 3x)
+    // Rule 5: Extreme resolution scale (>= 3x)
     if (static_cast<int>(Settings::values.resolution_setup.GetValue()) >=
         static_cast<int>(Settings::ResolutionSetup::Res3X)) {
         conflicts.push_back({

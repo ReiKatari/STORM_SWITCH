@@ -811,6 +811,7 @@ void StormGamesWorldDialog::RefreshDownloadedFilesCache(const QString bitand dir
                 info.tid = meta_obj[QStringLiteral("id")].toString().trimmed().toUpper();
                 info.title = meta_obj[QStringLiteral("name")].toString().trimmed();
                 info.version = meta_obj[QStringLiteral("version")].toString().trimmed();
+                info.internal_version = meta_obj[QStringLiteral("internal_version")].toString().trimmed();
             }
 
             // Fallbacks if not in metadata cache
@@ -1033,31 +1034,51 @@ bool StormGamesWorldDialog::IsGameDownloaded(const StormWorldGame bitand game, c
 
         // [Rule 4: FULL-SET MATCHING - DLC]
         if (game_has_dlc != file.has_dlc) {
-            continue;
+            if (file.dlc_count == 0 && !file.lower_name.contains(QStringLiteral("(1g"))) {
+                // allow match if user filename does not use (1g full-set notation
+            } else {
+                continue;
+            }
         }
         if (game_has_dlc and game_dlc_count > 0 and file.dlc_count > 0 and file.dlc_count < game_dlc_count) {
             continue;
         }
 
         // [Rule 5: FULL-SET MATCHING - RUSSIAN]
-        if (game_is_rus != file.has_rus) {
+        if (game_is_mod and game_is_rus != file.has_rus) {
             continue;
         }
 
         // [Rule 6: FULL-SET MATCHING - VERSION]
+        QString eff_int_ver = int_ver;
+        if (eff_int_ver.isEmpty() || eff_int_ver == QStringLiteral("0")) {
+            static const QRegularExpression title_intver_rx(QStringLiteral(R"(\(([0-9][0-9A-Za-z._-]*)\s*-\s*([0-9]{4,})\s*-\s*([0-9A-Fa-f]{16})\))"));
+            auto m_int = title_intver_rx.match(game.final_title);
+            if (!m_int.hasMatch()) {
+                m_int = title_intver_rx.match(game.title);
+            }
+            if (m_int.hasMatch()) {
+                eff_int_ver = m_int.captured(2).trimmed();
+            }
+        }
+
         const bool has_ver = (!ver.isEmpty() and ver != QStringLiteral("1.0.0") and ver != QStringLiteral("—") and ver != QStringLiteral("-"));
-        const bool has_int_ver = (!int_ver.isEmpty() and int_ver != QStringLiteral("0"));
+        const bool has_int_ver = (!eff_int_ver.isEmpty() and eff_int_ver != QStringLiteral("0"));
         if (has_ver or has_int_ver) {
             bool ver_matched = false;
-            if (has_ver and (!file.version.isEmpty() and file.version.toLower() == ver)) ver_matched = true;
+            if (has_ver and (!file.version.isEmpty() and (file.version.toLower() == ver or file.version == eff_int_ver))) ver_matched = true;
+            if (has_int_ver and (!file.internal_version.isEmpty() and file.internal_version == eff_int_ver)) ver_matched = true;
             if (has_ver and (file.lower_name.contains(ver) or file.lower_name.contains(QStringLiteral("v%1").arg(ver)))) ver_matched = true;
-            if (has_int_ver and (file.lower_name.contains(int_ver) or file.lower_name.contains(QStringLiteral("v%1").arg(int_ver)))) ver_matched = true;
+            if (has_int_ver and (file.lower_name.contains(eff_int_ver) or file.lower_name.contains(QStringLiteral("v%1").arg(eff_int_ver)))) ver_matched = true;
+            if (file.version.isEmpty() or (file.version == QStringLiteral("1.0.0") and !file.lower_name.contains(QStringLiteral("(1g")))) ver_matched = true;
             if (!ver_matched) {
                 continue;
             }
-        } else if (ver == QStringLiteral("1.0.0") or int_ver == QStringLiteral("0")) {
+        } else if (ver == QStringLiteral("1.0.0") or eff_int_ver == QStringLiteral("0")) {
             if (!file.version.isEmpty() and file.version != QStringLiteral("1.0.0") and file.version != QStringLiteral("0")) {
-                continue;
+                if (file.lower_name.contains(QStringLiteral("(1g"))) {
+                    continue;
+                }
             }
         }
 

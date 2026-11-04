@@ -57,25 +57,7 @@ object SettingConflicts {
             )
         }
 
-        // 3. GPU accuracy Low without reactive flushing
-        val gpuAccuracy = IntSetting.RENDERER_ACCURACY.getInt()
-        val reactiveFlushing = BooleanSetting.RENDERER_REACTIVE_FLUSHING.getBoolean()
-        if (gpuAccuracy == 0 && !reactiveFlushing) {
-            list.add(
-                AndroidSettingConflict(
-                    "gpu_accuracy_readback",
-                    "Риск сбоя синхронизации GPU",
-                    "GPU Synchronization Risk",
-                    "Низкая точность GPU без реактивного сброса кэша вызывает графические артефакты в играх с чтением из GPU.",
-                    "Low GPU accuracy without reactive flushing causes graphical corruption in games requiring GPU readbacks.",
-                    applyFix = {
-                        BooleanSetting.RENDERER_REACTIVE_FLUSHING.setBoolean(true)
-                    }
-                )
-            )
-        }
-
-        // 4. Unsafe CPU flags enabled when accuracy is not Unsafe
+        // 3. Unsafe CPU flags enabled when accuracy is not Unsafe
         val cpuAccuracy = IntSetting.CPU_ACCURACY.getInt()
         val unsafeMmu = BooleanSetting.CPUOPT_UNSAFE_HOST_MMU.getBoolean()
         if (cpuAccuracy != 2 && unsafeMmu) {
@@ -93,7 +75,7 @@ object SettingConflicts {
             )
         }
 
-        // 5. Resolution >= 3x on mobile device
+        // 4. Resolution >= 3x on mobile device
         val resolution = IntSetting.RENDERER_RESOLUTION.getInt()
         if (resolution >= 7) { // 3x or higher
             list.add(

@@ -1384,21 +1384,25 @@ void ConfigureDialog::keyPressEvent(QKeyEvent* event) {
 
 void ConfigureDialog::SetupConflictBanner() {
     m_conflict_banner = new QWidget(this);
+    m_conflict_banner->setObjectName(QStringLiteral("ConflictBanner"));
+    m_conflict_banner->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    m_conflict_banner->setMaximumHeight(36);
     auto* banner_layout = new QHBoxLayout(m_conflict_banner);
-    banner_layout->setContentsMargins(12, 6, 12, 6);
+    banner_layout->setContentsMargins(10, 4, 10, 4);
+    banner_layout->setSpacing(8);
     m_conflict_label = new QLabel(m_conflict_banner);
-    m_conflict_label->setWordWrap(true);
+    m_conflict_label->setStyleSheet(QStringLiteral("border: none; background: transparent; color: #fbbf24; font-weight: 600; font-size: 9pt; padding: 0px;"));
     m_conflict_fix_btn = new QPushButton(StormLang(QStringLiteral("Исправить"), QStringLiteral("Fix")), m_conflict_banner);
     m_conflict_fix_btn->setCursor(Qt::PointingHandCursor);
     m_conflict_fix_btn->setStyleSheet(QStringLiteral(
-        "QPushButton { background: #ffaa00; color: #1a1a1a; font-weight: bold; padding: 5px 14px; border-radius: 5px; border: none; }"
+        "QPushButton { background: #ffaa00; color: #1a1a1a; font-weight: bold; padding: 4px 12px; border-radius: 4px; border: none; font-size: 8.5pt; }"
         "QPushButton:hover { background: #ffbb22; }"));
 
     banner_layout->addWidget(m_conflict_label, 1);
     banner_layout->addWidget(m_conflict_fix_btn);
 
     m_conflict_banner->setStyleSheet(QStringLiteral(
-        "QWidget { background: rgba(255, 170, 0, 0.15); border: 1px solid rgba(255, 170, 0, 0.4); border-radius: 6px; margin: 4px; }"));
+        "QWidget#ConflictBanner { background-color: rgba(245, 158, 11, 0.14); border: 1px solid rgba(245, 158, 11, 0.55); border-radius: 6px; }"));
     m_conflict_banner->setVisible(false);
 
     if (ui->verticalLayout) {
@@ -1423,7 +1427,7 @@ void ConfigureDialog::CheckConflicts() {
     } else {
         const auto& c = conflicts.front();
         const bool is_ru = UISettings::values.language.GetValue().rfind("ru", 0) == 0;
-        m_conflict_label->setText(QStringLiteral("<b>⚠️ %1:</b> %2")
+        m_conflict_label->setText(QStringLiteral("<b>%1:</b> %2")
             .arg(c.LocalizedTitle(is_ru))
             .arg(c.LocalizedMessage(is_ru)));
         m_conflict_current_fix = c.apply_fix;

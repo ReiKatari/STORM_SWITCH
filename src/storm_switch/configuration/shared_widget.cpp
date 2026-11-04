@@ -899,7 +899,6 @@ void Widget::SetupComponent(const QString& label, std::function<void()>& load_fu
 
     const bool is_ru = UISettings::values.language.GetValue().rfind("ru", 0) == 0;
     const auto* impact = ConfigurationShared::GetSettingImpact(setting.GetLabel());
-    const QString impact_badge = impact ? ConfigurationShared::FormatImpactBadge(*impact, is_ru) : QString();
     const QString impact_tip = impact ? ConfigurationShared::FormatImpactTooltip(*impact, is_ru) : QString();
 
     bool is_profile_override = false;
@@ -909,18 +908,22 @@ void Widget::SetupComponent(const QString& label, std::function<void()>& load_fu
             is_profile_override = true;
         }
     }
-    const QString override_badge = is_profile_override ?
-        (is_ru ? QStringLiteral(" [задано профилем игры]") : QStringLiteral(" [game fix profile]")) : QString();
+
+    QString final_tooltip = impact_tip;
+    if (is_profile_override) {
+        const QString override_tip = is_ru ?
+            QStringLiteral("<b>Задано профилем игры</b>") :
+            QStringLiteral("<b>Configured by Game Fix Profile</b>");
+        if (final_tooltip.isEmpty()) {
+            final_tooltip = override_tip;
+        } else {
+            final_tooltip = override_tip + QStringLiteral("<br><br>") + final_tooltip;
+        }
+    }
 
     QString display_label = label;
-    if (!impact_badge.isEmpty()) {
-        display_label += QStringLiteral(" ") + impact_badge;
-    }
-    if (!override_badge.isEmpty()) {
-        display_label += override_badge;
-    }
-    if (!impact_tip.isEmpty()) {
-        setToolTip(impact_tip);
+    if (!final_tooltip.isEmpty()) {
+        setToolTip(final_tooltip);
     }
     if (is_profile_override && restore_button) {
         restore_button->setEnabled(true);

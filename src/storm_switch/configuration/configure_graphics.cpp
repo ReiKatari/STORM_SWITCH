@@ -1295,22 +1295,24 @@ Settings::RendererBackend ConfigureGraphics::GetCurrentGraphicsBackend() const {
 
 void ConfigureGraphics::SetupPerformancePresets() {
     auto* preset_group = new QGroupBox(StormLang(
-        QStringLiteral("⚡ Профиль производительности"),
-        QStringLiteral("⚡ Performance Preset")), this);
+        QStringLiteral("Профиль производительности"),
+        QStringLiteral("Performance Preset")), this);
     auto* preset_layout = new QHBoxLayout(preset_group);
+    preset_layout->setContentsMargins(10, 6, 10, 6);
+    preset_layout->setSpacing(8);
     auto* preset_label = new QLabel(StormLang(
-        QStringLiteral("Режим оптимизации:"),
-        QStringLiteral("Preset Mode:")), preset_group);
+        QStringLiteral("Режим:"),
+        QStringLiteral("Mode:")), preset_group);
     m_preset_combobox = new QComboBox(preset_group);
-    m_preset_combobox->addItem(StormLang(QStringLiteral("🔋 Экономия батареи"), QStringLiteral("🔋 Battery Saver")), 0);
-    m_preset_combobox->addItem(StormLang(QStringLiteral("⚖️ Баланс (Рекомендуется)"), QStringLiteral("⚖️ Balanced (Recommended)")), 1);
-    m_preset_combobox->addItem(StormLang(QStringLiteral("🚀 Максимальное качество"), QStringLiteral("🚀 Maximum Quality")), 2);
-    m_preset_combobox->addItem(StormLang(QStringLiteral("⚙️ Свой"), QStringLiteral("⚙️ Custom")), 3);
+    m_preset_combobox->addItem(StormLang(QStringLiteral("Экономия батареи"), QStringLiteral("Battery Saver")), 0);
+    m_preset_combobox->addItem(StormLang(QStringLiteral("Баланс (Рекомендуется)"), QStringLiteral("Balanced (Recommended)")), 1);
+    m_preset_combobox->addItem(StormLang(QStringLiteral("Максимальное качество"), QStringLiteral("Maximum Quality")), 2);
+    m_preset_combobox->addItem(StormLang(QStringLiteral("Пользовательский"), QStringLiteral("Custom")), 3);
 
     preset_layout->addWidget(preset_label);
     preset_layout->addWidget(m_preset_combobox, 1);
     preset_group->setStyleSheet(QStringLiteral(
-        "QGroupBox { font-weight: bold; margin-top: 4px; margin-bottom: 6px; padding: 10px; "
+        "QGroupBox { font-weight: bold; margin-top: 4px; margin-bottom: 6px; padding: 8px 10px; "
         "border: 1px solid rgba(80, 150, 255, 0.35); border-radius: 8px; background: rgba(80, 150, 255, 0.06); }"));
 
     if (ui->verticalLayout_2) {

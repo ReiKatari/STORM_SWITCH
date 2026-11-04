@@ -44,7 +44,7 @@ abstract class SettingsItem(
 
     open val title: String
         get() {
-            var rawTitle = if (titleId != 0) {
+            return if (titleId != 0) {
                 try {
                     YuzuApplication.getLocalizedContext().getString(titleId)
                 } catch (_: Exception) {
@@ -53,25 +53,6 @@ abstract class SettingsItem(
             } else {
                 titleString
             }
-            val impact = SettingImpactTable.getImpact(setting.key)
-            if (impact != null) {
-                val isRu = try {
-                    YuzuApplication.getLocalizedContext().resources.configuration.locales[0].language.startsWith("ru")
-                } catch (_: Exception) { false }
-                val badge = impact.formatBadge(isRu)
-                rawTitle = "$rawTitle $badge"
-            }
-            if (NativeConfig.isPerGameConfigLoaded()) {
-                val isOverridden = org.yuzu.yuzu_emu.model.GameFixSessionState.activeSessionFix?.settingsMap?.containsKey(setting.key) == true
-                if (isOverridden) {
-                    val isRu = try {
-                        YuzuApplication.getLocalizedContext().resources.configuration.locales[0].language.startsWith("ru")
-                    } catch (_: Exception) { false }
-                    val badge = if (isRu) " [задано профилем игры]" else " [game fix profile]"
-                    rawTitle = "$rawTitle $badge"
-                }
-            }
-            return rawTitle
         }
 
     open val description: String
@@ -91,15 +72,7 @@ abstract class SettingsItem(
                 } catch (_: Exception) {
                     "Unsafe CPU flags are active only when CPU accuracy is set to 'Unsafe'."
                 }
-                rawDesc = if (rawDesc.isNotEmpty()) "$rawDesc\n⚠️ $expl" else "⚠️ $expl"
-            }
-            val impact = SettingImpactTable.getImpact(setting.key)
-            if (impact != null) {
-                val isRu = try {
-                    YuzuApplication.getLocalizedContext().resources.configuration.locales[0].language.startsWith("ru")
-                } catch (_: Exception) { false }
-                val tip = impact.formatTooltip(isRu)
-                rawDesc = if (rawDesc.isNotEmpty()) "$rawDesc\n$tip" else tip
+                rawDesc = if (rawDesc.isNotEmpty()) "$rawDesc\n$expl" else expl
             }
             return rawDesc
         }

@@ -104,6 +104,7 @@ private:
         QString tid;
         QString title;
         QString version;
+        QString internal_version;
         qint64 size{0};
         int mod_count{0};
         int dlc_count{0};

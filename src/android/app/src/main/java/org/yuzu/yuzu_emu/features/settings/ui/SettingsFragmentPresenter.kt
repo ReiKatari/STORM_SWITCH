@@ -401,14 +401,7 @@ class SettingsFragmentPresenter(
 
         }
 
-        val conflicts = SettingConflicts.detectConflicts()
-        if (conflicts.isNotEmpty()) {
-            val isRu = try {
-                org.yuzu.yuzu_emu.YuzuApplication.getLocalizedContext().resources.configuration.locales[0].language.startsWith("ru")
-            } catch (_: Exception) { false }
-            val c = conflicts.first()
-            sl.add(0, HeaderSetting(titleString = "⚠️ " + c.localizedTitle(isRu) + ": " + c.localizedMessage(isRu)))
-        }
+
 
         settingsList = sl
 

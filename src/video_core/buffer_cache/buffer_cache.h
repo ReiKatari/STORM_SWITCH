@@ -850,7 +850,7 @@ void BufferCache<P>::BindHostIndexBuffer() {
     } else {
         if constexpr (USE_MEMORY_MAPS_FOR_UPLOADS) {
             auto upload_staging = runtime.UploadStagingBuffer(size);
-            if (upload_staging.mapped_span.empty() || upload_staging.buffer == VK_NULL_HANDLE) {
+            if (upload_staging.mapped_span.empty()) {
                 LOG_ERROR(HW_GPU, "Failed to allocate staging buffer for inline index upload, skipping");
                 return;
             }
@@ -1874,7 +1874,7 @@ void BufferCache<P>::MappedUploadMemory([[maybe_unused]] Buffer& buffer,
     if constexpr (USE_MEMORY_MAPS) {
         auto upload_staging = runtime.UploadStagingBuffer(total_size_bytes);
         const std::span<u8> staging_pointer = upload_staging.mapped_span;
-        if (staging_pointer.empty() || upload_staging.buffer == VK_NULL_HANDLE) {
+        if (staging_pointer.empty()) {
             LOG_ERROR(HW_GPU, "Failed to allocate staging buffer for upload ({} bytes), skipping upload", total_size_bytes);
             return;
         }
@@ -1921,7 +1921,7 @@ void BufferCache<P>::InlineMemoryImplementation(DAddr dest_address, size_t copy_
 
     if constexpr (USE_MEMORY_MAPS_FOR_UPLOADS) {
         auto upload_staging = runtime.UploadStagingBuffer(copy_size);
-        if (upload_staging.mapped_span.empty() || upload_staging.buffer == VK_NULL_HANDLE) {
+        if (upload_staging.mapped_span.empty()) {
             LOG_ERROR(HW_GPU, "Failed to allocate staging buffer for inline upload, skipping");
             return;
         }
