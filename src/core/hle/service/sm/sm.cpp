@@ -8,6 +8,7 @@
 #include <tuple>
 #include "common/assert.h"
 #include "common/scope_exit.h"
+#include "common/settings.h"
 #include "core/core.h"
 #include "core/core_timing.h"
 #include "core/hle/kernel/k_client_port.h"
@@ -253,8 +254,8 @@ Result SM::GetServiceImpl(Kernel::KClientSession** out_client_session, HLEReques
         // waiting would hang them for good: hand out a placeholder whose commands are all
         // auto-stubbed, like their unknown commands on existing services.
         const auto* const caller = ctx.GetThread().GetOwnerProcess();
-        if (caller != nullptr && caller->IsSwitch2()) {
-            LOG_WARNING(Service_SM, "(STUBBED) Switch 2 service {} does not exist, returning a stub",
+        if ((caller != nullptr && caller->IsSwitch2()) || Settings::values.use_auto_stub.GetValue()) {
+            LOG_WARNING(Service_SM, "(STUBBED) service {} does not exist, returning a stub",
                         name);
             *out_client_session = CreateStubSession(system, ctx, name);
             return ResultSuccess;

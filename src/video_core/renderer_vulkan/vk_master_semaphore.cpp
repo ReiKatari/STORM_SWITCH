@@ -81,6 +81,7 @@ void MasterSemaphore::Refresh() {
     } catch (const vk::Exception&) {
         const u64 fallback = current_tick.load(std::memory_order_acquire);
         gpu_tick.store(fallback, std::memory_order_release);
+        gpu_tick.notify_all();
     }
 }
 
@@ -93,6 +94,12 @@ void MasterSemaphore::Wait(u64 tick) {
 
         u64 last_tick = gpu_tick.load(std::memory_order_relaxed);
         while (gpu_tick.load(std::memory_order_acquire) < tick) {
+            if (device.IsLost()) {
+                const u64 fallback = current_tick.load(std::memory_order_acquire);
+                gpu_tick.store((std::max)(fallback, tick), std::memory_order_release);
+                gpu_tick.notify_all();
+                return;
+            }
             gpu_tick.wait(last_tick, std::memory_order_acquire);
             last_tick = gpu_tick.load(std::memory_order_relaxed);
         }
@@ -114,10 +121,18 @@ void MasterSemaphore::Wait(u64 tick) {
     // If none of the above is hit, fallback to a regular wait
     try {
         while (!semaphore.Wait(tick)) {
+            if (device.IsLost()) {
+                const u64 fallback = current_tick.load(std::memory_order_acquire);
+                gpu_tick.store((std::max)(fallback, tick), std::memory_order_release);
+                gpu_tick.notify_all();
+                return;
+            }
         }
     } catch (const vk::Exception&) {
-        gpu_tick.store(std::max(gpu_tick.load(std::memory_order_relaxed), tick),
+        const u64 fallback = current_tick.load(std::memory_order_acquire);
+        gpu_tick.store((std::max)({gpu_tick.load(std::memory_order_relaxed), tick, fallback}),
                        std::memory_order_release);
+        gpu_tick.notify_all();
         return;
     }
 
@@ -359,8 +374,16 @@ void MasterSemaphore::WaitThread(std::stop_token token) {
             wait_queue.pop();
         }
 
-        fence.Wait();
-        fence.Reset();
+        try {
+            fence.Wait();
+            fence.Reset();
+        } catch (const vk::Exception&) {
+            const u64 fallback = current_tick.load(std::memory_order_acquire);
+            gpu_tick.store((std::max)({gpu_tick.load(std::memory_order_relaxed), host_tick, fallback}),
+                           std::memory_order_release);
+            gpu_tick.notify_all();
+            continue;
+        }
 
         {
             std::scoped_lock lock{free_mutex};

@@ -234,28 +234,28 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
         const QRect avail = scr->availableGeometry();
         const int max_w = std::max(680, avail.width() - 48);
         const int max_h = std::max(420, avail.height() - 56);
-        setMinimumSize(std::min(1240, max_w), std::min(620, max_h));
+        setMinimumSize(std::min(1240, max_w), std::min(500, max_h));
         setMaximumSize(max_w, max_h);
 
         int target_w = std::clamp(1280, std::min(1240, max_w), max_w);
-        int target_h = std::min(840, max_h);
+        int target_h = std::min(620, max_h);
         if (QWidget* main_win = parentWidget() ? parentWidget()->window() : nullptr) {
             if (main_win->isVisible() && !main_win->isMinimized()) {
                 target_w = std::clamp(std::max(1280, main_win->width() - 36), std::min(1240, max_w), max_w);
                 if (avail.height() <= 920) {
                     target_h = std::clamp(std::min(main_win->height() - 16, avail.height() - 68),
-                                          std::min(620, max_h), max_h);
+                                          std::min(500, max_h), std::min(620, max_h));
                 } else {
-                    target_h = std::clamp(std::max(820, main_win->height()), std::min(680, max_h), max_h);
+                    target_h = std::clamp(main_win->height() - 80, std::min(500, max_h), std::min(620, max_h));
                 }
             }
         } else if (avail.height() <= 920) {
-            target_h = std::clamp(avail.height() - 68, std::min(620, max_h), max_h);
+            target_h = std::clamp(avail.height() - 68, std::min(500, max_h), std::min(620, max_h));
         }
         resize(target_w, target_h);
     } else {
-        setMinimumSize(1240, 620);
-        resize(1280, 840);
+        setMinimumSize(1240, 500);
+        resize(1280, 620);
     }
 
     ui->display_name->setLineWrapMode(QTextEdit::WidgetWidth);
@@ -518,12 +518,21 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
         "    background-color: %7;"
         "    border: 1px solid %2;"
         "    border-radius: 6px;"
-        "    padding: 4px 10px;"
-        "    min-height: 22px;"
+        "    padding-top: 0px;"
+        "    padding-bottom: 0px;"
+        "    padding-left: 10px;"
+        "    padding-right: 28px;"
+        "    min-height: 32px;"
         "    color: %4;"
         "    font-size: 12px;"
         "    selection-background-color: %5;"
         "    selection-color: #FFFFFF;"
+        "}"
+        "QSpinBox QLineEdit, QDoubleSpinBox QLineEdit {"
+        "    padding: 0px;"
+        "    margin: 0px;"
+        "    border: none;"
+        "    background: transparent;"
         "}"
         "QComboBox:hover, QSpinBox:hover, QDoubleSpinBox:hover, QLineEdit:hover, QDateTimeEdit:hover {"
         "    border: 1px solid %5;"

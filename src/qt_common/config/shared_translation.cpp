@@ -34,14 +34,18 @@ static QString TranslateConfigText(const char* text, const char* disambiguation 
     }
 
     struct LangItem {
-        const char* key;
-        const char* ru;
-        const char* ar;
-        const char* de;
-        const char* fr;
-        const char* zh;
-        const char* ja;
-        const char* es;
+        const char* key = nullptr;
+        const char* ru = nullptr;
+        const char* ar = nullptr;
+        const char* de = nullptr;
+        const char* fr = nullptr;
+        const char* zh = nullptr;
+        const char* ja = nullptr;
+        const char* es = nullptr;
+        const char* ko = nullptr;
+        const char* it = nullptr;
+        const char* pt = nullptr;
+        const char* hi = nullptr;
     };
 
     static const LangItem s_table[] = {
@@ -86,6 +90,83 @@ static QString TranslateConfigText(const char* text, const char* disambiguation 
          "Habilita el preoptimizador de instrucciones STORM Tier-2 sin sobrecarga y el ajustador JIT de superbloques."},
 
         // Screenshot 4 & Graphics settings
+        {"Enable Frame Interpolation",
+         "Интерполяция кадров (генерация промежуточных кадров)",
+         "توليد الإطارات البينية (LSFG)",
+         "Frame-Interpolation aktivieren",
+         "Activer l'interpolation d'images",
+         "启用帧插值 (中间帧生成)",
+         "フレーム補間を有効化 (中間フレーム生成)",
+         "Habilitar interpolación de fotogramas",
+         "프레임 보간 활성화 (중간 프레임 생성)",
+         "Abilita interpolazione fotogrammi",
+         "Ativar interpolação de quadros",
+         "फ़्रेम इंटरपोलेशन सक्षम करें (मध्यवर्ती फ़्रेम निर्माण)"},
+
+        {"Generates intermediate frames using Lossless Scaling / LSFG temporal interpolation.",
+         "Генерирует промежуточные кадры с помощью временной интерполяции Lossless Scaling / LSFG для повышения плавности.",
+         "توليد إطارات وسيطة باستخدام تقنية الاستيفاء الزمني Lossless Scaling / LSFG لزيادة السلاسة.",
+         "Erzeugt Zwischenbilder mittels temporaler Interpolation (Lossless Scaling / LSFG) für flüssigeres Gameplay.",
+         "Génère des images intermédiaires via l'interpolation temporelle Lossless Scaling / LSFG pour fluidifier le rendu.",
+         "使用 Lossless Scaling / LSFG 时间插值算法生成中间帧，大幅提升画面流畅度。",
+         "Lossless Scaling / LSFG 時間補間を使用して中間フレームを生成し、映像の滑らかさを向上させます。",
+         "Genera fotogramas intermedios mediante interpolación temporal Lossless Scaling / LSFG para mayor fluidez.",
+         "Lossless Scaling / LSFG 시간적 보간을 사용하여 중간 프레임을 생성하고 부드러운 화면을 제공합니다.",
+         "Genera fotogrammi intermedi utilizzando l'interpolazione temporale Lossless Scaling / LSFG per una maggiore fluidità.",
+         "Gera quadros intermediários usando interpolação temporal Lossless Scaling / LSFG para maior fluidez.",
+         "स्मूथ गेमप्ले के लिए Lossless Scaling / LSFG टेम्पोरल इंटरपोलेशन का उपयोग करके मध्यवर्ती फ़्रेम बनाता है।"},
+
+        {"Pipeline Compilation Threads",
+         "Потоки компиляции шейдеров",
+         "خيوط تجميع خطوط الأنابيب",
+         "Pipeline-Kompilierungs-Threads",
+         "Threads de compilation des pipelines",
+         "管线编译线程数",
+         "パイプラインコンパイルスレッド",
+         "Hilos de compilación de tuberías",
+         "파이프라인 컴파일 스레드",
+         "Thread di compilazione pipeline",
+         "Threads de compilação de pipeline",
+         "पाइपलाइन संकलन थ्रेड्स"},
+
+        {"Number of background worker threads for Vulkan pipeline compilation (0 = Auto).",
+         "Количество фоновых рабочих потоков для компиляции конвейеров Vulkan (0 = авто).",
+         "عدد خيوط العمل الخلفية لتجميع خطوط أنابيب Vulkan (0 = تلقائي).",
+         "Anzahl der Hintergrund-Worker-Threads für die Vulkan-Pipeline-Kompilierung (0 = Automatisch).",
+         "Nombre de threads de travail en arrière-plan pour la compilation des pipelines Vulkan (0 = Auto).",
+         "用于 Vulkan 管线后台编译的工作线程数量 (0 = 自动)。",
+         "Vulkan パイプラインコンパイル用のバックグラウンドワーカースレッド数 (0 = 自動)。",
+         "Número de subprocesos en segundo plano para compilar canalizaciones de Vulkan (0 = Automático).",
+         "Vulkan 파이프라인 컴파일을 위한 백그라운드 작업자 스레드 수입니다 (0 = 자동).",
+         "Numero di thread di lavoro in background per la compilazione della pipeline Vulkan (0 = Automatico).",
+         "Número de threads de trabalho em segundo plano para compilação de pipeline Vulkan (0 = Automático).",
+         "Vulkan पाइपलाइन संकलन के लिए पृष्ठभूमि कार्यकर्ता थ्रेड्स की संख्या (0 = ऑटो)।"},
+
+        {"Airplane Mode",
+         "Режим полёта",
+         "وضع الطيران",
+         "Flugmodus",
+         "Mode avion",
+         "飞行模式",
+         "機内モード",
+         "Modo avión",
+         "비행기 모드",
+         "Modalità aereo",
+         "Modo avião",
+         "हवाई जहाज मोड"},
+
+        {"Disables all wireless and network communication.",
+         "Отключает все беспроводные и сетевые соединения.",
+         "تعطيل جميع الاتصالات اللاسلكية والشبكية.",
+         "Deaktiviert die gesamte drahtlose und Netzwerkkommunikation.",
+         "Désactive toutes les communications sans fil et réseau.",
+         "禁用所有无线与网络通信。",
+         "すべてのワイヤレス通信およびネットワーク通信を無効化します。",
+         "Deshabilita todas las comunicaciones inalámbricas y de red.",
+         "모든 무선 및 네트워크 통신을 비활성화합니다.",
+         "Disabilita tutte le comunicazioni wireless e di rete.",
+         "Desativa todas as comunicações sem fio e de rede.",
+         "सभी वायरलेस और नेटवर्क संचार अक्षम करता है।"},
         {"API:", "Графический API:", "واجهة برمجة الرسوميات:", "Grafik-API:", "API graphique :", "图形 API:", "グラフィックス API:", "API de gráficos:"},
         {"Device:", "Устройство:", "الجهاز:", "Gerät:", "Appareil :", "设备:", "デバイス:", "Dispositivo:"},
         {"VSync Mode:", "Режим VSync:", "وضع VSync:", "VSync-Modus:", "Mode VSync :", "垂直同步模式:", "VSync モード:", "Modo VSync:"},
@@ -628,6 +709,10 @@ static QString TranslateConfigText(const char* text, const char* disambiguation 
             if (cur_lang.rfind("zh", 0) == 0 && item.zh) return QString::fromUtf8(item.zh);
             if (cur_lang.rfind("ja", 0) == 0 && item.ja) return QString::fromUtf8(item.ja);
             if (cur_lang.rfind("es", 0) == 0 && item.es) return QString::fromUtf8(item.es);
+            if (cur_lang.rfind("ko", 0) == 0 && item.ko) return QString::fromUtf8(item.ko);
+            if (cur_lang.rfind("it", 0) == 0 && item.it) return QString::fromUtf8(item.it);
+            if (cur_lang.rfind("pt", 0) == 0 && item.pt) return QString::fromUtf8(item.pt);
+            if (cur_lang.rfind("hi", 0) == 0 && item.hi) return QString::fromUtf8(item.hi);
         }
     }
 
@@ -701,6 +786,7 @@ std::unique_ptr<TranslationMap> InitializeTranslations(QObject* parent) {
            tr("Synchronizes CPU core speed with the game's maximum rendering speed to boost FPS "
               "without affecting game speed (animations, physics, etc.).\n"
               "Can help reduce stuttering at lower framerates."));
+    INSERT(Settings, current_program_id, QString(), QString());
 
     // Cpu
     INSERT(Settings, cpu_accuracy, tr("Accuracy:"),
@@ -888,6 +974,10 @@ std::unique_ptr<TranslationMap> InitializeTranslations(QObject* parent) {
            tr("Required by some games.\nThis setting only exists for Intel "
               "proprietary drivers and may crash if enabled.\nCompute pipelines are always enabled "
               "on all other drivers."));
+    INSERT(Settings, enable_frame_interpolation, tr("Enable Frame Interpolation"),
+           tr("Generates intermediate frames using Lossless Scaling / LSFG temporal interpolation."));
+    INSERT(Settings, pipeline_worker_threads, tr("Pipeline Compilation Threads"),
+           tr("Number of background worker threads for Vulkan pipeline compilation (0 = Auto)."));
     INSERT(
         Settings, use_reactive_flushing, tr("Enable Reactive Flushing"),
         tr("Uses reactive flushing instead of predictive flushing, allowing more accurate memory "

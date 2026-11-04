@@ -86,6 +86,9 @@ void StructureEngine::ModernizeForm(QWidget* container, const CardStyleOptions& 
             cb->setMinimumHeight(32);
         }
         cb->setProperty("stormCapsule", true);
+        if (auto* le = cb->lineEdit()) {
+            le->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+        }
     }
 
     const auto spin_boxes = container->findChildren<QSpinBox*>();
@@ -95,6 +98,9 @@ void StructureEngine::ModernizeForm(QWidget* container, const CardStyleOptions& 
         }
         sb->setProperty("stormCapsule", true);
         sb->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+        if (auto* le = sb->findChild<QLineEdit*>()) {
+            le->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+        }
     }
 
     const auto double_spin_boxes = container->findChildren<QDoubleSpinBox*>();
@@ -104,6 +110,9 @@ void StructureEngine::ModernizeForm(QWidget* container, const CardStyleOptions& 
         }
         dsb->setProperty("stormCapsule", true);
         dsb->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+        if (auto* le = dsb->findChild<QLineEdit*>()) {
+            le->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+        }
     }
 
     // 4. Description and subtext labels: enforce word wrap to eliminate truncation (Law 12/17)

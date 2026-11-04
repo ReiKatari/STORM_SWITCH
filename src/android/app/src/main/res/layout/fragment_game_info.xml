@@ -228,7 +228,7 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Card: Program ID -->
+            <!-- Card: Program ID (TID) -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/program_id"
                 style="@style/EdenCard"
@@ -265,11 +265,11 @@
                             style="@style/SynthwaveText.Secondary"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/program_id"
+                            android:text="Title ID (TID)"
                             android:textSize="11sp"
                             android:textColor="?attr/colorOnSurfaceVariant"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                            android:breakStrategy="simple"
+                            android:hyphenationFrequency="none"/>
 
                         <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/program_id_field"
@@ -282,13 +282,85 @@
                             android:textStyle="bold"
                             android:textColor="?attr/colorOnSurface"
                             tools:text="0100F2C0115B6000"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                            android:breakStrategy="simple"
+                            android:hyphenationFrequency="none"/>
 
                     </LinearLayout>
 
                     <ImageButton
                         android:id="@+id/button_copy_program_id"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/ic_copy"
+                        app:tint="?attr/colorPrimary"
+                        android:contentDescription="@string/copy" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Card: Build ID (BID) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_build_id"
+                style="@style/EdenCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant"
+                app:strokeColor="?attr/colorOutline"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="12dp">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_code"
+                        app:tint="?attr/colorPrimary"
+                        android:layout_marginEnd="12dp" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <com.google.android.material.textview.MaterialTextView
+                            style="@style/SynthwaveText.Secondary"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Build ID (BID)"
+                            android:textSize="11sp"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:breakStrategy="simple"
+                            android:hyphenationFrequency="none"/>
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/build_id_field"
+                            style="@style/SynthwaveText.Body"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:fontFamily="monospace"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorOnSurface"
+                            tools:text="1234567890ABCDEF"
+                            android:breakStrategy="simple"
+                            android:hyphenationFrequency="none"/>
+
+                    </LinearLayout>
+
+                    <ImageButton
+                        android:id="@+id/button_copy_build_id"
                         android:layout_width="36dp"
                         android:layout_height="36dp"
                         android:background="?attr/selectableItemBackgroundBorderless"

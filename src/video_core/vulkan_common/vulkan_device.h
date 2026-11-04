@@ -71,6 +71,7 @@ VK_DEFINE_HANDLE(VmaAllocator)
     FEATURE(EXT, Robustness2, ROBUSTNESS_2, robustness2)                                           \
     FEATURE(EXT, TransformFeedback, TRANSFORM_FEEDBACK, transform_feedback)                        \
     FEATURE(EXT, VertexInputDynamicState, VERTEX_INPUT_DYNAMIC_STATE, vertex_input_dynamic_state)  \
+    FEATURE(KHR, DynamicRenderingLocalRead, DYNAMIC_RENDERING_LOCAL_READ, dynamic_rendering_local_read) \
     FEATURE(KHR, Maintenance5, MAINTENANCE_5, maintenance5)                                        \
     FEATURE(KHR, Maintenance6, MAINTENANCE_6, maintenance6)                                        \
     FEATURE(KHR, PipelineExecutableProperties, PIPELINE_EXECUTABLE_PROPERTIES,                     \
@@ -249,6 +250,11 @@ public:
 
     /// Reports a device loss.
     void ReportLoss(std::string_view source = "") const;
+
+    /// Returns true if a device loss occurred on the device.
+    bool IsLost() const {
+        return is_lost.load(std::memory_order_relaxed);
+    }
 
     /// Reports a shader to Nsight Aftermath.
     void SaveShader(std::span<const u32> spirv) const;
@@ -839,6 +845,17 @@ FN_MAX_LIMIT_LIST
         return extensions.vertex_input_dynamic_state;
     }
 
+    /// Returns true if VK_KHR_dynamic_rendering_local_read is supported and enabled.
+    bool IsKhrDynamicRenderingLocalReadSupported() const {
+        return features.dynamic_rendering_local_read.dynamicRenderingLocalRead;
+    }
+
+    /// Returns VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ_KHR if supported, otherwise VK_IMAGE_LAYOUT_GENERAL.
+    VkImageLayout GetDynamicRenderingLocalReadLayout() const {
+        return IsKhrDynamicRenderingLocalReadSupported() ? VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ_KHR
+                                                         : VK_IMAGE_LAYOUT_GENERAL;
+    }
+
     /// Returns true if the device supports VK_EXT_shader_demote_to_helper_invocation
     bool IsExtShaderDemoteToHelperInvocationSupported() const {
         return extensions.shader_demote_to_helper_invocation;
@@ -1249,6 +1266,7 @@ private:
     bool dynamic_state3_alpha_to_one{};
     bool supports_conditional_barriers{};      ///< Allows barriers in conditional control flow.
     mutable std::atomic<size_t> custom_border_color_samplers_used{};
+    mutable std::atomic<bool> is_lost{false};
     u64 device_access_memory{};                ///< Total size of device local memory in bytes.
     u64 device_physical_memory{};              ///< Total physical size of GPU local VRAM in bytes.
     u32 sets_per_pool{};                       ///< Sets per Description Pool

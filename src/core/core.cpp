@@ -162,10 +162,11 @@ struct System::Impl {
     u64 program_id;
 
     void Initialize(System& system) {
-        device_memory.emplace();
-
+        memory_layout_mode = Settings::values.memory_layout_mode.GetValue();
         is_multicore = Settings::values.use_multi_core.GetValue();
-        extended_memory_layout = Settings::values.memory_layout_mode.GetValue() != Settings::MemoryLayout::Memory_4Gb;
+        extended_memory_layout = memory_layout_mode != Settings::MemoryLayout::Memory_4Gb;
+
+        device_memory.emplace();
 
         core_timing.SetMulticore(is_multicore);
         core_timing.Initialize([&system]() { system.RegisterHostThread(); });
@@ -192,18 +193,15 @@ struct System::Impl {
         const bool must_reinitialize =
             !device_memory.has_value() ||
             is_multicore != Settings::values.use_multi_core.GetValue() ||
-            extended_memory_layout != (Settings::values.memory_layout_mode.GetValue() !=
-                                       Settings::MemoryLayout::Memory_4Gb);
+            memory_layout_mode != Settings::values.memory_layout_mode.GetValue();
 
         if (!must_reinitialize) {
             return;
         }
 
-        LOG_DEBUG(Kernel, "Re-initializing");
-
-        is_multicore = Settings::values.use_multi_core.GetValue();
-        extended_memory_layout =
-            Settings::values.memory_layout_mode.GetValue() != Settings::MemoryLayout::Memory_4Gb;
+        LOG_DEBUG(Kernel, "Re-initializing (memory layout: {}, multicore: {})",
+                  Settings::values.memory_layout_mode.GetValue(),
+                  Settings::values.use_multi_core.GetValue());
 
         Initialize(system);
     }
@@ -620,6 +618,7 @@ struct System::Impl {
     std::atomic_bool is_powered_on{};
     bool is_multicore : 1 = false;
     bool extended_memory_layout : 1 = false;
+    Settings::MemoryLayout memory_layout_mode{Settings::MemoryLayout::Memory_4Gb};
     bool exit_locked : 1 = false;
     bool exit_requested : 1 = false;
     u64 main_nso_begin{};

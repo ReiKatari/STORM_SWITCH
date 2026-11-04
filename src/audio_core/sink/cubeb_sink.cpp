@@ -173,8 +173,15 @@ public:
      * Finalize the sink stream.
      */
     void Finalize() override {
-        Stop();
-        cubeb_stream_destroy(stream_backend);
+        cubeb_stream* local_stream = nullptr;
+        std::swap(local_stream, stream_backend);
+        if (local_stream) {
+            if (!paused) {
+                SignalPause();
+                cubeb_stream_stop(local_stream);
+            }
+            cubeb_stream_destroy(local_stream);
+        }
     }
 
     /**
@@ -203,8 +210,10 @@ public:
         }
 
         SignalPause();
-        if (cubeb_stream_stop(stream_backend) != CUBEB_OK) {
-            LOG_CRITICAL(Audio_Sink, "Error stopping cubeb stream");
+        if (stream_backend) {
+            if (cubeb_stream_stop(stream_backend) != CUBEB_OK) {
+                LOG_CRITICAL(Audio_Sink, "Error stopping cubeb stream");
+            }
         }
     }
 

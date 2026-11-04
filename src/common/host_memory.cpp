@@ -252,7 +252,20 @@ private:
                     LOG_CRITICAL(HW_Memory, "Failed to unmap virtual memory placeholder");
                 }
             }
-            Coalesce(0, virtual_size);
+            if (!VirtualFreeEx(process, reinterpret_cast<LPVOID>(virtual_base), virtual_size,
+                               MEM_RELEASE | MEM_COALESCE_PLACEHOLDERS)) {
+                LOG_WARNING(HW_Memory, "Failed to coalesce placeholders, freeing split placeholder regions individually");
+                MEMORY_BASIC_INFORMATION mbi;
+                u8* current = virtual_base;
+                u8* const end = virtual_base + virtual_size;
+                while (current < end && VirtualQuery(current, &mbi, sizeof(mbi))) {
+                    if (mbi.State != MEM_FREE) {
+                        VirtualFree(mbi.BaseAddress, 0, MEM_RELEASE);
+                    }
+                    current = static_cast<u8*>(mbi.BaseAddress) + mbi.RegionSize;
+                }
+                virtual_base = nullptr;
+            }
         }
         if (virtual_base) {
             if (!VirtualFree(virtual_base, 0, MEM_RELEASE)) {

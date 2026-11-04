@@ -231,7 +231,7 @@ inline Palette GetThemePalette(const std::string& explicit_theme = {}) {
 }
 
 inline QString GetDialogStyle(const Palette& pal = GetThemePalette()) {
-    return QStringLiteral(
+    QString qss = QStringLiteral(
         "QDialog {"
         "    background-color: %1;"
         "    color: %2;"
@@ -245,8 +245,17 @@ inline QString GetDialogStyle(const Palette& pal = GetThemePalette()) {
         "    color: %2;"
         "    border: 1px solid %4;"
         "    border-radius: 6px;"
-        "    padding: 4px 8px;"
-        "    min-height: 28px;"
+        "    padding-top: 0px;"
+        "    padding-bottom: 0px;"
+        "    padding-left: 10px;"
+        "    padding-right: 28px;"
+        "    min-height: 32px;"
+        "}"
+        "QSpinBox QLineEdit, QDoubleSpinBox QLineEdit {"
+        "    padding: 0px;"
+        "    margin: 0px;"
+        "    border: none;"
+        "    background: transparent;"
         "}"
         "QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus, QComboBox:focus {"
         "    border: 1px solid %5;"
@@ -355,7 +364,10 @@ inline QString GetDialogStyle(const Palette& pal = GetThemePalette()) {
         "    border: 1px solid #34D399;"
         "    background-color: #34D399;"
         "}"
-    ).arg(
+    );
+    qss.replace(QLatin1String("%11"), pal.textSecondary);
+    qss.replace(QLatin1String("%10"), pal.buttonBorder);
+    return qss.arg(
         pal.bg,            // %1
         pal.textPrimary,   // %2
         pal.inputBg,       // %3
@@ -364,9 +376,7 @@ inline QString GetDialogStyle(const Palette& pal = GetThemePalette()) {
         pal.itemHover,     // %6
         pal.surface,       // %7
         pal.card,          // %8
-        pal.buttonBg,      // %9
-        pal.buttonBorder,  // %10
-        pal.textSecondary  // %11
+        pal.buttonBg       // %9
     );
 }
 

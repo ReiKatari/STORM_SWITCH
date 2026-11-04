@@ -164,6 +164,11 @@ void ConfigureSystem::Setup(const ConfigurationShared::Builder& builder) {
             continue;
         }
 
+        if (setting->Id() == Settings::values.current_program_id.Id() ||
+            setting->GetLabel() == "current_program_id") {
+            continue;
+        }
+
         ConfigurationShared::Widget* widget = builder.BuildWidget(setting, apply_funcs);
 
         if (widget == nullptr) {

@@ -414,8 +414,11 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
         "    background-color: #17132B;"
         "    border: 1px solid rgba(139, 92, 246, 0.38);"
         "    border-radius: 6px;"
-        "    padding: 4px 10px;"
-        "    min-height: 22px;"
+        "    padding-top: 0px;"
+        "    padding-bottom: 0px;"
+        "    padding-left: 10px;"
+        "    padding-right: 28px;"
+        "    min-height: 32px;"
         "    color: #F8FAFC;"
         "    font-size: 12px;"
         "    selection-background-color: #8B5CF6;"
@@ -467,12 +470,21 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
         "    background-color: #17132B;"
         "    border: 1px solid rgba(139, 92, 246, 0.38);"
         "    border-radius: 6px;"
-        "    padding: 4px 10px;"
-        "    min-height: 22px;"
+        "    padding-top: 0px;"
+        "    padding-bottom: 0px;"
+        "    padding-left: 10px;"
+        "    padding-right: 28px;"
+        "    min-height: 32px;"
         "    color: #F8FAFC;"
         "    font-size: 12px;"
         "    selection-background-color: #8B5CF6;"
         "    selection-color: #FFFFFF;"
+        "}"
+        "QSpinBox QLineEdit, QDoubleSpinBox QLineEdit {"
+        "    padding: 0px;"
+        "    margin: 0px;"
+        "    border: none;"
+        "    background: transparent;"
         "}"
         "QSpinBox:hover, QDoubleSpinBox:hover, QLineEdit:hover, QDateTimeEdit:hover {"
         "    border: 1px solid #8B5CF6;"
@@ -617,23 +629,23 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
         setMaximumSize(max_w, max_h);
 
         int target_w = std::min(1340, max_w);
-        int target_h = std::min(610, max_h);
+        int target_h = std::min(540, max_h);
         if (QWidget* main_win = parentWidget() ? parentWidget()->window() : nullptr) {
             if (main_win->isVisible() && !main_win->isMinimized()) {
                 target_w = std::clamp(main_win->width() - 36, std::min(1240, max_w), max_w);
                 if (avail.height() <= 920) {
                     target_h = std::clamp(std::min(main_win->height() - 56, avail.height() - 88),
-                                          std::min(460, max_h), std::min(610, max_h));
+                                          std::min(440, max_h), std::min(540, max_h));
                 } else {
-                    target_h = std::clamp(main_win->height() - 80, std::min(540, max_h), std::min(620, max_h));
+                    target_h = std::clamp(main_win->height() - 80, std::min(480, max_h), std::min(540, max_h));
                 }
             }
         } else if (avail.height() <= 920) {
-            target_h = std::clamp(avail.height() - 88, std::min(460, max_h), std::min(600, max_h));
+            target_h = std::clamp(avail.height() - 88, std::min(440, max_h), std::min(540, max_h));
         }
         resize(target_w, target_h);
     } else {
-        resize(1280, 610);
+        resize(1280, 540);
     }
 
     for (auto* t : {static_cast<QWidget*>(applets_tab.get()), static_cast<QWidget*>(audio_tab.get()),

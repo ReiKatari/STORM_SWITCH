@@ -8974,6 +8974,50 @@ struct ExtraStormSessionBackup {
 
 } s_extra_session_backup;
 
+struct AutoFixSnapshot {
+    bool is_captured{false};
+    Settings::MemoryLayout memory_layout_mode{Settings::MemoryLayout::Memory_4Gb};
+    bool memory_layout_mode_global{true};
+    std::vector<std::pair<Settings::BasicSetting*, std::string>> saved_global_strings;
+
+    void Snapshot() {
+        if (is_captured) {
+            return;
+        }
+        memory_layout_mode = Settings::values.memory_layout_mode.GetValue(true);
+        memory_layout_mode_global = Settings::values.memory_layout_mode.UsingGlobal();
+        saved_global_strings.clear();
+        for (const auto& [category, settings_list] : Settings::values.linkage.by_category) {
+            (void)category;
+            for (auto* setting : settings_list) {
+                if (setting) {
+                    saved_global_strings.emplace_back(setting, setting->ToStringGlobal());
+                }
+            }
+        }
+        is_captured = true;
+    }
+
+    void Restore() {
+        if (!is_captured) {
+            return;
+        }
+        Settings::values.memory_layout_mode.SetGlobal(true);
+        Settings::values.memory_layout_mode.SetValue(memory_layout_mode);
+        Settings::values.memory_layout_mode.SetGlobal(memory_layout_mode_global);
+        for (const auto& [setting, val_str] : saved_global_strings) {
+            if (setting) {
+                setting->SetGlobal(true);
+#ifdef LoadString
+#undef LoadString
+#endif
+                setting->LoadString(val_str);
+            }
+        }
+        is_captured = false;
+    }
+} s_autofix_snapshot;
+
 } // namespace
 
 
@@ -9357,6 +9401,8 @@ void MainWindow::StormSessionBackup::Restore() {
 
 
 void MainWindow::RestoreSessionSettings() {
+
+    s_autofix_snapshot.Restore();
 
     if (m_session_backup.is_active) {
 
@@ -11360,6 +11406,8 @@ MainWindow::GameFixDialogResult MainWindow::ShowGameFixDialog(u64 title_id, cons
 
                 }
 
+                s_autofix_snapshot.Snapshot();
+
                 Core::GameFixDatabase::ApplyProfileDirectly(title_id, game_path.toStdString());
 
                 if (QtCommon::system && QtCommon::system->IsPoweredOn()) {
@@ -11779,6 +11827,11 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
 
 
         if (Core::GameFixDatabase::AreFixesEnabled()) {
+
+            if (!m_session_backup.is_active) {
+                m_session_backup.Capture();
+            }
+            s_autofix_snapshot.Snapshot();
 
             Core::GameFixDatabase::ApplyProfileDirectly(title_id, filename.toStdString());
 
@@ -12735,6 +12788,8 @@ void MainWindow::OnEmulationStopped() {
     game_list->setEnabled(true);
 
 
+
+    s_autofix_snapshot.Restore();
 
     RestoreSessionSettings();
 
@@ -15339,6 +15394,8 @@ void MainWindow::OnConfigure() {
         if (had_active_autofix && m_current_addons_title_id != 0) {
 
             Core::GameFixDatabase::SetFixesEnabled(true);
+
+            s_autofix_snapshot.Snapshot();
 
             Core::GameFixDatabase::ApplyProfileDirectly(m_current_addons_title_id, m_current_addons_game_path);
 
@@ -30791,7 +30848,11 @@ public:
 
         if (is_ru) {
 
-            return StormI18n::LookupEnToRu(src_sv);
+            const QString ru_trans = StormI18n::LookupEnToRu(src_sv);
+            if (!ru_trans.isEmpty()) {
+                return ru_trans;
+            }
+            return base ? base->translate(context, sourceText, disambiguation, n) : QString();
 
         }
 

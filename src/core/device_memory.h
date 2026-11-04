@@ -59,6 +59,10 @@ public:
         return reinterpret_cast<T*>(buffer.BackingBasePointer() + addr);
     }
 
+    [[nodiscard]] size_t GetBackingSize() const noexcept {
+        return buffer.BackingSize();
+    }
+
     Common::HostMemory buffer;
 };
 

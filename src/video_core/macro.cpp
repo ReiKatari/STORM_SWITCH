@@ -1364,7 +1364,7 @@ static void Dump(u64 hash, std::span<const u32> code, bool decompiled = false) {
 
 void MacroEngine::Execute(Core::System& system, Engines::Maxwell3D& maxwell3d, u32 method,
                           std::span<const u32> parameters) {
-    if (native_turing) {
+    if (native_turing && VideoCore::Nx2IsActive()) {
         maxwell3d.RefreshParameters();
         const auto context = reinterpret_cast<std::uintptr_t>(this);
         static std::unordered_set<std::uintptr_t> captured_contexts;
@@ -1382,9 +1382,10 @@ void MacroEngine::Execute(Core::System& system, Engines::Maxwell3D& maxwell3d, u
 #ifdef ARCHITECTURE_x86_64
         // Macro code runs compiled to x86-64 (macro_turing_jit.h) instead of through the interpreter;
         // EDEN_NX2_MME_JIT=0 goes back to the interpreter.
-        static const bool use_jit = [] {
+        const bool use_jit = [] {
             const char* value = std::getenv("EDEN_NX2_MME_JIT");
-            return value == nullptr || value[0] != '0';
+            return (value == nullptr || value[0] != '0') &&
+                   !Settings::values.disable_macro_jit.GetValue();
         }();
         if (use_jit) {
             if (!native_jit) {

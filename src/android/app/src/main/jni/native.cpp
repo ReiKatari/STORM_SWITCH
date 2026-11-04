@@ -406,6 +406,16 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
     }
     Core::GameFixDatabase::SanitizeSettingsForHostHardware();
 
+#ifdef __ANDROID__
+    // Re-apply Android low-RAM clamping (<= 8GB -> 4GB DRAM) AFTER ApplyProfileDirectly so game profiles cannot override it
+    const u64 host_ram_bytes_post = static_cast<u64>(sysconf(_SC_PHYS_PAGES)) * static_cast<u64>(sysconf(_SC_PAGESIZE));
+    if (host_ram_bytes_post > 0 && host_ram_bytes_post <= (8ULL * 1024ULL * 1024ULL * 1024ULL) &&
+        Settings::values.memory_layout_mode.GetValue() != Settings::MemoryLayout::Memory_4Gb) {
+        Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_4Gb);
+        LOG_INFO(Frontend, "Re-applied Android low-RAM clamping to 4GB DRAM (host RAM: {} MB)", host_ram_bytes_post / (1024ULL * 1024ULL));
+    }
+#endif
+
     m_system.SetShuttingDown(false);
     m_system.ApplySettings();
     Settings::LogSettings();

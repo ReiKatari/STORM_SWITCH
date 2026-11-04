@@ -1001,6 +1001,7 @@ VkFormat Device::GetSupportedFormat(VkFormat wanted_format, VkFormatFeatureFlags
 }
 
 void Device::ReportLoss(std::string_view source) const {
+    is_lost.store(true, std::memory_order_release);
     if (source.empty()) {
         LOG_CRITICAL(Render_Vulkan, "Device loss occurred!");
     } else {

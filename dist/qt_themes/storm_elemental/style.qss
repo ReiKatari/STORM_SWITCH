@@ -185,9 +185,13 @@ QLineEdit, QTextEdit, QPlainTextEdit, QSpinBox, QDoubleSpinBox {
     color: #FFFFFF;
     border: 1px solid #334155;
     border-radius: 6px;
-    padding: 6px 10px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    padding-left: 10px;
+    padding-right: 28px;
     selection-background-color: #00D2FF;
     selection-color: #06151c;
+    min-height: 32px;
 }
 
 QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus {
@@ -201,8 +205,11 @@ QComboBox {
     color: #FFFFFF;
     border: 1px solid #334155;
     border-radius: 6px;
-    padding: 3px 12px;
-    min-height: 26px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    padding-left: 10px;
+    padding-right: 28px;
+    min-height: 32px;
     min-width: 6em;
 }
 
@@ -787,4 +794,11 @@ QTreeWidget[stormTable="true"]::item {
 QHeaderView::section {
     border-right: 1px solid rgba(0, 229, 255, 0.16);
     border-bottom: 1px solid rgba(0, 229, 255, 0.16);
+}
+
+QSpinBox QLineEdit, QDoubleSpinBox QLineEdit {
+    padding: 0px;
+    margin: 0px;
+    border: none;
+    background: transparent;
 }

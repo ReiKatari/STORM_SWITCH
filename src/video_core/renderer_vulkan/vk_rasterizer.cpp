@@ -1630,7 +1630,7 @@ void RasterizerVulkan::UpdateDepthBias(Tegra::Engines::Maxwell3D::Regs& regs) {
                                regs.zeta.format == Tegra::DepthFormat::X8Z24_UNORM ||
                                regs.zeta.format == Tegra::DepthFormat::S8Z24_UNORM ||
                                regs.zeta.format == Tegra::DepthFormat::V8Z24_UNORM;
-    const bool is_d24 = is_d24_format || NeedsD24DepthFormat();
+    const bool is_d24 = is_d24_format || NeedsD24DepthFormat(current_title_id);
 
     if (is_d24 && device.IsExtDepthBiasControlSupported()) {
         const bool exact = device.HasExactDepthBiasControl();

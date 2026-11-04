@@ -8,6 +8,7 @@
 
 #include <memory>
 #include "video_core/macro_turing.h"
+#include "video_core/nx2.h"
 
 namespace Tegra {
 class TuringMacroJit;
@@ -228,7 +229,7 @@ struct MacroEngine {
     MacroEngine(bool is_interpreted_) noexcept : is_interpreted{is_interpreted_} {}
     // Store the uploaded macro code to compile them when they're called.
     inline void AddCode(u32 method, u32 data) noexcept {
-        if (native_turing) {
+        if (native_turing && VideoCore::Nx2IsActive()) {
             if (native_write_offset < native_code.size()) native_code[native_write_offset++] = data;
             ++native_code_generation;
             return;
@@ -237,7 +238,7 @@ struct MacroEngine {
     }
     // Clear the code associated with a method.
     inline void ClearCode(u32 method) noexcept {
-        if (native_turing) {
+        if (native_turing && VideoCore::Nx2IsActive()) {
             native_write_offset = method < 0x1000 ? method * 3 : static_cast<u32>(native_code.size());
             ++native_code_generation;
             return;

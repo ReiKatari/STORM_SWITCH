@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <array>
 #include <atomic>
 #include <condition_variable>
 #include <deque>
@@ -56,6 +57,13 @@ private:
     std::thread background_thread;
 
     std::atomic<size_t> tier2_optimized_count{0};
+
+    struct FastTier3CacheEntry {
+        std::atomic<u64> vaddr{0};
+        std::atomic<void*> ptr{nullptr};
+    };
+    static constexpr size_t FAST_TIER3_CACHE_SIZE = 1024;
+    std::array<FastTier3CacheEntry, FAST_TIER3_CACHE_SIZE> fast_tier3_cache{};
 };
 
 } // namespace Core::Arm

@@ -72,6 +72,10 @@ public:
         return virtual_size;
     }
 
+    [[nodiscard]] size_t BackingSize() const noexcept {
+        return backing_size;
+    }
+
     bool IsInVirtualRange(void* address) const noexcept {
         return address >= virtual_base && address < virtual_base + virtual_size;
     }

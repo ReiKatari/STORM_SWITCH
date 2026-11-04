@@ -226,37 +226,48 @@ std::shared_ptr<FrontendApplet> FrontendAppletHolder::GetApplet(std::shared_ptr<
                                                                 LibraryAppletMode mode) const {
     switch (id) {
     case AppletId::Auth:
-        return std::make_shared<Auth>(system, applet, mode, *frontend.parental_controls);
+        if (frontend.parental_controls) return std::make_shared<Auth>(system, applet, mode, *frontend.parental_controls);
+        break;
     case AppletId::Cabinet:
-        return std::make_shared<Cabinet>(system, applet, mode, *frontend.cabinet);
+        if (frontend.cabinet) return std::make_shared<Cabinet>(system, applet, mode, *frontend.cabinet);
+        break;
     case AppletId::Controller:
-        return std::make_shared<Controller>(system, applet, mode, *frontend.controller);
+        if (frontend.controller) return std::make_shared<Controller>(system, applet, mode, *frontend.controller);
+        break;
     case AppletId::Error:
-        return std::make_shared<Error>(system, applet, mode, *frontend.error);
+        if (frontend.error) return std::make_shared<Error>(system, applet, mode, *frontend.error);
+        break;
     case AppletId::ProfileSelect:
-        return std::make_shared<ProfileSelect>(system, applet, mode, *frontend.profile_select);
+        if (frontend.profile_select) return std::make_shared<ProfileSelect>(system, applet, mode, *frontend.profile_select);
+        break;
     case AppletId::SoftwareKeyboard:
-        return std::make_shared<SoftwareKeyboard>(system, applet, mode, *frontend.software_keyboard);
+        if (frontend.software_keyboard) return std::make_shared<SoftwareKeyboard>(system, applet, mode, *frontend.software_keyboard);
+        break;
     case AppletId::MiiEdit:
-        return std::make_shared<MiiEdit>(system, applet, mode, *frontend.mii_edit);
+        if (frontend.mii_edit) return std::make_shared<MiiEdit>(system, applet, mode, *frontend.mii_edit);
+        break;
     case AppletId::Web:
     case AppletId::Shop:
     case AppletId::OfflineWeb:
     case AppletId::LoginShare:
     case AppletId::WebAuth:
     case AppletId::Lhub:
-        return std::make_shared<WebBrowser>(system, applet, mode, *frontend.web_browser);
+        if (frontend.web_browser) return std::make_shared<WebBrowser>(system, applet, mode, *frontend.web_browser);
+        break;
     case AppletId::PhotoViewer:
-        return std::make_shared<PhotoViewer>(system, applet, mode, *frontend.photo_viewer);
+        if (frontend.photo_viewer) return std::make_shared<PhotoViewer>(system, applet, mode, *frontend.photo_viewer);
+        break;
     case AppletId::NetConnect:
-        return std::make_shared<NetConnect>(system, applet, mode, *frontend.net_connect);
+        if (frontend.net_connect) return std::make_shared<NetConnect>(system, applet, mode, *frontend.net_connect);
+        break;
     case AppletId::None:
-        return nullptr;
-    default:
-        LOG_ERROR(Service_AM, "No backend implementation exists for applet_id={:02X} program_id={:016X}, falling back to stub applet",
-                  static_cast<u8>(id), applet->program_id);
         return std::make_shared<StubApplet>(system, applet, id, mode);
+    default:
+        break;
     }
+    LOG_WARNING(Service_AM, "No frontend implementation for applet_id={:02X}, falling back to stub applet",
+                static_cast<u8>(id));
+    return std::make_shared<StubApplet>(system, applet, id, mode);
 }
 
 } // namespace Service::AM::Frontend

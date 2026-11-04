@@ -111,11 +111,31 @@ class GameInfoFragment : Fragment() {
             path.setOnClickListener { copyToClipboard(getString(R.string.path), pathString) }
             buttonCopyPath.setOnClickListener { copyToClipboard(getString(R.string.path), pathString) }
 
-            // Bind Program ID
-            programIdField.text = args.game.programIdHex
-            programIdField.setOnClickListener { copyToClipboard(getString(R.string.program_id), args.game.programIdHex) }
-            programId.setOnClickListener { copyToClipboard(getString(R.string.program_id), args.game.programIdHex) }
-            buttonCopyProgramId.setOnClickListener { copyToClipboard(getString(R.string.program_id), args.game.programIdHex) }
+            // Bind Program ID (TID)
+            val tidText = args.game.programIdHex
+            programIdField.text = tidText
+            programIdField.setOnClickListener { copyToClipboard("Title ID (TID)", tidText) }
+            programId.setOnClickListener { copyToClipboard("Title ID (TID)", tidText) }
+            buttonCopyProgramId.setOnClickListener { copyToClipboard("Title ID (TID)", tidText) }
+
+            // Bind Build ID (BID) (Issue #79)
+            val bidText = getGameBuildId(args.game)
+            buildIdField?.text = bidText
+            buildIdField?.setOnClickListener {
+                if (bidText != "—") {
+                    copyToClipboard("Build ID (BID)", bidText)
+                }
+            }
+            cardBuildId?.setOnClickListener {
+                if (bidText != "—") {
+                    copyToClipboard("Build ID (BID)", bidText)
+                }
+            }
+            buttonCopyBuildId?.setOnClickListener {
+                if (bidText != "—") {
+                    copyToClipboard("Build ID (BID)", bidText)
+                }
+            }
 
             // Bind Developer
             if (args.game.developer.isNotEmpty()) {
@@ -159,7 +179,8 @@ class GameInfoFragment : Fragment() {
                 val details = """
                     ${args.game.title}
                     ${getString(R.string.path)} - $pathString
-                    ${getString(R.string.program_id)} - ${args.game.programIdHex}
+                    Title ID (TID) - $tidText
+                    Build ID (BID) - $bidText
                     ${getString(R.string.developer)} - ${args.game.developer}
                     ${getString(R.string.version)} - $fullVersionText
                     ${getString(R.string.file_size)} - $formattedSize
@@ -205,12 +226,97 @@ class GameInfoFragment : Fragment() {
         setInsets()
     }
 
+    private fun getGameBuildId(game: org.yuzu.yuzu_emu.model.Game): String {
+        val tid = game.programIdHex
+        // 1. Check cheats directory: userDirectory/cheats/<TID>/
+        try {
+            val baseDir = org.yuzu.yuzu_emu.utils.DirectoryInitialization.userDirectory
+                ?: requireContext().filesDir.absolutePath
+            val cheatsDir = java.io.File(baseDir, "cheats/$tid")
+            if (cheatsDir.exists()) {
+                cheatsDir.listFiles()?.forEach { f ->
+                    val name = f.nameWithoutExtension.uppercase()
+                    if (name.length in 16..64 && name.all { it.isDigit() || (it in 'A'..'F') } && name != tid && name != "CHEATS" && name != "ALL") {
+                        return name.take(16)
+                    }
+                }
+            }
+        } catch (_: Exception) {}
+
+        // 2. Check load directory: userDirectory/load/<TID>/
+        try {
+            val baseDir = org.yuzu.yuzu_emu.utils.DirectoryInitialization.userDirectory
+                ?: requireContext().filesDir.absolutePath
+            val loadDir = java.io.File(baseDir, "load/$tid")
+            if (loadDir.exists()) {
+                val files = loadDir.walkTopDown().maxDepth(4)
+                for (f in files) {
+                    if (f.isFile) {
+                        val name = f.nameWithoutExtension.uppercase()
+                        if (name.length in 16..64 && name.all { it.isDigit() || (it in 'A'..'F') } && name != tid) {
+                            return name.take(16)
+                        }
+                        if (f.extension.equals("pchtxt", ignoreCase = true)) {
+                            f.useLines { lines ->
+                                for (l in lines) {
+                                    val trimmed = l.trim()
+                                    if (trimmed.startsWith("@nsobid-", ignoreCase = true)) {
+                                        val bid = trimmed.substring(8).trim().uppercase()
+                                        if (bid.isNotEmpty()) {
+                                            return bid.take(16)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (_: Exception) {}
+
+        // 3. Scan game file header for NSO0 magic (0x4E 0x53 0x4F 0x30)
+        try {
+            val uri = Uri.parse(game.path)
+            val pfd = if (uri.scheme == "content") {
+                requireContext().contentResolver.openFileDescriptor(uri, "r")
+            } else {
+                android.os.ParcelFileDescriptor.open(java.io.File(uri.path ?: game.path), android.os.ParcelFileDescriptor.MODE_READ_ONLY)
+            }
+            pfd?.use { fd ->
+                java.io.FileInputStream(fd.fileDescriptor).use { fis ->
+                    val buf = ByteArray(65536)
+                    var totalRead = 0
+                    val maxScan = 16 * 1024 * 1024
+                    while (totalRead < maxScan) {
+                        val read = fis.read(buf)
+                        if (read <= 0) break
+                        for (i in 0 until read - 0x60) {
+                            if (buf[i] == 0x4E.toByte() && buf[i+1] == 0x53.toByte() &&
+                                buf[i+2] == 0x4F.toByte() && buf[i+3] == 0x30.toByte()) {
+                                val bidBytes = ByteArray(16)
+                                System.arraycopy(buf, i + 0x40, bidBytes, 0, 16)
+                                val hex = bidBytes.joinToString("") { "%02X".format(it) }
+                                if (hex != "00000000000000000000000000000000" && hex.isNotEmpty()) {
+                                    return hex.take(16)
+                                }
+                            }
+                        }
+                        totalRead += read
+                    }
+                }
+            }
+        } catch (_: Exception) {}
+
+        return "—"
+    }
+
     private fun copyToClipboard(label: String, body: String) {
         val clipBoard =
             requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText(label, body)
         clipBoard.setPrimaryClip(clip)
 
+        Toast.makeText(requireContext(), "$label: ${getString(R.string.copied_to_clipboard)}", Toast.LENGTH_SHORT).show()
         ThemeHelper.showThemedSnackbar(binding.root, getString(R.string.copied_to_clipboard))
     }
 

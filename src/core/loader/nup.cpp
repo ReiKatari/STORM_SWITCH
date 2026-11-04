@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "core/loader/nup.h"
+#include "common/settings.h"
 
 #include <algorithm>
 #include <cstring>
@@ -185,6 +186,8 @@ AppLoader::LoadResult AppLoader_NUP::Load(Kernel::KProcess& process, Core::Syste
     if (result.first != ResultStatus::Success) {
         return result;
     }
+
+    Settings::values.current_program_id.SetValue(base_title_id);
 
     system.GetFileSystemController().RegisterProcess(
         process.GetProcessId(), base_title_id,

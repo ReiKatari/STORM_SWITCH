@@ -17,6 +17,15 @@ namespace Core {
 
 using namespace Common::Literals;
 
+static std::atomic<u64> g_code_cache_epoch{1};
+
+struct LastCodePageCache {
+    Dynarmic::CodePage page{};
+    u64 addr{u64(-1)};
+    u64 epoch{0};
+};
+static thread_local LastCodePageCache g_last_code_page{};
+
 DynarmicCallbacks64::DynarmicCallbacks64(ArmDynarmic64& parent, Kernel::KProcess* process)
     : m_parent{parent}, m_memory(process->GetMemory())
     , m_process(process), m_debugger_enabled{parent.m_system.DebuggerEnabled()}
@@ -47,13 +56,20 @@ Dynarmic::A64::Vector DynarmicCallbacks64::MemoryRead128(u64 vaddr) {
 std::optional<u32> DynarmicCallbacks64::MemoryReadCode(u64 vaddr) {
     if (!m_memory.IsValidVirtualAddressRange(vaddr, sizeof(u32)))
         return std::nullopt;
+    const auto current_epoch = g_code_cache_epoch.load(std::memory_order_relaxed);
     auto const aligned_vaddr = vaddr & ~Core::Memory::YUZU_PAGEMASK;
-    if (last_code_addr != aligned_vaddr) {
-        m_memory.ReadBlock(aligned_vaddr, &cached_code_page, sizeof(cached_code_page));
-        StormTier2Compiler::OptimizePage64(cached_code_page.inst);
+    if (g_last_code_page.addr != aligned_vaddr || g_last_code_page.epoch != current_epoch || last_code_addr != aligned_vaddr) {
+        m_memory.ReadBlock(aligned_vaddr, &g_last_code_page.page, sizeof(g_last_code_page.page));
+        static const bool enable_tier2_rewrite = std::getenv("STORM_TIER2_REWRITE") != nullptr;
+        if (enable_tier2_rewrite) {
+            StormTier2Compiler::OptimizePage64(g_last_code_page.page.inst);
+        }
+        g_last_code_page.addr = aligned_vaddr;
+        g_last_code_page.epoch = current_epoch;
+        cached_code_page = g_last_code_page.page;
         last_code_addr = aligned_vaddr;
     }
-    return cached_code_page.inst[(vaddr & Core::Memory::YUZU_PAGEMASK) / sizeof(u32)];
+    return g_last_code_page.page.inst[(vaddr & Core::Memory::YUZU_PAGEMASK) / sizeof(u32)];
 }
 
 void DynarmicCallbacks64::MemoryWrite8(u64 vaddr, u8 value) {
@@ -105,16 +121,15 @@ bool DynarmicCallbacks64::MemoryWriteExclusive128(u64 vaddr, Dynarmic::A64::Vect
 }
 
 void DynarmicCallbacks64::InstructionCacheOperationRaised(Dynarmic::A64::InstructionCacheOperation op, u64 value) {
+    g_code_cache_epoch.fetch_add(1, std::memory_order_relaxed);
+    g_last_code_page.addr = u64(-1);
     last_code_addr = u64(-1); //invalidate cached page
     switch (op) {
     case Dynarmic::A64::InstructionCacheOperation::InvalidateByVAToPoU: {
         static constexpr u64 ICACHE_LINE_SIZE = 64;
         const u64 cache_line_start = value & ~(ICACHE_LINE_SIZE - 1);
         m_parent.InvalidateCacheRange(cache_line_start, ICACHE_LINE_SIZE);
-        const u64 pc = m_parent.m_jit->GetPC();
-        if (pc + 4096 >= cache_line_start && pc <= cache_line_start + 4096) {
-            m_parent.m_jit->HaltExecution(Dynarmic::HaltReason::CacheInvalidation);
-        }
+        m_parent.m_jit->HaltExecution(Dynarmic::HaltReason::CacheInvalidation);
         return;
     }
     case Dynarmic::A64::InstructionCacheOperation::InvalidateAllToPoU:
@@ -608,12 +623,16 @@ void ArmDynarmic64::SignalInterrupt(Kernel::KThread* thread) {
 }
 
 void ArmDynarmic64::ClearInstructionCache() {
+    g_code_cache_epoch.fetch_add(1, std::memory_order_relaxed);
+    g_last_code_page.addr = u64(-1);
     m_cb->last_code_addr = u64(-1);
     m_jit->ClearCache();
 }
 
 void ArmDynarmic64::InvalidateCacheRange(u64 addr, std::size_t size) {
     // Refetch the source page too, including instructions restored by the debugger.
+    g_code_cache_epoch.fetch_add(1, std::memory_order_relaxed);
+    g_last_code_page.addr = u64(-1);
     m_cb->last_code_addr = u64(-1);
     m_jit->InvalidateCacheRange(addr, size);
 }

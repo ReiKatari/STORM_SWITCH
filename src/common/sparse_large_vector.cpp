@@ -28,7 +28,7 @@ static LONG WINAPI FakePageFaultHandler(PEXCEPTION_POINTERS info) {
     DWORD code = info->ExceptionRecord->ExceptionCode;
     u64 exception_addr = static_cast<u64>(info->ExceptionRecord->ExceptionInformation[1]);
 
-    if (code != EXCEPTION_ACCESS_VIOLATION || info->ExceptionRecord->ExceptionInformation[0] == 1) {
+    if (code != EXCEPTION_ACCESS_VIOLATION || info->ExceptionRecord->ExceptionInformation[0] > 1) {
         // Not our problem
         return EXCEPTION_CONTINUE_SEARCH;
     }
@@ -63,13 +63,13 @@ static LONG WINAPI FakePageFaultHandler(PEXCEPTION_POINTERS info) {
 
     // Commit this region
     if (addr != 0) {
-        if (!CommitVectorPage(addr << HostPageBits, false)) {
+        if (!CommitVectorPage(addr << HostPageBits, true)) {
             return EXCEPTION_CONTINUE_SEARCH;
         }
     }
     // Commit next region if needed
     if (addr2 != 0) {
-        if (!CommitVectorPage(addr2 << HostPageBits, false)) {
+        if (!CommitVectorPage(addr2 << HostPageBits, true)) {
             return EXCEPTION_CONTINUE_SEARCH;
         }
     }
@@ -164,7 +164,7 @@ void FreeSparseMemoryPages(void* base, [[maybe_unused]] std::size_t size) noexce
         return;
 #ifdef _WIN32
     std::lock_guard lock(vector_regions_mutex);
-    std::erase_if(vector_regions, [base](const auto& r) {return r.first == reinterpret_cast<u64>(base); });
+    std::erase_if(vector_regions, [base](const auto& r) { return r.first == (reinterpret_cast<u64>(base) >> HostPageBits); });
     ASSERT(VirtualFree(base, 0, MEM_RELEASE));
 #else
     ASSERT(munmap(base, size) == 0);

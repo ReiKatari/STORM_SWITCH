@@ -12,12 +12,24 @@
 #include <vector>
 
 #include "common/common_types.h"
+#include "common/settings.h"
 
 namespace Tegra {
-
 // Set once a Switch 2 (Ampere, NVN2) driver is talking to the GPU. Its command streams use
 // Ampere classes and the Turing+ macro ISA, which Eden's Maxwell engines don't implement.
 inline std::atomic<bool> g_nx2_ampere{false};
+} // namespace Tegra
+
+namespace VideoCore {
+inline bool IsNx2() {
+    return Tegra::g_nx2_ampere.load(std::memory_order_relaxed) && Settings::IsCurrentProgramSwitch2();
+}
+inline bool Nx2IsActive() {
+    return Tegra::g_nx2_ampere.load(std::memory_order_relaxed) && Settings::IsCurrentProgramSwitch2();
+}
+} // namespace VideoCore
+
+namespace Tegra {
 
 // Device pages the GPU has written through the buffer cache (shader stores, copies), ever. Title 1
 // runs command lists the GPU writes each frame (20-byte entries its culling fills in); read
@@ -28,7 +40,7 @@ inline constexpr u64 Nx2WrittenPageBits = 12;
 inline std::array<std::atomic<u64>, (u64{1} << (36 - Nx2WrittenPageBits)) / 64> g_nx2_gpu_written_pages{};
 
 inline void Nx2MarkGpuWritten(u64 device_address, u64 size) {
-    if (size == 0) {
+    if (!VideoCore::Nx2IsActive() || size == 0) {
         return;
     }
     const u64 last = (std::min)((device_address + size - 1) >> Nx2WrittenPageBits,
@@ -50,6 +62,9 @@ inline std::array<std::atomic<u64>, (u64{1} << (36 - Nx2WrittenPageBits)) / 64> 
 inline std::atomic<bool> g_nx2_has_command_list_pages{false};
 
 inline void Nx2MarkCommandListPage(u64 device_address) {
+    if (!VideoCore::Nx2IsActive()) {
+        return;
+    }
     const u64 page = device_address >> Nx2WrittenPageBits;
     if (page >= g_nx2_command_list_pages.size() * 64) {
         return;
@@ -63,6 +78,9 @@ inline void Nx2MarkCommandListPage(u64 device_address) {
 }
 
 [[nodiscard]] inline bool Nx2IsCommandListPage(u64 device_address) {
+    if (!VideoCore::Nx2IsActive()) {
+        return false;
+    }
     const u64 page = device_address >> Nx2WrittenPageBits;
     if (page >= g_nx2_command_list_pages.size() * 64) {
         return false;
@@ -82,6 +100,9 @@ inline void Nx2ClearGpuWrittenPages() {
 }
 
 [[nodiscard]] inline bool Nx2IsGpuWritten(u64 device_address) {
+    if (!VideoCore::Nx2IsActive()) {
+        return false;
+    }
     const u64 page = device_address >> Nx2WrittenPageBits;
     if (page >= g_nx2_gpu_written_pages.size() * 64) {
         return false;
@@ -217,7 +238,7 @@ inline bool Nx2InSparseRegion(u64 gpu_address, u64 size) {
 /// The GPU renders into [gpu_address, +size): count its blocks as written, so images made there
 /// later get memory (their contents live in the host image, not in guest memory).
 inline void Nx2SparseMarkWritten(u64 gpu_address, u64 size) {
-    if (size == 0 || gpu_address + size <= g_nx2_sparse_low.load(std::memory_order_relaxed) ||
+    if (!VideoCore::Nx2IsActive() || size == 0 || gpu_address + size <= g_nx2_sparse_low.load(std::memory_order_relaxed) ||
         gpu_address >= g_nx2_sparse_high.load(std::memory_order_relaxed)) [[likely]] {
         return;
     }
@@ -237,7 +258,7 @@ inline void Nx2SparseMarkWritten(u64 gpu_address, u64 size) {
 
 /// True when [gpu_address, +size) lies in one sparse region and none of it has been written.
 inline bool Nx2SparseUnwritten(u64 gpu_address, u64 size) {
-    if (size == 0 || gpu_address + size <= g_nx2_sparse_low.load(std::memory_order_relaxed) ||
+    if (!VideoCore::Nx2IsActive() || size == 0 || gpu_address + size <= g_nx2_sparse_low.load(std::memory_order_relaxed) ||
         gpu_address >= g_nx2_sparse_high.load(std::memory_order_relaxed)) [[likely]] {
         return false;
     }
@@ -262,6 +283,9 @@ inline bool Nx2SparseUnwritten(u64 gpu_address, u64 size) {
 
 /// GPU VA in the first page that mirrors a release at `address`, or 0.
 inline u64 Nx2SemaphoreMirror(u64 address) {
+    if (!VideoCore::Nx2IsActive()) {
+        return 0;
+    }
     for (const auto& region : g_nx2_semaphore_regions) {
         const u64 start = region.load(std::memory_order_relaxed);
         if (start == 0) {
@@ -356,11 +380,4 @@ private:
 
 } // namespace Tegra
 
-namespace VideoCore {
-inline bool IsNx2() {
-    return Tegra::g_nx2_ampere.load(std::memory_order_relaxed);
-}
-inline bool Nx2IsActive() {
-    return Tegra::g_nx2_ampere.load(std::memory_order_relaxed);
-}
-} // namespace VideoCore
+// VideoCore::IsNx2 / Nx2IsActive declared at top of file

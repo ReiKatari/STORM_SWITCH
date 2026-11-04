@@ -1154,6 +1154,12 @@ Widget::Widget(Settings::BasicSetting* setting_, const TranslationMap& translati
         return;
     }
 
+    if (setting.Id() == Settings::values.current_program_id.Id() ||
+        setting.GetLabel() == "current_program_id") {
+        LOG_DEBUG(Frontend, "Explicitly skipping internal setting \"current_program_id\"");
+        return;
+    }
+
     const int id = setting.Id();
 
     const auto [label, tooltip] = [&]() {

@@ -55,7 +55,7 @@ ProfileManager::ProfileManager() {
 
     // Create an user if none are present
     if (user_count == 0 || !profiles[0].user_uuid.IsValid()) {
-        CreateNewUser(UUID::MakeRandom(), "STORM SWITCH");
+        CreateNewUser(UUID::MakeRandom(), "STORM");
         WriteUserSaveFile();
     }
 
@@ -418,14 +418,14 @@ void ProfileManager::ParseUserSaveFile() {
 
     if (!save.IsOpen()) {
         LOG_WARNING(Service_ACC, "Failed to load profile data from save data... Generating new "
-                                 "user 'Eden' with random UUID.");
+                                 "user 'STORM' with random UUID.");
         return;
     }
 
     ProfileDataRaw data;
     if (!save.ReadObject(data)) {
         LOG_WARNING(Service_ACC, "profiles.dat is smaller than expected... Generating new user "
-                                 "'Eden' with random UUID.");
+                                 "'STORM' with random UUID.");
         return;
     }
 

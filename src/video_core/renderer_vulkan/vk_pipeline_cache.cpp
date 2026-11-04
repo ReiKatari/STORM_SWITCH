@@ -51,6 +51,11 @@
 
 namespace Vulkan {
 
+[[maybe_unused]] inline VkImageLayout GetEffectiveLocalReadLayout(const Device& device) {
+    return device.IsKhrDynamicRenderingLocalReadSupported() ? VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ_KHR
+                                                            : VK_IMAGE_LAYOUT_GENERAL;
+}
+
 namespace {
 using Shader::Backend::SPIRV::EmitSPIRV;
 using Shader::Maxwell::ConvertLegacyToGeneric;

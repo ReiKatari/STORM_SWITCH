@@ -18,6 +18,10 @@ void TieredRecompiler::Initialize() {
     block_map.clear();
     pending_recompile_queue.clear();
     tier2_optimized_count = 0;
+    for (auto& entry : fast_tier3_cache) {
+        entry.vaddr.store(0, std::memory_order_relaxed);
+        entry.ptr.store(nullptr, std::memory_order_relaxed);
+    }
 
     background_thread = std::thread(&TieredRecompiler::BackgroundCompilationLoop, this);
     LOG_INFO(Core_ARM, "TieredRecompiler: JIT Profiler & Tier-2 Optimizer Initialized (Threshold = {} executions)",
@@ -37,6 +41,18 @@ void TieredRecompiler::Shutdown() {
 }
 
 void* TieredRecompiler::ReportExecution(u64 guest_vaddr, size_t code_size, void* current_ptr) {
+    if (!is_running.load(std::memory_order_relaxed)) {
+        return current_ptr;
+    }
+
+    const size_t cache_idx = (guest_vaddr ^ (guest_vaddr >> 12)) & (FAST_TIER3_CACHE_SIZE - 1);
+    if (fast_tier3_cache[cache_idx].vaddr.load(std::memory_order_relaxed) == guest_vaddr) {
+        void* cached_ptr = fast_tier3_cache[cache_idx].ptr.load(std::memory_order_relaxed);
+        if (cached_ptr != nullptr) {
+            return cached_ptr;
+        }
+    }
+
     std::unique_lock lock(mutex);
     auto& profile = block_map[guest_vaddr];
     if (profile.guest_vaddr == 0) {
@@ -44,6 +60,12 @@ void* TieredRecompiler::ReportExecution(u64 guest_vaddr, size_t code_size, void*
         profile.code_size = code_size;
         profile.tier_level = 1;
         profile.compiled_func_ptr = current_ptr;
+    }
+
+    if (profile.tier_level == 3) {
+        fast_tier3_cache[cache_idx].ptr.store(profile.compiled_func_ptr, std::memory_order_relaxed);
+        fast_tier3_cache[cache_idx].vaddr.store(guest_vaddr, std::memory_order_release);
+        return profile.compiled_func_ptr;
     }
 
     profile.execution_count++;
@@ -97,6 +119,9 @@ void TieredRecompiler::BackgroundCompilationLoop() {
                 block_map[vaddr].compiled_func_ptr = new_ptr;
                 block_map[vaddr].tier_level = 3; // Fully Tier-2 Optimized
                 tier2_optimized_count++;
+                const size_t c_idx = (vaddr ^ (vaddr >> 12)) & (FAST_TIER3_CACHE_SIZE - 1);
+                fast_tier3_cache[c_idx].ptr.store(new_ptr, std::memory_order_relaxed);
+                fast_tier3_cache[c_idx].vaddr.store(vaddr, std::memory_order_release);
             }
         }
     }

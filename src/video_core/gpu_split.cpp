@@ -90,7 +90,7 @@ void GpuSplit::MaybeStart(Core::System& system_) {
         return value != nullptr ? value[0] : '2';
     }();
     const bool wanted = mode == '1' || mode == '2';
-    if (!wanted || !Tegra::g_nx2_ampere.load(std::memory_order_relaxed)) {
+    if (!wanted || !Settings::IsCurrentProgramSwitch2() || !Tegra::g_nx2_ampere.load(std::memory_order_relaxed)) {
         return;
     }
     // The front reads command lists straight from guest memory; a read that flushes the caches

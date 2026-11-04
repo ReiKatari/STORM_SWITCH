@@ -50,8 +50,7 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -76,8 +75,7 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -102,8 +100,7 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -127,7 +124,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
         ),
@@ -152,7 +148,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
         ),
@@ -177,7 +172,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
         ),
@@ -212,7 +206,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
         ),
@@ -246,8 +239,7 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -280,7 +272,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
         ),
@@ -314,8 +305,7 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1"
+                "System\\memory_layout_mode" to "0"
             )
         ),
 
@@ -327,8 +317,7 @@ object GameFixDatabase {
             "✓ Память: 8 ГБ DRAM (устраняет дедлок и краш при загрузке боя)\n✓ Быстрое время ГПУ: Отключено (исправление зависания на заставке и стартовом тексте)\n✓ Декодирование ASTC: ГПУ\n✓ Поведение барьеров ГПУ: Стандартное (0)\n✓ Точность DMA: Стандартная\n✓ Динамическое состояние: Базовое (EDS1)\n✓ Точность ЦП: Авто (стабильный быстрый JIT-компилятор)\n✓ Синхронизация памяти: Отключено\n✓ Реактивная очистка: Отключено\n✓ Режим полёта: Включено (пропуск серверов WB Play)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Точность ГПУ: Высокая",
             "✓ Memory Layout: 8GB DRAM (Fixes fight load crash)\n✓ Fast GPU Time: Disabled (Fixes intro and epilepsy warning freeze)\n✓ ASTC Decoding: GPU\n✓ GPU Fence Behavior: Standard (0)\n✓ DMA Accuracy: Standard\n✓ Dynamic State: Basic (EDS1)\n✓ CPU Accuracy: Auto (Stable fast JIT compiler)\n✓ Sync Memory Operations: Disabled\n✓ Reactive Flushing: Disabled\n✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ GPU Accuracy: High",
             mapOf(
-                "Core\\memory_layout_mode" to "2",
-                "System\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "0",
                 "System\\airplane_mode" to "true",
                 "Network\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
@@ -361,8 +350,7 @@ object GameFixDatabase {
             "✓ Память: 8 ГБ DRAM (устраняет дедлок и краш при загрузке боя)\n✓ Быстрое время ГПУ: Отключено (исправление зависания на заставке и стартовом тексте)\n✓ Декодирование ASTC: ГПУ\n✓ Поведение барьеров ГПУ: Стандартное (0)\n✓ Точность DMA: Стандартная\n✓ Динамическое состояние: Базовое (EDS1)\n✓ Точность ЦП: Авто (стабильный быстрый JIT-компилятор)\n✓ Синхронизация памяти: Отключено\n✓ Реактивная очистка: Отключено\n✓ Режим полёта: Включено (пропуск серверов WB Play)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Точность ГПУ: Высокая",
             "✓ Memory Layout: 8GB DRAM (Fixes fight load crash)\n✓ Fast GPU Time: Disabled (Fixes intro and epilepsy warning freeze)\n✓ ASTC Decoding: GPU\n✓ GPU Fence Behavior: Standard (0)\n✓ DMA Accuracy: Standard\n✓ Dynamic State: Basic (EDS1)\n✓ CPU Accuracy: Auto (Stable fast JIT compiler)\n✓ Sync Memory Operations: Disabled\n✓ Reactive Flushing: Disabled\n✓ Airplane Mode: Enabled (Bypasses WB Play online check)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ GPU Accuracy: High",
             mapOf(
-                "Core\\memory_layout_mode" to "2",
-                "System\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "0",
                 "System\\airplane_mode" to "true",
                 "Network\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
@@ -408,8 +396,7 @@ object GameFixDatabase {
                 "Cpu\\cpu_accuracy" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "System\\airplane_mode" to "false",
                 "System\\language_index" to "10",
                 "System\\region_index" to "2"
@@ -436,8 +423,7 @@ object GameFixDatabase {
                 "Cpu\\cpu_accuracy" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "System\\airplane_mode" to "false",
                 "System\\language_index" to "10",
                 "System\\region_index" to "2"
@@ -451,8 +437,7 @@ object GameFixDatabase {
             "✓ Память: 8GB DRAM (предотвращает краш аллокатора при загрузке сейва)\n✓ Игнорирование сбоев памяти: Включено (стабильность физики Havok)\n✓ Точность ГПУ: Обычная\n✓ Реактивная очистка: Отключено (стабильность кадрового буфера)\n✓ Barrier Feedback Loops: Включено\n✓ Сжатие ASTC: Отключено",
             "✓ Memory Layout: 8GB DRAM (Prevents save loading OOM)\n✓ Ignore Memory Aborts: Enabled (Havok physics stability)\n✓ GPU Accuracy: Normal\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Enabled\n✓ ASTC Recompression: Uncompressed",
             mapOf(
-                "Core\\memory_layout_mode" to "2",
-                "System\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "0",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpu_accuracy" to "0",
@@ -506,7 +491,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
-                "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
         ),
@@ -541,7 +525,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
-                "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
         ),
@@ -575,7 +558,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
-                "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
         ),
@@ -609,7 +591,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
-                "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
         ),
@@ -621,8 +602,7 @@ object GameFixDatabase {
             "✓ Память: 8GB DRAM (критично для движка Frostbite)\n✓ Режим полета: Включено (пропуск серверов EA Connect)\n✓ Асинхронные шейдеры: Отключено (стабильность загрузки)\n✓ Реактивная очистка: Включено\n✓ Веб-апплет: Отключено\n✓ Быстрая память: Включено",
             "✓ Memory Layout: 8GB DRAM (Critical for Frostbite Engine)\n✓ Airplane Mode: Enabled (Bypasses EA Connect handshake)\n✓ Asynchronous Shaders: Disabled (Prevents boot crash)\n✓ Reactive Flushing: Enabled\n✓ Disable Web Applet: Enabled\n✓ Fastmem: Enabled",
             mapOf(
-                "Core\\memory_layout_mode" to "2",
-                "System\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "0",
                 "Debugging\\disable_web_applet" to "true",
                 "Renderer\\use_reactive_flushing" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
@@ -639,8 +619,7 @@ object GameFixDatabase {
             "✓ Память: 8GB DRAM (критично для движка Frostbite)\n✓ Режим полета: Включено (пропуск серверов EA Connect)\n✓ Асинхронные шейдеры: Отключено (стабильность загрузки)\n✓ Реактивная очистка: Включено\n✓ Веб-апплет: Отключено\n✓ Быстрая память: Включено",
             "✓ Memory Layout: 8GB DRAM (Critical for Frostbite Engine)\n✓ Airplane Mode: Enabled (Bypasses EA Connect handshake)\n✓ Asynchronous Shaders: Disabled (Prevents boot crash)\n✓ Reactive Flushing: Enabled\n✓ Disable Web Applet: Enabled\n✓ Fastmem: Enabled",
             mapOf(
-                "Core\\memory_layout_mode" to "2",
-                "System\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "0",
                 "Debugging\\disable_web_applet" to "true",
                 "Renderer\\use_reactive_flushing" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
@@ -657,8 +636,7 @@ object GameFixDatabase {
             "✓ Память: 6GB DRAM (устраняет вылет через время)\n✓ Асинхронные шейдеры: Отключено\n✓ Быстрая память: Включено",
             "✓ Memory Layout: 6GB DRAM (Prevents crash over time)\n✓ Asynchronous Shaders: Disabled\n✓ Fastmem: Enabled",
             mapOf(
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\use_asynchronous_shaders" to "false",
                 "Cpu\\cpuopt_fastmem" to "true"
             )
@@ -674,8 +652,7 @@ object GameFixDatabase {
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
@@ -705,8 +682,7 @@ object GameFixDatabase {
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\barrier_feedback_loops" to "true",
-                "Core\\memory_layout_mode" to "2",
-                "System\\memory_layout_mode" to "2"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -739,8 +715,7 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "false",
-                "Core\\memory_layout_mode" to "2",
-                "System\\memory_layout_mode" to "2"
+                "System\\memory_layout_mode" to "0"
             )
         ),
 
@@ -752,8 +727,7 @@ object GameFixDatabase {
             "✓ Память: 8GB DRAM (критично для стабильности)\n✓ Исправление свечения (Bloom): Включено\n✓ Точность ГПУ: Высокая\n✓ Динамическое состояние: EDS1\n✓ Реактивная очистка: Отключено (исправление освещения замка)\n✓ Обратная связь барьеров: Включено\n✓ Сжатие текстур ASTC: Отключено",
             "✓ Memory Layout: 8GB DRAM (Critical for stability)\n✓ Fix Bloom Effects: Enabled\n✓ GPU Accuracy: High\n✓ Dynamic State: EDS1\n✓ Reactive Flushing: Disabled (Fixes castle lighting)\n✓ Barrier Feedback Loops: Enabled\n✓ ASTC Recompression: Uncompressed",
             mapOf(
-                "Core\\memory_layout_mode" to "2",
-                "System\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\fix_bloom_effects" to "true",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\barrier_feedback_loops" to "true",
@@ -793,8 +767,7 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "false",
-                "Core\\memory_layout_mode" to "2",
-                "System\\memory_layout_mode" to "2"
+                "System\\memory_layout_mode" to "0"
             )
         ),
 
@@ -819,8 +792,7 @@ object GameFixDatabase {
             "✓ Память: 8GB DRAM (критично для стабильности)\n✓ Исправление свечения (Bloom): Включено\n✓ Точность ГПУ: Высокая\n✓ Динамическое состояние: EDS1\n✓ Реактивная очистка: Отключено\n✓ Обратная связь барьеров: Включено\n✓ Сжатие текстур ASTC: Отключено",
             "✓ Memory Layout: 8GB DRAM (Critical for stability)\n✓ Fix Bloom Effects: Enabled\n✓ GPU Accuracy: High\n✓ Dynamic State: EDS1\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Enabled\n✓ ASTC Recompression: Uncompressed",
             mapOf(
-                "Core\\memory_layout_mode" to "2",
-                "System\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\fix_bloom_effects" to "true",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\barrier_feedback_loops" to "true",
@@ -838,8 +810,7 @@ object GameFixDatabase {
             "✓ Память: 8GB DRAM (критично для стабильности)\n✓ Исправление свечения (Bloom): Включено\n✓ Точность ГПУ: Высокая\n✓ Динамическое состояние: EDS1\n✓ Реактивная очистка: Отключено\n✓ Обратная связь барьеров: Включено\n✓ Сжатие текстур ASTC: Отключено",
             "✓ Memory Layout: 8GB DRAM (Critical for stability)\n✓ Fix Bloom Effects: Enabled\n✓ GPU Accuracy: High\n✓ Dynamic State: EDS1\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Enabled\n✓ ASTC Recompression: Uncompressed",
             mapOf(
-                "Core\\memory_layout_mode" to "2",
-                "System\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\fix_bloom_effects" to "true",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\barrier_feedback_loops" to "true",
@@ -857,8 +828,7 @@ object GameFixDatabase {
             "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Точность ГПУ: Высокая (High / синхронизация буферов шрифта)\n✓ Быстрое время ГПУ: Отключено (100% отрисовка динамических глифов и букв шрифта)\n✓ Асинхронные шейдеры: Отключено (100% отрисовка всех букв и глифов без пропусков)\n✓ Реактивная очистка: Включено (синхронизация атласов шрифта во всех Актах)\n✓ Сборка мусора VRAM: Отключено (защита атласа букв от выгрузки после I Акта)\n✓ Точность ЦП: Авто (устранение задержек)\n✓ Обратное чтение буферов ГПУ: Отключено (устраняет просадки 4 FPS)\n✓ Сжатие текстур ASTC: Отключено (устраняет полосы и квадраты)\n✓ Динамическое состояние: Отключено (исправляет артефакты декалей)\n✓ Обратная связь барьеров: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание)",
             "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ GPU Accuracy: High (Buffer synchronization)\n✓ Fast GPU Time: Disabled (100% font glyph rendering and timing guarantee)\n✓ Asynchronous Shaders: Disabled (100% font glyph render guarantee)\n✓ Reactive Flushing: Enabled (Syncs font atlases across all Acts)\n✓ VRAM Garbage Collection: Disabled (Protects font atlas after Act I)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ GPU Buffer Readback: Disabled (Fixes 4 FPS drops)\n✓ ASTC Recompression: Uncompressed (Fixes decals and square artifacts)\n✓ Dynamic State: Disabled\n✓ Barrier Feedback Loops: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes flickering)",
             mapOf(
-                "Core\\memory_layout_mode" to "2",
-                "System\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "0",
                 "System\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
@@ -888,8 +858,7 @@ object GameFixDatabase {
             "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Точность ГПУ: Высокая (High / синхронизация буферов шрифта)\n✓ Быстрое время ГПУ: Отключено (100% отрисовка динамических глифов и букв шрифта)\n✓ Асинхронные шейдеры: Отключено (100% отрисовка всех букв и глифов без пропусков)\n✓ Реактивная очистка: Включено (синхронизация атласов шрифта во всех Актах)\n✓ Сборка мусора VRAM: Отключено (защита атласа букв от выгрузки после I Акта)\n✓ Точность ЦП: Авто (устранение задержек)\n✓ Обратное чтение буферов ГПУ: Отключено (устраняет просадки 4 FPS)\n✓ Сжатие текстур ASTC: Отключено (устраняет полосы и квадраты)\n✓ Динамическое состояние: Отключено (исправляет артефакты декалей)\n✓ Обратная связь барьеров: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание)",
             "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ GPU Accuracy: High (Buffer synchronization)\n✓ Fast GPU Time: Disabled (100% font glyph rendering and timing guarantee)\n✓ Asynchronous Shaders: Disabled (100% font glyph render guarantee)\n✓ Reactive Flushing: Enabled (Syncs font atlases across all Acts)\n✓ VRAM Garbage Collection: Disabled (Protects font atlas after Act I)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ GPU Buffer Readback: Disabled (Fixes 4 FPS drops)\n✓ ASTC Recompression: Uncompressed (Fixes decals and square artifacts)\n✓ Dynamic State: Disabled\n✓ Barrier Feedback Loops: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes flickering)",
             mapOf(
-                "Core\\memory_layout_mode" to "2",
-                "System\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "0",
                 "System\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
@@ -914,20 +883,18 @@ object GameFixDatabase {
         GameFixProfile(
             0x01008C3005A32000L,
             "Unravel Two",
-            "• Зависание на вступительных видеороликах (декодер NVDEC)\n• Графические артефакты освещения и текстур",
-            "• Freeze during intro cutscenes (NVDEC video decoder)\n• Lighting and texture rendering artifacts",
-            "✓ Программный декодер видео: ЦП (NVDEC CPU)\n✓ Точность ГПУ: Высокая (High)\n✓ Асинхронная эмуляция ГПУ: Включено\n✓ Barrier Feedback Loops: Включено",
-            "✓ NVDEC Video Decoding: CPU\n✓ GPU Accuracy: High\n✓ Asynchronous GPU Emulation: Enabled\n✓ Barrier Feedback Loops: Enabled",
+            "• Зависание на вступительных видеороликах (дедлок видеодекодера NVDEC)\n• Графические артефакты освещения и искажение шейдеров",
+            "• Freeze during intro cutscenes (NVDEC video decoder deadlock)\n• Lighting rendering artifacts and shader corruption",
+            "✓ Программный декодер видео (NVDEC CPU: устранение зависания заставок)\n✓ Точность ГПУ: Высокая (устранение графических артефактов)\n✓ Асинхронная эмуляция ГПУ: Включено\n✓ Обратные циклы барьеров: Включено",
+            "✓ CPU NVDEC Video Decoding (Fixes intro video hang)\n✓ GPU Accuracy: High (Fixes lighting artifacts)\n✓ Asynchronous GPU Emulation: Enabled\n✓ Barrier Feedback Loops: Enabled",
             mapOf(
                 "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\gpu_accuracy" to "2",
-                "Renderer\\use_asynchronous_gpu_emulation" to "true",
                 "Renderer\\barrier_feedback_loops" to "true",
-                "Renderer\\use_fast_gpu_time" to "false",
-                "Renderer\\astc_recompression" to "0"
+                "Renderer\\use_asynchronous_gpu_emulation" to "true"
             )
         ),
-        GameFixProfile(
+ GameFixProfile(
             0x01FF434243555253L, // Castlevania: Belmont's Curse (Deterministic Homebrew ID)
             "Castlevania: Belmont's Curse",
             "• Зависание при запуске на стандартных драйверах Vulkan < 1.3 (Adreno 6xx/Snapdragon 870)\n• Сбои декодирования кастомных ASTC текстур",
@@ -950,8 +917,7 @@ object GameFixDatabase {
             "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Точность ГПУ: Высокая (High / синхронизация буферов шрифта)\n✓ Быстрое время ГПУ: Отключено (100% отрисовка динамических глифов и букв шрифта)\n✓ Асинхронные шейдеры: Отключено (100% отрисовка всех букв и глифов без пропусков)\n✓ Реактивная очистка: Включено (синхронизация атласов шрифта во всех Актах)\n✓ Сборка мусора VRAM: Отключено (защита атласа букв от выгрузки после I Акта)\n✓ Точность ЦП: Авто (устранение задержек)\n✓ Обратное чтение буферов ГПУ: Отключено (устраняет просадки 4 FPS)\n✓ Сжатие текстур ASTC: Отключено (устраняет полосы и квадраты)\n✓ Динамическое состояние: Отключено (исправляет артефакты декалей)\n✓ Обратная связь барьеров: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание)",
             "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ GPU Accuracy: High (Buffer synchronization)\n✓ Fast GPU Time: Disabled (100% font glyph rendering and timing guarantee)\n✓ Asynchronous Shaders: Disabled (100% font glyph render guarantee)\n✓ Reactive Flushing: Enabled (Syncs font atlases across all Acts)\n✓ VRAM Garbage Collection: Disabled (Protects font atlas after Act I)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ GPU Buffer Readback: Disabled (Fixes 4 FPS drops)\n✓ ASTC Recompression: Uncompressed (Fixes decals and square artifacts)\n✓ Dynamic State: Disabled\n✓ Barrier Feedback Loops: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes flickering)",
             mapOf(
-                "Core\\memory_layout_mode" to "2",
-                "System\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "0",
                 "System\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
@@ -981,8 +947,7 @@ object GameFixDatabase {
             "✓ Память: 8GB DRAM (предотвращение вылетов Unity)\n✓ Обратные циклы барьеров: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память (Fastmem): Отключено (стабильность Unity GC)\n✓ Сжатие текстур ASTC: Отключено\n✓ Динамическое состояние: Базовое\n✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено",
             "✓ Memory Layout: 8GB DRAM (Prevents Unity OOM crashes)\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Disabled (Unity GC stability)\n✓ ASTC Recompression: Uncompressed (Max art fidelity)\n✓ Dynamic State: Disabled\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled",
             mapOf(
-                "Core\\memory_layout_mode" to "2",
-                "System\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Cpu\\cpuopt_fastmem" to "false",
@@ -1014,7 +979,7 @@ object GameFixDatabase {
             "✓ Airplane Mode: Enabled (Critical for Android launch!)\n✓ Fast GPU Time: Disabled (Fixes infinite loading!)\n✓ Dynamic State: Basic (EDS1)\n✓ GPU Accuracy: High\n✓ CPU Accuracy: Accurate\n✓ Reactive Flushing: Disabled\n✓ Memory Layout: 8GB DRAM",
             mapOf(
                 "System\\airplane_mode" to "true",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\dyna_state" to "0",
                 "Renderer\\gpu_accuracy" to "2",
@@ -1064,8 +1029,7 @@ object GameFixDatabase {
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\sync_memory_operations" to "true",
                 "Renderer\\early_release_fences" to "false",
-                "Core\\memory_layout_mode" to "2",
-                "System\\memory_layout_mode" to "2"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -1083,8 +1047,7 @@ object GameFixDatabase {
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\sync_memory_operations" to "true",
                 "Renderer\\early_release_fences" to "false",
-                "Core\\memory_layout_mode" to "2",
-                "System\\memory_layout_mode" to "2"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -1102,8 +1065,7 @@ object GameFixDatabase {
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\sync_memory_operations" to "true",
                 "Renderer\\early_release_fences" to "false",
-                "Core\\memory_layout_mode" to "2",
-                "System\\memory_layout_mode" to "2"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -1121,8 +1083,7 @@ object GameFixDatabase {
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\sync_memory_operations" to "true",
                 "Renderer\\early_release_fences" to "false",
-                "Core\\memory_layout_mode" to "2",
-                "System\\memory_layout_mode" to "2"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -1140,8 +1101,7 @@ object GameFixDatabase {
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\sync_memory_operations" to "true",
                 "Renderer\\early_release_fences" to "false",
-                "Core\\memory_layout_mode" to "2",
-                "System\\memory_layout_mode" to "2"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -1234,7 +1194,7 @@ object GameFixDatabase {
             "✓ ASTC Recompression: BC1\n✓ Memory Layout: 8GB DRAM",
             mapOf(
                 "Renderer\\astc_recompression" to "0",
-                "System\\memory_layout_mode" to "2"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -1261,8 +1221,7 @@ object GameFixDatabase {
                 "Renderer\\fsr_sharpening_slider" to "85",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_reactive_flushing" to "false",
-                "Core\\memory_layout_mode" to "2",
-                "System\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "1"
             )
         ),
@@ -1288,7 +1247,7 @@ object GameFixDatabase {
             "✓ ASTC Recompression: BC1\n✓ Memory Layout: 8GB DRAM",
             mapOf(
                 "Renderer\\astc_recompression" to "0",
-                "System\\memory_layout_mode" to "2"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -1369,7 +1328,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
         ),
@@ -1403,7 +1361,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
         ),
@@ -1437,7 +1394,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
         ),
@@ -1461,38 +1417,18 @@ object GameFixDatabase {
             "Super Mario Bros. Wonder",
             "• Вылет при переходе уровней и активации Чудо-цветка (нехватка стандартной памяти 4GB)\n• Микрофризы при компиляции анимаций персонажей",
             "• Crash on stage transitions and Wonder Flower effects (4GB memory limit)\n• Shader compilation stutter on character animations",
-            "✓ Конфигурация памяти: 6 ГБ DRAM (предотвращение переполнения памяти)\n✓ Точность ГПУ: Обычная (Normal 60 FPS)\n✓ Тайминги ГПУ: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
-            "✓ Memory Layout: 6GB DRAM (Prevents memory overflow)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
+            "✓ Конфигурация памяти: 4 ГБ DRAM (стабильная работа)\n✓ Точность ГПУ: Обычная (Normal 60 FPS)\n✓ Тайминги ГПУ: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Реактивная очистка: Отключено",
+            "✓ Memory Layout: 4GB DRAM (Stable operation)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Reactive Flushing: Disabled",
             mapOf(
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
-
-        GameFixProfile(
-            0x0100C88011246000L,
-            "Disco Elysium: The Final Cut",
-            "• Утечка памяти и вылеты при смене локаций\n• Размытие и мерцание текста диалогов TextMeshPro\n• Цветовые артефакты акварельных портретов и фонов",
-            "• Out of memory (OOM) crash on zone transitions\n• TextMeshPro dialogue font blur and jitter\n• Color compression artifacts on painted portraits and backdrops",
-            "✓ Память: 8GB DRAM (предотвращение вылетов Unity)\n✓ Обратные циклы барьеров: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память (Fastmem): Отключено (стабильность Unity GC)\n✓ Сжатие текстур ASTC: Отключено\n✓ Динамическое состояние: Базовое\n✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено",
-            "✓ Memory Layout: 8GB DRAM (Prevents Unity OOM crashes)\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Disabled (Unity GC stability)\n✓ ASTC Recompression: Uncompressed (Max art fidelity)\n✓ Dynamic State: Disabled\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled",
-            mapOf(
-                "Core\\memory_layout_mode" to "2",
-                "System\\memory_layout_mode" to "2",
-                "Renderer\\barrier_feedback_loops" to "true",
-                "Renderer\\use_asynchronous_shaders" to "true",
-                "Cpu\\cpuopt_fastmem" to "false",
-                "Cpu\\cpuopt_fastmem_exclusives" to "false",
-                "Renderer\\astc_recompression" to "0",
-                "Renderer\\dyna_state" to "0",
-                "Renderer\\gpu_accuracy" to "2",
-                "Renderer\\use_reactive_flushing" to "true"
-            )
-        ),
-        GameFixProfile(
+ GameFixProfile(
             0x01008C300F7F0000L,
             "Disco Elysium: The Final Cut (WW)",
             "• Утечка памяти и вылеты при смене локаций\n• Размытие и мерцание текста диалогов TextMeshPro\n• Цветовые артефакты акварельных портретов и фонов",
@@ -1500,8 +1436,7 @@ object GameFixDatabase {
             "✓ Память: 8GB DRAM (предотвращение вылетов Unity)\n✓ Обратные циклы барьеров: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память (Fastmem): Отключено (стабильность Unity GC)\n✓ Сжатие текстур ASTC: Отключено\n✓ Динамическое состояние: Базовое\n✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено",
             "✓ Memory Layout: 8GB DRAM (Prevents Unity OOM crashes)\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Disabled (Unity GC stability)\n✓ ASTC Recompression: Uncompressed (Max art fidelity)\n✓ Dynamic State: Disabled\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled",
             mapOf(
-                "Core\\memory_layout_mode" to "2",
-                "System\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Cpu\\cpuopt_fastmem" to "false",
@@ -1520,8 +1455,7 @@ object GameFixDatabase {
             "✓ Память: 8GB DRAM (предотвращение вылетов Unity)\n✓ Обратные циклы барьеров: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память (Fastmem): Отключено (стабильность Unity GC)\n✓ Сжатие текстур ASTC: Отключено\n✓ Динамическое состояние: Базовое\n✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено",
             "✓ Memory Layout: 8GB DRAM (Prevents Unity OOM crashes)\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Disabled (Unity GC stability)\n✓ ASTC Recompression: Uncompressed (Max art fidelity)\n✓ Dynamic State: Disabled\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled",
             mapOf(
-                "Core\\memory_layout_mode" to "2",
-                "System\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Cpu\\cpuopt_fastmem" to "false",
@@ -1541,7 +1475,7 @@ object GameFixDatabase {
             "✓ CPU Accuracy: Accurate\n✓ Memory Layout: 6GB DRAM\n✓ Dynamic State: EDS1",
             mapOf(
                 "Cpu\\cpu_accuracy" to "0",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\dyna_state" to "0"
             )
         ),
@@ -1556,7 +1490,7 @@ object GameFixDatabase {
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\dyna_state" to "2",
                 "Renderer\\astc_recompression" to "0",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\use_fast_gpu_time" to "true"
             )
         ),
@@ -1570,7 +1504,7 @@ object GameFixDatabase {
             mapOf(
                 "Renderer\\dyna_state" to "2",
                 "Renderer\\astc_recompression" to "0",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\use_fast_gpu_time" to "true"
             )
         ),
@@ -1583,7 +1517,7 @@ object GameFixDatabase {
             "✓ ASTC Recompression: BC3\n✓ Memory Layout: 6GB DRAM\n✓ Dynamic State: EDS2\n✓ GPU Accuracy: High",
             mapOf(
                 "Renderer\\astc_recompression" to "0",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\dyna_state" to "2",
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_fast_gpu_time" to "true"
@@ -1597,8 +1531,7 @@ object GameFixDatabase {
             "✓ Память: 6 ГБ DRAM (устраняет падение аллокатора памяти хоста)\n✓ Fastmem Exclusives: Отключено (устраняет дедлоки диспетчера потоков)\n✓ Игнорировать прерывания памяти: Включено\n✓ Точность ГПУ: Обычная\n✓ Обратные циклы барьеров: Включено\n✓ Сжатие текстур ASTC: Отключено",
             "✓ Memory Layout: 6GB DRAM (Prevents host memory allocator OOM)\n✓ Fastmem Exclusives: Disabled (Fixes REDengine thread deadlocks)\n✓ Ignore Memory Aborts: Enabled\n✓ GPU Accuracy: Normal\n✓ Barrier Feedback Loops: Enabled\n✓ ASTC Recompression: Uncompressed",
             mapOf(
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_fastmem_exclusives" to "false",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
@@ -1631,8 +1564,7 @@ object GameFixDatabase {
             "✓ Память: 6 ГБ DRAM (устраняет сбой аллокатора памяти)\n✓ Fastmem Exclusives: Отключено (устраняет дедлоки диспетчера потоков)\n✓ Игнорировать прерывания памяти: Включено\n✓ Точность ГПУ: Обычная\n✓ Обратные циклы барьеров: Включено\n✓ Анизотропная фильтрация: 16x",
             "✓ Memory Layout: 6GB DRAM (Prevents host allocator OOM)\n✓ Fastmem Exclusives: Disabled (Fixes REDengine thread deadlocks)\n✓ Ignore Memory Aborts: Enabled\n✓ GPU Accuracy: Normal\n✓ Barrier Feedback Loops: Enabled\n✓ Anisotropic Filtering: 16x",
             mapOf(
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_fastmem_exclusives" to "false",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
@@ -1668,7 +1600,7 @@ object GameFixDatabase {
             mapOf(
                 "System\\airplane_mode" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "System\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\astc_recompression" to "0"
             )
         ),
@@ -1706,7 +1638,7 @@ object GameFixDatabase {
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\fix_bloom_effects" to "true",
                 "Renderer\\early_release_fences" to "false",
-                "System\\memory_layout_mode" to "2"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -1761,7 +1693,7 @@ object GameFixDatabase {
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\use_reactive_flushing" to "true",
-                "System\\memory_layout_mode" to "2"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -1810,8 +1742,7 @@ object GameFixDatabase {
             "✓ Память: 8GB DRAM (критично для движка Frostbite)\n✓ Режим полета (В самолете): Включено (пропуск серверов EA)\n✓ Асинхронные шейдеры: Отключено (стабильность загрузки)\n✓ Реактивная очистка: Включено\n✓ Веб-апплет: Отключено\n✓ Быстрая память: Включено",
             "✓ Memory Layout: 8GB DRAM (Critical for Frostbite Engine)\n✓ Airplane Mode: Enabled\n✓ Asynchronous Shaders: Disabled (Prevents boot crash)\n✓ Reactive Flushing: Enabled\n✓ Disable Web Applet: Enabled\n✓ Fastmem: Enabled",
             mapOf(
-                "Core\\memory_layout_mode" to "2",
-                "System\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "0",
                 "Debugging\\disable_web_applet" to "true",
                 "Renderer\\use_reactive_flushing" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
@@ -1831,7 +1762,7 @@ object GameFixDatabase {
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\max_anisotropy" to "5",
-                "System\\memory_layout_mode" to "2"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -1845,7 +1776,7 @@ object GameFixDatabase {
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "true",
-                "System\\memory_layout_mode" to "2"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -1859,7 +1790,7 @@ object GameFixDatabase {
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_reactive_flushing" to "true",
-                "System\\memory_layout_mode" to "2"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -1912,7 +1843,7 @@ object GameFixDatabase {
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "System\\memory_layout_mode" to "2"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -1926,7 +1857,7 @@ object GameFixDatabase {
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "true",
-                "System\\memory_layout_mode" to "2"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -1940,7 +1871,7 @@ object GameFixDatabase {
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_reactive_flushing" to "true",
-                "System\\memory_layout_mode" to "2"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -1993,7 +1924,7 @@ object GameFixDatabase {
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "System\\memory_layout_mode" to "2"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -2004,7 +1935,7 @@ object GameFixDatabase {
             "✓ Память: 8GB DRAM\n✓ Сжатие текстур ASTC: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Точность ГПУ: Высокая",
             "✓ Memory Layout: 8GB DRAM\n✓ ASTC Recompression: Uncompressed\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: High",
             mapOf(
-                "System\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\gpu_accuracy" to "2"
@@ -2073,7 +2004,7 @@ object GameFixDatabase {
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
-                "System\\memory_layout_mode" to "2"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -2087,7 +2018,7 @@ object GameFixDatabase {
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_reactive_flushing" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
-                "System\\memory_layout_mode" to "2"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -2100,7 +2031,7 @@ object GameFixDatabase {
             mapOf(
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\max_anisotropy" to "5",
-                "System\\memory_layout_mode" to "2"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -2128,7 +2059,7 @@ object GameFixDatabase {
                 "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\max_anisotropy" to "5",
-                "System\\memory_layout_mode" to "2"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -2181,7 +2112,7 @@ object GameFixDatabase {
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_reactive_flushing" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
-                "System\\memory_layout_mode" to "2"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -2195,7 +2126,7 @@ object GameFixDatabase {
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_reactive_flushing" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
-                "System\\memory_layout_mode" to "2"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -2232,7 +2163,7 @@ object GameFixDatabase {
             "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Реактивная очистка: Включено",
             "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Reactive Flushing: Enabled",
             mapOf(
-                "System\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "true"
@@ -2246,7 +2177,7 @@ object GameFixDatabase {
             "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
             "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
-                "System\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
@@ -2325,7 +2256,7 @@ object GameFixDatabase {
             "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено",
             "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled",
             mapOf(
-                "System\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true"
             )
@@ -2351,7 +2282,7 @@ object GameFixDatabase {
             "✓ Память: 8GB DRAM\n✓ Точность ЦП: Точная\n✓ Асинхронные шейдеры: Включено",
             "✓ Memory Layout: 8GB DRAM\n✓ CPU Accuracy: Accurate\n✓ Asynchronous Shaders: Enabled",
             mapOf(
-                "System\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "0",
                 "Cpu\\cpu_accuracy" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -2364,7 +2295,7 @@ object GameFixDatabase {
             "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
             "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
-                "System\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
@@ -2395,7 +2326,7 @@ object GameFixDatabase {
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\max_anisotropy" to "5",
-                "System\\memory_layout_mode" to "2"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -2441,7 +2372,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
         ),
@@ -2474,7 +2404,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
         ),
@@ -2512,7 +2441,7 @@ object GameFixDatabase {
             "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено",
             "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled",
             mapOf(
-                "System\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -2578,7 +2507,7 @@ object GameFixDatabase {
             "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Обратные циклы барьеров: Включено\n✓ Асинхронные шейдеры: Включено",
             "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
-                "System\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
@@ -2699,7 +2628,7 @@ object GameFixDatabase {
             "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
             "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
@@ -2710,16 +2639,16 @@ object GameFixDatabase {
             "Super Mario Party Jamboree",
             "• Микрофризы в мини-играх на 20 игроков Koopathlon\n• Рассинхронизация счетчика очков",
             "• 20-player Koopathlon minigame stutters\n• Live board score counter desync",
-            "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Реактивная очистка: Включено",
-            "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Reactive Flushing: Enabled",
+            "✓ Память: 4GB DRAM\n✓ Точность ГПУ: Обычная\n✓ Асинхронные шейдеры: Включено\n✓ Реактивная очистка: Отключено",
+            "✓ Memory Layout: 4GB DRAM\n✓ GPU Accuracy: Normal\n✓ Asynchronous Shaders: Enabled\n✓ Reactive Flushing: Disabled",
             mapOf(
-                "System\\memory_layout_mode" to "1",
-                "Renderer\\gpu_accuracy" to "2",
+                "System\\memory_layout_mode" to "0",
+                "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\use_reactive_flushing" to "true"
+                "Renderer\\use_reactive_flushing" to "false"
             )
         ),
-        GameFixProfile(
+ GameFixProfile(
             0x010091801E8B2000L,
             "Mario & Luigi: Brothership",
             "• Задержка отклика в совместных Brother Attacks\n• Просадки FPS на морских островах Конкордии",
@@ -2808,7 +2737,7 @@ object GameFixDatabase {
             "✓ Airplane Mode: Enabled (Instant offline Hero mode)\n✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Reactive Flushing: Enabled",
             mapOf(
                 "System\\airplane_mode" to "true",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "true"
@@ -2835,7 +2764,7 @@ object GameFixDatabase {
             "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
             "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled",
             mapOf(
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Cpu\\cpuopt_fastmem" to "true"
@@ -2862,7 +2791,7 @@ object GameFixDatabase {
             "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено",
             "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled",
             mapOf(
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -2929,7 +2858,7 @@ object GameFixDatabase {
             "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
             "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled",
             mapOf(
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Cpu\\cpuopt_fastmem" to "true"
@@ -2943,7 +2872,7 @@ object GameFixDatabase {
             "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Высокая\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
             "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled",
             mapOf(
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Cpu\\cpuopt_fastmem" to "true"
@@ -3039,7 +2968,7 @@ object GameFixDatabase {
             "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
             "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
@@ -3053,7 +2982,7 @@ object GameFixDatabase {
             "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Быстрая память: Включено",
             "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Fastmem: Enabled",
             mapOf(
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_reactive_flushing" to "true",
                 "Cpu\\cpuopt_fastmem" to "true"
@@ -3124,7 +3053,7 @@ object GameFixDatabase {
             "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
             "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
@@ -3138,7 +3067,7 @@ object GameFixDatabase {
             "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Реактивная очистка: Включено",
             "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Reactive Flushing: Enabled",
             mapOf(
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
@@ -3197,7 +3126,7 @@ object GameFixDatabase {
             "✓ Airplane Mode: Enabled (Bypasses Activision online login)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 8GB DRAM",
             mapOf(
                 "System\\airplane_mode" to "true",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -3253,7 +3182,7 @@ object GameFixDatabase {
             "✓ Airplane Mode: Enabled (Skips online verification)\n✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "System\\airplane_mode" to "true",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
@@ -3268,7 +3197,7 @@ object GameFixDatabase {
             "✓ Airplane Mode: Enabled (Fixes Hunter Search lobby lag)\n✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "System\\airplane_mode" to "true",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
@@ -3310,7 +3239,7 @@ object GameFixDatabase {
             "✓ Airplane Mode: Enabled (Bypasses EA online login requirement)\n✓ Memory Layout: 8GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "System\\airplane_mode" to "true",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -3365,7 +3294,7 @@ object GameFixDatabase {
             "✓ Airplane Mode: Enabled (Bypasses Conton City server)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 8GB DRAM",
             mapOf(
                 "System\\airplane_mode" to "true",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -3379,7 +3308,7 @@ object GameFixDatabase {
             "✓ Airplane Mode: Enabled (Bypasses 2K server handshake)\n✓ Memory Layout: 8GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "System\\airplane_mode" to "true",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -3447,7 +3376,7 @@ object GameFixDatabase {
             "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
             "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
@@ -3475,7 +3404,7 @@ object GameFixDatabase {
             "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Реактивная очистка: Включено\n✓ Быстрая память: Включено",
             "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Fastmem: Enabled",
             mapOf(
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_reactive_flushing" to "true",
                 "Cpu\\cpuopt_fastmem" to "true"
@@ -3503,7 +3432,7 @@ object GameFixDatabase {
             "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
             "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
@@ -3545,7 +3474,7 @@ object GameFixDatabase {
             "✓ Airplane Mode: Enabled (Bypasses network connection retry)\n✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: High\n✓ Fastmem: Enabled",
             mapOf(
                 "System\\airplane_mode" to "true",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true"
             )
@@ -3593,7 +3522,7 @@ object GameFixDatabase {
                 "Renderer\\astc_recompression" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "System\\memory_layout_mode" to "1"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -3608,7 +3537,7 @@ object GameFixDatabase {
                 "Renderer\\astc_recompression" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "System\\memory_layout_mode" to "1"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -3633,7 +3562,7 @@ object GameFixDatabase {
             "✓ GPU Accuracy: Normal\n✓ Memory Layout: 8GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "Renderer\\gpu_accuracy" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -3649,7 +3578,7 @@ object GameFixDatabase {
                 "Renderer\\gpu_accuracy" to "1",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "System\\memory_layout_mode" to "1"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -3689,7 +3618,7 @@ object GameFixDatabase {
             "✓ GPU Accuracy: Normal (Smooth 30 FPS)\n✓ Memory Layout: 8GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "Renderer\\gpu_accuracy" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -3704,7 +3633,7 @@ object GameFixDatabase {
             mapOf(
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\use_reactive_flushing" to "false",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -3719,7 +3648,7 @@ object GameFixDatabase {
             mapOf(
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\use_reactive_flushing" to "false",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -3747,8 +3676,7 @@ object GameFixDatabase {
             "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ЦП: Авто\n✓ Точность ГПУ: Обычная\n✓ Сжатие текстур ASTC: Отключено\n✓ Быстрая память: Включено",
             "✓ Memory Layout: 8GB DRAM\n✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal\n✓ ASTC Recompression: Uncompressed\n✓ Fastmem: Enabled",
             mapOf(
-                "Core\\memory_layout_mode" to "2",
-                "System\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "0",
                 "Cpu\\cpu_accuracy" to "1",
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\astc_recompression" to "0",
@@ -3836,7 +3764,7 @@ object GameFixDatabase {
             "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ЦП: Авто\n✓ Точность ГПУ: Обычная (60 FPS)\n✓ Быстрая память: Включено",
             "✓ Memory Layout: 8GB DRAM\n✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled",
             mapOf(
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Cpu\\cpu_accuracy" to "1",
                 "Renderer\\gpu_accuracy" to "1",
                 "Cpu\\cpuopt_fastmem" to "true",
@@ -3935,7 +3863,7 @@ object GameFixDatabase {
             "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ЦП: Авто\n✓ Точность ГПУ: Обычная\n✓ Быстрая память: Включено",
             "✓ Memory Layout: 8GB DRAM\n✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal\n✓ Fastmem: Enabled",
             mapOf(
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Cpu\\cpu_accuracy" to "1",
                 "Renderer\\gpu_accuracy" to "1",
                 "Cpu\\cpuopt_fastmem" to "true",
@@ -3964,7 +3892,7 @@ object GameFixDatabase {
             "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ЦП: Авто\n✓ Точность ГПУ: Обычная\n✓ Быстрая память: Включено",
             "✓ Memory Layout: 8GB DRAM\n✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal\n✓ Fastmem: Enabled",
             mapOf(
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Cpu\\cpu_accuracy" to "1",
                 "Renderer\\gpu_accuracy" to "1",
                 "Cpu\\cpuopt_fastmem" to "true",
@@ -4063,7 +3991,7 @@ object GameFixDatabase {
             "✓ Конфигурация памяти: 8 ГБ DRAM\n✓ Точность ЦП: Авто\n✓ Точность ГПУ: Обычная (60 FPS)\n✓ Быстрая память: Включено",
             "✓ Memory Layout: 8GB DRAM\n✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled",
             mapOf(
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Cpu\\cpu_accuracy" to "1",
                 "Renderer\\gpu_accuracy" to "1",
                 "Cpu\\cpuopt_fastmem" to "true",
@@ -4092,7 +4020,7 @@ object GameFixDatabase {
             "✓ Память: 8GB DRAM (критично для стабильной работы открытого мира)\n✓ Точность ЦП: Авто (максимальный FPS)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Режим полёта: Включено (пропуск сетевых хуков)\n✓ Авто-заглушки: Включено",
             "✓ Memory Layout: 8GB DRAM (Critical for open-world stability)\n✓ CPU Accuracy: Auto / Unsafe (Max FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Airplane Mode: Enabled\n✓ Auto Stub: Enabled",
             mapOf(
-                "System\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "0",
                 "Cpu\\cpu_accuracy" to "1",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
@@ -4110,7 +4038,7 @@ object GameFixDatabase {
             "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Точность ЦП: Авто\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
             "✓ Memory Layout: 6GB DRAM\n✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Cpu\\cpu_accuracy" to "1",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
@@ -4149,8 +4077,7 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -4184,8 +4111,7 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -4219,8 +4145,7 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -4252,7 +4177,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
         ),
@@ -4285,7 +4209,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
         ),
@@ -4297,7 +4220,7 @@ object GameFixDatabase {
             "✓ Память: 8GB DRAM\n✓ Точность ГПУ: Обычная\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
             "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: Normal\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
-                "System\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "1",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
@@ -4359,8 +4282,7 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -4393,8 +4315,7 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -4427,8 +4348,7 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -4461,7 +4381,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
         ),
@@ -4495,7 +4414,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
         ),
@@ -4529,7 +4447,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
         ),
@@ -4563,7 +4480,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
         ),
@@ -4597,8 +4513,7 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -4631,8 +4546,7 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -4665,8 +4579,7 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1"
+                "System\\memory_layout_mode" to "0"
             )
         ),
 
@@ -4678,7 +4591,7 @@ object GameFixDatabase {
             "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Точность ГПУ: Высокая\n✓ Динамическое состояние: Базовое (EDS1)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
             "✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: High\n✓ Dynamic State: Basic (EDS1)\n✓ Fastmem: Enabled\n✓ Auto Stub: Enabled",
             mapOf(
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\dyna_state" to "1",
                 "Cpu\\cpuopt_fastmem" to "true",
@@ -4715,7 +4628,6 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
-                "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0"
             )
         ),
@@ -4750,8 +4662,7 @@ object GameFixDatabase {
             "✓ Конфигурация памяти: 6 ГБ DRAM (устраняет вылет после предупреждения об эпилепсии)\n✓ Игнорировать прерывания памяти: Включено\n✓ Динамическое состояние: Базовое (EDS1)\n✓ Точность DMA: Safe\n✓ Точность ГПУ: Обычная\n✓ Обратные циклы барьеров: Включено",
             "✓ Memory Layout: 6GB DRAM (Prevents crash after epilepsy warning)\n✓ Ignore Memory Aborts: Enabled\n✓ Dynamic State: Basic (EDS1)\n✓ DMA Accuracy: Safe\n✓ GPU Accuracy: Normal\n✓ Barrier Feedback Loops: Enabled",
             mapOf(
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Renderer\\gpu_accuracy" to "1",
@@ -4783,8 +4694,7 @@ object GameFixDatabase {
             "✓ Конфигурация памяти: 6 ГБ DRAM (устраняет вылет после предупреждения об эпилепсии)\n✓ Игнорировать прерывания памяти: Включено\n✓ Динамическое состояние: Базовое (EDS1)\n✓ Точность DMA: Safe\n✓ Точность ГПУ: Обычная\n✓ Обратные циклы барьеров: Включено",
             "✓ Memory Layout: 6GB DRAM (Prevents crash after epilepsy warning)\n✓ Ignore Memory Aborts: Enabled\n✓ Dynamic State: Basic (EDS1)\n✓ DMA Accuracy: Safe\n✓ GPU Accuracy: Normal\n✓ Barrier Feedback Loops: Enabled",
             mapOf(
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Renderer\\gpu_accuracy" to "1",
@@ -4878,8 +4788,7 @@ object GameFixDatabase {
             "✓ Airplane Mode: Enabled (Skips Battle.net server check)\n✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: High",
             mapOf(
                 "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -4893,8 +4802,7 @@ object GameFixDatabase {
             "✓ Airplane Mode: Enabled (Skips Battle.net server check)\n✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ GPU Accuracy: High",
             mapOf(
                 "System\\airplane_mode" to "true",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -4907,8 +4815,7 @@ object GameFixDatabase {
             "✓ Требуется Firmware 18.0.0+ и системные файлы Mii\n✓ Сжатие ASTC: Отключено\n✓ Реактивный сброс: Включено\n✓ Конфигурация памяти: 6 ГБ DRAM",
             "✓ Firmware 18.0.0+ and Mii system files required\n✓ ASTC Recompression: Uncompressed\n✓ Reactive Flushing: Enabled\n✓ Memory Layout: 6GB DRAM",
             mapOf(
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\use_reactive_flushing" to "true"
             )
         ),
@@ -4920,12 +4827,13 @@ object GameFixDatabase {
             "",
             "",
             mapOf(
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\astc_recompression" to "0"
             )
         ),
-        GameFixProfile(
+ GameFixProfile(
             0x0100AA80194B0000L,
             "Pikmin 4",
             "• Вылет при отключении/переподключении контроллера\n• Случайный краш при смене профилей ввода NPad",
@@ -4933,8 +4841,7 @@ object GameFixDatabase {
             "",
             "",
             mapOf(
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -4945,8 +4852,7 @@ object GameFixDatabase {
             "",
             "",
             mapOf(
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\astc_recompression" to "0"
             )
         ),
@@ -4972,7 +4878,7 @@ object GameFixDatabase {
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\barrier_feedback_loops" to "true",
-                "Core\\memory_layout_mode" to "1"
+                "System\\memory_layout_mode" to "0"
             )
         ),
 
@@ -4988,8 +4894,7 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpuopt_unsafe_unfuse_fma" to "false",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
@@ -5025,8 +4930,7 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpuopt_unsafe_unfuse_fma" to "false",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
@@ -5062,8 +4966,7 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpuopt_unsafe_unfuse_fma" to "false",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
@@ -5105,8 +5008,7 @@ object GameFixDatabase {
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
@@ -5134,7 +5036,6 @@ object GameFixDatabase {
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
-                "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
@@ -5173,8 +5074,7 @@ object GameFixDatabase {
                 "Cpu\\cpu_accuracy" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "System\\airplane_mode" to "true",
             )
         ),
@@ -5333,8 +5233,7 @@ object GameFixDatabase {
                 "Renderer\\rescale_hack" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -5360,8 +5259,7 @@ object GameFixDatabase {
                 "Renderer\\rescale_hack" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
-                "Core\\memory_layout_mode" to "2",
-                "System\\memory_layout_mode" to "2"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -5479,8 +5377,7 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
@@ -5495,8 +5392,7 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "true",
@@ -5516,8 +5412,7 @@ object GameFixDatabase {
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -5567,8 +5462,7 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "System\\airplane_mode" to "true",
@@ -5589,8 +5483,7 @@ object GameFixDatabase {
                 "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -5601,8 +5494,7 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "true",
@@ -5633,8 +5525,7 @@ object GameFixDatabase {
             mapOf(
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\nvdec_emulation" to "1"
             )
         ),
@@ -5660,8 +5551,7 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "true",
@@ -5736,8 +5626,7 @@ object GameFixDatabase {
             mapOf(
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\nvdec_emulation" to "1"
             )
         ),
@@ -5751,8 +5640,7 @@ object GameFixDatabase {
             mapOf(
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\nvdec_emulation" to "1"
             )
         ),
@@ -5766,8 +5654,7 @@ object GameFixDatabase {
             mapOf(
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\nvdec_emulation" to "1"
             )
         ),
@@ -5781,8 +5668,7 @@ object GameFixDatabase {
             mapOf(
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\nvdec_emulation" to "1"
             )
         ),
@@ -5796,8 +5682,7 @@ object GameFixDatabase {
             mapOf(
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\nvdec_emulation" to "1"
             )
         ),
@@ -5840,8 +5725,7 @@ object GameFixDatabase {
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -5901,23 +5785,6 @@ object GameFixDatabase {
             )
         ),
         GameFixProfile(
-            0x0100965017338000L,
-            "Super Mario Party Jamboree",
-            "• Вылеты по нехватке памяти из-за разнообразия 110+ мини-игр и больших досок\n• Зависания при сетевом поиске игроков",
-            "• Out of memory crashes across 110+ minigames and expansive game boards\n• Network socket hangs during matchmaking",
-            "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
-            "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
-            mapOf(
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\use_fast_gpu_time" to "true",
-                "System\\airplane_mode" to "true",
-                "Services\\airplane_mode" to "true"
-            )
-        ),
-        GameFixProfile(
             0x010022201229A000L,
             "Super Robot Wars 30",
             "• Размытие высокодетализированных спрайтов роботов при сжатии ASTC\n• Зависание видеовставок атак при аппаратном NVDEC\n• Вылеты по памяти при 16 DLC",
@@ -5925,8 +5792,7 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\astc_recompression" to "0",
@@ -5941,8 +5807,7 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\astc_recompression" to "0",
@@ -5957,8 +5822,7 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\astc_recompression" to "0",
@@ -5973,8 +5837,7 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\astc_recompression" to "0",
@@ -5989,8 +5852,7 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\astc_recompression" to "0",
@@ -6005,8 +5867,7 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\use_asynchronous_shaders" to "true",
@@ -6021,8 +5882,7 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\use_asynchronous_shaders" to "true",
@@ -6054,8 +5914,7 @@ object GameFixDatabase {
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -6066,8 +5925,7 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\use_asynchronous_shaders" to "true",
@@ -6178,8 +6036,7 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true",
@@ -6194,8 +6051,7 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\use_asynchronous_shaders" to "true",
@@ -6283,8 +6139,7 @@ object GameFixDatabase {
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -6309,8 +6164,7 @@ object GameFixDatabase {
             "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Core\\memory_layout_mode" to "1",
-                "System\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\use_asynchronous_shaders" to "true",
@@ -6318,8 +6172,21 @@ object GameFixDatabase {
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true"
             )
-        )
+        ),
+        GameFixProfile(
+            0x0100535012974000L,
+            "Kingdom Hearts - HD 1.5+2.5 ReMIX",
+            "• Зависание видеороликов при аппаратном декодировании NVDEC\n• Артефакты текстур меню и интерфейса при сжатии ASTC",
+            "• Video playback freezes under hardware NVDEC decoding\n• Menu and UI texture compression artifacts under ASTC recompression",
+            "✓ Программный декодер видео (NVDEC CPU: устранение зависания роликов)\n✓ Сжатие ASTC: Отключено (максимальная четкость интерфейса)",
+            "✓ CPU NVDEC Video Decoding (Fixes cutscene freezes)\n✓ ASTC Recompression: Uncompressed (Max UI clarity)",
+            mapOf(
+                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\astc_recompression" to "0"
+            )
+        ),
     )
+
 
     fun parseProgramId(programIdStr: String): Long {
         val str = programIdStr.trim()
@@ -7169,7 +7036,7 @@ object GameFixDatabase {
             "Cpu\\cpu_accuracy" to "0",
             "Cpu\\cpu_backend" to targetCpuBackend,
             "Services\\airplane_mode" to "false",
-            "Core\\memory_layout_mode" to "0"
+            "System\\memory_layout_mode" to "0"
         )
         fullMap.putAll(profile.settingsMap)
         if (fullMap["System\\airplane_mode"] == "true" || fullMap["Services\\airplane_mode"] == "true") {

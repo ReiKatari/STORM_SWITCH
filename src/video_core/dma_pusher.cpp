@@ -124,12 +124,14 @@ bool DmaPusher::Step() {
             const std::span<const CommandHeader> commands{headers.data(), headers.size()};
             command_resume_offset +=
                 ProcessCommands(commands.subspan(command_resume_offset), command_resume_offset);
-        } else if (ReadGpuWrittenCommands(dma_state.dma_get, static_cast<u32>(header.size))) {
+        } else if (VideoCore::Nx2IsActive() && ReadGpuWrittenCommands(dma_state.dma_get, static_cast<u32>(header.size))) {
             const std::span<const CommandHeader> commands{command_headers.data(), header.size};
             command_resume_offset +=
                 ProcessCommands(commands.subspan(command_resume_offset), command_resume_offset);
         } else {
-            FlushGpuWrittenCommands(dma_state.dma_get, size_t{header.size} * sizeof(u32));
+            if (VideoCore::Nx2IsActive()) {
+                FlushGpuWrittenCommands(dma_state.dma_get, size_t{header.size} * sizeof(u32));
+            }
             Tegra::Memory::GpuGuestMemory<Tegra::CommandHeader, Tegra::Memory::GuestMemoryFlags::UnsafeRead>headers(memory_manager, dma_state.dma_get, header.size, &command_headers);
             const std::span<const CommandHeader> commands{headers.data(), headers.size()};
             command_resume_offset +=
@@ -273,7 +275,7 @@ void DmaPusher::BindRasterizer(VideoCore::RasterizerInterface* rasterizer_) {
 }
 
 bool DmaPusher::IsGpuWrittenCommands(GPUVAddr address, size_t size) {
-    if (!Tegra::g_nx2_ampere.load(std::memory_order_relaxed) || size == 0) {
+    if (!VideoCore::Nx2IsActive() || size == 0) {
         return false;
     }
     for (GPUVAddr page = address & ~GPUVAddr{0xfff}; page < address + size; page += 0x1000) {
@@ -291,8 +293,7 @@ bool DmaPusher::ReadGpuWrittenCommands(GPUVAddr address, u32 count) {
     // front then waits only for the back to run that work and for the GPU to finish the copy, not
     // for everything queued and a cache flush. Pages FlushGpuWrittenCommands flushed whole and no
     // GPU work wrote since are read from guest memory.
-    if (!Tegra::g_nx2_ampere.load(std::memory_order_relaxed) || count == 0 ||
-        rasterizer == nullptr) {
+    if (!VideoCore::Nx2IsActive() || count == 0 || rasterizer == nullptr) {
         return false;
     }
     const GPUVAddr end = address + u64{count} * sizeof(u32);
@@ -341,7 +342,7 @@ void DmaPusher::FlushGpuWrittenCommands(GPUVAddr address, size_t size) {
     // the GPU has written are, or their draws run with an older frame's words (trees vanish).
     // These are the lists ReadGpuWrittenCommands can't take from a copy or guest memory (a page's
     // first list, or pages draws write too).
-    if (!IsGpuWrittenCommands(address, size)) {
+    if (!VideoCore::Nx2IsActive() || !IsGpuWrittenCommands(address, size)) {
         return;
     }
     // The caches belong to the split's back: it first runs what the front queued.

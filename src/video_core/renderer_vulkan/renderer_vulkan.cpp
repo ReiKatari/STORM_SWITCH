@@ -385,9 +385,9 @@ vk::Buffer RendererVulkan::RenderToBuffer(std::span<const Tegra::FramebufferConf
     blit_capture.DrawToFrame(device, rasterizer, &frame, framebuffers, layout, 1, format);
 
     scheduler.RequestOutsideRenderPassOperationContext();
-    scheduler.Record([&](vk::CommandBuffer cmdbuf) {
-        DownloadColorImage(cmdbuf, *frame.image, *dst_buffer,
-                           VkExtent3D{layout.width, layout.height, 1});
+    scheduler.Record([image = *frame.image, buffer = *dst_buffer,
+                      extent = VkExtent3D{layout.width, layout.height, 1}](vk::CommandBuffer cmdbuf) {
+        DownloadColorImage(cmdbuf, image, buffer, extent);
     });
 
     // Ensure the copy is fully completed before saving the capture
@@ -430,8 +430,9 @@ std::vector<u8> RendererVulkan::GetAppletCaptureBuffer() {
         CreateWrappedBuffer(memory_allocator, VideoCore::Capture::TiledSize, MemoryUsage::Download);
 
     scheduler.RequestOutsideRenderPassOperationContext();
-    scheduler.Record([&](vk::CommandBuffer cmdbuf) {
-        DownloadColorImage(cmdbuf, *applet_frame.image, *dst_buffer, CaptureImageExtent);
+    scheduler.Record([image = *applet_frame.image, buffer = *dst_buffer,
+                      extent = CaptureImageExtent](vk::CommandBuffer cmdbuf) {
+        DownloadColorImage(cmdbuf, image, buffer, extent);
     });
 
     // Ensure the copy is fully completed before writing the capture

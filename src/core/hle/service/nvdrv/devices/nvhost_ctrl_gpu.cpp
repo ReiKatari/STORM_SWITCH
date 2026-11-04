@@ -9,6 +9,7 @@
 #include <cstring>
 #include "common/assert.h"
 #include "common/logging.h"
+#include "common/settings.h"
 #include "core/core.h"
 #include "core/core_timing.h"
 #include "core/hle/service/nvdrv/devices/ioctl_serialization.h"
@@ -319,7 +320,9 @@ NvResult nvhost_ctrl_gpu::GetCharacteristics3(
     if (nx2) {
         nx2_caller = true;
         g_nx2_driver = true;
-        Tegra::g_nx2_ampere = true;
+        if (Settings::IsCurrentProgramSwitch2()) {
+            Tegra::g_nx2_ampere = true;
+        }
         ApplyNx2Characteristics(params.gc);
         params.gpu_characteristics_buf_size = Nx2CharacteristicsSize;
         LOG_WARNING(Service_NVDRV, "Switch 2 caller, reporting Ampere chip 0x17E");
