@@ -2226,4 +2226,17 @@ Lancez un jeu ou connectez-vous à un autre appareil.</string>
     <string name="save_state_unsupported_toast">Sauvegardes rapides non prises en charge pour ce jeu. Utilisez les sauvegardes en jeu. Activez le mode expérimental dans Paramètres → Système.</string>
     <string name="save_state_experimental_warning">Sauvegardes rapides expérimentales : le chargement peut figer le jeu. Gardez vos sauvegardes en jeu.</string>
     <string name="save_states_mode_disabled_toast">Les sauvegardes rapides sont désactivées dans Paramètres → Système.</string>
+
+    <string name="performance_preset">Profil de performance</string>
+    <string name="performance_preset_description">Sélectionner un profil d\'optimisation pour équilibrer performances, batterie et qualité visuelle</string>
+    <string name="performance_preset_battery">🔋 Économie de batterie</string>
+    <string name="performance_preset_balanced">⚖️ Équilibré (Recommandé)</string>
+    <string name="performance_preset_quality">🚀 Qualité maximale</string>
+    <string name="performance_preset_custom">⚙️ Personnalisé</string>
+    <string name="performance_preset_applied">Profil de performance appliqué</string>
+    <string name="setting_conflict_warning">Conflit de paramètres détecté</string>
+    <string name="setting_conflict_fix">Corriger</string>
+    <string name="profile_override_badge">défini par le profil du jeu</string>
+    <string name="profile_override_revert">Rétablir les paramètres globaux</string>
+    <string name="cpu_unsafe_disabled_explanation">Les options CPU non sécurisées ne sont actives que lorsque la précision CPU est réglée sur \'Non sécurisée\'.</string>
 </resources>

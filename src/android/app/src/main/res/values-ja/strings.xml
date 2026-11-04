@@ -2278,4 +2278,17 @@
     <string name="save_state_unsupported_toast">このゲームはクイックセーブに対応していません。ゲーム内セーブをご利用ください。「設定 → システム」で実験的モードを有効化できます。</string>
     <string name="save_state_experimental_warning">クイックセーブは実験的機能です。ロード時にフリーズする可能性があります。</string>
     <string name="save_states_mode_disabled_toast">クイックセーブは「設定 → システム」で無効化されています。</string>
+
+    <string name="performance_preset">パフォーマンスプリセット</string>
+    <string name="performance_preset_description">パフォーマンス、バッテリー消費、画質のバランスを考慮した最適化プリセットを選択します</string>
+    <string name="performance_preset_battery">🔋 バッテリー節約</string>
+    <string name="performance_preset_balanced">⚖️ バランス（推奨）</string>
+    <string name="performance_preset_quality">🚀 最高品質</string>
+    <string name="performance_preset_custom">⚙️ カスタム</string>
+    <string name="performance_preset_applied">パフォーマンスプリセットを適用しました</string>
+    <string name="setting_conflict_warning">設定の競合が検出されました</string>
+    <string name="setting_conflict_fix">修正</string>
+    <string name="profile_override_badge">ゲームプロファイルで指定</string>
+    <string name="profile_override_revert">グローバル設定に戻す</string>
+    <string name="cpu_unsafe_disabled_explanation">非安全な CPU 最適化は、CPU 精度が「非安全」に設定されている場合のみ有効です。</string>
 </resources>

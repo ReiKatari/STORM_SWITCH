@@ -28,6 +28,11 @@ BufferCache<P>::BufferCache(Tegra::MaxwellDeviceMemoryManager& device_memory_, R
     // Ensure the first slot is used for the null buffer
     void(slot_buffers.insert(runtime, NullBufferParams{}));
     gpu_modified_ranges.Clear();
+#ifdef __ANDROID__
+    use_optimized_vertex_buffers = Settings::values.use_optimized_vertex_buffers.GetValue();
+#else
+    use_optimized_vertex_buffers = true;
+#endif
     inline_buffer_id = NULL_BUFFER_ID;
 #ifdef YUZU_LEGACY
     immediately_free = (Settings::values.vram_usage_mode.GetValue() == Settings::VramUsageMode::Aggressive);
@@ -832,6 +837,9 @@ bool BufferCache<P>::IsRegionCpuModified(DAddr addr, size_t size) {
 
 template <class P>
 void BufferCache<P>::BindHostIndexBuffer() {
+    if (channel_state->index_buffer.buffer_id == NULL_BUFFER_ID || channel_state->index_buffer.size == 0) {
+        return;
+    }
     Buffer& buffer = slot_buffers[channel_state->index_buffer.buffer_id];
     TouchBuffer(buffer, channel_state->index_buffer.buffer_id);
     const u32 offset = buffer.Offset(channel_state->index_buffer.device_addr);
@@ -842,6 +850,10 @@ void BufferCache<P>::BindHostIndexBuffer() {
     } else {
         if constexpr (USE_MEMORY_MAPS_FOR_UPLOADS) {
             auto upload_staging = runtime.UploadStagingBuffer(size);
+            if (upload_staging.mapped_span.empty() || upload_staging.buffer == VK_NULL_HANDLE) {
+                LOG_ERROR(HW_GPU, "Failed to allocate staging buffer for inline index upload, skipping");
+                return;
+            }
             std::array<BufferCopy, 1> copies{{BufferCopy{.src_offset = upload_staging.offset, .dst_offset = 0, .size = size}}};
             std::memcpy(upload_staging.mapped_span.data(), draw_state.inline_index_draw_indexes.data(), size);
             runtime.CopyBuffer(buffer, upload_staging.buffer, copies, true);
@@ -897,11 +909,7 @@ void BufferCache<P>::UpdateVertexBufferSlot(u32 index, const Binding& binding) {
 template <class P>
 void BufferCache<P>::BindHostVertexBuffers() {
 
-#ifdef __ANDROID__
-    const bool use_optimized_vertex_buffers = Settings::values.use_optimized_vertex_buffers.GetValue();
-#else
-    constexpr bool use_optimized_vertex_buffers = true;
-#endif
+// Using cached member use_optimized_vertex_buffers
 
     if (use_optimized_vertex_buffers) {
         auto& flags = maxwell3d->dirty.flags;
@@ -1367,18 +1375,32 @@ void BufferCache<P>::UpdateIndexBuffer() {
 
     const GPUVAddr gpu_addr_begin = index_buffer_ref.StartAddress();
     const GPUVAddr gpu_addr_end = index_buffer_ref.EndAddress();
+    if (gpu_addr_end <= gpu_addr_begin || index_buffer_ref.count == 0) {
+        channel_state->index_buffer = NULL_BINDING;
+        return;
+    }
+
     const std::optional<DAddr> device_addr = gpu_memory->GpuToCpuAddress(gpu_addr_begin);
-    const u32 address_size = static_cast<u32>(gpu_addr_end - gpu_addr_begin);
-    const u32 draw_size = (index_buffer_ref.count + index_buffer_ref.first) * u32(index_buffer_ref.FormatSizeInBytes());
-    const u32 size = (std::min)(address_size, draw_size);
+    const u64 address_size = gpu_addr_end - gpu_addr_begin;
+    const u64 total_indices = static_cast<u64>(index_buffer_ref.count) + static_cast<u64>(index_buffer_ref.first);
+    const u64 draw_size = total_indices * static_cast<u64>(index_buffer_ref.FormatSizeInBytes());
+    u64 size = (std::min)(address_size, draw_size);
+
+    constexpr u64 MAX_INDEX_BUFFER_SIZE = 64_MiB;
+    if (!gpu_memory->IsWithinGPUAddressRange(gpu_addr_end) || size >= MAX_INDEX_BUFFER_SIZE) {
+        size = static_cast<u64>(gpu_memory->MaxContinuousRange(gpu_addr_begin, size));
+    }
+    size = (std::min)(size, MAX_INDEX_BUFFER_SIZE);
+
     if (size == 0 || !device_addr) {
         channel_state->index_buffer = NULL_BINDING;
         return;
     }
+    const u32 clamped_size = static_cast<u32>(size);
     channel_state->index_buffer = Binding{
         .device_addr = *device_addr,
-        .size = size,
-        .buffer_id = FindBuffer(*device_addr, size),
+        .size = clamped_size,
+        .buffer_id = FindBuffer(*device_addr, clamped_size),
     };
 }
 
@@ -1852,6 +1874,10 @@ void BufferCache<P>::MappedUploadMemory([[maybe_unused]] Buffer& buffer,
     if constexpr (USE_MEMORY_MAPS) {
         auto upload_staging = runtime.UploadStagingBuffer(total_size_bytes);
         const std::span<u8> staging_pointer = upload_staging.mapped_span;
+        if (staging_pointer.empty() || upload_staging.buffer == VK_NULL_HANDLE) {
+            LOG_ERROR(HW_GPU, "Failed to allocate staging buffer for upload ({} bytes), skipping upload", total_size_bytes);
+            return;
+        }
         for (BufferCopy& copy : copies) {
             u8* const src_pointer = staging_pointer.data() + copy.src_offset;
             const DAddr device_addr = buffer.CpuAddr() + copy.dst_offset;
@@ -1895,6 +1921,10 @@ void BufferCache<P>::InlineMemoryImplementation(DAddr dest_address, size_t copy_
 
     if constexpr (USE_MEMORY_MAPS_FOR_UPLOADS) {
         auto upload_staging = runtime.UploadStagingBuffer(copy_size);
+        if (upload_staging.mapped_span.empty() || upload_staging.buffer == VK_NULL_HANDLE) {
+            LOG_ERROR(HW_GPU, "Failed to allocate staging buffer for inline upload, skipping");
+            return;
+        }
         std::array copies{BufferCopy{
             .src_offset = upload_staging.offset,
             .dst_offset = buffer.Offset(dest_address),

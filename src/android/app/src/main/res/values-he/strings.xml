@@ -2041,4 +2041,17 @@
     <string name="save_state_unsupported_toast">Save states are not supported for this game. Use in-game saves. Experimental mode can be enabled in Settings → System.</string>
     <string name="save_state_experimental_warning">Save states are experimental: loading may freeze the game. Keep in-game saves.</string>
     <string name="save_states_mode_disabled_toast">Save states are disabled in Settings → System.</string>
+
+    <string name="performance_preset">פרופיל ביצועים</string>
+    <string name="performance_preset_description">בחר פרופיל מותאם לאיזון בין ביצועים, סוללה ואיכות</string>
+    <string name="performance_preset_battery">🔋 חסכון בסוללה</string>
+    <string name="performance_preset_balanced">⚖️ מאוזן (מומלץ)</string>
+    <string name="performance_preset_quality">🚀 איכות מרבית</string>
+    <string name="performance_preset_custom">⚙️ מותאם אישית</string>
+    <string name="performance_preset_applied">פרופיל ביצועים הוחל</string>
+    <string name="setting_conflict_warning">זוהתה התנגשות הגדרות</string>
+    <string name="setting_conflict_fix">תקן</string>
+    <string name="profile_override_badge">הוגדר לפי פרופיל משחק</string>
+    <string name="profile_override_revert">שחזר לגלובלי</string>
+    <string name="cpu_unsafe_disabled_explanation">אפשרויות מעבד לא בטוחות פעילות רק כאשר דיוק המעבד מוגדר כ\'לא בטוח\'.</string>
 </resources>

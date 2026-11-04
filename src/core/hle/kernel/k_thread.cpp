@@ -1150,6 +1150,9 @@ namespace Kernel {
     }
 
     Result KThread::Run(KernelCore& kernel) {
+        if (this == nullptr) {
+            return ResultInvalidState;
+        }
         while (true) {
             KScopedSchedulerLock lk{kernel};
 

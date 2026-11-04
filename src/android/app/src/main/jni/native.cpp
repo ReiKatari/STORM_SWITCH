@@ -984,10 +984,16 @@ void JNICALL Java_org_yuzu_yuzu_1emu_NativeLibrary_initializeGpuDriver(JNIEnv* e
         if (tu_breadcrumbs) LOG_INFO(Frontend, "[Freedreno]   TU_BREADCRUMBS={}", tu_breadcrumbs);
     }
 
+    const auto custom_driver_name_str = Common::Android::GetJString(env, custom_driver_name);
+    const auto custom_driver_dir_str = Common::Android::GetJString(env, custom_driver_dir);
+    if (!custom_driver_name_str.empty() || !custom_driver_dir_str.empty() || tu_debug != nullptr) {
+        Core::GameFixDatabase::SetDetectedGpuVendor("adreno");
+    }
+
     EmulationSession::GetInstance().InitializeGpuDriver(
         Common::Android::GetJString(env, hook_lib_dir),
-        Common::Android::GetJString(env, custom_driver_dir),
-        Common::Android::GetJString(env, custom_driver_name),
+        custom_driver_dir_str,
+        custom_driver_name_str,
         Common::Android::GetJString(env, file_redirect_dir));
 }
 

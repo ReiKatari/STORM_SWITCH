@@ -70,6 +70,13 @@ public:
 
     /// Save all button configurations to settings file
     void ApplyConfiguration();
+    void SetupConflictBanner();
+    void CheckConflicts();
+
+    QWidget* m_conflict_banner{nullptr};
+    QLabel* m_conflict_label{nullptr};
+    QPushButton* m_conflict_fix_btn{nullptr};
+    std::function<void()> m_conflict_current_fix;
 
     void LoadFromFile(FileSys::VirtualFile file_);
 

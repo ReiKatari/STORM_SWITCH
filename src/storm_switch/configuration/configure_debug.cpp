@@ -96,6 +96,13 @@ void ConfigureDebug::SetConfiguration() {
     ui->reporting_services->setChecked(Settings::values.reporting_services.GetValue());
     ui->dump_audio_commands->setChecked(Settings::values.dump_audio_commands.GetValue());
     ui->quest_flag->setChecked(Settings::values.quest_flag.GetValue());
+    ui->quest_flag->setVisible(false);
+    if (ui->serial_battery_edit) {
+        ui->serial_battery_edit->setVisible(false);
+    }
+    if (ui->serial_board_edit) {
+        ui->serial_board_edit->setVisible(false);
+    }
     ui->use_dev_keys->setChecked(Settings::values.use_dev_keys.GetValue());
     ui->use_debug_asserts->setChecked(Settings::values.use_debug_asserts.GetValue());
     ui->use_auto_stub->setChecked(Settings::values.use_auto_stub.GetValue());

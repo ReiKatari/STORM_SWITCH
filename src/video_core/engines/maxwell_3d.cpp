@@ -38,6 +38,7 @@ Maxwell3D::Maxwell3D(MemoryManager& memory_manager_)
     , macro_engine(true)
 #endif
     , upload_state{memory_manager, regs.upload}
+    , use_reactive_flushing_cached{Settings::values.use_reactive_flushing.GetValue()}
 {
     dirty.flags.flip();
     InitializeRegisterDefaults();
@@ -266,7 +267,7 @@ void Maxwell3D::ProcessMacro(Core::System& system, u32 method, const u32* base_s
 }
 
 void Maxwell3D::RefreshParametersImpl() {
-    if (!Settings::IsGPULevelHigh() && !Settings::values.use_reactive_flushing.GetValue()) {
+    if (!Settings::IsGPULevelHigh() && !use_reactive_flushing_cached) {
         return;
     }
     size_t total_params = 0;

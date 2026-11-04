@@ -2034,4 +2034,17 @@
     <string name="save_state_unsupported_toast">Save states are not supported for this game. Use in-game saves. Experimental mode can be enabled in Settings → System.</string>
     <string name="save_state_experimental_warning">Save states are experimental: loading may freeze the game. Keep in-game saves.</string>
     <string name="save_states_mode_disabled_toast">Save states are disabled in Settings → System.</string>
+
+    <string name="performance_preset">الإعداد المسبق للأداء</string>
+    <string name="performance_preset_description">حدد ملف تعريف للتحسين لموازنة الأداء وعمر البطارية وجودة الرسوم</string>
+    <string name="performance_preset_battery">🔋 توفير البطارية</string>
+    <string name="performance_preset_balanced">⚖️ متوازن (مستحسن)</string>
+    <string name="performance_preset_quality">🚀 أقصى جودة</string>
+    <string name="performance_preset_custom">⚙️ مخصص</string>
+    <string name="performance_preset_applied">تم تطبيق الإعداد المسبق للأداء</string>
+    <string name="setting_conflict_warning">تم اكتشاف تعارض في الإعدادات</string>
+    <string name="setting_conflict_fix">إصلاح</string>
+    <string name="profile_override_badge">محدد بواسطة ملف تعريف اللعبة</string>
+    <string name="profile_override_revert">استعادة الإعدادات العامة</string>
+    <string name="cpu_unsafe_disabled_explanation">خيارات المعالج غير الآمنة نشطة فقط عند تعيين دقة المعالج على \'غير آمن\'.</string>
 </resources>

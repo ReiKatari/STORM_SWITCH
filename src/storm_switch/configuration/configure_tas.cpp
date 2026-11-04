@@ -37,6 +37,8 @@ void ConfigureTasDialog::LoadConfiguration() {
     ui->tas_pause_on_load->setChecked(Settings::values.pause_tas_on_load.GetValue());
     ui->tas_show_recording_dialog->setChecked(
         Settings::values.tas_show_recording_dialog.GetValue());
+    ui->tas_pause_on_load->setVisible(false);
+    ui->tas_show_recording_dialog->setVisible(false);
 }
 
 void ConfigureTasDialog::ApplyConfiguration() {

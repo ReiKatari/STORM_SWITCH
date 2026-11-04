@@ -142,7 +142,7 @@ ComputePipeline::ComputePipeline(const Device& device_, Scheduler& scheduler, vk
         }
     }};
     if (thread_worker) {
-        thread_worker->QueueWork(std::move(func));
+        thread_worker->QueueWork(std::move(func), Common::ThreadWorker::Priority::Low);
     } else {
         func();
     }

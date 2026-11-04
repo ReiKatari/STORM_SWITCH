@@ -1247,10 +1247,19 @@ void KernelCore::SuspendEmulation(bool suspended) {
 }
 
 void KernelCore::ShutdownCores() {
+    impl->is_shutting_down.store(true, std::memory_order_relaxed);
     impl->TerminateAllProcesses();
+    SetCurrentThread(*this, nullptr);
     KScopedSchedulerLock lk{*this};
-    for (auto* thread : impl->shutdown_threads)
+    for (auto* thread : impl->shutdown_threads) {
+        if (!thread) {
+            continue;
+        }
+        if (thread->GetState() != ThreadState::Initialized) {
+            continue;
+        }
         void(thread->Run(*this));
+    }
 }
 
 bool KernelCore::IsMulticore() const {

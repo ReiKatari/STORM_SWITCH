@@ -2910,4 +2910,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="save_state_unsupported_toast">Save states are not supported for this game. Use in-game saves. Experimental mode can be enabled in Settings → System.</string>
     <string name="save_state_experimental_warning">Save states are experimental: loading may freeze the game. Keep in-game saves.</string>
     <string name="save_states_mode_disabled_toast">Save states are disabled in Settings → System.</string>
+
+    <string name="performance_preset">प्रदर्शन प्रीसेट</string>
+    <string name="performance_preset_description">प्रदर्शन, बैटरी और दृश्य गुणवत्ता को संतुलित करने के लिए अनुकूलित प्रीसेट चुनें</string>
+    <string name="performance_preset_battery">🔋 बैटरी सेवर</string>
+    <string name="performance_preset_balanced">⚖️ संतुलित (अनुशंसित)</string>
+    <string name="performance_preset_quality">🚀 अधिकतम गुणवत्ता</string>
+    <string name="performance_preset_custom">⚙️ कस्टम</string>
+    <string name="performance_preset_applied">प्रदर्शन प्रीसेट लागू किया गया</string>
+    <string name="setting_conflict_warning">सेटिंग्स टकराव का पता चला</string>
+    <string name="setting_conflict_fix">ठीक करें</string>
+    <string name="profile_override_badge">गेम प्रोफ़ाइल द्वारा निर्दिष्ट</string>
+    <string name="profile_override_revert">ग्लोबल पर रीसेट करें</string>
+    <string name="cpu_unsafe_disabled_explanation">असुरक्षित CPU विकल्प केवल तभी सक्रिय होते हैं जब CPU सटीकता \'असुरक्षित\' पर सेट हो।</string>
 </resources>

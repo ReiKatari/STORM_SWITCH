@@ -1,3 +1,4 @@
+#include <QLabel>
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -38,6 +39,14 @@ ConfigureCpu::ConfigureCpu(const Core::System& system_,
 #ifdef HAS_NCE
     ui->backend_group->setVisible(true);
 #endif
+
+    m_unsafe_explanation_label = new QLabel(this);
+    m_unsafe_explanation_label->setWordWrap(true);
+    m_unsafe_explanation_label->setStyleSheet(QStringLiteral(
+        "color: #e0b040; background: rgba(224, 176, 64, 0.12); padding: 8px; border-radius: 6px; border: 1px solid rgba(224, 176, 64, 0.3); font-size: 11px;"));
+    if (ui->unsafe_group && ui->unsafe_group->layout()) {
+        ui->unsafe_group->layout()->addWidget(m_unsafe_explanation_label);
+    }
 }
 
 ConfigureCpu::~ConfigureCpu() = default;
@@ -136,9 +145,27 @@ void ConfigureCpu::UpdateGroup() {
     }
     const int accuracy = accuracy_combobox->currentIndex();
     const int backend = backend_combobox->currentIndex();
-    // TODO(crueter): see if this works on NCE
-    ui->unsafe_group->setVisible(accuracy == static_cast<int>(Settings::CpuAccuracy::Unsafe) &&
-                                 backend == static_cast<int>(Settings::CpuBackend::Dynarmic));
+    const bool is_unsafe = (accuracy == static_cast<int>(Settings::CpuAccuracy::Unsafe) &&
+                            backend == static_cast<int>(Settings::CpuBackend::Dynarmic));
+
+    ui->unsafe_group->setVisible(true);
+    ui->unsafe_widget->setEnabled(is_unsafe);
+
+    if (m_unsafe_explanation_label) {
+        if (is_unsafe) {
+            m_unsafe_explanation_label->setStyleSheet(QStringLiteral(
+                "color: #55ff99; background: rgba(85, 255, 153, 0.12); padding: 8px; border-radius: 6px; border: 1px solid rgba(85, 255, 153, 0.3); font-size: 11px;"));
+            m_unsafe_explanation_label->setText(StormLang(
+                QStringLiteral("✓ Точность «Небезопасно» активна: включённые оптимизации применяются напрямую в Dynarmic JIT."),
+                QStringLiteral("✓ Unsafe accuracy is active: selected optimizations are applied directly in Dynarmic JIT.")));
+        } else {
+            m_unsafe_explanation_label->setStyleSheet(QStringLiteral(
+                "color: #e0b040; background: rgba(224, 176, 64, 0.12); padding: 8px; border-radius: 6px; border: 1px solid rgba(224, 176, 64, 0.3); font-size: 11px;"));
+            m_unsafe_explanation_label->setText(StormLang(
+                QStringLiteral("⚠️ Опции ниже отключены и будут проигнорированы движком Dynarmic, так как точность процессора установлена в «Авто/Точно». Для активации выберите точность «Небезопасно»."),
+                QStringLiteral("⚠️ The options below are disabled and ignored by Dynarmic because CPU accuracy is set to Auto/Accurate. Select 'Unsafe' accuracy to enable.")));
+        }
+    }
 }
 
 void ConfigureCpu::ApplyConfiguration() {

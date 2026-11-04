@@ -42,6 +42,11 @@ void ConfigureGraphicsAdvanced::Setup(const ConfigurationShared::Builder& builde
 
     for (auto setting :
          Settings::values.linkage.by_category[Settings::Category::RendererAdvanced]) {
+        // Hide duplicate setting (controlled via Graphics -> Frame Generation)
+        if (setting->Id() == Settings::values.enable_frame_interpolation.Id()) {
+            continue;
+        }
+
         ConfigurationShared::Widget* widget = builder.BuildWidget(setting, apply_funcs);
 
         if (widget == nullptr) {

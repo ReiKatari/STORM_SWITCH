@@ -2108,4 +2108,17 @@
     <string name="save_state_unsupported_toast">Salvataggi rapidi non supportati per questo gioco. Usa i salvataggi di gioco. Modalità sperimentale in Impostazioni → Sistema.</string>
     <string name="save_state_experimental_warning">Salvataggi rapidi sperimentali: il caricamento può bloccare il gioco. Salva normalmente.</string>
     <string name="save_states_mode_disabled_toast">Salvataggi rapidi disattivati in Impostazioni → Sistema.</string>
+
+    <string name="performance_preset">Profilo di prestazioni</string>
+    <string name="performance_preset_description">Seleziona un profilo per bilanciare prestazioni, consumo di batteria e qualità visiva</string>
+    <string name="performance_preset_battery">🔋 Risparmio batteria</string>
+    <string name="performance_preset_balanced">⚖️ Bilanciato (Consigliato)</string>
+    <string name="performance_preset_quality">🚀 Massima qualità</string>
+    <string name="performance_preset_custom">⚙️ Personalizzato</string>
+    <string name="performance_preset_applied">Profilo di prestazioni applicato</string>
+    <string name="setting_conflict_warning">Rilevato conflitto di impostazioni</string>
+    <string name="setting_conflict_fix">Correggi</string>
+    <string name="profile_override_badge">impostato da profilo gioco</string>
+    <string name="profile_override_revert">Ripristina globale</string>
+    <string name="cpu_unsafe_disabled_explanation">Le opzioni CPU non sicure sono attive solo quando la precisione CPU è impostata su \'Non sicuro\'.</string>
 </resources>

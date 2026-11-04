@@ -2045,4 +2045,17 @@
     <string name="save_state_unsupported_toast">Save states are not supported for this game. Use in-game saves. Experimental mode can be enabled in Settings → System.</string>
     <string name="save_state_experimental_warning">Save states are experimental: loading may freeze the game. Keep in-game saves.</string>
     <string name="save_states_mode_disabled_toast">Save states are disabled in Settings → System.</string>
+
+    <string name="performance_preset">Profil performansi</string>
+    <string name="performance_preset_description">Izaberite optimizovani profil konfiguracije</string>
+    <string name="performance_preset_battery">🔋 Ušteda baterije</string>
+    <string name="performance_preset_balanced">⚖️ Uravnoteženo (Preporučeno)</string>
+    <string name="performance_preset_quality">🚀 Maksimalni kvalitet</string>
+    <string name="performance_preset_custom">⚙️ Prilagođeno</string>
+    <string name="performance_preset_applied">Primenjen profil performansi</string>
+    <string name="setting_conflict_warning">Otkriven konflikt podešavanja</string>
+    <string name="setting_conflict_fix">Ispravi</string>
+    <string name="profile_override_badge">definisano profilom igre</string>
+    <string name="profile_override_revert">Vrati na globalno</string>
+    <string name="cpu_unsafe_disabled_explanation">Nesigurne CPU opcije su aktivne samo kada je preciznost procesora podešena na \'Nesigurno\'.</string>
 </resources>

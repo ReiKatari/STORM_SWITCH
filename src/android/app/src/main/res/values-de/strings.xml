@@ -2221,4 +2221,17 @@ Starte ein Spiel oder verbinde dich mit einem anderen Gerät.</string>
     <string name="save_state_unsupported_toast">Schnellspeichern wird für dieses Spiel nicht unterstützt. Bitte im Spiel speichern. Experimenteller Modus unter Einstellungen → System.</string>
     <string name="save_state_experimental_warning">Schnellspeichern ist experimentell: Das Laden kann zum Einfrieren führen. Regulär speichern.</string>
     <string name="save_states_mode_disabled_toast">Schnellspeichern ist unter Einstellungen → System deaktiviert.</string>
+
+    <string name="performance_preset">Leistungsprofil</string>
+    <string name="performance_preset_description">Optimiertes Konfigurationsprofil für Leistung, Akku und Bildqualität wählen</string>
+    <string name="performance_preset_battery">🔋 Energiesparmodus</string>
+    <string name="performance_preset_balanced">⚖️ Ausbalanciert (Empfohlen)</string>
+    <string name="performance_preset_quality">🚀 Maximale Qualität</string>
+    <string name="performance_preset_custom">⚙️ Benutzerdefiniert</string>
+    <string name="performance_preset_applied">Leistungsprofil angewendet</string>
+    <string name="setting_conflict_warning">Einstellungskonflikt erkannt</string>
+    <string name="setting_conflict_fix">Beheben</string>
+    <string name="profile_override_badge">durch Spielprofil festgelegt</string>
+    <string name="profile_override_revert">Auf Standard zurücksetzen</string>
+    <string name="cpu_unsafe_disabled_explanation">Unsichere CPU-Optionen sind nur aktiv, wenn die CPU-Genauigkeit auf \'Unsicher\' eingestellt ist.</string>
 </resources>

@@ -196,6 +196,7 @@ public:
     bool dma_increment_once : 1 = false;
     bool signal_sync : 1 = false;
     bool synced : 1 = false;
+    bool sync_memory_operations_cached : 1 = false;
 };
 
 } // namespace Tegra

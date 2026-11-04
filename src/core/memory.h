@@ -75,6 +75,11 @@ public:
     void Reset();
 
     /**
+     * Refreshes cached settings (such as reactive flushing).
+     */
+    void RefreshSettings();
+
+    /**
      * Changes the currently active page table to that of the given process instance.
      *
      * @param process The process to use the page table of.

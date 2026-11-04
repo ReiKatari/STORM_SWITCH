@@ -2187,4 +2187,17 @@
     <string name="save_state_unsupported_toast">الحفظ السريع غير مدعوم لهذه اللعبة. استخدم الحفظ داخل اللعبة. يمكن تفعيل الوضع التجريبي في الإعدادات ← النظام.</string>
     <string name="save_state_experimental_warning">الحفظ السريع ميزة تجريبية: قد يؤدي التحميل إلى تجميد اللعبة. احتفظ بنسخ حفظ عادية.</string>
     <string name="save_states_mode_disabled_toast">الحفظ السريع معطل في الإعدادات ← النظام.</string>
+
+    <string name="performance_preset">الإعداد المسبق للأداء</string>
+    <string name="performance_preset_description">حدد ملف تعريف للتحسين لموازنة الأداء وعمر البطارية وجودة الرسوم</string>
+    <string name="performance_preset_battery">🔋 توفير البطارية</string>
+    <string name="performance_preset_balanced">⚖️ متوازن (مستحسن)</string>
+    <string name="performance_preset_quality">🚀 أقصى جودة</string>
+    <string name="performance_preset_custom">⚙️ مخصص</string>
+    <string name="performance_preset_applied">تم تطبيق الإعداد المسبق للأداء</string>
+    <string name="setting_conflict_warning">تم اكتشاف تعارض في الإعدادات</string>
+    <string name="setting_conflict_fix">إصلاح</string>
+    <string name="profile_override_badge">محدد بواسطة ملف تعريف اللعبة</string>
+    <string name="profile_override_revert">استعادة الإعدادات العامة</string>
+    <string name="cpu_unsafe_disabled_explanation">خيارات المعالج غير الآمنة نشطة فقط عند تعيين دقة المعالج على \'غير آمن\'.</string>
 </resources>

@@ -591,15 +591,16 @@ Id EmitImageSampleExplicitLod(EmitContext& ctx, IR::Inst* inst, const IR::Value&
                      &EmitContext::OpImageSampleExplicitLod, ctx, inst, result_type,
                      Texture(ctx, info, index), coords, operands.Mask(), operands.Span());
     if (Settings::values.fix_bloom_effects.GetValue() && !is_integer) {
-        std::array<Id, 4> components;
-        for (u32 c = 0; c < 4; ++c) {
-            Id comp = ctx.OpCompositeExtract(ctx.F32[1], result, c);
-            const Id is_not_nan = ctx.OpFOrdEqual(ctx.U1, comp, comp);
-            comp = ctx.OpSelect(ctx.F32[1], is_not_nan, comp, ctx.Const(0.0f));
-            comp = ctx.OpFClamp(ctx.F32[1], comp, ctx.Const(-65000.0f), ctx.Const(65000.0f));
-            components[c] = comp;
-        }
-        result = ctx.OpCompositeConstruct(ctx.F32[4], components[0], components[1], components[2], components[3]);
+        const Id bvec4 = ctx.TypeVector(ctx.U1, 4);
+        const Id is_not_nan = ctx.OpFOrdEqual(bvec4, result, result);
+        const Id zero_f32 = ctx.Const(0.0f);
+        const Id zero_vec = ctx.ConstantComposite(ctx.F32[4], zero_f32, zero_f32, zero_f32, zero_f32);
+        const Id clamped = ctx.OpSelect(ctx.F32[4], is_not_nan, result, zero_vec);
+        const Id min_f32 = ctx.Const(-65000.0f);
+        const Id min_vec = ctx.ConstantComposite(ctx.F32[4], min_f32, min_f32, min_f32, min_f32);
+        const Id max_f32 = ctx.Const(65000.0f);
+        const Id max_vec = ctx.ConstantComposite(ctx.F32[4], max_f32, max_f32, max_f32, max_f32);
+        result = ctx.OpFClamp(ctx.F32[4], clamped, min_vec, max_vec);
     }
     return is_integer ? ctx.OpBitcast(ctx.F32[4], result) : result;
 }

@@ -2091,4 +2091,17 @@
     <string name="save_state_unsupported_toast">이 게임은 빠른 저장을 지원하지 않습니다. 게임 내 저장을 사용하세요. 설정 → 시스템에서 활성화 가능합니다.</string>
     <string name="save_state_experimental_warning">빠른 저장은 실험적 기능입니다. 불러오기 시 게임이 멈출 수 있습니다.</string>
     <string name="save_states_mode_disabled_toast">설정 → 시스템에서 빠른 저장이 비활성화되었습니다.</string>
+
+    <string name="performance_preset">성능 프리셋</string>
+    <string name="performance_preset_description">성능, 배터리 소모 및 화질의 균형을 맞춘 최적화 프리셋을 선택합니다</string>
+    <string name="performance_preset_battery">🔋 배터리 절약</string>
+    <string name="performance_preset_balanced">⚖️ 균형 (권장)</string>
+    <string name="performance_preset_quality">🚀 최고 품질</string>
+    <string name="performance_preset_custom">⚙️ 사용자 지정</string>
+    <string name="performance_preset_applied">성능 프리셋이 적용되었습니다</string>
+    <string name="setting_conflict_warning">설정 충돌 감지됨</string>
+    <string name="setting_conflict_fix">수정</string>
+    <string name="profile_override_badge">게임 프로필에 의해 지정됨</string>
+    <string name="profile_override_revert">전역 설정으로 복원</string>
+    <string name="cpu_unsafe_disabled_explanation">안전하지 않은 CPU 최적화는 CPU 정확도가 \'안전하지 않음\'으로 설정된 경우에만 활성화됩니다.</string>
 </resources>

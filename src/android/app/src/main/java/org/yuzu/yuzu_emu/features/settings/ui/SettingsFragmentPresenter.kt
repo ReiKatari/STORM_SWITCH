@@ -6,6 +6,8 @@
 
 package org.yuzu.yuzu_emu.features.settings.ui
 
+import org.yuzu.yuzu_emu.features.settings.model.SettingConflicts
+
 
 
 import android.annotation.SuppressLint
@@ -399,6 +401,15 @@ class SettingsFragmentPresenter(
 
         }
 
+        val conflicts = SettingConflicts.detectConflicts()
+        if (conflicts.isNotEmpty()) {
+            val isRu = try {
+                org.yuzu.yuzu_emu.YuzuApplication.getLocalizedContext().resources.configuration.locales[0].language.startsWith("ru")
+            } catch (_: Exception) { false }
+            val c = conflicts.first()
+            sl.add(0, HeaderSetting(titleString = "⚠️ " + c.localizedTitle(isRu) + ": " + c.localizedMessage(isRu)))
+        }
+
         settingsList = sl
 
         adapter.submitList(settingsList) {
@@ -718,6 +729,8 @@ class SettingsFragmentPresenter(
     private fun addGraphicsSettings(sl: ArrayList<SettingsItem>) {
 
         sl.apply {
+
+            add(IntSetting.PERFORMANCE_PRESET.key)
 
             add(IntSetting.RENDERER_RESOLUTION.key)
 

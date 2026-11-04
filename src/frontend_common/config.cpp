@@ -488,6 +488,13 @@ void Config::ReadRendererValues() {
     ReadCategory(Settings::Category::RendererExtensions);
     ReadCategory(Settings::Category::RendererDebug);
 
+    // Synchronize duplicate frame generation flags
+    if (Settings::values.enable_frame_interpolation.GetValue() && !Settings::values.frame_gen.GetValue()) {
+        Settings::values.frame_gen.SetValue(true);
+    } else if (Settings::values.frame_gen.GetValue() && !Settings::values.enable_frame_interpolation.GetValue()) {
+        Settings::values.enable_frame_interpolation.SetValue(true);
+    }
+
     EndGroup();
 }
 
@@ -788,6 +795,9 @@ void Config::SaveRendererValues() {
     WriteCategory(Settings::Category::RendererAdvanced);
     WriteCategory(Settings::Category::RendererHacks);
     WriteCategory(Settings::Category::RendererExtensions);
+    // Synchronize duplicate frame generation flags
+    Settings::values.enable_frame_interpolation.SetValue(Settings::values.frame_gen.GetValue());
+
     WriteCategory(Settings::Category::RendererDebug);
 
     EndGroup();

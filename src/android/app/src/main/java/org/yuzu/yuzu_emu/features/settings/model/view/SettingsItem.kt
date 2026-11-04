@@ -6,6 +6,8 @@
 
 package org.yuzu.yuzu_emu.features.settings.model.view
 
+import org.yuzu.yuzu_emu.features.settings.model.SettingImpactTable
+
 import androidx.annotation.StringRes
 import org.yuzu.yuzu_emu.NativeLibrary
 import org.yuzu.yuzu_emu.R
@@ -41,30 +43,75 @@ abstract class SettingsItem(
     abstract val type: Int
 
     open val title: String
-        get() = if (titleId != 0) {
-            try {
-                YuzuApplication.getLocalizedContext().getString(titleId)
-            } catch (_: Exception) {
-                YuzuApplication.appContext.getString(titleId)
+        get() {
+            var rawTitle = if (titleId != 0) {
+                try {
+                    YuzuApplication.getLocalizedContext().getString(titleId)
+                } catch (_: Exception) {
+                    YuzuApplication.appContext.getString(titleId)
+                }
+            } else {
+                titleString
             }
-        } else {
-            titleString
+            val impact = SettingImpactTable.getImpact(setting.key)
+            if (impact != null) {
+                val isRu = try {
+                    YuzuApplication.getLocalizedContext().resources.configuration.locales[0].language.startsWith("ru")
+                } catch (_: Exception) { false }
+                val badge = impact.formatBadge(isRu)
+                rawTitle = "$rawTitle $badge"
+            }
+            if (NativeConfig.isPerGameConfigLoaded()) {
+                val isOverridden = org.yuzu.yuzu_emu.model.GameFixSessionState.activeSessionFix?.settingsMap?.containsKey(setting.key) == true
+                if (isOverridden) {
+                    val isRu = try {
+                        YuzuApplication.getLocalizedContext().resources.configuration.locales[0].language.startsWith("ru")
+                    } catch (_: Exception) { false }
+                    val badge = if (isRu) " [задано профилем игры]" else " [game fix profile]"
+                    rawTitle = "$rawTitle $badge"
+                }
+            }
+            return rawTitle
         }
 
     open val description: String
-        get() = if (descriptionId != 0) {
-            try {
-                YuzuApplication.getLocalizedContext().getString(descriptionId)
-            } catch (_: Exception) {
-                YuzuApplication.appContext.getString(descriptionId)
+        get() {
+            var rawDesc = if (descriptionId != 0) {
+                try {
+                    YuzuApplication.getLocalizedContext().getString(descriptionId)
+                } catch (_: Exception) {
+                    YuzuApplication.appContext.getString(descriptionId)
+                }
+            } else {
+                descriptionString
             }
-        } else {
-            descriptionString
+            if (setting.key.startsWith("cpuopt_unsafe") && IntSetting.CPU_ACCURACY.getInt() != 2) {
+                val expl = try {
+                    YuzuApplication.getLocalizedContext().getString(R.string.cpu_unsafe_disabled_explanation)
+                } catch (_: Exception) {
+                    "Unsafe CPU flags are active only when CPU accuracy is set to 'Unsafe'."
+                }
+                rawDesc = if (rawDesc.isNotEmpty()) "$rawDesc\n⚠️ $expl" else "⚠️ $expl"
+            }
+            val impact = SettingImpactTable.getImpact(setting.key)
+            if (impact != null) {
+                val isRu = try {
+                    YuzuApplication.getLocalizedContext().resources.configuration.locales[0].language.startsWith("ru")
+                } catch (_: Exception) { false }
+                val tip = impact.formatTooltip(isRu)
+                rawDesc = if (rawDesc.isNotEmpty()) "$rawDesc\n$tip" else tip
+            }
+            return rawDesc
         }
 
     val isEditable: Boolean
         get() {
             // Allow toggling docked/handheld mode freely regardless of controller style
+
+            // cpuopt_unsafe_* are active only when CPU accuracy is Unsafe (2)
+            if (setting.key.startsWith("cpuopt_unsafe") && IntSetting.CPU_ACCURACY.getInt() != 2) {
+                return false
+            }
 
             // Can't edit enable_qlaunch_button if firmware is not available
             if (setting.key == BooleanSetting.ENABLE_QLAUNCH_BUTTON.key) {
@@ -406,6 +453,16 @@ abstract class SettingsItem(
                     descriptionId = R.string.vram_usage_mode_description,
                     choicesId = R.array.vramUsageMethodNames,
                     valuesId = R.array.vramUsageMethodValues
+                )
+            )
+
+            put(
+                SingleChoiceSetting(
+                    IntSetting.PERFORMANCE_PRESET,
+                    titleId = R.string.performance_preset,
+                    descriptionId = R.string.performance_preset_description,
+                    choicesId = R.array.performancePresetNames,
+                    valuesId = R.array.performancePresetValues
                 )
             )
 

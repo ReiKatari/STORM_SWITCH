@@ -6,6 +6,10 @@
 
 #include "storm_switch/configuration/shared_widget.h"
 
+#include "core/hle/service/game_fix_database.h"
+#include "qt_common/config/setting_impact_table.h"
+#include "qt_common/config/uisettings.h"
+
 #include <algorithm>
 #include <functional>
 #include <limits>
@@ -102,6 +106,14 @@ void RetranslateAllActiveWidgets() {
             w->RetranslateUI();
         }
     }
+}
+
+static u64 s_current_per_game_title_id = 0;
+void SetCurrentPerGameTitleId(u64 id) {
+    s_current_per_game_title_id = id;
+}
+u64 GetCurrentPerGameTitleId() {
+    return s_current_per_game_title_id;
 }
 
 static int restore_button_count = 0;
@@ -884,6 +896,39 @@ void Widget::SetupComponent(const QString& label, std::function<void()>& load_fu
 
     paired_other_setting = other_setting;
     std::function<void()> lhs_reload_func = nullptr;
+
+    const bool is_ru = UISettings::values.language.GetValue().rfind("ru", 0) == 0;
+    const auto* impact = ConfigurationShared::GetSettingImpact(setting.GetLabel());
+    const QString impact_badge = impact ? ConfigurationShared::FormatImpactBadge(*impact, is_ru) : QString();
+    const QString impact_tip = impact ? ConfigurationShared::FormatImpactTooltip(*impact, is_ru) : QString();
+
+    bool is_profile_override = false;
+    if (s_current_per_game_title_id != 0 && !Settings::IsConfiguringGlobal()) {
+        const auto* profile = Core::GameFixDatabase::GetProfile(s_current_per_game_title_id);
+        if (profile && profile->ini_settings.find(setting.GetLabel()) != profile->ini_settings.end()) {
+            is_profile_override = true;
+        }
+    }
+    const QString override_badge = is_profile_override ?
+        (is_ru ? QStringLiteral(" [задано профилем игры]") : QStringLiteral(" [game fix profile]")) : QString();
+
+    QString display_label = label;
+    if (!impact_badge.isEmpty()) {
+        display_label += QStringLiteral(" ") + impact_badge;
+    }
+    if (!override_badge.isEmpty()) {
+        display_label += override_badge;
+    }
+    if (!impact_tip.isEmpty()) {
+        setToolTip(impact_tip);
+    }
+    if (is_profile_override && restore_button) {
+        restore_button->setEnabled(true);
+        restore_button->setVisible(true);
+        restore_button->setToolTip(is_ru ?
+            QStringLiteral("Сбросить индивидуальное переопределение профиля игры") :
+            QStringLiteral("Revert game fix profile override to global"));
+    }
     if (require_checkbox) {
         QString check_label = label;
         if (check_label.trimmed().isEmpty() && other_setting && translations.contains(other_setting->Id())) {
@@ -908,12 +953,12 @@ void Widget::SetupComponent(const QString& label, std::function<void()>& load_fu
         lhs_reload_func = reload_func;
         reload_func = nullptr;
     } else if (type_id != "bool") {
-        label_widget = CreateLabel(label);
+        label_widget = CreateLabel(display_label);
         layout->addWidget(label_widget, 1);
     }
 
     if (type_id == "bool") {
-        data_component = CreateCheckBox(&setting, label, serializer, restore_func, touch);
+        data_component = CreateCheckBox(&setting, display_label, serializer, restore_func, touch);
     } else if (type_id == "string") {
         switch (request) {
         case RequestType::Default:

@@ -2083,4 +2083,17 @@
     <string name="save_state_unsupported_toast">Save states are not supported for this game. Use in-game saves. Experimental mode can be enabled in Settings → System.</string>
     <string name="save_state_experimental_warning">Save states are experimental: loading may freeze the game. Keep in-game saves.</string>
     <string name="save_states_mode_disabled_toast">Save states are disabled in Settings → System.</string>
+
+    <string name="performance_preset">Profil wydajności</string>
+    <string name="performance_preset_description">Wybierz zoptymalizowany profil konfiguracji</string>
+    <string name="performance_preset_battery">🔋 Oszczędzanie baterii</string>
+    <string name="performance_preset_balanced">⚖️ Zrównoważony (Zalecane)</string>
+    <string name="performance_preset_quality">🚀 Maksymalna jakość</string>
+    <string name="performance_preset_custom">⚙️ Własny</string>
+    <string name="performance_preset_applied">Zastosowano profil wydajności</string>
+    <string name="setting_conflict_warning">Wykryto konflikt ustawień</string>
+    <string name="setting_conflict_fix">Napraw</string>
+    <string name="profile_override_badge">określone przez profil gry</string>
+    <string name="profile_override_revert">Przywróć globalne</string>
+    <string name="cpu_unsafe_disabled_explanation">Niebezpieczne opcje procesora są aktywne tylko wtedy, gdy dokładność procesora jest ustawiona na \'Niebezpieczna\'.</string>
 </resources>

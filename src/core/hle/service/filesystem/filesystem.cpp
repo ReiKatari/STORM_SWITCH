@@ -238,8 +238,16 @@ Result VfsDirectoryServiceWrapper::RenameDirectory(const std::string& src_path_,
     }
 
     if (Common::FS::GetParentPath(src_path) == Common::FS::GetParentPath(dest_path)) {
-        const std::string full_src_path = backing->GetFullPath() + "/" + src_path;
-        const std::string full_dest_path = backing->GetFullPath() + "/" + dest_path;
+        std::string_view clean_src = src_path;
+        while (!clean_src.empty() && (clean_src.front() == '/' || clean_src.front() == '\\')) {
+            clean_src.remove_prefix(1);
+        }
+        std::string_view clean_dest = dest_path;
+        while (!clean_dest.empty() && (clean_dest.front() == '/' || clean_dest.front() == '\\')) {
+            clean_dest.remove_prefix(1);
+        }
+        const std::string full_src_path = backing->GetFullPath() + "/" + std::string(clean_src);
+        const std::string full_dest_path = backing->GetFullPath() + "/" + std::string(clean_dest);
         if (Common::FS::Exists(full_dest_path)) {
             return FileSys::ResultPathAlreadyExists;
         }

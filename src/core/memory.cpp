@@ -45,9 +45,16 @@ static inline bool AddressSpaceContains(const Common::PageTable& table, const Co
 // from outside classes. This also allows modification to the internals of the memory
 // subsystem without needing to rebuild all files that make use of the memory interface.
 struct Memory::Impl {
-    explicit Impl(Core::System& system_) : system{system_} {}
+    explicit Impl(Core::System& system_) : system{system_} {
+        RefreshSettings();
+    }
+
+    void RefreshSettings() noexcept {
+        use_reactive_flushing = Settings::values.use_reactive_flushing.GetValue();
+    }
 
     void SetCurrentPageTable(Kernel::KProcess& process) {
+        RefreshSettings();
         current_page_table = &process.GetPageTable().GetImpl();
 
         if (process.IsApplication() && Settings::IsFastmemEnabled()) {
@@ -451,7 +458,7 @@ struct Memory::Impl {
         }
 
         Common::MemoryPermission perm{};
-        if (!Settings::values.use_reactive_flushing.GetValue() || !cached) {
+        if (!use_reactive_flushing || !cached) {
             perm |= Common::MemoryPermission::Read;
         }
         if (!cached) {
@@ -774,6 +781,7 @@ struct Memory::Impl {
             p, scratch_buffers[core], [&](DAddr address) { gpu.InvalidateRegion(address, size); });
     }
 
+    bool use_reactive_flushing{false};
     Core::System& system;
     Tegra::MaxwellDeviceMemoryManager* gpu_device_memory{};
     Common::PageTable* current_page_table = nullptr;
@@ -799,6 +807,12 @@ Memory::~Memory() = default;
 
 void Memory::Reset() {
     impl = std::make_unique<Impl>(system);
+}
+
+void Memory::RefreshSettings() {
+    if (impl) {
+        impl->RefreshSettings();
+    }
 }
 
 void Memory::SetCurrentPageTable(Kernel::KProcess& process) {

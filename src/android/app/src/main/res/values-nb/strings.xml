@@ -2036,4 +2036,17 @@
     <string name="save_state_unsupported_toast">Save states are not supported for this game. Use in-game saves. Experimental mode can be enabled in Settings → System.</string>
     <string name="save_state_experimental_warning">Save states are experimental: loading may freeze the game. Keep in-game saves.</string>
     <string name="save_states_mode_disabled_toast">Save states are disabled in Settings → System.</string>
+
+    <string name="performance_preset">Ytelsesprofil</string>
+    <string name="performance_preset_description">Velg en optimalisert profil for balanse mellom ytelse og batteri</string>
+    <string name="performance_preset_battery">🔋 Batterisparing</string>
+    <string name="performance_preset_balanced">⚖️ Balansert (Anbefalt)</string>
+    <string name="performance_preset_quality">🚀 Maksimal kvalitet</string>
+    <string name="performance_preset_custom">⚙️ Egendefinert</string>
+    <string name="performance_preset_applied">Ytelsesprofil tatt i bruk</string>
+    <string name="setting_conflict_warning">Konflikt i innstillinger oppdaget</string>
+    <string name="setting_conflict_fix">Løs</string>
+    <string name="profile_override_badge">angitt av spillprofil</string>
+    <string name="profile_override_revert">Tilbakestill til global</string>
+    <string name="cpu_unsafe_disabled_explanation">Usikre CPU-valg er kun aktive når CPU-nøyaktighet er satt til \'Usikker\'.</string>
 </resources>

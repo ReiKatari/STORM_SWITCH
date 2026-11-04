@@ -9013,7 +9013,12 @@ struct AutoFixSnapshot {
     bool is_captured{false};
     Settings::MemoryLayout memory_layout_mode{Settings::MemoryLayout::Memory_4Gb};
     bool memory_layout_mode_global{true};
-    std::vector<std::pair<Settings::BasicSetting*, std::string>> saved_global_strings;
+    struct SettingEntry {
+        Settings::BasicSetting* setting{nullptr};
+        bool using_global{true};
+        std::string val_str;
+    };
+    std::vector<SettingEntry> saved_settings;
 
     void Snapshot() {
         if (is_captured) {
@@ -9021,12 +9026,17 @@ struct AutoFixSnapshot {
         }
         memory_layout_mode = Settings::values.memory_layout_mode.GetValue(true);
         memory_layout_mode_global = Settings::values.memory_layout_mode.UsingGlobal();
-        saved_global_strings.clear();
+        saved_settings.clear();
         for (const auto& [category, settings_list] : Settings::values.linkage.by_category) {
             (void)category;
             for (auto* setting : settings_list) {
                 if (setting) {
-                    saved_global_strings.emplace_back(setting, setting->ToStringGlobal());
+                    const bool is_global = setting->UsingGlobal();
+                    saved_settings.push_back({
+                        setting,
+                        is_global,
+                        is_global ? setting->ToStringGlobal() : setting->ToString(),
+                    });
                 }
             }
         }
@@ -9040,13 +9050,13 @@ struct AutoFixSnapshot {
         Settings::values.memory_layout_mode.SetGlobal(true);
         Settings::values.memory_layout_mode.SetValue(memory_layout_mode);
         Settings::values.memory_layout_mode.SetGlobal(memory_layout_mode_global);
-        for (const auto& [setting, val_str] : saved_global_strings) {
-            if (setting) {
-                setting->SetGlobal(true);
+        for (const auto& entry : saved_settings) {
+            if (entry.setting) {
+                entry.setting->SetGlobal(entry.using_global);
 #ifdef LoadString
 #undef LoadString
 #endif
-                setting->LoadString(val_str);
+                entry.setting->LoadString(entry.val_str);
             }
         }
         is_captured = false;
@@ -21147,7 +21157,7 @@ void MainWindow::ApplyDynamicSettingChange() {
             std::string per_game_config_name;
             const bool has_per_game_file =
                 GetActivePerGameConfigName(current_game_path, last_filename_booted, per_game_config_name);
-            if (has_per_game_file && !Core::GameFixDatabase::AreFixesEnabled()) {
+            if (has_per_game_file) {
                 QtConfig per_game_config(per_game_config_name, Config::ConfigType::PerGameConfig, false);
                 per_game_config.SaveAllValues();
             } else if (config) {

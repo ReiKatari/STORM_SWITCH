@@ -339,7 +339,7 @@ GraphicsPipeline::GraphicsPipeline(
         }
     }};
     if (worker_thread) {
-        worker_thread->QueueWork(std::move(func));
+        worker_thread->QueueWork(std::move(func), Common::ThreadWorker::Priority::High);
     } else {
         func();
     }

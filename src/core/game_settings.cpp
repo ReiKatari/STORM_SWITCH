@@ -9,6 +9,7 @@
 #include "common/logging.h"
 #include "common/settings.h"
 #include "video_core/renderer_base.h"
+#include "core/hle/service/game_fix_database.h"
 
 #if defined(__APPLE__)
 #include <TargetConditionals.h>
@@ -121,6 +122,10 @@ EnvironmentInfo DetectEnvironment(const VideoCore::RendererBase& renderer) {
 
 void LoadOverrides(std::uint64_t program_id, const VideoCore::RendererBase& renderer) {
     const auto env = DetectEnvironment(renderer);
+
+    // Synchronize detected GPU vendor with GameFixDatabase and re-apply vendor-specific profile overrides
+    Core::GameFixDatabase::SetDetectedGpuVendor(env.vendor_string);
+    Core::GameFixDatabase::ReapplyVendorOverrides(program_id);
 
     switch (static_cast<TitleID>(program_id)) {
         case TitleID::NinjaGaidenRagebound:

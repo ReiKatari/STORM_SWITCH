@@ -37,6 +37,11 @@ class StatefulThreadWorker {
     using StateMaker = std::conditional_t<with_state, std::function<StateType()>, DummyCallable>;
 
 public:
+    enum class Priority {
+        High,
+        Low,
+    };
+
     explicit StatefulThreadWorker(size_t num_workers, std::string name, StateMaker func = {},
                                   ThreadPlacement placement = ThreadPlacement::Default)
         : workers_queued{num_workers}, thread_name{std::move(name)} {
@@ -60,18 +65,31 @@ public:
                 [[maybe_unused]] std::conditional_t<with_state, StateType, int> state{func()};
                 while (!stop_token.stop_requested()) {
                     Task task;
+                    bool is_high_priority = false;
                     {
                         std::unique_lock lock{queue_mutex};
-                        if (requests.empty()) {
+                        if (high_requests.empty() && low_requests.empty()) {
                             wait_condition.notify_all();
                         }
-                        condition.wait(lock, stop_token,
-                                       [this] { return !requests.empty(); });
+                        condition.wait(lock, stop_token, [this] {
+                            return !high_requests.empty() || !low_requests.empty();
+                        });
                         if (stop_token.stop_requested()) {
                             break;
                         }
-                        task = std::move(requests.front());
-                        requests.pop();
+                        if (!high_requests.empty()) {
+                            task = std::move(high_requests.front());
+                            high_requests.pop();
+                            is_high_priority = true;
+                        } else {
+                            task = std::move(low_requests.front());
+                            low_requests.pop();
+                        }
+                    }
+                    if (is_high_priority) {
+                        Common::SetCurrentThreadPriority(ThreadPriority::Normal);
+                    } else if (placement != ThreadPlacement::Default) {
+                        Common::SetCurrentThreadPriority(ThreadPriority::Low);
                     }
                     if constexpr (with_state) {
                         task(&state);
@@ -96,10 +114,14 @@ public:
     StatefulThreadWorker& operator=(StatefulThreadWorker&&) = delete;
     StatefulThreadWorker(StatefulThreadWorker&&) = delete;
 
-    void QueueWork(Task work) {
+    void QueueWork(Task work, Priority priority = Priority::Low) {
         {
             std::unique_lock lock{queue_mutex};
-            requests.emplace(std::move(work));
+            if (priority == Priority::High) {
+                high_requests.emplace(std::move(work));
+            } else {
+                low_requests.emplace(std::move(work));
+            }
             ++work_scheduled;
         }
         condition.notify_one();
@@ -118,7 +140,8 @@ public:
     }
 
 private:
-    std::queue<Task> requests;
+    std::queue<Task> high_requests;
+    std::queue<Task> low_requests;
     std::mutex queue_mutex;
     std::condition_variable_any condition;
     std::condition_variable wait_condition;

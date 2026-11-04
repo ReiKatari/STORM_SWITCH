@@ -2230,4 +2230,17 @@ Inicia un juego o conéctate a otro dispositivo.</string>
     <string name="save_state_unsupported_toast">Guardado rápido no compatible con este juego. Usa el guardado en el juego. Modo experimental en Ajustes → Sistema.</string>
     <string name="save_state_experimental_warning">Guardado rápido experimental: cargar puede congelar el juego. Guarda dentro del juego.</string>
     <string name="save_states_mode_disabled_toast">Guardado rápido desactivado en Ajustes → Sistema.</string>
+
+    <string name="performance_preset">Perfil de rendimiento</string>
+    <string name="performance_preset_description">Seleccionar un perfil de optimización para equilibrar rendimiento, batería y calidad visual</string>
+    <string name="performance_preset_battery">🔋 Ahorro de batería</string>
+    <string name="performance_preset_balanced">⚖️ Equilibrado (Recomendado)</string>
+    <string name="performance_preset_quality">🚀 Calidad máxima</string>
+    <string name="performance_preset_custom">⚙️ Personalizado</string>
+    <string name="performance_preset_applied">Perfil de rendimiento aplicado</string>
+    <string name="setting_conflict_warning">Conflicto de configuración detectado</string>
+    <string name="setting_conflict_fix">Corregir</string>
+    <string name="profile_override_badge">definido por perfil de juego</string>
+    <string name="profile_override_revert">Restablecer a global</string>
+    <string name="cpu_unsafe_disabled_explanation">Las opciones no seguras de CPU solo están activas cuando la precisión de CPU está en \'No seguro\'.</string>
 </resources>

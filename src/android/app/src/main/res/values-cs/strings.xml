@@ -2053,4 +2053,17 @@
     <string name="save_state_unsupported_toast">Save states are not supported for this game. Use in-game saves. Experimental mode can be enabled in Settings → System.</string>
     <string name="save_state_experimental_warning">Save states are experimental: loading may freeze the game. Keep in-game saves.</string>
     <string name="save_states_mode_disabled_toast">Save states are disabled in Settings → System.</string>
+
+    <string name="performance_preset">Profil výkonu</string>
+    <string name="performance_preset_description">Vyberte optimalizovaný konfigurační profil</string>
+    <string name="performance_preset_battery">🔋 Úspora baterie</string>
+    <string name="performance_preset_balanced">⚖️ Vyvážený (Doporučeno)</string>
+    <string name="performance_preset_quality">🚀 Maximální kvalita</string>
+    <string name="performance_preset_custom">⚙️ Vlastní</string>
+    <string name="performance_preset_applied">Profil výkonu byl použit</string>
+    <string name="setting_conflict_warning">Zjištěn konflikt nastavení</string>
+    <string name="setting_conflict_fix">Opravit</string>
+    <string name="profile_override_badge">nastaveno herním profilem</string>
+    <string name="profile_override_revert">Obnovit globální</string>
+    <string name="cpu_unsafe_disabled_explanation">Nebezpečné možnosti procesoru jsou aktivní pouze při nastavení přesnosti procesoru na \'Nebezpečné\'.</string>
 </resources>

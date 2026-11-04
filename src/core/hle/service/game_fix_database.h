@@ -11,6 +11,12 @@
 
 namespace Core {
 
+struct AppliedProfileOverride {
+    std::string key;
+    std::string value;
+    std::string source; // "base" or vendor key ("nvidia", "amd", "intel", "adreno", "mali", "xclipse", "other")
+};
+
 struct GameFixProfile {
     u64 title_id;
     std::string game_name;
@@ -24,6 +30,9 @@ struct GameFixProfile {
 
     // Alternative Title IDs (regional releases, aliases)
     std::vector<u64> alt_title_ids{};
+
+    // Vendor-specific override maps (keys: "nvidia", "amd", "intel", "adreno", "mali", "xclipse", "other")
+    std::unordered_map<std::string, std::unordered_map<std::string, std::string>> vendor_overrides{};
 };
 
 class GameFixDatabase {
@@ -42,6 +51,17 @@ public:
     static void SetExcludedKeys(const std::vector<std::string>& excluded_keys);
     static bool IsKeyExcluded(const std::string& full_key);
     static void SanitizeSettingsForHostHardware();
+
+    /// GPU vendor detection and override re-application
+    static void SetDetectedGpuVendor(const std::string& vendor_or_driver);
+    static void SetDetectedGpuVendorFromDriver(u32 vendor_id, const std::string& driver_name);
+    static std::string NormalizeGpuVendor(u32 vendor_id, const std::string& driver_name);
+    static const std::string& GetDetectedGpuVendor();
+    static bool ReapplyVendorOverrides(u64 title_id);
+
+    /// Profile override transparency API: returns list of (key, value, source) applied for a TID
+    /// Source is "base" for default profile settings, or vendor key (e.g. "nvidia", "amd") for vendor overrides
+    static std::vector<AppliedProfileOverride> GetAppliedOverrides(u64 title_id);
 };
 
 } // namespace Core

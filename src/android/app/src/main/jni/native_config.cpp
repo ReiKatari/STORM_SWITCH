@@ -21,6 +21,9 @@ std::unique_ptr<AndroidConfig> global_config;
 std::unique_ptr<AndroidConfig> per_game_config;
 
 static std::string ResolveSettingKey(std::string key) {
+    if (key == "pipeline_worker_count") {
+        return "pipeline_worker_threads";
+    }
     if (key == "fast_cpu_time") {
         return "cpu_clock";
     }

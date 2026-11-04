@@ -511,9 +511,7 @@ void ArmDynarmic64::MakeJit(Common::PageTable* page_table, std::size_t address_s
     case Settings::CpuAccuracy::Auto:
         config.unsafe_optimizations = true;
         config.optimizations |= Dynarmic::OptimizationFlag::Unsafe_UnfuseFMA;
-        if (Settings::values.cpuopt_unsafe_ignore_global_monitor) {
-            config.optimizations |= Dynarmic::OptimizationFlag::Unsafe_IgnoreGlobalMonitor;
-        }
+        // Unsafe optimization flags (such as cpuopt_unsafe_ignore_global_monitor) apply only in Unsafe mode
         break;
     // Paranoia mode for debugging optimizations
     case Settings::CpuAccuracy::Paranoid:

@@ -55,4 +55,5 @@ private:
 
     QComboBox* accuracy_combobox;
     QComboBox* backend_combobox;
+    class QLabel* m_unsafe_explanation_label{nullptr};
 };

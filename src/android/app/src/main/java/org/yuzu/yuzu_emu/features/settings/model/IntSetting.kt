@@ -25,6 +25,48 @@ enum class IntSetting(override val key: String) : AbstractIntSetting {
     RENDERER_ASTC_DECODE_METHOD("accelerate_astc"),
     ASTC_RECOMPRESSION("astc_recompression"),
     RENDERER_ACCURACY("gpu_accuracy"),
+    PERFORMANCE_PRESET("performance_preset") {
+        override fun getInt(needsGlobal: Boolean): Int {
+            val eco = BooleanSetting.ECO_THERMAL_MODE.getBoolean()
+            val res = RENDERER_RESOLUTION.getInt()
+            val acc = RENDERER_ACCURACY.getInt()
+            return when {
+                eco && res == 3 && acc == 0 -> 0
+                !eco && res == 3 && acc == 1 -> 1
+                !eco && res == 6 && acc == 2 -> 2
+                else -> 3
+            }
+        }
+        override fun setInt(value: Int) {
+            when (value) {
+                0 -> {
+                    RENDERER_RESOLUTION.setInt(3)
+                    RENDERER_ACCURACY.setInt(0)
+                    BooleanSetting.ECO_THERMAL_MODE.setBoolean(true)
+                    BooleanSetting.RENDERER_ASYNCHRONOUS_SHADERS.setBoolean(true)
+                    RENDERER_VSYNC.setInt(2)
+                    BooleanSetting.RENDERER_USE_SPEED_LIMIT.setBoolean(true)
+                }
+                1 -> {
+                    RENDERER_RESOLUTION.setInt(3)
+                    RENDERER_ACCURACY.setInt(1)
+                    BooleanSetting.ECO_THERMAL_MODE.setBoolean(false)
+                    BooleanSetting.RENDERER_ASYNCHRONOUS_SHADERS.setBoolean(true)
+                    RENDERER_VSYNC.setInt(2)
+                    BooleanSetting.RENDERER_USE_SPEED_LIMIT.setBoolean(true)
+                }
+                2 -> {
+                    RENDERER_RESOLUTION.setInt(6)
+                    RENDERER_ACCURACY.setInt(2)
+                    BooleanSetting.ECO_THERMAL_MODE.setBoolean(false)
+                    BooleanSetting.RENDERER_ASYNCHRONOUS_SHADERS.setBoolean(true)
+                    RENDERER_VSYNC.setInt(2)
+                    BooleanSetting.RENDERER_USE_SPEED_LIMIT.setBoolean(true)
+                }
+            }
+        }
+        override val defaultValue: Int = 1
+    },
     RENDERER_RESOLUTION("resolution_setup"),
     RENDERER_FRAME_GEN_MULTIPLIER("frame_gen_multiplier"),
     RENDERER_FRAME_GEN_TARGET_RATE("frame_gen_target_rate"),
@@ -84,7 +126,7 @@ enum class IntSetting(override val key: String) : AbstractIntSetting {
     INPUT_OVERLAY_AUTO_HIDE("input_overlay_auto_hide"),
     OVERLAY_GRID_SIZE("overlay_grid_size"),
     GPU_LOG_RING_BUFFER_SIZE("gpu_log_ring_buffer_size"),
-    ANDROID_PIPELINE_WORKERS("pipeline_worker_count"),
+    ANDROID_PIPELINE_WORKERS("pipeline_worker_threads"),
     THERMAL_EMERGENCY_LIMIT("thermal_emergency_limit"),
     SAVE_STATES_MODE("save_states_mode")
     ;

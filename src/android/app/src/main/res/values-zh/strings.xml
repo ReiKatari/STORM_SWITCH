@@ -2228,4 +2228,17 @@
     <string name="save_state_unsupported_toast">此游戏不支持快速保存。请使用游戏内存档。可在“设置 → 系统”中开启实验性模式。</string>
     <string name="save_state_experimental_warning">快速保存为实验性功能：读取可能导致游戏卡死。请保持常规存档。</string>
     <string name="save_states_mode_disabled_toast">快速保存在“设置 → 系统”中已禁用。</string>
+
+    <string name="performance_preset">性能预设</string>
+    <string name="performance_preset_description">选择优化配置预设，平衡性能、发热与画质</string>
+    <string name="performance_preset_battery">🔋 节省电池</string>
+    <string name="performance_preset_balanced">⚖️ 平衡（推荐）</string>
+    <string name="performance_preset_quality">🚀 极高质量</string>
+    <string name="performance_preset_custom">⚙️ 自定义</string>
+    <string name="performance_preset_applied">已应用性能预设</string>
+    <string name="setting_conflict_warning">检测到设置冲突</string>
+    <string name="setting_conflict_fix">修复</string>
+    <string name="profile_override_badge">由游戏配置文件指定</string>
+    <string name="profile_override_revert">恢复为全局设置</string>
+    <string name="cpu_unsafe_disabled_explanation">不安全 CPU 优化项仅在 CPU 精度设为“不安全”时生效。</string>
 </resources>

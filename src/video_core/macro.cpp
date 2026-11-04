@@ -179,6 +179,12 @@ void HLE_DrawIndexedIndirect::Fallback(Core::System& system, Engines::Maxwell3D&
     }
     maxwell3d.RefreshParameters();
     const u32 instance_count = (maxwell3d.GetRegisterValue(0xD1B) & parameters[2]);
+    const u32 index_count = parameters[1];
+    const u32 index_first = parameters[3];
+    constexpr u32 MAX_SANE_INDEX_COUNT = 0x04000000;
+    if (instance_count == 0 || index_count == 0 || index_count > MAX_SANE_INDEX_COUNT || index_first > MAX_SANE_INDEX_COUNT) {
+        return;
+    }
     const u32 element_base = parameters[4];
     const u32 base_instance = extended ? parameters[5] : 0;
     maxwell3d.regs.vertex_id_base = element_base;

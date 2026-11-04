@@ -1923,4 +1923,17 @@
     <string name="save_state_unsupported_toast">Save states are not supported for this game. Use in-game saves. Experimental mode can be enabled in Settings → System.</string>
     <string name="save_state_experimental_warning">Save states are experimental: loading may freeze the game. Keep in-game saves.</string>
     <string name="save_states_mode_disabled_toast">Save states are disabled in Settings → System.</string>
+
+    <string name="performance_preset">พรีเซ็ตประสิทธิภาพ</string>
+    <string name="performance_preset_description">เลือกพรีเซ็ตการกำหนดค่าที่ปรับแต่งเพื่อความสมดุล</string>
+    <string name="performance_preset_battery">🔋 ประหยัดแบตเตอรี่</string>
+    <string name="performance_preset_balanced">⚖️ สมดุล (แนะนำ)</string>
+    <string name="performance_preset_quality">🚀 คุณภาพสูงสุด</string>
+    <string name="performance_preset_custom">⚙️ กำหนดเอง</string>
+    <string name="performance_preset_applied">ใช้พรีเซ็ตประสิทธิภาพแล้ว</string>
+    <string name="setting_conflict_warning">ตรวจพบความขัดแย้งของการตั้งค่า</string>
+    <string name="setting_conflict_fix">แก้ไข</string>
+    <string name="profile_override_badge">กำหนดโดยโปรไฟล์เกม</string>
+    <string name="profile_override_revert">คืนค่าเป็นค่าส่วนกลาง</string>
+    <string name="cpu_unsafe_disabled_explanation">ตัวเลือก CPU ที่ไม่ปลอดภัยจะทำงานเมื่อตั้งค่าความแม่นยำ CPU เป็น \'ไม่ปลอดภัย\' เท่านั้น</string>
 </resources>

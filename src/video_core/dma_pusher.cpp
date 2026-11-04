@@ -28,6 +28,7 @@ DmaPusher::DmaPusher(Core::System& system_, MemoryManager& memory_manager_, Cont
     , channel_state{channel_state_}
     , signal_sync{false}
     , synced{false}
+    , sync_memory_operations_cached{Settings::values.sync_memory_operations.GetValue()}
 {}
 
 DmaPusher::~DmaPusher() = default;
@@ -145,7 +146,7 @@ bool DmaPusher::Step() {
         dma_pushbuffer.pop();
         dma_pushbuffer_subindex = 0;
     } else {
-        signal_sync = command_list.command_lists[dma_pushbuffer_subindex].sync && Settings::values.sync_memory_operations.GetValue();
+        signal_sync = command_list.command_lists[dma_pushbuffer_subindex].sync && sync_memory_operations_cached;
     }
 
     if (signal_sync) {

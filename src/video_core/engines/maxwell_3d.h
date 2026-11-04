@@ -3312,6 +3312,7 @@ private:
 
     std::vector<std::pair<GPUVAddr, size_t>> macro_segments;
     bool current_macro_dirty{};
+    bool use_reactive_flushing_cached{false};
 };
 
 #define ASSERT_REG_POSITION(field_name, position)                                                  \

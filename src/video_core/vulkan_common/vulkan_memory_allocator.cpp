@@ -288,6 +288,10 @@ namespace Vulkan {
             auto alloc_ci_relax = alloc_ci;
             alloc_ci_relax.flags &= ~VMA_ALLOCATION_CREATE_WITHIN_BUDGET_BIT;
             res_buffer = vmaCreateBuffer(allocator, &ci, &alloc_ci_relax, &handle, &allocation, &alloc_info);
+            if (res_buffer != VK_SUCCESS && (alloc_ci_relax.preferredFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
+                alloc_ci_relax.preferredFlags &= ~VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+                res_buffer = vmaCreateBuffer(allocator, &ci, &alloc_ci_relax, &handle, &allocation, &alloc_info);
+            }
         }
         if (res_buffer != VK_SUCCESS) {
             LOG_CRITICAL(Render_Vulkan, "Buffer allocation failed: bytes={}, usage={}, buffer_flags={:#x}, result={}",

@@ -468,6 +468,10 @@ IR::Program MergeDualVertexPrograms(IR::Program& vertex_a, IR::Program& vertex_b
     Optimization::JoinStorageInfo(result.info, vertex_b.info);
     result.info.nvn_buffer_used |= vertex_b.info.nvn_buffer_used;
     Optimization::DeadCodeEliminationPass(result);
+    if (Settings::values.optimize_spirv_output.GetValue() != Settings::SpirvOptimizeMode::Never) {
+        Optimization::IdentityRemovalPass(result);
+        Optimization::DeadCodeEliminationPass(result);
+    }
     if (Settings::values.renderer_debug) {
         Optimization::VerificationPass(result);
     }

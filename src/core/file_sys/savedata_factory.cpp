@@ -8,9 +8,11 @@
 #include "common/common_types.h"
 #include "common/logging.h"
 #include "common/uuid.h"
+#include "core/core.h"
 #include "core/file_sys/common_funcs.h"
 #include "core/file_sys/savedata_factory.h"
 #include "core/file_sys/vfs/vfs.h"
+#include "core/hle/service/acc/profile_manager.h"
 
 namespace FileSys {
 
@@ -94,18 +96,49 @@ VirtualDir SaveDataFactory::Open(SaveDataSpaceId space, const SaveDataAttribute&
         }
     }
 
-    // 2. Fallback: Search across all user subdirectories for existing save files for this title
+    // 2. One-Time Migration: If current user's save is empty, and exactly one orphaned UUID folder (not an existing profile in ProfileManager) has data for this TID, copy it into the current user's folder once
     if (space == SaveDataSpaceId::User && (meta.type == SaveDataType::Account || meta.type == SaveDataType::Device)) {
         const std::string space_path = GetSaveDataSpaceIdPath(space);
         const std::string user_save_root = fmt::format("{}save/{:016X}", space_path, 0);
         if (const auto root_dir = dir->GetDirectoryRelative(user_save_root); root_dir != nullptr) {
+            std::vector<std::pair<VirtualDir, std::string>> orphaned_candidates;
+            const auto& profile_manager = system.GetProfileManager();
+            const std::string cur_user_str = fmt::format("{:016X}{:016X}", meta.user_id[1], meta.user_id[0]);
+
             for (const auto& user_sub : root_dir->GetSubdirectories()) {
+                const std::string sub_name = user_sub->GetName();
+                if (sub_name == cur_user_str) {
+                    continue;
+                }
+                const Common::UUID cand_uuid(sub_name);
+                if (cand_uuid.IsValid() && profile_manager.UserExists(cand_uuid)) {
+                    // Belongs to an existing active profile -- never read/write or migrate another active profile's folder
+                    continue;
+                }
+
                 for (u64 cand_id : {raw_tid, base_tid}) {
                     if (cand_id == 0) continue;
                     const std::string cand_name = fmt::format("{:016X}", cand_id);
                     if (const auto cand_dir = user_sub->GetSubdirectory(cand_name); HasContent(cand_dir)) {
-                        LOG_INFO(Service_FS, "Found existing save data in user directory: {}/{}", user_sub->GetName(), cand_name);
-                        return cand_dir;
+                        orphaned_candidates.emplace_back(cand_dir, sub_name);
+                        break;
+                    }
+                }
+            }
+
+            if (orphaned_candidates.size() == 1) {
+                const auto& [src_cand_dir, orphan_uuid_str] = orphaned_candidates.front();
+                LOG_INFO(Service_FS, "Performing one-time migration of orphaned save data from {} to current user {} for title {:016X}",
+                         orphan_uuid_str, cur_user_str, raw_tid);
+                if (out == nullptr) {
+                    out = Create(space, meta);
+                }
+                if (out != nullptr) {
+                    if (VfsRawCopyD(src_cand_dir, out)) {
+                        LOG_INFO(Service_FS, "Successfully migrated orphaned save data into current user's directory for title {:016X}", raw_tid);
+                        return out;
+                    } else {
+                        LOG_ERROR(Service_FS, "Failed to copy orphaned save data during migration for title {:016X}", raw_tid);
                     }
                 }
             }

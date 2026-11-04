@@ -2384,4 +2384,16 @@
     <string name="save_state_unsupported_toast">Быстрые сохранения для этой игры не поддерживаются. Используйте сохранения внутри игры. Включить экспериментальный режим можно в Настройки → Система.</string>
     <string name="save_state_experimental_warning">Быстрые сохранения экспериментальны: загрузка может вызвать зависание игры. Сохраняйтесь внутри игры.</string>
     <string name="save_states_mode_disabled_toast">Быстрые сохранения отключены в Настройки → Система.</string>
+    <string name="performance_preset">Профиль производительности</string>
+    <string name="performance_preset_description">Готовый профиль настроек для баланса скорости, нагрева батареи и качества картинки</string>
+    <string name="performance_preset_battery">🔋 Экономия батареи</string>
+    <string name="performance_preset_balanced">⚖️ Баланс (Рекомендуется)</string>
+    <string name="performance_preset_quality">🚀 Максимальное качество</string>
+    <string name="performance_preset_custom">⚙️ Свой</string>
+    <string name="performance_preset_applied">Профиль производительности применён</string>
+    <string name="setting_conflict_warning">Обнаружен конфликт настроек</string>
+    <string name="setting_conflict_fix">Исправить</string>
+    <string name="profile_override_badge">задано профилем игры</string>
+    <string name="profile_override_revert">Сбросить к глобальным</string>
+    <string name="cpu_unsafe_disabled_explanation">Небезопасные флаги процессора активны только при выбранной точности ЦП «Небезопасно».</string>
 </resources>

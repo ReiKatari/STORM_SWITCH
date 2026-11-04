@@ -187,6 +187,11 @@ ConfigureGraphics::ConfigureGraphics(
         ui->bg_widget->setEnabled(Settings::values.bg_red.UsingGlobal());
     }
     RetranslateUI();
+
+    SetupPerformancePresets();
+    ConfigurationShared::RegisterReloadCallback(reinterpret_cast<uintptr_t>(this), [this]() {
+        UpdatePresetSelection();
+    });
 }
 
 void ConfigureGraphics::PopulateVSyncModeSelection(bool use_setting) {
@@ -274,7 +279,9 @@ void ConfigureGraphics::UpdateDeviceSelection(int device) {
     }
 }
 
-ConfigureGraphics::~ConfigureGraphics() = default;
+ConfigureGraphics::~ConfigureGraphics() {
+    ConfigurationShared::UnregisterReloadCallback(reinterpret_cast<uintptr_t>(this));
+}
 
 void ConfigureGraphics::UpdateFsrSliderState() {
     if (!scaling_filter_combobox || !fsr_sharpening_widget) {
@@ -303,6 +310,7 @@ void ConfigureGraphics::UpdateFsrSliderState() {
 }
 
 void ConfigureGraphics::SetConfiguration() {
+    UpdatePresetSelection();
     UpdateFsrSliderState();
     if (api_combobox) {
         const auto backend = Settings::values.renderer_backend.GetValue();
@@ -1018,6 +1026,7 @@ void ConfigureGraphics::ApplyConfiguration() {
     }
 
     UpdateVsyncSetting();
+    Settings::values.enable_frame_interpolation.SetValue(Settings::values.frame_gen.GetValue());
 
     Settings::values.vulkan_device.SetGlobal(true);
     auto const index = Settings::EnumMetadata<Settings::RendererBackend>::Index();
@@ -1282,4 +1291,166 @@ Settings::RendererBackend ConfigureGraphics::GetCurrentGraphicsBackend() const {
         UISettings::values.has_broken_vulkan)
         return Settings::RendererBackend::OpenGL_GLSL;
     return selected_backend;
+}
+
+void ConfigureGraphics::SetupPerformancePresets() {
+    auto* preset_group = new QGroupBox(StormLang(
+        QStringLiteral("⚡ Профиль производительности"),
+        QStringLiteral("⚡ Performance Preset")), this);
+    auto* preset_layout = new QHBoxLayout(preset_group);
+    auto* preset_label = new QLabel(StormLang(
+        QStringLiteral("Режим оптимизации:"),
+        QStringLiteral("Preset Mode:")), preset_group);
+    m_preset_combobox = new QComboBox(preset_group);
+    m_preset_combobox->addItem(StormLang(QStringLiteral("🔋 Экономия батареи"), QStringLiteral("🔋 Battery Saver")), 0);
+    m_preset_combobox->addItem(StormLang(QStringLiteral("⚖️ Баланс (Рекомендуется)"), QStringLiteral("⚖️ Balanced (Recommended)")), 1);
+    m_preset_combobox->addItem(StormLang(QStringLiteral("🚀 Максимальное качество"), QStringLiteral("🚀 Maximum Quality")), 2);
+    m_preset_combobox->addItem(StormLang(QStringLiteral("⚙️ Свой"), QStringLiteral("⚙️ Custom")), 3);
+
+    preset_layout->addWidget(preset_label);
+    preset_layout->addWidget(m_preset_combobox, 1);
+    preset_group->setStyleSheet(QStringLiteral(
+        "QGroupBox { font-weight: bold; margin-top: 4px; margin-bottom: 6px; padding: 10px; "
+        "border: 1px solid rgba(80, 150, 255, 0.35); border-radius: 8px; background: rgba(80, 150, 255, 0.06); }"));
+
+    if (ui->verticalLayout_2) {
+        ui->verticalLayout_2->insertWidget(0, preset_group);
+    }
+
+    connect(m_preset_combobox, qOverload<int>(&QComboBox::activated), this, [this](int index) {
+        if (index >= 0 && index <= 2) {
+            ApplyPerformancePreset(index);
+        }
+    });
+}
+
+void ConfigureGraphics::UpdatePresetSelection() {
+    if (!m_preset_combobox) return;
+    const bool blocked = m_preset_combobox->blockSignals(true);
+    if (Settings::values.eco_thermal_mode.GetValue() &&
+        Settings::values.resolution_setup.GetValue() == Settings::ResolutionSetup::Res1X &&
+        Settings::values.gpu_accuracy.GetValue() == Settings::GpuAccuracy::Low) {
+        m_preset_combobox->setCurrentIndex(0);
+    } else if (!Settings::values.eco_thermal_mode.GetValue() &&
+               Settings::values.resolution_setup.GetValue() == Settings::ResolutionSetup::Res1X &&
+               Settings::values.gpu_accuracy.GetValue() == Settings::GpuAccuracy::Normal) {
+        m_preset_combobox->setCurrentIndex(1);
+    } else if (!Settings::values.eco_thermal_mode.GetValue() &&
+               Settings::values.resolution_setup.GetValue() == Settings::ResolutionSetup::Res2X &&
+               Settings::values.gpu_accuracy.GetValue() == Settings::GpuAccuracy::High) {
+        m_preset_combobox->setCurrentIndex(2);
+    } else {
+        m_preset_combobox->setCurrentIndex(3);
+    }
+    m_preset_combobox->blockSignals(blocked);
+}
+
+void ConfigureGraphics::ApplyPerformancePreset(int index) {
+    struct TargetPreset {
+        Settings::ResolutionSetup res;
+        Settings::AstcDecodeMode astc;
+        Settings::AstcRecompression astc_recomp;
+        bool async_shaders;
+        bool eco_thermal;
+        Settings::VSyncMode vsync;
+        bool speed_limit_enabled;
+        u16 speed_limit_val;
+        Settings::GpuAccuracy accuracy;
+        QString name;
+    };
+
+    TargetPreset target;
+    if (index == 0) { // Battery Saver
+        target = {
+            Settings::ResolutionSetup::Res1X,
+            Settings::AstcDecodeMode::CpuAsynchronous,
+            Settings::AstcRecompression::Bc1,
+            true,
+            true,
+            Settings::VSyncMode::Fifo,
+            true,
+            100,
+            Settings::GpuAccuracy::Low,
+            StormLang(QStringLiteral("🔋 Экономия батареи"), QStringLiteral("🔋 Battery Saver"))
+        };
+    } else if (index == 1) { // Balanced
+        target = {
+            Settings::ResolutionSetup::Res1X,
+            Settings::AstcDecodeMode::Gpu,
+            Settings::AstcRecompression::Uncompressed,
+            true,
+            false,
+            Settings::VSyncMode::Fifo,
+            true,
+            100,
+            Settings::GpuAccuracy::Normal,
+            StormLang(QStringLiteral("⚖️ Баланс"), QStringLiteral("⚖️ Balanced"))
+        };
+    } else { // Maximum Quality
+        target = {
+            Settings::ResolutionSetup::Res2X,
+            Settings::AstcDecodeMode::Gpu,
+            Settings::AstcRecompression::Uncompressed,
+            true,
+            false,
+            Settings::VSyncMode::Fifo,
+            true,
+            100,
+            Settings::GpuAccuracy::High,
+            StormLang(QStringLiteral("🚀 Максимальное качество"), QStringLiteral("🚀 Maximum Quality"))
+        };
+    }
+
+    QStringList diffs;
+    if (Settings::values.resolution_setup.GetValue() != target.res) {
+        diffs.append(StormLang(
+            QStringLiteral("• Разрешение: изменено на %1").arg(index == 2 ? QStringLiteral("2x (1440p/4K)") : QStringLiteral("1x (720p/1080p)")),
+            QStringLiteral("• Resolution: changed to %1").arg(index == 2 ? QStringLiteral("2x (1440p/4K)") : QStringLiteral("1x (720p/1080p)"))));
+    }
+    if (Settings::values.gpu_accuracy.GetValue() != target.accuracy) {
+        diffs.append(StormLang(
+            QStringLiteral("• Точность GPU: изменено на %1").arg(index == 0 ? QStringLiteral("Низкая") : (index == 1 ? QStringLiteral("Обычная") : QStringLiteral("Высокая"))),
+            QStringLiteral("• GPU Accuracy: changed to %1").arg(index == 0 ? QStringLiteral("Low") : (index == 1 ? QStringLiteral("Normal") : QStringLiteral("High")))));
+    }
+    if (Settings::values.eco_thermal_mode.GetValue() != target.eco_thermal) {
+        diffs.append(StormLang(
+            QStringLiteral("• Энергосбережение (Eco Thermal): %1").arg(target.eco_thermal ? QStringLiteral("Включено") : QStringLiteral("Выключено")),
+            QStringLiteral("• Eco Thermal Mode: %1").arg(target.eco_thermal ? QStringLiteral("Enabled") : QStringLiteral("Disabled"))));
+    }
+    if (Settings::values.accelerate_astc.GetValue() != target.astc) {
+        diffs.append(StormLang(
+            QStringLiteral("• Декодирование ASTC: %1").arg(index == 0 ? QStringLiteral("CPU (Асинхронно)") : QStringLiteral("GPU")),
+            QStringLiteral("• ASTC Decoding: %1").arg(index == 0 ? QStringLiteral("CPU (Async)") : QStringLiteral("GPU"))));
+    }
+
+    if (!diffs.isEmpty()) {
+        QMessageBox msg(this);
+        msg.setWindowTitle(StormLang(QStringLiteral("Применить профиль?"), QStringLiteral("Apply Preset?")));
+        msg.setText(StormLang(
+            QStringLiteral("<b>Применение профиля: %1</b><br><br>Будут изменены следующие параметры:<br>%2<br>Применить изменения?")
+                .arg(target.name).arg(diffs.join(QStringLiteral("<br>"))),
+            QStringLiteral("<b>Apply preset: %1</b><br><br>The following parameters will be modified:<br>%2<br>Apply changes?")
+                .arg(target.name).arg(diffs.join(QStringLiteral("<br>")))));
+        msg.setIcon(QMessageBox::Question);
+        auto* ok_btn = msg.addButton(StormLang(QStringLiteral("Применить"), QStringLiteral("Apply")), QMessageBox::AcceptRole);
+        msg.addButton(StormLang(QStringLiteral("Отмена"), QStringLiteral("Cancel")), QMessageBox::RejectRole);
+        msg.exec();
+        if (msg.clickedButton() != ok_btn) {
+            UpdatePresetSelection();
+            return;
+        }
+    }
+
+    Settings::values.resolution_setup.SetValue(target.res);
+    Settings::values.accelerate_astc.SetValue(target.astc);
+    Settings::values.astc_recompression.SetValue(target.astc_recomp);
+    Settings::values.use_asynchronous_shaders.SetValue(target.async_shaders);
+    Settings::values.eco_thermal_mode.SetValue(target.eco_thermal);
+    Settings::values.vsync_mode.SetValue(target.vsync);
+    Settings::values.use_speed_limit.SetValue(target.speed_limit_enabled);
+    Settings::values.speed_limit.SetValue(target.speed_limit_val);
+    Settings::values.gpu_accuracy.SetValue(target.accuracy);
+
+    ConfigurationShared::ReloadAllActiveWidgets();
+    SetConfiguration();
 }

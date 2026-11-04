@@ -15,6 +15,12 @@ import org.yuzu.yuzu_emu.features.settings.model.BooleanSetting
 import org.yuzu.yuzu_emu.features.settings.model.IntSetting
 import java.io.File
 
+data class AppliedProfileOverride(
+    val key: String,
+    val value: String,
+    val source: String // "base" or vendor key ("nvidia", "amd", "intel", "adreno", "mali", "xclipse", "other")
+)
+
 data class GameFixProfile(
     val titleId: Long,
     val gameName: String,
@@ -22,7 +28,9 @@ data class GameFixProfile(
     val issuesEn: String,
     val fixesRu: String,
     val fixesEn: String,
-    val settingsMap: Map<String, String>
+    val settingsMap: Map<String, String>,
+    val altTitleIds: List<Long> = emptyList(),
+    val vendorOverrides: Map<String, Map<String, String>> = emptyMap()
 )
 
 object GameFixSessionState {
@@ -46,6 +54,41 @@ object GameFixSessionState {
 }
 
 object GameFixDatabase {
+
+    @Volatile
+    private var detectedGpuVendor: String = "adreno"
+
+    fun setDetectedGpuVendor(vendor: String) {
+        val v = vendor.lowercase()
+        detectedGpuVendor = when {
+            v.contains("nvidia") || v.contains("tegra") -> "nvidia"
+            v.contains("amd") || v.contains("radeon") -> "amd"
+            v.contains("intel") || v.contains("arc") -> "intel"
+            v.contains("adreno") || v.contains("qualcomm") || v.contains("freedreno") || v.contains("turnip") -> "adreno"
+            v.contains("mali") || v.contains("immortalis") || v.contains("panfrost") || v.contains("panvk") -> "mali"
+            v.contains("xclipse") || v.contains("samsung") -> "xclipse"
+            else -> "other"
+        }
+        Log.info("[GameFixDatabase] Detected GPU vendor set to: $detectedGpuVendor (raw: $vendor)")
+    }
+
+    fun getDetectedGpuVendor(): String = detectedGpuVendor
+
+    fun getAppliedOverrides(titleId: Long): List<AppliedProfileOverride> {
+        val fix = profiles.firstOrNull { it.titleId == titleId || it.altTitleIds.contains(titleId) } ?: return emptyList()
+        val result = mutableMapOf<String, AppliedProfileOverride>()
+        for ((k, v) in fix.settingsMap) {
+            result[k] = AppliedProfileOverride(k, v, "base")
+        }
+        val vendorMap = fix.vendorOverrides[detectedGpuVendor]
+        if (vendorMap != null) {
+            for ((k, v) in vendorMap) {
+                result[k] = AppliedProfileOverride(k, v, detectedGpuVendor)
+            }
+        }
+        return result.values.toList()
+    }
+
 
     private val profiles: List<GameFixProfile> by lazy {
         listOf(
@@ -489,7 +532,28 @@ GameFixProfile(
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true"
             )
-        ),
+,
+            listOf(0x01007EF00011E800L),
+            mapOf(
+                "amd" to mapOf(
+                    "Renderer\\gpu_accuracy" to "0",
+                    "Renderer\\use_reactive_flushing" to "false",
+                    "Renderer\\barrier_feedback_loops" to "true",
+                    "Renderer\\use_fast_gpu_time" to "false"
+                ),
+                "intel" to mapOf(
+                    "Renderer\\gpu_accuracy" to "0",
+                    "Renderer\\use_reactive_flushing" to "false",
+                    "Renderer\\barrier_feedback_loops" to "true",
+                    "Renderer\\use_fast_gpu_time" to "false"
+                ),
+                "adreno" to mapOf(
+                    "Renderer\\gpu_accuracy" to "1",
+                    "Renderer\\use_reactive_flushing" to "true",
+                    "Renderer\\barrier_feedback_loops" to "true",
+                    "Renderer\\astc_recompression" to "0"
+                )
+            )        ),
         GameFixProfile(
             0x0100EC9010258000L,
             "Streets of Rage 4",
@@ -807,7 +871,24 @@ GameFixProfile(
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0"
             )
-        ),
+,
+            listOf(0x0100F2C0115B6800L),
+            mapOf(
+                "adreno" to mapOf(
+                    "Renderer\\gpu_accuracy" to "1",
+                    "Renderer\\barrier_feedback_loops" to "true",
+                    "Renderer\\use_reactive_flushing" to "true",
+                    "Renderer\\astc_recompression" to "0"
+                ),
+                "amd" to mapOf(
+                    "Renderer\\gpu_accuracy" to "0",
+                    "Renderer\\barrier_feedback_loops" to "true"
+                ),
+                "nvidia" to mapOf(
+                    "Renderer\\gpu_accuracy" to "0",
+                    "Renderer\\barrier_feedback_loops" to "true"
+                )
+            )        ),
 
                 // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/4812
 GameFixProfile(
@@ -892,7 +973,32 @@ GameFixProfile(
                 "Renderer\\vram_budget_governor" to "true",
                 "Renderer\\use_asynchronous_gpu_emulation" to "true"
             )
-        ),
+,
+            listOf(0x0100916014D8C000L, 0x0100726014352000L),
+            mapOf(
+                "adreno" to mapOf(
+                    "Renderer\\gpu_accuracy" to "1",
+                    "Renderer\\use_fast_gpu_time" to "false",
+                    "Renderer\\astc_recompression" to "0",
+                    "Renderer\\accelerate_astc" to "0",
+                    "Renderer\\use_reactive_flushing" to "true",
+                    "Renderer\\enable_gpu_buffer_readback" to "false"
+                ),
+                "intel" to mapOf(
+                    "Renderer\\gpu_accuracy" to "1",
+                    "Renderer\\use_reactive_flushing" to "true",
+                    "Renderer\\use_fast_gpu_time" to "false",
+                    "Renderer\\astc_recompression" to "0",
+                    "Renderer\\enable_gpu_buffer_readback" to "false"
+                ),
+                "amd" to mapOf(
+                    "Renderer\\gpu_accuracy" to "1",
+                    "Renderer\\use_reactive_flushing" to "true",
+                    "Renderer\\use_fast_gpu_time" to "false",
+                    "Renderer\\astc_recompression" to "0",
+                    "Renderer\\enable_gpu_buffer_readback" to "false"
+                )
+            )        ),
         GameFixProfile(
             0x0100916014D8C000L,
             "Diablo II: Resurrected",
@@ -7219,6 +7325,11 @@ GameFixProfile(
             )
 
             val settings = (if (fix.settingsMap.isNotEmpty()) fix.settingsMap else getFullSettingsMap(fix)).toMutableMap()
+            val vendorMap = fix.vendorOverrides[detectedGpuVendor]
+            if (vendorMap != null) {
+                settings.putAll(vendorMap)
+                Log.info("[GameFixDatabase] Merged ${vendorMap.size} vendor overrides for '$detectedGpuVendor' into clean settings")
+            }
             org.yuzu.yuzu_emu.utils.StormHardwareCalibrator.sanitizeFixMapForHardware(settings)
             for ((fullKey, value) in settings) {
                 if (fullKey == "Renderer\\aspect_ratio" || fullKey.endsWith("aspect_ratio") ||

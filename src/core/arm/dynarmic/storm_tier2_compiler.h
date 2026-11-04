@@ -86,13 +86,10 @@ public:
             return 0xD53BE020U | (inst & 0x1FU);
         }
 
-        // 2. Eliminate basic-block exits on SEV (0xD503209F) & SEVL (0xD50320BF):
-        // Dynarmic terminates the basic block and exits to C++ ExceptionRaised (which is a no-op)
-        // on every SEV/SEVL. Rewriting them to NOP keeps spinlocks inside the JIT superblock.
-        if (inst == A64_SEV || inst == A64_SEVL) [[unlikely]] {
-            s_rewritten_inst_count.fetch_add(1, std::memory_order_relaxed);
-            return A64_NOP;
-        }
+        // 2. SEV / SEVL rewrite to NOP:
+        // REJECTED / DISABLED per audit and stability review: rewriting SEV/SEVL to NOP
+        // breaks guest multithreaded synchronization, causing spinlock deadlocks where
+        // waiting cores never wake from WFE.
 
         // 3. Fast WFE/WFET -> YIELD rewrite under Low-End Turbo / Unsafe CPU to avoid micro-stutters
         if ((inst == A64_WFE || (inst & A64_WFET_MASK) == A64_WFET_VAL) &&
@@ -137,9 +134,7 @@ public:
                 if ((inst & 0xFFFFFFE0U) == 0xD53BE040U) {
                     page[i] = 0xD53BE020U | (inst & 0x1FU);
                     ++rewritten;
-                } else if (inst == A64_SEV || inst == A64_SEVL) {
-                    page[i] = A64_NOP;
-                    ++rewritten;
+                // SEV/SEVL -> NOP disabled to prevent guest spinlock deadlocks
                 } else if (wfe_to_yield &&
                            (inst == A64_WFE || (inst & A64_WFET_MASK) == A64_WFET_VAL)) {
                     page[i] = A64_YIELD;

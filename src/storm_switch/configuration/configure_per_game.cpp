@@ -4,6 +4,7 @@
 #include <QPainterPath>
 #include "frontend_common/play_time_manager.h"
 #include "storm_switch/configuration/storm_ui_structure_helper.h"
+#include "qt_common/config/setting_conflicts.h"
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -68,6 +69,7 @@
 #include "storm_switch/configuration/configure_per_game.h"
 #include <QListWidget>
 #include "storm_switch/configuration/storm_ui_structure_helper.h"
+#include "qt_common/config/setting_conflicts.h"
 #include "storm_switch/configuration/configure_per_game_addons.h"
 #include "storm_switch/configuration/configure_gamebanana_mods.h"
 #include "storm_switch/configuration/configure_per_game_amiibo.h"
@@ -84,6 +86,7 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
       system{system_},
       builder{std::make_unique<ConfigurationShared::Builder>(this, !system_.IsPoweredOn())},
       tab_group{std::make_shared<std::vector<ConfigurationShared::Tab*>>()} {
+    ConfigurationShared::SetCurrentPerGameTitleId(title_id_);
     const auto file_path = std::filesystem::path(Common::FS::ToU8String(file_name));
     const auto file_path_hash = Common::CityHash64(file_name.data(), file_name.size());
     const auto specific_config = fmt::format("{:016X}_{:016X}", title_id, file_path_hash);
@@ -697,9 +700,14 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
 
     RetranslateUI();
     LoadConfiguration();
+
+    SetupConflictBanner();
+    CheckConflicts();
 }
 
-ConfigurePerGame::~ConfigurePerGame() = default;
+ConfigurePerGame::~ConfigurePerGame() {
+    ConfigurationShared::SetCurrentPerGameTitleId(0);
+}
 
 void ConfigurePerGame::ApplyConfiguration() {
     for (const auto tab : *tab_group) {
@@ -1186,5 +1194,54 @@ void ConfigurePerGame::UpdateVisibleTabs() {
 
         tab->setMinimumSize(200, 160);
         ui->tabWidget->addTab(tab, tab_title);
+    }
+}
+
+void ConfigurePerGame::SetupConflictBanner() {
+    m_conflict_banner = new QWidget(this);
+    auto* banner_layout = new QHBoxLayout(m_conflict_banner);
+    banner_layout->setContentsMargins(12, 6, 12, 6);
+    m_conflict_label = new QLabel(m_conflict_banner);
+    m_conflict_label->setWordWrap(true);
+    m_conflict_fix_btn = new QPushButton(StormLang(QStringLiteral("Исправить"), QStringLiteral("Fix")), m_conflict_banner);
+    m_conflict_fix_btn->setCursor(Qt::PointingHandCursor);
+    m_conflict_fix_btn->setStyleSheet(QStringLiteral(
+        "QPushButton { background: #ffaa00; color: #1a1a1a; font-weight: bold; padding: 5px 14px; border-radius: 5px; border: none; }"
+        "QPushButton:hover { background: #ffbb22; }"));
+
+    banner_layout->addWidget(m_conflict_label, 1);
+    banner_layout->addWidget(m_conflict_fix_btn);
+
+    m_conflict_banner->setStyleSheet(QStringLiteral(
+        "QWidget { background: rgba(255, 170, 0, 0.15); border: 1px solid rgba(255, 170, 0, 0.4); border-radius: 6px; margin: 4px; }"));
+    m_conflict_banner->setVisible(false);
+
+    if (ui->verticalLayout_3) {
+        ui->verticalLayout_3->addWidget(m_conflict_banner);
+    }
+
+    connect(m_conflict_fix_btn, &QPushButton::clicked, this, [this]() {
+        if (m_conflict_current_fix) {
+            m_conflict_current_fix();
+            ConfigurationShared::ReloadAllActiveWidgets();
+            CheckConflicts();
+        }
+    });
+}
+
+void ConfigurePerGame::CheckConflicts() {
+    if (!m_conflict_banner || !m_conflict_label) return;
+    const auto conflicts = ConfigurationShared::SettingConflicts::DetectConflicts(true, title_id);
+    if (conflicts.empty()) {
+        m_conflict_banner->setVisible(false);
+        m_conflict_current_fix = nullptr;
+    } else {
+        const auto& c = conflicts.front();
+        const bool is_ru = UISettings::values.language.GetValue().rfind("ru", 0) == 0;
+        m_conflict_label->setText(QStringLiteral("<b>⚠️ %1:</b> %2")
+            .arg(c.LocalizedTitle(is_ru))
+            .arg(c.LocalizedMessage(is_ru)));
+        m_conflict_current_fix = c.apply_fix;
+        m_conflict_banner->setVisible(true);
     }
 }

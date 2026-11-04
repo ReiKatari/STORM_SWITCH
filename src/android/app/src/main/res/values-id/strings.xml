@@ -2048,4 +2048,17 @@
     <string name="save_state_unsupported_toast">Save states are not supported for this game. Use in-game saves. Experimental mode can be enabled in Settings → System.</string>
     <string name="save_state_experimental_warning">Save states are experimental: loading may freeze the game. Keep in-game saves.</string>
     <string name="save_states_mode_disabled_toast">Save states are disabled in Settings → System.</string>
+
+    <string name="performance_preset">Preset Performa</string>
+    <string name="performance_preset_description">Pilih preset konfigurasi yang dioptimalkan</string>
+    <string name="performance_preset_battery">🔋 Penghemat Baterai</string>
+    <string name="performance_preset_balanced">⚖️ Seimbang (Disarankan)</string>
+    <string name="performance_preset_quality">🚀 Kualitas Maksimal</string>
+    <string name="performance_preset_custom">⚙️ Kustom</string>
+    <string name="performance_preset_applied">Preset performa diterapkan</string>
+    <string name="setting_conflict_warning">Konflik Pengaturan Terdeteksi</string>
+    <string name="setting_conflict_fix">Perbaiki</string>
+    <string name="profile_override_badge">ditentukan oleh profil game</string>
+    <string name="profile_override_revert">Kembalikan ke global</string>
+    <string name="cpu_unsafe_disabled_explanation">Opsi CPU tidak aman hanya aktif jika akurasi CPU diatur ke \'Tidak Aman\'.</string>
 </resources>

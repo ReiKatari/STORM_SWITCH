@@ -84,6 +84,12 @@ private:
 
     int FindIndex(u32 enumeration, int value) const;
 
+    void SetupPerformancePresets();
+    void ApplyPerformancePreset(int index);
+    void UpdatePresetSelection();
+
+    QComboBox* m_preset_combobox{nullptr};
+
     std::unique_ptr<Ui::ConfigureGraphics> ui;
     QColor bg_color;
 

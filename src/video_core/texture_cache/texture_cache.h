@@ -79,6 +79,7 @@ TextureCache<P>::TextureCache(Runtime& runtime_, Tegra::MaxwellDeviceMemoryManag
         minimum_memory = 0;
     }
 
+    has_barrier_feedback_loops = Settings::values.barrier_feedback_loops.GetValue();
     const bool gpu_unswizzle_enabled = Settings::values.gpu_unswizzle_enabled.GetValue();
 
     if (gpu_unswizzle_enabled) {
@@ -321,7 +322,7 @@ void TextureCache<P>::FillImageViews(std::span<ImageViewInOut> views, bool compu
 
 template <class P>
 void TextureCache<P>::CheckFeedbackLoop(std::span<const ImageViewInOut> views) {
-    if (!Settings::values.barrier_feedback_loops.GetValue()) {
+    if (!has_barrier_feedback_loops) {
         return;
     }
 
@@ -1418,6 +1419,9 @@ template <class P>
 template <typename StagingBuffer>
 void TextureCache<P>::UploadImageContents(Image& image, StagingBuffer& staging) {
     const std::span<u8> mapped_span = staging.mapped_span;
+    if (mapped_span.empty()) {
+        return;
+    }
     const GPUVAddr gpu_addr = image.gpu_addr;
 
     if (True(image.flags & ImageFlagBits::AcceleratedUpload)) {

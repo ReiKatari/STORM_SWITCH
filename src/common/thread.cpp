@@ -812,7 +812,7 @@ bool Event::WaitFor(const std::chrono::nanoseconds time) {
                 auto const now = _rdtsc();
 #endif
                 if (end > now) {
-                    u32 const cycles = std::min<u32>((std::numeric_limits<u32>::max)(), s64(end) - s64(now));
+                    u32 const cycles = static_cast<u32>(std::min<u64>((std::numeric_limits<u32>::max)(), static_cast<u64>(end - now)));
                     // See here: https://github.com/torvalds/linux/blob/948a64995aca6820abefd17f1a4258f5835c5ad9/arch/x86/lib/delay.c#L93
                     // MWAITX accepts a 32-bit input timer which determines the total number of cycles to wait for
                     // NOT THE TOTAL ABSOLUTE TSC VALUE, it's just a delta
@@ -830,15 +830,46 @@ bool Event::WaitFor(const std::chrono::nanoseconds time) {
         }
     } else if (caps.waitpkg) {
         // #UD If CPUID.7.0:ECX.WAITPKG[bit 5]=0.
+        // Bit 0 = 0 selects C0.2 (deeper sleep, lower power); bit 0 = 1 selects C0.1 (lighter, faster wake for very short waits).
+        const u32 hint = time < std::chrono::microseconds(10) ? 1 : 0;
         while (true) {
             _umonitor(std::addressof(is_set));
-            if (!is_set.load() && !_umwait(0, end)) //umwait is absolute time!!!
+            if (!is_set.load() && !_umwait(hint, end))
                 return false;
             bool expected = true;
             if (is_set.compare_exchange_weak(expected, false, std::memory_order_release))
                 return true;
         }
     } else {
+#ifdef _WIN32
+        // Use high-resolution waitable timer for precise sub-ms waits without system-wide timer resolution penalty
+        static const auto get_timer = []() -> HANDLE {
+#ifndef CREATE_WAITABLE_TIMER_HIGH_RESOLUTION
+#define CREATE_WAITABLE_TIMER_HIGH_RESOLUTION 0x00000002
+#endif
+            HANDLE h = CreateWaitableTimerExW(nullptr, nullptr,
+                CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
+            if (!h) {
+                h = CreateWaitableTimerExW(nullptr, nullptr, 0, TIMER_ALL_ACCESS);
+            }
+            return h;
+        };
+        thread_local HANDLE timer = get_timer();
+        if (timer && time > std::chrono::milliseconds(1)) {
+            LARGE_INTEGER due_time;
+            due_time.QuadPart = -static_cast<LONGLONG>(time.count() / 100);
+            if (SetWaitableTimer(timer, &due_time, 0, nullptr, nullptr, FALSE)) {
+                std::unique_lock lk{mutex};
+                if (!condvar.wait_for(lk, time, [this] { return is_set.load(); })) {
+                    CancelWaitableTimer(timer);
+                    return false;
+                }
+                CancelWaitableTimer(timer);
+                is_set = false;
+                return true;
+            }
+        }
+#endif
         std::unique_lock lk{mutex};
         if (!condvar.wait_for(lk, time, [this] { return is_set.load(); }))
             return false;

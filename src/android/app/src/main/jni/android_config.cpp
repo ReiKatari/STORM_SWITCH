@@ -35,6 +35,14 @@ void AndroidConfig::SaveAllValues() {
 
 void AndroidConfig::ReadAndroidValues() {
     ReadAndroidUIValues();
+    if (AndroidSettings::values.pipeline_worker_count.GetValue() > 0 &&
+        Settings::values.pipeline_worker_threads.GetValue() == 0) {
+        Settings::values.pipeline_worker_threads.SetValue(
+            static_cast<u32>(AndroidSettings::values.pipeline_worker_count.GetValue()));
+    } else if (Settings::values.pipeline_worker_threads.GetValue() > 0) {
+        AndroidSettings::values.pipeline_worker_count.SetValue(
+            static_cast<s32>(Settings::values.pipeline_worker_threads.GetValue()));
+    }
     // Enforce Vulkan graphics backend on Android
     Settings::values.renderer_backend.SetValue(Settings::RendererBackend::Vulkan);
     if (global) {
@@ -256,6 +264,8 @@ void AndroidConfig::ReadAndroidControlValues() {
 }
 
 void AndroidConfig::SaveAndroidValues() {
+    AndroidSettings::values.pipeline_worker_count.SetValue(
+        static_cast<s32>(Settings::values.pipeline_worker_threads.GetValue()));
     SaveAndroidUIValues();
     if (global) {
         SaveUIValues();

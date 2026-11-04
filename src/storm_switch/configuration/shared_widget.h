@@ -40,6 +40,8 @@ void SetGlobalSettingChangeCallback(SettingChangeCallback cb);
 void NotifyGlobalSettingChanged();
 void ReloadAllActiveWidgets();
 void RetranslateAllActiveWidgets();
+void SetCurrentPerGameTitleId(u64 id);
+u64 GetCurrentPerGameTitleId();
 void RegisterReloadCallback(uintptr_t id, std::function<void()> cb);
 void UnregisterReloadCallback(uintptr_t id);
 

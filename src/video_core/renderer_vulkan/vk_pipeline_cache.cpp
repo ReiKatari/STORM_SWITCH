@@ -321,24 +321,6 @@ Shader::RuntimeInfo MakeRuntimeInfo(std::span<const Shader::IR::Program> program
 
 size_t GetTotalPipelineWorkers() {
     const size_t hardware_threads = static_cast<size_t>(std::thread::hardware_concurrency());
-    const size_t max_core_threads =
-        std::max<size_t>(hardware_threads, 2ULL) - 1ULL;
-#ifdef __ANDROID__
-    if (Settings::values.eco_thermal_mode.GetValue()) {
-        return 2ULL; // Cap pipeline worker threads to 2 under thermal throttle to cool CPU
-    }
-    const int configured = AndroidSettings::values.pipeline_worker_count.GetValue();
-    const int clamped = std::clamp(configured, 1, 8);
-    const size_t desired = static_cast<size_t>(clamped);
-    if (desired == 0) {
-        return 1ULL;
-    }
-    const size_t workers = std::min(max_core_threads, desired);
-    if (Settings::values.smart_shader_throttle.GetValue()) {
-        return std::clamp<size_t>(workers / 2, 1ULL, 3ULL);
-    }
-    return workers;
-#else
     const u32 user_threads = Settings::values.pipeline_worker_threads.GetValue();
     if (user_threads > 0) {
         return std::clamp<size_t>(user_threads, 1ULL, std::max<size_t>(1ULL, hardware_threads));
@@ -351,7 +333,6 @@ size_t GetTotalPipelineWorkers() {
         return std::min<size_t>(auto_threads, 2ULL);
     }
     return auto_threads;
-#endif
 }
 
 } // Anonymous namespace
@@ -672,9 +653,34 @@ void PipelineCache::LoadDiskResources(u64 title_id, std::stop_token stop_loading
         return;
     }
     pipeline_cache_filename = base_dir / "vulkan.bin";
+    vulkan_pipeline_cache_filename = base_dir / "vulkan_pipelines.bin";
+
+    // Incorporate driver UUID and version check for disk cache clean invalidation
+    const auto driver_tag_file = base_dir / "driver.tag";
+    const auto current_uuid = device.GetPipelineCacheUUID();
+    const u32 current_driver_ver = device.GetDriverVersion();
+    bool driver_mismatch = false;
+    if (std::ifstream tag{driver_tag_file, std::ios::binary}) {
+        u32 saved_ver{};
+        std::array<u8, VK_UUID_SIZE> saved_uuid{};
+        tag.read(reinterpret_cast<char*>(&saved_ver), sizeof(saved_ver));
+        tag.read(reinterpret_cast<char*>(saved_uuid.data()), saved_uuid.size());
+        if (saved_ver != current_driver_ver || !std::ranges::equal(saved_uuid, current_uuid)) {
+            driver_mismatch = true;
+        }
+    } else {
+        driver_mismatch = true;
+    }
+    if (driver_mismatch) {
+        LOG_INFO(Render_Vulkan, "Driver or GPU update detected. Invalidating shader disk cache for title {:016x}", title_id);
+        Common::FS::RemoveFile(pipeline_cache_filename);
+        Common::FS::RemoveFile(vulkan_pipeline_cache_filename);
+        std::ofstream tag{driver_tag_file, std::ios::binary};
+        tag.write(reinterpret_cast<const char*>(&current_driver_ver), sizeof(current_driver_ver));
+        tag.write(reinterpret_cast<const char*>(current_uuid.data()), current_uuid.size());
+    }
 
     if (use_vulkan_pipeline_cache) {
-        vulkan_pipeline_cache_filename = base_dir / "vulkan_pipelines.bin";
         vulkan_pipeline_cache =
             LoadVulkanPipelineCache(vulkan_pipeline_cache_filename, CACHE_VERSION);
     }
@@ -691,38 +697,13 @@ void PipelineCache::LoadDiskResources(u64 title_id, std::stop_token stop_loading
     if (device.IsKhrPipelineExecutablePropertiesEnabled()) {
         state->statistics = std::make_unique<PipelineStatistics>(device);
     }
-    const std::size_t hw_threads = std::max<std::size_t>(std::thread::hardware_concurrency(), 2ULL);
-    std::size_t preload_thread_count =
-        device.HasBrokenParallelShaderCompiling()
-            ? 1ULL
-            : std::clamp<std::size_t>(hw_threads - 1ULL, 2ULL, 16ULL);
-#ifdef __ANDROID__
-    const int configured_workers = AndroidSettings::values.pipeline_worker_count.GetValue();
-    if (configured_workers > 0) {
-        preload_thread_count = std::clamp<std::size_t>(static_cast<std::size_t>(configured_workers), 1ULL, hw_threads);
-    }
-    if (Settings::values.eco_thermal_mode.GetValue()) {
-        preload_thread_count = std::min<std::size_t>(preload_thread_count, 2ULL);
-    } else if (Settings::values.smart_shader_throttle.GetValue()) {
-        preload_thread_count = std::min<std::size_t>(preload_thread_count, 4ULL);
-    }
-#else
-    if (!device.HasBrokenParallelShaderCompiling()) {
-        const u32 user_threads = Settings::values.pipeline_worker_threads.GetValue();
-        if (user_threads > 0) {
-            preload_thread_count = std::clamp<std::size_t>(user_threads, 1ULL, hw_threads);
-        } else {
-            preload_thread_count = std::max<std::size_t>(1ULL, std::min<std::size_t>(4ULL, hw_threads / 4ULL));
-        }
-    }
-#endif
-    Common::ThreadWorker preload_workers(preload_thread_count, "VkPipelinePreload");
+    // Persistent workers pool is used for preloading at Priority::Low to eliminate thread pool churn
 
     const auto load_compute{[&](std::ifstream& file, FileEnvironment env) {
         ComputePipelineCacheKey key;
         file.read(reinterpret_cast<char*>(&key), sizeof(key));
 
-        preload_workers.QueueWork([this, key, env_ = std::move(env), state_weak = std::weak_ptr<LoadingState>(state), callback]() mutable {
+        workers.QueueWork([this, key, env_ = std::move(env), state_weak = std::weak_ptr<LoadingState>(state), callback]() mutable {
             ShaderPools pools;
             auto auto_state = state_weak.lock();
             PipelineStatistics* stats = auto_state ? auto_state->statistics.get() : nullptr;
@@ -775,7 +756,7 @@ void PipelineCache::LoadDiskResources(u64 title_id, std::stop_token stop_loading
             return;
         }
 
-        preload_workers.QueueWork([this, key, envs_ = std::move(envs), state_weak = std::weak_ptr<LoadingState>(state), callback]() mutable {
+        workers.QueueWork([this, key, envs_ = std::move(envs), state_weak = std::weak_ptr<LoadingState>(state), callback]() mutable {
             ShaderPools pools;
             boost::container::static_vector<Shader::Environment*, 5> env_ptrs;
             for (auto& env : envs_) {
@@ -812,7 +793,7 @@ void PipelineCache::LoadDiskResources(u64 title_id, std::stop_token stop_loading
         state->has_loaded.store(true, std::memory_order_release);
     }
 
-    preload_workers.WaitForRequests(stop_loading);
+    workers.WaitForRequests(stop_loading);
     callback(VideoCore::LoadCallbackStage::Build, state->total, state->total);
 
     if (use_vulkan_pipeline_cache) {

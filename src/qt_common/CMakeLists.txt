@@ -16,6 +16,8 @@ add_library(qt_common STATIC
     config/qt_config.h
     config/shared_translation.cpp
     config/shared_translation.h
+    config/setting_conflicts.cpp
+    config/setting_conflicts.h
 
     util/path.h util/path.cpp
     util/game.h util/game.cpp

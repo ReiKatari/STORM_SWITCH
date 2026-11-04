@@ -2118,4 +2118,17 @@
     <string name="save_state_unsupported_toast">Salvamento rápido não suportado para este jogo. Salve no jogo. Ative o modo experimental em Configurações → Sistema.</string>
     <string name="save_state_experimental_warning">Salvamento rápido experimental: carregar pode travar o jogo. Mantenha salvamentos no jogo.</string>
     <string name="save_states_mode_disabled_toast">Salvamento rápido desativado em Configurações → Sistema.</string>
+
+    <string name="performance_preset">Perfil de desempenho</string>
+    <string name="performance_preset_description">Selecione um perfil de otimização para equilibrar desempenho, bateria e qualidade visual</string>
+    <string name="performance_preset_battery">🔋 Economia de bateria</string>
+    <string name="performance_preset_balanced">⚖️ Equilibrado (Recomendado)</string>
+    <string name="performance_preset_quality">🚀 Qualidade máxima</string>
+    <string name="performance_preset_custom">⚙️ Personalizado</string>
+    <string name="performance_preset_applied">Perfil de desempenho aplicado</string>
+    <string name="setting_conflict_warning">Conflito de configurações detectado</string>
+    <string name="setting_conflict_fix">Corrigir</string>
+    <string name="profile_override_badge">definido por perfil do jogo</string>
+    <string name="profile_override_revert">Restaurar padrão global</string>
+    <string name="cpu_unsafe_disabled_explanation">Opções de CPU inseguras só estão ativas quando a precisão da CPU está definida como \'Inseguro\'.</string>
 </resources>

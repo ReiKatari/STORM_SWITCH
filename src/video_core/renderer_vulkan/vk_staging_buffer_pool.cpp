@@ -15,6 +15,7 @@
 #include "common/bit_util.h"
 #include "common/common_types.h"
 #include "common/literals.h"
+#include "common/logging/log.h"
 #include "video_core/renderer_vulkan/vk_scheduler.h"
 #include "video_core/renderer_vulkan/vk_staging_buffer_pool.h"
 #include "video_core/vulkan_common/vulkan_device.h"
@@ -101,6 +102,9 @@ StagingBufferPool::StagingBufferPool(const Device& device_, MemoryAllocator& mem
 StagingBufferPool::~StagingBufferPool() = default;
 
 StagingBufferRef StagingBufferPool::Request(size_t size, MemoryUsage usage, bool deferred) {
+    if (size == 0) {
+        return StagingBufferRef{};
+    }
     if (!deferred && usage == MemoryUsage::Upload && size <= (region_size * 4)) {
         return GetStreamBuffer(size);
     }
@@ -125,6 +129,11 @@ void StagingBufferPool::TickFrame() {
     ReleaseCache(MemoryUsage::DeviceLocal);
     ReleaseCache(MemoryUsage::Upload);
     ReleaseCache(MemoryUsage::Download);
+
+    // Trim idle buffers periodically across all levels to prevent unbounded growth
+    if (current_delete_level == 0) {
+        TrimUnusedBuffers();
+    }
 }
 
 StagingBufferRef StagingBufferPool::GetStreamBuffer(size_t size) {
@@ -185,7 +194,11 @@ StagingBufferRef StagingBufferPool::GetStagingBuffer(size_t size, MemoryUsage us
 std::optional<StagingBufferRef> StagingBufferPool::TryGetReservedBuffer(size_t size,
                                                                         MemoryUsage usage,
                                                                         bool deferred) {
-    StagingBuffers& cache_level = GetCache(usage)[Common::Log2Ceil(size)];
+    const auto log2_level = Common::Log2Ceil(size);
+    if (log2_level >= NUM_LEVELS) {
+        return std::nullopt;
+    }
+    StagingBuffers& cache_level = GetCache(usage)[log2_level];
 
     const auto is_free = [this](const StagingBuffer& entry) {
         return !entry.deferred && scheduler.IsFree(entry.tick);
@@ -208,6 +221,10 @@ std::optional<StagingBufferRef> StagingBufferPool::TryGetReservedBuffer(size_t s
 
 StagingBufferRef StagingBufferPool::CreateStagingBuffer(size_t size, MemoryUsage usage, bool deferred) {
     auto const log2_size = Common::Log2Ceil<u32>(u32(size));
+    if (log2_size >= NUM_LEVELS) {
+        LOG_ERROR(Render_Vulkan, "Requested staging buffer size exceeds max levels: {}", size);
+        return StagingBufferRef{};
+    }
     VkBufferCreateInfo buffer_ci = {
         .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
         .pNext = nullptr,
@@ -226,7 +243,28 @@ StagingBufferRef StagingBufferPool::CreateStagingBuffer(size_t size, MemoryUsage
     if (device.IsBufferDeviceAddressSupported()) {
         buffer_ci.usage |= VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
     }
-    vk::Buffer buffer = memory_allocator.CreateBuffer(buffer_ci, usage);
+    vk::Buffer buffer;
+    try {
+        buffer = memory_allocator.CreateBuffer(buffer_ci, usage);
+    } catch (const vk::Exception& ex) {
+        LOG_WARNING(Render_Vulkan, "Staging buffer allocation failed for size {}: {}. Freeing unused buffers and retrying...", size, ex.what());
+        TrimUnusedBuffers();
+        try {
+            buffer = memory_allocator.CreateBuffer(buffer_ci, usage);
+        } catch (const vk::Exception& ex2) {
+            LOG_ERROR(Render_Vulkan, "Staging buffer allocation retry failed: {}. Falling back to stream buffer or empty", ex2.what());
+            if (usage == MemoryUsage::Upload && size <= stream_buffer_size) {
+                return GetStreamBuffer(size);
+            }
+            return StagingBufferRef{};
+        }
+    }
+    if (!buffer) {
+        if (usage == MemoryUsage::Upload && size <= stream_buffer_size) {
+            return GetStreamBuffer(size);
+        }
+        return StagingBufferRef{};
+    }
     if (device.HasDebuggingToolAttached()) {
         ++buffer_index;
         buffer.SetObjectNameEXT(fmt::format("Staging Buffer {}", buffer_index).c_str());
@@ -267,28 +305,46 @@ void StagingBufferPool::ReleaseCache(MemoryUsage usage) {
     ReleaseLevel(GetCache(usage), current_delete_level);
 }
 
-void StagingBufferPool::ReleaseLevel(StagingBuffersCache& cache, size_t log2) {
-    constexpr size_t deletions_per_tick = 16;
+void StagingBufferPool::TrimUnusedBuffers() {
+    for (size_t i = 0; i < NUM_LEVELS; ++i) {
+        ReleaseLevel(device_local_cache, i, true);
+        ReleaseLevel(upload_cache, i, true);
+        ReleaseLevel(download_cache, i, true);
+    }
+}
+
+void StagingBufferPool::ReleaseLevel(StagingBuffersCache& cache, size_t log2, bool force_all) {
+    if (log2 >= NUM_LEVELS) {
+        return;
+    }
     auto& staging = cache[log2];
     auto& entries = staging.entries;
-    const size_t old_size = entries.size();
+    if (entries.empty()) {
+        return;
+    }
 
     const auto is_deletable = [this](const StagingBuffer& entry) {
-        return scheduler.IsFree(entry.tick);
+        return !entry.deferred && scheduler.IsFree(entry.tick);
     };
-    const size_t begin_offset = staging.delete_index;
-    const size_t end_offset = (std::min)(begin_offset + deletions_per_tick, old_size);
-    const auto begin = entries.begin() + begin_offset;
-    const auto end = entries.begin() + end_offset;
-    entries.erase(std::remove_if(begin, end, is_deletable), end);
 
-    const size_t new_size = entries.size();
-    staging.delete_index += deletions_per_tick;
-    if (staging.delete_index >= new_size) {
+    if (force_all) {
+        entries.erase(std::remove_if(entries.begin(), entries.end(), is_deletable), entries.end());
         staging.delete_index = 0;
-    }
-    if (staging.iterate_index > new_size) {
         staging.iterate_index = 0;
+    } else {
+        constexpr size_t deletions_per_tick = 16;
+        const size_t old_size = entries.size();
+        const size_t begin_offset = staging.delete_index;
+        const size_t end_offset = (std::min)(begin_offset + deletions_per_tick, old_size);
+        const auto begin = entries.begin() + begin_offset;
+        const auto end = entries.begin() + end_offset;
+        entries.erase(std::remove_if(begin, end, is_deletable), end);
+
+        const size_t new_size = entries.size();
+        staging.delete_index = (begin_offset + deletions_per_tick >= new_size) ? 0 : begin_offset + deletions_per_tick;
+        if (staging.iterate_index > new_size) {
+            staging.iterate_index = 0;
+        }
     }
 }
 

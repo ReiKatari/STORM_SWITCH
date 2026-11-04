@@ -55,12 +55,20 @@ void KScheduler::RequestScheduleOnInterrupt(KernelCore& kernel) {
 }
 
 void KScheduler::DisableScheduling(KernelCore& kernel) {
-    ASSERT(GetCurrentThread(kernel).GetDisableDispatchCount() >= 0);
-    GetCurrentThread(kernel).DisableDispatch(kernel);
+    auto* cur_thread = GetCurrentThreadPointer(kernel);
+    if (!cur_thread) {
+        return;
+    }
+    ASSERT(cur_thread->GetDisableDispatchCount() >= 0);
+    cur_thread->DisableDispatch(kernel);
 }
 
 void KScheduler::EnableScheduling(KernelCore& kernel, u64 cores_needing_scheduling) {
-    ASSERT(GetCurrentThread(kernel).GetDisableDispatchCount() >= 1);
+    auto* cur_thread = GetCurrentThreadPointer(kernel);
+    if (!cur_thread) {
+        return;
+    }
+    ASSERT(cur_thread->GetDisableDispatchCount() >= 1);
 
     auto* scheduler{kernel.CurrentScheduler()};
 
@@ -72,22 +80,29 @@ void KScheduler::EnableScheduling(KernelCore& kernel, u64 cores_needing_scheduli
 
     scheduler->RescheduleOtherCores(kernel, cores_needing_scheduling);
 
-    if (GetCurrentThread(kernel).GetDisableDispatchCount() > 1) {
-        GetCurrentThread(kernel).EnableDispatch(kernel);
+    if (cur_thread->GetDisableDispatchCount() > 1) {
+        cur_thread->EnableDispatch(kernel);
     } else {
         scheduler->RescheduleCurrentCore(kernel);
     }
 }
 
 void KScheduler::RescheduleCurrentHLEThread(KernelCore& kernel) {
+    if (kernel.IsShuttingDown()) {
+        return;
+    }
+    auto* cur_thread = GetCurrentThreadPointer(kernel);
+    if (!cur_thread) {
+        return;
+    }
     // HACK: we cannot schedule from this thread, it is not a core thread
-    ASSERT(GetCurrentThread(kernel).GetDisableDispatchCount() == 1);
+    ASSERT(cur_thread->GetDisableDispatchCount() == 1);
 
     // Ensure dummy threads that are waiting block.
-    GetCurrentThread(kernel).DummyThreadBeginWait(kernel);
+    cur_thread->DummyThreadBeginWait(kernel);
 
-    ASSERT(GetCurrentThread(kernel).GetState() != ThreadState::Waiting);
-    GetCurrentThread(kernel).EnableDispatch(kernel);
+    ASSERT(cur_thread->GetState() != ThreadState::Waiting);
+    cur_thread->EnableDispatch(kernel);
 }
 
 u64 KScheduler::UpdateHighestPriorityThreads(KernelCore& kernel) {

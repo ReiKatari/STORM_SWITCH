@@ -526,6 +526,7 @@ private:
     u32 last_index_count = 0;
 
     u32 enabled_vertex_buffers_mask = 0;
+    bool use_optimized_vertex_buffers = true;
     u64 vertex_buffers_serial = 0;
     std::array<Binding, 32> v_buffer{};
 

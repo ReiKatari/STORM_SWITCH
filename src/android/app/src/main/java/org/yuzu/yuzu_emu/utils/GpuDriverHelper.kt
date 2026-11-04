@@ -272,6 +272,34 @@ object GpuDriverHelper {
         )
     }
 
+    // Per-TID Turnip driver hints (verified real TU_DEBUG flags only: nolrz, sysmem, gmem, nobin, noubwc, flushall, syncdraw)
+    val PER_TID_TURNIP_DEBUG_HINTS: Map<String, List<String>> = mapOf(
+        // Diablo II: Resurrected - 'nobin' disables tile binning (concurrent binning race equivalent); 'nolrz' disables broken LRZ
+        "0100726014352000" to listOf("nobin", "nolrz"),
+        "01002A801458A000" to listOf("nobin", "nolrz"),
+        // The Legend of Zelda: Tears of the Kingdom - 'nolrz' resolves depth/stencil bias artifacts
+        "0100F2C0115B6000" to listOf("nolrz"),
+        // The Legend of Zelda: Breath of the Wild
+        "01007EF00011E000" to listOf("nolrz"),
+        // The Legend of Zelda: Echoes of Wisdom
+        "01008CF01BAAC000" to listOf("nolrz"),
+        // Super Mario Bros. Wonder
+        "010015100B514000" to listOf("nolrz"),
+        // Mario + Rabbids Kingdom Battle & Sparks of Hope
+        "010067300059A000" to listOf("nolrz"),
+        "0100760012E4A000" to listOf("nolrz"),
+        // Red Dead Redemption
+        "01007820196A6000" to listOf("nolrz"),
+        // Xenoblade Chronicles 3, DE, 2
+        "010074F013262000" to listOf("nolrz"),
+        "0100FF500E34A000" to listOf("nolrz"),
+        "0100E95004038000" to listOf("nolrz"),
+        // Pokemon Legends Arceus, Scarlet, Violet
+        "01001F5010DFA000" to listOf("nolrz"),
+        "0100A3D008C5C000" to listOf("nolrz"),
+        "01008F6008C5E000" to listOf("nolrz")
+    )
+
     fun applyPerGameDriverConfig(programIdHex: String, gameTitle: String) {
         val customLib = installedCustomDriverData.libraryName
         if (customLib.isNullOrEmpty() || driverInstallationPath.isNullOrEmpty() || !isTurnipDriverActive()) {
@@ -338,26 +366,33 @@ object GpuDriverHelper {
             NativeFreedrenoConfig.setFreedrenoEnv("MESA_DRIRC_FILE", perGameDrircFile.absolutePath)
             NativeFreedrenoConfig.setFreedrenoEnv("HOME", YuzuApplication.appContext.filesDir.absolutePath)
 
+            // Synchronize detected vendor with GameFixDatabase
+            org.yuzu.yuzu_emu.model.GameFixDatabase.setDetectedGpuVendor("adreno")
+
             if (isDiablo || isMarioRabbids) {
                 NativeFreedrenoConfig.setFreedrenoEnv("MESA_VK_DYNAMIC_ATTACHMENT_FEEDBACK_LOOP_ENABLE", "1")
-                val existingTuDebug = if (NativeFreedrenoConfig.isFreedrenoEnvSet("TU_DEBUG")) NativeFreedrenoConfig.getFreedrenoEnv("TU_DEBUG") else ""
-                val flags = existingTuDebug.split(",").map { it.trim() }.filter { it.isNotEmpty() && it != "syncdraw" && it != "noubwc" }.toMutableSet()
-                flags.addAll(listOf("nolrz", "noconcurrentunresolves"))
-                NativeFreedrenoConfig.setFreedrenoEnv("TU_DEBUG", flags.joinToString(","))
-                Log.info("[GpuDriverHelper] Applied per-game Freedreno env vars for $programIdHex ($gameTitle): MESA_VK_DYNAMIC_ATTACHMENT_FEEDBACK_LOOP_ENABLE=1, TU_DEBUG=${flags.joinToString(",")}")
             } else {
                 if (NativeFreedrenoConfig.isFreedrenoEnvSet("MESA_VK_DYNAMIC_ATTACHMENT_FEEDBACK_LOOP_ENABLE")) {
                     NativeFreedrenoConfig.clearFreedrenoEnv("MESA_VK_DYNAMIC_ATTACHMENT_FEEDBACK_LOOP_ENABLE")
                 }
-                if (NativeFreedrenoConfig.isFreedrenoEnvSet("TU_DEBUG")) {
-                    val current = NativeFreedrenoConfig.getFreedrenoEnv("TU_DEBUG")
-                    val specialFlags = setOf("nolrz", "noubwc", "syncdraw", "noconcurrentunresolves")
-                    val flags = current.split(",").map { it.trim() }.filter { it.isNotEmpty() && !specialFlags.contains(it) }
-                    if (flags.isEmpty()) {
-                        NativeFreedrenoConfig.clearFreedrenoEnv("TU_DEBUG")
-                    } else {
-                        NativeFreedrenoConfig.setFreedrenoEnv("TU_DEBUG", flags.joinToString(","))
-                    }
+            }
+
+            val normalizedTid = programIdHex.uppercase()
+            val perTidHints = PER_TID_TURNIP_DEBUG_HINTS[normalizedTid]
+            val existingTuDebug = if (NativeFreedrenoConfig.isFreedrenoEnvSet("TU_DEBUG")) NativeFreedrenoConfig.getFreedrenoEnv("TU_DEBUG") else ""
+            val flags = existingTuDebug.split(",").map { it.trim() }.filter { it.isNotEmpty() && it != "noconcurrentunresolves" }.toMutableSet()
+
+            if (perTidHints != null && perTidHints.isNotEmpty()) {
+                flags.addAll(perTidHints)
+                NativeFreedrenoConfig.setFreedrenoEnv("TU_DEBUG", flags.joinToString(","))
+                Log.info("[GpuDriverHelper] Applied verified per-TID Turnip driver hints for $normalizedTid ($gameTitle): TU_DEBUG=${flags.joinToString(",")}")
+            } else {
+                val specialFlags = setOf("nobin", "nolrz", "noubwc", "sysmem", "gmem", "flushall", "syncdraw")
+                val cleanedFlags = flags.filter { !specialFlags.contains(it) }
+                if (cleanedFlags.isEmpty()) {
+                    NativeFreedrenoConfig.clearFreedrenoEnv("TU_DEBUG")
+                } else {
+                    NativeFreedrenoConfig.setFreedrenoEnv("TU_DEBUG", cleanedFlags.joinToString(","))
                 }
             }
 

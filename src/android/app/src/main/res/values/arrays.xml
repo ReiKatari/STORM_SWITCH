@@ -1027,4 +1027,16 @@
         <item>2</item>
         <item>3</item>
     </integer-array>
+    <string-array name="performancePresetNames">
+        <item>@string/performance_preset_battery</item>
+        <item>@string/performance_preset_balanced</item>
+        <item>@string/performance_preset_quality</item>
+        <item>@string/performance_preset_custom</item>
+    </string-array>
+    <integer-array name="performancePresetValues">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </integer-array>
 </resources>

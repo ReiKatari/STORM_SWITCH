@@ -497,6 +497,9 @@ struct System::Impl {
     }
 
     void ShutdownMainProcess() {
+        if (is_shutting_down) {
+            return;
+        }
         SetShuttingDown(true);
         Common::ADPF::Shutdown();
 
@@ -504,7 +507,7 @@ struct System::Impl {
         Settings::values.use_squashed_iterated_blend = false;
         Settings::RestoreGlobalState(false);
 
-        is_powered_on = false;
+        const bool was_powered_on = is_powered_on.exchange(false);
         exit_locked = false;
         exit_requested = false;
         if (gpu_core)
@@ -515,7 +518,9 @@ struct System::Impl {
         Network::CancelPendingSocketOperations();
         kernel.SuspendEmulation(true);
         kernel.CloseServices();
-        kernel.ShutdownCores();
+        if (was_powered_on) {
+            kernel.ShutdownCores();
+        }
         cpu_manager.Shutdown();
 
         // Reset GPU and Audio before services so BufferQueue/nvnflinger are safe during GPU teardown
@@ -1186,6 +1191,7 @@ void System::ApplySettings() {
     impl->RefreshTime(*this);
 
     if (IsPoweredOn()) {
+        ApplicationMemory().RefreshSettings();
         Renderer().RefreshBaseSettings();
         GetAppletManager().OperationModeChanged();
     }

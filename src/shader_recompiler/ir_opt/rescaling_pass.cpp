@@ -105,11 +105,16 @@ void PatchPointSize(IR::Block& block, IR::Inst& inst) {
 }
 
 [[nodiscard]] IR::U32 Scale(IR::IREmitter& ir, const IR::U1& is_scaled, const IR::U32& value) {
+    const u32 up_scale = Settings::values.resolution_info.up_scale;
+    const u32 down_shift = Settings::values.resolution_info.down_shift;
+    if (up_scale == 1 && down_shift == 0) {
+        return value;
+    }
     IR::U32 scaled_value{value};
-    if (const u32 up_scale = Settings::values.resolution_info.up_scale; up_scale != 1) {
+    if (up_scale != 1) {
         scaled_value = ir.IMul(scaled_value, ir.Imm32(up_scale));
     }
-    if (const u32 down_shift = Settings::values.resolution_info.down_shift; down_shift != 0) {
+    if (down_shift != 0) {
         scaled_value = ir.ShiftRightArithmetic(scaled_value, ir.Imm32(down_shift));
     }
     return IR::U32{ir.Select(is_scaled, scaled_value, value)};
@@ -127,11 +132,16 @@ void PatchPointSize(IR::Block& block, IR::Inst& inst) {
 }
 
 [[nodiscard]] IR::U32 DownScale(IR::IREmitter& ir, const IR::U1& is_scaled, const IR::U32& value) {
+    const u32 up_scale = Settings::values.resolution_info.up_scale;
+    const u32 down_shift = Settings::values.resolution_info.down_shift;
+    if (up_scale == 1 && down_shift == 0) {
+        return value;
+    }
     IR::U32 scaled_value{value};
-    if (const u32 down_shift = Settings::values.resolution_info.down_shift; down_shift != 0) {
+    if (down_shift != 0) {
         scaled_value = ir.ShiftLeftLogical(scaled_value, ir.Imm32(down_shift));
     }
-    if (const u32 up_scale = Settings::values.resolution_info.up_scale; up_scale != 1) {
+    if (up_scale != 1) {
         scaled_value = ir.IDiv(scaled_value, ir.Imm32(up_scale));
     }
     return IR::U32{ir.Select(is_scaled, scaled_value, value)};
