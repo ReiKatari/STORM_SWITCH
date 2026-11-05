@@ -17,7 +17,7 @@ if (-not $sha1) {
     if ($cert) { $sha1 = $cert.Thumbprint }
 }
 
-$version = '16.2.6'
+$version = '16.2.7'
 if (Test-Path "$PSScriptRoot\GIT-RELEASE") {
     $v = (Get-Content "$PSScriptRoot\GIT-RELEASE" -Raw).Trim()
     if ($v) { $version = $v }
@@ -107,6 +107,8 @@ Write-Host "Creating Windows 10 package (identical universal CRT bundle)..."
 $zipPathWin10 = Join-Path $filesDir "STORM_SWITCH_${version}_Windows10.zip"
 Copy-Item $zipPathWin11 $zipPathWin10 -Force
 Unblock-File $zipPathWin10 -ErrorAction SilentlyContinue
+Copy-Item $zipPathWin10 (Join-Path $filesDir "STORM_SWITCH_Windows_MSVC_${version}.zip") -Force
+Copy-Item $zipPathWin11 (Join-Path $filesDir "STORM_SWITCH_Windows_MSYS2_${version}.zip") -Force
 
 $installerDir = Join-Path $baseDir "installer"
 $payloadZip = Join-Path $installerDir "Payload\Payload.zip"
@@ -121,6 +123,8 @@ $setupExe = Join-Path $filesDir "STORM_SWITCH_${version}_Setup.exe"
 if (Test-Path $setupExe) {
     Write-Host "Signing Installer Setup with unified STORM SERTIFICATE..."
     & $signtool sign /sha1 $sha1 /fd SHA256 /d "STORM SWITCH" /tr http://timestamp.digicert.com /td SHA256 "$setupExe"
+    $descriptiveSetup = Join-Path $filesDir "STORM_SWITCH_Windows_Setup_${version}.exe"
+    Copy-Item $setupExe $descriptiveSetup -Force
 }
 
 Write-Host "All Windows $version executables signed and packaged successfully into $filesDir!"

@@ -1825,7 +1825,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
 
 
 
-    setWindowTitle(QStringLiteral("STORM SWITCH 16.2.6"));
+    setWindowTitle(QStringLiteral("STORM SWITCH 16.2.7"));
     UpdateWindowTitle();
 
 
@@ -1923,6 +1923,16 @@ MainWindow::MainWindow(bool has_broken_vulkan)
     }
 
     game_list->PopulateAsync(UISettings::values.game_dirs);
+
+    // Instant 0 ms Background SGW Scanner warmup & 45s periodic refresh
+    QTimer::singleShot(500, []() {
+        StormGamesWorldDialog::StartBackgroundScanner();
+    });
+    auto* sgw_scan_timer = new QTimer(this);
+    connect(sgw_scan_timer, &QTimer::timeout, this, []() {
+        StormGamesWorldDialog::StartBackgroundScanner();
+    });
+    sgw_scan_timer->start(45000);
 
     QTimer::singleShot(2500, this, &MainWindow::StartSilentCheatsSync);
 
@@ -20286,6 +20296,7 @@ void MainWindow::RefreshSaveStateMenus() {
 
 
 void MainWindow::OnGameListRefresh() {
+    StormGamesWorldDialog::StartBackgroundScanner();
 
     // Resets metadata cache and reloads
 
@@ -20682,7 +20693,7 @@ void MainWindow::UpdateWindowTitle(std::string_view filename, std::string_view d
                                    std::string_view internal_version, std::string_view gpu_vendor) {
 
     const QString build_ver = QString::fromUtf8(Common::g_build_version).isEmpty()
-                                  ? QStringLiteral("16.2.6")
+                                  ? QStringLiteral("16.2.7")
                                   : QString::fromUtf8(Common::g_build_version);
     const QString strict_idle_title = QStringLiteral("STORM SWITCH %1").arg(build_ver);
 

@@ -397,6 +397,7 @@ VirtualDir PatchManager::PatchExeFS(VirtualDir exefs) const {
     }
 
     // Game Updates
+    auto base_nca = content_provider.GetEntry(title_id, ContentRecordType::Program);
     std::unique_ptr<NCA> update = nullptr;
 
     // If we have a specific enabled version from external provider, use it
@@ -405,7 +406,7 @@ VirtualDir PatchManager::PatchExeFS(VirtualDir exefs) const {
         if (external_provider) {
             auto file = external_provider->GetEntryForVersion(update_tid, ContentRecordType::Program, *enabled_version);
             if (file != nullptr) {
-                update = std::make_unique<NCA>(file);
+                update = std::make_unique<NCA>(file, base_nca.get());
             }
         }
 
@@ -416,7 +417,7 @@ VirtualDir PatchManager::PatchExeFS(VirtualDir exefs) const {
             if (manual_provider) {
                 auto file = manual_provider->GetEntryForVersion(update_tid, ContentRecordType::Program, *enabled_version);
                 if (file != nullptr) {
-                    update = std::make_unique<NCA>(file);
+                    update = std::make_unique<NCA>(file, base_nca.get());
                 }
             }
         }
@@ -424,7 +425,15 @@ VirtualDir PatchManager::PatchExeFS(VirtualDir exefs) const {
 
     // Fallback to regular content provider if no external update was loaded
     if (update == nullptr && !update_disabled) {
-        update = content_provider.GetEntry(update_tid, ContentRecordType::Program);
+        auto update_raw = content_provider.GetEntryRaw(update_tid, ContentRecordType::Program);
+        if (update_raw != nullptr && base_nca != nullptr) {
+            update = std::make_unique<NCA>(update_raw, base_nca.get());
+            if (update->GetStatus() != Loader::ResultStatus::Success || update->GetExeFS() == nullptr) {
+                update = content_provider.GetEntry(update_tid, ContentRecordType::Program);
+            }
+        } else {
+            update = content_provider.GetEntry(update_tid, ContentRecordType::Program);
+        }
     }
 
     if (!update_disabled && update != nullptr && update->GetExeFS() != nullptr) {

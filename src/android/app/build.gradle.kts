@@ -149,9 +149,9 @@ android {
 
         targetSdk = 36
 
-        versionName = getGitVersion()
+        versionName = "16.2.7"
 
-        versionCode = autoVersion
+        versionCode = 34226837
 
 
 
@@ -187,11 +187,11 @@ android {
 
                         "-DENABLE_UPDATE_CHECKER=ON",
 
-                        "-DBUILD_VERSION=16.2.6",
+                        "-DBUILD_VERSION=16.2.7",
 
-                        "-DGIT_TAG=16.2.6",
+                        "-DGIT_TAG=16.2.7",
 
-                        "-DGIT_RELEASE=16.2.6",
+                        "-DGIT_RELEASE=16.2.7",
 
                         "-DBUILD_TESTING=OFF",
 
@@ -939,7 +939,7 @@ fun getGitVersion(): String {
 
     }
 
-    return "16.2.6"
+    return "16.2.7"
 
 }
 

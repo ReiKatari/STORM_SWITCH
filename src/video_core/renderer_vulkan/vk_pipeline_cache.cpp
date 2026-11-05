@@ -319,20 +319,33 @@ Shader::RuntimeInfo MakeRuntimeInfo(std::span<const Shader::IR::Program> program
     return info;
 }
 
-size_t GetTotalPipelineWorkers() {
-    const size_t hardware_threads = static_cast<size_t>(std::thread::hardware_concurrency());
-    const u32 user_threads = Settings::values.pipeline_worker_threads.GetValue();
-    if (user_threads > 0) {
-        return std::clamp<size_t>(user_threads, 1ULL, std::max<size_t>(1ULL, hardware_threads));
-    }
-    const size_t auto_threads = std::max<size_t>(1ULL, std::min<size_t>(4ULL, hardware_threads / 4ULL));
-    if (Settings::values.storm_lowend_turbo.GetValue()) {
+size_t GetTotalPipelineWorkers(const Device& device) {
+    if (device.HasBrokenParallelShaderCompiling()) {
         return 1ULL;
     }
-    if (Settings::values.eco_thermal_mode.GetValue()) {
-        return std::min<size_t>(auto_threads, 2ULL);
+    const size_t hardware_threads = static_cast<size_t>(std::thread::hardware_concurrency());
+    const u32 user_threads = Settings::values.pipeline_worker_threads.GetValue();
+    size_t num_workers;
+    if (user_threads > 0) {
+        num_workers = std::clamp<size_t>(user_threads, 1ULL, std::max<size_t>(1ULL, hardware_threads));
+    } else {
+        const size_t auto_threads = std::max<size_t>(1ULL, std::min<size_t>(4ULL, hardware_threads / 4ULL));
+        if (Settings::values.storm_lowend_turbo.GetValue()) {
+            num_workers = 1ULL;
+        } else if (Settings::values.eco_thermal_mode.GetValue()) {
+            num_workers = std::min<size_t>(auto_threads, 2ULL);
+        } else {
+            num_workers = auto_threads;
+        }
     }
-    return auto_threads;
+
+    if (device.GetDriverID() == VK_DRIVER_ID_ARM_PROPRIETARY ||
+        device.GetVendorName() == "ARM" ||
+        device.GetDriverName().find("panvk") != std::string::npos) {
+        num_workers = std::clamp<size_t>(num_workers, 1ULL, 2ULL);
+    }
+
+    return num_workers;
 }
 
 } // Anonymous namespace
@@ -369,7 +382,7 @@ PipelineCache::PipelineCache(Tegra::MaxwellDeviceMemoryManager& device_memory_,
       texture_cache{texture_cache_}, shader_notify{shader_notify_},
       use_asynchronous_shaders{Settings::values.use_asynchronous_shaders.GetValue()},
       use_vulkan_pipeline_cache{Settings::values.use_vulkan_driver_pipeline_cache.GetValue()},
-      workers(device.HasBrokenParallelShaderCompiling() ? 1ULL : GetTotalPipelineWorkers(),
+      workers(GetTotalPipelineWorkers(device),
               "VkPipelineBuilder", {},
 #ifdef __ANDROID__
               Common::ThreadPlacement::Background

@@ -1,7 +1,15 @@
 // SPDX-FileCopyrightText: Copyright 2026 STORM SOFT Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
 #include "storm_switch/storm_games_world_dialog.h"
+#include <atomic>
+#include <mutex>
+#include <thread>
+#include <unordered_map>
+
 #include "storm_switch/storm_catalog_cache.h"
 #include "common/scm_rev.h"
 #include "storm_switch/common/storm_lang.h"
@@ -547,12 +555,468 @@ public:
     }
 };
 
+static int ExtractModCountFast(const QString bitand str) {
+    static const QRegularExpression m_regex(QStringLiteral(R"((?:[+([{\s]|^)(\d+)m(?:[+)\]}\s]|$))"), QRegularExpression::CaseInsensitiveOption);
+    const auto match = m_regex.match(str);
+    if (match.hasMatch()) {
+        return match.captured(1).toInt();
+    }
+    static const QRegularExpression word_regex(QStringLiteral(R"((?:\bmod\b)|(?:\bмод\b)|русификатор|озвучка)"), QRegularExpression::CaseInsensitiveOption);
+    if (str.contains(word_regex)) {
+        return 1;
+    }
+    return 0;
+}
+
+static int ExtractDlcCountFast(const QString bitand str) {
+    static const QRegularExpression d_regex(QStringLiteral(R"((?:[+([{\s]|^)(\d+)d(?:[+)\]}\s]|$))"), QRegularExpression::CaseInsensitiveOption);
+    const auto match = d_regex.match(str);
+    if (match.hasMatch()) {
+        return match.captured(1).toInt();
+    }
+    if (str.contains(QStringLiteral("dlc"), Qt::CaseInsensitive)) {
+        return 1;
+    }
+    return 0;
+}
+
+using LocalPackageVersionInfo = StormGamesWorldDialog::LocalPackageVersionInfo;
+
+static std::mutex s_global_cache_mutex;
+static std::vector<StormGamesWorldDialog::DownloadedFileInfo> s_global_cached_dir_files;
+static std::map<u64, std::set<QString>> s_global_installed_title_id_formats;
+static std::map<QString, std::set<QString>> s_global_installed_title_formats;
+static std::unordered_map<std::string, LocalPackageVersionInfo> s_global_pkg_ver_cache;
+static bool s_global_cache_ready = false;
+static QJsonArray s_cached_catalog_games;
+static std::atomic<bool> s_scan_in_progress{false};
+static StormGamesWorldDialog* s_active_dialog{nullptr};
+
+static LocalPackageVersionInfo ExtractLocalPackageVersionInfo(
+    const QFileInfo& fi,
+    const QMap<QString, QJsonObject>& meta_by_path,
+    const QMap<QString, QJsonObject>& meta_by_name) {
+
+    LocalPackageVersionInfo pkg;
+    const QString lower_file = fi.fileName().toLower();
+    pkg.path = fi.absoluteFilePath();
+    pkg.size = fi.size();
+    pkg.mtime = fi.lastModified().toMSecsSinceEpoch();
+    pkg.mod_count = ExtractModCountFast(lower_file);
+    pkg.dlc_count = ExtractDlcCountFast(lower_file);
+    pkg.has_rus = lower_file.contains(QStringLiteral("rus")) || lower_file.contains(QStringLiteral("рус"));
+
+    const QString clean_path = QDir::cleanPath(fi.absoluteFilePath()).toLower();
+    QJsonObject meta_obj;
+    if (meta_by_path.contains(clean_path)) {
+        meta_obj = meta_by_path.value(clean_path);
+    } else if (meta_by_name.contains(lower_file)) {
+        meta_obj = meta_by_name.value(lower_file);
+    }
+
+    if (!meta_obj.isEmpty()) {
+        pkg.tid = meta_obj[QStringLiteral("id")].toString().trimmed().toUpper();
+        pkg.title = meta_obj[QStringLiteral("name")].toString().trimmed();
+        pkg.display_ver = meta_obj[QStringLiteral("version")].toString().trimmed();
+        pkg.internal_ver = meta_obj[QStringLiteral("internal_version")].toString().trimmed();
+    }
+
+    static const QRegularExpression tid_rx(QStringLiteral(R"(\b(01[0-9A-Fa-f]{14})\b)"));
+    static const QRegularExpression tid_bracket_rx(QStringLiteral(R"(\[([0-9A-Fa-f]{16})\])"));
+    static const QRegularExpression ver_rx(QStringLiteral(R"(\(\s*([^-\)]+?)\s*-\s*(\d+)\s*-\s*([0-9A-Fa-f]{16})\s*\))"));
+
+    if (pkg.tid.isEmpty()) {
+        auto m_v = ver_rx.match(fi.fileName());
+        if (m_v.hasMatch()) {
+            pkg.display_ver = m_v.captured(1).trimmed();
+            pkg.internal_ver = m_v.captured(2).trimmed();
+            pkg.tid = m_v.captured(3).toUpper();
+        } else {
+            auto m_b = tid_bracket_rx.match(fi.fileName());
+            if (m_b.hasMatch()) {
+                pkg.tid = m_b.captured(1).toUpper();
+            } else {
+                auto m_tid = tid_rx.match(fi.fileName());
+                if (m_tid.hasMatch()) {
+                    pkg.tid = m_tid.captured(1).toUpper();
+                }
+            }
+        }
+    }
+
+    if (pkg.title.isEmpty()) {
+        bool ok_tid = false;
+        const u64 tid_val = pkg.tid.toULongLong(&ok_tid, 16);
+        if (ok_tid && tid_val != 0 && TitleDB::TitleDatabase::Instance().IsLoaded()) {
+            auto entry = TitleDB::TitleDatabase::Instance().Lookup(tid_val);
+            if (!entry || entry->name.empty()) {
+                entry = TitleDB::TitleDatabase::Instance().Lookup(tid_val & ~0x1FFFULL);
+            }
+            if (entry && !entry->name.empty()) {
+                pkg.title = QString::fromStdString(entry->name);
+            }
+        }
+        if (pkg.title.isEmpty()) {
+            QString clean = fi.completeBaseName();
+            static const QRegularExpression strip_rx(QStringLiteral(R"(\s*(\[[^\]]*\]|\([^\)]*\)).*$)"));
+            clean = clean.remove(strip_rx).trimmed();
+            pkg.title = clean.isEmpty() ? fi.completeBaseName() : clean;
+        }
+    }
+
+    if (pkg.display_ver.isEmpty()) {
+        static const QRegularExpression fn_ver_regex(QStringLiteral(R"((?:[\(\[\s]v?|\b)([0-9]+\.[0-9]+(?:\.[0-9]+)*)(?!\s*(?:GB|MB|KB|TB|ГБ|МБ|КБ|Б|B)\b))"));
+        auto m_ver = fn_ver_regex.match(fi.fileName());
+        if (m_ver.hasMatch()) {
+            pkg.display_ver = m_ver.captured(1).trimmed();
+        } else {
+            pkg.display_ver = QStringLiteral("1.0.0");
+        }
+    }
+
+    while (pkg.display_ver.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
+        pkg.display_ver.remove(0, 1);
+    }
+    pkg.display_ver = pkg.display_ver.trimmed();
+
+    return pkg;
+}
+
+static void LoadDownloadedIndexDiskCache() {
+    const auto index_path = Common::FS::GetEdenPath(Common::FS::EdenPath::CacheDir) / "sgw_downloaded_index_v2.json";
+    const QString qindex_path = QString::fromStdString(Common::FS::PathToUTF8String(index_path));
+    QFile file(qindex_path);
+    if (!file.open(QFile::ReadOnly)) {
+        return;
+    }
+    const auto doc = QJsonDocument::fromJson(file.readAll());
+    if (!doc.isArray()) {
+        return;
+    }
+    const auto arr = doc.array();
+    s_global_cached_dir_files.clear();
+    s_global_pkg_ver_cache.clear();
+    s_global_installed_title_id_formats.clear();
+    s_global_installed_title_formats.clear();
+
+    for (const auto& val : arr) {
+        if (!val.isObject()) continue;
+        const auto obj = val.toObject();
+
+        LocalPackageVersionInfo pkg;
+        pkg.path = obj[QStringLiteral("path")].toString();
+        pkg.size = obj[QStringLiteral("size")].toVariant().toLongLong();
+        pkg.mtime = obj[QStringLiteral("mtime")].toVariant().toLongLong();
+        pkg.tid = obj[QStringLiteral("tid")].toString();
+        pkg.title = obj[QStringLiteral("title")].toString();
+        pkg.display_ver = obj[QStringLiteral("display_ver")].toString();
+        pkg.internal_ver = obj[QStringLiteral("internal_ver")].toString();
+        pkg.has_rus = obj[QStringLiteral("has_rus")].toBool();
+        pkg.mod_count = obj[QStringLiteral("mod_count")].toInt();
+        pkg.dlc_count = obj[QStringLiteral("dlc_count")].toInt();
+
+        const std::string cache_key = pkg.path.toStdString() + "|" +
+                                      std::to_string(pkg.size) + "|" +
+                                      std::to_string(pkg.mtime);
+        s_global_pkg_ver_cache[cache_key] = pkg;
+
+        QFileInfo fi(pkg.path);
+        const QString lower_file = fi.fileName().toLower();
+
+        StormGamesWorldDialog::DownloadedFileInfo info;
+        info.file_path = pkg.path;
+        info.file_name = fi.fileName();
+        info.extension = fi.suffix().toLower();
+        info.complete_base_name = fi.completeBaseName().toLower();
+        info.lower_name = lower_file;
+        info.size = pkg.size;
+        info.tid = pkg.tid;
+        info.title = pkg.title;
+        info.version = pkg.display_ver;
+        info.internal_version = pkg.internal_ver;
+        info.has_rus = pkg.has_rus;
+        info.mod_count = pkg.mod_count;
+        info.dlc_count = pkg.dlc_count;
+        info.has_mod = (pkg.mod_count > 0);
+        info.has_dlc = (pkg.dlc_count > 0);
+
+        const QString ext = info.extension.trimmed().toLower();
+        bool ok_fid = false;
+        const u64 fid_val = info.tid.toULongLong(&ok_fid, 16);
+        if (ok_fid && fid_val != 0) {
+            s_global_installed_title_id_formats[fid_val].insert(ext);
+            s_global_installed_title_id_formats[fid_val & ~0x1FFFULL].insert(ext);
+        }
+        const QString n_title = SanitizeFileName(info.title).trimmed().toLower();
+        if (!n_title.isEmpty()) {
+            s_global_installed_title_formats[n_title].insert(ext);
+        }
+        const QString n_base = fi.completeBaseName().trimmed().toLower();
+        if (!n_base.isEmpty()) {
+            s_global_installed_title_formats[n_base].insert(ext);
+        }
+
+        s_global_cached_dir_files.push_back(std::move(info));
+    }
+    s_global_cache_ready = true;
+}
+
+static void SaveDownloadedIndexDiskCache() {
+    const auto index_path = Common::FS::GetEdenPath(Common::FS::EdenPath::CacheDir) / "sgw_downloaded_index_v2.json";
+    const QString qindex_path = QString::fromStdString(Common::FS::PathToUTF8String(index_path));
+    const QString tmp_path = qindex_path + QStringLiteral(".tmp");
+
+    QJsonArray arr;
+    {
+        std::lock_guard<std::mutex> lock(s_global_cache_mutex);
+        for (const auto& [key, pkg] : s_global_pkg_ver_cache) {
+            QJsonObject obj;
+            obj[QStringLiteral("path")] = pkg.path;
+            obj[QStringLiteral("size")] = pkg.size;
+            obj[QStringLiteral("mtime")] = pkg.mtime;
+            obj[QStringLiteral("tid")] = pkg.tid;
+            obj[QStringLiteral("title")] = pkg.title;
+            obj[QStringLiteral("display_ver")] = pkg.display_ver;
+            obj[QStringLiteral("internal_ver")] = pkg.internal_ver;
+            obj[QStringLiteral("has_rus")] = pkg.has_rus;
+            obj[QStringLiteral("mod_count")] = pkg.mod_count;
+            obj[QStringLiteral("dlc_count")] = pkg.dlc_count;
+            arr.append(obj);
+        }
+    }
+
+    QFile file(tmp_path);
+    if (file.open(QFile::WriteOnly)) {
+        file.write(QJsonDocument(arr).toJson(QJsonDocument::Compact));
+        file.close();
+        QFile::remove(qindex_path);
+        file.rename(qindex_path);
+    }
+}
+
+void StormGamesWorldDialog::StartBackgroundScanner() {
+    if (s_scan_in_progress.exchange(true)) {
+        return; // Scan already in progress
+    }
+
+    std::thread scanner([]() {
+#ifdef _WIN32
+        SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_BELOW_NORMAL);
+#endif
+        {
+            std::lock_guard<std::mutex> lock(s_global_cache_mutex);
+            if (!s_global_cache_ready) {
+                LoadDownloadedIndexDiskCache();
+            }
+        }
+
+        // Collect scan dirs
+        QStringList dirs_to_scan;
+        for (const auto& gd : UISettings::values.game_dirs) {
+            const QString gpath = QString::fromStdString(gd.path).trimmed();
+            if (gpath.isEmpty()) continue;
+            if (gpath == QStringLiteral("SDMC") || gpath == QStringLiteral("UserNAND") ||
+                gpath == QStringLiteral("SysNAND")) {
+                continue;
+            }
+            if (!QDir(gpath).exists()) continue;
+            const QString clean = QDir::cleanPath(gpath);
+            if (!dirs_to_scan.contains(clean)) {
+                dirs_to_scan.append(clean);
+            }
+        }
+
+        // Extra standard directories
+        for (const auto& extra : {
+            QStringLiteral("Q:/CONSOLES/Nintendo Switch/GAMES"),
+            QStringLiteral("Q:/CONSOLES/Nintendo Switch 2/GAMES")
+        }) {
+            if (QDir(extra).exists()) {
+                const QString clean = QDir::cleanPath(extra);
+                if (!dirs_to_scan.contains(clean)) {
+                    dirs_to_scan.append(clean);
+                }
+            }
+        }
+
+        // Default download dir
+        QSettings settings;
+        QString dl_dir = settings.value(QStringLiteral("StormGamesWorld/download_dir")).toString().trimmed();
+        if (dl_dir.isEmpty() || !QDir(dl_dir).exists()) {
+            dl_dir = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation) + QStringLiteral("/STORM_SWITCH_GAMES");
+        }
+        if (QDir(dl_dir).exists()) {
+            const QString clean = QDir::cleanPath(dl_dir);
+            if (!dirs_to_scan.contains(clean)) {
+                dirs_to_scan.append(clean);
+            }
+        }
+
+        // Load file_metadata_cache.json if available
+        QMap<QString, QJsonObject> meta_by_name;
+        QMap<QString, QJsonObject> meta_by_path;
+        const auto meta_cache_path = Common::FS::PathToUTF8String(
+            Common::FS::GetEdenPath(Common::FS::EdenPath::CacheDir) / "game_list" / "file_metadata_cache.json");
+        QFile meta_file(QString::fromStdString(meta_cache_path));
+        if (meta_file.open(QFile::ReadOnly)) {
+            const auto doc = QJsonDocument::fromJson(meta_file.readAll());
+            if (doc.isObject()) {
+                const auto root = doc.object();
+                for (auto it = root.begin(); it != root.end(); ++it) {
+                    const auto obj = it.value().toObject();
+                    const QString key = it.key();
+                    meta_by_path.insert(QDir::cleanPath(key).toLower(), obj);
+                    const QString base_fn = QFileInfo(key).fileName().toLower();
+                    meta_by_name.insert(base_fn, obj);
+                }
+            }
+        }
+
+        static const QStringList filters{
+            QStringLiteral("*.nsp"), QStringLiteral("*.xci"), QStringLiteral("*.nsz"),
+            QStringLiteral("*.xcz"), QStringLiteral("*.nca"), QStringLiteral("*.nro")
+        };
+
+        std::vector<StormGamesWorldDialog::DownloadedFileInfo> new_files;
+        std::map<u64, std::set<QString>> new_installed_title_id_formats;
+        std::map<QString, std::set<QString>> new_installed_title_formats;
+        QSet<QString> seen_paths;
+
+        for (const auto& scan_dir : dirs_to_scan) {
+            QDirIterator it(scan_dir, filters, QDir::Files, QDirIterator::Subdirectories);
+            while (it.hasNext()) {
+                it.next();
+                const QFileInfo fi = it.fileInfo();
+                const QString rel = QDir(scan_dir).relativeFilePath(fi.absoluteFilePath());
+                if (rel.count(QLatin1Char('/')) > 2 || rel.count(QLatin1Char('\\')) > 2) {
+                    continue;
+                }
+                const QString lower_file = fi.fileName().toLower();
+                const bool is_nro = lower_file.endsWith(QStringLiteral(".nro"));
+                const qint64 min_size = is_nro ? (32 * 1024) : (1024 * 1024);
+                if (fi.size() < min_size) continue;
+
+                const QString clean_path = QDir::cleanPath(fi.absoluteFilePath()).toLower();
+                if (seen_paths.contains(clean_path)) continue;
+                seen_paths.insert(clean_path);
+
+                const qint64 mtime = fi.lastModified().toMSecsSinceEpoch();
+                const std::string cache_key = fi.absoluteFilePath().toStdString() + "|" +
+                                              std::to_string(fi.size()) + "|" +
+                                              std::to_string(mtime);
+
+                LocalPackageVersionInfo pkg_info;
+                bool found_in_cache = false;
+                {
+                    std::lock_guard<std::mutex> lock(s_global_cache_mutex);
+                    auto it_c = s_global_pkg_ver_cache.find(cache_key);
+                    if (it_c != s_global_pkg_ver_cache.end()) {
+                        pkg_info = it_c->second;
+                        found_in_cache = true;
+                    }
+                }
+
+                if (!found_in_cache) {
+                    pkg_info = ExtractLocalPackageVersionInfo(fi, meta_by_path, meta_by_name);
+                    pkg_info.path = fi.absoluteFilePath();
+                    pkg_info.size = fi.size();
+                    pkg_info.mtime = mtime;
+                    std::lock_guard<std::mutex> lock(s_global_cache_mutex);
+                    s_global_pkg_ver_cache[cache_key] = pkg_info;
+                }
+
+                StormGamesWorldDialog::DownloadedFileInfo info;
+                info.file_path = fi.absoluteFilePath();
+                info.file_name = fi.fileName();
+                info.extension = fi.suffix().toLower();
+                info.complete_base_name = fi.completeBaseName().toLower();
+                info.lower_name = lower_file;
+                info.size = fi.size();
+                info.tid = pkg_info.tid;
+                info.title = pkg_info.title;
+                info.version = pkg_info.display_ver;
+                info.internal_version = pkg_info.internal_ver;
+                info.has_rus = pkg_info.has_rus;
+                info.mod_count = pkg_info.mod_count;
+                info.dlc_count = pkg_info.dlc_count;
+                info.has_mod = (info.mod_count > 0);
+                info.has_dlc = (info.dlc_count > 0);
+
+                const QString ext = info.extension.trimmed().toLower();
+                bool ok_fid = false;
+                const u64 fid_val = info.tid.toULongLong(&ok_fid, 16);
+                if (ok_fid && fid_val != 0) {
+                    new_installed_title_id_formats[fid_val].insert(ext);
+                    new_installed_title_id_formats[fid_val & ~0x1FFFULL].insert(ext);
+                }
+                const QString n_title = SanitizeFileName(info.title).trimmed().toLower();
+                if (!n_title.isEmpty()) {
+                    new_installed_title_formats[n_title].insert(ext);
+                }
+                const QString n_base = fi.completeBaseName().trimmed().toLower();
+                if (!n_base.isEmpty()) {
+                    new_installed_title_formats[n_base].insert(ext);
+                }
+
+                new_files.push_back(std::move(info));
+            }
+        }
+
+        bool changed = false;
+        {
+            std::lock_guard<std::mutex> lock(s_global_cache_mutex);
+            if (s_global_cached_dir_files.size() != new_files.size()) {
+                changed = true;
+            } else {
+                for (size_t i = 0; i < new_files.size(); ++i) {
+                    if (new_files[i].file_path != s_global_cached_dir_files[i].file_path ||
+                        new_files[i].size != s_global_cached_dir_files[i].size) {
+                        changed = true;
+                        break;
+                    }
+                }
+            }
+            s_global_cached_dir_files = std::move(new_files);
+            s_global_installed_title_id_formats = std::move(new_installed_title_id_formats);
+            s_global_installed_title_formats = std::move(new_installed_title_formats);
+            s_global_cache_ready = true;
+        }
+
+        SaveDownloadedIndexDiskCache();
+
+        if (changed) {
+            std::lock_guard<std::mutex> lock(s_global_cache_mutex);
+            if (s_active_dialog) {
+                QMetaObject::invokeMethod(s_active_dialog, [dlg = s_active_dialog]() {
+                    if (dlg) {
+                        dlg->RefreshDownloadedFilesCache(dlg->GetDefaultDownloadDir());
+                        dlg->PopulateGameList();
+                    }
+                }, Qt::QueuedConnection);
+            }
+        }
+
+        s_scan_in_progress = false;
+    });
+    scanner.detach();
+}
+
 StormGamesWorldDialog::StormGamesWorldDialog(QWidget* parent)
     : QDialog(parent) {
+    {
+        std::lock_guard<std::mutex> lock(s_global_cache_mutex);
+        s_active_dialog = this;
+    }
+    // Warm up downloaded cache synchronously in 0 ms
+    RefreshDownloadedFilesCache(GetDefaultDownloadDir());
+
     SetupUI();
     ApplyStormStyles();
     LoadCachedCatalog();
     OnFetchCatalog();
+
+    // Trigger async background scanner to discover any newly added files
+    StartBackgroundScanner();
 }
 
 void StormGamesWorldDialog::CancelAllNetworkRequests() {
@@ -596,6 +1060,12 @@ void StormGamesWorldDialog::CancelAllNetworkRequests() {
 }
 
 StormGamesWorldDialog::~StormGamesWorldDialog() {
+    {
+        std::lock_guard<std::mutex> lock(s_global_cache_mutex);
+        if (s_active_dialog == this) {
+            s_active_dialog = nullptr;
+        }
+    }
     CancelAllNetworkRequests();
 }
 
@@ -607,12 +1077,23 @@ void StormGamesWorldDialog::closeEvent(QCloseEvent* event) {
 }
 
 void StormGamesWorldDialog::LoadCachedCatalog() {
-    const QByteArray cached_data = StormCatalogCache::Instance().GetRawCacheData();
-    if (!cached_data.isEmpty()) {
-        ParseCatalogData(cached_data);
-        if (status_label && !all_games.empty()) {
-            status_label->setText(tr("Каталог загружен из кэша (доступно: %1)").arg(all_games.size()));
+    bool loaded = false;
+    {
+        std::lock_guard<std::mutex> lock(s_global_cache_mutex);
+        if (!s_cached_catalog_games.isEmpty()) {
+            ParseCatalogArray(s_cached_catalog_games);
+            loaded = true;
         }
+    }
+    if (!loaded) {
+        const QByteArray cached_data = StormCatalogCache::Instance().GetRawCacheData();
+        if (!cached_data.isEmpty()) {
+            ParseCatalogData(cached_data);
+            loaded = true;
+        }
+    }
+    if (status_label && !all_games.empty()) {
+        status_label->setText(tr("Каталог загружен из кэша (доступно: %1)").arg(all_games.size()));
     }
 }
 
@@ -669,32 +1150,21 @@ void StormGamesWorldDialog::SaveDownloadDir(const QString bitand dir) {
     settings.setValue(QStringLiteral("StormGamesWorld/download_dir"), dir);
 }
 
-static int ExtractModCountFast(const QString bitand str) {
-    static const QRegularExpression m_regex(QStringLiteral(R"((?:[+([{\s]|^)(\d+)m(?:[+)\]}\s]|$))"), QRegularExpression::CaseInsensitiveOption);
-    const auto match = m_regex.match(str);
-    if (match.hasMatch()) {
-        return match.captured(1).toInt();
-    }
-    static const QRegularExpression word_regex(QStringLiteral(R"((?:\bmod\b)|(?:\bмод\b)|русификатор|озвучка)"), QRegularExpression::CaseInsensitiveOption);
-    if (str.contains(word_regex)) {
-        return 1;
-    }
-    return 0;
-}
-
-static int ExtractDlcCountFast(const QString bitand str) {
-    static const QRegularExpression d_regex(QStringLiteral(R"((?:[+([{\s]|^)(\d+)d(?:[+)\]}\s]|$))"), QRegularExpression::CaseInsensitiveOption);
-    const auto match = d_regex.match(str);
-    if (match.hasMatch()) {
-        return match.captured(1).toInt();
-    }
-    if (str.contains(QStringLiteral("dlc"), Qt::CaseInsensitive)) {
-        return 1;
-    }
-    return 0;
-}
-
 void StormGamesWorldDialog::RefreshDownloadedFilesCache(const QString bitand dir_path) const {
+    // 0 ms Fast Path: if global cache is ready, immediately copy
+    {
+        std::lock_guard<std::mutex> lock(s_global_cache_mutex);
+        if (!s_global_cache_ready) {
+            LoadDownloadedIndexDiskCache();
+        }
+        if (s_global_cache_ready && !s_global_cached_dir_files.empty()) {
+            cached_dir_files = s_global_cached_dir_files;
+            installed_title_id_formats_ = s_global_installed_title_id_formats;
+            installed_title_formats_ = s_global_installed_title_formats;
+            cached_dir_path = dir_path;
+            return;
+        }
+    }
     // Collect all unique directories to scan: download dir + real UISettings::values.game_dirs
     QStringList dirs_to_scan;
     QString key_builder = dir_path.trimmed();
@@ -1579,8 +2049,17 @@ void StormGamesWorldDialog::ParseCatalogData(const QByteArray bitand raw_data) {
         return;
     }
 
-    all_games.clear();
     const QJsonArray arr = doc.array();
+    {
+        std::lock_guard<std::mutex> lock(s_global_cache_mutex);
+        s_cached_catalog_games = arr;
+    }
+    ParseCatalogArray(arr);
+}
+
+void StormGamesWorldDialog::ParseCatalogArray(const QJsonArray bitand arr) {
+    if (is_closing) return;
+    all_games.clear();
 
     auto parse_bool_val = [](const QJsonValue bitand v) -> bool {
         if (v.isBool()) return v.toBool();

@@ -148,9 +148,11 @@ object GpuDriverHelper {
                vendor.contains("PanVK", ignoreCase = true) ||
                libName.contains("panvk", ignoreCase = true) ||
                libName.contains("panfrost", ignoreCase = true) ||
+               libName.contains("libvulkan_panfrost", ignoreCase = true) ||
                description.contains("PanVK", ignoreCase = true) ||
                activeDriverZipPath.contains("panvk", ignoreCase = true) ||
-               activeDriverZipPath.contains("panfrost", ignoreCase = true)
+               activeDriverZipPath.contains("panfrost", ignoreCase = true) ||
+               activeDriverZipPath.contains("libvulkan_panfrost", ignoreCase = true)
     }
 
     fun isDriverCompatibleWithAdreno8xx(metadata: GpuDriverMetadata): Boolean {
@@ -294,15 +296,20 @@ object GpuDriverHelper {
                 // Ignore fallback
             }
 
-            // ARM Mali (PanVK/Panfrost) early Z and geometry optimizations
-            if (model.contains("Mali", ignoreCase = true)) {
-                NativeFreedrenoConfig.setFreedrenoEnv("PAN_MESA_DEBUG", "fpk,early_z,opt")
+            // ARM Mali / PanVK stability and driver flags
+            if (isPanVkDriverActive() || model.contains("Mali", ignoreCase = true)) {
+                NativeFreedrenoConfig.setFreedrenoEnv("PAN_MESA_DEBUG", "nocrc,noafbc")
+                NativeFreedrenoConfig.setFreedrenoEnv("PAN_I_WANT_A_BROKEN_VULKAN_DRIVER", "1")
+                NativeFreedrenoConfig.setFreedrenoEnv("MESA_NO_ERROR", "1")
             }
         } else {
             // Reverting to system driver or non-turnip: clear all freedreno drirc variables
             NativeFreedrenoConfig.clearFreedrenoEnv("DRIRC_CONFIGDIR")
             NativeFreedrenoConfig.clearFreedrenoEnv("MESA_DRIRC_DIR")
             NativeFreedrenoConfig.clearFreedrenoEnv("MESA_DRIRC_FILE")
+            NativeFreedrenoConfig.clearFreedrenoEnv("PAN_MESA_DEBUG")
+            NativeFreedrenoConfig.clearFreedrenoEnv("PAN_I_WANT_A_BROKEN_VULKAN_DRIVER")
+            NativeFreedrenoConfig.clearFreedrenoEnv("MESA_NO_ERROR")
         }
 
         NativeLibrary.initializeGpuDriver(

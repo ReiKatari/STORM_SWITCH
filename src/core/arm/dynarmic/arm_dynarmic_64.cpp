@@ -239,7 +239,16 @@ void DynarmicCallbacks64::ExceptionRaised(u64 pc, Dynarmic::A64::Exception excep
 #endif
         return;
     case Dynarmic::A64::Exception::NoExecuteFault:
-        if (!m_debugger_enabled) {
+        if (pc == 0) {
+            const u64 lr = m_parent.m_jit->GetRegister(30);
+            if (lr == 0) {
+                LOG_CRITICAL(Core_ARM, "Cannot execute instruction at PC=0 and LR=0; halting cleanly");
+                ReturnException(pc, PrefetchAbort);
+                m_parent.m_jit->HaltExecution(BreakLoop);
+                return;
+            }
+        }
+        if (Settings::values.cpuopt_ignore_memory_aborts.GetValue() && !m_debugger_enabled) {
             thread_local u64 tls_last_noexec_lr = 0;
             thread_local u32 tls_noexec_repeat_count = 0;
             const u64 lr = m_parent.m_jit->GetRegister(30);
@@ -266,13 +275,27 @@ void DynarmicCallbacks64::ExceptionRaised(u64 pc, Dynarmic::A64::Exception excep
         LOG_CRITICAL(Core_ARM, "Cannot execute instruction at unmapped address {:#016x}", pc);
         m_parent.LogBacktrace(m_process);
         ReturnException(pc, PrefetchAbort);
+        m_parent.m_jit->HaltExecution(BreakLoop);
         return;
     default:
+        if (pc == 0) {
+            const u64 lr = m_parent.m_jit->GetRegister(30);
+            if (lr == 0) {
+                LOG_CRITICAL(Core_ARM, "Guest trap at PC=0 and LR=0; halting cleanly");
+                ReturnException(pc, InstructionBreakpoint);
+                m_parent.m_jit->HaltExecution(BreakLoop);
+                return;
+            }
+        }
         if (m_debugger_enabled) {
             ReturnException(pc, InstructionBreakpoint);
-        } else {
-            // 1. Try direct LR return if LR points outside the abort stub
+            m_parent.m_jit->HaltExecution(BreakLoop);
+            return;
+        }
+
+        if (Settings::values.cpuopt_ignore_memory_aborts.GetValue()) {
             const u64 lr = m_parent.m_jit->GetRegister(30);
+            // 1. Try direct LR return if LR points outside the abort stub
             if (is_valid_return_target(lr)) {
                 LOG_WARNING(Core_ARM, "Recovering from guest trap at PC={:#010x} via LR={:#010x}", pc, lr);
                 m_parent.m_jit->SetRegister(0, 0);
@@ -296,12 +319,18 @@ void DynarmicCallbacks64::ExceptionRaised(u64 pc, Dynarmic::A64::Exception excep
                 m_parent.m_jit->HaltExecution(BreakLoop);
                 return;
             }
-            static std::atomic<u32> s_exception_log_count{0};
-            if (s_exception_log_count.fetch_add(1, std::memory_order_relaxed) < 8) {
-                m_parent.LogBacktrace(m_process);
-                LOG_CRITICAL(Core_ARM, "ExceptionRaised(exception = {}, pc = {:08X}, code = {:08X})", static_cast<std::size_t>(exception), pc, m_memory.Read32(pc));
-            }
         }
+
+        static std::atomic<u32> s_exception_log_count{0};
+        if (s_exception_log_count.fetch_add(1, std::memory_order_relaxed) < 8) {
+            m_parent.LogBacktrace(m_process);
+            LOG_CRITICAL(Core_ARM, "ExceptionRaised(exception = {}, pc = {:08X}, code = {:08X})",
+                         static_cast<std::size_t>(exception), pc,
+                         m_memory.IsValidVirtualAddressRange(pc, sizeof(u32)) ? m_memory.Read32(pc) : 0);
+        }
+        ReturnException(pc, InstructionBreakpoint);
+        m_parent.m_jit->HaltExecution(BreakLoop);
+        return;
     }
 }
 

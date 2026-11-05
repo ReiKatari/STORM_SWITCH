@@ -141,11 +141,9 @@ bool ArmNce::HandleFailedGuestFault(GuestContext* guest_ctx, void* raw_info, voi
     const bool is_prefetch_abort =
         (host_ctx.pc == reinterpret_cast<u64>(info->si_addr)) || !resolved_pc.has_value();
 
-    // For data aborts or when ignoring memory aborts, handle gracefully.
-    // For data aborts, skip the faulting instruction (pc += 4).
-    // For prefetch aborts (e.g. calling null function pointer in Streets of Rage 4),
-    // safely return to LR (link register) instead of crashing into unmapped pc + 4.
-    if (!is_prefetch_abort) {
+    // Only attempt instruction skip or LR return when cpuopt_ignore_memory_aborts is explicitly enabled.
+    const bool ignore_aborts = Settings::values.cpuopt_ignore_memory_aborts.GetValue();
+    if (!is_prefetch_abort && ignore_aborts) {
         // Some guest object wrappers guard a pointer with CBZ immediately before loading its
         // type field. A packed handle can incorrectly reach this path as a non-null pointer. If
         // this exact sequence faults, follow the wrapper's own null-object return path.
@@ -544,13 +542,6 @@ HaltReason ArmNce::RunThread(Kernel::KThread* thread) {
     // Memory barrier to ensure visibility of changes
     std::atomic_thread_fence(std::memory_order_release);
     thread_params->is_running = true;
-    std::atomic_thread_fence(std::memory_order_seq_cst);
-    if (HaltReason race_hr = static_cast<HaltReason>(m_guest_ctx.esr_el1.exchange(0)); True(race_hr)) {
-        thread_params->is_running = false;
-        thread_params->native_context = nullptr;
-        m_running_thread = nullptr;
-        return race_hr;
-    }
 
     // TODO: finding and creating the post handler needs to be locked
     // to deal with dynamic loading of NROs.

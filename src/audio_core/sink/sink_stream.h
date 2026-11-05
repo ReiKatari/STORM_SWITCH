@@ -209,7 +209,7 @@ public:
      *
      * @return The number of samples.
      */
-    u64 GetExpectedPlayedSampleCount();
+    virtual u64 GetExpectedPlayedSampleCount();
 
     /**
      * Waits for free space in the sample ring buffer

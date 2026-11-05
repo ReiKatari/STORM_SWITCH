@@ -256,6 +256,8 @@ if (MSVC)
         /we4242 # 'identifier': conversion from 'type1' to 'type2', possible loss of data
         /we4254 # 'operator': conversion from 'type1:field_bits' to 'type2:field_bits', possible loss of data
         /we4800 # Implicit conversion from 'type' to bool. Possible information loss
+        $<$<CONFIG:Release>:/O2 /Ob3 /Oi /Ot /Gw /Gy /fp:fast>
+        $<$<CONFIG:RelWithDebInfo>:/O2 /Ob3 /Oi /Ot /Gw /Gy /fp:fast>
     )
 else()
     target_compile_options(shader_recompiler PRIVATE
@@ -264,6 +266,8 @@ else()
         # And this in turns limits the size of a std::array.
         $<$<CXX_COMPILER_ID:Clang>:-fbracket-depth=1024>
         $<$<CXX_COMPILER_ID:AppleClang>:-fbracket-depth=1024>
+        $<$<CONFIG:Release>:-O3 -ffp-contract=fast -fno-math-errno -fno-trapping-math -fomit-frame-pointer>
+        $<$<CONFIG:RelWithDebInfo>:-O3 -ffp-contract=fast -fno-math-errno -fno-trapping-math -fomit-frame-pointer>
     )
 endif()
 

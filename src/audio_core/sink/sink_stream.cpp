@@ -249,14 +249,14 @@ u64 SinkStream::GetExpectedPlayedSampleCount() {
 void SinkStream::WaitFreeSpace(std::stop_token stop_token) {
     std::unique_lock lk{release_mutex};
 
-    auto can_continue = [this]() {
-        return paused || queued_buffers < max_queue_size;
+    auto can_continue = [this, &stop_token]() {
+        return stop_token.stop_requested() || paused || queued_buffers < max_queue_size;
     };
 
     release_cv.wait_for(lk, std::chrono::milliseconds(7), can_continue);
 
     if (queued_buffers > max_queue_size + 3) {
-        release_cv.wait(lk, stop_token, can_continue);
+        release_cv.wait_for(lk, std::chrono::milliseconds(15), can_continue);
     }
 }
 

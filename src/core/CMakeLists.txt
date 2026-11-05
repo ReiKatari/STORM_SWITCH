@@ -1242,13 +1242,17 @@ if (MSVC)
         /we4245 # 'conversion': conversion from 'type1' to 'type2', signed/unsigned mismatch
         /we4254 # 'operator': conversion from 'type1:field_bits' to 'type2:field_bits', possible loss of data
         /we4800 # Implicit conversion from 'type' to bool. Possible information loss
+        $<$<CONFIG:Release>:/O2 /Ob3 /Oi /Ot /Gw /Gy /fp:fast>
+        $<$<CONFIG:RelWithDebInfo>:/O2 /Ob3 /Oi /Ot /Gw /Gy /fp:fast>
     )
 else()
     target_compile_options(core PRIVATE
         $<$<COMPILE_LANGUAGE:C,CXX>:-Wconversion>
         $<$<COMPILE_LANGUAGE:C,CXX>:-Wno-sign-conversion>
         $<$<COMPILE_LANGUAGE:C,CXX>:-Wno-cast-function-type>
-        $<$<CXX_COMPILER_ID:Clang>:-fsized-deallocation>)
+        $<$<CXX_COMPILER_ID:Clang>:-fsized-deallocation>
+        $<$<CONFIG:Release>:-O3 -ffp-contract=fast -fno-math-errno -fno-trapping-math -fomit-frame-pointer>
+        $<$<CONFIG:RelWithDebInfo>:-O3 -ffp-contract=fast -fno-math-errno -fno-trapping-math -fomit-frame-pointer>)
     # pre-clang19 will spam with "OH DID YOU MEAN THIS?" otherwise...
     if (CXX_CLANG AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 20)
         target_compile_options(core PRIVATE $<$<COMPILE_LANGUAGE:C,CXX>:-Wno-cast-function-type-mismatch>)

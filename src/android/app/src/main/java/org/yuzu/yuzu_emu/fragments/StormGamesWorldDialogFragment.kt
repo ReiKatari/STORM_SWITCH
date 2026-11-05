@@ -643,6 +643,13 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         val appCtx = context?.applicationContext
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             val cached = if (appCtx != null) getCachedCatalog(appCtx) else emptyList()
+            if (cached.isNotEmpty() && appCtx != null) {
+                // Synchronous 0 ms downloaded status prefill from warm memory/disk index
+                val warmIndex = cachedInstalledLibraryIndex ?: loadDiskInstalledLibraryIndex(appCtx)
+                if (warmIndex != null && warmIndex.allFiles.isNotEmpty()) {
+                    applyDownloadedStatus(cached, warmIndex)
+                }
+            }
             withContext(Dispatchers.Main) {
                 if (_binding != null && cached.isNotEmpty()) {
                     synchronized(allGames) {
@@ -669,7 +676,10 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         downloadCheckJob?.cancel()
         val snapshot = synchronized(allGames) { allGames.toList() }
         downloadCheckJob = viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-            checkDownloadedStatus(snapshot, ctx)
+            val freshIndex = buildInstalledLibraryIndex(ctx)
+            cachedInstalledLibraryIndex = freshIndex
+            saveDiskInstalledLibraryIndex(ctx, freshIndex)
+            applyDownloadedStatus(snapshot, freshIndex)
             withContext(Dispatchers.Main) {
                 if (_binding != null) {
                     binding.recyclerGames.adapter?.notifyDataSetChanged()
@@ -727,402 +737,8 @@ class StormGamesWorldDialogFragment : DialogFragment() {
     }
 
     private fun checkDownloadedStatus(games: List<StormWorldGameItem>, ctx: Context) {
-        val gameDirs = NativeConfig.getGameDirs()
-        data class LocalGameFile(
-            val name: String,
-            val stem: String,
-            val extension: String,
-            val tid: String = "",
-            val baseTid: String = "",
-            val version: String = "",
-            val internalVersion: String = "",
-            val modCount: Int = 0,
-            val dlcCount: Int = 0,
-            val hasRus: Boolean = false,
-            val cleanTitle: String = "",
-            val addonCount: Int = 0
-        )
-        val allFiles = mutableListOf<LocalGameFile>()
-
-        fun extractVer(str: String): String {
-            return try {
-                val m = Regex("""(?:v|\-|\b)([0-9]+\.[0-9]+(?:\.[0-9]+)*)(?:\b|\]|\))""").find(str)
-                m?.groupValues?.get(1)?.lowercase(Locale.ROOT) ?: ""
-            } catch (_: Exception) { "" }
-        }
-
-        fun extractInternalVer(str: String): String {
-            return try {
-                val m = Regex("""(?:\[v?|\(v?|\bv)([0-9]{4,8})(?:\]|\)|\b)""").find(str)
-                m?.groupValues?.get(1) ?: ""
-            } catch (_: Exception) { "" }
-        }
-
-        // 1. Ingest installed games from user library database and build format index
-        val installedFormatsByTitleId = HashMap<String, HashSet<String>>()
-        val installedFormatsByTitle = HashMap<String, HashSet<String>>()
-
-        fun recordInstalledFormat(tid: String, baseTid: String, title: String, cleanTitle: String, ext: String) {
-            val formatClean = ext.lowercase(Locale.ROOT).removePrefix(".").trim()
-            if (formatClean.isNotEmpty()) {
-                if (tid.isNotEmpty() && tid != "0" && tid != "—" && tid != "-") {
-                    installedFormatsByTitleId.getOrPut(tid) { HashSet() }.add(formatClean)
-                }
-                if (baseTid.isNotEmpty()) {
-                    installedFormatsByTitleId.getOrPut(baseTid) { HashSet() }.add(formatClean)
-                }
-                if (title.isNotEmpty()) {
-                    val norm = title.replace(Regex("""[\/:*?"<>|]"""), " ").trim().lowercase(Locale.ROOT)
-                    installedFormatsByTitle.getOrPut(norm) { HashSet() }.add(formatClean)
-                }
-                if (cleanTitle.isNotEmpty()) {
-                    val normClean = cleanTitle.replace(Regex("""[\/:*?"<>|]"""), " ").trim().lowercase(Locale.ROOT)
-                    installedFormatsByTitle.getOrPut(normClean) { HashSet() }.add(formatClean)
-                }
-            }
-        }
-
-        val installedGames = mutableListOf<org.yuzu.yuzu_emu.model.Game>()
-        try {
-            val liveGames = gamesViewModel.games.value
-            if (!liveGames.isNullOrEmpty()) {
-                installedGames.addAll(liveGames)
-            } else if (org.yuzu.yuzu_emu.utils.GameHelper.cachedGameList.isNotEmpty()) {
-                installedGames.addAll(org.yuzu.yuzu_emu.utils.GameHelper.cachedGameList)
-            } else {
-                val sp = androidx.preference.PreferenceManager.getDefaultSharedPreferences(YuzuApplication.appContext)
-                val set = sp.getStringSet(org.yuzu.yuzu_emu.utils.GameHelper.KEY_GAMES, emptySet()) ?: emptySet()
-                set.forEach { jsonStr ->
-                    try {
-                        installedGames.add(kotlinx.serialization.json.Json.decodeFromString<org.yuzu.yuzu_emu.model.Game>(jsonStr))
-                    } catch (_: Throwable) {}
-                }
-            }
-        } catch (_: Throwable) {}
-
-        installedGames.forEach { gm ->
-            val uri = Uri.parse(gm.path)
-            val fileName = FileUtil.getFilename(uri).lowercase(Locale.ROOT)
-            val ext = (FileUtil.getExtension(uri).ifEmpty { gm.extension }).lowercase(Locale.ROOT).removePrefix(".")
-            val rawTid = gm.programIdHex.trim().lowercase(Locale.ROOT)
-            val num = rawTid.toULongOrNull(16) ?: 0uL
-            val baseTid = if (num != 0uL) (num and 0xFFFFFFFFFFFFE000uL).toString(16).padStart(16, '0').lowercase(Locale.ROOT) else ""
-            val cleanName = gm.title.replace(Regex("""[\\/:*?"<>|]"""), " ").trim().lowercase(Locale.ROOT)
-            val fullCandidateStr = "$fileName ${gm.title.lowercase(Locale.ROOT)}"
-            val modCount = StormWorldGameItem.extractModCount(fullCandidateStr)
-            val dlcCount = StormWorldGameItem.extractDlcCount(fullCandidateStr)
-            val hasRus = fullCandidateStr.contains("rus") || fullCandidateStr.contains("рус")
-            val gmVerClean = gm.version.trim().lowercase(Locale.ROOT).removePrefix("v").trim()
-            val gmIntVer = gm.internalVersion.trim().removePrefix("v").trim()
-            val finalIntVer = if (gmIntVer.isNotEmpty() && gmIntVer != "0") {
-                gmIntVer
-            } else if (gmVerClean.all { it.isDigit() } && gmVerClean.length >= 4) {
-                gmVerClean
-            } else {
-                ""
-            }
-            allFiles.add(
-                LocalGameFile(
-                    name = fileName,
-                    stem = fileName.substringBeforeLast('.', fileName),
-                    extension = ext,
-                    tid = rawTid,
-                    baseTid = baseTid,
-                    version = gmVerClean,
-                    internalVersion = finalIntVer,
-                    modCount = modCount,
-                    dlcCount = dlcCount,
-                    hasRus = hasRus,
-                    cleanTitle = cleanName,
-                    addonCount = gm.addonCount
-                )
-            )
-            recordInstalledFormat(rawTid, baseTid, gm.title, cleanName, ext)
-        }
-
-        // 2. Scan physical directories for standalone packages
-        fun scanDoc(doc: DocumentFile?, depth: Int) {
-            if (doc == null || depth > 2) return
-            doc.listFiles()?.forEach { f ->
-                if (f.isDirectory) {
-                    scanDoc(f, depth + 1)
-                } else if (f.isFile) {
-                    val lower = f.name.orEmpty().lowercase(Locale.ROOT)
-                    if (lower.endsWith(".nsp") || lower.endsWith(".xci") || lower.endsWith(".nsz") || lower.endsWith(".xcz")) {
-                        val ext = lower.substringAfterLast('.', "")
-                        val stem = lower.substringBeforeLast('.')
-                        val modCount = StormWorldGameItem.extractModCount(lower)
-                        val dlcCount = StormWorldGameItem.extractDlcCount(lower)
-                        val hasRus = lower.contains("rus") || lower.contains("рус")
-                        val tidMatch = Regex("""\b(01[0-9a-f]{14})\b""").find(lower) ?: Regex("""\[([0-9a-f]{16})\]""").find(lower)
-                        val rawTid = tidMatch?.groupValues?.get(1)?.lowercase(Locale.ROOT) ?: ""
-                        val num = rawTid.toULongOrNull(16) ?: 0uL
-                        var baseTid = if (num != 0uL) (num and 0xFFFFFFFFFFFFE000uL).toString(16).padStart(16, '0').lowercase(Locale.ROOT) else ""
-                        val (resolvedDispVer, resolvedIntVer) = org.yuzu.yuzu_emu.utils.GameHelper.resolveVersionFromNames(listOf(lower), extractVer(lower), extractInternalVer(lower))
-                        var fileVer = resolvedDispVer
-                        var fileIntVer = resolvedIntVer
-                        var fileTid = rawTid
-                        var fileAddonCount = 0
-
-                        val cleanTitleStr = stem.replace(Regex("""[\\/:*?"<>|]"""), " ").trim()
-                        val matchingGm = installedGames.firstOrNull { gm ->
-                            val gmName = try { File(Uri.decode(gm.path)).name } catch (_: Exception) { "" }
-                            gmName.equals(lower, ignoreCase = true) || (cleanTitleStr.length >= 4 && gm.title.contains(cleanTitleStr, ignoreCase = true))
-                        }
-                        if (matchingGm != null) {
-                            if (fileTid.isEmpty()) fileTid = matchingGm.programIdHex.trim().lowercase(Locale.ROOT)
-                            if (baseTid.isEmpty()) {
-                                val n = fileTid.toULongOrNull(16) ?: 0uL
-                                if (n != 0uL) baseTid = (n and 0xFFFFFFFFFFFFE000uL).toString(16).padStart(16, '0').lowercase(Locale.ROOT)
-                            }
-                            if (fileVer.isEmpty() || fileVer == "1.0.0") fileVer = matchingGm.version.trim().lowercase(Locale.ROOT).removePrefix("v").trim()
-                            if (fileIntVer.isEmpty()) fileIntVer = matchingGm.internalVersion.trim().removePrefix("v").trim()
-                            fileAddonCount = matchingGm.addonCount
-                        }
-
-                        allFiles.add(
-                            LocalGameFile(
-                                name = lower,
-                                stem = stem,
-                                extension = ext,
-                                tid = fileTid,
-                                baseTid = baseTid,
-                                version = fileVer,
-                                internalVersion = fileIntVer,
-                                modCount = modCount,
-                                dlcCount = dlcCount,
-                                hasRus = hasRus,
-                                cleanTitle = cleanTitleStr,
-                                addonCount = fileAddonCount
-                            )
-                        )
-                        recordInstalledFormat(fileTid, baseTid, matchingGm?.title ?: cleanTitleStr, cleanTitleStr, ext)
-                    }
-                }
-            }
-        }
-
-        fun scanFile(dir: File, depth: Int) {
-            if (depth > 2) return
-            dir.listFiles()?.forEach { f ->
-                if (f.isDirectory) {
-                    scanFile(f, depth + 1)
-                } else if (f.isFile) {
-                    val lower = f.name.lowercase(Locale.ROOT)
-                    if (lower.endsWith(".nsp") || lower.endsWith(".xci") || lower.endsWith(".nsz") || lower.endsWith(".xcz")) {
-                        val ext = lower.substringAfterLast('.', "")
-                        val stem = lower.substringBeforeLast('.')
-                        val modCount = StormWorldGameItem.extractModCount(lower)
-                        val dlcCount = StormWorldGameItem.extractDlcCount(lower)
-                        val hasRus = lower.contains("rus") || lower.contains("рус")
-                        val tidMatch = Regex("""\b(01[0-9a-f]{14})\b""").find(lower) ?: Regex("""\[([0-9a-f]{16})\]""").find(lower)
-                        val rawTid = tidMatch?.groupValues?.get(1)?.lowercase(Locale.ROOT) ?: ""
-                        val num = rawTid.toULongOrNull(16) ?: 0uL
-                        var baseTid = if (num != 0uL) (num and 0xFFFFFFFFFFFFE000uL).toString(16).padStart(16, '0').lowercase(Locale.ROOT) else ""
-                        val (resolvedDispVer, resolvedIntVer) = org.yuzu.yuzu_emu.utils.GameHelper.resolveVersionFromNames(listOf(lower), extractVer(lower), extractInternalVer(lower))
-                        var fileVer = resolvedDispVer
-                        var fileIntVer = resolvedIntVer
-                        var fileTid = rawTid
-                        var fileAddonCount = 0
-
-                        val cleanTitleStr = stem.replace(Regex("""[\\/:*?"<>|]"""), " ").trim()
-                        val matchingGm = installedGames.firstOrNull { gm ->
-                            val gmName = try { File(Uri.decode(gm.path)).name } catch (_: Exception) { "" }
-                            gmName.equals(lower, ignoreCase = true) || (cleanTitleStr.length >= 4 && gm.title.contains(cleanTitleStr, ignoreCase = true))
-                        }
-                        if (matchingGm != null) {
-                            if (fileTid.isEmpty()) fileTid = matchingGm.programIdHex.trim().lowercase(Locale.ROOT)
-                            if (baseTid.isEmpty()) {
-                                val n = fileTid.toULongOrNull(16) ?: 0uL
-                                if (n != 0uL) baseTid = (n and 0xFFFFFFFFFFFFE000uL).toString(16).padStart(16, '0').lowercase(Locale.ROOT)
-                            }
-                            if (fileVer.isEmpty() || fileVer == "1.0.0") fileVer = matchingGm.version.trim().lowercase(Locale.ROOT).removePrefix("v").trim()
-                            if (fileIntVer.isEmpty()) fileIntVer = matchingGm.internalVersion.trim().removePrefix("v").trim()
-                            fileAddonCount = matchingGm.addonCount
-                        } else if ((baseTid.isEmpty() || fileVer.isEmpty()) && f.canRead()) {
-                            try {
-                                if (fileTid.isEmpty()) {
-                                    fileTid = org.yuzu.yuzu_emu.utils.GameMetadata.getProgramId(f.absolutePath).trim().lowercase(Locale.ROOT)
-                                    val n = fileTid.toULongOrNull(16) ?: 0uL
-                                    if (n != 0uL) baseTid = (n and 0xFFFFFFFFFFFFE000uL).toString(16).padStart(16, '0').lowercase(Locale.ROOT)
-                                }
-                                if (fileVer.isEmpty() || fileVer == "1.0.0") {
-                                    val mVer = org.yuzu.yuzu_emu.utils.GameMetadata.getVersion(f.absolutePath, false).trim().lowercase(Locale.ROOT).removePrefix("v").trim()
-                                    if (mVer.isNotEmpty()) fileVer = mVer
-                                }
-                                if (fileIntVer.isEmpty()) {
-                                    val mIntVer = org.yuzu.yuzu_emu.utils.GameMetadata.getInternalVersion(f.absolutePath).trim().removePrefix("v").trim()
-                                    if (mIntVer.isNotEmpty() && mIntVer != "0") fileIntVer = mIntVer
-                                }
-                                fileAddonCount = org.yuzu.yuzu_emu.utils.GameMetadata.getAddonCount(f.absolutePath)
-                            } catch (_: Throwable) {}
-                        }
-
-                        allFiles.add(
-                            LocalGameFile(
-                                name = lower,
-                                stem = stem,
-                                extension = ext,
-                                tid = fileTid,
-                                baseTid = baseTid,
-                                version = fileVer,
-                                internalVersion = fileIntVer,
-                                modCount = modCount,
-                                dlcCount = dlcCount,
-                                hasRus = hasRus,
-                                cleanTitle = cleanTitleStr,
-                                addonCount = fileAddonCount
-                            )
-                        )
-                        recordInstalledFormat(fileTid, baseTid, matchingGm?.title ?: cleanTitleStr, cleanTitleStr, ext)
-                    }
-                }
-            }
-        }
-
-        for (dir in gameDirs) {
-            try {
-                val uri = Uri.parse(dir.uriString)
-                if (uri.scheme == "content") {
-                    val rootDoc = DocumentFile.fromTreeUri(ctx, uri)
-                    scanDoc(rootDoc, 0)
-                } else {
-                    val path = uri.path ?: dir.uriString
-                    scanFile(File(path), 0)
-                }
-            } catch (_: Exception) {}
-        }
-
-        // 3. Match each catalog item with 100% full-set precision
-        games.forEach { g ->
-            val expectedExt = g.extensionClean.lowercase(Locale.ROOT)
-            val tid = g.serialId.trim().lowercase(Locale.ROOT)
-            val tidNum = tid.toULongOrNull(16) ?: 0uL
-            val baseTid = if (tidNum != 0uL) (tidNum and 0xFFFFFFFFFFFFE000uL).toString(16).padStart(16, '0').lowercase(Locale.ROOT) else ""
-            val cleanTitle = g.title.replace(Regex("""[\\/:*?"<>|]"""), "_").trim().lowercase(Locale.ROOT)
-            val cleanFinal = (if (g.finalTitle.isNotEmpty()) g.finalTitle else g.title).replace(Regex("""[\\/:*?"<>|]"""), "_").trim().lowercase(Locale.ROOT)
-            val normTitle = g.title.replace(Regex("""[\\/:*?"<>|]"""), " ").trim().lowercase(Locale.ROOT)
-            val normFinal = (if (g.finalTitle.isNotEmpty()) g.finalTitle else g.title).replace(Regex("""[\\/:*?"<>|]"""), " ").trim().lowercase(Locale.ROOT)
-
-            val rawVer = g.version.trim().lowercase(Locale.ROOT).removePrefix("v").trim()
-            val rawIntVer = g.internalVersion.trim().lowercase(Locale.ROOT).removePrefix("v").trim()
-            val (resolvedVer, resolvedIntVer) = org.yuzu.yuzu_emu.utils.GameHelper.resolveVersionFromNames(listOf(g.finalTitle, g.title), rawVer, rawIntVer)
-
-            val fullTitle = "${g.finalTitle} ${g.title}".lowercase(Locale.ROOT)
-            val gameIsRus = fullTitle.contains("rus") || fullTitle.contains("рус")
-            val gameModCount = maxOf(g.modCount, StormWorldGameItem.extractModCount(fullTitle))
-            val gameDlcCount = maxOf(g.dlcCount, StormWorldGameItem.extractDlcCount(fullTitle))
-            val gameIsMod = gameModCount > 0
-            val gameHasDlc = gameDlcCount > 0
-
-            // Extract catalog entry format ("nsp", "nsz", "xci", "xcz")
-            val entryFormat = (g.realExtension.ifEmpty { g.extensionClean })
-                .removePrefix(".")
-                .trim()
-                .lowercase(Locale.ROOT)
-
-            // Format-Exact Matching: catalog entry can only be downloaded if the user has that exact format!
-            val formatsForTid = if (tid.isNotEmpty() && tid != "0" && tid != "—" && tid != "-") installedFormatsByTitleId[tid] else null
-            val formatsForBaseTid = if (baseTid.isNotEmpty()) installedFormatsByTitleId[baseTid] else null
-            val formatsForTitle = if (normTitle.isNotEmpty()) installedFormatsByTitle[normTitle] else null
-            val formatsForFinal = if (normFinal.isNotEmpty()) installedFormatsByTitle[normFinal] else null
-            val hasExactFormatInstalled = if (entryFormat.isNotEmpty()) {
-                (formatsForTid?.contains(entryFormat) == true) ||
-                (formatsForBaseTid?.contains(entryFormat) == true) ||
-                (formatsForTitle?.contains(entryFormat) == true) ||
-                (formatsForFinal?.contains(entryFormat) == true)
-            } else {
-                true
-            }
-
-            // 1. Check games already indexed in GamesViewModel by Program ID or Title (with exact format check)
-            val installedInModel = installedGames.any { ig ->
-                val igUri = Uri.parse(ig.path)
-                val igExt = (FileUtil.getExtension(igUri).ifEmpty { ig.extension }).lowercase(Locale.ROOT).removePrefix(".")
-                if (entryFormat.isNotEmpty() && igExt.isNotEmpty() && igExt != entryFormat) {
-                    return@any false
-                }
-                val igPid = ig.programIdHex.lowercase(Locale.ROOT)
-                val igTitleNorm = ig.title.replace(Regex("""[\/:*?"<>|]"""), " ").trim().lowercase(Locale.ROOT)
-                (tid.isNotEmpty() && tid != "0" && tid != "—" && tid != "-" && igPid == tid) ||
-                (baseTid.isNotEmpty() && igPid.startsWith(baseTid.take(13))) ||
-                (cleanTitle.length >= 4 && (igTitleNorm == normTitle || igTitleNorm.contains(normTitle) || normTitle.contains(igTitleNorm)))
-            }
-
-            g.isDownloaded = hasExactFormatInstalled && (installedInModel || allFiles.any { cand ->
-                // Support format-exact matching (.nsp vs .nsz vs .xci vs .xcz)
-                if (entryFormat.isNotEmpty() && cand.extension.isNotEmpty() && cand.extension != entryFormat) {
-                    return@any false
-                }
-                // Support any standard format (.nsp, .nsz, .xci, .xcz)
-                val idMatch = (tid.isNotEmpty() && tid != "—" && tid != "-" && (cand.tid == tid || cand.name.contains(tid))) ||
-                              (baseTid.isNotEmpty() && (cand.baseTid == baseTid || (cand.tid.isNotEmpty() && cand.tid.startsWith(baseTid.take(13))))) ||
-                              (cleanFinal.isNotEmpty() && (cand.stem == cleanFinal || cand.name.contains(cleanFinal))) ||
-                              (normFinal.isNotEmpty() && (cand.cleanTitle == normFinal || cand.cleanTitle.contains(normFinal))) ||
-                              (cleanTitle.isNotEmpty() && cleanTitle.length >= 4 && (cand.stem == cleanTitle || cand.name.contains(cleanTitle)))
-
-                if (!idMatch) {
-                    return@any false
-                }
-
-                // [Rule 3: FULL-SET MATCHING - MODS]
-                if (gameIsMod != (cand.modCount > 0)) {
-                    return@any false
-                }
-                if (gameIsMod && gameModCount > 0 && cand.modCount > 0 && cand.modCount < gameModCount) {
-                    return@any false
-                }
-
-                // [Rule 4: FULL-SET MATCHING - DLC]
-                if (cand.dlcCount > 0) {
-                    if (cand.dlcCount != gameDlcCount) {
-                        return@any false
-                    }
-                } else if (gameHasDlc) {
-                    val dlcCoveredByNand = (cand.addonCount >= gameDlcCount)
-                    val isLooseNonCatalogFilename = !cand.name.contains("(1g")
-                    if (!dlcCoveredByNand && !isLooseNonCatalogFilename) {
-                        return@any false
-                    }
-                }
-
-                // [Rule 5: FULL-SET MATCHING - RUSSIAN]
-                if (gameIsMod && gameIsRus != cand.hasRus) {
-                    return@any false
-                }
-
-                // [Rule 6: FULL-SET MATCHING - VERSION]
-                val hasSpecificVer = resolvedVer.isNotEmpty() && resolvedVer != "1.0.0" && resolvedVer != "—" && resolvedVer != "-"
-                val hasSpecificIntVer = resolvedIntVer.isNotEmpty() && resolvedIntVer != "0"
-                if (hasSpecificVer || hasSpecificIntVer) {
-                    var verMatched = false
-                    if (cand.version.isNotEmpty() && (cand.version == resolvedVer || cand.version == resolvedIntVer)) {
-                        verMatched = true
-                    }
-                    if (cand.internalVersion.isNotEmpty() && (cand.internalVersion == resolvedIntVer || cand.internalVersion == resolvedVer)) {
-                        verMatched = true
-                    }
-                    if (resolvedVer.isNotEmpty() && (cand.name.contains(resolvedVer) || cand.name.contains("v$resolvedVer"))) {
-                        verMatched = true
-                    }
-                    if (resolvedIntVer.isNotEmpty() && (cand.name.contains(resolvedIntVer) || cand.name.contains("v$resolvedIntVer"))) {
-                        verMatched = true
-                    }
-                    if (cand.version.isEmpty() && cand.internalVersion.isEmpty() && !cand.name.contains("(1g")) {
-                        verMatched = true
-                    }
-                    if (!verMatched) {
-                        return@any false
-                    }
-                } else if (resolvedVer == "1.0.0" || resolvedIntVer == "0") {
-                    if (cand.version.isNotEmpty() && cand.version != "1.0.0" && cand.version != "0" && cand.name.contains("(1g")) {
-                        return@any false
-                    }
-                }
-
-                true
-            })
-        }
+        val index = cachedInstalledLibraryIndex ?: loadDiskInstalledLibraryIndex(ctx) ?: buildInstalledLibraryIndex(ctx)
+        applyDownloadedStatus(games, index)
     }
 
     private fun matchesLanguage(g: StormWorldGameItem, filter: LanguageFilter): Boolean {
@@ -1931,6 +1547,558 @@ class StormGamesWorldDialogFragment : DialogFragment() {
     companion object {
         const val TAG = "StormGamesWorldDialogFragment"
         private const val CATALOG_CACHE_FILE = "storm_world_catalog_cache.json"
+        private const val LOCAL_INDEX_CACHE_FILE = "sgw_local_index_v2.json"
+
+        data class LocalGameFile(
+            val name: String = "",
+            val stem: String = "",
+            val extension: String = "",
+            val tid: String = "",
+            val baseTid: String = "",
+            val version: String = "",
+            val internalVersion: String = "",
+            val modCount: Int = 0,
+            val dlcCount: Int = 0,
+            val hasRus: Boolean = false,
+            val cleanTitle: String = "",
+            val addonCount: Int = 0
+        )
+
+        data class InstalledLibraryIndex(
+            val allFiles: List<LocalGameFile> = emptyList(),
+            val installedFormatsByTitleId: Map<String, Set<String>> = emptyMap(),
+            val installedFormatsByTitle: Map<String, Set<String>> = emptyMap()
+        )
+
+        @Volatile
+        var cachedInstalledLibraryIndex: InstalledLibraryIndex? = null
+        private val cachedParsedFiles = java.util.concurrent.ConcurrentHashMap<String, LocalGameFile>()
+
+        fun loadDiskInstalledLibraryIndex(context: Context): InstalledLibraryIndex? {
+            return try {
+                val file = File(context.cacheDir, LOCAL_INDEX_CACHE_FILE)
+                if (!file.exists() || file.length() == 0L) return null
+                val jsonStr = file.readText(Charsets.UTF_8)
+                val root = JSONObject(jsonStr)
+                val filesArr = root.optJSONArray("files") ?: return null
+                val filesList = ArrayList<LocalGameFile>(filesArr.length())
+                for (i in 0 until filesArr.length()) {
+                    val obj = filesArr.optJSONObject(i) ?: continue
+                    filesList.add(LocalGameFile(
+                        name = obj.optString("name"),
+                        stem = obj.optString("stem"),
+                        extension = obj.optString("ext"),
+                        tid = obj.optString("tid"),
+                        baseTid = obj.optString("baseTid"),
+                        version = obj.optString("ver"),
+                        internalVersion = obj.optString("intVer"),
+                        modCount = obj.optInt("mod", 0),
+                        dlcCount = obj.optInt("dlc", 0),
+                        hasRus = obj.optBoolean("rus", false),
+                        cleanTitle = obj.optString("title"),
+                        addonCount = obj.optInt("addons", 0)
+                    ))
+                }
+                val formatsTid = HashMap<String, HashSet<String>>()
+                val formatsTidObj = root.optJSONObject("formatsByTid")
+                if (formatsTidObj != null) {
+                    val keys = formatsTidObj.keys()
+                    while (keys.hasNext()) {
+                        val k = keys.next()
+                        val arr = formatsTidObj.optJSONArray(k)
+                        if (arr != null) {
+                            val set = HashSet<String>()
+                            for (j in 0 until arr.length()) set.add(arr.optString(j))
+                            formatsTid[k] = set
+                        }
+                    }
+                }
+                val formatsTitle = HashMap<String, HashSet<String>>()
+                val formatsTitleObj = root.optJSONObject("formatsByTitle")
+                if (formatsTitleObj != null) {
+                    val keys = formatsTitleObj.keys()
+                    while (keys.hasNext()) {
+                        val k = keys.next()
+                        val arr = formatsTitleObj.optJSONArray(k)
+                        if (arr != null) {
+                            val set = HashSet<String>()
+                            for (j in 0 until arr.length()) set.add(arr.optString(j))
+                            formatsTitle[k] = set
+                        }
+                    }
+                }
+                val idx = InstalledLibraryIndex(filesList, formatsTid, formatsTitle)
+                cachedInstalledLibraryIndex = idx
+                idx
+            } catch (_: Throwable) {
+                null
+            }
+        }
+
+        fun saveDiskInstalledLibraryIndex(context: Context, index: InstalledLibraryIndex) {
+            try {
+                val root = JSONObject()
+                val filesArr = JSONArray()
+                index.allFiles.forEach { f ->
+                    val obj = JSONObject()
+                    obj.put("name", f.name)
+                    obj.put("stem", f.stem)
+                    obj.put("ext", f.extension)
+                    obj.put("tid", f.tid)
+                    obj.put("baseTid", f.baseTid)
+                    obj.put("ver", f.version)
+                    obj.put("intVer", f.internalVersion)
+                    obj.put("mod", f.modCount)
+                    obj.put("dlc", f.dlcCount)
+                    obj.put("rus", f.hasRus)
+                    obj.put("title", f.cleanTitle)
+                    obj.put("addons", f.addonCount)
+                    filesArr.put(obj)
+                }
+                root.put("files", filesArr)
+
+                val formatsTidObj = JSONObject()
+                index.installedFormatsByTitleId.forEach { (k, set) ->
+                    val arr = JSONArray()
+                    set.forEach { arr.put(it) }
+                    formatsTidObj.put(k, arr)
+                }
+                root.put("formatsByTid", formatsTidObj)
+
+                val formatsTitleObj = JSONObject()
+                index.installedFormatsByTitle.forEach { (k, set) ->
+                    val arr = JSONArray()
+                    set.forEach { arr.put(it) }
+                    formatsTitleObj.put(k, arr)
+                }
+                root.put("formatsByTitle", formatsTitleObj)
+
+                val file = File(context.cacheDir, LOCAL_INDEX_CACHE_FILE)
+                val tempFile = File(context.cacheDir, "$LOCAL_INDEX_CACHE_FILE.tmp")
+                tempFile.writeText(root.toString(), Charsets.UTF_8)
+                tempFile.renameTo(file)
+            } catch (_: Throwable) {}
+        }
+
+        fun buildInstalledLibraryIndex(ctx: Context): InstalledLibraryIndex {
+            val gameDirs = NativeConfig.getGameDirs()
+            val allFiles = mutableListOf<LocalGameFile>()
+            val installedFormatsByTitleId = HashMap<String, HashSet<String>>()
+            val installedFormatsByTitle = HashMap<String, HashSet<String>>()
+
+            fun extractVer(str: String): String {
+                return try {
+                    val m = Regex("""(?:v|\-|\b)([0-9]+\.[0-9]+(?:\.[0-9]+)*)(?:\b|\]|\))""").find(str)
+                    m?.groupValues?.get(1)?.lowercase(Locale.ROOT) ?: ""
+                } catch (_: Exception) { "" }
+            }
+
+            fun extractInternalVer(str: String): String {
+                return try {
+                    val m = Regex("""(?:\[v?|\(v?|\bv)([0-9]{4,8})(?:\]|\)|\b)""").find(str)
+                    m?.groupValues?.get(1) ?: ""
+                } catch (_: Exception) { "" }
+            }
+
+            fun recordInstalledFormat(tid: String, baseTid: String, title: String, cleanTitle: String, ext: String) {
+                val formatClean = ext.lowercase(Locale.ROOT).removePrefix(".").trim()
+                if (formatClean.isNotEmpty()) {
+                    if (tid.isNotEmpty() && tid != "0" && tid != "—" && tid != "-") {
+                        installedFormatsByTitleId.getOrPut(tid) { HashSet() }.add(formatClean)
+                    }
+                    if (baseTid.isNotEmpty()) {
+                        installedFormatsByTitleId.getOrPut(baseTid) { HashSet() }.add(formatClean)
+                    }
+                    if (title.isNotEmpty()) {
+                        val norm = title.replace(Regex("""[\/:*?"<>|]"""), " ").trim().lowercase(Locale.ROOT)
+                        installedFormatsByTitle.getOrPut(norm) { HashSet() }.add(formatClean)
+                    }
+                    if (cleanTitle.isNotEmpty()) {
+                        val normClean = cleanTitle.replace(Regex("""[\/:*?"<>|]"""), " ").trim().lowercase(Locale.ROOT)
+                        installedFormatsByTitle.getOrPut(normClean) { HashSet() }.add(formatClean)
+                    }
+                }
+            }
+
+            val installedGames = mutableListOf<org.yuzu.yuzu_emu.model.Game>()
+            try {
+                if (org.yuzu.yuzu_emu.utils.GameHelper.cachedGameList.isNotEmpty()) {
+                    installedGames.addAll(org.yuzu.yuzu_emu.utils.GameHelper.cachedGameList)
+                } else {
+                    val sp = androidx.preference.PreferenceManager.getDefaultSharedPreferences(ctx.applicationContext)
+                    val set = sp.getStringSet(org.yuzu.yuzu_emu.utils.GameHelper.KEY_GAMES, emptySet()) ?: emptySet()
+                    set.forEach { jsonStr ->
+                        try {
+                            installedGames.add(kotlinx.serialization.json.Json.decodeFromString<org.yuzu.yuzu_emu.model.Game>(jsonStr))
+                        } catch (_: Throwable) {}
+                    }
+                }
+            } catch (_: Throwable) {}
+
+            installedGames.forEach { gm ->
+                val uri = Uri.parse(gm.path)
+                val fileName = FileUtil.getFilename(uri).lowercase(Locale.ROOT)
+                val ext = (FileUtil.getExtension(uri).ifEmpty { gm.extension }).lowercase(Locale.ROOT).removePrefix(".")
+                val rawTid = gm.programIdHex.trim().lowercase(Locale.ROOT)
+                val num = rawTid.toULongOrNull(16) ?: 0uL
+                val baseTid = if (num != 0uL) (num and 0xFFFFFFFFFFFFE000uL).toString(16).padStart(16, '0').lowercase(Locale.ROOT) else ""
+                val cleanName = gm.title.replace(Regex("""[\\/:*?"<>|]"""), " ").trim().lowercase(Locale.ROOT)
+                val fullCandidateStr = "$fileName ${gm.title.lowercase(Locale.ROOT)}"
+                val modCount = StormWorldGameItem.extractModCount(fullCandidateStr)
+                val dlcCount = StormWorldGameItem.extractDlcCount(fullCandidateStr)
+                val hasRus = fullCandidateStr.contains("rus") || fullCandidateStr.contains("рус")
+                val gmVerClean = gm.version.trim().lowercase(Locale.ROOT).removePrefix("v").trim()
+                val gmIntVer = gm.internalVersion.trim().removePrefix("v").trim()
+                val finalIntVer = if (gmIntVer.isNotEmpty() && gmIntVer != "0") {
+                    gmIntVer
+                } else if (gmVerClean.all { it.isDigit() } && gmVerClean.length >= 4) {
+                    gmVerClean
+                } else {
+                    ""
+                }
+                allFiles.add(
+                    LocalGameFile(
+                        name = fileName,
+                        stem = fileName.substringBeforeLast('.', fileName),
+                        extension = ext,
+                        tid = rawTid,
+                        baseTid = baseTid,
+                        version = gmVerClean,
+                        internalVersion = finalIntVer,
+                        modCount = modCount,
+                        dlcCount = dlcCount,
+                        hasRus = hasRus,
+                        cleanTitle = cleanName,
+                        addonCount = gm.addonCount
+                    )
+                )
+                recordInstalledFormat(rawTid, baseTid, gm.title, cleanName, ext)
+            }
+
+            fun scanDoc(doc: DocumentFile?, depth: Int) {
+                if (doc == null || depth > 2) return
+                doc.listFiles()?.forEach { f ->
+                    if (f.isDirectory) {
+                        scanDoc(f, depth + 1)
+                    } else if (f.isFile) {
+                        val lower = f.name.orEmpty().lowercase(Locale.ROOT)
+                        if (lower.endsWith(".nsp") || lower.endsWith(".xci") || lower.endsWith(".nsz") || lower.endsWith(".xcz")) {
+                            val cacheKey = "${f.uri}|${f.length()}|${f.lastModified()}"
+                            val cached = cachedParsedFiles[cacheKey]
+                            if (cached != null) {
+                                allFiles.add(cached)
+                                recordInstalledFormat(cached.tid, cached.baseTid, cached.cleanTitle, cached.cleanTitle, cached.extension)
+                                return@forEach
+                            }
+
+                            val ext = lower.substringAfterLast('.', "")
+                            val stem = lower.substringBeforeLast('.')
+                            val modCount = StormWorldGameItem.extractModCount(lower)
+                            val dlcCount = StormWorldGameItem.extractDlcCount(lower)
+                            val hasRus = lower.contains("rus") || lower.contains("рус")
+                            val tidMatch = Regex("""\b(01[0-9a-f]{14})\b""").find(lower) ?: Regex("""\[([0-9a-f]{16})\]""").find(lower)
+                            val rawTid = tidMatch?.groupValues?.get(1)?.lowercase(Locale.ROOT) ?: ""
+                            val num = rawTid.toULongOrNull(16) ?: 0uL
+                            var baseTid = if (num != 0uL) (num and 0xFFFFFFFFFFFFE000uL).toString(16).padStart(16, '0').lowercase(Locale.ROOT) else ""
+                            val (resolvedDispVer, resolvedIntVer) = org.yuzu.yuzu_emu.utils.GameHelper.resolveVersionFromNames(listOf(lower), extractVer(lower), extractInternalVer(lower))
+                            var fileVer = resolvedDispVer
+                            var fileIntVer = resolvedIntVer
+                            var fileTid = rawTid
+                            var fileAddonCount = 0
+
+                            val cleanTitleStr = stem.replace(Regex("""[\\/:*?"<>|]"""), " ").trim()
+                            val matchingGm = installedGames.firstOrNull { gm ->
+                                val gmName = try { File(Uri.decode(gm.path)).name } catch (_: Exception) { "" }
+                                gmName.equals(lower, ignoreCase = true) || (cleanTitleStr.length >= 4 && gm.title.contains(cleanTitleStr, ignoreCase = true))
+                            }
+                            if (matchingGm != null) {
+                                if (fileTid.isEmpty()) fileTid = matchingGm.programIdHex.trim().lowercase(Locale.ROOT)
+                                if (baseTid.isEmpty()) {
+                                    val n = fileTid.toULongOrNull(16) ?: 0uL
+                                    if (n != 0uL) baseTid = (n and 0xFFFFFFFFFFFFE000uL).toString(16).padStart(16, '0').lowercase(Locale.ROOT)
+                                }
+                                if (fileVer.isEmpty() || fileVer == "1.0.0") fileVer = matchingGm.version.trim().lowercase(Locale.ROOT).removePrefix("v").trim()
+                                if (fileIntVer.isEmpty()) fileIntVer = matchingGm.internalVersion.trim().removePrefix("v").trim()
+                                fileAddonCount = matchingGm.addonCount
+                            }
+
+                            val parsed = LocalGameFile(
+                                name = lower,
+                                stem = stem,
+                                extension = ext,
+                                tid = fileTid,
+                                baseTid = baseTid,
+                                version = fileVer,
+                                internalVersion = fileIntVer,
+                                modCount = modCount,
+                                dlcCount = dlcCount,
+                                hasRus = hasRus,
+                                cleanTitle = cleanTitleStr,
+                                addonCount = fileAddonCount
+                            )
+                            cachedParsedFiles[cacheKey] = parsed
+                            allFiles.add(parsed)
+                            recordInstalledFormat(fileTid, baseTid, matchingGm?.title ?: cleanTitleStr, cleanTitleStr, ext)
+                        }
+                    }
+                }
+            }
+
+            fun scanFile(dir: File, depth: Int) {
+                if (depth > 2) return
+                dir.listFiles()?.forEach { f ->
+                    if (f.isDirectory) {
+                        scanFile(f, depth + 1)
+                    } else if (f.isFile) {
+                        val lower = f.name.lowercase(Locale.ROOT)
+                        if (lower.endsWith(".nsp") || lower.endsWith(".xci") || lower.endsWith(".nsz") || lower.endsWith(".xcz")) {
+                            val cacheKey = "${f.absolutePath}|${f.length()}|${f.lastModified()}"
+                            val cached = cachedParsedFiles[cacheKey]
+                            if (cached != null) {
+                                allFiles.add(cached)
+                                recordInstalledFormat(cached.tid, cached.baseTid, cached.cleanTitle, cached.cleanTitle, cached.extension)
+                                return@forEach
+                            }
+
+                            val ext = lower.substringAfterLast('.', "")
+                            val stem = lower.substringBeforeLast('.')
+                            val modCount = StormWorldGameItem.extractModCount(lower)
+                            val dlcCount = StormWorldGameItem.extractDlcCount(lower)
+                            val hasRus = lower.contains("rus") || lower.contains("рус")
+                            val tidMatch = Regex("""\b(01[0-9a-f]{14})\b""").find(lower) ?: Regex("""\[([0-9a-f]{16})\]""").find(lower)
+                            val rawTid = tidMatch?.groupValues?.get(1)?.lowercase(Locale.ROOT) ?: ""
+                            val num = rawTid.toULongOrNull(16) ?: 0uL
+                            var baseTid = if (num != 0uL) (num and 0xFFFFFFFFFFFFE000uL).toString(16).padStart(16, '0').lowercase(Locale.ROOT) else ""
+                            val (resolvedDispVer, resolvedIntVer) = org.yuzu.yuzu_emu.utils.GameHelper.resolveVersionFromNames(listOf(lower), extractVer(lower), extractInternalVer(lower))
+                            var fileVer = resolvedDispVer
+                            var fileIntVer = resolvedIntVer
+                            var fileTid = rawTid
+                            var fileAddonCount = 0
+
+                            val cleanTitleStr = stem.replace(Regex("""[\\/:*?"<>|]"""), " ").trim()
+                            val matchingGm = installedGames.firstOrNull { gm ->
+                                val gmName = try { File(Uri.decode(gm.path)).name } catch (_: Exception) { "" }
+                                gmName.equals(lower, ignoreCase = true) || (cleanTitleStr.length >= 4 && gm.title.contains(cleanTitleStr, ignoreCase = true))
+                            }
+                            if (matchingGm != null) {
+                                if (fileTid.isEmpty()) fileTid = matchingGm.programIdHex.trim().lowercase(Locale.ROOT)
+                                if (baseTid.isEmpty()) {
+                                    val n = fileTid.toULongOrNull(16) ?: 0uL
+                                    if (n != 0uL) baseTid = (n and 0xFFFFFFFFFFFFE000uL).toString(16).padStart(16, '0').lowercase(Locale.ROOT)
+                                }
+                                if (fileVer.isEmpty() || fileVer == "1.0.0") fileVer = matchingGm.version.trim().lowercase(Locale.ROOT).removePrefix("v").trim()
+                                if (fileIntVer.isEmpty()) fileIntVer = matchingGm.internalVersion.trim().removePrefix("v").trim()
+                                fileAddonCount = matchingGm.addonCount
+                            } else if ((baseTid.isEmpty() || fileVer.isEmpty()) && f.canRead()) {
+                                try {
+                                    if (fileTid.isEmpty()) {
+                                        fileTid = org.yuzu.yuzu_emu.utils.GameMetadata.getProgramId(f.absolutePath).trim().lowercase(Locale.ROOT)
+                                        val n = fileTid.toULongOrNull(16) ?: 0uL
+                                        if (n != 0uL) baseTid = (n and 0xFFFFFFFFFFFFE000uL).toString(16).padStart(16, '0').lowercase(Locale.ROOT)
+                                    }
+                                    if (fileVer.isEmpty() || fileVer == "1.0.0") {
+                                        val mVer = org.yuzu.yuzu_emu.utils.GameMetadata.getVersion(f.absolutePath, false).trim().lowercase(Locale.ROOT).removePrefix("v").trim()
+                                        if (mVer.isNotEmpty()) fileVer = mVer
+                                    }
+                                    if (fileIntVer.isEmpty()) {
+                                        val mIntVer = org.yuzu.yuzu_emu.utils.GameMetadata.getInternalVersion(f.absolutePath).trim().removePrefix("v").trim()
+                                        if (mIntVer.isNotEmpty() && mIntVer != "0") fileIntVer = mIntVer
+                                    }
+                                    fileAddonCount = org.yuzu.yuzu_emu.utils.GameMetadata.getAddonCount(f.absolutePath)
+                                } catch (_: Throwable) {}
+                            }
+
+                            val parsed = LocalGameFile(
+                                name = lower,
+                                stem = stem,
+                                extension = ext,
+                                tid = fileTid,
+                                baseTid = baseTid,
+                                version = fileVer,
+                                internalVersion = fileIntVer,
+                                modCount = modCount,
+                                dlcCount = dlcCount,
+                                hasRus = hasRus,
+                                cleanTitle = cleanTitleStr,
+                                addonCount = fileAddonCount
+                            )
+                            cachedParsedFiles[cacheKey] = parsed
+                            allFiles.add(parsed)
+                            recordInstalledFormat(fileTid, baseTid, matchingGm?.title ?: cleanTitleStr, cleanTitleStr, ext)
+                        }
+                    }
+                }
+            }
+
+            for (dir in gameDirs) {
+                try {
+                    val uri = Uri.parse(dir.uriString)
+                    if (uri.scheme == "content") {
+                        val rootDoc = DocumentFile.fromTreeUri(ctx, uri)
+                        scanDoc(rootDoc, 0)
+                    } else {
+                        val path = uri.path ?: dir.uriString
+                        scanFile(File(path), 0)
+                    }
+                } catch (_: Exception) {}
+            }
+
+            return InstalledLibraryIndex(allFiles, installedFormatsByTitleId, installedFormatsByTitle)
+        }
+
+        fun prewarmInstalledLibraryIndex(context: Context): InstalledLibraryIndex {
+            val existing = cachedInstalledLibraryIndex
+            if (existing != null && existing.allFiles.isNotEmpty()) {
+                return existing
+            }
+            val disk = loadDiskInstalledLibraryIndex(context)
+            if (disk != null && disk.allFiles.isNotEmpty()) {
+                cachedInstalledLibraryIndex = disk
+                kotlinx.coroutines.CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        val fresh = buildInstalledLibraryIndex(context)
+                        cachedInstalledLibraryIndex = fresh
+                        saveDiskInstalledLibraryIndex(context, fresh)
+                    } catch (_: Throwable) {}
+                }
+                return disk
+            }
+            val fresh = buildInstalledLibraryIndex(context)
+            cachedInstalledLibraryIndex = fresh
+            saveDiskInstalledLibraryIndex(context, fresh)
+            return fresh
+        }
+
+        fun applyDownloadedStatus(
+            games: List<StormWorldGameItem>,
+            index: InstalledLibraryIndex,
+            installedGamesList: List<org.yuzu.yuzu_emu.model.Game> = emptyList()
+        ) {
+            val allFiles = index.allFiles
+            val installedFormatsByTitleId = index.installedFormatsByTitleId
+            val installedFormatsByTitle = index.installedFormatsByTitle
+
+            games.forEach { g ->
+                val expectedExt = g.extensionClean.lowercase(Locale.ROOT)
+                val tid = g.serialId.trim().lowercase(Locale.ROOT)
+                val tidNum = tid.toULongOrNull(16) ?: 0uL
+                val baseTid = if (tidNum != 0uL) (tidNum and 0xFFFFFFFFFFFFE000uL).toString(16).padStart(16, '0').lowercase(Locale.ROOT) else ""
+                val cleanTitle = g.title.replace(Regex("""[\\/:*?"<>|]"""), "_").trim().lowercase(Locale.ROOT)
+                val cleanFinal = (if (g.finalTitle.isNotEmpty()) g.finalTitle else g.title).replace(Regex("""[\\/:*?"<>|]"""), "_").trim().lowercase(Locale.ROOT)
+                val normTitle = g.title.replace(Regex("""[\\/:*?"<>|]"""), " ").trim().lowercase(Locale.ROOT)
+                val normFinal = (if (g.finalTitle.isNotEmpty()) g.finalTitle else g.title).replace(Regex("""[\\/:*?"<>|]"""), " ").trim().lowercase(Locale.ROOT)
+
+                val rawVer = g.version.trim().lowercase(Locale.ROOT).removePrefix("v").trim()
+                val rawIntVer = g.internalVersion.trim().lowercase(Locale.ROOT).removePrefix("v").trim()
+                val (resolvedVer, resolvedIntVer) = org.yuzu.yuzu_emu.utils.GameHelper.resolveVersionFromNames(listOf(g.finalTitle, g.title), rawVer, rawIntVer)
+
+                val fullTitle = "${g.finalTitle} ${g.title}".lowercase(Locale.ROOT)
+                val gameIsRus = fullTitle.contains("rus") || fullTitle.contains("рус")
+                val gameModCount = maxOf(g.modCount, StormWorldGameItem.extractModCount(fullTitle))
+                val gameDlcCount = maxOf(g.dlcCount, StormWorldGameItem.extractDlcCount(fullTitle))
+                val gameIsMod = gameModCount > 0
+                val gameHasDlc = gameDlcCount > 0
+
+                val entryFormat = (g.realExtension.ifEmpty { g.extensionClean })
+                    .removePrefix(".")
+                    .trim()
+                    .lowercase(Locale.ROOT)
+
+                val formatsForTid = if (tid.isNotEmpty() && tid != "0" && tid != "—" && tid != "-") installedFormatsByTitleId[tid] else null
+                val formatsForBaseTid = if (baseTid.isNotEmpty()) installedFormatsByTitleId[baseTid] else null
+                val formatsForTitle = if (normTitle.isNotEmpty()) installedFormatsByTitle[normTitle] else null
+                val formatsForFinal = if (normFinal.isNotEmpty()) installedFormatsByTitle[normFinal] else null
+                val hasExactFormatInstalled = if (entryFormat.isNotEmpty()) {
+                    (formatsForTid?.contains(entryFormat) == true) ||
+                    (formatsForBaseTid?.contains(entryFormat) == true) ||
+                    (formatsForTitle?.contains(entryFormat) == true) ||
+                    (formatsForFinal?.contains(entryFormat) == true)
+                } else {
+                    true
+                }
+
+                val installedInModel = installedGamesList.any { ig ->
+                    val igUri = Uri.parse(ig.path)
+                    val igExt = (FileUtil.getExtension(igUri).ifEmpty { ig.extension }).lowercase(Locale.ROOT).removePrefix(".")
+                    if (entryFormat.isNotEmpty() && igExt.isNotEmpty() && igExt != entryFormat) {
+                        return@any false
+                    }
+                    val igPid = ig.programIdHex.lowercase(Locale.ROOT)
+                    val igTitleNorm = ig.title.replace(Regex("""[\/:*?"<>|]"""), " ").trim().lowercase(Locale.ROOT)
+                    (tid.isNotEmpty() && tid != "0" && tid != "—" && tid != "-" && igPid == tid) ||
+                    (baseTid.isNotEmpty() && igPid.startsWith(baseTid.take(13))) ||
+                    (cleanTitle.length >= 4 && (igTitleNorm == normTitle || igTitleNorm.contains(normTitle) || normTitle.contains(igTitleNorm)))
+                }
+
+                g.isDownloaded = hasExactFormatInstalled && (installedInModel || allFiles.any { cand ->
+                    if (entryFormat.isNotEmpty() && cand.extension.isNotEmpty() && cand.extension != entryFormat) {
+                        return@any false
+                    }
+                    val idMatch = (tid.isNotEmpty() && tid != "—" && tid != "-" && (cand.tid == tid || cand.name.contains(tid))) ||
+                                  (baseTid.isNotEmpty() && (cand.baseTid == baseTid || (cand.tid.isNotEmpty() && cand.tid.startsWith(baseTid.take(13))))) ||
+                                  (cleanFinal.isNotEmpty() && (cand.stem == cleanFinal || cand.name.contains(cleanFinal))) ||
+                                  (normFinal.isNotEmpty() && (cand.cleanTitle == normFinal || cand.cleanTitle.contains(normFinal))) ||
+                                  (cleanTitle.isNotEmpty() && cleanTitle.length >= 4 && (cand.stem == cleanTitle || cand.name.contains(cleanTitle)))
+
+                    if (!idMatch) {
+                        return@any false
+                    }
+
+                    if (gameIsMod != (cand.modCount > 0)) {
+                        return@any false
+                    }
+                    if (gameIsMod && gameModCount > 0 && cand.modCount > 0 && cand.modCount < gameModCount) {
+                        return@any false
+                    }
+
+                    if (cand.dlcCount > 0) {
+                        if (cand.dlcCount != gameDlcCount) {
+                            return@any false
+                        }
+                    } else if (gameHasDlc) {
+                        val dlcCoveredByNand = (cand.addonCount >= gameDlcCount)
+                        val isLooseNonCatalogFilename = !cand.name.contains("(1g")
+                        if (!dlcCoveredByNand && !isLooseNonCatalogFilename) {
+                            return@any false
+                        }
+                    }
+
+                    if (gameIsMod && gameIsRus != cand.hasRus) {
+                        return@any false
+                    }
+
+                    val hasSpecificVer = resolvedVer.isNotEmpty() && resolvedVer != "1.0.0" && resolvedVer != "—" && resolvedVer != "-"
+                    val hasSpecificIntVer = resolvedIntVer.isNotEmpty() && resolvedIntVer != "0"
+                    if (hasSpecificVer || hasSpecificIntVer) {
+                        var verMatched = false
+                        if (cand.version.isNotEmpty() && (cand.version == resolvedVer || cand.version == resolvedIntVer)) {
+                            verMatched = true
+                        }
+                        if (hasSpecificIntVer && cand.internalVersion.isNotEmpty() && cand.internalVersion == resolvedIntVer) {
+                            verMatched = true
+                        }
+                        if (cand.name.contains(resolvedVer) || cand.name.contains("v$resolvedVer")) {
+                            verMatched = true
+                        }
+                        if (hasSpecificIntVer && (cand.name.contains(resolvedIntVer) || cand.name.contains("v$resolvedIntVer"))) {
+                            verMatched = true
+                        }
+                        if (cand.version.isEmpty() || (cand.version == "1.0.0" && !cand.name.contains("(1g"))) {
+                            verMatched = true
+                        }
+                        if (!verMatched) {
+                            return@any false
+                        }
+                    } else if (resolvedVer == "1.0.0" || resolvedIntVer == "0") {
+                        if (cand.version.isNotEmpty() && cand.version != "1.0.0" && cand.version != "0" && cand.name.contains("(1g")) {
+                            return@any false
+                        }
+                    }
+
+                    true
+                })
+            }
+        }
 
         val dynamicCoverCache = java.util.concurrent.ConcurrentHashMap<String, String>()
 
@@ -2301,6 +2469,11 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         }
 
         suspend fun syncCatalogInBackground(context: Context): List<StormWorldGameItem> = withContext(Dispatchers.IO) {
+            // Prewarm installed library index in background so opening SGW is 0 ms instant
+            try {
+                prewarmInstalledLibraryIndex(context)
+            } catch (_: Throwable) {}
+
             try {
                 val req = Request.Builder()
                     .url("https://stormgamesworld.ru/api/games/index")

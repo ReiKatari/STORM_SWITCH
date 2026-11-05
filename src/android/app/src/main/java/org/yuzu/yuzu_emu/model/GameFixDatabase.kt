@@ -1657,7 +1657,7 @@ GameFixProfile(
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\barrier_feedback_loops" to "false",
                 "Cpu\\cpuopt_fastmem" to "true",
-                "Cpu\\cpuopt_ignore_memory_aborts" to "true"
+                "Cpu\\cpuopt_ignore_memory_aborts" to "false"
             )
         ),
  GameFixProfile(

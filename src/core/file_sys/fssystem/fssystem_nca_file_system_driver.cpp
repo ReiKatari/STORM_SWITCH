@@ -555,15 +555,81 @@ Result NcaFileSystemDriver::CreateSparseStorageMetaStorage(VirtualFile* out,
         std::make_shared<OffsetVfsFile>(std::move(base_storage), meta_size, meta_offset);
     R_UNLESS(enc_storage != nullptr, ResultAllocationMemoryFailedAllocateShared);
 
-    // Create the decrypted storage.
-    VirtualFile decrypted_storage;
-    R_TRY(this->CreateAesCtrStorage(std::addressof(decrypted_storage), std::move(enc_storage),
-                                    offset + meta_offset, sparse_info.MakeAesCtrUpperIv(upper_iv),
-                                    AlignmentStorageRequirement::None, true));
+    const auto IsValidBucketTreeNode = [](const std::vector<u8>& buf) -> bool {
+        if (buf.size() < sizeof(BucketTree::NodeHeader)) {
+            return false;
+        }
+        BucketTree::NodeHeader node_hdr{};
+        std::memcpy(&node_hdr, buf.data(), sizeof(node_hdr));
+        return node_hdr.Verify(0, SparseStorage::NodeSize, sizeof(SparseStorage::Entry)).IsSuccess();
+    };
 
-    // Create buffered storage.
+    const auto sparse_upper_iv = sparse_info.MakeAesCtrUpperIv(upper_iv);
     std::vector<u8> meta_data(meta_size);
-    decrypted_storage->Read(meta_data.data(), meta_size, 0);
+
+    // Candidate 1: Standard encrypted NCA (decrypt with sparse_upper_iv at offset + meta_offset)
+    {
+        VirtualFile dec_std;
+        R_TRY(this->CreateAesCtrStorage(std::addressof(dec_std), enc_storage,
+                                        offset + meta_offset, sparse_upper_iv,
+                                        AlignmentStorageRequirement::None, true));
+        dec_std->Read(meta_data.data(), meta_size, 0);
+    }
+
+    if (!IsValidBucketTreeNode(meta_data) && m_reader->GetStorage() &&
+        m_reader->GetStorage()->HasDecryptedSections()) {
+        // Candidate 2: Already plaintext in NCZ
+        std::vector<u8> raw_data(meta_size);
+        enc_storage->Read(raw_data.data(), meta_size, 0);
+        if (IsValidBucketTreeNode(raw_data)) {
+            meta_data = std::move(raw_data);
+        } else {
+            // Candidate 3: Standard NSZ (undo linear upper_iv at offset + meta_offset, then decrypt with sparse_upper_iv)
+            VirtualFile reenc_nsz;
+            VirtualFile dec_nsz;
+            R_TRY(this->CreateAesCtrStorage(std::addressof(reenc_nsz), enc_storage,
+                                            offset + meta_offset, upper_iv,
+                                            AlignmentStorageRequirement::None, true));
+            R_TRY(this->CreateAesCtrStorage(std::addressof(dec_nsz), std::move(reenc_nsz),
+                                            offset + meta_offset, sparse_upper_iv,
+                                            AlignmentStorageRequirement::None, true));
+            std::vector<u8> nsz_data(meta_size);
+            dec_nsz->Read(nsz_data.data(), meta_size, 0);
+            if (IsValidBucketTreeNode(nsz_data)) {
+                meta_data = std::move(nsz_data);
+            } else {
+                // Candidate 4: StormNczCompressor (undo AesCtrExXorBatched at meta_offset, then decrypt with sparse_upper_iv)
+                const void* aes_key = m_reader->HasExternalDecryptionKey()
+                                          ? m_reader->GetExternalDecryptionKey()
+                                          : m_reader->GetDecryptionKey(NcaHeader::DecryptionKey_AesCtr);
+                std::vector<u8> storm_reenc = raw_data;
+                const size_t num_blocks = storm_reenc.size() / AesCtrStorage::BlockSize;
+                for (size_t b = 0; b < num_blocks; ++b) {
+                    std::array<u8, AesCtrStorage::IvSize> ex_iv{};
+                    const u32 blk_idx = static_cast<u32>((meta_offset >> 4) + b);
+                    const u64 low_val = (static_cast<u64>(sparse_info.generation) << 48) |
+                                        (static_cast<u64>(blk_idx) << 16);
+                    *reinterpret_cast<u64_be*>(ex_iv.data() + 0) = sparse_upper_iv.value;
+                    *reinterpret_cast<u64_be*>(ex_iv.data() + sizeof(u64)) = low_val;
+                    auto blk_file = std::make_shared<VectorVfsFile>(
+                        std::vector<u8>(storm_reenc.begin() + b * 16, storm_reenc.begin() + (b + 1) * 16));
+                    AesCtrStorage blk_ctr(std::move(blk_file), aes_key, AesCtrStorage::KeySize,
+                                          ex_iv.data(), AesCtrStorage::IvSize);
+                    blk_ctr.Read(storm_reenc.data() + b * 16, 16, 0);
+                }
+                auto storm_reenc_storage = std::make_shared<VectorVfsFile>(std::move(storm_reenc));
+                VirtualFile dec_storm;
+                R_TRY(this->CreateAesCtrStorage(std::addressof(dec_storm), std::move(storm_reenc_storage),
+                                                offset + meta_offset, sparse_upper_iv,
+                                                AlignmentStorageRequirement::None, true));
+                std::vector<u8> storm_data(meta_size);
+                dec_storm->Read(storm_data.data(), meta_size, 0);
+                if (IsValidBucketTreeNode(storm_data)) {
+                    meta_data = std::move(storm_data);
+                }
+            }
+        }
+    }
 
     auto buffered_storage = std::make_shared<VectorVfsFile>(std::move(meta_data));
     R_UNLESS(buffered_storage != nullptr, ResultAllocationMemoryFailedAllocateShared);
@@ -649,19 +715,20 @@ Result NcaFileSystemDriver::CreateSparseStorage(VirtualFile* out, s64* out_fs_da
                                          sparse_info.physical_offset,
                                          sparse_info.GetPhysicalSize()));
 
-        if (m_reader->GetStorage() && m_reader->GetStorage()->HasDecryptedSections()) {
-            // Undo NSZ's linear physical AES-CTR pass (which used generation=0 at physical offsets)
-            // so SparseStorage and SparseStorageMetaStorage see the original NCA physical body.
-            R_TRY(this->CreateAesCtrStorage(std::addressof(body_substorage),
-                                            std::move(body_substorage), sparse_info.physical_offset,
-                                            upper_iv, AlignmentStorageRequirement::None, true));
-        }
-
-        // Create the meta storage.
+        // Create the meta storage BEFORE re-encrypting body_substorage so CreateSparseStorageMetaStorage
+        // can inspect the raw NCZ BucketTree and auto-detect Plaintext / NSZ / StormNczCompressor formats.
         VirtualFile meta_storage;
         R_TRY(this->CreateSparseStorageMetaStorage(std::addressof(meta_storage), body_substorage,
                                                    sparse_info.physical_offset, upper_iv,
                                                    sparse_info));
+
+        if (m_reader->GetStorage() && m_reader->GetStorage()->HasDecryptedSections()) {
+            // Undo NSZ/StormNcz's linear physical AES-CTR pass on sparse data blocks
+            // so SparseStorage maps virtual offsets prior to virtual-offset decryption.
+            R_TRY(this->CreateAesCtrStorage(std::addressof(body_substorage),
+                                            std::move(body_substorage), sparse_info.physical_offset,
+                                            upper_iv, AlignmentStorageRequirement::None, true));
+        }
 
         // Potentially set the output meta storage.
         if (out_meta_storage != nullptr) {

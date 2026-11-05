@@ -19,6 +19,7 @@
 #include <string_view>
 #include <thread>
 #include <vector>
+#include <filesystem>
 #include <dlfcn.h>
 #include <unistd.h>
 
@@ -218,6 +219,18 @@ void EmulationSession::InitializeGpuDriver(const std::string& hook_lib_dir,
             handle = adrenotools_open_libvulkan(RTLD_NOW, featureFlags, nullptr, hook_lib_dir.c_str(),
                                                 nullptr, nullptr, file_redirect_dir_, nullptr);
         }
+    }
+
+    const std::string lower_custom_name = Common::ToLower(custom_driver_name);
+    const std::string lower_custom_dir = Common::ToLower(custom_driver_dir);
+    const bool is_panvk_driver = lower_custom_name.find("panvk") != std::string::npos ||
+                                 lower_custom_name.find("panfrost") != std::string::npos ||
+                                 lower_custom_dir.find("panvk") != std::string::npos ||
+                                 lower_custom_dir.find("panfrost") != std::string::npos;
+    if (is_panvk_driver) {
+        setenv("PAN_I_WANT_A_BROKEN_VULKAN_DRIVER", "1", 1);
+        setenv("MESA_NO_ERROR", "1", 1);
+        LOG_INFO(Frontend, "Exported PAN_I_WANT_A_BROKEN_VULKAN_DRIVER=1 and MESA_NO_ERROR=1 for PanVK");
     }
 
     // Try to load a custom driver directly if adrenotools failed or on non-KGSL hardware (e.g. Mali PanVK)
@@ -1028,8 +1041,31 @@ void JNICALL Java_org_yuzu_yuzu_1emu_NativeLibrary_initializeGpuDriver(JNIEnv* e
 
     const auto custom_driver_name_str = Common::Android::GetJString(env, custom_driver_name);
     const auto custom_driver_dir_str = Common::Android::GetJString(env, custom_driver_dir);
-    if (!custom_driver_name_str.empty() || !custom_driver_dir_str.empty() || tu_debug != nullptr) {
-        Core::GameFixDatabase::SetDetectedGpuVendor("adreno");
+
+    std::string full_custom_driver_path;
+    if (!custom_driver_dir_str.empty() && !custom_driver_name_str.empty()) {
+        full_custom_driver_path = custom_driver_dir_str + "/" + custom_driver_name_str;
+    }
+
+    const std::string lower_driver_name = Common::ToLower(custom_driver_name_str);
+    const std::string lower_driver_dir = Common::ToLower(custom_driver_dir_str);
+    const bool is_panvk = lower_driver_name.find("panvk") != std::string::npos ||
+                          lower_driver_name.find("panfrost") != std::string::npos ||
+                          lower_driver_dir.find("panvk") != std::string::npos ||
+                          lower_driver_dir.find("panfrost") != std::string::npos;
+
+    if (is_panvk) {
+        setenv("PAN_I_WANT_A_BROKEN_VULKAN_DRIVER", "1", 1);
+        setenv("MESA_NO_ERROR", "1", 1);
+        Core::GameFixDatabase::SetDetectedGpuVendor("ARM");
+        LOG_INFO(Frontend, "PanVK driver detected: exported PAN_I_WANT_A_BROKEN_VULKAN_DRIVER=1 and MESA_NO_ERROR=1, tagged vendor ARM");
+    } else if (!full_custom_driver_path.empty() && std::filesystem::exists(full_custom_driver_path)) {
+        Core::GameFixDatabase::SetDetectedGpuVendor("Qualcomm");
+        LOG_INFO(Frontend, "Custom Turnip driver exists on disk: {}, tagged vendor Qualcomm", full_custom_driver_path);
+    } else if (tu_debug != nullptr) {
+        Core::GameFixDatabase::SetDetectedGpuVendor("Qualcomm");
+    } else {
+        LOG_INFO(Frontend, "No custom driver active, leaving GPU vendor empty for VulkanDevice auto-detection");
     }
 
     EmulationSession::GetInstance().InitializeGpuDriver(

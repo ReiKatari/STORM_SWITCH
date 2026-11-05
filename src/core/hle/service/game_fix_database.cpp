@@ -1277,7 +1277,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\barrier_feedback_loops", "false"},
             {"Cpu\\cpuopt_fastmem", "true"},
-            {"Cpu\\cpuopt_ignore_memory_aborts", "true"}
+            {"Cpu\\cpuopt_ignore_memory_aborts", "false"}
         }
     },
 

@@ -64,6 +64,14 @@ object SettingsFile {
                     modified = true
                 }
             }
+            // Force cpuopt_ignore_memory_aborts to false so NCE/Dynarmic handles Wonder's page faults cleanly
+            if (text.contains("cpuopt_ignore_memory_aborts")) {
+                val replaced = text.replace(Regex("cpuopt_ignore_memory_aborts\\s*=\\s*true", RegexOption.IGNORE_CASE), "cpuopt_ignore_memory_aborts = false")
+                if (replaced != text) {
+                    text = replaced
+                    modified = true
+                }
+            }
             if (modified) {
                 file.writeText(text, Charsets.UTF_8)
             }

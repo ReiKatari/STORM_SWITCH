@@ -314,6 +314,37 @@
                     android:layout_height="0dp"
                     android:layout_weight="1" />
 
+                <!-- Header Badge: Метод запуска / Launch Method -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_launch_method_header"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="6dp"
+                    android:layout_marginBottom="8dp"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="?attr/colorSurfaceVariant"
+                    app:strokeColor="?attr/colorPrimary"
+                    app:strokeWidth="1.5dp">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/text_game_fix_launch_method"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:paddingHorizontal="18dp"
+                        android:paddingVertical="5dp"
+                        android:text="@string/launch_method_title"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.05"
+                        android:textColor="?attr/colorPrimary"
+                        android:breakStrategy="simple"
+                        android:hyphenationFrequency="none" />
+
+                </com.google.android.material.card.MaterialCardView>
+
                 <!-- Card 1: Apply Auto-Fix & Launch -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/card_launch_auto_fix"
@@ -606,12 +637,19 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_cancel"
-                style="@style/Widget.Material3.Button.TextButton"
+                style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="wrap_content"
-                android:layout_height="36dp"
+                android:layout_height="38dp"
+                android:minHeight="38dp"
+                android:minWidth="115dp"
+                android:paddingHorizontal="18dp"
+                app:cornerRadius="10dp"
+                app:strokeWidth="1.5dp"
+                app:strokeColor="?attr/colorOutline"
                 android:text="@string/cancel"
-                android:textSize="11sp"
-                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="11.5sp"
+                android:textStyle="bold"
+                android:textColor="?attr/colorOnSurface"
                 android:breakStrategy="simple"
                 android:hyphenationFrequency="none" />
 

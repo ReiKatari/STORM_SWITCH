@@ -54,12 +54,48 @@ struct StormWorldGame {
     QVector<StormWorldDlc> dlcs;
 };
 
+struct DownloadedFileInfo {
+    QString file_path;
+    QString file_name;
+    QString extension;
+    QString complete_base_name;
+    QString lower_name;
+    QString tid;
+    QString title;
+    QString version;
+    QString internal_version;
+    qint64 size{0};
+    int mod_count{0};
+    int dlc_count{0};
+    bool has_rus{false};
+    bool has_mod{false};
+    bool has_dlc{false};
+};
+
+struct LocalPackageVersionInfo {
+    QString path;
+    qint64 size{0};
+    qint64 mtime{0};
+    QString tid;
+    QString title;
+    QString display_ver;
+    QString internal_ver;
+    bool has_rus{false};
+    int mod_count{0};
+    int dlc_count{0};
+};
+
 class StormGamesWorldDialog : public QDialog {
     Q_OBJECT
 
 public:
+    using DownloadedFileInfo = ::DownloadedFileInfo;
+    using LocalPackageVersionInfo = ::LocalPackageVersionInfo;
+
     explicit StormGamesWorldDialog(QWidget* parent = nullptr);
     ~StormGamesWorldDialog() override;
+
+    static void StartBackgroundScanner();
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
@@ -89,6 +125,7 @@ private:
     void ApplyStormStyles();
     void LoadCachedCatalog();
     void ParseCatalogData(const QByteArray bitand raw_data);
+    void ParseCatalogArray(const QJsonArray bitand arr);
     void PopulateGameList(const QString bitand filter = QString());
     void DisplayGameDetails(const StormWorldGame bitand game);
     void FetchGameDetails(int game_id);
@@ -98,24 +135,6 @@ private:
     void CancelAllNetworkRequests();
 
     bool is_closing{false};
-
-    struct DownloadedFileInfo {
-        QString file_path;
-        QString file_name;
-        QString extension;
-        QString complete_base_name;
-        QString lower_name;
-        QString tid;
-        QString title;
-        QString version;
-        QString internal_version;
-        qint64 size{0};
-        int mod_count{0};
-        int dlc_count{0};
-        bool has_rus{false};
-        bool has_mod{false};
-        bool has_dlc{false};
-    };
 
     void RefreshDownloadedFilesCache(const QString bitand dir_path) const;
     void MergeLocalGamesIntoCatalog(const QString bitand dir_path);

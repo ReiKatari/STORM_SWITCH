@@ -359,21 +359,50 @@ std::shared_ptr<Frame> DecoderContext::ReceiveFrame() {
     m_final_frame = std::make_shared<Frame>();
     if (m_codec_context->hw_device_ctx) {
         m_final_frame->SetFormat(PreferredGpuFormat);
-        if (const int ret = av_hwframe_transfer_data(m_final_frame->GetFrame(), intermediate_frame->GetFrame(), 0); ret < 0) {
-            LOG_WARNING(HW_GPU, "av_hwframe_transfer_data failed ({}), falling back to software copy", AVError(ret));
+        const int ret = av_hwframe_transfer_data(m_final_frame->GetFrame(), intermediate_frame->GetFrame(), 0);
+        AVFrame* final_frame_ptr = m_final_frame->GetFrame();
+        AVFrame* inter_frame_ptr = intermediate_frame->GetFrame();
+
+        if (ret < 0 || final_frame_ptr->width == 0 || final_frame_ptr->height == 0) {
+            LOG_WARNING(HW_GPU, "av_hwframe_transfer_data failed ({}) or produced 0x0 frame ({}x{}), falling back to software frame",
+                        AVError(ret), final_frame_ptr->width, final_frame_ptr->height);
             // Fallback: use software frame directly if it has valid data
-            AVFrame* hw_frame = intermediate_frame->GetFrame();
-            if (hw_frame->format != AV_PIX_FMT_NONE && hw_frame->width > 0 && hw_frame->height > 0) {
-                // Try SW fallback via sws_scale or direct format use
+            if (inter_frame_ptr->format != AV_PIX_FMT_NONE && inter_frame_ptr->width > 0 && inter_frame_ptr->height > 0) {
                 m_final_frame = std::move(intermediate_frame);
-                LOG_INFO(HW_GPU, "NVDEC fallback: using intermediate frame directly (format={})", hw_frame->format);
+                LOG_INFO(HW_GPU, "NVDEC fallback: using intermediate frame directly (format={}, {}x{})",
+                         inter_frame_ptr->format, inter_frame_ptr->width, inter_frame_ptr->height);
+            } else if (m_codec_context->width > 0 && m_codec_context->height > 0) {
+                if (final_frame_ptr->width == 0) final_frame_ptr->width = m_codec_context->width;
+                if (final_frame_ptr->height == 0) final_frame_ptr->height = m_codec_context->height;
+                if (inter_frame_ptr->width == 0) inter_frame_ptr->width = m_codec_context->width;
+                if (inter_frame_ptr->height == 0) inter_frame_ptr->height = m_codec_context->height;
+                if (final_frame_ptr->width == 0 || final_frame_ptr->height == 0) {
+                    m_final_frame = std::move(intermediate_frame);
+                }
             } else {
                 LOG_ERROR(HW_GPU, "NVDEC fallback: intermediate frame has no usable data, dropping frame");
                 return {};
             }
+        } else {
+            if (final_frame_ptr->width == 0 && inter_frame_ptr->width > 0) {
+                final_frame_ptr->width = inter_frame_ptr->width;
+            }
+            if (final_frame_ptr->height == 0 && inter_frame_ptr->height > 0) {
+                final_frame_ptr->height = inter_frame_ptr->height;
+            }
         }
     } else {
         m_final_frame = std::move(intermediate_frame);
+    }
+
+    if (m_final_frame && m_final_frame->GetFrame()) {
+        AVFrame* f = m_final_frame->GetFrame();
+        if (f->width == 0 && m_codec_context->width > 0) {
+            f->width = m_codec_context->width;
+        }
+        if (f->height == 0 && m_codec_context->height > 0) {
+            f->height = m_codec_context->height;
+        }
     }
 
     return std::move(m_final_frame);

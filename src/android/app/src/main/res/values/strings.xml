@@ -2950,4 +2950,5 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="apply_driver_msg">Apply selected GPU driver?</string>
     <string name="apply_driver_negative">Cancel</string>
     <string name="apply_driver_positive">Apply</string>
+    <string name="game_fix_launch_method">@string/launch_method_title</string>
 </resources>

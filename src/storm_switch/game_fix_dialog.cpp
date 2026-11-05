@@ -643,6 +643,36 @@ void GameFixDialog::SetupUI() {
         QStringLiteral("Don't ask again for this game (remember choice)")), footer_row);
     footer_lay->addWidget(m_dont_ask_cb);
 
+    // Centered, bold, faceted 3D header badge "Метод запуска" / "Launch Method"
+    const auto pal = StormTheme::GetThemePalette();
+    const QString launch_method_text = StormLangStorm11(
+        QStringLiteral("Метод запуска"),
+        QStringLiteral("Launch Method"),
+        QStringLiteral("Startmethode"),
+        QStringLiteral("Méthode de lancement"),
+        QStringLiteral("启动方式"),
+        QStringLiteral("실행 방식"),
+        QStringLiteral("起動方法"),
+        QStringLiteral("Método de inicio"),
+        QStringLiteral("Metodo di avvio"),
+        QStringLiteral("Método de inicialização"),
+        QStringLiteral("लॉन्च विधि"));
+
+    auto* launch_method_badge = new QLabel(launch_method_text, footer_row);
+    launch_method_badge->setAlignment(Qt::AlignCenter);
+    const QString badge_qss = QStringLiteral(
+        "font-weight: 800; font-size: 12px; letter-spacing: 0.6px; color: %1; "
+        "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %2, stop:0.5 %3, stop:1 %4); "
+        "border: 1.5px solid %5; border-top: 1.5px solid %6; border-radius: 8px; padding: 5px 18px;")
+        .arg(pal.accent)
+        .arg(pal.cardAlt)
+        .arg(pal.card)
+        .arg(pal.surface)
+        .arg(pal.border)
+        .arg(pal.accentHover);
+    launch_method_badge->setStyleSheet(badge_qss);
+    footer_lay->addWidget(launch_method_badge, 0, Qt::AlignHCenter);
+
     auto* btn_row = new QWidget(footer_row);
     auto* btn_lay = new QHBoxLayout(btn_row);
     btn_lay->setContentsMargins(0, 0, 0, 0);
@@ -655,9 +685,9 @@ void GameFixDialog::SetupUI() {
     apply_and_launch_btn->setDefault(true);
     apply_and_launch_btn->setProperty("primary", true);
     apply_and_launch_btn->setStyleSheet(QStringLiteral(
-        "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #8B5CF6, stop:1 #7C3AED); color: #FFFFFF; font-weight: 700; border-radius: 6px; padding: 6px 16px; border: 1px solid #7C3AED; min-height: 24px; }"
-        "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #A78BFA, stop:1 #8B5CF6); border-color: #C4B5FD; }"
-        "QPushButton:pressed { background: #6D28D9; border-color: #5B21B6; }"
+        "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #8B5CF6, stop:0.5 #7C3AED, stop:1 #6D28D9); color: #FFFFFF; font-weight: 700; font-size: 12px; border-radius: 9px; padding: 7px 18px; border: 1.5px solid #7C3AED; border-top: 1.5px solid #A78BFA; border-bottom: 2px solid #5B21B6; min-height: 36px; }"
+        "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #A78BFA, stop:1 #8B5CF6); border-color: #C4B5FD; border-top-color: #DDD6FE; }"
+        "QPushButton:pressed { background: #6D28D9; border-color: #5B21B6; padding-top: 8px; }"
     ));
     connect(apply_and_launch_btn, &QPushButton::clicked, this, [this]() {
         m_apply_fixes = true;
@@ -671,6 +701,11 @@ void GameFixDialog::SetupUI() {
         QStringLiteral("Только для этого запуска"),
         QStringLiteral("This Session Only")), btn_row);
     session_only_btn->setCursor(Qt::PointingHandCursor);
+    session_only_btn->setStyleSheet(QStringLiteral(
+        "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1E293B, stop:0.5 #0F172A, stop:1 #020617); color: #E2E8F0; font-weight: 700; font-size: 12px; border-radius: 9px; padding: 7px 18px; border: 1.5px solid #334155; border-top: 1.5px solid #475569; border-bottom: 2px solid #020617; min-height: 36px; }"
+        "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #334155, stop:1 #1E293B); border-color: #64748B; color: #FFFFFF; }"
+        "QPushButton:pressed { background: #0F172A; border-color: #1E293B; padding-top: 8px; }"
+    ));
     connect(session_only_btn, &QPushButton::clicked, this, [this]() {
         m_apply_fixes = true;
         m_save_to_ini = false;
@@ -683,6 +718,11 @@ void GameFixDialog::SetupUI() {
         QStringLiteral("Сохранить в профиль игры"),
         QStringLiteral("Save to Game Profile")), btn_row);
     save_profile_btn->setCursor(Qt::PointingHandCursor);
+    save_profile_btn->setStyleSheet(QStringLiteral(
+        "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1E293B, stop:0.5 #0F172A, stop:1 #020617); color: #E2E8F0; font-weight: 700; font-size: 12px; border-radius: 9px; padding: 7px 18px; border: 1.5px solid #334155; border-top: 1.5px solid #475569; border-bottom: 2px solid #020617; min-height: 36px; }"
+        "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #334155, stop:1 #1E293B); border-color: #64748B; color: #FFFFFF; }"
+        "QPushButton:pressed { background: #0F172A; border-color: #1E293B; padding-top: 8px; }"
+    ));
     connect(save_profile_btn, &QPushButton::clicked, this, [this]() {
         m_apply_fixes = true;
         m_save_to_ini = true;
@@ -693,11 +733,38 @@ void GameFixDialog::SetupUI() {
 
     btn_lay->addStretch();
 
-    auto* cancel_btn = new QPushButton(StormLang(
-        QStringLiteral("Отмена"),
-        QStringLiteral("Cancel")), btn_row);
+    auto* cancel_btn = new QPushButton(StormCancelText(), btn_row);
     cancel_btn->setProperty("isCancelButton", true);
     cancel_btn->setCursor(Qt::PointingHandCursor);
+    cancel_btn->setStyleSheet(QStringLiteral(
+        "QPushButton {"
+        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #334155, stop:0.5 #1E293B, stop:1 #0F172A);"
+        "    color: #F1F5F9;"
+        "    font-weight: 700;"
+        "    font-size: 12px;"
+        "    min-height: 36px;"
+        "    min-width: 115px;"
+        "    padding: 7px 20px;"
+        "    border-radius: 9px;"
+        "    border: 1.5px solid #475569;"
+        "    border-top: 1.5px solid #64748B;"
+        "    border-bottom: 2px solid #0F172A;"
+        "}"
+        "QPushButton:hover {"
+        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #DC2626, stop:0.5 #B91C1C, stop:1 #991B1B);"
+        "    color: #FFFFFF;"
+        "    border: 1.5px solid #EF4444;"
+        "    border-top: 1.5px solid #F87171;"
+        "    border-bottom: 2px solid #7F1D1D;"
+        "}"
+        "QPushButton:pressed {"
+        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #991B1B, stop:1 #7F1D1D);"
+        "    color: #FEE2E2;"
+        "    border: 1.5px solid #991B1B;"
+        "    border-top: 1.5px solid #7F1D1D;"
+        "    padding-top: 8px;"
+        "}"
+    ));
     connect(cancel_btn, &QPushButton::clicked, this, [this]() {
         m_result = Result::Cancel;
         reject();
