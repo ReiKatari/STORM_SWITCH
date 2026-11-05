@@ -36,6 +36,11 @@ ConfigureDebug::ConfigureDebug(const Core::System& system_, QWidget* parent)
     connect(ui->toggle_gdbstub, &QCheckBox::toggled,
             [&]() { ui->gdbport_spinbox->setEnabled(ui->toggle_gdbstub->isChecked()); });
 
+    connect(ui->toggle_console, &QCheckBox::toggled, this, [](bool checked) {
+        UISettings::values.show_console = checked;
+        Debugger::ToggleConsole();
+    });
+
     // Homebrew Arguments volumetric styling & quick pills
     StormUI::StructureEngine::StyleAsVolumetricCard(ui->groupBox_3);
 
@@ -121,42 +126,48 @@ void ConfigureDebug::SetConfiguration() {
     ui->disable_web_applet->setChecked(true);
 #endif
 
-    // Immutable after starting
-    ui->homebrew_args_edit->setEnabled(runtime_lock);
+    // Always editable in settings dialog
+    (void)runtime_lock;
+    ui->homebrew_args_edit->setEnabled(true);
     ui->homebrew_args_edit->setText(
         QString::fromStdString(Settings::values.program_args.GetValue()));
-    ui->toggle_console->setEnabled(runtime_lock);
-    ui->toggle_console->setChecked(UISettings::values.show_console.GetValue());
-    ui->fs_access_log->setEnabled(runtime_lock);
+    {
+        [[maybe_unused]] const QSignalBlocker blocker(ui->toggle_console);
+        ui->toggle_console->setEnabled(true);
+        ui->toggle_console->setChecked(UISettings::values.show_console.GetValue());
+    }
+    ui->fs_access_log->setEnabled(true);
     ui->fs_access_log->setChecked(Settings::values.enable_fs_access_log.GetValue());
-    ui->enable_renderdoc_hotkey->setEnabled(runtime_lock);
+    ui->enable_renderdoc_hotkey->setEnabled(true);
     ui->enable_renderdoc_hotkey->setChecked(Settings::values.enable_renderdoc_hotkey.GetValue());
-    ui->disable_buffer_reorder->setEnabled(runtime_lock);
+    ui->disable_buffer_reorder->setEnabled(true);
     ui->disable_buffer_reorder->setChecked(Settings::values.disable_buffer_reorder.GetValue());
-    ui->enable_graphics_debugging->setEnabled(runtime_lock);
+    ui->enable_graphics_debugging->setEnabled(true);
     ui->enable_graphics_debugging->setChecked(Settings::values.renderer_debug.GetValue());
-    ui->enable_shader_feedback->setEnabled(runtime_lock);
+    ui->enable_shader_feedback->setEnabled(true);
     ui->enable_shader_feedback->setChecked(Settings::values.renderer_shader_feedback.GetValue());
-    ui->enable_nsight_aftermath->setEnabled(runtime_lock);
+    ui->enable_nsight_aftermath->setEnabled(true);
     ui->enable_nsight_aftermath->setChecked(Settings::values.enable_nsight_aftermath.GetValue());
-    ui->dump_guest_shaders->setEnabled(runtime_lock);
+    ui->dump_guest_shaders->setEnabled(true);
     ui->dump_guest_shaders->setChecked(Settings::values.dump_guest_shaders.GetValue());
-    ui->dump_macros->setEnabled(runtime_lock);
+    ui->dump_macros->setEnabled(true);
     ui->dump_macros->setChecked(Settings::values.dump_macros.GetValue());
-    ui->disable_macro_jit->setEnabled(runtime_lock);
+    ui->disable_macro_jit->setEnabled(true);
     ui->disable_macro_jit->setChecked(Settings::values.disable_macro_jit.GetValue());
-    ui->disable_macro_hle->setEnabled(runtime_lock);
+    ui->disable_macro_hle->setEnabled(true);
     ui->disable_macro_hle->setChecked(Settings::values.disable_macro_hle.GetValue());
-    ui->disable_loop_safety_checks->setEnabled(runtime_lock);
+    ui->disable_loop_safety_checks->setEnabled(true);
     ui->disable_loop_safety_checks->setChecked(
         Settings::values.disable_shader_loop_safety_checks.GetValue());
+    ui->perform_vulkan_check->setEnabled(true);
     ui->perform_vulkan_check->setChecked(Settings::values.perform_vulkan_check.GetValue());
+    ui->debug_knobs_spinbox->setEnabled(true);
     ui->debug_knobs_spinbox->setValue(Settings::values.debug_knobs.GetValue());
 
-    ui->gpu_log_level->setEnabled(runtime_lock);
+    ui->gpu_log_level->setEnabled(true);
     ui->gpu_log_level->setCurrentIndex(
         static_cast<int>(Settings::values.gpu_log_level.GetValue()));
-    ui->gpu_log_shader_dumps->setEnabled(runtime_lock);
+    ui->gpu_log_shader_dumps->setEnabled(true);
     ui->gpu_log_shader_dumps->setChecked(Settings::values.gpu_log_shader_dumps.GetValue());
 #ifdef YUZU_USE_QT_WEB_ENGINE
     ui->disable_web_applet->setChecked(Settings::values.disable_web_applet.GetValue());

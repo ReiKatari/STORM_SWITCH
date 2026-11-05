@@ -1825,7 +1825,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
 
 
 
-    setWindowTitle(QStringLiteral("STORM SWITCH 16.2.5"));
+    setWindowTitle(QStringLiteral("STORM SWITCH 16.2.6"));
     UpdateWindowTitle();
 
 
@@ -7471,7 +7471,12 @@ void MainWindow::SetupMenuIcons() {
                 QStringLiteral("<b>Are you sure you want to clear the shader cache?</b><br><br>Compiled shader pipelines will be deleted and recreated on next launch.")));
             ask_box.setIcon(QMessageBox::Question);
             auto* ok_btn = ask_box.addButton(StormLang(QStringLiteral("Очистить"), QStringLiteral("Clear")), QMessageBox::AcceptRole);
-            ask_box.addButton(StormCancelText(), QMessageBox::RejectRole);
+            auto* cancel_btn = ask_box.addButton(StormCancelText(), QMessageBox::RejectRole);
+            ok_btn->setMinimumWidth(124);
+            ok_btn->setStyleSheet(QStringLiteral("padding-left: 24px; padding-right: 24px; min-width: 100px;"));
+            if (cancel_btn) {
+                cancel_btn->setMinimumWidth(108);
+            }
             ask_box.exec();
             if (ask_box.clickedButton() == ok_btn) {
                 const auto shader_cache_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::ShaderDir);
@@ -20677,7 +20682,7 @@ void MainWindow::UpdateWindowTitle(std::string_view filename, std::string_view d
                                    std::string_view internal_version, std::string_view gpu_vendor) {
 
     const QString build_ver = QString::fromUtf8(Common::g_build_version).isEmpty()
-                                  ? QStringLiteral("16.2.5")
+                                  ? QStringLiteral("16.2.6")
                                   : QString::fromUtf8(Common::g_build_version);
     const QString strict_idle_title = QStringLiteral("STORM SWITCH %1").arg(build_ver);
 

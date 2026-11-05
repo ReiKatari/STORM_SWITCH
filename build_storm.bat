@@ -1,4 +1,4 @@
-@echo off
+﻿@echo off
 setlocal enabledelayedexpansion
 
 echo ===================================================
@@ -9,7 +9,6 @@ powershell -NoProfile -Command "try { $ppid = (Get-CimInstance Win32_Process -Fi
 
 taskkill /F /IM STORM_SWITCH.exe /IM STORM_SWITCH-cli.exe /IM STORM_SWITCH-room.exe 2>nul
 
-set "VSLANG=1033"
 set "CMAKE_BUILD_PARALLEL_LEVEL=4"
 call "C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build\vcvarsall.bat" amd64
 if errorlevel 1 (
@@ -38,9 +37,9 @@ if not exist "%BUILD_DIR%\build.ninja" (
         -DCMAKE_BUILD_TYPE=Release ^
         -DCMAKE_CXX_FLAGS_RELEASE="/MD /O2 /Ob3 /Oi /Ot /Gw /Gy /Zc:inline /DNDEBUG" ^
         -DCMAKE_C_FLAGS_RELEASE="/MD /O2 /Ob3 /Oi /Ot /Gw /Gy /Zc:inline /DNDEBUG" ^
-        -DGIT_TAG="16.2.5" ^
-        -DGIT_RELEASE="16.2.5" ^
-        -DBUILD_VERSION="16.2.5" ^
+        -DGIT_TAG="16.2.6" ^
+        -DGIT_RELEASE="16.2.6" ^
+        -DBUILD_VERSION="16.2.6" ^
         -DENABLE_QT=ON ^
         -DENABLE_QT_TRANSLATION=ON ^
         -DYUZU_USE_BUNDLED_QT=ON ^
@@ -57,8 +56,8 @@ if not exist "%BUILD_DIR%\build.ninja" (
         exit /b 1
     )
 ) else (
-    echo [1/3] Updating SCM revision for 16.2.5...
-    "%CMAKE%" -DGIT_TAG="16.2.5" -DGIT_RELEASE="16.2.5" -DBUILD_VERSION="16.2.5" -DSRC_DIR="%SRC_DIR%" -P "%SRC_DIR%\CMakeModules\GenerateSCMRev.cmake" 2>nul
+    echo [1/3] Updating SCM revision for 16.2.6...
+    "%CMAKE%" -DGIT_TAG="16.2.6" -DGIT_RELEASE="16.2.6" -DBUILD_VERSION="16.2.6" -DSRC_DIR="%SRC_DIR%" -P "%SRC_DIR%\CMakeModules\GenerateSCMRev.cmake" 2>nul
 )
 
 echo [2/3] Compiling STORM SWITCH with Low-Load Ninja (-j 4, BelowNormal)...

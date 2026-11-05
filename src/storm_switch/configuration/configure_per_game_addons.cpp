@@ -507,6 +507,13 @@ void ConfigurePerGameAddons::LoadConfiguration() {
                 version_display.remove(0, 1);
             }
             version_display = version_display.trimmed();
+            if (!version_display.isEmpty() && !version_display.contains(QLatin1Char('.'))) {
+                bool ok_num = false;
+                const u64 raw_num = version_display.toULongLong(&ok_num);
+                if (ok_num && raw_num > 0 && (raw_num % 65536ULL) == 0 && (raw_num / 65536ULL) <= 200) {
+                    version_display = QStringLiteral("1.0.%1 (%2)").arg(raw_num / 65536ULL).arg(raw_num);
+                }
+            }
             if (version_display.isEmpty() || version_display == QStringLiteral("0") || version_display == QStringLiteral("PACKED")) {
                 version_display = QStringLiteral("1.0.0");
             }

@@ -1030,16 +1030,34 @@ void ConfigurePerGame::LoadConfiguration() {
         title_text = QString::fromStdString(file->GetName());
     }
 
+    while (ver_str.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
+        ver_str.remove(0, 1);
+    }
+    ver_str = ver_str.trimmed();
+
+    u64 internal_ver = 0;
+    // If NACP returned a raw numeric internal version (e.g. "458752" without dots), treat it as internal_ver
+    if (!ver_str.isEmpty() && !ver_str.contains(QLatin1Char('.'))) {
+        bool ok_num = false;
+        const u64 raw_num = ver_str.toULongLong(&ok_num);
+        if (ok_num && raw_num > 0) {
+            internal_ver = raw_num;
+        }
+        ver_str.clear();
+    }
+
     // Extract paired version (e.g. "(1.5.1 - 262144 - ...)") from filename if present
     static const QRegularExpression fn_pair_ver_regex{QStringLiteral(R"(\(([0-9]+\.[0-9]+(?:\.[0-9]+)*)\s*-\s*([0-9]+))")};
     const auto fm = fn_pair_ver_regex.match(QString::fromStdString(file->GetName()));
     if (fm.hasMatch() && !fm.captured(1).isEmpty()) {
+        if (!fm.captured(2).isEmpty()) {
+            const u64 f_int = fm.captured(2).toULongLong();
+            if (f_int > 0) {
+                internal_ver = f_int;
+            }
+        }
         if (fm.captured(1) != QStringLiteral("1.0.0") || ver_str.isEmpty() || ver_str == QStringLiteral("0")) {
             ver_str = fm.captured(1);
-        }
-        const u32 f_int = fm.captured(2).toUInt();
-        if ((ver_str.isEmpty() || ver_str == QStringLiteral("1.0.0")) && f_int > 0 && (f_int % 65536U) == 0 && (f_int / 65536U) <= 200) {
-            ver_str = QStringLiteral("1.0.%1").arg(f_int / 65536U);
         }
     } else {
         static const QRegularExpression fn_ver_regex{QStringLiteral(R"((?:[\(\[\s]v?|\b)([0-9]+\.[0-9]+(?:\.[0-9]+)*)(?!\s*(?:GB|MB|KB|TB|ГБ|МБ|КБ|Б|B)\b))")};
@@ -1052,15 +1070,18 @@ void ConfigurePerGame::LoadConfiguration() {
         }
     }
 
-    if (ver_str.isEmpty() || ver_str == QStringLiteral("1.0.0")) {
+    if (internal_ver == 0) {
         static const QRegularExpression fn_vnum_regex{QStringLiteral(R"(\[v([0-9]+)\])")};
         const auto vm = fn_vnum_regex.match(QString::fromStdString(file->GetName()));
         if (vm.hasMatch()) {
-            const u32 vnum = vm.captured(1).toUInt();
-            if (vnum > 0) {
-                ver_str = QString::number(vnum);
-            }
+            internal_ver = vm.captured(1).toULongLong();
         }
+    }
+
+    // Convert Switch 65536-step internal version (e.g. 458752 -> 1.0.7) when display version is missing or placeholder 1.0.0
+    if ((ver_str.isEmpty() || ver_str == QStringLiteral("0") || ver_str == QStringLiteral("1.0.0") || ver_str == QStringLiteral("1.0")) &&
+        internal_ver > 0 && (internal_ver % 65536ULL) == 0 && (internal_ver / 65536ULL) <= 200) {
+        ver_str = QStringLiteral("1.0.%1").arg(internal_ver / 65536ULL);
     }
 
     while (ver_str.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
@@ -1072,7 +1093,12 @@ void ConfigurePerGame::LoadConfiguration() {
         ver_str = QStringLiteral("1.0.0");
     }
 
-    addons_tab->SetGameVersion(ver_str);
+    QString full_ver_text = ver_str;
+    if (internal_ver > 0 && full_ver_text != QString::number(internal_ver)) {
+        full_ver_text.append(QStringLiteral(" (%1)").arg(internal_ver));
+    }
+
+    addons_tab->SetGameVersion(full_ver_text);
     addons_tab->LoadFromFile(file);
 
     ui->display_name->setPlainText(title_text);
@@ -1080,48 +1106,6 @@ void ConfigurePerGame::LoadConfiguration() {
     ui->display_developer->setCursorPosition(0);
     ui->display_developer->home(false);
     ui->display_developer->setToolTip(dev_text);
-    // Extract internal version number (e.g. 131072) from filename or NACP
-    u64 internal_ver = 0;
-    if (fm.hasMatch() && !fm.captured(2).isEmpty()) {
-        internal_ver = fm.captured(2).toULongLong();
-    }
-    if (internal_ver == 0) {
-        static const QRegularExpression fn_vnum_sub_regex{QStringLiteral(R"(\[v([0-9]+)\])")};
-        const auto vm = fn_vnum_sub_regex.match(QString::fromStdString(file->GetName()));
-        if (vm.hasMatch()) {
-            internal_ver = vm.captured(1).toULongLong();
-        }
-    }
-
-    // Extract addon summary (e.g. 1G+1U, 1G+3D, +1 UPD / +2 DLC)
-    QString addon_summary;
-    static const QRegularExpression fn_addons_regex{QStringLiteral(R"(\((1G(?:\+[0-9]+[UMD])+)\))"), QRegularExpression::CaseInsensitiveOption};
-    const auto am = fn_addons_regex.match(QString::fromStdString(file->GetName()));
-    if (am.hasMatch() && am.hasCaptured(1)) {
-        addon_summary = am.captured(1).toUpper();
-    } else {
-        static const QRegularExpression fn_dlc_sub_regex{QStringLiteral(R"(\+([0-9]+)D)"), QRegularExpression::CaseInsensitiveOption};
-        const auto dm = fn_dlc_sub_regex.match(QString::fromStdString(file->GetName()));
-        if (dm.hasMatch() && dm.hasCaptured(1)) {
-            addon_summary = QStringLiteral("+%1 DLC").arg(dm.captured(1));
-        }
-    }
-
-    QString full_ver_text = ver_str;
-    while (full_ver_text.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
-        full_ver_text.remove(0, 1);
-    }
-    full_ver_text = full_ver_text.trimmed();
-    if (full_ver_text.isEmpty()) {
-        full_ver_text = QStringLiteral("1.0.0");
-    }
-
-    if (internal_ver > 0) {
-        full_ver_text.append(QStringLiteral(" (%1)").arg(internal_ver));
-    }
-    if (!addon_summary.isEmpty()) {
-        full_ver_text.append(QStringLiteral(" · %1").arg(addon_summary));
-    }
 
     ui->display_version->setText(full_ver_text);
     ui->display_version->setCursorPosition(0);

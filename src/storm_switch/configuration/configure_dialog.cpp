@@ -664,6 +664,9 @@ void ConfigureDialog::ReloadAllTabs() {
     if (graphics_extensions_tab) {
         graphics_extensions_tab->SetConfiguration();
     }
+    if (debug_tab_tab) {
+        debug_tab_tab->SetConfiguration();
+    }
     if (audio_tab) {
         audio_tab->SetConfiguration();
     }
@@ -911,15 +914,21 @@ void ConfigureDialog::OnThemeChanged(const QString& theme) {
 }
 
 void ConfigureDialog::UpdateVisibleTabs() {
-    const auto items = ui->selectorList->selectedItems();
-    if (items.isEmpty()) {
+    QListWidgetItem* current_item = ui->selectorList->currentItem();
+    if (!current_item) {
+        const auto items = ui->selectorList->selectedItems();
+        if (!items.isEmpty()) {
+            current_item = items[0];
+        }
+    }
+    if (!current_item) {
         return;
     }
 
     const QSize saved_size = size();
     [[maybe_unused]] const QSignalBlocker blocker(ui->tabWidget);
 
-    const auto tabs = qvariant_cast<QList<QWidget*>>(items[0]->data(Qt::UserRole));
+    const auto tabs = qvariant_cast<QList<QWidget*>>(current_item->data(Qt::UserRole));
 
     // Check if current tabs match the requested list to avoid destructive clear() on active widgets
     bool tabs_match = (ui->tabWidget->count() == tabs.size());
@@ -945,6 +954,9 @@ void ConfigureDialog::UpdateVisibleTabs() {
         LOG_DEBUG(Frontend, "{}", tab->accessibleName().toStdString());
         tab->setMinimumSize(200, 160);
         ui->tabWidget->addTab(tab, GetLocalizedTabText(tab->accessibleName()));
+    }
+    if (ui->tabWidget->count() > 0) {
+        ui->tabWidget->setCurrentIndex(0);
     }
 
     if (isVisible() && saved_size.isValid()) {

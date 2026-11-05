@@ -22,12 +22,11 @@ public:
     ~ConfigureCpuDebug() override;
 
     void ApplyConfiguration();
+    void SetConfiguration();
 
 private:
     void changeEvent(QEvent* event) override;
     void RetranslateUI();
-
-    void SetConfiguration();
 
     std::unique_ptr<Ui::ConfigureCpuDebug> ui;
 

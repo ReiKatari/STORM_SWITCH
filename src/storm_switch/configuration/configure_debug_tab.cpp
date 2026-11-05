@@ -66,4 +66,11 @@ void ConfigureDebugTab::RetranslateUI() {
     ui->tabWidget->setTabText(1, StormLang(QStringLiteral("ЦП"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU")));
 }
 
-void ConfigureDebugTab::SetConfiguration() {}
+void ConfigureDebugTab::SetConfiguration() {
+    if (debug_tab) {
+        debug_tab->SetConfiguration();
+    }
+    if (cpu_debug_tab) {
+        cpu_debug_tab->SetConfiguration();
+    }
+}

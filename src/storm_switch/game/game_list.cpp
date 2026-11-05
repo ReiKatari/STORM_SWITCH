@@ -738,6 +738,19 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
         return en;
     };
 
+    const auto make_emoji_icon = [](const QString& emoji) -> QIcon {
+        QPixmap pixmap(18, 18);
+        pixmap.fill(Qt::transparent);
+        QPainter painter(&pixmap);
+        painter.setRenderHint(QPainter::Antialiasing);
+        painter.setRenderHint(QPainter::TextAntialiasing);
+        QFont f(QStringLiteral("Segoe UI Emoji"));
+        f.setPixelSize(13);
+        painter.setFont(f);
+        painter.drawText(QRect(0, 0, 18, 18), Qt::AlignCenter, emoji);
+        return QIcon(pixmap);
+    };
+
     QAction* properties = context_menu.addAction(item_tr(QString(), "Configure Game", QStringLiteral("Настройки игры...")));
     {
         QPixmap pixmap(18, 18);
@@ -755,29 +768,41 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
         }
         properties->setIcon(QIcon(pixmap));
     }
-    QAction* favorite = context_menu.addAction(item_tr(QStringLiteral("⭐ "), "Favorite", QStringLiteral("Добавить в избранное")));
+    const bool is_fav = UISettings::values.favorited_ids.contains(program_id);
+    QAction* favorite = context_menu.addAction(
+        is_fav ? item_tr(QString(), "Favorite", QStringLiteral("В избранном (убрать)"))
+               : item_tr(QString(), "Favorite", QStringLiteral("Добавить в избранное")));
+    favorite->setIcon(make_emoji_icon(QStringLiteral("⭐")));
     context_menu.addSeparator();
-    QAction* start_game = context_menu.addAction(item_tr(QStringLiteral("▶️ "), "Start Game", QStringLiteral("Запустить игру")));
+    QAction* start_game = context_menu.addAction(item_tr(QString(), "Start Game", QStringLiteral("Запустить игру")));
+    start_game->setIcon(make_emoji_icon(QStringLiteral("▶️")));
     QAction* start_game_global =
-        context_menu.addAction(item_tr(QStringLiteral("🚀 "), "Start Game without Custom Configuration", QStringLiteral("Запустить со стандартными настройками")));
+        context_menu.addAction(item_tr(QString(), "Start Game without Custom Configuration", QStringLiteral("Запустить со стандартными настройками")));
+    start_game_global->setIcon(make_emoji_icon(QStringLiteral("🚀")));
     context_menu.addSeparator();
-    QAction* open_save_location = context_menu.addAction(item_tr(QStringLiteral("💾 "), "Open Save Data Location", QStringLiteral("Открыть папку сохранений")));
+    QAction* open_save_location = context_menu.addAction(item_tr(QString(), "Open Save Data Location", QStringLiteral("Открыть папку сохранений")));
+    open_save_location->setIcon(make_emoji_icon(QStringLiteral("💾")));
     QAction* sync_save = context_menu.addAction(storm_tr(
-        QStringLiteral("🔄 Синхронизация сохранения (STORM SAVE SYNC)..."),
-        QStringLiteral("🔄 Save Data Sync (STORM SAVE SYNC)..."),
-        QStringLiteral("🔄 存档同步 (STORM SAVE SYNC)..."),
-        QStringLiteral("🔄 セーブデータ同期 (STORM SAVE SYNC)..."),
-        QStringLiteral("🔄 세이브 데이터 동기화 (STORM SAVE SYNC)..."),
-        QStringLiteral("🔄 Speicherdaten-Synchronisation (STORM SAVE SYNC)..."),
-        QStringLiteral("🔄 Synchronisation des sauvegardes (STORM SAVE SYNC)..."),
-        QStringLiteral("🔄 Sincronización de partidas (STORM SAVE SYNC)..."),
-        QStringLiteral("🔄 مزامنة بيانات الحفظ (STORM SAVE SYNC)...")));
-    QAction* open_mod_location = context_menu.addAction(item_tr(QStringLiteral("🧩 "), "Open Mod Data Location", QStringLiteral("Открыть папку модов")));
+        QStringLiteral("Синхронизация сохранения (STORM SAVE SYNC)..."),
+        QStringLiteral("Save Data Sync (STORM SAVE SYNC)..."),
+        QStringLiteral("存档同步 (STORM SAVE SYNC)..."),
+        QStringLiteral("セーブデータ同期 (STORM SAVE SYNC)..."),
+        QStringLiteral("세이브 데이터 동기화 (STORM SAVE SYNC)..."),
+        QStringLiteral("Speicherdaten-Synchronisation (STORM SAVE SYNC)..."),
+        QStringLiteral("Synchronisation des sauvegardes (STORM SAVE SYNC)..."),
+        QStringLiteral("Sincronización de partidas (STORM SAVE SYNC)..."),
+        QStringLiteral("مزامنة بيانات الحفظ (STORM SAVE SYNC)...")));
+    sync_save->setIcon(make_emoji_icon(QStringLiteral("🔄")));
+    QAction* open_mod_location = context_menu.addAction(item_tr(QString(), "Open Mod Data Location", QStringLiteral("Открыть папку модов")));
+    open_mod_location->setIcon(make_emoji_icon(QStringLiteral("🧩")));
     QAction* open_transferable_shader_cache =
-        context_menu.addAction(item_tr(QStringLiteral("⚡ "), "Open Transferable Pipeline Cache", QStringLiteral("Открыть кэш шейдеров")));
-    QAction* ryujinx = context_menu.addAction(item_tr(QStringLiteral("🔗 "), "Link to Ryujinx", QStringLiteral("Связать с Ryujinx")));
+        context_menu.addAction(item_tr(QString(), "Open Transferable Pipeline Cache", QStringLiteral("Открыть кэш шейдеров")));
+    open_transferable_shader_cache->setIcon(make_emoji_icon(QStringLiteral("⚡")));
+    QAction* ryujinx = context_menu.addAction(item_tr(QString(), "Link to Ryujinx", QStringLiteral("Связать с Ryujinx")));
+    ryujinx->setIcon(make_emoji_icon(QStringLiteral("🔗")));
     context_menu.addSeparator();
-    QMenu* remove_menu = context_menu.addMenu(item_tr(QStringLiteral("🗑️ "), "Remove", QStringLiteral("Удалить")));
+    QMenu* remove_menu = context_menu.addMenu(item_tr(QString(), "Remove", QStringLiteral("Удалить")));
+    remove_menu->setIcon(make_emoji_icon(QStringLiteral("🗑️")));
     QAction* remove_update = remove_menu->addAction(item_tr(QString(), "Remove Installed Update", QStringLiteral("Удалить установленное обновление")));
     QAction* remove_dlc = remove_menu->addAction(item_tr(QString(), "Remove All Installed DLC", QStringLiteral("Удалить все установленные DLC")));
     QAction* remove_custom_config = remove_menu->addAction(item_tr(QString(), "Remove Custom Configuration", QStringLiteral("Удалить индивидуальные настройки")));
@@ -787,69 +812,76 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
     remove_menu->addSeparator();
     QAction* remove_shader_cache = remove_menu->addAction(item_tr(QString(), "Remove All Pipeline Caches", QStringLiteral("Удалить все кэши шейдеров")));
     QAction* remove_all_content = remove_menu->addAction(item_tr(QString(), "Remove All Installed Contents", QStringLiteral("Удалить весь установленный контент")));
-    QMenu* play_time_menu = context_menu.addMenu(item_tr(QStringLiteral("⏱️ "), "Manage Play Time", QStringLiteral("Управление временем игры")));
+    QMenu* play_time_menu = context_menu.addMenu(item_tr(QString(), "Manage Play Time", QStringLiteral("Управление временем игры")));
+    play_time_menu->setIcon(make_emoji_icon(QStringLiteral("⏱️")));
     QAction* set_play_time = play_time_menu->addAction(item_tr(QString(), "Edit Play Time Data", QStringLiteral("Изменить время игры...")));
     QAction* remove_play_time_data = play_time_menu->addAction(item_tr(QString(), "Remove Play Time Data", QStringLiteral("Сбросить время игры")));
-    QMenu* dump_romfs_menu = context_menu.addMenu(item_tr(QStringLiteral("📦 "), "Dump RomFS", QStringLiteral("Дамп RomFS")));
+    QMenu* dump_romfs_menu = context_menu.addMenu(item_tr(QString(), "Dump RomFS", QStringLiteral("Дамп RomFS")));
+    dump_romfs_menu->setIcon(make_emoji_icon(QStringLiteral("📦")));
     QAction* dump_romfs = dump_romfs_menu->addAction(item_tr(QString(), "Dump RomFS", QStringLiteral("Дамп RomFS")));
     QAction* dump_romfs_sdmc = dump_romfs_menu->addAction(item_tr(QString(), "Dump RomFS to SDMC", QStringLiteral("Дамп RomFS на SD-карту")));
-    QAction* verify_integrity = context_menu.addAction(item_tr(QStringLiteral("🔍 "), "Verify Integrity", QStringLiteral("Проверить целостность")));
-    QAction* copy_tid = context_menu.addAction(item_tr(QStringLiteral("📋 "), "Copy Title ID to Clipboard", QStringLiteral("Скопировать Title ID в буфер обмена")));
+    QAction* verify_integrity = context_menu.addAction(item_tr(QString(), "Verify Integrity", QStringLiteral("Проверить целостность")));
+    verify_integrity->setIcon(make_emoji_icon(QStringLiteral("🔍")));
+    QAction* copy_tid = context_menu.addAction(item_tr(QString(), "Copy Title ID to Clipboard", QStringLiteral("Скопировать Title ID в буфер обмена")));
+    copy_tid->setIcon(make_emoji_icon(QStringLiteral("📋")));
 #if !defined(__APPLE__)
-    QMenu* shortcut_menu = context_menu.addMenu(item_tr(QStringLiteral("🔗 "), "Create Shortcut", QStringLiteral("Создать ярлык")));
+    QMenu* shortcut_menu = context_menu.addMenu(item_tr(QString(), "Create Shortcut", QStringLiteral("Создать ярлык")));
+    shortcut_menu->setIcon(make_emoji_icon(QStringLiteral("🔗")));
     QAction* create_desktop_shortcut = shortcut_menu->addAction(item_tr(QString(), "Add to Desktop", QStringLiteral("На рабочий стол")));
     QAction* create_applications_menu_shortcut =
         shortcut_menu->addAction(item_tr(QString(), "Add to Applications Menu", QStringLiteral("В меню приложений")));
 #endif
     context_menu.addSeparator();
     QAction* mod_manager_action = context_menu.addAction(storm_tr(
-        QStringLiteral("🧩 Менеджер модов..."),
-        QStringLiteral("🧩 Mod Manager..."),
-        QStringLiteral("🧩 模组管理器..."),
-        QStringLiteral("🧩 Mod マネージャー..."),
-        QStringLiteral("🧩 모드 매니저..."),
-        QStringLiteral("🧩 Mod-Manager..."),
-        QStringLiteral("🧩 Gestionnaire de mods..."),
-        QStringLiteral("🧩 Gestor de mods..."),
-        QStringLiteral("🧩 مدير التعديلات...")));
+        QStringLiteral("Менеджер модов..."),
+        QStringLiteral("Mod Manager..."),
+        QStringLiteral("模组管理器..."),
+        QStringLiteral("Mod マネージャー..."),
+        QStringLiteral("모드 매니저..."),
+        QStringLiteral("Mod-Manager..."),
+        QStringLiteral("Gestionnaire de mods..."),
+        QStringLiteral("Gestor de mods..."),
+        QStringLiteral("مدير التعديلات...")));
+    mod_manager_action->setIcon(make_emoji_icon(QStringLiteral("🧩")));
     QAction* cheats_action = context_menu.addAction(storm_tr(
-        QStringLiteral("✨ Чит-коды..."),
-        QStringLiteral("✨ Cheats..."),
-        QStringLiteral("✨ 金手指 / 作弊码..."),
-        QStringLiteral("✨ チートコード..."),
-        QStringLiteral("✨ 치트 코드..."),
-        QStringLiteral("✨ Cheats..."),
-        QStringLiteral("✨ Codes de triche..."),
-        QStringLiteral("✨ Trucos..."),
-        QStringLiteral("✨ رموز الغش...")));
+        QStringLiteral("Чит-коды..."),
+        QStringLiteral("Cheats..."),
+        QStringLiteral("金手指 / 作弊码..."),
+        QStringLiteral("チートコード..."),
+        QStringLiteral("치트 코드..."),
+        QStringLiteral("Cheats..."),
+        QStringLiteral("Codes de triche..."),
+        QStringLiteral("Trucos..."),
+        QStringLiteral("رموز الغش...")));
+    cheats_action->setIcon(make_emoji_icon(QStringLiteral("✨")));
     QAction* game_fix_action = nullptr;
     if (Core::GameFixDatabase::GetProfileByTitleOrPath(program_id, path) != nullptr) {
         game_fix_action = context_menu.addAction(storm_tr(
-            QStringLiteral("🛡️ Авто-исправление игры..."),
-            QStringLiteral("🛡️ Game Auto-Fix..."),
-            QStringLiteral("🛡️ 游戏自动修复..."),
-            QStringLiteral("🛡️ ゲーム自動修復..."),
-            QStringLiteral("🛡️ 게임 자동 수정..."),
-            QStringLiteral("🛡️ Spiel-Auto-Korrektur..."),
-            QStringLiteral("🛡️ Correction automatique du jeu..."),
-            QStringLiteral("🛡️ Corrección automática del juego..."),
-            QStringLiteral("🛡️ الإصلاح التلقائي للعبة...")));
+            QStringLiteral("Авто-исправление игры..."),
+            QStringLiteral("Game Auto-Fix..."),
+            QStringLiteral("游戏自动修复..."),
+            QStringLiteral("ゲーム自動修復..."),
+            QStringLiteral("게임 자동 수정..."),
+            QStringLiteral("Spiel-Auto-Korrektur..."),
+            QStringLiteral("Correction automatique du jeu..."),
+            QStringLiteral("Corrección automática del juego..."),
+            QStringLiteral("الإصلاح التلقائي للعبة...")));
+        game_fix_action->setIcon(make_emoji_icon(QStringLiteral("🛡️")));
     }
     // properties action moved to top of context menu per Item 21
     QAction* reset_game_settings = context_menu.addAction(storm_tr(
-        QStringLiteral("🔄 Сбросить настройки игры на стандартные"),
-        QStringLiteral("🔄 Reset Per-Game Settings to Defaults"),
-        QStringLiteral("🔄 重置游戏独立设置为默认值"),
-        QStringLiteral("🔄 ゲーム個別設定をデフォルトにリセット"),
-        QStringLiteral("🔄 게임별 설정을 기본값으로 초기화"),
-        QStringLiteral("🔄 Spielspezifische Einstellungen zurücksetzen"),
-        QStringLiteral("🔄 Réinitialiser les paramètres du jeu par défaut"),
-        QStringLiteral("🔄 Restablecer configuración del juego a valores predeterminados"),
-        QStringLiteral("🔄 إعادة تعيين إعدادات اللعبة إلى الافتراضية")));
+        QStringLiteral("Сбросить настройки игры на стандартные"),
+        QStringLiteral("Reset Per-Game Settings to Defaults"),
+        QStringLiteral("重置游戏独立设置为默认值"),
+        QStringLiteral("ゲーム個別設定をデフォルトにリセット"),
+        QStringLiteral("게임별 설정을 기본값으로 초기화"),
+        QStringLiteral("Spielspezifische Einstellungen zurücksetzen"),
+        QStringLiteral("Réinitialiser les paramètres du jeu par défaut"),
+        QStringLiteral("Restablecer configuración del juego a valores predeterminados"),
+        QStringLiteral("إعادة تعيين إعدادات اللعبة إلى الافتراضية")));
+    reset_game_settings->setIcon(make_emoji_icon(QStringLiteral("🔄")));
 
     favorite->setVisible(program_id != 0);
-    favorite->setCheckable(true);
-    favorite->setChecked(UISettings::values.favorited_ids.contains(program_id));
     reset_game_settings->setVisible(program_id != 0);
     mod_manager_action->setVisible(program_id != 0);
     cheats_action->setVisible(program_id != 0);

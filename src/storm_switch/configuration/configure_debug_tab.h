@@ -25,14 +25,13 @@ public:
     ~ConfigureDebugTab() override;
 
     void ApplyConfiguration();
+    void SetConfiguration();
 
     void SetCurrentIndex(int index);
 
 private:
     void changeEvent(QEvent* event) override;
     void RetranslateUI();
-
-    void SetConfiguration();
 
     std::unique_ptr<Ui::ConfigureDebugTab> ui;
 
