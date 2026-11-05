@@ -197,7 +197,13 @@ const ProgramMetadata::KernelCapabilityDescriptors& ProgramMetadata::GetKernelCa
     return aci_kernel_capabilities;
 }
 
+TargetPlatform ProgramMetadata::GetTargetPlatform() const {
+    return is_switch2 ? TargetPlatform::Ounce : TargetPlatform::NX;
+}
+
 void ProgramMetadata::Print() const {
+    const char* platform = is_switch2 ? "Nintendo Switch 2 (Ounce)" : "Nintendo Switch (NX)";
+    LOG_DEBUG(Service_FS, "Target platform:        {}", platform);
     LOG_DEBUG(Service_FS, "Magic:                  {:.4}", npdm_header.magic.data());
     LOG_DEBUG(Service_FS, "Main thread priority:   {:#02x}", npdm_header.main_thread_priority);
     LOG_DEBUG(Service_FS, "Main thread core:       {}", npdm_header.main_thread_cpu);

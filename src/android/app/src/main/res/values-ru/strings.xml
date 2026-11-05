@@ -1418,7 +1418,7 @@
 
     <!-- Методы запуска и глобальные настройки -->
     <string name="launch_method_title">Метод запуска</string>
-    <string name="launch_mode_auto_fix">Применить авто-фикс и запустить</string>
+    <string name="launch_mode_auto_fix">Применить авто-исправление и запустить</string>
     <string name="launch_mode_auto_fix_description">Чистый эталонный профиль STORM SOFT для максимальной стабильности</string>
     <string name="launch_mode_auto_fix_with_custom">Объединить с моими настройками игры</string>
     <string name="launch_mode_auto_fix_with_custom_description">Оптимизация игры с сохранением ваших ручных настроек</string>
@@ -2398,16 +2398,16 @@
     <string name="cpu_unsafe_disabled_explanation">Небезопасные флаги процессора активны только при выбранной точности ЦП «Небезопасно».</string>
     <string name="barrier_feedback_loops">Обратная связь барьеров (Barrier Feedback Loops)</string>
     <string name="barrier_feedback_loops_description">Исправляет прозрачность, воду и глубину резкости в играх вроде Unravel Two</string>
-    <string name="game_fix_status_badge">АВТО-ФИКС</string>
+    <string name="game_fix_status_badge">АВТО-ИСПРАВЛЕНИЕ</string>
     <string name="tier_flagship_elite">УЛЬТРА-ФЛАГМАН</string>
     <string name="tier_flagship">ФЛАГМАН</string>
     <string name="tier_high_midrange">ВЫСОКИЙ КЛАСС</string>
     <string name="tier_midrange">СРЕДНИЙ КЛАСС</string>
     <string name="tier_budget">БЮДЖЕТНЫЙ</string>
     <string name="auto_opt_hw_summary">✓ Динамическое состояние • NCE • Реактивная очистка • Привязка ядер ЦП • Быстрое время ГПУ</string>
-    <string name="freedreno_reset_recommended">Сбросить к рекомендованным</string>
+    <string name="freedreno_reset_recommended">Сбросить к рекомендуемым</string>
     <string name="freedreno_reset_recommended_desc">Сбросить все отладочные переменные Freedreno к настройкам максимальной производительности</string>
-    <string name="freedreno_reset_done_toast">Настройки Freedreno сброшены к рекомендованным</string>
+    <string name="freedreno_reset_done_toast">Настройки Freedreno сброшены к рекомендуемым</string>
     <!-- PanVK & STORM DRIVER 10.0.0 additions -->
     <string name="tab_driver_all">Все драйверы</string>
     <string name="tab_driver_storm">STORM DRIVER</string>

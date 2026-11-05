@@ -219,8 +219,8 @@ inline const std::unordered_map<std::string_view, const char*>& GetRuToEnSvMap()
         {"u0421u043eu0441u0442u043eu044fu043du0438u0435 u0438u0433u0440u044b SESS v2 u0443u0441u043fu0435u0448u043du043e u0432u043eu0441u0441u0442u0430u043du043eu0432u043bu0435u043du043e", "Game state SESS v2 restored successfully"},
         {"АВТО", "AUTO"},
         {"АВТО ОКНО", "AUTO WIN"},
-        {"АВТО-ФИКС:\nАКТИВЕН", "AUTO-FIX:\nACTIVE"},
-        {"АВТО-ФИКС:\nДОСТУПЕН", "AUTO-FIX:\nREADY"},
+        {"АВТО-ИСПРАВЛЕНИЕ:\nАКТИВНО", "AUTO-FIX:\nACTIVE"},
+        {"АВТО-ИСПРАВЛЕНИЕ:\nДОСТУПНО", "AUTO-FIX:\nREADY"},
         {"АВТОР", "AUTHOR"},
         {"АГРЕССИВНЫЙ", "AGGRESSIVE"},
         {"АНИЗОТРОПИЯ:\n%1", "ANISOTROPY:\n%1"},
@@ -1081,7 +1081,7 @@ inline const std::unordered_map<std::string_view, const char*>& GetRuToEnSvMap()
         {"Профиль NAND «%1» успешно активирован!", "NAND profile \"%1\" activated successfully!"},
         {"Профиль «%1» успешно импортирован!", "Profile \"%1\" imported successfully!"},
         {"Профиль «%1» успешно склонирован!", "Profile \"%1\" cloned successfully!"},
-        {"Профиль Авто-фикса применён", "Auto-Fix Profile Applied"},
+        {"Профиль Авто-исправления применён", "Auto-Fix Profile Applied"},
         {"Профиль переключен", "Profile Switched"},
         {"Профиль с таким именем уже создан.", "A profile with this name has already been created."},
         {"Профиль с таким именем уже существует.", "A profile with this name already exists."},
@@ -1148,7 +1148,7 @@ inline const std::unordered_map<std::string_view, const char*>& GetRuToEnSvMap()
         {"Резервная копия профиля успешно создана в:\n%1", "Profile backup created successfully at:\n%1"},
         {"Резкость FSR:", "FSR Sharpness:"},
         {"Результат перевода", "Translation Result"},
-        {"Рекомендованные настройки STORM GameFix для этой игры загружены в форму.\nНажмите «ОК» или «Применить», чтобы сохранить их.", "Recommended STORM GameFix settings for this game have been loaded.\nClick OK or Apply to save them."},
+        {"Рекомендуемые настройки STORM GameFix для этой игры загружены в форму.\nНажмите «ОК» или «Применить», чтобы сохранить их.", "Recommended STORM GameFix settings for this game have been loaded.\nClick OK or Apply to save them."},
         {"Рекомендуемая новейшая версия игры (%1)", "Recommended latest game version (%1)"},
         {"Рекомендуется очистить кэш шейдеров.\nНе снимайте отметку, если не уверены.", "Clearing the shader cache is recommended.\nDo not uncheck unless you are sure."},
         {"Релиз %1", "Release %1"},
@@ -1578,7 +1578,7 @@ inline const std::unordered_map<std::string_view, const char*>& GetRuToEnSvMap()
         {"⚡ Авто-патч 60 FPS / Экран...", "⚡ Auto-Patch 60 FPS / Aspect Ratio..."},
         {"⚡ Авто-патч успешно создан и активирован", "⚡ Auto-Patch Created & Activated"},
         {"⚡ Активен в игре", "⚡ Active In-Game"},
-        {"⚡ Быстрые настройки и Авто-фикс", "⚡ Quick Settings & Auto-Fix"},
+        {"⚡ Быстрые настройки и Авто-исправление", "⚡ Quick Settings & Auto-Fix"},
         {"⚡ Включить / Установить", "⚡ Enable / Install"},
         {"⚡ Генератор патчей 60/120 FPS и всех форматов экрана", "⚡ 60/120 FPS & Aspect Ratio Patch Generator"},
         {"⚡ Генератор патчей 60/120 FPS и всех форматов экрана...", "⚡ 60/120 FPS & Aspect Ratio Patch Generator..."},
@@ -1597,7 +1597,7 @@ inline const std::unordered_map<std::string_view, const char*>& GetRuToEnSvMap()
         {"⚡ Перевести сейчас (F9)", "⚡ Translate Now (F9)"},
         {"⚡ Перевести экран сейчас", "⚡ Translate Screen Now"},
         {"⚡ Применяются в реальном времени", "⚡ Applied in Real Time"},
-        {"⚡ Профиль Авто-фикса", "⚡ Auto-Fix Profile"},
+        {"⚡ Профиль Авто-исправления", "⚡ Auto-Fix Profile"},
         {"⚡ Реактивная очистка буферов (Reactive Flushing)", "⚡ Reactive Buffer Flushing"},
         {"⚡ Сгенерировать и активировать патч", "⚡ Generate & Activate Patch"},
         {"⚡ Синхронизировать всё", "⚡ Sync All Saves"},
@@ -2061,8 +2061,8 @@ inline const std::unordered_map<std::string_view, const char*>& GetEnToRuSvMap()
         {"AUTHOR", "АВТОР"},
         {"AUTO", "АВТО"},
         {"AUTO WIN", "АВТО ОКНО"},
-        {"AUTO-FIX:\nACTIVE", "АВТО-ФИКС:\nАКТИВЕН"},
-        {"AUTO-FIX:\nREADY", "АВТО-ФИКС:\nДОСТУПЕН"},
+        {"AUTO-FIX:\nACTIVE", "АВТО-ИСПРАВЛЕНИЕ:\nАКТИВНО"},
+        {"AUTO-FIX:\nREADY", "АВТО-ИСПРАВЛЕНИЕ:\nДОСТУПНО"},
         {"About", "О программе"},
         {"About STORM SWITCH", "О STORM SWITCH"},
         {"Accuracy:", "Точность:"},
@@ -2151,7 +2151,7 @@ inline const std::unordered_map<std::string_view, const char*>& GetEnToRuSvMap()
         {"Auto Window Fit — True 3D Aspect Ratio", "Авто по размеру окна — Честный 3D-формат"},
         {"Auto select time zone", "Автовыбор часового пояса"},
         {"Auto-Detect", "Автоопределение"},
-        {"Auto-Fix Profile Applied", "Профиль Авто-фикса применён"},
+        {"Auto-Fix Profile Applied", "Профиль Авто-исправления применён"},
         {"Auto-Patch 3D Aspect Ratio (No Stretch)", "Авто-патч 3D-камеры под формат экрана (без растяжения)"},
         {"Auto-Patch 3D Camera Aspect Ratio (No Stretch)", "Авто-патч 3D-камеры под формат экрана (без растяжения)"},
         {"Auto-Unlock 60/120 FPS", "Авто-разблокировка 60/120 FPS"},
@@ -3017,7 +3017,7 @@ inline const std::unordered_map<std::string_view, const char*>& GetEnToRuSvMap()
         {"Received an invalid response from the update server.", "Получен некорректный ответ от сервера обновлений."},
         {"Recognized Screen Text (Original)", "Распознанный текст с экрана (Оригинал)"},
         {"Recognized text from the current game frame will appear here...", "Здесь появится текст из текущего кадра игры..."},
-        {"Recommended STORM GameFix settings for this game have been loaded.\nClick OK or Apply to save them.", "Рекомендованные настройки STORM GameFix для этой игры загружены в форму.\nНажмите «ОК» или «Применить», чтобы сохранить их."},
+        {"Recommended STORM GameFix settings for this game have been loaded.\nClick OK or Apply to save them.", "Рекомендуемые настройки STORM GameFix для этой игры загружены в форму.\nНажмите «ОК» или «Применить», чтобы сохранить их."},
         {"Recommended latest game version (%1)", "Рекомендуемая новейшая версия игры (%1)"},
         {"Record TAS", "Запись скрипта TAS"},
         {"Reduces CPU and GPU temperatures by 10-15°C during frame wait intervals without dropping target frame rate.", "Снижает температуру ЦП и ГПУ на 10-15°C во время интервалов ожидания кадров без падения целевого фреймрейта."},
@@ -3493,7 +3493,7 @@ inline const std::unordered_map<std::string_view, const char*>& GetEnToRuSvMap()
         {"⚡ ACTIVE IN-GAME", "⚡ АКТИВЕН В ИГРЕ"},
         {"⚡ Active In-Game", "⚡ Активен в игре"},
         {"⚡ Applied in Real Time", "⚡ Применяются в реальном времени"},
-        {"⚡ Auto-Fix Profile", "⚡ Профиль Авто-фикса"},
+        {"⚡ Auto-Fix Profile", "⚡ Профиль Авто-исправления"},
         {"⚡ Auto-Patch 60 FPS / Aspect Ratio...", "⚡ Авто-патч 60 FPS / Экран..."},
         {"⚡ Auto-Patch Created & Activated", "⚡ Авто-патч успешно создан и активирован"},
         {"⚡ CFW Tweaks", "⚡ CFW твики"},
@@ -3510,7 +3510,7 @@ inline const std::unordered_map<std::string_view, const char*>& GetEnToRuSvMap()
         {"⚡ Max FPS", "⚡ Максимум FPS"},
         {"⚡ Menu (F6)", "⚡ Меню (F6)"},
         {"⚡ Monitoring & HUD", "⚡ Мониторинг и HUD"},
-        {"⚡ Quick Settings & Auto-Fix", "⚡ Быстрые настройки и Авто-фикс"},
+        {"⚡ Quick Settings & Auto-Fix", "⚡ Быстрые настройки и Авто-исправление"},
         {"⚡ Quick Settings menu (LSFG FrameGen, DRS 100%, Reactive Flushing, GPU Readback, HDR Bloom)", "⚡ Меню быстрых настроек (LSFG FrameGen, DRS 100%, Reactive Flushing, GPU Readback, HDR Bloom)"},
         {"⚡ Reactive Buffer Flushing", "⚡ Реактивная очистка буферов (Reactive Flushing)"},
         {"⚡ Render Settings", "⚡ Параметры рендера"},
@@ -3888,8 +3888,8 @@ inline const std::unordered_map<std::string_view, MultiLangEntry>& GetMultiLangS
         {"ASTC recompress", "Пересж. ASTC", "ASTC-Rekompression", "Recompression ASTC", "", "ASTC 重压缩", "ASTC 再圧縮", "", "Ricompressione ASTC", "Recompressão ASTC", "ASTC 재압축", "ASTC पुनः संपीड़न"},
         {"AUTO", "АВТО", "AUTO", "AUTO", "", "自动", "自動", "", "AUTO", "AUTO", "자동", "स्वचालित"},
         {"AUTO WIN", "АВТО ОКНО", "AUTO FENST.", "AUTO FEN.", "AUTO VENT.", "自动窗口", "自動ウィンドウ", "تلقائي", "AUTO VENT.", "AUTO VENT.", "自動ウィンドウ", "AUTO WIN"},
-        {"AUTO-FIX:\\nACTIVE", "АВТО-ФИКС:\\nАКТИВЕН", "AUTO-FIX:\\nAKTIV", "AUTO-FIX:\\nACTIF", "", "自动修复:\\n已激活", "自動修正:\\n有効", "", "AUTO-FIX:\\nACTIVE", "AUTO-FIX:\\nACTIVE", "自動修正:\\n有効", "AUTO-FIX:\\nACTIVE"},
-        {"AUTO-FIX:\\nREADY", "АВТО-ФИКС:\\nДОСТУПЕН", "AUTO-FIX:\\nBEREIT", "AUTO-FIX:\\nPRÊT", "", "自动修复:\\n可用", "自動修正:\\n利用可能", "", "AUTO-FIX:\\nREADY", "AUTO-FIX:\\nREADY", "自動修正:\\n利用可能", "AUTO-FIX:\\nREADY"},
+        {"AUTO-FIX:\\nACTIVE", "АВТО-ИСПРАВЛЕНИЕ:\\nАКТИВНО", "AUTO-FIX:\\nAKTIV", "AUTO-FIX:\\nACTIF", "", "自动修复:\\n已激活", "自動修正:\\n有効", "", "AUTO-FIX:\\nACTIVE", "AUTO-FIX:\\nACTIVE", "自動修正:\\n有効", "AUTO-FIX:\\nACTIVE"},
+        {"AUTO-FIX:\\nREADY", "АВТО-ИСПРАВЛЕНИЕ:\\nДОСТУПНО", "AUTO-FIX:\\nBEREIT", "AUTO-FIX:\\nPRÊT", "", "自动修复:\\n可用", "自動修正:\\n利用可能", "", "AUTO-FIX:\\nREADY", "AUTO-FIX:\\nREADY", "自動修正:\\n利用可能", "AUTO-FIX:\\nREADY"},
         {"About", "О программе", "Über das Programm", "À propos", "Acerca de", "关于程序", "バージョン情報", "حول البرنامج", "Acerca de", "Acerca de", "バージョン情報", "के बारे में"},
         {"About STORM SWITCH", "О STORM SWITCH", "Über STORM SWITCH", "À propos de STORM SWITCH", "", "关于 STORM SWITCH", "STORM SWITCH について", "", "About STORM SWITCH", "About STORM SWITCH", "STORM SWITCH について", "About STORM SWITCH"},
         {"Accuracy:", "Точность:", "Genauigkeit:", "Précision :", "Precisión:", "精确度:", "精度:", "الدقة:", "Precisione:", "Precisão:", "정확도:", "Accuracy:"},
@@ -3932,7 +3932,7 @@ inline const std::unordered_map<std::string_view, MultiLangEntry>& GetMultiLangS
         {"Auto Translator (OCR and Voice)...", "Авто-переводчик (OCR и озвучка)...", "Automatischer Übersetzer (OCR und Sprachausgabe)...", "Traducteur automatique (OCR et Voix)...", "", "自动翻译器 (OCR 和 语音)...", "自動翻訳（OCRと音声読み上げ）...", "", "Auto Translator (OCR and Voice)...", "Auto Translator (OCR and Voice)...", "自動翻訳（OCRと音声読み上げ）...", "Auto Translator (OCR and Voice)..."},
         {"Auto Window Aspect (3D Native)", "Авто по пропорциям окна (3D без растяжения)", "Automatisch nach Fenstergröße (3D Nativ)", "Auto selon la fenêtre (3D natif)", "Auto según ventana (3D nativo)", "按窗口比例自动适配 (3D 原生无拉伸)", "ウィンドウ比率に自動適応 (3D ネイティブ)", "تلقائي حسب أبعاد النافذة (3D أصلي)", "Auto según ventana (3D nativo)", "Auto según ventana (3D nativo)", "ウィンドウ比率に自動適応 (3D ネイティブ)", "Auto Window Aspect (3D Native)"},
         {"Auto Window Aspect (True 3D Fit)", "Авто по размеру окна (Честный 3D-формат)", "Automatisch an Fenster anpassen (3D)", "Format auto de la fenêtre (3D)", "Ajuste automático a la ventana (3D)", "自动窗口比例 (3D)", "ウィンドウ比率に自動調整 (3D)", "تلقائي حسب النافذة", "Ajuste automático a la ventana (3D)", "Ajuste automático a la ventana (3D)", "ウィンドウ比率に自動調整 (3D)", "Auto Window Aspect (True 3D Fit)"},
-        {"Auto-Fix Profile Applied", "Профиль Авто-фикса применён", "Auto-Fix-Profil angewendet", "Profil Auto-Fix appliqué", "Perfil Auto-Fix aplicado", "已应用自动修复配置", "自動修正プロファイルを適用しました", "تم تطبيق ملف الإصلاح التلقائي", "Perfil Auto-Fix aplicado", "Perfil Auto-Fix aplicado", "自動修正プロファイルを適用しました", "Auto-Fix Profile Applied"},
+        {"Auto-Fix Profile Applied", "Профиль Авто-исправления применён", "Auto-Fix-Profil angewendet", "Profil Auto-Fix appliqué", "Perfil Auto-Fix aplicado", "已应用自动修复配置", "自動修正プロファイルを適用しました", "تم تطبيق ملف الإصلاح التلقائي", "Perfil Auto-Fix aplicado", "Perfil Auto-Fix aplicado", "自動修正プロファイルを適用しました", "Auto-Fix Profile Applied"},
         {"Auto-Patch 3D Aspect Ratio (No Stretch)", "Авто-патч 3D-камеры под формат экрана (без растяжения)", "3D-Seitenverhältnis automatisch patchen", "Patch auto du format 3D", "Parche automático de aspecto 3D", "自动修补 3D 宽高比", "3Dアスペクト比自動パッチ", "تصحيح تلقائي لأبعاد 3D", "Parche automático de aspecto 3D", "Parche automático de aspecto 3D", "3Dアスペクト比自動パッチ", "Auto-Patch 3D Aspect Ratio (No Stretch)"},
         {"Auto-Unlock 60/120 FPS", "Авто-разблокировка 60/120 FPS", "60/120 FPS automatisch entsperren", "Déverrouillage auto 60/120 FPS", "Desbloqueo automático de 60/120 FPS", "自动解锁 60/120 FPS", "60/120 FPS 自動ロック解除", "فتح 60/120 إطار تلقائياً", "Desbloqueo automático de 60/120 FPS", "Desbloqueo automático de 60/120 FPS", "60/120 FPS 自動ロック解除", "Auto-Unlock 60/120 FPS"},
         {"Automatic", "Автоматически", "Automatisch", "Automatique", "Automático", "自动", "自動", "تلقائي", "Automatico", "Automático", "자동", "Automatic"},
@@ -4300,7 +4300,7 @@ inline const std::unordered_map<std::string_view, MultiLangEntry>& GetMultiLangS
         {"RENDER:\\n%1", "РЕНДЕР:\\n%1", "RENDER:\\n%1", "RENDU:\\n%1", "", "渲染:\\n%1", "レンダー:\\n%1", "", "RENDER:\\n%1", "RENDER:\\n%1", "レンダー:\\n%1", "RENDER:\\n%1"},
         {"Raises the clock the emulated CPU reports, which removes some FPS limiters.\\nWeaker CPUs may see reduced performance, and certain games may behave improperly.", "Повышает тактовую частоту, которую сообщает эмулируемый ЦП, снимая некоторые ограничители FPS.\\nНа слабых ЦП производительность может снизиться, а некоторые игры могут работать некорректно.", "Erhöht den Takt, den die emulierte CPU meldet, was einige FPS-Begrenzungen aufhebt.\\nSchwächere CPUs können Leistungseinbußen erleiden und manche Spiele reagieren fehlerhaft.", "Augmente la fréquence signalée par le processeur émulé, supprimant ainsi certains limiteurs de FPS.\\nLes processeurs moins puissants peuvent voir leurs performances réduites.", "Aumenta la frecuencia de reloj que informa la CPU emulada, lo que elimina algunos limitadores de FPS.\\nLas CPUs menos potentes pueden ver reducido su rendimiento.", "提高模拟 CPU 报告的时钟频率，以解除部分游戏的帧率限制。\\n较弱的 CPU 可能会降低性能，某些游戏可能出现异常。", "エミュレートされた CPU が報告するクロックを引き上げ、一部の FPS 制限を解除します。\\n低性能な CPU ではパフォーマンスが低下する場合があり、一部のゲームで不具合が生じる可能性があります。", "يرفع تردد المعالج الذي يتم الإبلاغ عنه لمحاكاة أسرع، مما يزيل بعض محددات الإطارات.\\nقد ينخفض الأداء على المعالجات الضعيفة وتتصرف بعض الألعاب بشكل غير صحيح.", "Aumenta la frecuencia de reloj que informa la CPU emulada, lo que elimina algunos limitadores de FPS.\\nLas CPUs menos potentes pueden ver reducido su rendimiento.", "Aumenta la frecuencia de reloj que informa la CPU emulada, lo que elimina algunos limitadores de FPS.\\nLas CPUs menos potentes pueden ver reducido su rendimiento.", "エミュレートされた CPU が報告するクロックを引き上げ、一部の FPS 制限を解除します。\\n低性能な CPU ではパフォーマンスが低下する場合があり、一部のゲームで不具合が生じる可能性があります。", "Raises the clock the emulated CPU reports, which removes some FPS limiters.\\nWeaker CPUs may see reduced performance, and certain games may behave improperly."},
         {"Real applet", "Настоящий апплет", "Echtes Applet", "Véritable applet", "Applet real", "真实小程序", "実際のアプレット", "بريمج حقيقي", "Applet reale", "Applet real", "실제 애플릿", "Real applet"},
-        {"Recommended STORM GameFix settings for this game have been loaded.\\nClick OK or Apply to save them.", "Рекомендованные настройки STORM GameFix для этой игры загружены в форму.\\nНажмите «ОК» или «Применить», чтобы сохранить их.", "Die empfohlenen STORM GameFix-Einstellungen wurden geladen.\\nKlicken Sie auf OK oder Anwenden, um sie zu speichern.", "Les paramètres recommandés STORM GameFix ont été chargés.\\nCliquez sur OK ou Appliquer pour enregistrer.", "Se han cargado los ajustes recomendados de STORM GameFix.\\nHaga clic en Aceptar o Aplicar para guardarlos.", "已加载推荐的 STORM GameFix 游戏配置。\\n点击“确定”或“应用”以保存。", "推奨される STORM GameFix 設定が読み込まれました。\\nOK または適用をクリックして保存してください。", "تم تحميل إعدادات STORM GameFix الموصى بها لهذه اللعبة.\\nاضغط على موافق أو تطبيق للحفظ.", "Se han cargado los ajustes recomendados de STORM GameFix.\\nHaga clic en OK o Aplicar para guardarlos.", "Se han cargado los ajustes recomendados de STORM GameFix.\\nHaga clic en OK o Aplicar para guardarlos.", "推奨される STORM GameFix 設定が読み込まれました。\\nOK または適用をクリックして保存してください。", "Recommended STORM GameFix settings for this game have been loaded.\\nClick OK or Apply to save them."},
+        {"Recommended STORM GameFix settings for this game have been loaded.\\nClick OK or Apply to save them.", "Рекомендуемые настройки STORM GameFix для этой игры загружены в форму.\\nНажмите «ОК» или «Применить», чтобы сохранить их.", "Die empfohlenen STORM GameFix-Einstellungen wurden geladen.\\nKlicken Sie auf OK oder Anwenden, um sie zu speichern.", "Les paramètres recommandés STORM GameFix ont été chargés.\\nCliquez sur OK ou Appliquer pour enregistrer.", "Se han cargado los ajustes recomendados de STORM GameFix.\\nHaga clic en Aceptar o Aplicar para guardarlos.", "已加载推荐的 STORM GameFix 游戏配置。\\n点击“确定”或“应用”以保存。", "推奨される STORM GameFix 設定が読み込まれました。\\nOK または適用をクリックして保存してください。", "تم تحميل إعدادات STORM GameFix الموصى بها لهذه اللعبة.\\nاضغط على موافق أو تطبيق للحفظ.", "Se han cargado los ajustes recomendados de STORM GameFix.\\nHaga clic en OK o Aplicar para guardarlos.", "Se han cargado los ajustes recomendados de STORM GameFix.\\nHaga clic en OK o Aplicar para guardarlos.", "推奨される STORM GameFix 設定が読み込まれました。\\nOK または適用をクリックして保存してください。", "Recommended STORM GameFix settings for this game have been loaded.\\nClick OK or Apply to save them."},
         {"Record TAS", "Запись скрипта TAS", "TAS aufzeichnen", "Enregistrer TAS", "", "录制 TAS", "TAS を録画", "", "Record TAS", "Record TAS", "TAS を録画", "Record TAS"},
         {"Reduces CPU and GPU temperatures by 10-15°C during frame wait intervals without dropping target frame rate.", "Снижает температуру ЦП и ГПУ на 10-15°C во время интервалов ожидания кадров без падения целевого фреймрейта.", "Senkt CPU- und GPU-Temperaturen in Frame-Warteintervallen um 10–15 °C, ohne die Zielbildrate zu verringern.", "Réduit les températures CPU et GPU de 10 à 15 °C pendant les temps d'attente d'images sans baisser la fréquence cible.", "Reduce la temperatura de CPU y GPU en 10-15 °C durante los intervalos de espera de fotogramas sin perder fluidez.", "在帧等待间隙将 CPU 和 GPU 温度降低 10-15°C，且完全不降低目标帧率。", "フレーム待機中にターゲットフレームレートを維持したまま、CPU と GPU の温度を 10〜15℃ 低減させます。", "تقليل حرارة المعالج والرسوميات بمقدار 10-15 درجة أثناء فترات انتظار الإطارات دون انخفاض معدل الإطارات.", "Reduce la temperatura de CPU y GPU en 10-15 °C durante los intervalos de espera de fotogramas sin perder fluidez.", "Reduce la temperatura de CPU y GPU en 10-15 °C durante los intervalos de espera de fotogramas sin perder fluidez.", "フレーム待機中にターゲットフレームレートを維持したまま、CPU と GPU の温度を 10〜15℃ 低減させます。", "Reduces CPU and GPU temperatures by 10-15°C during frame wait intervals without dropping target frame rate."},
         {"Reduces power consumption and fan noise on portable devices.", "Снижает энергопотребление и шум вентилятора на портативных устройствах.", "Reduziert Stromverbrauch und Lüftergeräusche auf tragbaren Geräten.", "Réduit la consommation d'énergie et le bruit du ventilateur sur les appareils portables.", "Reduce el consumo de energía y el ruido del ventilador en dispositivos portátiles.", "降低便携式设备的功耗与风扇噪音。", "ポータブルデバイスでの消費電力とファンの騒音を抑制します。", "تقليل استهلاك الطاقة وضوضاء المروحة على الأجهزة المحمولة.", "Reduce el consumo de energía y el ruido del ventilador en dispositivos portátiles.", "Reduce el consumo de energía y el ruido del ventilador en dispositivos portátiles.", "ポータブルデバイスでの消費電力とファンの騒音を抑制します。", "Reduces power consumption and fan noise on portable devices."},
@@ -4480,11 +4480,11 @@ inline const std::unordered_map<std::string_view, MultiLangEntry>& GetMultiLangS
         {"⚙️ Manage Add-ons...", "⚙️ Управление дополнениями...", "⚙️ Add-ons verwalten...", "⚙️ Gérer les extensions...", "", "⚙️ 管理附加组件...", "⚙️ アドオンを管理...", "", "⚙️ Manage Add-ons...", "⚙️ Manage Add-ons...", "⚙️ アドオンを管理...", "⚙️ Manage Add-ons..."},
         {"⚙️ Network Settings...", "⚙️ Настройки сети...", "⚙️ Netzwerkeinstellungen...", "⚙️ Paramètres réseau...", "", "⚙️ 网络设置...", "⚙️ ネットワーク設定...", "", "⚙️ Network Settings...", "⚙️ Network Settings...", "⚙️ ネットワーク設定...", "⚙️ Network Settings..."},
         {"⚠️ No game selected or running", "⚠️ Игра не выбрана или не запущена", "⚠️ Kein Spiel ausgewählt oder wird ausgeführt", "⚠️ Aucun jeu sélectionné ou en cours d'exécution", "", "⚠️ 未选择或未运行游戏", "⚠️ ゲームが選択されていないか実行されていません", "", "⚠️ No game selected or running", "⚠️ No game selected or running", "⚠️ ゲームが選択されていないか実行されていません", "⚠️ No game selected or running"},
-        {"⚡ Auto-Fix Profile", "⚡ Профиль Авто-фикса", "⚡ Auto-Fix-Profil", "⚡ Profil Auto-Fix", "⚡ Perfil Auto-Fix", "⚡ 自动修复配置", "⚡ 自動修正プロファイル", "⚡ ملف الإصلاح التلقائي", "⚡ Perfil Auto-Fix", "⚡ Perfil Auto-Fix", "⚡ 自動修正プロファイル", "⚡ Auto-Fix Profile"},
+        {"⚡ Auto-Fix Profile", "⚡ Профиль Авто-исправления", "⚡ Auto-Fix-Profil", "⚡ Profil Auto-Fix", "⚡ Perfil Auto-Fix", "⚡ 自动修复配置", "⚡ 自動修正プロファイル", "⚡ ملف الإصلاح التلقائي", "⚡ Perfil Auto-Fix", "⚡ Perfil Auto-Fix", "⚡ 自動修正プロファイル", "⚡ Auto-Fix Profile"},
         {"⚡ DMA Accuracy", "⚡ Точность DMA", "⚡ DMA-Genauigkeit", "⚡ Précision DMA", "", "⚡ DMA 精度", "⚡ DMA 精度", "", "⚡ DMA Accuracy", "⚡ DMA Accuracy", "⚡ DMA 精度", "⚡ DMA Accuracy"},
         {"⚡ Load Selected Slot", "⚡ Загрузить выбранный слот", "⚡ Ausgewählten Slot laden", "⚡ Charger l'emplacement", "", "⚡ 加载所选槽位", "⚡ 選択スロットをロード", "", "⚡ Load Selected Slot", "⚡ Load Selected Slot", "⚡ 選択スロットをロード", "⚡ Load Selected Slot"},
         {"⚡ Max FPS", "⚡ Максимум FPS", "⚡ Max. FPS", "⚡ FPS Max", "⚡ Máx. FPS", "⚡ 最高帧率", "⚡ 最大 FPS", "⚡ أقصى إطارات", "⚡ Máx. FPS", "⚡ Máx. FPS", "⚡ 最大 FPS", "⚡ Max FPS"},
-        {"⚡ Quick Settings & Auto-Fix", "⚡ Быстрые настройки и Авто-фикс", "⚡ Schnelleinstellungen & Auto-Fix", "⚡ Paramètres rapides & Auto-Fix", "", "⚡ 快捷设置与自动修复", "⚡ クイック設定と自動修正", "", "⚡ Quick Settings & Auto-Fix", "⚡ Quick Settings & Auto-Fix", "⚡ クイック設定と自動修正", "⚡ Quick Settings & Auto-Fix"},
+        {"⚡ Quick Settings & Auto-Fix", "⚡ Быстрые настройки и Авто-исправление", "⚡ Schnelleinstellungen & Auto-Fix", "⚡ Paramètres rapides & Auto-Fix", "", "⚡ 快捷设置与自动修复", "⚡ クイック設定と自動修正", "", "⚡ Quick Settings & Auto-Fix", "⚡ Quick Settings & Auto-Fix", "⚡ クイック設定と自動修正", "⚡ Quick Settings & Auto-Fix"},
         {"⚡ Quick Settings menu (LSFG FrameGen, DRS 100%, Reactive Flushing, GPU Readback, HDR Bloom)", "⚡ Меню быстрых настроек (LSFG FrameGen, DRS 100%, Reactive Flushing, GPU Readback, HDR Bloom)", "⚡ Schnelleinstellungsmenü (LSFG FrameGen, DRS 100%, Reactive Flushing, GPU Readback, HDR Bloom)", "⚡ Menu des paramètres rapides (LSFG FrameGen, DRS 100%, Reactive Flushing, GPU Readback, HDR Bloom)", "", "⚡ 快捷设置菜单 (LSFG 帧生成, DRS 100%, 响应式刷新, GPU 回读, HDR 泛光)", "⚡ クイック設定メニュー (LSFG フレーム生成, DRS 100%, リアクティブフラッシング, GPU リードバック, HDR ブルーム)", "", "⚡ Quick Settings menu (LSFG FrameGen, DRS 100%, Reactive Flushing, GPU Readback, HDR Bloom)", "⚡ Quick Settings menu (LSFG FrameGen, DRS 100%, Reactive Flushing, GPU Readback, HDR Bloom)", "⚡ クイック設定メニュー (LSFG フレーム生成, DRS 100%, リアクティブフラッシング, GPU リードバック, HDR ブルーム)", "⚡ Quick Settings menu (LSFG FrameGen, DRS 100%, Reactive Flushing, GPU Readback, HDR Bloom)"},
         {"⚡ Reactive Buffer Flushing", "⚡ Реактивная очистка буферов (Reactive Flushing)", "⚡ Reaktives Puffer-Flushing", "⚡ Vidage réactif des tampons", "", "⚡ 响应式缓冲刷新 (Reactive Flushing)", "⚡ リアクティブフラッシング", "", "⚡ Reactive Buffer Flushing", "⚡ Reactive Buffer Flushing", "⚡ リアクティブフラッシング", "⚡ Reactive Buffer Flushing"},
         {"⚡ Render Settings", "⚡ Параметры рендера", "⚡ Rendereinstellungen", "⚡ Paramètres de rendu", "", "⚡ 渲染设置", "⚡ レンダラー設定", "", "⚡ Render Settings", "⚡ Render Settings", "⚡ レンダラー設定", "⚡ Render Settings"},
@@ -4584,7 +4584,68 @@ inline const std::unordered_map<std::string_view, MultiLangEntry>& GetMultiLangS
         {"Fix", "Исправить", "Beheben", "Corriger", "Corregir", "修复", "修正", "إصلاح", "Correggi", "Corrigir", "수정", "ठीक करें"},
         {"game fix profile", "задано профилем игры", "durch Spielprofil festgelegt", "défini par le profil du jeu", "definido por perfil de juego", "由游戏配置文件指定", "ゲームプロファイルで指定", "محدد بواسطة ملف تعريف اللعبة", "impostato da profilo gioco", "definido por perfil do jogo", "게임 프로필에 의해 지정됨", "गेम प्रोफ़ाइल द्वारा निर्दिष्ट"},
         {"Revert game fix profile override to global", "Сбросить индивидуальное переопределение профиля игры", "Spiel-Überschreibung auf Standard zurücksetzen", "Rétablir les paramètres globaux", "Restablecer anulación del juego a global", "恢复游戏覆盖为全局设置", "ゲームの個別設定をグローバルに戻す", "استعادة تجاوز ملف اللعبة إلى عام", "Ripristina impostazioni globali", "Restaurar configuração global", "게임 설정을 전역 설정으로 복원", "गेम ओवरराइड को ग्लोबल पर रीसेट करें"},
-        {"Unsafe CPU flags are active only when CPU accuracy is set to 'Unsafe'.", "Небезопасные флаги процессора активны только при выбранной точности ЦП «Небезопасно».", "Unsichere CPU-Optionen sind nur aktiv, wenn die CPU-Genauigkeit auf 'Unsicher' eingestellt ist.", "Les options CPU non sécurisées ne sont actives que lorsque la précision CPU est réglée sur 'Non sécurisée'.", "Las opciones no seguras de CPU solo están activas cuando la precisión de CPU está en 'No seguro'.", "不安全 CPU 优化项仅在 CPU 精度设为“不安全”时生效。", "非安全な CPU 最適化は、CPU 精度が「非安全」に設定されている場合のみ有効です。", "خيارات المعالج غير الآمنة نشطة فقط عند تعيين دقة المعالج على 'غير آمن'.", "Le opzioni CPU non sicure sono attive solo quando la precisione CPU è impostata su 'Non sicuro'.", "Opções de CPU inseguras só estão ativas quando a precisão da CPU está definida como 'Inseguro'.", "안전하지 않은 CPU 최적화는 CPU 정확도가 '안전하지 않음'으로 설정된 경우에만 활성화됩니다.", "असुरक्षित CPU विकल्प केवल तभी सक्रिय होते हैं जब CPU सटीकता 'असुरक्षित' पर सेट हो।"}
+        {"Unsafe CPU flags are active only when CPU accuracy is set to 'Unsafe'.", "Небезопасные флаги процессора активны только при выбранной точности ЦП «Небезопасно».", "Unsichere CPU-Optionen sind nur aktiv, wenn die CPU-Genauigkeit auf 'Unsicher' eingestellt ist.", "Les options CPU non sécurisées ne sont actives que lorsque la précision CPU est réglée sur 'Non sécurisée'.", "Las opciones no seguras de CPU solo están activas cuando la precisión de CPU está en 'No seguro'.", "不安全 CPU 优化项仅在 CPU 精度设为“不安全”时生效。", "非安全な CPU 最適化は、CPU 精度が「非安全」に設定されている場合のみ有効です。", "خيارات المعالج غير الآمنة نشطة فقط عند تعيين دقة المعالج على 'غير آمن'.", "Le opzioni CPU non sicure sono attive solo quando la precisione CPU è impostata su 'Non sicuro'.", "Opções de CPU inseguras só estão ativas quando a precisão da CPU está definida como 'Inseguro'.", "안전하지 않은 CPU 최적화는 CPU 정확도가 '안전하지 않음'으로 설정된 경우에만 활성화됩니다.", "असुरक्षित CPU विकल्प केवल तभी सक्रिय होते हैं जब CPU सटीकता 'असुरक्षित' पर सेट हो。"},
+        // Accent Color & UI Fonts (11 languages)
+        {"Accent Color:", "Цвет акцента:", "Akzentfarbe:", "Couleur d'accent :", "Color de acento:", "强调色:", "アクセントカラー:", "لون التمييز:", "Colore accento:", "Cor de destaque:", "강조 색상:", "एक्सेंट रंग:"},
+        {"Accent Color", "Цвет акцента", "Akzentfarbe", "Couleur d'accent", "Color de acento", "强调色", "アクセントカラー", "لون التمييز", "Colore accento", "Cor de destaque", "강조 색상", "एक्सेंट रंग"},
+        {"Interface Font:", "Шрифт интерфейса:", "Oberflächenschriftart:", "Police d'interface :", "Fuente de la interfaz:", "界面字体:", "インターフェースフォント:", "خط الواجهة:", "Carattere interfaccia:", "Fonte da interface:", "인터페이스 글꼴:", "इंटरफ़ेस फ़ॉन्ट:"},
+        {"Interface Font", "Шрифт интерфейса", "Oberflächenschriftart", "Police d'interface", "Fuente de la interfaz", "界面字体", "インターフェースフォント", "خط الواجهة", "Carattere interfaccia", "Fonte da interface", "인터페이스 글꼴", "इंटरफ़ेस फ़ॉन्ट"},
+        {"Violet", "Фиолетовый", "Violett", "Violet", "Violeta", "紫罗兰", "バイオレット", "بنفسجي", "Viola", "Violeta", "바이올렛", "बैंगनी"},
+        {"Cyan", "Голубой", "Cyan", "Cyan", "Cian", "青色", "シアン", "سماوي", "Ciano", "Ciano", "시안", "स्यान"},
+        {"Electric Blue", "Синий электрик", "Elektro-Blau", "Bleu électrique", "Azul eléctrico", "电光蓝", "エレクトリックブルー", "أزرق كهربائي", "Blu elettrico", "Azul elétrico", "일렉트릭 블루", "इलेक्ट्रिक नीला"},
+        {"Royal Indigo", "Королевский индиго", "Königsindigo", "Indigo royal", "Índigo real", "皇家靛蓝", "ロイヤルインディゴ", "نيلي ملكي", "Indaco reale", "Índigo real", "로열 인디고", "रॉयल ​​इंडिगो"},
+        {"Teal Mint", "Мятный бирюзовый", "Türkis-Minze", "Menthe sarcelle", "Menta azulada", "水鸭薄荷", "ティールミント", "نعناع أزرق مخضر", "Menta verde acqua", "Menta cerceta", "틸 민트", "टील मिंट"},
+        {"Emerald Green", "Изумрудный", "Smaragdgrün", "Vert émeraude", "Verde esmeralda", "翡翠绿", "エメラルドグリーン", "أخضر زمردي", "Verde smeraldo", "Verde esmeralda", "에메랄드 그린", "पन्ना हरा"},
+        {"Neon Lime", "Неоновый лайм", "Neon-Limette", "Citron vert néon", "Lima neón", "荧光酸橙", "ネオンライム", "ليموني نيون", "Lime neon", "Limão neon", "네온 라임", "नियॉन लाइम"},
+        {"Amber Gold", "Янтарный", "Bernsteingold", "Or ambré", "Oro ámbar", "琥珀金", "アンバーゴールド", "ذهبي عنبري", "Oro ambra", "Ouro ámbar", "앰버 골드", "एम्बर गोल्ड"},
+        {"Solar Orange", "Солнечный оранжевый", "Sonniges Orange", "Orange solaire", "Naranja solar", "太阳橙", "ソーラーオレンジ", "برتقالي شمسي", "Arancio solare", "Laranja solar", "솔라 오렌지", "सौर नारंगी"},
+        {"Crimson Red", "Алый", "Karmesinrot", "Rouge cramoisi", "Rojo carmesí", "绯红", "クリムゾンレッド", "أحمر قرمزي", "Rosso cremisi", "Vermelho carmesim", "크림슨 레드", "गहरा लाल"},
+        {"Rose Pink", "Розовый", "Rosarot", "Rose vif", "Rosa", "玫瑰粉", "ローズピンク", "وردي وردي", "Rosa confetto", "Rosa choque", "로즈 핑크", "गुलाबी"},
+        {"Magenta Fuchsia", "Фуксия", "Magenta-Fuchsia", "Magenta fuchsia", "Fucsia magenta", "洋红品红", "マゼンタフューシャ", "أرجواني فوشيا", "Fucsia magenta", "Fúcsia magenta", "마ゼンタ 푸시아", "मैजेंटा फुशिया"},
+        {"Platinum Silver", "Платиновое серебро", "Platinsilber", "Argent platine", "Plata platino", "白金银", "プラチナシルバー", "فضي بلاتيني", "Argento platino", "Prata platina", "플래티넘 실버", "प्लैटिनम सिल्वर"},
+
+        // Vulkan Driver Families & Details (11 languages)
+        {"Driver Family", "Семейство драйвера", "Treiberfamilie", "Famille de pilote", "Familia de controladores", "驱动系列", "ドライバーファミリー", "عائلة برنامج التشغيل", "Famiglia driver", "Família de drivers", "드라이버 패밀리", "ड्राइवर परिवार"},
+        {"Driver Family:", "Семейство драйвера:", "Treiberfamilie:", "Famille de pilote :", "Familia de controladores:", "驱动系列:", "ドライバーファミリー:", "عائلة برنامج التشغيل:", "Famiglia driver:", "Família de drivers:", "드라이버 패밀리:", "ड्राइवर परिवार:"},
+        {"Key Extensions", "Ключевые расширения", "Schlüsselerweiterungen", "Extensions clés", "Extensiones clave", "关键扩展", "主要拡張機能", "الملحقات الرئيسية", "Estensioni chiave", "Extensões principais", "핵심 확장", "प्रमुख एक्सटेंशन"},
+        {"Key Extensions:", "Ключевые расширения:", "Schlüsselerweiterungen:", "Extensions clés :", "Extensiones clave:", "关键扩展:", "主要拡張機能:", "الملحقات الرئيسية:", "Estensioni chiave:", "Extensões principais:", "핵심 확장:", "प्रमुख एक्सटेंशन:"},
+        {"NVIDIA Proprietary", "Проприетарный NVIDIA", "Proprietär NVIDIA", "Propriétaire NVIDIA", "Propietario de NVIDIA", "NVIDIA 专有驱动", "NVIDIA プロプライエタリ", "برنامج تشغيل NVIDIA الاحتكاري", "Proprietario NVIDIA", "Proprietário NVIDIA", "NVIDIA 독점 드라이버", "NVIDIA प्रोप्राइटरी"},
+        {"AMD Proprietary", "Проприетарный AMD", "Proprietär AMD", "Propriétaire AMD", "Propietario de AMD", "AMD 专有驱动", "AMD プロプライエタリ", "برنامج تشغيل AMD الاحتكاري", "Proprietario AMD", "Proprietário AMD", "AMD 독점 드라이버", "AMD प्रोप्राइटरी"},
+        {"Intel Proprietary", "Проприетарный Intel", "Proprietär Intel", "Propriétaire Intel", "Propietario de Intel", "Intel 专有驱动", "Intel プロプライエタリ", "برنامج تشغيل Intel الاحتكاري", "Proprietario Intel", "Proprietário Intel", "Intel 독점 드라이버", "Intel प्रोप्राइटरी"},
+        {"Arm Mali Proprietary", "Проприетарный Arm Mali", "Proprietär Arm Mali", "Propriétaire Arm Mali", "Propietario de Arm Mali", "Arm Mali 专有驱动", "Arm Mali プロプライエタリ", "برنامج تشغيل Arm Mali الاحتكاري", "Proprietario Arm Mali", "Proprietário Arm Mali", "Arm Mali 독점 드라이버", "Arm Mali प्रोप्राइटरी"},
+        {"Qualcomm Proprietary", "Проприетарный Qualcomm", "Proprietär Qualcomm", "Propriétaire Qualcomm", "Propietario de Qualcomm", "Qualcomm 专有驱动", "Qualcomm プロプライエタリ", "برنامج تشغيل Qualcomm الاحتكاري", "Proprietario Qualcomm", "Proprietário Qualcomm", "Qualcomm 독점 드라이버", "Qualcomm प्रोप्राइटरी"},
+        {"Samsung Xclipse (AMD RDNA)", "Samsung Xclipse (AMD RDNA)", "Samsung Xclipse (AMD RDNA)", "Samsung Xclipse (AMD RDNA)", "Samsung Xclipse (AMD RDNA)", "Samsung Xclipse (AMD RDNA)", "Samsung Xclipse (AMD RDNA)", "Samsung Xclipse (AMD RDNA)", "Samsung Xclipse (AMD RDNA)", "Samsung Xclipse (AMD RDNA)", "Samsung Xclipse (AMD RDNA)", "Samsung Xclipse (AMD RDNA)"},
+        {"Mesa PanVK (Arm Mali)", "Mesa PanVK (Arm Mali)", "Mesa PanVK (Arm Mali)", "Mesa PanVK (Arm Mali)", "Mesa PanVK (Arm Mali)", "Mesa PanVK (Arm Mali)", "Mesa PanVK (Arm Mali)", "Mesa PanVK (Arm Mali)", "Mesa PanVK (Arm Mali)", "Mesa PanVK (Arm Mali)", "Mesa PanVK (Arm Mali)", "Mesa PanVK (Arm Mali)"},
+        {"Mesa Turnip (Qualcomm Adreno)", "Mesa Turnip (Qualcomm Adreno)", "Mesa Turnip (Qualcomm Adreno)", "Mesa Turnip (Qualcomm Adreno)", "Mesa Turnip (Qualcomm Adreno)", "Mesa Turnip (Qualcomm Adreno)", "Mesa Turnip (Qualcomm Adreno)", "Mesa Turnip (Qualcomm Adreno)", "Mesa Turnip (Qualcomm Adreno)", "Mesa Turnip (Qualcomm Adreno)", "Mesa Turnip (Qualcomm Adreno)", "Mesa Turnip (Qualcomm Adreno)"},
+        {"Mesa RADV (AMD RDNA)", "Mesa RADV (AMD RDNA)", "Mesa RADV (AMD RDNA)", "Mesa RADV (AMD RDNA)", "Mesa RADV (AMD RDNA)", "Mesa RADV (AMD RDNA)", "Mesa RADV (AMD RDNA)", "Mesa RADV (AMD RDNA)", "Mesa RADV (AMD RDNA)", "Mesa RADV (AMD RDNA)", "Mesa RADV (AMD RDNA)", "Mesa RADV (AMD RDNA)"},
+        {"Mesa ANV (Intel)", "Mesa ANV (Intel)", "Mesa ANV (Intel)", "Mesa ANV (Intel)", "Mesa ANV (Intel)", "Mesa ANV (Intel)", "Mesa ANV (Intel)", "Mesa ANV (Intel)", "Mesa ANV (Intel)", "Mesa ANV (Intel)", "Mesa ANV (Intel)", "Mesa ANV (Intel)"},
+        {"Mesa NVK (NVIDIA)", "Mesa NVK (NVIDIA)", "Mesa NVK (NVIDIA)", "Mesa NVK (NVIDIA)", "Mesa NVK (NVIDIA)", "Mesa NVK (NVIDIA)", "Mesa NVK (NVIDIA)", "Mesa NVK (NVIDIA)", "Mesa NVK (NVIDIA)", "Mesa NVK (NVIDIA)", "Mesa NVK (NVIDIA)", "Mesa NVK (NVIDIA)"},
+        {"Mesa Lavapipe / llvmpipe (Software)", "Mesa Lavapipe / llvmpipe (Программный)", "Mesa Lavapipe / llvmpipe (Software)", "Mesa Lavapipe / llvmpipe (Logiciel)", "Mesa Lavapipe / llvmpipe (Software)", "Mesa Lavapipe / llvmpipe (软件渲染)", "Mesa Lavapipe / llvmpipe (ソフトウェア)", "Mesa Lavapipe / llvmpipe (برمجي)", "Mesa Lavapipe / llvmpipe (Software)", "Mesa Lavapipe / llvmpipe (Software)", "Mesa Lavapipe / llvmpipe (소프트웨어)", "Mesa Lavapipe / llvmpipe (सॉफ़्टवेयर)"},
+        {"AMDVLK (AMD Open Source)", "AMDVLK (AMD с открытым исходным кодом)", "AMDVLK (AMD Open Source)", "AMDVLK (AMD Open Source)", "AMDVLK (AMD código abierto)", "AMDVLK (AMD 开源驱动)", "AMDVLK (AMD オープンソース)", "AMDVLK (AMD مفتوح المصدر)", "AMDVLK (AMD Open Source)", "AMDVLK (AMD Código Aberto)", "AMDVLK (AMD 오픈 소스)", "AMDVLK (AMD ओपन सोर्स)"},
+        {"MoltenVK (Apple Metal)", "MoltenVK (Apple Metal)", "MoltenVK (Apple Metal)", "MoltenVK (Apple Metal)", "MoltenVK (Apple Metal)", "MoltenVK (Apple Metal)", "MoltenVK (Apple Metal)", "MoltenVK (Apple Metal)", "MoltenVK (Apple Metal)", "MoltenVK (Apple Metal)", "MoltenVK (Apple Metal)", "MoltenVK (Apple Metal)"},
+        {"Mesa / Generic", "Mesa / Универсальный", "Mesa / Generisch", "Mesa / Générique", "Mesa / Genérico", "Mesa / 通用", "Mesa / 汎用", "Mesa / عام", "Mesa / Generico", "Mesa / Genérico", "Mesa / 범용", "Mesa / जेनेरिक"},
+        {"Core Vulkan extensions", "Базовый набор расширений", "Standard-Vulkan-Erweiterungen", "Extensions Vulkan de base", "Extensiones Vulkan básicas", "核心 Vulkan 扩展", "コア Vulkan 拡張機能", "ملحقات Vulkan الأساسية", "Estensioni Vulkan di base", "Extensões Vulkan básicas", "핵심 Vulkan 확장", "कोर वल्कन एक्सटेंशन"},
+
+        // Vulkan Key Extensions (11 languages)
+        {"Dynamic Rendering", "Динамический рендеринг", "Dynamisches Rendern", "Rendu dynamique", "Renderizado dinámico", "动态渲染", "ダイナミックレンダリング", "عرض ديناميكي", "Rendering dinamico", "Renderização dinâmica", "동적 렌더링", "डायनामिक रेंडरिंग"},
+        {"Descriptor Indexing", "Индексация дескрипторов", "Deskriptor-Indizierung", "Indexation de descripteurs", "Indexación de descriptores", "描述符索引", "記述子インデックス", "فهرسة الواصفات", "Indicizzazione descrittori", "Indexação de descritores", "설명자 인덱싱", "वर्णनकर्ता अनुक्रमण"},
+        {"Timeline Semaphore", "Временные семафоры", "Timeline-Semaphore", "Sémaphores chronologiques", "Semáforos de línea temporal", "时间线信号量", "タイムラインセマフォ", "إشارات الجدول الزمني", "Semafori timeline", "Semáforos de linha do tempo", "타임라인 세마포어", "टाइमलाइन सेमाफोर"},
+        {"Synchronization2", "Синхронизация 2", "Synchronisation 2", "Synchronisation 2", "Sincronización 2", "同步 2", "同期 2", "مزامنة 2", "Sincronizzazione 2", "Sincronização 2", "동기화 2", "तुल्यकालन 2"},
+        {"Extended Dynamic State", "Расширенное динамическое состояние", "Erweiterter dynamischer Zustand", "État dynamique étendu", "Estado dinámico extendido", "扩展动态状态", "拡張動的状態", "حالة ديناميكية موسعة", "Stato dinamico esteso", "Estado dinâmico estendido", "확장된 동적 상태", "विस्तारित गतिशील स्थिति"},
+        {"Maintenance1", "Обслуживание 1", "Wartung 1", "Maintenance 1", "Mantenimiento 1", "维护 1", "メンテナンス 1", "صيانة 1", "Manutenzione 1", "Manutenção 1", "유지 관리 1", "रखरखाव 1"},
+        {"Maintenance2", "Обслуживание 2", "Wartung 2", "Maintenance 2", "Mantenimiento 2", "维护 2", "メンテナンス 2", "صيانة 2", "Manutenzione 2", "Manutenção 2", "유지 관리 2", "रखरखाव 2"},
+        {"Maintenance3", "Обслуживание 3", "Wartung 3", "Maintenance 3", "Mantenimiento 3", "维护 3", "メンテナンス 3", "صيانة 3", "Manutenzione 3", "Manutenção 3", "유지 관리 3", "रखरखाव 3"},
+        {"Maintenance4", "Обслуживание 4", "Wartung 4", "Maintenance 4", "Mantenimiento 4", "维护 4", "メンテナンス 4", "صيانة 4", "Manutenzione 4", "Manutenção 4", "유지 관리 4", "रखरखाव 4"},
+        {"Maintenance5", "Обслуживание 5", "Wartung 5", "Maintenance 5", "Mantenimiento 5", "维护 5", "メンテナンス 5", "صيانة 5", "Manutenzione 5", "Manutenção 5", "유지 관리 5", "रखरखाव 5"},
+        {"Maintenance6", "Обслуживание 6", "Wartung 6", "Maintenance 6", "Mantenimiento 6", "维护 6", "メンテナンス 6", "صيانة 6", "Manutenzione 6", "Manutenção 6", "유지 관리 6", "रखरखाव 6"},
+        {"Maintenance7", "Обслуживание 7", "Wartung 7", "Maintenance 7", "Mantenimiento 7", "维护 7", "メンテナンス 7", "صيانة 7", "Manutenzione 7", "Manutenção 7", "유지 관리 7", "रखरखाव 7"},
+        {"Custom Border Color", "Пользовательский цвет границ", "Benutzerdefinierte Rahmenfarbe", "Couleur de bordure personnalisée", "Color de borde personalizado", "自定义边框颜色", "カスタムボーダー色", "لون حدود مخصص", "Colore bordo personalizzato", "Cor de borda personalizada", "사용자 지정 테두리 색상", "कस्टम सीमा रंग"},
+        {"Robustness2", "Повышенная надёжность 2", "Erhöhte Robustheit 2", "Robustesse améliorée 2", "Robustez mejorada 2", "增强健壮性 2", "拡張堅牢性 2", "متانة معززة 2", "Robustezza migliorata 2", "Robustez melhorada 2", "향상된 견고성 2", "उन्नत मजबूती 2"},
+
+        // Recommendations & Auto-Fix badges (11 languages)
+        {"Recommended Settings", "Рекомендуемые настройки", "Empfohlene Einstellungen", "Paramètres recommandés", "Configuraciones recomendadas", "推荐设置", "推奨設定", "الإعدادات الموصى بها", "Impostazioni consigliate", "Configurações recomendadas", "권장 설정", "अनुशंसित सेटिंग्स"},
+        {"Recommended Fixes & Optimizations", "Рекомендуемые исправления и оптимизации", "Empfohlene Korrekturen & Optimierungen", "Corrections et optimisations recommandées", "Correcciones y optimizaciones recomendadas", "推荐修复与优化", "推奨される修正と最適化", "الإصلاحات والتحسينات الموصى بها", "Correzioni e ottimizzazioni consigliate", "Correções e otimizações recomendadas", "권장 수정 및 최적화", "अनुशंसित सुधार और अनुकूलन"},
+        {"Recommended STORM SWITCH Settings", "Рекомендуемые настройки STORM SWITCH", "Empfohlene STORM SWITCH-Einstellungen", "Paramètres STORM SWITCH recommandés", "Ajustes recomendados de STORM SWITCH", "STORM SWITCH 推荐设置", "STORM SWITCH 推奨設定", "إعدادات STORM SWITCH الموصى بها", "Impostazioni consigliate di STORM SWITCH", "Configurações recomendadas do STORM SWITCH", "권장 STORM SWITCH 설정", "अनुशंसित STORM SWITCH सेटिंग्स"},
     };
     static const std::unordered_map<std::string_view, MultiLangEntry> kMap = [] {
         std::unordered_map<std::string_view, MultiLangEntry> m;
@@ -4630,14 +4691,23 @@ inline QString LookupEnToRu(std::string_view en_sv) {
     if (it != mmap.end() && it->second.ru && it->second.ru[0]) {
         return QString::fromUtf8(it->second.ru);
     }
+    const auto& en2ru = GetEnToRuSvMap();
+    auto it2 = en2ru.find(en_sv);
+    if (it2 != en2ru.end() && it2->second && it2->second[0]) {
+        return QString::fromUtf8(it2->second);
+    }
     return {};
 }
 
 inline const char* LookupRuToEn(std::string_view ru_sv) {
     static const std::unordered_map<std::string_view, const char*> kRuToEn = [] {
         std::unordered_map<std::string_view, const char*> m;
+        const auto& ru2en = GetRuToEnSvMap();
+        m.reserve(ru2en.size() + 2000);
+        for (const auto& [ru_k, en_v] : ru2en) {
+            m.emplace(ru_k, en_v);
+        }
         const auto& mmap = GetMultiLangSvMap();
-        m.reserve(mmap.size());
         for (const auto& [en_k, entry] : mmap) {
             if (entry.ru && entry.ru[0]) {
                 m.emplace(entry.ru, entry.en);

@@ -178,6 +178,10 @@ void PopulateRecords(std::vector<Record>& records, QWindow* window) try {
             if (has_ext(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME)) key_exts.push_back("Synchronization2");
             if (has_ext(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME)) key_exts.push_back("Extended Dynamic State");
             if (has_ext(VK_KHR_MAINTENANCE_4_EXTENSION_NAME)) key_exts.push_back("Maintenance4");
+#ifndef VK_KHR_MAINTENANCE_5_EXTENSION_NAME
+#define VK_KHR_MAINTENANCE_5_EXTENSION_NAME "VK_KHR_maintenance5"
+#endif
+            if (has_ext(VK_KHR_MAINTENANCE_5_EXTENSION_NAME)) key_exts.push_back("Maintenance5");
             if (has_ext(VK_EXT_CUSTOM_BORDER_COLOR_EXTENSION_NAME)) key_exts.push_back("Custom Border Color");
             if (has_ext(VK_EXT_ROBUSTNESS_2_EXTENSION_NAME)) key_exts.push_back("Robustness2");
         }

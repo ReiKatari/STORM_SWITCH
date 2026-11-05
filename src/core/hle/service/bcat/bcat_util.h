@@ -18,11 +18,17 @@ namespace Service::BCAT {
 // char, can only contain numbers, letters, underscores and a hyphen if directory and a period if
 // file.
 constexpr Result VerifyNameValidInternal(std::array<char, 0x20> name, char match_char) {
-    const auto null_chars = std::count(name.begin(), name.end(), 0);
-    const auto bad_chars = std::count_if(name.begin(), name.end(), [match_char](char c) {
-        return !std::isalnum(static_cast<u8>(c)) && c != '_' && c != match_char && c != '\0';
+    // Only the bytes before the first NUL are part of the name; games may leave stale bytes
+    // after the terminator.
+    const auto first_null = std::find(name.begin(), name.end(), '\0');
+    if (first_null == name.begin() || first_null == name.end()) {
+        LOG_ERROR(Service_BCAT, "Name passed was invalid!");
+        return ResultInvalidArgument;
+    }
+    const auto bad_chars = std::count_if(name.begin(), first_null, [match_char](char c) {
+        return !std::isalnum(static_cast<u8>(c)) && c != '_' && c != match_char;
     });
-    if (null_chars == 0x20 || null_chars == 0 || bad_chars != 0 || name[0x1F] != '\0') {
+    if (bad_chars != 0) {
         LOG_ERROR(Service_BCAT, "Name passed was invalid!");
         return ResultInvalidArgument;
     }

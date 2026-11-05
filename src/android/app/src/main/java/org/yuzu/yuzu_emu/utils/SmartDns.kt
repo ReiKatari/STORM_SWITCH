@@ -21,15 +21,11 @@ object SmartDns : Dns {
     // Static fallback IPs for critical mirrors and GitHub to guarantee resolution
     // even if local cellular DNS is completely poisoned, blocked or unreachable without VPN
     private val staticFallbackHosts = mapOf(
-        "ghfast.top" to listOf("23.95.31.220", "107.175.190.200"),
-        "gh-proxy.net" to listOf("37.48.77.81"),
-        "ghproxy.net" to listOf("5.135.5.132"),
-        "gh.con.sh" to listOf("172.66.45.36", "172.66.46.220"),
-        "gh.llkk.cc" to listOf("104.21.35.157", "172.67.157.106"),
         "api.github.com" to listOf("140.82.121.6", "140.82.121.5", "140.82.112.6"),
         "github.com" to listOf("140.82.121.4", "140.82.121.3", "140.82.114.3"),
         "raw.githubusercontent.com" to listOf("185.199.108.133", "185.199.109.133", "185.199.110.133", "185.199.111.133"),
-        "objects.githubusercontent.com" to listOf("185.199.108.133", "185.199.109.133", "185.199.110.133", "185.199.111.133")
+        "objects.githubusercontent.com" to listOf("185.199.108.133", "185.199.109.133", "185.199.110.133", "185.199.111.133"),
+        "stormgamesworld.ru" to listOf("172.67.182.203", "104.21.58.172")
     )
 
     override fun lookup(hostname: String): List<InetAddress> {
@@ -82,7 +78,7 @@ object SmartDns : Dns {
                 conn.connectTimeout = 3000
                 conn.readTimeout = 3000
                 conn.setRequestProperty("Accept", "application/dns-json")
-                conn.setRequestProperty("User-Agent", "Mozilla/5.0")
+                conn.setRequestProperty("User-Agent", "STORM-SWITCH")
                 if (conn.responseCode == 200) {
                     val jsonStr = conn.inputStream.bufferedReader().use { it.readText() }
                     val json = JSONObject(jsonStr)

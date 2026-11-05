@@ -498,9 +498,17 @@ void GameFixDialog::SetupUI() {
     badge_lay->addWidget(tid_btn);
 
     auto* profile_badge = new QLabel(StormLang(
-        QStringLiteral("Профиль: Оптимизирован для STORM SWITCH"),
-        QStringLiteral("Profile: Optimized for STORM SWITCH")), badge_row);
-    profile_badge->setStyleSheet(QStringLiteral("color: #00F0FF; font-weight: 600; font-size: 8.5pt;"));
+        QStringLiteral("Рекомендуемые настройки STORM SWITCH"),
+        QStringLiteral("Recommended STORM SWITCH Settings")), badge_row);
+    profile_badge->setStyleSheet(QStringLiteral(
+        "background: #0D2B36;"
+        "color: #00E5FF;"
+        "border: 1px solid #00E5FF;"
+        "border-radius: 5px;"
+        "font-weight: 700;"
+        "font-size: 8.5pt;"
+        "padding: 4px 10px;"
+    ));
     badge_lay->addWidget(profile_badge);
     badge_lay->addStretch();
     title_lay->addWidget(badge_row);
@@ -534,6 +542,10 @@ void GameFixDialog::SetupUI() {
         QStringLiteral("Рекомендуемые исправления и оптимизации"),
         QStringLiteral("Recommended Fixes & Optimizations")), scroll_content);
     StormUI::StructureEngine::StyleAsVolumetricCard(fixes_card);
+    fixes_card->setStyleSheet(QStringLiteral(
+        "QGroupBox { border: 1px solid #00E5FF; border-radius: 8px; margin-top: 14px; background: rgba(13, 43, 54, 0.45); }"
+        "QGroupBox::title { subcontrol-origin: margin; subcontrol-position: top left; padding: 2px 8px; color: #00E5FF; font-weight: 700; background: #0D2B36; border-radius: 4px; border: 1px solid #00E5FF; }"
+    ));
     auto* fixes_lay = new QVBoxLayout(fixes_card);
     fixes_lay->setSpacing(8);
 
@@ -637,11 +649,16 @@ void GameFixDialog::SetupUI() {
     btn_lay->setSpacing(8);
 
     auto* apply_and_launch_btn = new QPushButton(StormLang(
-        QStringLiteral("Применить и запустить"),
-        QStringLiteral("Apply & Launch")), btn_row);
+        QStringLiteral("Применить авто-исправление и запустить"),
+        QStringLiteral("Apply Auto-Fix & Launch")), btn_row);
     apply_and_launch_btn->setCursor(Qt::PointingHandCursor);
     apply_and_launch_btn->setDefault(true);
     apply_and_launch_btn->setProperty("primary", true);
+    apply_and_launch_btn->setStyleSheet(QStringLiteral(
+        "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #8B5CF6, stop:1 #7C3AED); color: #FFFFFF; font-weight: 700; border-radius: 6px; padding: 6px 16px; border: 1px solid #7C3AED; min-height: 24px; }"
+        "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #A78BFA, stop:1 #8B5CF6); border-color: #C4B5FD; }"
+        "QPushButton:pressed { background: #6D28D9; border-color: #5B21B6; }"
+    ));
     connect(apply_and_launch_btn, &QPushButton::clicked, this, [this]() {
         m_apply_fixes = true;
         m_save_to_ini = true;

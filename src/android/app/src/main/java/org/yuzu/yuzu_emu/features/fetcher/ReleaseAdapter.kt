@@ -254,13 +254,7 @@ class ReleaseAdapter(
                                     val file = File(cacheDir, artifact.name)
 
                                     val originalUrl = artifact.url.toString()
-                                    val downloadMirrors = mutableListOf<String>()
-                                    downloadMirrors.add(originalUrl)
-                                    if (originalUrl.startsWith("https://github.com/")) {
-                                        downloadMirrors.add("https://gh.con.sh/$originalUrl")
-                                        downloadMirrors.add("https://gh.llkk.cc/$originalUrl")
-                                        downloadMirrors.add("https://ghfast.top/$originalUrl")
-                                    }
+                                    val downloadMirrors = mutableListOf<String>(originalUrl)
 
                                     var downloadSuccess = false
                                     var lastException: Exception? = null

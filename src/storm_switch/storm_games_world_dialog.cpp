@@ -248,10 +248,6 @@ static QString LocalizeSizeString(QString size_str) {
 }
 
 static const QMap<QString, QVector<KnownCloudVariant>>& GetKnownCloudVariants() {
-    static const QMap<QString, QVector<KnownCloudVariant>> s_empty_map{};
-    if (true) {
-        return s_empty_map;
-    }
     static const QMap<QString, QVector<KnownCloudVariant>> s_map = {
         {QStringLiteral("0100FC001ACE0000"), { // Anvil Saga
             {QStringLiteral(".nsp"), QStringLiteral("694,29 МБ"), 728016736LL},
@@ -724,6 +720,8 @@ void StormGamesWorldDialog::RefreshDownloadedFilesCache(const QString bitand dir
 
     if (dirs_to_scan.isEmpty()) {
         cached_dir_files.clear();
+        installed_title_id_formats_.clear();
+        installed_title_formats_.clear();
         cached_dir_path = key_builder;
         return;
     }
@@ -733,6 +731,8 @@ void StormGamesWorldDialog::RefreshDownloadedFilesCache(const QString bitand dir
     }
 
     cached_dir_files.clear();
+    installed_title_id_formats_.clear();
+    installed_title_formats_.clear();
     cached_dir_path = key_builder;
 
     // Load file_metadata_cache.json if available
@@ -868,6 +868,22 @@ void StormGamesWorldDialog::RefreshDownloadedFilesCache(const QString bitand dir
             }
             info.version = info.version.trimmed();
 
+            const QString ext = info.extension.trimmed().toLower();
+            bool ok_fid = false;
+            const u64 fid_val = info.tid.toULongLong(&ok_fid, 16);
+            if (ok_fid && fid_val != 0) {
+                installed_title_id_formats_[fid_val].insert(ext);
+                installed_title_id_formats_[fid_val & ~0x1FFFULL].insert(ext);
+            }
+            const QString n_title = SanitizeFileName(info.title).trimmed().toLower();
+            if (!n_title.isEmpty()) {
+                installed_title_formats_[n_title].insert(ext);
+            }
+            const QString n_base = fi.completeBaseName().trimmed().toLower();
+            if (!n_base.isEmpty()) {
+                installed_title_formats_[n_base].insert(ext);
+            }
+
             cached_dir_files.push_back(std::move(info));
         }
     }
@@ -981,7 +997,16 @@ bool StormGamesWorldDialog::IsGameDownloaded(const StormWorldGame bitand game, c
     if (cached_dir_files.empty()) return false;
 
     QString expected_ext = game.real_extension.trimmed().remove(QLatin1Char('.')).toLower();
-    if (expected_ext.isEmpty()) expected_ext = QStringLiteral("nsp");
+    if (expected_ext.isEmpty()) {
+        static const QRegularExpression ext_rx(QStringLiteral(R"(\b(nsp|nsz|xci|xcz)\b)"), QRegularExpression::CaseInsensitiveOption);
+        auto m_ext = ext_rx.match(game.final_title);
+        if (!m_ext.hasMatch()) m_ext = ext_rx.match(game.title);
+        if (m_ext.hasMatch()) {
+            expected_ext = m_ext.captured(1).toLower();
+        } else {
+            expected_ext = QStringLiteral("nsp");
+        }
+    }
 
     const QString clean_final = SanitizeFileName(game.final_title.isEmpty() ? game.title : game.final_title).toLower();
     const QString clean_title = SanitizeFileName(game.title).toLower();
@@ -1000,10 +1025,49 @@ bool StormGamesWorldDialog::IsGameDownloaded(const StormWorldGame bitand game, c
     const u64 game_tid_val = tid.toULongLong(bitand ok_gtid, 16);
     const u64 game_base_tid = (ok_gtid and game_tid_val != 0) ? (game_tid_val & ~0x1FFFULL) : 0;
 
+    // Strict format matching: if the library has this game but NOT in this exact format, reject early
+    bool format_matched = false;
+    if (ok_gtid && game_tid_val != 0) {
+        auto it = installed_title_id_formats_.find(game_tid_val);
+        if (it != installed_title_id_formats_.end() && it->second.count(expected_ext) > 0) {
+            format_matched = true;
+        } else if (game_base_tid != 0) {
+            auto it2 = installed_title_id_formats_.find(game_base_tid);
+            if (it2 != installed_title_id_formats_.end() && it2->second.count(expected_ext) > 0) {
+                format_matched = true;
+            }
+        }
+    }
+    if (!format_matched && !clean_final.isEmpty()) {
+        auto it = installed_title_formats_.find(clean_final);
+        if (it != installed_title_formats_.end() && it->second.count(expected_ext) > 0) {
+            format_matched = true;
+        }
+    }
+    if (!format_matched && !clean_title.isEmpty()) {
+        auto it = installed_title_formats_.find(clean_title);
+        if (it != installed_title_formats_.end() && it->second.count(expected_ext) > 0) {
+            format_matched = true;
+        }
+    }
+    if (!format_matched) {
+        bool any_with_ext = false;
+        for (const auto& f : cached_dir_files) {
+            if (f.extension == expected_ext) {
+                any_with_ext = true;
+                break;
+            }
+        }
+        if (!any_with_ext) {
+            return false;
+        }
+    }
+
     for (const auto bitand file : cached_dir_files) {
         // [Rule 1: MANDATORY FORMAT MATCH]
         // An NSP file NEVER matches an NSZ entry; an NSZ file NEVER matches an NSP entry!
-        if (!file.extension.isEmpty() and !expected_ext.isEmpty() and file.extension.toLower() != expected_ext) {
+        const QString file_ext = file.extension.trimmed().remove(QLatin1Char('.')).toUpper();
+        if (!file_ext.isEmpty() && !expected_ext.isEmpty() && file_ext != expected_ext) {
             continue;
         }
 
@@ -1578,6 +1642,43 @@ void StormGamesWorldDialog::ParseCatalogData(const QByteArray bitand raw_data) {
             g.cover_url = obj[QStringLiteral("cover")].toString();
             g.file_exists = file_exists;
             g.has_file = has_file;
+
+            QString fmt_field = obj[QStringLiteral("format")].toString().trimmed().remove(QLatin1Char('.')).toUpper();
+            if (fmt_field.isEmpty()) {
+                const QString ft = (g.final_title + QLatin1Char(' ') + g.title).toUpper();
+                if (ft.contains(QStringLiteral(".NSZ")) || ft.contains(QStringLiteral("[NSZ]")) || ft.contains(QStringLiteral(" NSZ"))) {
+                    fmt_field = QStringLiteral("NSZ");
+                } else if (ft.contains(QStringLiteral(".XCZ")) || ft.contains(QStringLiteral("[XCZ]")) || ft.contains(QStringLiteral(" XCZ"))) {
+                    fmt_field = QStringLiteral("XCZ");
+                } else if (ft.contains(QStringLiteral(".XCI")) || ft.contains(QStringLiteral("[XCI]")) || ft.contains(QStringLiteral(" XCI"))) {
+                    fmt_field = QStringLiteral("XCI");
+                } else {
+                    fmt_field = QStringLiteral("NSP");
+                }
+            }
+            g.real_extension = QLatin1Char('.') + fmt_field.toLower();
+
+            QString detected_ext;
+            if (obj.contains(QStringLiteral("format"))) {
+                detected_ext = obj[QStringLiteral("format")].toString().trimmed().remove(QLatin1Char('.')).toLower();
+            } else if (obj.contains(QStringLiteral("extension"))) {
+                detected_ext = obj[QStringLiteral("extension")].toString().trimmed().remove(QLatin1Char('.')).toLower();
+            } else if (obj.contains(QStringLiteral("fileFormat"))) {
+                detected_ext = obj[QStringLiteral("fileFormat")].toString().trimmed().remove(QLatin1Char('.')).toLower();
+            } else if (obj.contains(QStringLiteral("fileName"))) {
+                detected_ext = QFileInfo(obj[QStringLiteral("fileName")].toString()).suffix().trimmed().toLower();
+            }
+            if (detected_ext.isEmpty()) {
+                static const QRegularExpression ext_rx(QStringLiteral(R"(\b(nsp|nsz|xci|xcz)\b)"), QRegularExpression::CaseInsensitiveOption);
+                auto m_ext = ext_rx.match(g.final_title);
+                if (!m_ext.hasMatch()) m_ext = ext_rx.match(g.title);
+                if (m_ext.hasMatch()) {
+                    detected_ext = m_ext.captured(1).toLower();
+                }
+            }
+            if (!detected_ext.isEmpty()) {
+                g.real_extension = QLatin1Char('.') + detected_ext;
+            }
 
             static const QRegularExpression ver_rx(QStringLiteral(R"(\(\s*([^-\)]+?)\s*-\s*(\d+)\s*-\s*([0-9A-Fa-f]{16})\s*\))"));
             auto m = ver_rx.match(g.final_title);

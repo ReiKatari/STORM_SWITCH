@@ -284,7 +284,25 @@ void ConfigureGraphics::UpdateDriverDetails(int device) {
     }
 
     const auto& rec = records[device];
-    QString family = QString::fromStdString(rec.driver_family.empty() ? "Mesa / Generic" : rec.driver_family);
+    std::string cur_lang = UISettings::values.language.GetValue();
+    if (cur_lang.empty()) {
+        cur_lang = QLocale::system().name().toStdString();
+    }
+
+    const QString orig_family = QString::fromStdString(rec.driver_family.empty() ? "Mesa / Generic" : rec.driver_family);
+    const QString family_tr = StormLookupMultiLang(orig_family, cur_lang);
+    QString family = !family_tr.isEmpty() ? family_tr : orig_family;
+    if (family == orig_family && cur_lang.rfind("ru", 0) == 0) {
+        if (orig_family.contains(QStringLiteral("NVIDIA"), Qt::CaseInsensitive)) family = QStringLiteral("Проприетарный драйвер NVIDIA");
+        else if (orig_family.contains(QStringLiteral("AMD"), Qt::CaseInsensitive)) family = QStringLiteral("Проприетарный драйвер AMD Adrenalin");
+        else if (orig_family.contains(QStringLiteral("Intel"), Qt::CaseInsensitive)) family = QStringLiteral("Драйвер Intel Arc / Iris");
+        else if (orig_family.contains(QStringLiteral("Turnip"), Qt::CaseInsensitive)) family = QStringLiteral("Открытый драйвер Mesa Turnip (Adreno)");
+        else if (orig_family.contains(QStringLiteral("PanVK"), Qt::CaseInsensitive)) family = QStringLiteral("Открытый драйвер Mesa PanVK (Mali / Immortalis)");
+        else if (orig_family.contains(QStringLiteral("RADV"), Qt::CaseInsensitive)) family = QStringLiteral("Открытый драйвер Mesa RADV (AMD RDNA)");
+        else if (orig_family.contains(QStringLiteral("ANV"), Qt::CaseInsensitive)) family = QStringLiteral("Открытый драйвер Mesa ANV (Intel)");
+        else if (orig_family.contains(QStringLiteral("NVK"), Qt::CaseInsensitive)) family = QStringLiteral("Открытый драйвер Mesa NVK (NVIDIA)");
+    }
+
     QString ver = QString::fromStdString(rec.driver_version);
     QString vk_ver = QString::fromStdString(rec.vulkan_version);
 
@@ -292,7 +310,24 @@ void ConfigureGraphics::UpdateDriverDetails(int device) {
     if (!rec.key_extensions.empty()) {
         QStringList ext_list;
         for (const auto& ext : rec.key_extensions) {
-            ext_list.append(QString::fromStdString(ext));
+            const QString orig_ext = QString::fromStdString(ext);
+            const QString ext_tr = StormLookupMultiLang(orig_ext, cur_lang);
+            QString final_ext = !ext_tr.isEmpty() ? ext_tr : orig_ext;
+            if (final_ext == orig_ext && cur_lang.rfind("ru", 0) == 0) {
+                if (orig_ext == QStringLiteral("Dynamic Rendering")) final_ext = QStringLiteral("Динамический рендеринг");
+                else if (orig_ext == QStringLiteral("Descriptor Indexing")) final_ext = QStringLiteral("Индексация дескрипторов");
+                else if (orig_ext == QStringLiteral("Timeline Semaphore")) final_ext = QStringLiteral("Семафоры временной шкалы");
+                else if (orig_ext == QStringLiteral("Synchronization2")) final_ext = QStringLiteral("Синхронизация 2.0");
+                else if (orig_ext == QStringLiteral("Extended Dynamic State")) final_ext = QStringLiteral("Расширенное динамическое состояние (EDS)");
+                else if (orig_ext == QStringLiteral("Maintenance4")) final_ext = QStringLiteral("Оптимизация конвейера (Maintenance4)");
+                else if (orig_ext == QStringLiteral("Maintenance5")) final_ext = QStringLiteral("Оптимизация конвейера (Maintenance5)");
+                else if (orig_ext == QStringLiteral("Custom Border Color")) final_ext = QStringLiteral("Пользовательский цвет границ");
+                else if (orig_ext == QStringLiteral("Robustness2")) final_ext = QStringLiteral("Защита памяти ГПУ (Robustness2)");
+                else if (orig_ext == QStringLiteral("Transform Feedback")) final_ext = QStringLiteral("Обратная связь трансформации");
+                else if (orig_ext == QStringLiteral("Float16/Int8")) final_ext = QStringLiteral("Поддержка Float16 / Int8");
+                else if (orig_ext == QStringLiteral("Fragment Shader Barycentric")) final_ext = QStringLiteral("Барицентрические координаты фрагментного шейдера");
+            }
+            ext_list.append(final_ext);
         }
         exts_str = ext_list.join(QStringLiteral(", "));
     } else {

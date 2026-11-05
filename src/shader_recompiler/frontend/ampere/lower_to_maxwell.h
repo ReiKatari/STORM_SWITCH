@@ -1130,19 +1130,40 @@ inline LoweredProgram LowerToMaxwellWith(std::span<const Instruction> code, u32 
             if (strong) emit(0xef98000000000000ULL | predicate | (u64{1} << 8));
             break;
         }
-        case 0x59f: { // SURED.D.2D.ADD.STRONG.GPU.IGN U32, direct descriptor (title 1's race compute).
+        case 0x593: { // SUATOM Rd, [Ra], Rb on image/surface handle (Donkey Kong Bananza compute counters).
+            const u32 binding = insn.Bits(54, 5), offset = insn.Bits(40, 14);
+            const u32 coordinate = insn.Bits(24, 8), data = insn.Bits(32, 8);
+            const u32 dimension = insn.Bits(61, 3);
+            const u32 size = insn.Bits(73, 3);
+            const u32 op = insn.Bits(87, 4);
+            if (binding >= 18 || offset > 0x1fff || insn.Bits(59, 2) || data > 255 || coordinate > 255)
+                return fail(index, "native surface atomic mode");
+            const bool bindless = !bind_texture_buffer(binding);
+            if (bindless) {
+                emit(0x4c98000000070000ULL | 250 | (u64{15} << 39) | (u64{offset} << 20) | (u64{binding} << 34));
+            }
+            emit(0xea00000000000000ULL | predicate | static_cast<u32>(dest) | (u64{coordinate} << 8) |
+                (u64{data} << 20) | (u64{op} << 29) | (u64{dimension} << 33) |
+                (bindless ? (u64{250} << 39) | (u64{1} << 54) : (u64{offset} << 36)) |
+                (u64{size} << 51));
+            break;
+        }
+        case 0x59f: { // SURED.D.2D/3D.ADD/ATOM.STRONG.GPU.IGN U32, direct or bindless descriptor.
             const u32 binding = insn.Bits(54, 5), offset = insn.Bits(40, 14);
             const u32 data = insn.Bits(32, 8), coordinate = insn.Bits(24, 8);
-            if (insn.words[2] != 0x0010e000 || insn.Bits(61, 3) != 3 || binding >= 18 ||
-                offset > 0x1fff || insn.Bits(59, 2) || coordinate > 253)
+            const u32 dimension = insn.Bits(61, 3);
+            const u32 op = insn.Bits(87, 4);
+            if (binding >= 18 || offset > 0x1fff || insn.Bits(59, 2) || coordinate > 253)
                 return fail(index, "native surface reduction mode");
-            if (result.required_texture_buffer != ~0U && result.required_texture_buffer != binding)
-                return fail(index, "native surface descriptor buffer conflict");
-            result.required_texture_buffer = binding;
+            const bool bindless = !bind_texture_buffer(binding);
+            if (bindless) {
+                emit(0x4c98000000070000ULL | 250 | (u64{15} << 39) | (u64{offset} << 20) | (u64{binding} << 34));
+            }
             // Maxwell SURED (as the frontend decodes it): operand 0-7, coordinates 8-15, ADD and
-            // U32 are zero at 24 and 20, type 33 (3 = 2D), bound offset 36, bound 51.
+            // U32 at 24 and 20, type 33 (3 = 2D), bound offset 36, bound 51.
             emit(0xeb40000000000000ULL | predicate | data | (u64{coordinate} << 8) |
-                (u64{3} << 33) | (u64{offset} << 36) | (u64{1} << 51));
+                (u64{op} << 24) | (u64{dimension} << 33) |
+                (bindless ? (u64{250} << 39) : (u64{offset} << 36) | (u64{1} << 51)));
             break;
         }
         case 0x301: // BREV register.
@@ -1271,13 +1292,14 @@ inline LoweredProgram LowerToMaxwellWith(std::span<const Instruction> code, u32 
             // The expansion is correct but large: title 4's 372-HMMA network takes the host driver
             // minutes to compile, so it stays opt-in (the QMD still completes when rejected).
             // EDEN_NX2_TENSOR=stub keeps the rest of the program but makes every HMMA D = C.
+            // By default, full matrix multiply emulation via HFMA2 + shuffles is used.
             static const char* const mode = std::getenv("EDEN_NX2_TENSOR");
-            if (!mode) return fail(index, "native matrix multiply (set EDEN_NX2_TENSOR to emulate)");
+            const bool is_stub = (mode != nullptr && std::string_view{mode} == "stub");
             const u32 a = insn.Bits(24, 8), b = insn.Bits(32, 8), c = insn.Bits(64, 8);
             if ((insn.words[1] & ~0xffU) || (insn.words[2] & ~0xffU) != 0x800 || dest + 2 > 246 ||
                 a + 4 > 246 || b + 2 > 246 || (c != 255 && c + 2 > 246))
                 return fail(index, "native matrix multiply mode");
-            if (std::string_view{mode} == "stub") {
+            if (is_stub) {
                 for (u32 row = 0; row < 2; ++row) {
                     if (c == 255) mov_imm(static_cast<u32>(dest) + row, 0);
                     else if (c != dest) emit(0x5c98000000000000ULL | predicate | (dest + row) | (u64{15} << 39) | (u64{c + row} << 20));

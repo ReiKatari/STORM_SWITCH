@@ -6,6 +6,8 @@
 
 #include "storm_switch/configuration/configure_ui.h"
 
+#include "storm_switch/common/storm_lang.h"
+
 
 
 #include <array>
@@ -206,10 +208,29 @@ ConfigureUi::ConfigureUi(Core::System& system_, QWidget* parent)
 
 
 
+    auto get_translated_accent = [](std::string_view name) -> QString {
+        if (name == "Violet") return StormLangStorm11(QStringLiteral("Фиолетовый"), QStringLiteral("Violet"), QStringLiteral("Violett"), QStringLiteral("Violet"), QStringLiteral("紫罗兰"), QStringLiteral("바이올렛"), QStringLiteral("バイオレット"), QStringLiteral("Violeta"), QStringLiteral("Viola"), QStringLiteral("Violeta"), QStringLiteral("बैंगनी"));
+        if (name == "Cyan") return StormLangStorm11(QStringLiteral("Голубой (Циан)"), QStringLiteral("Cyan"), QStringLiteral("Cyan"), QStringLiteral("Cyan"), QStringLiteral("青色 (青蓝)"), QStringLiteral("시안"), QStringLiteral("シアン"), QStringLiteral("Cian"), QStringLiteral("Ciano"), QStringLiteral("Ciano"), QStringLiteral("स्यान"));
+        if (name == "Electric Blue") return StormLangStorm11(QStringLiteral("Синий (Электрик)"), QStringLiteral("Electric Blue"), QStringLiteral("Elektro-Blau"), QStringLiteral("Bleu électrique"), QStringLiteral("电光蓝"), QStringLiteral("일렉트릭 블루"), QStringLiteral("エレクトリックブルー"), QStringLiteral("Azul eléctrico"), QStringLiteral("Blu elettrico"), QStringLiteral("Azul elétrico"), QStringLiteral("इलेक्ट्रिक ब्लू"));
+        if (name == "Royal Indigo") return StormLangStorm11(QStringLiteral("Королевский индиго"), QStringLiteral("Royal Indigo"), QStringLiteral("Königsindigo"), QStringLiteral("Indigo royal"), QStringLiteral("皇家靛蓝"), QStringLiteral("로열 인디고"), QStringLiteral("ロイヤルインディゴ"), QStringLiteral("Índigo real"), QStringLiteral("Indaco reale"), QStringLiteral("Índigo real"), QStringLiteral("रॉयल इंडिगो"));
+        if (name == "Teal Mint") return StormLangStorm11(QStringLiteral("Мятный бирюзовый"), QStringLiteral("Teal Mint"), QStringLiteral("Mint-Blaugrün"), QStringLiteral("Menthe sarcelle"), QStringLiteral("薄荷青"), QStringLiteral("민트 틸"), QStringLiteral("ミントティール"), QStringLiteral("Menta azulada"), QStringLiteral("Verde acqua menta"), QStringLiteral("Menta cerceta"), QStringLiteral("टीला मिंट"));
+        if (name == "Emerald Green") return StormLangStorm11(QStringLiteral("Изумрудный"), QStringLiteral("Emerald Green"), QStringLiteral("Smaragdgrün"), QStringLiteral("Vert émeraude"), QStringLiteral("翡翠绿"), QStringLiteral("에메랄드 그린"), QStringLiteral("エメラルドグリーン"), QStringLiteral("Verde esmeralda"), QStringLiteral("Verde smeraldo"), QStringLiteral("Verde esmeralda"), QStringLiteral("पन्ना हरा"));
+        if (name == "Neon Lime") return StormLangStorm11(QStringLiteral("Неоновый лайм"), QStringLiteral("Neon Lime"), QStringLiteral("Neon-Limette"), QStringLiteral("Lime néon"), QStringLiteral("荧光酸橙"), QStringLiteral("네온 라임"), QStringLiteral("ネオンライム"), QStringLiteral("Lima neón"), QStringLiteral("Lime neon"), QStringLiteral("Limão neon"), QStringLiteral("नियॉन लाइम"));
+        if (name == "Amber Gold") return StormLangStorm11(QStringLiteral("Янтарный"), QStringLiteral("Amber Gold"), QStringLiteral("Bernsteingold"), QStringLiteral("Or ambré"), QStringLiteral("琥珀金"), QStringLiteral("앰버 골드"), QStringLiteral("アンバーゴールド"), QStringLiteral("Ámbar dorado"), QStringLiteral("Oro ambra"), QStringLiteral("Âmbar dourado"), QStringLiteral("एम्बर गोल्ड"));
+        if (name == "Solar Orange") return StormLangStorm11(QStringLiteral("Солнечный оранжевый"), QStringLiteral("Solar Orange"), QStringLiteral("Sonniges Orange"), QStringLiteral("Orange solaire"), QStringLiteral("炫阳橙"), QStringLiteral("솔라 오렌지"), QStringLiteral("ソーラーオレンジ"), QStringLiteral("Naranja solar"), QStringLiteral("Arancione solare"), QStringLiteral("Laranja solar"), QStringLiteral("सौर नारंगी"));
+        if (name == "Crimson Red") return StormLangStorm11(QStringLiteral("Алый"), QStringLiteral("Crimson Red"), QStringLiteral("Karmesinrot"), QStringLiteral("Rouge cramoisi"), QStringLiteral("绯红"), QStringLiteral("크림슨 레드"), QStringLiteral("クリムゾンレッド"), QStringLiteral("Rojo carmesí"), QStringLiteral("Rosso cremisi"), QStringLiteral("Vermelho carmesim"), QStringLiteral("गहरा लाल (क्रिमसन)"));
+        if (name == "Rose Pink") return StormLangStorm11(QStringLiteral("Розовый"), QStringLiteral("Rose Pink"), QStringLiteral("Rosenrosa"), QStringLiteral("Rose"), QStringLiteral("玫瑰粉"), QStringLiteral("로즈 핑크"), QStringLiteral("ローズピンク"), QStringLiteral("Rosa"), QStringLiteral("Rosa confetto"), QStringLiteral("Rosa"), QStringLiteral("गुलाबी"));
+        if (name == "Magenta Fuchsia") return StormLangStorm11(QStringLiteral("Пурпурный (Фуксия)"), QStringLiteral("Magenta Fuchsia"), QStringLiteral("Magenta Fuchsie"), QStringLiteral("Magenta fuchsia"), QStringLiteral("洋红紫红"), QStringLiteral("마젠타 푹샤"), QStringLiteral("マゼンタフューシャ"), QStringLiteral("Magenta fucsia"), QStringLiteral("Magenta fucsia"), QStringLiteral("Magenta fúcsia"), QStringLiteral("मैजेंटा फुशिया"));
+        if (name == "Platinum Silver") return StormLangStorm11(QStringLiteral("Платиновый серебряный"), QStringLiteral("Platinum Silver"), QStringLiteral("Platinsilber"), QStringLiteral("Argent platine"), QStringLiteral("铂金银"), QStringLiteral("플래티넘 실버"), QStringLiteral("プラチナシルバー"), QStringLiteral("Plata platino"), QStringLiteral("Argento platino"), QStringLiteral("Prata platina"), QStringLiteral("प्लैटिनम सिल्वर"));
+        const QString qname = QString::fromUtf8(name.data(), static_cast<int>(name.size()));
+        std::string lang = UISettings::values.language.GetValue();
+        if (lang.empty()) lang = QLocale::system().name().toStdString();
+        const QString tr_name = StormLookupMultiLang(qname, lang);
+        return !tr_name.isEmpty() ? tr_name : qname;
+    };
+
     for (const auto& acc : UISettings::canonical_accents) {
-
-        ui->accent_combobox->addItem(QString::fromUtf8(acc.name), QString::fromUtf8(acc.hex));
-
+        ui->accent_combobox->addItem(get_translated_accent(acc.name), QString::fromUtf8(acc.hex));
     }
 
     connect(ui->accent_combobox, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
@@ -527,15 +548,64 @@ void ConfigureUi::RetranslateUI() {
     }
 
     if (ui->accent_label) {
-
-        ui->accent_label->setText(tr("Accent Color:"));
-
+        ui->accent_label->setText(StormLangStorm11(
+            QStringLiteral("Цвет акцента:"),
+            QStringLiteral("Accent Color:"),
+            QStringLiteral("Akzentfarbe:"),
+            QStringLiteral("Couleur d'accentuation:"),
+            QStringLiteral("主题强调色:"),
+            QStringLiteral("강조 색상:"),
+            QStringLiteral("アクセントカラー:"),
+            QStringLiteral("Color de énfasis:"),
+            QStringLiteral("Colore di accento:"),
+            QStringLiteral("Cor de destaque:"),
+            QStringLiteral("एक्सेंट रंग:")));
     }
 
     if (ui->font_label) {
+        ui->font_label->setText(StormLangStorm11(
+            QStringLiteral("Шрифт интерфейса:"),
+            QStringLiteral("Interface Font:"),
+            QStringLiteral("Oberflächenschriftart:"),
+            QStringLiteral("Police d'interface:"),
+            QStringLiteral("界面字体:"),
+            QStringLiteral("인터페이스 글꼴:"),
+            QStringLiteral("インターフェースフォント:"),
+            QStringLiteral("Fuente de la interfaz:"),
+            QStringLiteral("Carattere dell'interfaccia:"),
+            QStringLiteral("Fonte da interface:"),
+            QStringLiteral("इंटरफ़ेस फ़ॉन्ट:")));
+    }
 
-        ui->font_label->setText(tr("Interface Font:"));
+    auto get_translated_accent = [](std::string_view name) -> QString {
+        if (name == "Violet") return StormLangStorm11(QStringLiteral("Фиолетовый"), QStringLiteral("Violet"), QStringLiteral("Violett"), QStringLiteral("Violet"), QStringLiteral("紫罗兰"), QStringLiteral("바이올렛"), QStringLiteral("バイオレット"), QStringLiteral("Violeta"), QStringLiteral("Viola"), QStringLiteral("Violeta"), QStringLiteral("बैंगनी"));
+        if (name == "Cyan") return StormLangStorm11(QStringLiteral("Голубой (Циан)"), QStringLiteral("Cyan"), QStringLiteral("Cyan"), QStringLiteral("Cyan"), QStringLiteral("青色 (青蓝)"), QStringLiteral("시안"), QStringLiteral("シアン"), QStringLiteral("Cian"), QStringLiteral("Ciano"), QStringLiteral("Ciano"), QStringLiteral("स्यान"));
+        if (name == "Electric Blue") return StormLangStorm11(QStringLiteral("Синий (Электрик)"), QStringLiteral("Electric Blue"), QStringLiteral("Elektro-Blau"), QStringLiteral("Bleu électrique"), QStringLiteral("电光蓝"), QStringLiteral("일렉트릭 블루"), QStringLiteral("エレクトリックブルー"), QStringLiteral("Azul eléctrico"), QStringLiteral("Blu elettrico"), QStringLiteral("Azul elétrico"), QStringLiteral("इलेक्ट्रिक ब्लू"));
+        if (name == "Royal Indigo") return StormLangStorm11(QStringLiteral("Королевский индиго"), QStringLiteral("Royal Indigo"), QStringLiteral("Königsindigo"), QStringLiteral("Indigo royal"), QStringLiteral("皇家靛蓝"), QStringLiteral("로열 인디고"), QStringLiteral("ロイヤルインディゴ"), QStringLiteral("Índigo real"), QStringLiteral("Indaco reale"), QStringLiteral("Índigo real"), QStringLiteral("रॉयल इंडिगो"));
+        if (name == "Teal Mint") return StormLangStorm11(QStringLiteral("Мятный бирюзовый"), QStringLiteral("Teal Mint"), QStringLiteral("Mint-Blaugrün"), QStringLiteral("Menthe sarcelle"), QStringLiteral("薄荷青"), QStringLiteral("민트 틸"), QStringLiteral("ミントティール"), QStringLiteral("Menta azulada"), QStringLiteral("Verde acqua menta"), QStringLiteral("Menta cerceta"), QStringLiteral("टीला मिंट"));
+        if (name == "Emerald Green") return StormLangStorm11(QStringLiteral("Изумрудный"), QStringLiteral("Emerald Green"), QStringLiteral("Smaragdgrün"), QStringLiteral("Vert émeraude"), QStringLiteral("翡翠绿"), QStringLiteral("에메랄드 그린"), QStringLiteral("エメラルドグリーン"), QStringLiteral("Verde esmeralda"), QStringLiteral("Verde smeraldo"), QStringLiteral("Verde esmeralda"), QStringLiteral("पन्ना हरा"));
+        if (name == "Neon Lime") return StormLangStorm11(QStringLiteral("Неоновый лайм"), QStringLiteral("Neon Lime"), QStringLiteral("Neon-Limette"), QStringLiteral("Lime néon"), QStringLiteral("荧光酸橙"), QStringLiteral("네온 라임"), QStringLiteral("ネオンライム"), QStringLiteral("Lima neón"), QStringLiteral("Lime neon"), QStringLiteral("Limão neon"), QStringLiteral("नियॉन लाइम"));
+        if (name == "Amber Gold") return StormLangStorm11(QStringLiteral("Янтарный"), QStringLiteral("Amber Gold"), QStringLiteral("Bernsteingold"), QStringLiteral("Or ambré"), QStringLiteral("琥珀金"), QStringLiteral("앰버 골드"), QStringLiteral("アンバーゴールド"), QStringLiteral("Ámbar dorado"), QStringLiteral("Oro ambra"), QStringLiteral("Âmbar dourado"), QStringLiteral("एम्बर गोल्ड"));
+        if (name == "Solar Orange") return StormLangStorm11(QStringLiteral("Солнечный оранжевый"), QStringLiteral("Solar Orange"), QStringLiteral("Sonniges Orange"), QStringLiteral("Orange solaire"), QStringLiteral("炫阳橙"), QStringLiteral("솔라 오렌지"), QStringLiteral("ソーラーオレンジ"), QStringLiteral("Naranja solar"), QStringLiteral("Arancione solare"), QStringLiteral("Laranja solar"), QStringLiteral("सौर नारंगी"));
+        if (name == "Crimson Red") return StormLangStorm11(QStringLiteral("Алый"), QStringLiteral("Crimson Red"), QStringLiteral("Karmesinrot"), QStringLiteral("Rouge cramoisi"), QStringLiteral("绯红"), QStringLiteral("크림슨 레드"), QStringLiteral("クリムゾンレッド"), QStringLiteral("Rojo carmesí"), QStringLiteral("Rosso cremisi"), QStringLiteral("Vermelho carmesim"), QStringLiteral("गहरा लाल (क्रिमसन)"));
+        if (name == "Rose Pink") return StormLangStorm11(QStringLiteral("Розовый"), QStringLiteral("Rose Pink"), QStringLiteral("Rosenrosa"), QStringLiteral("Rose"), QStringLiteral("玫瑰粉"), QStringLiteral("로즈 핑크"), QStringLiteral("ローズピンク"), QStringLiteral("Rosa"), QStringLiteral("Rosa confetto"), QStringLiteral("Rosa"), QStringLiteral("गुलाबी"));
+        if (name == "Magenta Fuchsia") return StormLangStorm11(QStringLiteral("Пурпурный (Фуксия)"), QStringLiteral("Magenta Fuchsia"), QStringLiteral("Magenta Fuchsie"), QStringLiteral("Magenta fuchsia"), QStringLiteral("洋红紫红"), QStringLiteral("마젠타 푹샤"), QStringLiteral("マゼンタフューシャ"), QStringLiteral("Magenta fucsia"), QStringLiteral("Magenta fucsia"), QStringLiteral("Magenta fúcsia"), QStringLiteral("मैजेंटा फुशिया"));
+        if (name == "Platinum Silver") return StormLangStorm11(QStringLiteral("Платиновый серебряный"), QStringLiteral("Platinum Silver"), QStringLiteral("Platinsilber"), QStringLiteral("Argent platine"), QStringLiteral("铂金银"), QStringLiteral("플래티넘 실버"), QStringLiteral("プラチナシルバー"), QStringLiteral("Plata platino"), QStringLiteral("Argento platino"), QStringLiteral("Prata platina"), QStringLiteral("प्लैटिनम सिल्वर"));
+        const QString qname = QString::fromUtf8(name.data(), static_cast<int>(name.size()));
+        std::string lang = UISettings::values.language.GetValue();
+        if (lang.empty()) lang = QLocale::system().name().toStdString();
+        const QString tr_name = StormLookupMultiLang(qname, lang);
+        return !tr_name.isEmpty() ? tr_name : qname;
+    };
 
+    for (int i = 0; i < ui->accent_combobox->count(); ++i) {
+        const QString hex = ui->accent_combobox->itemData(i).toString();
+        for (const auto& acc : UISettings::canonical_accents) {
+            if (QString::fromUtf8(acc.hex) == hex) {
+                ui->accent_combobox->setItemText(i, get_translated_accent(acc.name));
+                break;
+            }
+        }
     }
 
 
@@ -576,11 +646,23 @@ void ConfigureUi::InitializeLanguageComboBox() {
 
         locale.remove(0, locale.lastIndexOf(QLatin1Char{'/'}) + 1);
 
-        const QString lang = QLocale::languageToString(QLocale(locale).language());
-
-        const QString country = QLocale::territoryToString(QLocale(locale).territory());
-
-        ui->language_combobox->addItem(QStringLiteral("%1 (%2)").arg(lang, country), locale);
+        const QLocale loc(locale);
+        QString native = loc.nativeLanguageName();
+        if (!native.isEmpty()) {
+            native[0] = native[0].toUpper();
+        }
+        const QString eng = QLocale::languageToString(loc.language());
+        QString label;
+        if (!native.isEmpty() && native != eng) {
+            label = QStringLiteral("%1 (%2)").arg(native, eng);
+        } else if (!native.isEmpty()) {
+            label = native;
+        } else {
+            const QString lang = QLocale::languageToString(loc.language());
+            const QString country = QLocale::territoryToString(loc.territory());
+            label = QStringLiteral("%1 (%2)").arg(lang, country);
+        }
+        ui->language_combobox->addItem(label, locale);
 
     }
 

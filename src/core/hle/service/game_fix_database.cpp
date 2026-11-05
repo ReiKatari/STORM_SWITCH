@@ -1263,12 +1263,13 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x010015100B514000ULL,
         "Super Mario Bros. Wonder",
-        "• Вылет при переходе уровней и активации Чудо-цветка (нехватка стандартной памяти 4GB)\n• Микрофризы при компиляции анимаций персонажей",
-        "• Crash on stage transitions and Wonder Flower effects (4GB memory limit)\n• Shader compilation stutter on character animations",
-        "✓ Конфигурация памяти: 6 ГБ DRAM (предотвращение переполнения памяти)\n✓ Точность ГПУ: Обычная (Normal 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Сжатие ASTC: Отключено\n✓ Реактивная очистка: Отключено\n✓ Барьеры обратной связи: Отключено (устранение зависаний и вылетов)",
-        "✓ Memory Layout: 6GB DRAM (Prevents memory overflow)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Disabled (Eliminates freezes and crashes)",
+        "• Вылет при переходе уровней и активации Чудо-цветка\n• Микрофризы при компиляции анимаций персонажей",
+        "• Crash on stage transitions and Wonder Flower effects\n• Shader compilation stutter on character animations",
+        "✓ Конфигурация памяти: 4 ГБ DRAM (стабильный запуск без сбоев памяти)\n✓ Точность ГПУ: Обычная (Normal 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Сжатие ASTC: Отключено\n✓ Реактивная очистка: Отключено\n✓ Барьеры обратной связи: Отключено (устранение зависаний и вылетов)",
+        "✓ Memory Layout: 4GB DRAM (Stable launch without memory faults)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Disabled (Eliminates freezes and crashes)",
         {
-            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\use_reactive_flushing", "false"},
             {"Renderer\\use_fast_gpu_time", "true"},
@@ -5958,7 +5959,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Well Dweller",
         "• Рассинхронизация 2D-кадров\n• Потеря резкости пиксель-арта колодца",
         "• 2D frame presentation pacing jitter\n• Well pixel art sharpness degradation",
-        "✓ Рекомендованные настройки STORM SOFT для стабильности и максимального FPS",
+        "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
         "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
         {
             {"Renderer\\async_presentation", "false"},

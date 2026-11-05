@@ -52,8 +52,8 @@ Result IDeliveryCacheDirectoryService::Open(const DirectoryName& dir_name_raw) {
     R_TRY(VerifyNameValidDir(dir_name_raw));
     R_UNLESS(current_dir == nullptr, ResultEntityAlreadyOpen);
 
-    const auto dir = root->GetSubdirectory(dir_name);
-    R_UNLESS(dir != nullptr, ResultFailedOpenEntity);
+    current_dir = root->GetSubdirectory(dir_name);
+    R_UNLESS(current_dir != nullptr, ResultFailedOpenEntity);
 
     R_SUCCEED();
 }

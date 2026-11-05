@@ -325,7 +325,6 @@ object GpuDriverHelper {
         // The Legend of Zelda: Echoes of Wisdom
         "01008CF01BAAC000" to listOf("nolrz"),
         // Super Mario Bros. Wonder
-        "010015100B514000" to listOf("nolrz"),
         // Mario + Rabbids Kingdom Battle & Sparks of Hope
         "010067300059A000" to listOf("nolrz"),
         "0100760012E4A000" to listOf("nolrz"),

@@ -453,9 +453,7 @@ class OnlineToolsDialogFragment : DialogFragment() {
             "STORM_SWITCH_TOOLS_KEYS"
         }
         val candidateUrls = listOf(
-            "https://api.github.com/repos/ReiKatari/STORM_SWITCH_TOOLS/releases/tags/$tagName",
-            "https://ghfast.top/https://api.github.com/repos/ReiKatari/STORM_SWITCH_TOOLS/releases/tags/$tagName",
-            "https://gh-proxy.net/https://api.github.com/repos/ReiKatari/STORM_SWITCH_TOOLS/releases/tags/$tagName"
+            "https://api.github.com/repos/ReiKatari/STORM_SWITCH_TOOLS/releases/tags/$tagName"
         )
 
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
@@ -608,14 +606,8 @@ class OnlineToolsDialogFragment : DialogFragment() {
                 }
 
                 val candidateDlUrls = mutableListOf<String>()
-                // Direct GitHub first: CDN (1.3+ MB/s) and no proxy bottlenecks or arbitrary size limits!
+                // Direct GitHub official URL with SmartDns fallback
                 candidateDlUrls.add(asset.downloadUrl)
-
-                if (asset.downloadUrl.startsWith("https://github.com/")) {
-                    candidateDlUrls.add("https://gh.con.sh/" + asset.downloadUrl)
-                    candidateDlUrls.add("https://gh.llkk.cc/" + asset.downloadUrl)
-                    candidateDlUrls.add("https://ghfast.top/" + asset.downloadUrl)
-                }
 
                 var downloadSuccess = false
                 var lastError: Exception? = null

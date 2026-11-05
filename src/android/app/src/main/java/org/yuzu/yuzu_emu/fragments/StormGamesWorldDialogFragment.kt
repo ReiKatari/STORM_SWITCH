@@ -758,7 +758,30 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             } catch (_: Exception) { "" }
         }
 
-        // 1. Ingest installed games from user library database
+        // 1. Ingest installed games from user library database and build format index
+        val installedFormatsByTitleId = HashMap<String, HashSet<String>>()
+        val installedFormatsByTitle = HashMap<String, HashSet<String>>()
+
+        fun recordInstalledFormat(tid: String, baseTid: String, title: String, cleanTitle: String, ext: String) {
+            val formatClean = ext.lowercase(Locale.ROOT).removePrefix(".").trim()
+            if (formatClean.isNotEmpty()) {
+                if (tid.isNotEmpty() && tid != "0" && tid != "—" && tid != "-") {
+                    installedFormatsByTitleId.getOrPut(tid) { HashSet() }.add(formatClean)
+                }
+                if (baseTid.isNotEmpty()) {
+                    installedFormatsByTitleId.getOrPut(baseTid) { HashSet() }.add(formatClean)
+                }
+                if (title.isNotEmpty()) {
+                    val norm = title.replace(Regex("""[\/:*?"<>|]"""), " ").trim().lowercase(Locale.ROOT)
+                    installedFormatsByTitle.getOrPut(norm) { HashSet() }.add(formatClean)
+                }
+                if (cleanTitle.isNotEmpty()) {
+                    val normClean = cleanTitle.replace(Regex("""[\/:*?"<>|]"""), " ").trim().lowercase(Locale.ROOT)
+                    installedFormatsByTitle.getOrPut(normClean) { HashSet() }.add(formatClean)
+                }
+            }
+        }
+
         val installedGames = mutableListOf<org.yuzu.yuzu_emu.model.Game>()
         try {
             val liveGames = gamesViewModel.games.value
@@ -814,6 +837,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     addonCount = gm.addonCount
                 )
             )
+            recordInstalledFormat(rawTid, baseTid, gm.title, cleanName, ext)
         }
 
         // 2. Scan physical directories for standalone packages
@@ -872,6 +896,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                                 addonCount = fileAddonCount
                             )
                         )
+                        recordInstalledFormat(fileTid, baseTid, matchingGm?.title ?: cleanTitleStr, cleanTitleStr, ext)
                     }
                 }
             }
@@ -949,6 +974,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                                 addonCount = fileAddonCount
                             )
                         )
+                        recordInstalledFormat(fileTid, baseTid, matchingGm?.title ?: cleanTitleStr, cleanTitleStr, ext)
                     }
                 }
             }
@@ -989,16 +1015,45 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             val gameIsMod = gameModCount > 0
             val gameHasDlc = gameDlcCount > 0
 
-            // 1. Check games already indexed in GamesViewModel by Program ID or Title
+            // Extract catalog entry format ("nsp", "nsz", "xci", "xcz")
+            val entryFormat = (g.realExtension.ifEmpty { g.extensionClean })
+                .removePrefix(".")
+                .trim()
+                .lowercase(Locale.ROOT)
+
+            // Format-Exact Matching: catalog entry can only be downloaded if the user has that exact format!
+            val formatsForTid = if (tid.isNotEmpty() && tid != "0" && tid != "—" && tid != "-") installedFormatsByTitleId[tid] else null
+            val formatsForBaseTid = if (baseTid.isNotEmpty()) installedFormatsByTitleId[baseTid] else null
+            val formatsForTitle = if (normTitle.isNotEmpty()) installedFormatsByTitle[normTitle] else null
+            val formatsForFinal = if (normFinal.isNotEmpty()) installedFormatsByTitle[normFinal] else null
+            val hasExactFormatInstalled = if (entryFormat.isNotEmpty()) {
+                (formatsForTid?.contains(entryFormat) == true) ||
+                (formatsForBaseTid?.contains(entryFormat) == true) ||
+                (formatsForTitle?.contains(entryFormat) == true) ||
+                (formatsForFinal?.contains(entryFormat) == true)
+            } else {
+                true
+            }
+
+            // 1. Check games already indexed in GamesViewModel by Program ID or Title (with exact format check)
             val installedInModel = installedGames.any { ig ->
+                val igUri = Uri.parse(ig.path)
+                val igExt = (FileUtil.getExtension(igUri).ifEmpty { ig.extension }).lowercase(Locale.ROOT).removePrefix(".")
+                if (entryFormat.isNotEmpty() && igExt.isNotEmpty() && igExt != entryFormat) {
+                    return@any false
+                }
                 val igPid = ig.programIdHex.lowercase(Locale.ROOT)
-                val igTitleNorm = ig.title.replace(Regex("""[\\/:*?"<>|]"""), " ").trim().lowercase(Locale.ROOT)
+                val igTitleNorm = ig.title.replace(Regex("""[\/:*?"<>|]"""), " ").trim().lowercase(Locale.ROOT)
                 (tid.isNotEmpty() && tid != "0" && tid != "—" && tid != "-" && igPid == tid) ||
                 (baseTid.isNotEmpty() && igPid.startsWith(baseTid.take(13))) ||
                 (cleanTitle.length >= 4 && (igTitleNorm == normTitle || igTitleNorm.contains(normTitle) || normTitle.contains(igTitleNorm)))
             }
 
-            g.isDownloaded = installedInModel || allFiles.any { cand ->
+            g.isDownloaded = hasExactFormatInstalled && (installedInModel || allFiles.any { cand ->
+                // Support format-exact matching (.nsp vs .nsz vs .xci vs .xcz)
+                if (entryFormat.isNotEmpty() && cand.extension.isNotEmpty() && cand.extension != entryFormat) {
+                    return@any false
+                }
                 // Support any standard format (.nsp, .nsz, .xci, .xcz)
                 val idMatch = (tid.isNotEmpty() && tid != "—" && tid != "-" && (cand.tid == tid || cand.name.contains(tid))) ||
                               (baseTid.isNotEmpty() && (cand.baseTid == baseTid || (cand.tid.isNotEmpty() && cand.tid.startsWith(baseTid.take(13))))) ||
@@ -1066,7 +1121,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 }
 
                 true
-            }
+            })
         }
     }
 

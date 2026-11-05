@@ -544,6 +544,13 @@ HaltReason ArmNce::RunThread(Kernel::KThread* thread) {
     // Memory barrier to ensure visibility of changes
     std::atomic_thread_fence(std::memory_order_release);
     thread_params->is_running = true;
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    if (HaltReason race_hr = static_cast<HaltReason>(m_guest_ctx.esr_el1.exchange(0)); True(race_hr)) {
+        thread_params->is_running = false;
+        thread_params->native_context = nullptr;
+        m_running_thread = nullptr;
+        return race_hr;
+    }
 
     // TODO: finding and creating the post handler needs to be locked
     // to deal with dynamic loading of NROs.
@@ -701,8 +708,9 @@ void ArmNce::SetContext(const Kernel::Svc::ThreadContext& ctx) {
 }
 
 void ArmNce::SignalInterrupt(Kernel::KThread* thread) {
-    constexpr u64 break_loop = static_cast<u64>(HaltReason::BreakLoop);
-    if ((m_guest_ctx.esr_el1.fetch_or(break_loop) & break_loop) != 0) return;
+    // Add break loop condition (never return early before checking params->is_running,
+    // otherwise a pre-run SignalInterrupt prevents subsequent SIGURG preemption).
+    m_guest_ctx.esr_el1.fetch_or(static_cast<u64>(HaltReason::BreakLoop));
 
     auto* params = &thread->GetNativeExecutionParameters();
     LockThreadParameters(params);

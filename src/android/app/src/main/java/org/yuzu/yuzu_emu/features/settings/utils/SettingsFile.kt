@@ -43,8 +43,39 @@ object SettingsFile {
         }
     }
 
+    fun sanitizeMarioWonderConfig(file: File) {
+        try {
+            if (!file.exists() || file.length() == 0L) return
+            var text = file.readText(Charsets.UTF_8)
+            var modified = false
+            // Force memory_layout_mode to 0 (4GB DRAM)
+            if (text.contains("memory_layout_mode")) {
+                val replaced = text.replace(Regex("memory_layout_mode\\s*=\\s*[1-9]"), "memory_layout_mode = 0")
+                if (replaced != text) {
+                    text = replaced
+                    modified = true
+                }
+            }
+            // Force barrier_feedback_loops to false
+            if (text.contains("barrier_feedback_loops")) {
+                val replaced = text.replace(Regex("barrier_feedback_loops\\s*=\\s*true", RegexOption.IGNORE_CASE), "barrier_feedback_loops = false")
+                if (replaced != text) {
+                    text = replaced
+                    modified = true
+                }
+            }
+            if (modified) {
+                file.writeText(text, Charsets.UTF_8)
+            }
+        } catch (_: Exception) {}
+    }
+
     fun loadCustomConfig(game: Game) {
         val customFile = getCustomSettingsFile(game)
+        val cleanProg = game.programIdHex.trim().uppercase()
+        if (cleanProg == "010015100B514000" || cleanProg.startsWith("010015100B514")) {
+            sanitizeMarioWonderConfig(customFile)
+        }
         val fileName = customFile.nameWithoutExtension.ifEmpty {
             try { FileUtil.getFilename(Uri.parse(game.path)) } catch (_: Exception) { "" }
         }

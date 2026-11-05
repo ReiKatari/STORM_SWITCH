@@ -116,7 +116,7 @@ class GameFixDialogFragment : DialogFragment() {
         binding.textGameFixTitleId.text = idString
         val currentLang = resources.configuration.locales[0].language
         val isRu = currentLang.equals("ru", ignoreCase = true) || currentLang.equals("uk", ignoreCase = true) || currentLang.equals("be", ignoreCase = true)
-        binding.textGameFixStatusBadge.text = if (isRu) "АВТО-ФИКС" else "AUTO-FIX"
+        binding.textGameFixStatusBadge.text = if (isRu) "АВТО-ИСПРАВЛЕНИЕ" else "AUTO-FIX"
 
         val cleanVer = currentGame.version.trim().removePrefix("v").removePrefix("V").trim()
         try {

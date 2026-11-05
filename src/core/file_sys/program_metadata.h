@@ -25,6 +25,11 @@ enum class ProgramAddressSpaceType : u8 {
     Is39Bit = 3,
 };
 
+enum class TargetPlatform : u8 {
+    NX,
+    Ounce,
+};
+
 enum class ProgramFilePermission : u64 {
     MountContent = 1ULL << 0,
     SaveDataBackup = 1ULL << 5,
@@ -77,6 +82,7 @@ public:
     bool IsSwitch2() const {
         return is_switch2;
     }
+    TargetPlatform GetTargetPlatform() const;
     ProgramAddressSpaceType GetAddressSpaceType() const;
     u8 GetMainThreadPriority() const;
     u8 GetMainThreadCore() const;

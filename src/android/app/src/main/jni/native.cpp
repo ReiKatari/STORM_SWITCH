@@ -398,6 +398,14 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
     }
 #endif
 
+    if (early_title_id == 0x010015100B514000ULL || (early_title_id & ~0x1FFFULL) == 0x010015100B514000ULL) {
+        Settings::values.memory_layout_mode.SetGlobal(false);
+        Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_4Gb);
+        Settings::values.barrier_feedback_loops.SetGlobal(false);
+        Settings::values.barrier_feedback_loops.SetValue(false);
+        LOG_INFO(Frontend, "Guaranteed Super Mario Bros. Wonder 4GB DRAM and disabled barrier feedback loops (early)");
+    }
+
     if (Core::GameFixDatabase::AreFixesEnabled()) {
         bool applied_early = false;
         if (early_title_id != 0) {
@@ -479,6 +487,18 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
         if (title_id != 0 && Core::GameFixDatabase::ApplyProfileDirectly(title_id)) {
             LOG_INFO(Frontend, "Applied deferred GameFix profile for title_id={:016X}", title_id);
             m_system.ApplySettings();
+        }
+    }
+
+    {
+        const u64 cur_tid = m_system.GetApplicationProcessProgramID();
+        if (cur_tid == 0x010015100B514000ULL || (cur_tid & ~0x1FFFULL) == 0x010015100B514000ULL) {
+            Settings::values.memory_layout_mode.SetGlobal(false);
+            Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_4Gb);
+            Settings::values.barrier_feedback_loops.SetGlobal(false);
+            Settings::values.barrier_feedback_loops.SetValue(false);
+            m_system.ApplySettings();
+            LOG_INFO(Frontend, "Guaranteed Super Mario Bros. Wonder 4GB DRAM and disabled barrier feedback loops (post-load)");
         }
     }
 
@@ -1528,6 +1548,16 @@ jstring Java_org_yuzu_yuzu_1emu_NativeLibrary_getGpuModel(JNIEnv* env, jobject j
 
 jstring Java_org_yuzu_yuzu_1emu_NativeLibrary_getEmulationBuildId(JNIEnv* env, jclass clazz) {
     const auto build_id = EmulationSession::GetInstance().System().GetApplicationProcessBuildID();
+    bool all_zero = true;
+    for (auto b : build_id) {
+        if (b != 0) {
+            all_zero = false;
+            break;
+        }
+    }
+    if (all_zero) {
+        return Common::Android::ToJString(env, "");
+    }
     const auto bid_str = Common::HexToString(build_id, true);
     return Common::Android::ToJString(env, bid_str.size() >= 16 ? bid_str.substr(0, 16) : bid_str);
 }

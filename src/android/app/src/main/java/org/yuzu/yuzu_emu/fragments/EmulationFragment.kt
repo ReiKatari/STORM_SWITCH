@@ -759,11 +759,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         fwVersion = NativeLibrary.firmwareVersion()
 
         val buildVersion = NativeLibrary.getBuildVersion()
-        val emuBid = try { NativeLibrary.getEmulationBuildId().trim().uppercase() } catch (_: Throwable) { "" }
-        val bid = if (emuBid.isNotEmpty()) emuBid else {
-            try { GameMetadata.getBuildId(game!!.path).trim().uppercase() } catch (_: Throwable) { "" }
-        }
-        buildId = if (bid.isNotEmpty()) "BID: $bid" else "STORM SWITCH $buildVersion"
+        buildId = "STORM SWITCH $buildVersion"
         val driverTitle = driverViewModel.selectedDriverTitle.value
         driverInUse = if (driverTitle.isNotEmpty()) driverTitle else driverViewModel.selectedDriverVersion.value
 
@@ -2792,12 +2788,6 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                     sb.setLength(0)
 
                     if (BooleanSetting.SHOW_BUILD_ID.getBoolean()) {
-                        if (buildId.startsWith("STORM SWITCH")) {
-                            val liveBid = try { NativeLibrary.getEmulationBuildId().trim().uppercase() } catch (_: Throwable) { "" }
-                            if (liveBid.isNotEmpty()) {
-                                buildId = "BID: $liveBid"
-                            }
-                        }
                         appendWithPipe(buildId)
                     }
 

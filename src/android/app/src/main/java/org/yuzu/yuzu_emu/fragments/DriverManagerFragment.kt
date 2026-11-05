@@ -471,11 +471,7 @@ class DriverManagerFragment : Fragment() {
             val downloadMirrors = listOf(
                 "https://github.com/ReiKatari/STORM_SWITCH/releases/download/16.2.4/STORM_DRIVER_10.0.0.zip",
                 "https://github.com/ReiKatari/STORM_SWITCH/releases/download/16.2.3/STORM_DRIVER_10.0.0.zip",
-                "https://github.com/ReiKatari/STORM_DRIVER/releases/download/10.0.0/STORM_DRIVER_10.0.0.zip",
-                "https://gh.con.sh/https://github.com/ReiKatari/STORM_SWITCH/releases/download/16.2.4/STORM_DRIVER_10.0.0.zip",
-                "https://ghfast.top/https://github.com/ReiKatari/STORM_SWITCH/releases/download/16.2.4/STORM_DRIVER_10.0.0.zip",
-                "https://gh.con.sh/https://github.com/ReiKatari/STORM_DRIVER/releases/download/10.0.0/STORM_DRIVER_10.0.0.zip",
-                "https://ghfast.top/https://github.com/ReiKatari/STORM_DRIVER/releases/download/10.0.0/STORM_DRIVER_10.0.0.zip"
+                "https://github.com/ReiKatari/STORM_DRIVER/releases/download/10.0.0/STORM_DRIVER_10.0.0.zip"
             )
 
             var downloadedFile: File? = null

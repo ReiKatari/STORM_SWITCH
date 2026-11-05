@@ -1825,7 +1825,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
 
 
 
-    setWindowTitle(QStringLiteral("STORM SWITCH 16.2.4"));
+    setWindowTitle(QStringLiteral("STORM SWITCH 16.2.5"));
     UpdateWindowTitle();
 
 
@@ -4955,7 +4955,7 @@ void MainWindow::InitializeWidgets() {
 
                   .arg(QString::fromStdString(profile->game_name))
 
-            : StormLang(QStringLiteral("⚡ Быстрые настройки и Авто-фикс"),
+            : StormLang(QStringLiteral("⚡ Быстрые настройки и Авто-исправление"),
 
                         QStringLiteral("⚡ Quick Settings & Auto-Fix"),
 
@@ -9946,6 +9946,14 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
 
             Core::GameFixDatabase::ApplyProfileDirectly(title_id, filename.toStdString());
 
+            if (title_id == 0x010015100B514000ULL || (title_id & ~0x1FFFULL) == 0x010015100B514000ULL) {
+                Settings::values.memory_layout_mode.SetGlobal(false);
+                Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_4Gb);
+                Settings::values.barrier_feedback_loops.SetGlobal(false);
+                Settings::values.barrier_feedback_loops.SetValue(false);
+                LOG_INFO(Frontend, "Guaranteed Super Mario Bros. Wonder 4GB DRAM on Desktop");
+            }
+
             QtCommon::system->ApplySettings();
 
             const QString boot_af_title = StormLang11(
@@ -12817,6 +12825,11 @@ bool MainWindow::ConfirmShutdownGame() {
 void MainWindow::OnLoadComplete() {
 
     loading_screen->OnLoadComplete();
+
+    if (emulation_running) {
+        render_window->show();
+        render_window->setFocus();
+    }
 
 
 
@@ -20663,8 +20676,10 @@ void MainWindow::UpdateWindowTitle(std::string_view filename, std::string_view d
 
                                    std::string_view internal_version, std::string_view gpu_vendor) {
 
-    const QString strict_idle_title = QStringLiteral("STORM SWITCH 16.2.4");
-    const QString build_ver = QStringLiteral("16.2.4");
+    const QString build_ver = QString::fromUtf8(Common::g_build_version).isEmpty()
+                                  ? QStringLiteral("16.2.5")
+                                  : QString::fromUtf8(Common::g_build_version);
+    const QString strict_idle_title = QStringLiteral("STORM SWITCH %1").arg(build_ver);
 
     const bool no_game = filename.empty() ||
                          filename == "0000000000000000" ||
@@ -20708,7 +20723,8 @@ void MainWindow::UpdateWindowTitle(std::string_view filename, std::string_view d
 
             }
 
-            return fmt::format("STORM SWITCH 16.2.4 | {} | {} | {} | {}",
+            return fmt::format("STORM SWITCH {} | {} | {} | {} | {}",
+                               Common::g_build_version,
 
                                filename,
 
@@ -22805,7 +22821,7 @@ void MainWindow::UpdateGameFixStatusButton() {
 
         gamefix_status_button->setText(StormLang(
 
-            QStringLiteral("АВТО-ФИКС:\nАКТИВЕН"),
+            QStringLiteral("АВТО-ИСПРАВЛЕНИЕ:\nАКТИВНО"),
 
             QStringLiteral("AUTO-FIX:\nACTIVE"),
 
@@ -22873,7 +22889,7 @@ void MainWindow::UpdateGameFixStatusButton() {
 
         gamefix_status_button->setText(StormLang(
 
-            QStringLiteral("АВТО-ФИКС:\nДОСТУПЕН"),
+            QStringLiteral("АВТО-ИСПРАВЛЕНИЕ:\nДОСТУПНО"),
 
             QStringLiteral("AUTO-FIX:\nREADY"),
 

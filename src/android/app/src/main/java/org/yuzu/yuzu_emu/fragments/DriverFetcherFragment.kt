@@ -753,15 +753,7 @@ class DriverFetcherFragment : Fragment() {
                     if (releases.isEmpty()) {
 
                         val urlsToTry = listOf(
-
-                            "https://api.github.com/repos/$path/releases",
-
-                            "https://gh.con.sh/https://api.github.com/repos/$path/releases",
-
-                            "https://gh.llkk.cc/https://api.github.com/repos/$path/releases",
-
-                            "https://ghfast.top/https://api.github.com/repos/$path/releases"
-
+                            "https://api.github.com/repos/$path/releases"
                         )
 
 

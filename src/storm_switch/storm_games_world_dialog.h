@@ -3,13 +3,17 @@
 
 #pragma once
 
+#include <map>
 #include <memory>
+#include <set>
 #include <vector>
 #include <QDialog>
 #include <QElapsedTimer>
 #include <QFile>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+
+#include "common/common_types.h"
 
 class QComboBox;
 class QLabel;
@@ -122,6 +126,8 @@ private:
     mutable std::vector<DownloadedFileInfo> cached_dir_files;
     mutable QString cached_dir_path;
     mutable qint64 cached_dir_scan_time{0};
+    mutable std::map<u64, std::set<QString>> installed_title_id_formats_;
+    mutable std::map<QString, std::set<QString>> installed_title_formats_;
 
     QNetworkAccessManager network_mgr;
     QNetworkReply* catalog_reply{nullptr};

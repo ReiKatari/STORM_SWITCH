@@ -949,8 +949,7 @@ object AmiiboHelper {
             url,
             url.replace("cdn.jsdelivr.net/gh/N3evin/AmiiboAPI@master", "fastly.jsdelivr.net/gh/N3evin/AmiiboAPI@master"),
             url.replace("cdn.jsdelivr.net/gh/N3evin/AmiiboAPI@master", "raw.githubusercontent.com/N3evin/AmiiboAPI/master"),
-            url.replace("cdn.jsdelivr.net/gh/N3evin/AmiiboAPI@master", "ghproxy.net/https://raw.githubusercontent.com/N3evin/AmiiboAPI/master"),
-            url.replace("raw.githubusercontent.com/N3evin/AmiiboAPI/master", "fastly.jsdelivr.net/gh/N3evin/AmiiboAPI@master")
+                        url.replace("raw.githubusercontent.com/N3evin/AmiiboAPI/master", "fastly.jsdelivr.net/gh/N3evin/AmiiboAPI@master")
         ).distinct()
 
         for (mirror in mirrorUrls) {

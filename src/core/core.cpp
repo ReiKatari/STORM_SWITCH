@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include "common/cpu_features.h"
 #include "core/file_sys/submission_package.h"
+#include "core/file_sys/content_archive.h"
 #include "core/file_sys/program_metadata.h"
 #include "core/file_sys/nup_container.h"
 
@@ -127,34 +128,64 @@ bool IsSwitch2Program(const FileSys::VirtualFile& file) {
     if (FileSys::NupContainer::IsNupFile(file)) {
         return true;
     }
-    // Check loose ExeFS
-    const auto dir = file->GetContainingDirectory();
-    const auto npdm = dir != nullptr ? dir->GetFile("main.npdm") : nullptr;
-    if (npdm != nullptr) {
-        FileSys::ProgramMetadata metadata;
-        if (metadata.Load(npdm) == Loader::ResultStatus::Success && metadata.IsSwitch2()) {
-            return true;
+    const std::string fname = file->GetName();
+    // Check loose ExeFS directory only when booting loose main / main.npdm
+    if (fname == "main" || fname == "main.npdm") {
+        const auto dir = file->GetContainingDirectory();
+        const auto npdm = dir != nullptr ? dir->GetFile("main.npdm") : nullptr;
+        if (npdm != nullptr) {
+            FileSys::ProgramMetadata metadata;
+            if (metadata.Load(npdm) == Loader::ResultStatus::Success && metadata.IsSwitch2()) {
+                return true;
+            }
         }
-    }
-    // Check packaged NSP/XCI
-    FileSys::NSP nsp(file);
-    if (nsp.GetStatus() == Loader::ResultStatus::Success) {
-        const auto exefs = nsp.GetExeFS();
-        if (exefs != nullptr) {
-            const auto pkg_npdm = exefs->GetFile("main.npdm");
-            if (pkg_npdm != nullptr) {
-                FileSys::ProgramMetadata metadata;
-                if (metadata.Load(pkg_npdm) == Loader::ResultStatus::Success && metadata.IsSwitch2()) {
-                    return true;
+        if (dir != nullptr) {
+            for (const char* nso_name : {"sdk", "main", "subsdk0"}) {
+                const auto nso_file = dir->GetFile(nso_name);
+                if (nso_file != nullptr && nso_file->GetSize() >= 0x100) {
+                    std::vector<u8> buf(std::min<size_t>(0x40000, nso_file->GetSize()));
+                    nso_file->Read(buf.data(), buf.size(), 0);
+                    constexpr std::string_view ounce_spec{"spec: Ounce"};
+                    if (std::search(buf.begin(), buf.end(), ounce_spec.begin(), ounce_spec.end()) != buf.end()) {
+                        return true;
+                    }
                 }
             }
         }
-        const u64 title_id = nsp.GetProgramTitleID();
-        if ((title_id >> 48) == 0x0400 || (title_id >> 40) == 0x040000) {
-            return true;
+        return false;
+    }
+    // Check raw NCA file only if extension is .nca
+    if (fname.size() >= 4 && (fname.ends_with(".nca") || fname.ends_with(".NCA"))) {
+        FileSys::NCA nca(file);
+        if (nca.GetStatus() == Loader::ResultStatus::Success) {
+            const u64 title_id = nca.GetTitleId();
+            if ((title_id >> 48) == 0x0400 || (title_id >> 40) == 0x040000) {
+                return true;
+            }
+        }
+        return false;
+    }
+    // Check packaged NSP
+    if (fname.size() >= 4 && (fname.ends_with(".nsp") || fname.ends_with(".NSP"))) {
+        FileSys::NSP nsp(file);
+        if (nsp.GetStatus() == Loader::ResultStatus::Success) {
+            const u64 title_id = nsp.GetProgramTitleID();
+            if ((title_id >> 48) == 0x0400 || (title_id >> 40) == 0x040000) {
+                return true;
+            }
+            const auto exefs = nsp.GetExeFS();
+            if (exefs != nullptr) {
+                const auto pkg_npdm = exefs->GetFile("main.npdm");
+                if (pkg_npdm != nullptr) {
+                    FileSys::ProgramMetadata metadata;
+                    if (metadata.Load(pkg_npdm) == Loader::ResultStatus::Success && metadata.IsSwitch2()) {
+                        return true;
+                    }
+                }
+            }
         }
     }
-    return Settings::IsCurrentProgramSwitch2();
+    return false;
 }
 
 } // namespace

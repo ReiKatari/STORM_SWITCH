@@ -394,7 +394,7 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
 
     if (const auto* fix_profile = Core::GameFixDatabase::GetProfileByTitleOrPath(title_id, file_name)) {
         QPushButton* autofix_button = ui->buttonBox->addButton(
-            StormLang(QStringLiteral("Профиль Авто-фикса"),
+            StormLang(QStringLiteral("Профиль авто-исправления"),
                       QStringLiteral("Auto-Fix Profile"),
                       QStringLiteral("Auto-Fix-Profil"),
                       QStringLiteral("Profil Auto-Fix"),
@@ -414,7 +414,7 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
             ConfigurationShared::ReloadAllActiveWidgets();
             QMessageBox::information(
                 this,
-                StormLang(QStringLiteral("Профиль Авто-фикса применён"),
+                StormLang(QStringLiteral("Профиль авто-исправления применён"),
                           QStringLiteral("Auto-Fix Profile Applied"),
                           QStringLiteral("Auto-Fix-Profil angewendet"),
                           QStringLiteral("Profil Auto-Fix appliqué"),
@@ -422,7 +422,7 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
                           QStringLiteral("自動修正プロファイルを適用しました"),
                           QStringLiteral("تم تطبيق ملف الإصلاح التلقائي"),
                           QStringLiteral("Perfil Auto-Fix aplicado")),
-                StormLang(QStringLiteral("Рекомендованные настройки STORM GameFix для этой игры загружены в форму.\nНажмите «ОК» или «Применить», чтобы сохранить их."),
+                StormLang(QStringLiteral("Рекомендуемые настройки STORM GameFix для этой игры загружены в форму.\nНажмите «ОК» или «Применить», чтобы сохранить их."),
                           QStringLiteral("Recommended STORM GameFix settings for this game have been loaded.\nClick OK or Apply to save them."),
                           QStringLiteral("Die empfohlenen STORM GameFix-Einstellungen wurden geladen.\nKlicken Sie auf OK oder Anwenden, um sie zu speichern."),
                           QStringLiteral("Les paramètres recommandés STORM GameFix ont été chargés.\nCliquez sur OK ou Appliquer pour enregistrer."),

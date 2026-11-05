@@ -1,3 +1,4 @@
+#include "common/settings.h"
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -236,6 +237,13 @@ Result IPlatformServiceManager::GetSharedFontInOrderOfPriority(
 
     *out_fonts_are_loaded = true;
     *out_font_count = static_cast<u32>(max_size);
+    R_SUCCEED();
+}
+
+
+Result IPlatformServiceManager::IsRunningOnOunce(Out<bool> out_is_ounce) {
+    *out_is_ounce = Settings::IsCurrentProgramSwitch2();
+    LOG_INFO(Service_NS, "called, is_ounce={}", *out_is_ounce);
     R_SUCCEED();
 }
 

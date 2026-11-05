@@ -718,25 +718,6 @@ void NSP::ReadNCAs(const std::vector<VirtualFile>& files) {
     // be applied on top of the already-modified base RomFS without corrupting it.
     for (const u64 base_tid : repacked_base_program_tids) {
         program_status[base_tid] = Loader::ResultStatus::Success;
-        const u64 update_tid = (FileSys::GetBaseTitleID(base_tid) | 0x800ULL);
-        for (const u64 check_tid : {base_tid, update_tid}) {
-            auto map_it = ncas.find(check_tid);
-            if (map_it == ncas.end()) {
-                continue;
-            }
-            for (auto inner_it = map_it->second.begin(); inner_it != map_it->second.end();) {
-                if (inner_it->first.second == ContentRecordType::Program &&
-                    inner_it->second &&
-                    inner_it->second->GetStatus() == Loader::ResultStatus::ErrorMissingBKTRBaseRomFS) {
-                    LOG_WARNING(Service_FS,
-                                "Ignoring leftover BKTR update NCA in repacked SuperNSP container for title {:016X}",
-                                base_tid);
-                    inner_it = map_it->second.erase(inner_it);
-                } else {
-                    ++inner_it;
-                }
-            }
-        }
     }
 }
 } // namespace FileSys

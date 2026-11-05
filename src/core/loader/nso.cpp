@@ -215,6 +215,19 @@ std::optional<AppLoader_NSO::DecompressedModule> AppLoader_NSO::DecompressModule
         }
     }
 
+    // BananaNative / Ounce innovation: check for Switch 2 (Ounce) build spec string in .rodata
+    // Switch 2 SDKs state "FS_ACCESS: { sdk_version: ..., spec: Ounce }" in the sdk module.
+    if (codeset.segments.size() > 1 && codeset.segments[1].size > 11) {
+        const u8* const rodata = codeset.memory.data() + codeset.segments[1].offset;
+        const size_t rodata_size = codeset.segments[1].size;
+        constexpr std::string_view ounce_spec{"spec: Ounce"};
+        auto it = std::search(rodata, rodata + rodata_size, ounce_spec.begin(), ounce_spec.end());
+        if (it != rodata + rodata_size) {
+            LOG_INFO(Loader, "NSO '{}': detected Switch 2 build spec (spec: Ounce)", nso_file.GetName());
+            Settings::SetCurrentProgramIsSwitch2(true);
+        }
+    }
+
     if (should_pass_arguments && !Settings::values.program_args.GetValue().empty()) {
         const auto arg_data{Settings::values.program_args.GetValue()};
 

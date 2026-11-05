@@ -113,13 +113,13 @@
                     android:id="@+id/text_game_fix_status_badge"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/badge_pill_background"
+                    android:background="@drawable/badge_pill_cyan"
                     android:paddingHorizontal="6dp"
                     android:paddingVertical="2dp"
                     android:text="@string/game_fix_status_badge"
                     android:textSize="9.5sp"
                     android:textStyle="bold"
-                    android:textColor="?attr/colorPrimary"
+                    android:textColor="#00E5FF"
                     android:breakStrategy="simple"
                     android:hyphenationFrequency="none" />
 
@@ -140,7 +140,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:orientation="vertical">
 
             <!-- Card 1: Known Issues (conditional) -->
@@ -201,7 +201,7 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Card 2: Applied Auto-Fixes & Recommendations (Green Bullet List) -->
+            <!-- Card 2: Applied Auto-Fixes & Recommendations (Cyan Bullet List) -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_fixes"
                 android:layout_width="match_parent"
@@ -209,8 +209,8 @@
                 android:layout_marginBottom="8dp"
                 app:cardCornerRadius="10dp"
                 app:cardElevation="0dp"
-                app:cardBackgroundColor="?attr/colorSurfaceVariant"
-                app:strokeColor="?attr/colorPrimary"
+                app:cardBackgroundColor="#0D2B36"
+                app:strokeColor="#00E5FF"
                 app:strokeWidth="1.2dp">
 
                 <LinearLayout
@@ -230,7 +230,7 @@
                             android:layout_width="14dp"
                             android:layout_height="14dp"
                             android:src="@drawable/ic_check_circle"
-                            app:tint="?attr/colorPrimary"
+                            app:tint="#00E5FF"
                             android:layout_marginEnd="5dp" />
 
                         <com.google.android.material.textview.MaterialTextView
@@ -239,7 +239,7 @@
                             android:text="@string/game_fix_recommended_header"
                             android:textSize="10.5sp"
                             android:textStyle="bold"
-                            android:textColor="?attr/colorPrimary"
+                            android:textColor="#00E5FF"
                             android:breakStrategy="simple"
                             android:hyphenationFrequency="none" />
 
@@ -266,6 +266,12 @@
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
+
+            <!-- Flexible space pushing launch buttons to bottom edge -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
 
             <!-- 4 Launch Mode Cards -->
             <!-- Card 1: Apply Auto-Fix & Launch -->
