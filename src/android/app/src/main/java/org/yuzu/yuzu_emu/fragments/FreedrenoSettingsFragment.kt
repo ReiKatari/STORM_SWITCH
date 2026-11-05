@@ -69,6 +69,10 @@ class FreedrenoSettingsFragment : Fragment() {
         setupAdapters()
         loadCurrentSettings()
         setupButtonListeners()
+        binding.btnResetFreedrenoRecommended.setOnClickListener {
+            applyPreset(FreedrenoPresets.PERFORMANCE_DEFAULT)
+            android.widget.Toast.makeText(requireContext(), getString(R.string.freedreno_reset_done_toast), android.widget.Toast.LENGTH_SHORT).show()
+        }
         setupWindowInsets()
     }
 
@@ -154,6 +158,10 @@ class FreedrenoSettingsFragment : Fragment() {
     }
 
     private fun setupButtonListeners() {
+        binding.btnResetFreedrenoRecommended.setOnClickListener {
+            applyPreset(FreedrenoPresets.PERFORMANCE_DEFAULT)
+            android.widget.Toast.makeText(requireContext(), getString(R.string.freedreno_reset_done_toast), android.widget.Toast.LENGTH_SHORT).show()
+        }
         binding.buttonAddVariable.setOnClickListener {
             val varName = binding.variableNameInput.text.toString().trim()
             val varValue = binding.variableValueInput.text.toString().trim()

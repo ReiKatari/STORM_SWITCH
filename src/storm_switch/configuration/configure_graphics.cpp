@@ -270,6 +270,56 @@ void ConfigureGraphics::UpdateVsyncSetting() const {
     Settings::values.vsync_mode.SetValue(vsync_mode);
 }
 
+void ConfigureGraphics::UpdateDriverDetails(int device) {
+    if (!m_driver_details_widget || !m_driver_details_label) return;
+    const bool is_vulkan = GetCurrentGraphicsBackend() == Settings::RendererBackend::Vulkan;
+    m_driver_details_widget->setVisible(is_vulkan);
+    if (!is_vulkan) return;
+
+    if (device < 0 || static_cast<size_t>(device) >= records.size()) {
+        m_driver_details_label->setText(StormLang(
+            QStringLiteral("<b>Драйвер:</b> Системный Vulkan"),
+            QStringLiteral("<b>Driver:</b> System Vulkan")));
+        return;
+    }
+
+    const auto& rec = records[device];
+    QString family = QString::fromStdString(rec.driver_family.empty() ? "Mesa / Generic" : rec.driver_family);
+    QString ver = QString::fromStdString(rec.driver_version);
+    QString vk_ver = QString::fromStdString(rec.vulkan_version);
+
+    QString exts_str;
+    if (!rec.key_extensions.empty()) {
+        QStringList ext_list;
+        for (const auto& ext : rec.key_extensions) {
+            ext_list.append(QString::fromStdString(ext));
+        }
+        exts_str = ext_list.join(QStringLiteral(", "));
+    } else {
+        exts_str = StormLang(
+            QStringLiteral("Базовый набор расширений"),
+            QStringLiteral("Core Vulkan extensions"));
+    }
+
+    QString text = QStringLiteral(
+        "<div style='line-height: 135%;'>"
+        "<b>%1:</b> <span style='color: #00d2ff; font-weight: bold;'>%2</span><br>"
+        "<b>%3:</b> %4 (Vulkan API %5)<br>"
+        "<b>%6:</b> <span style='color: #98c379;'>%7</span>"
+        "</div>"
+    ).arg(
+        StormLang(QStringLiteral("Семейство драйвера"), QStringLiteral("Driver Family")),
+        family,
+        StormLang(QStringLiteral("Версия"), QStringLiteral("Version")),
+        ver,
+        vk_ver,
+        StormLang(QStringLiteral("Ключевые расширения"), QStringLiteral("Key Extensions")),
+        exts_str
+    );
+
+    m_driver_details_label->setText(text);
+}
+
 void ConfigureGraphics::UpdateDeviceSelection(int device) {
     if (device == -1) {
         return;
@@ -277,6 +327,7 @@ void ConfigureGraphics::UpdateDeviceSelection(int device) {
     if (GetCurrentGraphicsBackend() == Settings::RendererBackend::Vulkan) {
         vulkan_device = device;
     }
+    UpdateDriverDetails(device);
 }
 
 ConfigureGraphics::~ConfigureGraphics() {
@@ -354,14 +405,14 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
     presets_vbox->setSpacing(6);
 
     auto* presets_title = new QLabel(StormLang(
-        QStringLiteral("🚀 <b>Быстрые профили графики и производительности (в 1 клик):</b>"),
-        QStringLiteral("🚀 <b>1-Click Graphics & Performance Presets:</b>"),
-        QStringLiteral("🚀 <b>1-Klick-Grafik- & Leistungsprofile:</b>"),
-        QStringLiteral("🚀 <b>Profils graphiques et performances en 1 clic :</b>"),
-        QStringLiteral("🚀 <b>一键图形与性能预设配置：</b>"),
-        QStringLiteral("🚀 <b>ワンクリック描画・パフォーマンスプリセット:</b>"),
-        QStringLiteral("🚀 <b>ملفات تعريف الرسوميات والأداء بنقرة واحدة:</b>"),
-        QStringLiteral("🚀 <b>Perfiles de gráficos y rendimiento en 1 clic:</b>")), presets_frame);
+        QStringLiteral("<b>Быстрые профили графики и производительности (в 1 клик):</b>"),
+        QStringLiteral("<b>1-Click Graphics & Performance Presets:</b>"),
+        QStringLiteral("<b>1-Klick-Grafik- & Leistungsprofile:</b>"),
+        QStringLiteral("<b>Profils graphiques et performances en 1 clic :</b>"),
+        QStringLiteral("<b>一键图形与性能预设配置：</b>"),
+        QStringLiteral("<b>ワンクリック描画・パフォーマンスプリセット:</b>"),
+        QStringLiteral("<b>ملفات تعريف الرسوميات والأداء بنقرة واحدة:</b>"),
+        QStringLiteral("<b>Perfiles de gráficos y rendimiento en 1 clic:</b>")), presets_frame);
     presets_title->setObjectName(QStringLiteral("presetsTitleLabel"));
     presets_title->setStyleSheet(QStringLiteral("color: #00F0FF; font-size: 11.5px; border: none; background: transparent;"));
     presets_vbox->addWidget(presets_title);
@@ -408,10 +459,10 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
 
     make_preset_btn(
         QStringLiteral("presetBtnMaxFps"),
-        StormLang(QStringLiteral("⚡ Максимум FPS"), QStringLiteral("⚡ Maximum FPS"),
-                  QStringLiteral("⚡ Max. FPS"), QStringLiteral("⚡ FPS Max"),
-                  QStringLiteral("⚡ 最高帧率"), QStringLiteral("⚡ 最大 FPS"),
-                  QStringLiteral("⚡ أقصى إطارات"), QStringLiteral("⚡ Máx. FPS")),
+        StormLang(QStringLiteral("Максимум FPS"), QStringLiteral("Maximum FPS"),
+                  QStringLiteral("Max. FPS"), QStringLiteral("FPS Max"),
+                  QStringLiteral("最高帧率"), QStringLiteral("最大 FPS"),
+                  QStringLiteral("أقصى إطارات"), QStringLiteral("Máx. FPS")),
         StormLang(QStringLiteral("Максимальная скорость: точность ГП «Нормальный», асинхронные шейдеры, быстрый таймер ГП"),
                   QStringLiteral("Maximum speed: Low GPU accuracy, async shaders, fast GPU time"),
                   QStringLiteral("Maximale Geschwindigkeit: Niedrige GPU-Genauigkeit, asynchrone Shader, schnelle GPU-Zeit"),
@@ -432,10 +483,10 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
 
     make_preset_btn(
         QStringLiteral("presetBtnBalanced"),
-        StormLang(QStringLiteral("⚖️ Баланс (Рекомендуется)"), QStringLiteral("⚖️ Balanced (Recommended)"),
-                  QStringLiteral("⚖️ Ausgewogen (Empfohlen)"), QStringLiteral("⚖️ Équilibré (Recommandé)"),
-                  QStringLiteral("⚖️ 平衡（推荐）"), QStringLiteral("⚖️ バランス（推奨）"),
-                  QStringLiteral("⚖️ متوازن (موصى به)"), QStringLiteral("⚖️ Equilibrado (Recomendado)")),
+        StormLang(QStringLiteral("Баланс (Рекомендуется)"), QStringLiteral("Balanced (Recommended)"),
+                  QStringLiteral("Ausgewogen (Empfohlen)"), QStringLiteral("Équilibré (Recommandé)"),
+                  QStringLiteral("平衡（推荐）"), QStringLiteral("バランス（推奨）"),
+                  QStringLiteral("متوازن (موصى به)"), QStringLiteral("Equilibrado (Recomendado)")),
         StormLang(QStringLiteral("Идеальный баланс стабильности и FPS: точность ГП «Высокий», сжатие BC1, асинхронная презентация"),
                   QStringLiteral("Optimal stability & FPS balance: High GPU accuracy, BC1, async presentation"),
                   QStringLiteral("Optimale Balance aus Stabilität & FPS: Hohe GPU-Genauigkeit, BC1, asynchrone Präsentation"),
@@ -457,10 +508,10 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
 
     make_preset_btn(
         QStringLiteral("presetBtn4k"),
-        StormLang(QStringLiteral("💎 4K Качество"), QStringLiteral("💎 4K Quality"),
-                  QStringLiteral("💎 4K-Qualität"), QStringLiteral("💎 Qualité 4K"),
-                  QStringLiteral("💎 4K 极致画质"), QStringLiteral("💎 4K 高画質"),
-                  QStringLiteral("💎 جودة 4K"), QStringLiteral("💎 Calidad 4K")),
+        StormLang(QStringLiteral("4K Качество"), QStringLiteral("4K Quality"),
+                  QStringLiteral("4K-Qualität"), QStringLiteral("Qualité 4K"),
+                  QStringLiteral("4K 极致画质"), QStringLiteral("4K 高画質"),
+                  QStringLiteral("جودة 4K"), QStringLiteral("Calidad 4K")),
         StormLang(QStringLiteral("Максимальное качество: 2X (4K), фильтр FSR, сглаживание SMAA, анизотропия 16x, ASTC без сжатия"),
                   QStringLiteral("Ultra visual quality: 2X (4K), FSR scaling, SMAA anti-aliasing, 16x AF, Uncompressed ASTC"),
                   QStringLiteral("Maximale Bildqualität: 2X (4K), FSR-Skalierung, SMAA-Kantenglättung, 16x AF, unkomprimiertes ASTC"),
@@ -482,10 +533,10 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
 
     make_preset_btn(
         QStringLiteral("presetBtnEco"),
-        StormLang(QStringLiteral("🔋 Эко / Портатив"), QStringLiteral("🔋 Eco / Handheld"),
-                  QStringLiteral("🔋 Eco / Handheld"), QStringLiteral("🔋 Éco / Portable"),
-                  QStringLiteral("🔋 节能 / 掌机"), QStringLiteral("🔋 エコ / 携帯機"),
-                  QStringLiteral("🔋 اقتصادي / محمول"), QStringLiteral("🔋 Eco / Portátil")),
+        StormLang(QStringLiteral("Эко / Портатив"), QStringLiteral("Eco / Handheld"),
+                  QStringLiteral("Eco / Handheld"), QStringLiteral("Éco / Portable"),
+                  QStringLiteral("节能 / 掌机"), QStringLiteral("エコ / 携帯機"),
+                  QStringLiteral("اقتصادي / محمول"), QStringLiteral("Eco / Portátil")),
         StormLang(QStringLiteral("Для слабых ПК и портативных консолей: экономия видеопамяти, Турбо для слабых ПК и термоконтроль"),
                   QStringLiteral("For low-end PCs and handhelds: VRAM governor, Low-End Turbo, thermal control"),
                   QStringLiteral("Für schwache PCs und Handhelds: VRAM-Begrenzer, Low-End-Turbo, Temperaturregelung"),
@@ -812,37 +863,37 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
                     "QLabel { background: rgba(16, 185, 129, 0.15); border: 1px solid #10B981; color: #10B981; border-radius: 6px; padding: 6px 10px; font-weight: 600; font-size: 11.5px; }"
                 ));
                 status_badge->setText(StormLang(
-                    QStringLiteral("✔️ Lossless.dll подключён (активно аппаратное LSFG-ускорение)"),
-                    QStringLiteral("✔️ Lossless.dll linked (hardware LSFG acceleration active)"),
-                    QStringLiteral("✔️ Lossless.dll verknüpft (Hardware-LSFG-Beschleunigung aktiv)"),
-                    QStringLiteral("✔️ Lossless.dll lié (accélération matérielle LSFG active)"),
-                    QStringLiteral("✔️ 已连接 Lossless.dll（硬件 LSFG 加速已启用）"),
-                    QStringLiteral("✔️ Lossless.dll がリンクされました（ハードウェア LSFG 加速が有効）"),
-                    QStringLiteral("✔️ Lossless.dll 연결됨 (하드웨어 LSFG 가속 활성화)")));
+                    QStringLiteral("[!] Lossless.dll подключён (активно аппаратное LSFG-ускорение)"),
+                    QStringLiteral("[!] Lossless.dll linked (hardware LSFG acceleration active)"),
+                    QStringLiteral("[!] Lossless.dll verknüpft (Hardware-LSFG-Beschleunigung aktiv)"),
+                    QStringLiteral("[!] Lossless.dll lié (accélération matérielle LSFG active)"),
+                    QStringLiteral("[!] 已连接 Lossless.dll（硬件 LSFG 加速已启用）"),
+                    QStringLiteral("[!] Lossless.dll がリンクされました（ハードウェア LSFG 加速が有効）"),
+                    QStringLiteral("[!] Lossless.dll 연결됨 (하드웨어 LSFG 가속 활성화)")));
             } else if (steam_found) {
                 status_badge->setStyleSheet(QStringLiteral(
                     "QLabel { background: rgba(16, 185, 129, 0.15); border: 1px solid #10B981; color: #10B981; border-radius: 6px; padding: 6px 10px; font-weight: 600; font-size: 11.5px; }"
                 ));
                 status_badge->setText(StormLang(
-                    QStringLiteral("✔️ Lossless.dll обнаружен в Steam (Lossless Scaling)"),
-                    QStringLiteral("✔️ Lossless.dll detected in Steam (Lossless Scaling)"),
-                    QStringLiteral("✔️ Lossless.dll in Steam erkannt (Lossless Scaling)"),
-                    QStringLiteral("✔️ Lossless.dll détecté dans Steam (Lossless Scaling)"),
-                    QStringLiteral("✔️ 在 Steam 中检测到 Lossless.dll（Lossless Scaling）"),
-                    QStringLiteral("✔️ Steam で Lossless.dll が検出されました（Lossless Scaling）"),
-                    QStringLiteral("✔️ Steam에서 Lossless.dll 감지됨 (Lossless Scaling)")));
+                    QStringLiteral("Lossless.dll обнаружен в Steam (Lossless Scaling)"),
+                    QStringLiteral("Lossless.dll detected in Steam (Lossless Scaling)"),
+                    QStringLiteral("Lossless.dll in Steam erkannt (Lossless Scaling)"),
+                    QStringLiteral("Lossless.dll détecté dans Steam (Lossless Scaling)"),
+                    QStringLiteral("在 Steam 中检测到 Lossless.dll（Lossless Scaling）"),
+                    QStringLiteral("Steam で Lossless.dll が検出されました（Lossless Scaling）"),
+                    QStringLiteral("Steam에서 Lossless.dll 감지됨 (Lossless Scaling)")));
             } else {
                 status_badge->setStyleSheet(QStringLiteral(
                     "QLabel { background: rgba(0, 240, 255, 0.10); border: 1px solid %1; color: %2; border-radius: 6px; padding: 6px 10px; font-size: 11.5px; }"
                 ).arg(pal.accent, pal.textPrimary));
                 status_badge->setText(StormLang(
-                    QStringLiteral("⚡ Встроенная Vulkan-интерполяция активна (опционально: подключить Lossless.dll)"),
-                    QStringLiteral("⚡ Built-in Vulkan interpolation active (optional: link Lossless.dll)"),
-                    QStringLiteral("⚡ Integrierte Vulkan-Interpolation aktiv (optional: Lossless.dll verknüpfen)"),
-                    QStringLiteral("⚡ Interpolation Vulkan intégrée active (optionnel: lier Lossless.dll)"),
-                    QStringLiteral("⚡ 内置 Vulkan 插帧已激活（可选：连接 Lossless.dll）"),
-                    QStringLiteral("⚡ 組み込み Vulkan 補間がアクティブ（オプション: Lossless.dll をリンク）"),
-                    QStringLiteral("⚡ 기본 내장 Vulkan 보간 활성화 (선택 사항: Lossless.dll 연결)")));
+                    QStringLiteral("Встроенная Vulkan-интерполяция активна (опционально: подключить Lossless.dll)"),
+                    QStringLiteral("Built-in Vulkan interpolation active (optional: link Lossless.dll)"),
+                    QStringLiteral("Integrierte Vulkan-Interpolation aktiv (optional: Lossless.dll verknüpfen)"),
+                    QStringLiteral("Interpolation Vulkan intégrée active (optionnel: lier Lossless.dll)"),
+                    QStringLiteral("内置 Vulkan 插帧已激活（可选：连接 Lossless.dll）"),
+                    QStringLiteral("組み込み Vulkan 補間がアクティブ（オプション: Lossless.dll をリンク）"),
+                    QStringLiteral("기본 내장 Vulkan 보간 활성화 (선택 사항: Lossless.dll 연결)")));
             }
         };
 
@@ -921,6 +972,26 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
 
     for (auto widget : hold_api) {
         api_grid_layout->addWidget(widget);
+    }
+
+    // Active Vulkan Driver Family & Extensions Banner
+    {
+        m_driver_details_widget = new QWidget(ui->groupBox_2);
+        m_driver_details_widget->setObjectName(QStringLiteral("VulkanDriverDetailsWidget"));
+        auto* driver_layout = new QVBoxLayout(m_driver_details_widget);
+        driver_layout->setContentsMargins(8, 6, 8, 6);
+        driver_layout->setSpacing(4);
+
+        m_driver_details_label = new QLabel(m_driver_details_widget);
+        m_driver_details_label->setTextFormat(Qt::RichText);
+        m_driver_details_label->setWordWrap(true);
+        driver_layout->addWidget(m_driver_details_label);
+
+        m_driver_details_widget->setStyleSheet(QStringLiteral(
+            "QWidget#VulkanDriverDetailsWidget { background: rgba(0, 180, 255, 0.08); "
+            "border: 1px solid rgba(0, 180, 255, 0.35); border-radius: 8px; margin-top: 4px; }"));
+
+        api_grid_layout->addWidget(m_driver_details_widget);
     }
 
     // Background color is too specific to build into the new system, so we manage it here
@@ -1096,20 +1167,20 @@ void ConfigureGraphics::RetranslateUI() {
 
     if (auto* presets_title = findChild<QLabel*>(QStringLiteral("presetsTitleLabel"))) {
         presets_title->setText(StormLang(
-            QStringLiteral("🚀 <b>Быстрые профили графики и производительности (в 1 клик):</b>"),
-            QStringLiteral("🚀 <b>1-Click Graphics & Performance Presets:</b>"),
-            QStringLiteral("🚀 <b>1-Klick-Grafik- & Leistungsprofile:</b>"),
-            QStringLiteral("🚀 <b>Profils graphiques et performances en 1 clic :</b>"),
-            QStringLiteral("🚀 <b>一键图形与性能预设配置：</b>"),
-            QStringLiteral("🚀 <b>ワンクリック描画・パフォーマンスプリセット:</b>"),
-            QStringLiteral("🚀 <b>ملفات تعريف الرسوميات والأداء بنقرة واحدة:</b>"),
-            QStringLiteral("🚀 <b>Perfiles de gráficos y rendimiento en 1 clic:</b>")));
+            QStringLiteral("<b>Быстрые профили графики и производительности (в 1 клик):</b>"),
+            QStringLiteral("<b>1-Click Graphics & Performance Presets:</b>"),
+            QStringLiteral("<b>1-Klick-Grafik- & Leistungsprofile:</b>"),
+            QStringLiteral("<b>Profils graphiques et performances en 1 clic :</b>"),
+            QStringLiteral("<b>一键图形与性能预设配置：</b>"),
+            QStringLiteral("<b>ワンクリック描画・パフォーマンスプリセット:</b>"),
+            QStringLiteral("<b>ملفات تعريف الرسوميات والأداء بنقرة واحدة:</b>"),
+            QStringLiteral("<b>Perfiles de gráficos y rendimiento en 1 clic:</b>")));
     }
     if (auto* btn = findChild<QPushButton*>(QStringLiteral("presetBtnMaxFps"))) {
-        btn->setText(StormLang(QStringLiteral("⚡ Максимум FPS"), QStringLiteral("⚡ Maximum FPS"),
-                               QStringLiteral("⚡ Max. FPS"), QStringLiteral("⚡ FPS Max"),
-                               QStringLiteral("⚡ 最高帧率"), QStringLiteral("⚡ 最大 FPS"),
-                               QStringLiteral("⚡ أقصى إطارات"), QStringLiteral("⚡ Máx. FPS")));
+        btn->setText(StormLang(QStringLiteral("Максимум FPS"), QStringLiteral("Maximum FPS"),
+                               QStringLiteral("Max. FPS"), QStringLiteral("FPS Max"),
+                               QStringLiteral("最高帧率"), QStringLiteral("最大 FPS"),
+                               QStringLiteral("أقصى إطارات"), QStringLiteral("Máx. FPS")));
         btn->setToolTip(StormLang(
             QStringLiteral("Максимальная скорость: точность ГП «Нормальный», асинхронные шейдеры, быстрый таймер ГП"),
             QStringLiteral("Maximum speed: Low GPU accuracy, async shaders, fast GPU time"),
@@ -1121,10 +1192,10 @@ void ConfigureGraphics::RetranslateUI() {
             QStringLiteral("Velocidad máxima: precisión GPU baja, sombreadores asíncronos, tiempo GPU rápido")));
     }
     if (auto* btn = findChild<QPushButton*>(QStringLiteral("presetBtnBalanced"))) {
-        btn->setText(StormLang(QStringLiteral("⚖️ Баланс (Рекомендуется)"), QStringLiteral("⚖️ Balanced (Recommended)"),
-                               QStringLiteral("⚖️ Ausgewogen (Empfohlen)"), QStringLiteral("⚖️ Équilibré (Recommandé)"),
-                               QStringLiteral("⚖️ 平衡（推荐）"), QStringLiteral("⚖️ バランス（推奨）"),
-                               QStringLiteral("⚖️ متوازن (موصى به)"), QStringLiteral("⚖️ Equilibrado (Recomendado)")));
+        btn->setText(StormLang(QStringLiteral("Баланс (Рекомендуется)"), QStringLiteral("Balanced (Recommended)"),
+                               QStringLiteral("Ausgewogen (Empfohlen)"), QStringLiteral("Équilibré (Recommandé)"),
+                               QStringLiteral("平衡（推荐）"), QStringLiteral("バランス（推奨）"),
+                               QStringLiteral("متوازن (موصى به)"), QStringLiteral("Equilibrado (Recomendado)")));
         btn->setToolTip(StormLang(
             QStringLiteral("Идеальный баланс стабильности и FPS: точность ГП «Высокий», сжатие BC1, асинхронная презентация"),
             QStringLiteral("Optimal stability & FPS balance: High GPU accuracy, BC1, async presentation"),
@@ -1136,10 +1207,10 @@ void ConfigureGraphics::RetranslateUI() {
             QStringLiteral("Equilibrio óptimo entre estabilidad y FPS: precisión GPU alta, BC1, presentación asíncrona")));
     }
     if (auto* btn = findChild<QPushButton*>(QStringLiteral("presetBtn4k"))) {
-        btn->setText(StormLang(QStringLiteral("💎 4K Качество"), QStringLiteral("💎 4K Quality"),
-                               QStringLiteral("💎 4K-Qualität"), QStringLiteral("💎 Qualité 4K"),
-                               QStringLiteral("💎 4K 极致画质"), QStringLiteral("💎 4K 高画質"),
-                               QStringLiteral("💎 جودة 4K"), QStringLiteral("💎 Calidad 4K")));
+        btn->setText(StormLang(QStringLiteral("4K Качество"), QStringLiteral("4K Quality"),
+                               QStringLiteral("4K-Qualität"), QStringLiteral("Qualité 4K"),
+                               QStringLiteral("4K 极致画质"), QStringLiteral("4K 高画質"),
+                               QStringLiteral("جودة 4K"), QStringLiteral("Calidad 4K")));
         btn->setToolTip(StormLang(
             QStringLiteral("Максимальное качество: 2X (4K), фильтр FSR, сглаживание SMAA, анизотропия 16x, ASTC без сжатия"),
             QStringLiteral("Ultra visual quality: 2X (4K), FSR scaling, SMAA anti-aliasing, 16x AF, Uncompressed ASTC"),
@@ -1151,10 +1222,10 @@ void ConfigureGraphics::RetranslateUI() {
             QStringLiteral("Calidad visual ultra: 2X (4K), escalado FSR, antialiasing SMAA, AF 16x, ASTC sin comprimir")));
     }
     if (auto* btn = findChild<QPushButton*>(QStringLiteral("presetBtnEco"))) {
-        btn->setText(StormLang(QStringLiteral("🔋 Эко / Портатив"), QStringLiteral("🔋 Eco / Handheld"),
-                               QStringLiteral("🔋 Eco / Handheld"), QStringLiteral("🔋 Éco / Portable"),
-                               QStringLiteral("🔋 节能 / 掌机"), QStringLiteral("🔋 エコ / 携帯機"),
-                               QStringLiteral("🔋 اقتصادي / محمول"), QStringLiteral("🔋 Eco / Portátil")));
+        btn->setText(StormLang(QStringLiteral("Эко / Портатив"), QStringLiteral("Eco / Handheld"),
+                               QStringLiteral("Eco / Handheld"), QStringLiteral("Éco / Portable"),
+                               QStringLiteral("节能 / 掌机"), QStringLiteral("エコ / 携帯機"),
+                               QStringLiteral("اقتصادي / محمول"), QStringLiteral("Eco / Portátil")));
         btn->setToolTip(StormLang(
             QStringLiteral("Для слабых ПК и портативных консолей: экономия видеопамяти, Турбо для слабых ПК и термоконтроль"),
             QStringLiteral("For low-end PCs and handhelds: VRAM governor, Low-End Turbo, thermal control"),
@@ -1257,6 +1328,7 @@ void ConfigureGraphics::UpdateAPILayout() {
     if (is_vulkan && int(vulkan_device) < vulkan_device_combobox->count()) {
         vulkan_device_combobox->setCurrentIndex(vulkan_device);
     }
+    UpdateDriverDetails(vulkan_device_combobox ? vulkan_device_combobox->currentIndex() : 0);
 }
 
 void ConfigureGraphics::RetrieveVulkanDevices() {
@@ -1373,7 +1445,7 @@ void ConfigureGraphics::ApplyPerformancePreset(int index) {
             true,
             100,
             Settings::GpuAccuracy::Low,
-            StormLang(QStringLiteral("🔋 Экономия батареи"), QStringLiteral("🔋 Battery Saver"))
+            StormLang(QStringLiteral("Экономия батареи"), QStringLiteral("Battery Saver"))
         };
     } else if (index == 1) { // Balanced
         target = {
@@ -1386,7 +1458,7 @@ void ConfigureGraphics::ApplyPerformancePreset(int index) {
             true,
             100,
             Settings::GpuAccuracy::Normal,
-            StormLang(QStringLiteral("⚖️ Баланс"), QStringLiteral("⚖️ Balanced"))
+            StormLang(QStringLiteral("Баланс"), QStringLiteral("Balanced"))
         };
     } else { // Maximum Quality
         target = {
@@ -1399,7 +1471,7 @@ void ConfigureGraphics::ApplyPerformancePreset(int index) {
             true,
             100,
             Settings::GpuAccuracy::High,
-            StormLang(QStringLiteral("🚀 Максимальное качество"), QStringLiteral("🚀 Maximum Quality"))
+            StormLang(QStringLiteral("Максимальное качество"), QStringLiteral("Maximum Quality"))
         };
     }
 
@@ -1427,15 +1499,82 @@ void ConfigureGraphics::ApplyPerformancePreset(int index) {
 
     if (!diffs.isEmpty()) {
         QMessageBox msg(this);
-        msg.setWindowTitle(StormLang(QStringLiteral("Применить профиль?"), QStringLiteral("Apply Preset?")));
-        msg.setText(StormLang(
+        msg.setWindowTitle(StormLang11(
+            QStringLiteral("Применить профиль?"),
+            QStringLiteral("Apply Preset?"),
+            QStringLiteral("Profil anwenden?"),
+            QStringLiteral("Appliquer le profil ?"),
+            QStringLiteral("¿Aplicar perfil?"),
+            QStringLiteral("Applicare il profilo?"),
+            QStringLiteral("Aplicar perfil?"),
+            QStringLiteral("应用配置文件？"),
+            QStringLiteral("プロファイルを適用しますか？"),
+            QStringLiteral("프로필을 적용하시겠습니까?"),
+            QStringLiteral("تطبيق الملف التعريفي؟"),
+            QStringLiteral("प्रोफ़ाइल लागू करें?")
+        ));
+        msg.setText(StormLang11(
             QStringLiteral("<b>Применение профиля: %1</b><br><br>Будут изменены следующие параметры:<br>%2<br>Применить изменения?")
                 .arg(target.name).arg(diffs.join(QStringLiteral("<br>"))),
             QStringLiteral("<b>Apply preset: %1</b><br><br>The following parameters will be modified:<br>%2<br>Apply changes?")
-                .arg(target.name).arg(diffs.join(QStringLiteral("<br>")))));
+                .arg(target.name).arg(diffs.join(QStringLiteral("<br>"))),
+            QStringLiteral("<b>Profil anwenden: %1</b><br><br>Die folgenden Parameter werden geändert:<br>%2<br>Änderungen anwenden?")
+                .arg(target.name).arg(diffs.join(QStringLiteral("<br>"))),
+            QStringLiteral("<b>Application du profil : %1</b><br><br>Les paramètres suivants seront modifiés :<br>%2<br>Appliquer les modifications ?")
+                .arg(target.name).arg(diffs.join(QStringLiteral("<br>"))),
+            QStringLiteral("<b>Aplicar perfil: %1</b><br><br>Se modificarán los siguientes parámetros:<br>%2<br>¿Aplicar cambios?")
+                .arg(target.name).arg(diffs.join(QStringLiteral("<br>"))),
+            QStringLiteral("<b>Applica profilo: %1</b><br><br>I seguenti parametri verranno modificati:<br>%2<br>Applicare le modifiche?")
+                .arg(target.name).arg(diffs.join(QStringLiteral("<br>"))),
+            QStringLiteral("<b>Aplicar perfil: %1</b><br><br>Os seguintes parâmetros serão modificados:<br>%2<br>Aplicar alterações?")
+                .arg(target.name).arg(diffs.join(QStringLiteral("<br>"))),
+            QStringLiteral("<b>应用配置文件：%1</b><br><br>将修改以下参数：<br>%2<br>应用更改？")
+                .arg(target.name).arg(diffs.join(QStringLiteral("<br>"))),
+            QStringLiteral("<b>プロファイル適用：%1</b><br><br>以下のパラメータが変更されます：<br>%2<br>変更を適用しますか？")
+                .arg(target.name).arg(diffs.join(QStringLiteral("<br>"))),
+            QStringLiteral("<b>프로필 적용: %1</b><br><br>다음 매개변수가 수정됩니다:<br>%2<br>변경사항을 적용하시겠습니까?")
+                .arg(target.name).arg(diffs.join(QStringLiteral("<br>"))),
+            QStringLiteral("<b>تطبيق الملف: %1</b><br><br>سيتم تعديل المعلمات التالية:<br>%2<br>هل تريد تطبيق التغييرات؟")
+                .arg(target.name).arg(diffs.join(QStringLiteral("<br>"))),
+            QStringLiteral("<b>प्रोफ़ाइल लागू करें: %1</b><br><br>निम्नलिखित पैरामीटर बदले जाएंगे:<br>%2<br>क्या परिवर्तन लागू करें?")
+                .arg(target.name).arg(diffs.join(QStringLiteral("<br>")))
+        ));
         msg.setIcon(QMessageBox::Question);
-        auto* ok_btn = msg.addButton(StormLang(QStringLiteral("Применить"), QStringLiteral("Apply")), QMessageBox::AcceptRole);
-        msg.addButton(StormLang(QStringLiteral("Отмена"), QStringLiteral("Cancel")), QMessageBox::RejectRole);
+        auto* ok_btn = msg.addButton(StormLang11(
+            QStringLiteral("Применить"),
+            QStringLiteral("Apply"),
+            QStringLiteral("Anwenden"),
+            QStringLiteral("Appliquer"),
+            QStringLiteral("Aplicar"),
+            QStringLiteral("Applica"),
+            QStringLiteral("Aplicar"),
+            QStringLiteral("应用"),
+            QStringLiteral("適用"),
+            QStringLiteral("적용"),
+            QStringLiteral("تطبيق"),
+            QStringLiteral("लागू करें")
+        ), QMessageBox::AcceptRole);
+        ok_btn->setStyleSheet(QStringLiteral(
+            "QPushButton {"
+            "  min-width: 135px; min-height: 36px; padding: 6px 22px;"
+            "  font-weight: 700; font-size: 12px; border-radius: 7px;"
+            "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #3b82f6, stop:1 #1d4ed8);"
+            "  color: #FFFFFF; border: 1px solid #2563eb;"
+            "}"
+            "QPushButton:hover {"
+            "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #60a5fa, stop:1 #2563eb);"
+            "}"
+            "QPushButton:pressed {"
+            "  background: #1e40af;"
+            "}"));
+
+        auto* cancel_btn = msg.addButton(StormCancelText(), QMessageBox::RejectRole);
+        cancel_btn->setProperty("isCancelButton", true);
+        cancel_btn->setStyleSheet(QStringLiteral(
+            "QPushButton {"
+            "  min-width: 135px; min-height: 36px; padding: 6px 22px;"
+            "} ") + StormCancelButtonStyle());
+
         msg.exec();
         if (msg.clickedButton() != ok_btn) {
             UpdatePresetSelection();

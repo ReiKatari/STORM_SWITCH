@@ -22,24 +22,9 @@ data class SettingImpact(
     val effectEn: String = "",
     val effectRu: String = ""
 ) {
-    fun formatBadge(isRu: Boolean): String {
-        fun lvl(l: ImpactLevel) = when (l) {
-            ImpactLevel.HIGH, ImpactLevel.High -> if (isRu) "выс." else "High"
-            ImpactLevel.MED, ImpactLevel.Med   -> if (isRu) "сред." else "Med"
-            ImpactLevel.LOW, ImpactLevel.Low   -> if (isRu) "низк." else "Low"
-            else -> "—"
-        }
-        return "[${lvl(performance)}/${lvl(heat)}/${lvl(compatibility)}/${lvl(quality)}]"
-    }
+    fun formatBadge(isRu: Boolean): String = ""
 
-    fun formatTooltip(isRu: Boolean): String {
-        val desc = if (isRu) effectRu else effectEn
-        return if (isRu) {
-            "$desc\n• Производительность: ${formatBadge(true)}"
-        } else {
-            "$desc\n• Impact: ${formatBadge(false)}"
-        }
-    }
+    fun formatTooltip(isRu: Boolean): String = if (isRu) effectRu.ifEmpty { effectEn } else effectEn
 }
 
 object SettingImpactTable {

@@ -1645,15 +1645,18 @@ GameFixProfile(
             "Super Mario Bros. Wonder",
             "• Вылет при переходе уровней и активации Чудо-цветка (нехватка стандартной памяти 4GB)\n• Микрофризы при компиляции анимаций персонажей",
             "• Crash on stage transitions and Wonder Flower effects (4GB memory limit)\n• Shader compilation stutter on character animations",
-            "✓ Конфигурация памяти: 4 ГБ DRAM (стабильная работа)\n✓ Точность ГПУ: Обычная (Normal 60 FPS)\n✓ Тайминги ГПУ: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Реактивная очистка: Отключено",
-            "✓ Memory Layout: 4GB DRAM (Stable operation)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Reactive Flushing: Disabled",
+            "✓ Конфигурация памяти: 6 ГБ DRAM (предотвращение переполнения памяти)\n✓ Точность ГПУ: Обычная (Normal 60 FPS)\n✓ Тайминги ГПУ: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Сжатие ASTC: Отключено\n✓ Реактивная очистка: Отключено\n✓ Барьеры обратной связи: Отключено (устранение зависаний)",
+            "✓ Memory Layout: 6GB DRAM (Prevents memory overflow)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Disabled (Eliminates freezes)",
             mapOf(
-                "System\\memory_layout_mode" to "0",
+                "System\\memory_layout_mode" to "1",
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Cpu\\cpuopt_fastmem" to "true"
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\barrier_feedback_loops" to "false",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true"
             )
         ),
  GameFixProfile(
@@ -6772,10 +6775,14 @@ GameFixProfile(
     }
 
     private val profileByIdMap: Map<Long, GameFixProfile> by lazy {
-        HashMap<Long, GameFixProfile>(profiles.size * 2).apply {
+        HashMap<Long, GameFixProfile>(profiles.size * 4).apply {
             for (p in profiles) {
                 putIfAbsent(p.titleId, p)
                 putIfAbsent(p.titleId and 0x1FFFL.inv(), p)
+                for (alt in p.altTitleIds) {
+                    putIfAbsent(alt, p)
+                    putIfAbsent(alt and 0x1FFFL.inv(), p)
+                }
             }
         }
     }
@@ -6803,7 +6810,8 @@ GameFixProfile(
             val keywords = when {
                 nameLower.contains("crypt custodian") -> listOf("crypt custodian", "0100a4601eca8000", "0100a4601eca8800")
                 nameLower.contains("diablo ii") -> listOf("diablo ii", "diablo 2", "resurrected", "01002a801458a000", "0100916014d8c000", "0100726014352000")
-                nameLower.contains("unravel") -> listOf("unravel", "01008c3005a32000")
+                nameLower.contains("unravel") -> listOf("unravel", "01008c3005a32000", "0100e5d00cc0c000", "010099900b22e000")
+                nameLower.contains("kingdom hearts") || nameLower.contains("kh ") -> listOf("kingdom hearts", "kh", "010090c022978000", "010067b01cd68000", "0100826003994000", "01001b301cd6a000", "010045801cd6c000")
                 nameLower.contains("belmont") || (nameLower.contains("castlevania") && nameLower.contains("curse")) -> listOf("belmont", "curse", "01ff434243555253")
                 nameLower.contains("disco elysium") -> listOf("disco elysium", "elysium", "0100c88011246000", "01008c300f7f0000", "0100e26014466000")
                 nameLower.contains("definitive edition") && nameLower.contains("xenoblade") -> listOf("xenoblade", "definitive", "0100ff500e34a000")
@@ -7563,108 +7571,227 @@ GameFixProfile(
         get() = GameFixSessionState.selectedLaunchMode
         set(value) { GameFixSessionState.selectedLaunchMode = value }
 
-    fun getFormattedFixes(profile: GameFixProfile, isRu: Boolean): String {
-        val map = getFullSettingsMap(profile)
-        val lines = mutableListOf<String>()
-
-        val gpuAcc = map["Renderer\\gpu_accuracy"] ?: "0"
-        if (isRu) {
-            lines.add("🎮 <b>Графика и видео:</b>")
-            lines.add(if (gpuAcc == "1") "  • <b>Точность ГПУ:</b> Высокая (стабильная геометрия и текстуры)" else "  • <b>Точность ГПУ:</b> Обычная (плавные 60 FPS, устранение задержек 200 ms)")
-            val rescaleHack = map["Renderer\\rescale_hack"] ?: "false"
-            if (rescaleHack == "true" || rescaleHack == "1") {
-                lines.add("  • <b>Масштабирование спрайтов:</b> Включено (целочисленная выборка без артефактов и двоения)")
+        fun formatSettingKey(key: String, isRu: Boolean): String {
+        val cleanK = key.substringAfterLast('\\').substringAfterLast('/')
+        return if (isRu) {
+            when (cleanK) {
+                "gpu_accuracy" -> "Точность ГПУ"
+                "use_disk_shader_cache" -> "Кэш шейдеров на диске"
+                "async_presentation" -> "Асинхронный вывод"
+                "sync_memory_operations" -> "Синхронизация памяти ГПУ"
+                "early_release_fences" -> "Раннее освобождение барьеров"
+                "use_asynchronous_gpu_emulation" -> "Асинхронная эмуляция ГПУ"
+                "use_reactive_flushing" -> "Реактивная очистка"
+                "nvdec_emulation" -> "Декодирование видео NVDEC"
+                "astc_recompression" -> "Пересжатие текстур ASTC"
+                "barrier_feedback_loops" -> "Обратная связь барьеров"
+                "use_fast_gpu_time" -> "Быстрое время ГПУ"
+                "use_asynchronous_shaders" -> "Асинхронные шейдеры"
+                "cpu_accuracy" -> "Точность ЦП"
+                "resolution_setup" -> "Разрешение рендеринга"
+                "vram_usage_mode" -> "Использование видеопамяти (VRAM)"
+                "max_anisotropy" -> "Анизотропная фильтрация"
+                "use_docked_mode" -> "Режим док-станции"
+                "force_max_gpu_clocks" -> "Максимальные частоты ГПУ"
+                "adreno_driver_mode" -> "Режим драйвера Adreno"
+                "dma_accuracy" -> "Точность DMA"
+                "enable_compute_pipelines" -> "Вычислительные конвейеры"
+                "vram_garbage_collection" -> "Сборка мусора VRAM"
+                "rescale_hack" -> "Масштабирование спрайтов"
+                "drs_resolution_lock" -> "Фиксация разрешения DRS"
+                "scaling_filter" -> "Фильтр масштабирования"
+                "anti_aliasing" -> "Сглаживание"
+                "memory_layout_mode" -> "Конфигурация памяти (DRAM)"
+                "airplane_mode" -> "Режим «В самолете»"
+                "cpu_backend" -> "Бэкенд ЦП"
+                "cpuopt_fastmem" -> "Быстрая память (Fastmem)"
+                "cpuopt_ignore_memory_aborts" -> "Игнорирование сбоев памяти"
+                "dyna_state" -> "Динамическое состояние (EDS)"
+                "accelerate_astc" -> "Метод декодирования ASTC"
+                "vram_budget_governor" -> "Лимит видеопамяти VRAM"
+                "eco_frame_pacing" -> "Эко-режим и охлаждение"
+                "frame_gen" -> "Генерация кадров"
+                else -> cleanK.replace('_', ' ').replaceFirstChar { it.uppercaseChar() }
             }
-            lines.add("  • <b>Фиксация разрешения DRS:</b> Отключено (устранение смещения и обрезки экрана 320x180)")
-            lines.add("  • <b>Реактивная очистка:</b> Отключено (устранение просадок кадровой частоты 4 FPS и задержек 200 ms)")
-            val asyncPres = map["Renderer\\async_presentation"] ?: "false"
-            lines.add(if (asyncPres == "true" || asyncPres == "1") "  • <b>Асинхронный вывод:</b> Включено (плавные 60 FPS)" else "  • <b>Асинхронный вывод:</b> Отключено (стабильная передача кадров)")
-            lines.add("  • <b>Барьеры ГПУ:</b> По умолчанию")
-            val dma = map["Renderer\\dma_accuracy"] ?: "0"
-            lines.add("  • <b>Точность DMA:</b> " + (if (dma == "1") "Нормальная" else "По умолчанию (Безопасно)"))
-            val bfl = map["Renderer\\barrier_feedback_loops"] ?: "false"
-            lines.add(if (bfl == "true" || bfl == "1") "  • <b>Барьеры обратной связи:</b> Включено (корректные тени и эффекты)" else "  • <b>Барьеры обратной связи:</b> Отключено (устранение черных тайлов)")
-            lines.add("  • <b>Динамическое состояние:</b> Отключено (стабильные конвейеры Vulkan)")
-            lines.add("  • <b>Сглаживание:</b> По умолчанию")
-            lines.add("  • <b>Фильтр масштабирования:</b> По умолчанию")
-            lines.add("  • <b>Асинхронные шейдеры:</b> Включено (плавный геймплей)")
-            val compute = map["Renderer\\enable_compute_pipelines"] ?: "true"
-            lines.add(if (compute == "true" || compute == "1") "  • <b>Вычислительные конвейеры:</b> Включено (стабильность Vulkan)" else "  • <b>Вычислительные конвейеры:</b> Отключено")
-            val syncMem = map["Renderer\\sync_memory_operations"] ?: "true"
-            lines.add(if (syncMem == "true" || syncMem == "1") "  • <b>Синхронизация памяти ГПУ:</b> Включено (стабильные 2D/3D буферы)" else "  • <b>Синхронизация памяти ГПУ:</b> Отключено")
-            lines.add("  • <b>Быстрое время ГПУ:</b> Отключено (стабильная синхронизация кадров)")
-            lines.add("  • <b>Раннее освобождение барьеров:</b> Отключено (устранение зависаний загрузки)")
-            lines.add("  • <b>Сжатие ASTC:</b> Без сжатия")
-            lines.add("  • <b>Очистка VRAM:</b> Отключено (устраняет микрофризы)")
-            val nvdec = map["Renderer\\nvdec_emulation"] ?: "3"
-            lines.add("  • <b>Декодирование видео NVDEC:</b> " + when (nvdec) {
-                "1" -> "ЦП (FFmpeg)"
-                "2" -> "ГПУ (аппаратное)"
-                else -> "Гибридное (Hybrid 3)"
-            })
-            lines.add("\n⚡ <b>Процессор и память:</b>")
-            lines.add("  • <b>Быстрая память Fastmem:</b> Включено")
-            lines.add("  • <b>Игнорирование сбоев памяти:</b> Включено")
-            lines.add("  • <b>Точность ЦП:</b> Авто")
-            val mem = map["Core\\memory_layout_mode"] ?: map["System\\memory_layout_mode"] ?: "0"
-            lines.add("  • <b>Конфигурация памяти:</b> " + when (mem) {
-                "1" -> "6 ГБ DRAM"
-                "2" -> "8 ГБ DRAM"
-                else -> "4 ГБ DRAM"
-            })
-            lines.add("\n🛠️ <b>Система и сеть:</b>")
-            val airplane = map["Services\\airplane_mode"] ?: map["System\\airplane_mode"] ?: "false"
-            lines.add(if (airplane == "true" || airplane == "1") "  • <b>Режим «В самолете»:</b> Включено (устраняет сетевые таймауты и сбои)" else "  • <b>Режим «В самолете»:</b> Отключено (сеть активна)")
         } else {
-            lines.add("🎮 <b>Graphics and video:</b>")
-            lines.add(if (gpuAcc == "1") "  • <b>GPU accuracy:</b> High (stable geometry and textures)" else "  • <b>GPU accuracy:</b> Normal (smooth 60 FPS, eliminates 200 ms latency)")
-            val rescaleHackEn = map["Renderer\\rescale_hack"] ?: "false"
-            if (rescaleHackEn == "true" || rescaleHackEn == "1") {
-                lines.add("  • <b>Sprite scaling fix:</b> Enabled (integer sampling without jitter or ghosting)")
+            when (cleanK) {
+                "gpu_accuracy" -> "GPU Accuracy"
+                "use_disk_shader_cache" -> "Disk Shader Cache"
+                "async_presentation" -> "Async Presentation"
+                "sync_memory_operations" -> "Sync GPU Memory Operations"
+                "early_release_fences" -> "Early Release Fences"
+                "use_asynchronous_gpu_emulation" -> "Async GPU Emulation"
+                "use_reactive_flushing" -> "Reactive Flushing"
+                "nvdec_emulation" -> "NVDEC Video Decoding"
+                "astc_recompression" -> "ASTC Texture Recompression"
+                "barrier_feedback_loops" -> "Barrier Feedback Loops"
+                "use_fast_gpu_time" -> "Fast GPU Time"
+                "use_asynchronous_shaders" -> "Asynchronous Shaders"
+                "cpu_accuracy" -> "CPU Accuracy"
+                "resolution_setup" -> "Resolution Setup"
+                "vram_usage_mode" -> "VRAM Usage Mode"
+                "max_anisotropy" -> "Anisotropic Filtering"
+                "use_docked_mode" -> "Docked Mode"
+                "force_max_gpu_clocks" -> "Force Maximum GPU Clocks"
+                "adreno_driver_mode" -> "Adreno Driver Mode"
+                "dma_accuracy" -> "DMA Accuracy"
+                "enable_compute_pipelines" -> "Compute Pipelines"
+                "vram_garbage_collection" -> "VRAM Garbage Collection"
+                "rescale_hack" -> "Sprite Scaling Fix"
+                "drs_resolution_lock" -> "DRS Resolution Lock"
+                "scaling_filter" -> "Window Adapting Filter"
+                "anti_aliasing" -> "Anti-Aliasing"
+                "memory_layout_mode" -> "Memory Layout (DRAM)"
+                "airplane_mode" -> "Airplane Mode"
+                "cpu_backend" -> "CPU Backend"
+                "cpuopt_fastmem" -> "Fastmem (Host MMU)"
+                "cpuopt_ignore_memory_aborts" -> "Ignore Memory Aborts"
+                "dyna_state" -> "Dynamic State (EDS)"
+                "accelerate_astc" -> "ASTC Decoding Method"
+                "vram_budget_governor" -> "VRAM Budget Governor"
+                "eco_frame_pacing" -> "Eco Frame Pacing"
+                "frame_gen" -> "Frame Generation"
+                else -> cleanK.replace('_', ' ').replaceFirstChar { it.uppercaseChar() }
             }
-            lines.add("  • <b>DRS resolution lock:</b> Disabled (fixes 320x180 viewport offset and clipping)")
-            lines.add("  • <b>Reactive flushing:</b> Disabled (eliminates 4 FPS and 200 ms latency stalls)")
-            val asyncPresEn = map["Renderer\\async_presentation"] ?: "false"
-            lines.add(if (asyncPresEn == "true" || asyncPresEn == "1") "  • <b>Async presentation:</b> Enabled (smooth 60 FPS)" else "  • <b>Async presentation:</b> Disabled (stable frame presentation)")
-            lines.add("  • <b>GPU fence behavior:</b> Default")
-            val dma = map["Renderer\\dma_accuracy"] ?: "0"
-            lines.add("  • <b>DMA accuracy:</b> " + (if (dma == "1") "Normal" else "Default (safe)"))
-            val bfl = map["Renderer\\barrier_feedback_loops"] ?: "false"
-            lines.add(if (bfl == "true" || bfl == "1") "  • <b>Barrier feedback loops:</b> Enabled (correct shadows and effects)" else "  • <b>Barrier feedback loops:</b> Disabled (eliminates black tiles)")
-            lines.add("  • <b>Dynamic state:</b> Disabled (stable Vulkan pipelines)")
-            lines.add("  • <b>Anti-aliasing:</b> Default")
-            lines.add("  • <b>Scaling filter:</b> Default")
-            lines.add("  • <b>Async shaders:</b> Enabled (smooth gameplay)")
-            lines.add("  • <b>GPU buffer readback:</b> Disabled")
-            val computeEn = map["Renderer\\enable_compute_pipelines"] ?: "true"
-            lines.add(if (computeEn == "true" || computeEn == "1") "  • <b>Compute pipelines:</b> Enabled (Vulkan stability)" else "  • <b>Compute pipelines:</b> Disabled")
-            val syncMemEn = map["Renderer\\sync_memory_operations"] ?: "true"
-            lines.add(if (syncMemEn == "true" || syncMemEn == "1") "  • <b>Sync GPU memory operations:</b> Enabled (stable 2D/3D buffers)" else "  • <b>Sync GPU memory operations:</b> Disabled")
-            lines.add("  • <b>Fast GPU time:</b> Disabled (stable frame pacing)")
-            lines.add("  • <b>Early release fences:</b> Disabled (eliminates boot hangs)")
-            lines.add("  • <b>ASTC recompression:</b> Uncompressed")
-            lines.add("  • <b>VRAM garbage collection:</b> Disabled (prevents micro-stutters)")
-            val nvdec = map["Renderer\\nvdec_emulation"] ?: "3"
-            lines.add("  • <b>NVDEC video decoding:</b> " + when (nvdec) {
-                "1" -> "CPU (FFmpeg)"
-                "2" -> "GPU (hardware)"
-                else -> "Hybrid (Hybrid 3)"
-            })
-            lines.add("\n⚡ <b>CPU and memory:</b>")
-            lines.add("  • <b>Fastmem memory:</b> Enabled")
-            lines.add("  • <b>Ignore memory aborts:</b> Enabled")
-            lines.add("  • <b>CPU accuracy:</b> Auto")
-            val memEn = map["Core\\memory_layout_mode"] ?: map["System\\memory_layout_mode"] ?: "0"
-            lines.add("  • <b>Memory layout:</b> " + when (memEn) {
-                "1" -> "6GB DRAM"
-                "2" -> "8GB DRAM"
-                else -> "4GB DRAM"
-            })
-            lines.add("\n🛠️ <b>System and network:</b>")
-            val airplaneEn = map["Services\\airplane_mode"] ?: map["System\\airplane_mode"] ?: "false"
-            lines.add(if (airplaneEn == "true" || airplaneEn == "1") "  • <b>Airplane mode:</b> Enabled (prevents network timeouts)" else "  • <b>Airplane mode:</b> Disabled (network active)")
         }
-        return lines.joinToString("\n")
+    }
+
+    fun formatSettingValue(key: String, rawVal: String, isRu: Boolean): String {
+        val cleanK = key.substringAfterLast('\\').substringAfterLast('/')
+        val v = rawVal.trim().lowercase(java.util.Locale.ROOT)
+        return when (cleanK) {
+            "gpu_accuracy" -> when (v) {
+                "0" -> if (isRu) "Обычная" else "Normal"
+                "1" -> if (isRu) "Высокая" else "High"
+                "2" -> if (isRu) "Экстремальная" else "Extreme"
+                else -> rawVal
+            }
+            "nvdec_emulation" -> when (v) {
+                "0" -> if (isRu) "Выключено" else "Disabled"
+                "1" -> if (isRu) "Программное (ЦП)" else "CPU (FFmpeg)"
+                "2" -> if (isRu) "Аппаратное (ГПУ)" else "GPU (Hardware)"
+                "3" -> if (isRu) "Гибридное (Hybrid 3)" else "Hybrid (Hybrid 3)"
+                else -> rawVal
+            }
+            "astc_recompression" -> when (v) {
+                "0" -> if (isRu) "Без сжатия" else "Uncompressed"
+                "1" -> if (isRu) "BC1 (Низкое качество / Макс. экономия)" else "BC1 (Low quality / Max RAM savings)"
+                "2" -> if (isRu) "BC3 (Среднее качество / Экономия 50%)" else "BC3 (Medium quality / 50% RAM savings)"
+                "3" -> if (isRu) "BC5 (Высокое качество карт нормалей)" else "BC5 (High quality normals)"
+                else -> rawVal
+            }
+            "cpu_accuracy" -> when (v) {
+                "0" -> if (isRu) "Авто" else "Auto"
+                "1" -> if (isRu) "Точно" else "Accurate"
+                "2" -> if (isRu) "Небезопасно" else "Unsafe"
+                "3" -> if (isRu) "Параноик" else "Paranoid"
+                else -> rawVal
+            }
+            "vram_usage_mode" -> when (v) {
+                "0" -> if (isRu) "Стандартный" else "Conservative"
+                "1" -> if (isRu) "Агрессивный" else "Aggressive"
+                else -> rawVal
+            }
+            "resolution_setup" -> when (v) {
+                "0" -> "0.5X (360p / 540p)"
+                "1" -> "0.75X (540p / 810p)"
+                "2" -> "1X (720p / 1080p)"
+                "3" -> "1.5X (1080p / 1620p)"
+                "4" -> "2X (1440p / 2160p)"
+                else -> rawVal
+            }
+            "max_anisotropy" -> when (v) {
+                "0" -> if (isRu) "По умолчанию" else "Default"
+                "1" -> "2x"
+                "2" -> "4x"
+                "3" -> "8x"
+                "4" -> "16x"
+                else -> rawVal
+            }
+            "cpu_backend" -> when (v) {
+                "0" -> if (isRu) "Dynarmic (JIT)" else "Dynarmic (JIT)"
+                "1" -> if (isRu) "NCE (Нативное исполнение)" else "NCE (Native Code Execution)"
+                else -> rawVal
+            }
+            "memory_layout_mode" -> when (v) {
+                "0" -> if (isRu) "4 ГБ DRAM" else "4GB DRAM"
+                "1" -> if (isRu) "6 ГБ DRAM" else "6GB DRAM"
+                "2" -> if (isRu) "8 ГБ DRAM" else "8GB DRAM"
+                else -> rawVal
+            }
+            "dma_accuracy" -> when (v) {
+                "0" -> if (isRu) "По умолчанию (Безопасно)" else "Default (Safe)"
+                "1" -> if (isRu) "Нормальная" else "Normal"
+                "2" -> if (isRu) "Высокая" else "High"
+                else -> rawVal
+            }
+            "dyna_state" -> when (v) {
+                "0" -> if (isRu) "Отключено" else "Disabled"
+                "1" -> if (isRu) "Динамическое состояние 1 (EDS1)" else "Dynamic State 1 (EDS1)"
+                "2" -> if (isRu) "Динамическое состояние 2 (EDS2)" else "Dynamic State 2 (EDS2)"
+                else -> rawVal
+            }
+            "scaling_filter" -> when (v) {
+                "0" -> if (isRu) "Ближайший сосед" else "Nearest Neighbor"
+                "1" -> if (isRu) "Билинейная" else "Bilinear"
+                "2" -> "Bicubic"
+                "3" -> "Gaussian"
+                "4" -> "ScaleForce"
+                "5" -> "AMD FidelityFX FSR"
+                else -> rawVal
+            }
+            "anti_aliasing" -> when (v) {
+                "0" -> if (isRu) "Выключено" else "Disabled"
+                "1" -> "FXAA"
+                "2" -> "SMAA"
+                else -> rawVal
+            }
+            "accelerate_astc" -> when (v) {
+                "0" -> if (isRu) "ЦП" else "CPU"
+                "1" -> if (isRu) "ГПУ" else "GPU"
+                "2" -> if (isRu) "ЦП асинхронно" else "CPU Asynchronous"
+                else -> rawVal
+            }
+            else -> {
+                if (v == "true" || v == "1") {
+                    if (isRu) "Включено" else "Enabled"
+                } else if (v == "false" || v == "0") {
+                    if (isRu) "Отключено" else "Disabled"
+                } else {
+                    rawVal
+                }
+            }
+        }
+    }
+
+    fun getFormattedFixes(profile: GameFixProfile, isRu: Boolean): String {
+        val lines = mutableListOf<String>()
+        val customFixesText = if (isRu) profile.fixesRu.trim() else profile.fixesEn.trim()
+
+        if (customFixesText.isNotEmpty()) {
+            val rawLines = customFixesText.split("\n")
+            for (line in rawLines) {
+                val trimmed = line.trim()
+                if (trimmed.isEmpty()) continue
+                // Format checkmark bullet or standard line into green accent bullet • Param → Value
+                var formatted = trimmed.removePrefix("✓").removePrefix("•").removePrefix("-").trim()
+                if (formatted.contains(":")) {
+                    val pName = formatted.substringBefore(":").trim()
+                    val pVal = formatted.substringAfter(":").trim()
+                    lines.add("<font color='#00E676'>•</font> <b>$pName</b> → <b>$pVal</b>")
+                } else {
+                    lines.add("<font color='#00E676'>•</font> <b>$formatted</b>")
+                }
+            }
+        } else {
+            val map = getFullSettingsMap(profile)
+            for ((key, value) in map) {
+                val name = formatSettingKey(key, isRu)
+                val displayVal = formatSettingValue(key, value, isRu)
+                lines.add("<font color='#00E676'>•</font> <b>$name</b> → <b>$displayVal</b>")
+            }
+        }
+        return lines.joinToString("<br/>")
     }
 
 

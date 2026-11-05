@@ -174,14 +174,14 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
     m_search_edit->setProperty("stormSearchBox", true);
     m_search_edit->setClearButtonEnabled(true);
     m_search_edit->setPlaceholderText(StormLang(
-        QStringLiteral("🔍 Быстрый поиск настройки (например: Vulkan, FSR, звук, память, кадры)..."),
-        QStringLiteral("🔍 Quick search settings (e.g. Vulkan, FSR, audio, memory, frame)..."),
-        QStringLiteral("🔍 Einstellungen schnell suchen (z. B. Vulkan, FSR, Audio, Speicher, FPS)..."),
-        QStringLiteral("🔍 Recherche rapide des paramètres (ex. Vulkan, FSR, audio, mémoire, FPS)..."),
-        QStringLiteral("🔍 快速搜索设置（例如：Vulkan、FSR、音频、内存、帧率）..."),
-        QStringLiteral("🔍 設定をクイック検索（例：Vulkan、FSR、オーディオ、メモリ、フレーム）..."),
-        QStringLiteral("🔍 بحث سريع في الإعدادات (مثل: Vulkan، FSR، الصوت، الذاكرة، الإطارات)..."),
-        QStringLiteral("🔍 Búsqueda rápida de ajustes (ej.: Vulkan, FSR, audio, memoria, FPS)...")
+        QStringLiteral("Быстрый поиск настройки (например: Vulkan, FSR, звук, память, кадры)..."),
+        QStringLiteral("Quick search settings (e.g. Vulkan, FSR, audio, memory, frame)..."),
+        QStringLiteral("Einstellungen schnell suchen (z. B. Vulkan, FSR, Audio, Speicher, FPS)..."),
+        QStringLiteral("Recherche rapide des paramètres (ex. Vulkan, FSR, audio, mémoire, FPS)..."),
+        QStringLiteral("快速搜索设置（例如：Vulkan、FSR、音频、内存、帧率）..."),
+        QStringLiteral("設定をクイック検索（例：Vulkan、FSR、オーディオ、メモリ、フレーム）..."),
+        QStringLiteral("بحث سريع في الإعدادات (مثل: Vulkan، FSR، الصوت، الذاكرة، الإطارات)..."),
+        QStringLiteral("Búsqueda rápida de ajustes (ej.: Vulkan, FSR, audio, memoria, FPS)...")
     ));
     ui->verticalLayout->insertWidget(0, m_search_edit);
 
@@ -711,14 +711,14 @@ void ConfigureDialog::RetranslateUI() {
 
     if (m_search_edit) {
         m_search_edit->setPlaceholderText(StormLang(
-            QStringLiteral("🔍 Быстрый поиск настройки (например: Vulkan, FSR, звук, память, кадры)..."),
-            QStringLiteral("🔍 Quick search settings (e.g. Vulkan, FSR, audio, memory, frame)..."),
-            QStringLiteral("🔍 Einstellungen schnell suchen (z. B. Vulkan, FSR, Audio, Speicher, FPS)..."),
-            QStringLiteral("🔍 Recherche rapide des paramètres (ex. Vulkan, FSR, audio, mémoire, FPS)..."),
-            QStringLiteral("🔍 快速搜索设置（例如：Vulkan、FSR、音频、内存、帧率）..."),
-            QStringLiteral("🔍 設定をクイック検索（例：Vulkan、FSR、オーディオ、メモリ、フレーム）..."),
-            QStringLiteral("🔍 بحث سريع في الإعدادات (مثل: Vulkan، FSR، الصوت، الذاكرة، الإطارات)..."),
-            QStringLiteral("🔍 Búsqueda rápida de ajustes (ej.: Vulkan, FSR, audio, memoria, FPS)...")
+            QStringLiteral("Быстрый поиск настройки (например: Vulkan, FSR, звук, память, кадры)..."),
+            QStringLiteral("Quick search settings (e.g. Vulkan, FSR, audio, memory, frame)..."),
+            QStringLiteral("Einstellungen schnell suchen (z. B. Vulkan, FSR, Audio, Speicher, FPS)..."),
+            QStringLiteral("Recherche rapide des paramètres (ex. Vulkan, FSR, audio, mémoire, FPS)..."),
+            QStringLiteral("快速搜索设置（例如：Vulkan、FSR、音频、内存、帧率）..."),
+            QStringLiteral("設定をクイック検索（例：Vulkan、FSR、オーディオ、メモリ、フレーム）..."),
+            QStringLiteral("بحث سريع في الإعدادات (مثل: Vulkan، FSR، الصوت، الذاكرة، الإطارات)..."),
+            QStringLiteral("Búsqueda rápida de ajustes (ej.: Vulkan, FSR, audio, memoria, FPS)...")
         ));
     }
 
@@ -1248,8 +1248,8 @@ void ConfigureDialog::OnSearchTextChanged(const QString& text) {
                             score = 50;
                         }
                         const QString disp = val.isEmpty()
-                            ? QStringLiteral("⚡ [%1 › %2]  %3").arg(cat_name, tab_name, title)
-                            : QStringLiteral("⚡ [%1 › %2]  %3  —  %4").arg(cat_name, tab_name, title, val);
+                            ? QStringLiteral("• [%1 › %2]  %3").arg(cat_name, tab_name, title)
+                            : QStringLiteral("• [%1 › %2]  %3  —  %4").arg(cat_name, tab_name, title, val);
                         candidates.push_back({score, row, t_idx, disp, sw->toolTip(), sw});
                     }
                 }
@@ -1265,8 +1265,8 @@ void ConfigureDialog::OnSearchTextChanged(const QString& text) {
                         int score = title.startsWith(query, Qt::CaseInsensitive) ? 95
                                   : (title.contains(query, Qt::CaseInsensitive) ? 65 : 20);
                         const QString disp = val.isEmpty()
-                            ? QStringLiteral("⚡ [%1 › %2]  %3").arg(cat_name, tab_name, title)
-                            : QStringLiteral("⚡ [%1 › %2]  %3  —  %4").arg(cat_name, tab_name, title, val);
+                            ? QStringLiteral("• [%1 › %2]  %3").arg(cat_name, tab_name, title)
+                            : QStringLiteral("• [%1 › %2]  %3  —  %4").arg(cat_name, tab_name, title, val);
                         candidates.push_back({score, row, t_idx, disp, gb->toolTip(), gb});
                         added_subwidget = true;
                     }
@@ -1276,7 +1276,7 @@ void ConfigureDialog::OnSearchTextChanged(const QString& text) {
                     extract_widget_summary(tab, title, val, blob);
                     const QString full_blob = cat_name + QLatin1Char(' ') + tab_name + QLatin1Char(' ') + blob;
                     if (matches_all_tokens(full_blob)) {
-                        const QString disp = QStringLiteral("⚡ [%1 › %2]  %3").arg(cat_name, tab_name, title.isEmpty() ? tab_name : title);
+                        const QString disp = QStringLiteral("• [%1 › %2]  %3").arg(cat_name, tab_name, title.isEmpty() ? tab_name : title);
                         candidates.push_back({15, row, t_idx, disp, tab->toolTip(), tab});
                     }
                 }
@@ -1432,5 +1432,15 @@ void ConfigureDialog::CheckConflicts() {
             .arg(c.LocalizedMessage(is_ru)));
         m_conflict_current_fix = c.apply_fix;
         m_conflict_banner->setVisible(true);
+    }
+}
+
+void ConfigureDialog::SetCategory(int category_index, int tab_index) {
+    if (category_index >= 0 && category_index < ui->selectorList->count()) {
+        ui->selectorList->setCurrentRow(category_index);
+        UpdateVisibleTabs();
+        if (tab_index >= 0 && tab_index < ui->tabWidget->count()) {
+            ui->tabWidget->setCurrentIndex(tab_index);
+        }
     }
 }

@@ -31,7 +31,8 @@ public:
     };
 
     explicit GameFixDialog(QWidget* parent, u64 title_id_, const QString& game_path_,
-                           bool force_show_, Core::System& system_);
+                           bool force_show_, Core::System& system_,
+                           const QPixmap& game_icon_ = QPixmap());
     ~GameFixDialog() override;
 
     Result Execute();
@@ -51,6 +52,7 @@ private:
     QString m_game_path;
     bool m_force_show{false};
     Core::System& m_system;
+    QPixmap m_game_icon;
 
     const Core::GameFixProfile* m_profile{nullptr};
 

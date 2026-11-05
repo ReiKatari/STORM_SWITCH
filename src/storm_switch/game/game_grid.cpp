@@ -65,11 +65,30 @@ void GameGrid::ApplyFilter(const QString& edit_filter_text, GameListModel* model
         if (!item)
             continue;
 
-        total_count++;
-        if (Yuzu::FilterMatches(edit_filter_text, item)) {
-            setRowHidden(i, false);
-            visible_count++;
+        const auto type = item->data(GameListItem::TypeRole).value<GameListItemType>();
+        if (type == GameListItemType::Game || !item->data(GameListItemPath::FullPathRole).toString().isEmpty()) {
+            total_count++;
+            if (Yuzu::FilterMatches(edit_filter_text, item)) {
+                setRowHidden(i, false);
+                visible_count++;
+            } else {
+                setRowHidden(i, true);
+            }
+        } else if (item->rowCount() > 0) {
+            // Hierarchical directory item: count matching children
+            bool folder_has_match = false;
+            for (int j = 0; j < item->rowCount(); ++j) {
+                auto* child = item->child(j, 0);
+                if (!child) continue;
+                total_count++;
+                if (Yuzu::FilterMatches(edit_filter_text, child)) {
+                    visible_count++;
+                    folder_has_match = true;
+                }
+            }
+            setRowHidden(i, !folder_has_match);
         } else {
+            // Add directory or placeholder
             setRowHidden(i, true);
         }
     }
@@ -81,47 +100,39 @@ void GameGrid::ApplyFilter(const QString& edit_filter_text, GameListModel* model
 void GameGrid::UpdateIconSize() {
     const u32 icon_size = UISettings::values.game_icon_size.GetValue();
 
-    int heightMargin = 0;
-    int widthMargin = 80;
+    int heightMargin = 20;
+    int widthMargin = 24;
 
     if (UISettings::values.show_game_name) {
         switch (icon_size) {
-        case 128:
-            heightMargin = 72;
-            break;
-        case 0:
-            widthMargin = 120;
-            heightMargin = 120;
-            break;
         case 64:
-            heightMargin = 82;
+            heightMargin = 50;
+            widthMargin = 24;
             break;
-        case 32:
+        case 128:
+            heightMargin = 58;
+            widthMargin = 24;
+            break;
         case 256:
-            heightMargin = 88;
+        default:
+            heightMargin = 64;
+            widthMargin = 24;
             break;
         }
-    } else {
-        widthMargin = 24;
-        heightMargin = 24;
     }
 
     const int sb_width = style() ? style()->pixelMetric(QStyle::PM_ScrollBarExtent, nullptr, this) : 14;
     const int view_width = std::max(100, this->width() - sb_width - 8);
 
-    const double spacing = 0.01;
     const int min_item_width = icon_size + widthMargin;
-
-    int columns = std::max(1, (view_width - 16) / min_item_width);
-    int stretched_width = std::min(min_item_width + 28, (view_width - static_cast<int>(spacing * (columns - 1))) / columns);
+    const int columns = std::max(1, (view_width - 16) / min_item_width);
+    const int stretched_width = std::max(min_item_width, (view_width - 16) / columns);
 
     QSize grid_size(stretched_width, icon_size + heightMargin);
     if (gridSize() != grid_size) {
         setUpdatesEnabled(false);
-
         setGridSize(grid_size);
-        m_gameCard->setSize(grid_size, grid_size, stretched_width - min_item_width, columns);
-
+        m_gameCard->setSize(grid_size, grid_size, 0, columns);
         setUpdatesEnabled(true);
     }
 }

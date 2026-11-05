@@ -166,18 +166,18 @@ class AutoOptimizationDialogFragment : DialogFragment() {
         binding.textHwRam.text = getString(R.string.auto_opt_ram_fmt, profile.totalRamGb, profile.availRamGb)
 
         val tierName = when (profile.tier) {
-            StormHardwareCalibrator.HardwareTier.FLAGSHIP_ELITE -> "ULTRA-FLAGSHIP"
-            StormHardwareCalibrator.HardwareTier.FLAGSHIP -> "FLAGSHIP"
-            StormHardwareCalibrator.HardwareTier.HIGH_MIDRANGE -> "HIGH-END"
-            StormHardwareCalibrator.HardwareTier.MIDRANGE -> "MID-RANGE"
-            StormHardwareCalibrator.HardwareTier.BUDGET -> "BUDGET"
+            StormHardwareCalibrator.HardwareTier.FLAGSHIP_ELITE -> getString(R.string.tier_flagship_elite)
+            StormHardwareCalibrator.HardwareTier.FLAGSHIP -> getString(R.string.tier_flagship)
+            StormHardwareCalibrator.HardwareTier.HIGH_MIDRANGE -> getString(R.string.tier_high_midrange)
+            StormHardwareCalibrator.HardwareTier.MIDRANGE -> getString(R.string.tier_midrange)
+            StormHardwareCalibrator.HardwareTier.BUDGET -> getString(R.string.tier_budget)
         }
         binding.textHwTier.text = tierName
 
         val isNeonGreen = profile.tier == StormHardwareCalibrator.HardwareTier.FLAGSHIP_ELITE || profile.tier == StormHardwareCalibrator.HardwareTier.FLAGSHIP
         binding.textHwTier.setTextColor(if (isNeonGreen) Color.parseColor("#00F2FE") else Color.parseColor("#00E676"))
 
-        binding.tvHardwareInfo.text = "✓ Dynamic State • NCE • Reactive Flushing • CPU Affinity Pinning • Fast GPU Time"
+        binding.tvHardwareInfo.text = getString(R.string.auto_opt_hw_summary)
     }
 
     private fun setupModeSelectors() {

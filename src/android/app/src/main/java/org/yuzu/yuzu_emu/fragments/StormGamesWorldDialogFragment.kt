@@ -989,13 +989,17 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             val gameIsMod = gameModCount > 0
             val gameHasDlc = gameDlcCount > 0
 
-            g.isDownloaded = allFiles.any { cand ->
-                // [Rule 1: MANDATORY FORMAT MATCH]
-                if (cand.extension.isNotEmpty() && !cand.extension.equals(expectedExt, ignoreCase = true)) {
-                    return@any false
-                }
+            // 1. Check games already indexed in GamesViewModel by Program ID or Title
+            val installedInModel = installedGames.any { ig ->
+                val igPid = ig.programIdHex.lowercase(Locale.ROOT)
+                val igTitleNorm = ig.title.replace(Regex("""[\\/:*?"<>|]"""), " ").trim().lowercase(Locale.ROOT)
+                (tid.isNotEmpty() && tid != "0" && tid != "—" && tid != "-" && igPid == tid) ||
+                (baseTid.isNotEmpty() && igPid.startsWith(baseTid.take(13))) ||
+                (cleanTitle.length >= 4 && (igTitleNorm == normTitle || igTitleNorm.contains(normTitle) || normTitle.contains(igTitleNorm)))
+            }
 
-                // [Rule 2: GAME IDENTITY MATCH]
+            g.isDownloaded = installedInModel || allFiles.any { cand ->
+                // Support any standard format (.nsp, .nsz, .xci, .xcz)
                 val idMatch = (tid.isNotEmpty() && tid != "—" && tid != "-" && (cand.tid == tid || cand.name.contains(tid))) ||
                               (baseTid.isNotEmpty() && (cand.baseTid == baseTid || (cand.tid.isNotEmpty() && cand.tid.startsWith(baseTid.take(13))))) ||
                               (cleanFinal.isNotEmpty() && (cand.stem == cleanFinal || cand.name.contains(cleanFinal))) ||
@@ -1337,7 +1341,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         val dispTitle = if (game.title.isNotBlank()) game.title else game.finalTitle
         binding.detailGameTitle.text = dispTitle
         binding.detailBadgeExtension.text = game.extensionClean
-        binding.detailGameVersion.text = game.version
+        binding.detailGameVersion.text = game.version.trim().removePrefix("v").removePrefix("V").trim()
         if (game.internalVersion.isNotEmpty()) {
             binding.detailInternalVersion.isVisible = true
             binding.detailInternalVersion.text = game.internalVersion
@@ -1675,7 +1679,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
             holder.b.textGameTitle.text = dispTitle
             holder.b.badgeGameExtension.text = item.extensionClean
-            holder.b.textGameVersion.text = item.version
+            holder.b.textGameVersion.text = item.version.trim().removePrefix("v").removePrefix("V").trim()
             holder.b.textGameVersion.setTextColor(primaryColor)
             if (item.internalVersion.isNotEmpty()) {
                 holder.b.textInternalVersion.isVisible = true

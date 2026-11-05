@@ -326,7 +326,7 @@
     <string name="frame_gen_description">Insert interpolated frames between rendered ones using Lossless Scaling. Forces FIFO presentation while enabled.</string>
     <string name="frame_gen_multiplier">Frame multiplier</string>
     <string name="frame_gen_multiplier_description">How many frames to display for each rendered frame. Higher values cost proportionally more GPU time. Asking for more than your display can present will slow emulation down.</string>
-    <string name="frame_gen_multiplier_2x">2x</string>
+    <string name="frame_gen_multiplier_2x">2x (60 → 120 FPS)</string>
     <string name="frame_gen_multiplier_3x">3x</string>
     <string name="frame_gen_multiplier_4x">4x</string>
     <string name="frame_gen_target_rate">Target frame rate</string>
@@ -1047,7 +1047,7 @@
     <string name="lock_drawer">Lock drawer</string>
     <string name="unlock_drawer">Unlock drawer</string>
     <string name="reset">Reset</string>
-    <string name="game_fix_manual_override_warning">⚠️ Manual settings prioritized: %s. Auto-fix partially overridden.</string>
+    <string name="game_fix_manual_override_warning">[!] Manual settings prioritized: %s. Auto-fix partially overridden.</string>
 
     <!-- Amiibo -->
     <string name="amiibo_title">Amiibo</string>
@@ -2132,21 +2132,21 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="auto_optimization_defaults_restored_toast">🔄 Default settings successfully restored!</string>
     <string name="show_device_load_overlay">Show Device Load Overlay</string>
     <string name="show_device_load_overlay_description">Displays real-time CPU, GPU, RAM utilization and 5-stage device temperature indicators.</string>
-    <string name="game_fix_issues_header">⚠️ Known Issues and Bugs</string>
-    <string name="game_fix_recommended_header">⚡ Recommended Fixes and Settings</string>
+    <string name="game_fix_issues_header">Known Issues and Bugs</string>
+    <string name="game_fix_recommended_header">Recommended Fixes and Settings</string>
     <string name="game_fix_dont_ask_again">Don\'t ask again for this game</string>
-    <string name="game_fix_apply_and_launch">⚡ Apply Fixes and Launch</string>
+    <string name="game_fix_apply_and_launch">Apply Fixes and Launch</string>
     <string name="game_fix_skip_and_launch">Launch Without Changes</string>
 
     <!-- Launch Modes and Global Settings -->
     <string name="launch_method_title">Launch method</string>
-    <string name="launch_mode_auto_fix">Auto-fix</string>
+    <string name="launch_mode_auto_fix">Apply Auto-Fix &amp; Launch</string>
     <string name="launch_mode_auto_fix_description">Clean reference STORM SOFT profile for maximum stability</string>
-    <string name="launch_mode_auto_fix_with_custom">Auto-fix with custom settings</string>
-    <string name="launch_mode_auto_fix_with_custom_description">Game optimization while preserving your manual settings (User Priority)</string>
-    <string name="launch_mode_custom">Custom settings</string>
+    <string name="launch_mode_auto_fix_with_custom">Merge with My Game Settings</string>
+    <string name="launch_mode_auto_fix_with_custom_description">Game optimization while preserving your manual settings</string>
+    <string name="launch_mode_custom">Launch with My Game Settings</string>
     <string name="launch_mode_custom_description">Launch exclusively with custom per-game profile settings</string>
-    <string name="launch_mode_global">Global settings</string>
+    <string name="launch_mode_global">Launch with Global Settings</string>
     <string name="launch_mode_global_description">Launch with standard global emulator settings</string>
     <string name="apply_global_to_all_games">Apply global settings to all games</string>
     <string name="apply_global_to_all_games_description">Reset per-game profiles and propagate global settings to entire library</string>
@@ -2701,11 +2701,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="gamebanana_no_mod_desc">No mod description available.</string>
     <string name="gamebanana_avail_files_header">
 📦 Available files for download:</string>
-    <string name="game_fix_toast_autofix_custom">⚡ Auto-Fix: Applied with your custom settings preserved</string>
-    <string name="game_fix_toast_autofix_clean">⚡ Auto-Fix: Clean reference profile applied</string>
-    <string name="game_fix_toast_custom_saved">⚡ Auto-Fix: Custom settings preserved</string>
-    <string name="game_fix_toast_launch_custom">🎮 Custom Settings: Launching with your profile</string>
-    <string name="game_fix_toast_launch_global">🌐 Global Settings: Launching with global settings</string>
+    <string name="game_fix_toast_autofix_custom">Auto-Fix: Applied with your custom settings preserved</string>
+    <string name="game_fix_toast_autofix_clean">Auto-Fix: Clean reference profile applied</string>
+    <string name="game_fix_toast_custom_saved">Auto-Fix: Custom settings preserved</string>
+    <string name="game_fix_toast_launch_custom">Custom Settings: Launching with your profile</string>
+    <string name="game_fix_toast_launch_global">Global Settings: Launching with global settings</string>
     <string name="overlay_style_neon_glow">Neon Cyber Glow (3D)</string>
     <string name="overlay_style_joycon">Original Joy-Con Style (3D)</string>
     <string name="overlay_style_frost_glass">Frost Glass (3D)</string>
@@ -2928,4 +2928,26 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="cpu_unsafe_disabled_explanation">Unsafe CPU flags are active only when CPU accuracy is set to \'Unsafe\'.</string>
     <string name="barrier_feedback_loops">Barrier feedback loops</string>
     <string name="barrier_feedback_loops_description">Improves rendering of transparency and depth feedback effects in games like Unravel Two</string>
+    <string name="game_fix_status_badge">AUTO-FIX</string>
+    <string name="tier_flagship_elite">ULTRA-FLAGSHIP</string>
+    <string name="tier_flagship">FLAGSHIP</string>
+    <string name="tier_high_midrange">HIGH-END</string>
+    <string name="tier_midrange">MID-RANGE</string>
+    <string name="tier_budget">BUDGET</string>
+    <string name="auto_opt_hw_summary">✓ Dynamic State • NCE • Reactive Flushing • CPU Affinity Pinning • Fast GPU Time</string>
+    <string name="freedreno_reset_recommended">Reset to Recommended</string>
+    <string name="freedreno_reset_recommended_desc">Reset all Freedreno debug variables to maximum performance defaults</string>
+    <string name="freedreno_reset_done_toast">Freedreno settings reset to recommended defaults</string>
+    <!-- PanVK & STORM DRIVER 10.0.0 additions -->
+    <string name="tab_driver_all">All Drivers</string>
+    <string name="tab_driver_storm">STORM DRIVER</string>
+    <string name="tab_driver_turnip">Turnip (Adreno)</string>
+    <string name="tab_driver_panvk">PanVK (Mali / Immortalis)</string>
+    <string name="tab_driver_qualcomm">Qualcomm Proprietary</string>
+    <string name="install_storm_driver_10">Download STORM DRIVER 10.0.0</string>
+    <string name="storm_driver_10_recommendation">GPU: %1$s • Recommended: %2$s</string>
+    <string name="storm_driver_downloading">Downloading STORM DRIVER 10.0.0…</string>
+    <string name="apply_driver_msg">Apply selected GPU driver?</string>
+    <string name="apply_driver_negative">Cancel</string>
+    <string name="apply_driver_positive">Apply</string>
 </resources>

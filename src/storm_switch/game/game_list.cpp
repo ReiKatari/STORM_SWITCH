@@ -15,6 +15,8 @@
 #include <QList>
 #include <QListView>
 #include <QMenu>
+#include <QPainter>
+#include <cmath>
 #include <QMessageBox>
 #include <QScrollBar>
 #include <QSettings>
@@ -202,8 +204,12 @@ GameList::GameList(FileSys::VirtualFilesystem vfs_, FileSys::ManualContentProvid
                     int total = 0;
                     for (int i = 0; i < item_model->rowCount(); ++i) {
                         const auto* item = item_model->item(i, 0);
-                        if (item) {
+                        if (!item) continue;
+                        if (item->rowCount() > 0) {
                             total += item->rowCount();
+                        } else if (item->data(GameListItem::TypeRole).value<GameListItemType>() == GameListItemType::Game ||
+                                   !item->data(GameListItemPath::FullPathRole).toString().isEmpty()) {
+                            total++;
                         }
                     }
                     if (total > 0) {
@@ -336,7 +342,11 @@ void GameList::UnloadController() {
 }
 
 void GameList::ResetViewMode() {
-    const auto mode = UISettings::values.game_list_mode.GetValue();
+    auto mode = UISettings::values.game_list_mode.GetValue();
+    if (mode == Settings::GameListMode::CarouselView) {
+        mode = Settings::GameListMode::TreeView;
+        UISettings::values.game_list_mode.SetValue(mode);
+    }
     game_list_mode = mode;
 
     const bool was_initialized = (m_currentView != nullptr);
@@ -443,6 +453,10 @@ void GameList::OnFilterCloseClicked() {
 
 void GameList::OnPopulatingCompleted(const QStringList& watch_list) {
     emit ShowList(!item_model->IsEmpty());
+
+    if (!m_isTreeMode && grid_view) {
+        grid_view->ApplyFilter(search_field ? search_field->filterText() : QString{}, item_model);
+    }
 
     // favorites row
     if (m_isTreeMode) {
@@ -725,6 +739,22 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
     };
 
     QAction* properties = context_menu.addAction(item_tr(QString(), "Configure Game", QStringLiteral("Настройки игры...")));
+    {
+        QPixmap pixmap(18, 18);
+        pixmap.fill(Qt::transparent);
+        QPainter painter(&pixmap);
+        painter.setRenderHint(QPainter::Antialiasing);
+        QPen pen(QColor(0, 240, 255), 1.6, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+        painter.setPen(pen);
+        painter.drawEllipse(QPointF(9, 9), 5.5, 5.5);
+        painter.drawEllipse(QPointF(9, 9), 2.5, 2.5);
+        for (int i = 0; i < 8; ++i) {
+            qreal a = i * 3.14159265 / 4.0;
+            painter.drawLine(QPointF(9 + 5.5 * cos(a), 9 + 5.5 * sin(a)),
+                             QPointF(9 + 8.0 * cos(a), 9 + 8.0 * sin(a)));
+        }
+        properties->setIcon(QIcon(pixmap));
+    }
     QAction* favorite = context_menu.addAction(item_tr(QStringLiteral("⭐ "), "Favorite", QStringLiteral("Добавить в избранное")));
     context_menu.addSeparator();
     QAction* start_game = context_menu.addAction(item_tr(QStringLiteral("▶️ "), "Start Game", QStringLiteral("Запустить игру")));

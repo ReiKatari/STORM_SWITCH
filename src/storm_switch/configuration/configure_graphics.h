@@ -72,6 +72,7 @@ private:
     void UpdateAPILayout();
     void UpdateDeviceSelection(int device);
     void UpdateResolutionItems();
+    void UpdateDriverDetails(int device);
 
     void RetrieveVulkanDevices();
 
@@ -108,6 +109,8 @@ private:
     const Core::System& system;
     const ConfigurationShared::ComboboxTranslationMap& combobox_translations;
 
+    QLabel* m_driver_details_label{nullptr};
+    QWidget* m_driver_details_widget{nullptr};
     QPushButton* api_restore_global_button;
     QComboBox* vulkan_device_combobox;
     QComboBox* api_combobox;

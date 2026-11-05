@@ -114,7 +114,15 @@ class GameFixDialogFragment : DialogFragment() {
         val idString = "ID: $hexId"
         binding.textGameFixId.text = idString
         binding.textGameFixTitleId.text = idString
-        binding.textGameFixStatusBadge.text = "🛡️ AUTO-FIX"
+        val currentLang = resources.configuration.locales[0].language
+        val isRu = currentLang.equals("ru", ignoreCase = true) || currentLang.equals("uk", ignoreCase = true) || currentLang.equals("be", ignoreCase = true)
+        binding.textGameFixStatusBadge.text = if (isRu) "АВТО-ФИКС" else "AUTO-FIX"
+
+        val cleanVer = currentGame.version.trim().removePrefix("v").removePrefix("V").trim()
+        try {
+            binding.textGameFixVersion.visibility = if (cleanVer.isNotEmpty()) View.VISIBLE else View.GONE
+            binding.textGameFixVersion.text = cleanVer
+        } catch (_: Throwable) {}
 
         GameIconUtils.loadGameIcon(currentGame, binding.imageGameFixIcon)
 

@@ -454,7 +454,7 @@ struct Values {
 
     Setting<u8> row_2_text_id{linkage, 2, "row_2_text_id", Category::UiGameList};
 
-    Setting<Settings::GameListMode> game_list_mode{linkage, Settings::GameListMode::GridView, "game_list_mode", Category::UiGameList};
+    Setting<Settings::GameListMode> game_list_mode{linkage, Settings::GameListMode::TreeView, "game_list_mode", Category::UiGameList};
 
     Setting<bool> show_game_name{linkage, true, "show_game_name", Category::UiGameList};
 

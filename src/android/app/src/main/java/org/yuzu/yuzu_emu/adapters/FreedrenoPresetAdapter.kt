@@ -36,12 +36,18 @@ class FreedrenoPresetAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(preset: FreedrenoPreset) {
+            val ctx = binding.root.context
+            val currentLang = ctx.resources.configuration.locales[0].language
+            val isRu = currentLang.equals("ru", ignoreCase = true) || currentLang.equals("uk", ignoreCase = true) || currentLang.equals("be", ignoreCase = true)
+            val locName = preset.getLocalizedName(isRu)
+            val locDesc = preset.getLocalizedDescription(isRu)
+
             binding.presetButton.apply {
-                text = preset.name
+                text = locName
                 setOnClickListener {
                     onPresetClicked(preset)
                 }
-                contentDescription = "${preset.name}: ${preset.description}"
+                contentDescription = "$locName: $locDesc"
             }
         }
     }

@@ -5,580 +5,578 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorSurface"
-    android:orientation="horizontal"
-    android:baselineAligned="false"
+    android:orientation="vertical"
     android:paddingHorizontal="14dp"
     android:paddingVertical="10dp">
 
-    <!-- LEFT COLUMN: Game Header + Scrollable Issues & Recommendations -->
+    <!-- 1. Header: Crisp 76dp x 76dp Cover (10dp rounded, ZERO border) + Title + ID + Version Badge + Status Pill -->
     <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1.08"
-        android:layout_marginEnd="8dp"
-        android:orientation="vertical">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="8dp">
 
-        <!-- 1. Header: Borderless Game Cover Icon + Title + ID + Badge -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="8dp">
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="76dp"
+            android:layout_height="76dp"
+            android:layout_marginEnd="12dp"
+            app:cardCornerRadius="10dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp"
+            app:strokeColor="@android:color/transparent"
+            app:cardBackgroundColor="@android:color/transparent">
 
             <ImageView
                 android:id="@+id/image_game_fix_icon"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:scaleType="fitCenter"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
                 android:background="@android:color/transparent"
-                android:layout_marginEnd="10dp"
                 tools:src="@drawable/ic_controller" />
 
-            <LinearLayout
-                android:layout_width="0dp"
+        </com.google.android.material.card.MaterialCardView>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/text_game_fix_title"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
+                android:text="The Legend of Zelda"
+                android:textSize="15.5sp"
+                android:textStyle="bold"
+                android:textColor="?attr/colorOnSurface"
+                android:breakStrategy="simple"
+                android:hyphenationFrequency="none" />
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/text_game_fix_title"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="The Legend of Zelda"
-                    android:textSize="15sp"
-                    android:textStyle="bold"
-                    android:textColor="?attr/colorOnSurface"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="4dp">
 
+                <!-- Title ID Pill -->
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginTop="2dp">
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/badge_pill_background"
-                        android:paddingHorizontal="6dp"
-                        android:paddingVertical="1dp"
-                        android:layout_marginEnd="6dp">
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/text_game_fix_id"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="ID: 0100F2C0115B6000"
-                            android:textSize="10sp"
-                            android:textColor="?attr/colorPrimary"
-                            android:fontFamily="monospace"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/text_game_fix_title_id"
-                            android:layout_width="0dp"
-                            android:layout_height="0dp"
-                            android:visibility="gone"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-                    </LinearLayout>
+                    android:background="@drawable/badge_pill_background"
+                    android:paddingHorizontal="6dp"
+                    android:paddingVertical="2dp"
+                    android:layout_marginEnd="6dp">
 
                     <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/text_game_fix_status_badge"
+                        android:id="@+id/text_game_fix_id"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/badge_pill_background"
-                        android:paddingHorizontal="6dp"
-                        android:paddingVertical="1dp"
-                        android:text="🛡️ AUTO-FIX"
-                        android:textSize="9.5sp"
-                        android:textStyle="bold"
+                        android:text="ID: 0100F2C0115B6000"
+                        android:textSize="10sp"
                         android:textColor="?attr/colorPrimary"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                        android:fontFamily="monospace"
+                        android:breakStrategy="simple"
+                        android:hyphenationFrequency="none" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/text_game_fix_title_id"
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:visibility="gone"
+                        android:breakStrategy="simple"
+                        android:hyphenationFrequency="none" />
 
                 </LinearLayout>
+
+                <!-- Clean Game Version Badge (No 'v' prefix) -->
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/text_game_fix_version"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/badge_pill_cyan"
+                    android:paddingHorizontal="6dp"
+                    android:paddingVertical="2dp"
+                    android:layout_marginEnd="6dp"
+                    android:text="1.0.0"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:textColor="#00D2FF"
+                    android:fontFamily="monospace"
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none" />
+
+                <!-- Optimization Profile Badge -->
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/text_game_fix_status_badge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/badge_pill_background"
+                    android:paddingHorizontal="6dp"
+                    android:paddingVertical="2dp"
+                    android:text="@string/game_fix_status_badge"
+                    android:textSize="9.5sp"
+                    android:textStyle="bold"
+                    android:textColor="?attr/colorPrimary"
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none" />
 
             </LinearLayout>
 
         </LinearLayout>
 
-        <!-- 2. Independent Scroll Area for Issues & Recommendations Cards -->
-        <androidx.core.widget.NestedScrollView
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:fillViewport="true"
-            android:scrollbars="vertical"
-            android:fadeScrollbars="false">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <!-- Issues Card -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/card_issues"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    app:cardCornerRadius="10dp"
-                    app:cardElevation="0dp"
-                    app:cardBackgroundColor="?attr/colorSurfaceVariant"
-                    app:strokeColor="#EF4444"
-                    app:strokeWidth="1.2dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="8dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical"
-                            android:layout_marginBottom="4dp">
-
-                            <ImageView
-                                android:layout_width="14dp"
-                                android:layout_height="14dp"
-                                android:src="@drawable/ic_info_outline"
-                                app:tint="#EF4444"
-                                android:layout_marginEnd="5dp" />
-
-                            <com.google.android.material.textview.MaterialTextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/game_fix_issues_header"
-                                android:textSize="11sp"
-                                android:textStyle="bold"
-                                android:textColor="#EF4444"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-                        </LinearLayout>
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/text_game_fix_issues"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:textSize="10.5sp"
-                            android:lineSpacingExtra="1.5dp"
-                            android:textColor="?attr/colorOnSurfaceVariant"
-                            tools:text="• Visual artifacts in shadow rendering\n• Memory leak on scene transition"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-                    </LinearLayout>
-
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- Recommended Settings Card -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/card_fixes"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:cardCornerRadius="10dp"
-                    app:cardElevation="0dp"
-                    app:cardBackgroundColor="?attr/colorSurfaceVariant"
-                    app:strokeColor="?attr/colorPrimary"
-                    app:strokeWidth="1.2dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="8dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical"
-                            android:layout_marginBottom="4dp">
-
-                            <ImageView
-                                android:layout_width="14dp"
-                                android:layout_height="14dp"
-                                android:src="@drawable/ic_check"
-                                app:tint="?attr/colorPrimary"
-                                android:layout_marginEnd="5dp" />
-
-                            <com.google.android.material.textview.MaterialTextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/game_fix_recommended_header"
-                                android:textSize="11sp"
-                                android:textStyle="bold"
-                                android:textColor="?attr/colorPrimary"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-                        </LinearLayout>
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/text_game_fix_recommendations"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:textSize="10.5sp"
-                            android:lineSpacingExtra="1.5dp"
-                            android:textColor="?attr/colorOnSurface"
-                            tools:text="✓ Fastmem: Enabled\n✓ Reactive Flushing: Enabled"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/text_game_fix_recommended"
-                            android:layout_width="0dp"
-                            android:layout_height="0dp"
-                            android:visibility="gone"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-                    </LinearLayout>
-
-                </com.google.android.material.card.MaterialCardView>
-
-            </LinearLayout>
-
-        </androidx.core.widget.NestedScrollView>
-
     </LinearLayout>
 
-    <!-- RIGHT COLUMN: Launch Method + 4 Compact Launch Mode Cards + Checkbox + Cancel (Rigidly Fixed, Never Scrolls) -->
+    <!-- 2. Scrollable Body: Issues & Recommendations + 4 Launch Mode Cards -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:scrollbars="vertical"
+        android:fadeScrollbars="false">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Card 1: Known Issues (conditional) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_issues"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="6dp"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant"
+                app:strokeColor="?attr/colorOutline"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="8dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="3dp">
+
+                        <ImageView
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:src="@drawable/ic_info_outline"
+                            app:tint="#FFA000"
+                            android:layout_marginEnd="5dp" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/game_fix_issues_header"
+                            android:textSize="10.5sp"
+                            android:textStyle="bold"
+                            android:textColor="#FFA000"
+                            android:breakStrategy="simple"
+                            android:hyphenationFrequency="none" />
+
+                    </LinearLayout>
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/text_game_fix_issues"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="9.5sp"
+                        android:lineSpacingExtra="2dp"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:breakStrategy="simple"
+                        android:hyphenationFrequency="none" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Card 2: Applied Auto-Fixes & Recommendations (Green Bullet List) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_fixes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant"
+                app:strokeColor="?attr/colorPrimary"
+                app:strokeWidth="1.2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="8dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="3dp">
+
+                        <ImageView
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:src="@drawable/ic_check_circle"
+                            app:tint="?attr/colorPrimary"
+                            android:layout_marginEnd="5dp" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/game_fix_recommended_header"
+                            android:textSize="10.5sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorPrimary"
+                            android:breakStrategy="simple"
+                            android:hyphenationFrequency="none" />
+
+                    </LinearLayout>
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/text_game_fix_recommendations"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="9.5sp"
+                        android:lineSpacingExtra="2dp"
+                        android:textColor="?attr/colorOnSurface"
+                        android:breakStrategy="simple"
+                        android:hyphenationFrequency="none" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/text_game_fix_recommended"
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:visibility="gone"
+                        android:breakStrategy="simple"
+                        android:hyphenationFrequency="none" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 4 Launch Mode Cards -->
+            <!-- Card 1: Apply Auto-Fix & Launch -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_launch_auto_fix"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant"
+                app:strokeColor="?attr/colorPrimary"
+                app:strokeWidth="1.5dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="8dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="2dp">
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/ic_check_circle"
+                            app:tint="?attr/colorPrimary"
+                            android:layout_marginEnd="6dp" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/launch_mode_auto_fix"
+                            android:textSize="11.5sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorPrimary"
+                            android:breakStrategy="simple"
+                            android:hyphenationFrequency="none" />
+
+                        <ImageView
+                            android:layout_width="13dp"
+                            android:layout_height="13dp"
+                            android:src="@drawable/ic_arrow_forward"
+                            app:tint="?attr/colorPrimary" />
+
+                    </LinearLayout>
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/launch_mode_auto_fix_description"
+                        android:textSize="9.5sp"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:breakStrategy="simple"
+                        android:hyphenationFrequency="none" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Card 2: Merge with My Game Settings -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_launch_auto_fix_custom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant"
+                app:strokeColor="?attr/colorPrimary"
+                app:strokeWidth="1.2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="8dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="2dp">
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/ic_tune"
+                            app:tint="?attr/colorPrimary"
+                            android:layout_marginEnd="6dp" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/launch_mode_auto_fix_with_custom"
+                            android:textSize="11.5sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorOnSurface"
+                            android:breakStrategy="simple"
+                            android:hyphenationFrequency="none" />
+
+                        <ImageView
+                            android:layout_width="13dp"
+                            android:layout_height="13dp"
+                            android:src="@drawable/ic_arrow_forward"
+                            app:tint="?attr/colorPrimary" />
+
+                    </LinearLayout>
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/launch_mode_auto_fix_with_custom_description"
+                        android:textSize="9.5sp"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:breakStrategy="simple"
+                        android:hyphenationFrequency="none" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Card 3: Launch with My Game Settings -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_launch_custom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant"
+                app:strokeColor="?attr/colorOutline"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="8dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="2dp">
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/ic_settings"
+                            app:tint="?attr/colorOnSurfaceVariant"
+                            android:layout_marginEnd="6dp" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/launch_mode_custom"
+                            android:textSize="11.5sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorOnSurface"
+                            android:breakStrategy="simple"
+                            android:hyphenationFrequency="none" />
+
+                        <ImageView
+                            android:layout_width="13dp"
+                            android:layout_height="13dp"
+                            android:src="@drawable/ic_arrow_forward"
+                            app:tint="?attr/colorOnSurfaceVariant" />
+
+                    </LinearLayout>
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/launch_mode_custom_description"
+                        android:textSize="9.5sp"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:breakStrategy="simple"
+                        android:hyphenationFrequency="none" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Card 4: Launch with Global Settings -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_launch_global"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant"
+                app:strokeColor="?attr/colorOutline"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="8dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="2dp">
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/ic_settings"
+                            app:tint="?attr/colorOnSurfaceVariant"
+                            android:layout_marginEnd="6dp" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/launch_mode_global"
+                            android:textSize="11.5sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorOnSurface"
+                            android:breakStrategy="simple"
+                            android:hyphenationFrequency="none" />
+
+                        <ImageView
+                            android:layout_width="13dp"
+                            android:layout_height="13dp"
+                            android:src="@drawable/ic_arrow_forward"
+                            app:tint="?attr/colorOnSurfaceVariant" />
+
+                    </LinearLayout>
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/launch_mode_global_description"
+                        android:textSize="9.5sp"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:breakStrategy="simple"
+                        android:hyphenationFrequency="none" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- 3. Bottom Action Bar: Checkbox + Cancel Button -->
     <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="0.92"
-        android:layout_marginStart="6dp"
-        android:orientation="vertical">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="4dp">
 
-        <com.google.android.material.textview.MaterialTextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/launch_method_title"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:textColor="?attr/colorOnSurface"
-            android:layout_marginBottom="5dp"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-        <!-- Card 1: Auto-Fix -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/card_launch_auto_fix"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="5dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:foreground="?attr/selectableItemBackground"
-            app:cardCornerRadius="10dp"
-            app:cardElevation="0dp"
-            app:cardBackgroundColor="?attr/colorSurfaceVariant"
-            app:strokeColor="?attr/colorPrimary"
-            app:strokeWidth="1.5dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="7dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="2dp">
-
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:src="@drawable/ic_check_circle"
-                        app:tint="?attr/colorPrimary"
-                        android:layout_marginEnd="5dp" />
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/launch_mode_auto_fix"
-                        android:textSize="11.5sp"
-                        android:textStyle="bold"
-                        android:textColor="?attr/colorPrimary"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-                    <ImageView
-                        android:layout_width="13dp"
-                        android:layout_height="13dp"
-                        android:src="@drawable/ic_arrow_forward"
-                        app:tint="?attr/colorPrimary" />
-
-                </LinearLayout>
-
-                <com.google.android.material.textview.MaterialTextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/launch_mode_auto_fix_description"
-                    android:textSize="9.5sp"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-            </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Card 2: Auto-Fix with Custom -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/card_launch_auto_fix_custom"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="5dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:foreground="?attr/selectableItemBackground"
-            app:cardCornerRadius="10dp"
-            app:cardElevation="0dp"
-            app:cardBackgroundColor="?attr/colorSurfaceVariant"
-            app:strokeColor="?attr/colorPrimary"
-            app:strokeWidth="1.2dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="7dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="2dp">
-
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:src="@drawable/ic_tune"
-                        app:tint="?attr/colorPrimary"
-                        android:layout_marginEnd="5dp" />
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/launch_mode_auto_fix_with_custom"
-                        android:textSize="11.5sp"
-                        android:textStyle="bold"
-                        android:textColor="?attr/colorOnSurface"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-                    <ImageView
-                        android:layout_width="13dp"
-                        android:layout_height="13dp"
-                        android:src="@drawable/ic_arrow_forward"
-                        app:tint="?attr/colorPrimary" />
-
-                </LinearLayout>
-
-                <com.google.android.material.textview.MaterialTextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/launch_mode_auto_fix_with_custom_description"
-                    android:textSize="9.5sp"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-            </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Card 3: Custom -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/card_launch_custom"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="5dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:foreground="?attr/selectableItemBackground"
-            app:cardCornerRadius="10dp"
-            app:cardElevation="0dp"
-            app:cardBackgroundColor="?attr/colorSurfaceVariant"
-            app:strokeColor="?attr/colorPrimary"
-            app:strokeWidth="1.2dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="7dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="2dp">
-
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:src="@drawable/ic_controller"
-                        app:tint="?attr/colorPrimary"
-                        android:layout_marginEnd="5dp" />
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/launch_mode_custom"
-                        android:textSize="11.5sp"
-                        android:textStyle="bold"
-                        android:textColor="?attr/colorOnSurface"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-                    <ImageView
-                        android:layout_width="13dp"
-                        android:layout_height="13dp"
-                        android:src="@drawable/ic_arrow_forward"
-                        app:tint="?attr/colorPrimary" />
-
-                </LinearLayout>
-
-                <com.google.android.material.textview.MaterialTextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/launch_mode_custom_description"
-                    android:textSize="9.5sp"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-            </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Card 4: Global -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/card_launch_global"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="5dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:foreground="?attr/selectableItemBackground"
-            app:cardCornerRadius="10dp"
-            app:cardElevation="0dp"
-            app:cardBackgroundColor="?attr/colorSurfaceVariant"
-            app:strokeColor="?attr/colorOutline"
-            app:strokeWidth="1dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="7dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="2dp">
-
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:src="@drawable/ic_system"
-                        app:tint="?attr/colorOnSurfaceVariant"
-                        android:layout_marginEnd="5dp" />
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/launch_mode_global"
-                        android:textSize="11.5sp"
-                        android:textStyle="bold"
-                        android:textColor="?attr/colorOnSurface"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-                    <ImageView
-                        android:layout_width="13dp"
-                        android:layout_height="13dp"
-                        android:src="@drawable/ic_arrow_forward"
-                        app:tint="?attr/colorOnSurfaceVariant" />
-
-                </LinearLayout>
-
-                <com.google.android.material.textview.MaterialTextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/launch_mode_global_description"
-                    android:textSize="9.5sp"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-            </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Checkbox "Don't ask again" -->
         <com.google.android.material.checkbox.MaterialCheckBox
             android:id="@+id/checkbox_dont_ask_again"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:minHeight="28dp"
+            android:layout_weight="1"
             android:text="@string/game_fix_dont_ask_again"
-            android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="11sp"
-            android:layout_marginBottom="4dp" />
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:breakStrategy="simple"
+            android:hyphenationFrequency="none" />
 
-        <!-- Cancel Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_cancel"
-            android:layout_width="match_parent"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
             android:layout_height="36dp"
             android:text="@string/cancel"
-            android:textColor="#FFFFFF"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:background="@drawable/bg_cancel_button"
-            app:backgroundTint="@null"
-            app:strokeColor="#F87171"
-            app:strokeWidth="1dp"
-            app:cornerRadius="8dp"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"
-    android:maxLines="1"
-    android:ellipsize="none"/>
+            android:textSize="11sp"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:breakStrategy="simple"
+            android:hyphenationFrequency="none" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_cancel_launch"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:visibility="gone"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"
-    android:maxLines="1"
-    android:ellipsize="none"/>
+            android:breakStrategy="simple"
+            android:hyphenationFrequency="none" />
 
     </LinearLayout>
 

@@ -98,7 +98,7 @@ class DriverAdapter(
                 title.text = model.title
                 if (model.version.isNotBlank() && model.version != model.title) {
                     version.setVisible(true)
-                    version.text = model.version
+                    version.text = model.version.trim().removePrefix("v").removePrefix("V").trim()
                 } else {
                     version.setVisible(false)
                 }

@@ -32,6 +32,7 @@
 #include "core/hle/service/filesystem/filesystem.h"
 #include "ui_configure_profile_manager.h"
 #include "storm_switch/configuration/configure_profile_manager.h"
+#include "storm_switch/common/storm_lang.h"
 #include "storm_switch/util/limitable_input_dialog.h"
 
 namespace {
@@ -136,7 +137,11 @@ void ConfigureProfileManager::changeEvent(QEvent* event) {
 
 void ConfigureProfileManager::RetranslateUI() {
     ui->retranslateUi(this);
-    item_model->setHeaderData(0, Qt::Horizontal, tr("Users"));
+    item_model->setHeaderData(0, Qt::Horizontal, StormLang(QStringLiteral("Пользователи"), QStringLiteral("Users")));
+    ui->gridGroupBox->setTitle(StormLang(QStringLiteral("Менеджер профилей"), QStringLiteral("Profile Manager")));
+    ui->label->setText(StormLang(QStringLiteral("Текущий пользователь:"), QStringLiteral("Current User:")));
+    ui->pm_add->setText(StormLang(QStringLiteral("Добавить"), QStringLiteral("Add")));
+    ui->label_disable_info->setText(StormLang(QStringLiteral("Управление профилями доступно только тогда, когда игра не запущена."), QStringLiteral("Profile management is available only when game is not running.")));
     UpdateCurrentUser();
 }
 
@@ -192,7 +197,7 @@ void ConfigureProfileManager::UpdateCurrentUser() {
         ui->current_user_username->setText(username);
     } else {
         scene->clear();
-        ui->current_user_username->setText(tr("No user selected"));
+        ui->current_user_username->setText(StormLang(QStringLiteral("Пользователь не выбран"), QStringLiteral("No user selected")));
     }
 }
 
@@ -242,8 +247,8 @@ void ConfigureProfileManager::showContextMenu(const QPoint& pos) {
 
     QMenu menu(this);
 
-    QAction* edit = menu.addAction(tr("&Edit"));
-    QAction* remove = menu.addAction(tr("&Delete"));
+    QAction* edit = menu.addAction(StormLang(QStringLiteral("Редактировать"), QStringLiteral("&Edit")));
+    QAction* remove = menu.addAction(StormLang(QStringLiteral("Удалить"), QStringLiteral("&Delete")));
 
     QAction* chosen = menu.exec(tree_view->viewport()->mapToGlobal(pos));
 
@@ -303,7 +308,7 @@ void ConfigureProfileManager::EditUser() {
     std::ranges::copy_if(profile.username, std::back_inserter(username),
                          [](u8 byte) { return byte != 0; });
 
-    NewUserDialog* dialog = new NewUserDialog(uuid.value(), username, tr("Edit User"), this);
+    NewUserDialog* dialog = new NewUserDialog(uuid.value(), username, StormLang(QStringLiteral("Редактировать пользователя"), QStringLiteral("Edit User")), this);
 
     connect(dialog, &NewUserDialog::userAdded, this,
             [dialog, profile, user_idx, uuid, this](User user) mutable {
@@ -371,7 +376,7 @@ ConfigureProfileManagerDeleteDialog::ConfigureProfileManagerDeleteDialog(QWidget
     dialog_button_box =
         new QDialogButtonBox(QDialogButtonBox::Yes | QDialogButtonBox::No, Qt::Horizontal, parent);
     auto label_message =
-        new QLabel(tr("Delete this user? All of the user's save data will be deleted."), this);
+        new QLabel(StormLang(QStringLiteral("Удалить этого пользователя? Все сохранения пользователя будут удалены."), QStringLiteral("Delete this user? All of the user's save data will be deleted.")), this);
     label_info = new QLabel(this);
     auto dialog_hbox_layout_widget = new QWidget(this);
     auto dialog_hbox_layout = new QHBoxLayout(dialog_hbox_layout_widget);
@@ -386,7 +391,7 @@ ConfigureProfileManagerDeleteDialog::ConfigureProfileManagerDeleteDialog(QWidget
     icon_view->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     this->setLayout(dialog_vbox_layout);
-    this->setWindowTitle(tr("Confirm Delete"));
+    this->setWindowTitle(StormLang(QStringLiteral("Подтверждение удаления"), QStringLiteral("Confirm Delete")));
     this->setSizeGripEnabled(false);
 
     dialog_vbox_layout->addWidget(label_message);
@@ -409,7 +414,7 @@ ConfigureProfileManagerDeleteDialog::~ConfigureProfileManagerDeleteDialog() = de
 void ConfigureProfileManagerDeleteDialog::SetInfo(const QString& username, const Common::UUID& uuid,
                                                   int index) {
     label_info->setText(
-        tr("Name: %1\nUUID: %2").arg(username, QString::fromStdString(uuid.FormattedString())));
+        StormLang(QStringLiteral("Имя: %1\nUUID: %2"), QStringLiteral("Name: %1\nUUID: %2")).arg(username, QString::fromStdString(uuid.FormattedString())));
     icon_scene->clear();
     icon_scene->addPixmap(GetIcon(uuid));
 

@@ -75,8 +75,13 @@ data class FreedrenoPreset(
     val name: String,           // Display name (e.g., "Debug - CPU Memory")
     val description: String,    // Description of what this preset does
     val icon: String,           // Icon identifier
-    val variables: Map<String, String> // Map of env vars to set
-)
+    val variables: Map<String, String>, // Map of env vars to set
+    val nameRu: String = "",
+    val descriptionRu: String = ""
+) {
+    fun getLocalizedName(isRu: Boolean): String = if (isRu && nameRu.isNotEmpty()) nameRu else name
+    fun getLocalizedDescription(isRu: Boolean): String = if (isRu && descriptionRu.isNotEmpty()) descriptionRu else description
+}
 
 /**
  * Predefined Freedreno presets for quick configuration.
@@ -87,27 +92,27 @@ object FreedrenoPresets {
         name = "Debug - CPU Memory",
         description = "Use CPU memory (slower but more stable)",
         icon = "ic_debug_cpu",
-        variables = mapOf(
-            "TU_DEBUG" to "sysmem"
-        )
+        variables = mapOf("TU_DEBUG" to "sysmem"),
+        nameRu = "Отладка: Системная память",
+        descriptionRu = "Принудительный рендеринг через системную память (sysmem)"
     )
 
     val DEBUG_UBWC_DISABLED = FreedrenoPreset(
         name = "Debug - No UBWC",
         description = "Disable UBWC compression for debugging",
         icon = "ic_debug_ubwc",
-        variables = mapOf(
-            "TU_DEBUG" to "noubwc"
-        )
+        variables = mapOf("TU_DEBUG" to "noubwc"),
+        nameRu = "Отладка: Без UBWC",
+        descriptionRu = "Отключение сжатия UBWC для устранения графических артефактов"
     )
 
     val DEBUG_NO_BINNING = FreedrenoPreset(
         name = "Debug - No Binning",
         description = "Disable binning optimization",
         icon = "ic_debug_bin",
-        variables = mapOf(
-            "TU_DEBUG" to "nobin"
-        )
+        variables = mapOf("TU_DEBUG" to "nobin"),
+        nameRu = "Отладка: Без тайлинга (No Binning)",
+        descriptionRu = "Отключение тайлового биннинга ГПУ для стабильности"
     )
 
     val CAPTURE_RENDERPASS = FreedrenoPreset(
@@ -160,7 +165,9 @@ object FreedrenoPresets {
         name = "Performance - Default",
         description = "Clear all debug options for performance",
         icon = "ic_performance",
-        variables = emptyMap()  // Clears all when applied
+        variables = emptyMap(),
+        nameRu = "По умолчанию (Максимум FPS)",
+        descriptionRu = "Сброс всех отладочных флагов для максимальной производительности"
     )
 
     val ALL_PRESETS = listOf(

@@ -52,6 +52,16 @@ object GpuDriverHelper {
     }
 
 
+    fun isMaliGpu(): Boolean {
+        val model = (hookLibPath?.let { getGpuModel(hookLibPath = it) } ?: "").lowercase()
+        return model.contains("mali") || model.contains("immortalis")
+    }
+
+    fun isXclipseGpu(): Boolean {
+        val model = (hookLibPath?.let { getGpuModel(hookLibPath = it) } ?: "").lowercase()
+        return model.contains("xclipse")
+    }
+
     fun isStormDriver8OrNewer(): Boolean {
         val meta = installedCustomDriverData
         val name = meta.name ?: ""
@@ -62,6 +72,18 @@ object GpuDriverHelper {
         val verNum = regex.find(ver)?.value ?: regex.find(name)?.value ?: "0"
         val major = verNum.split(".").firstOrNull()?.toIntOrNull() ?: 0
         return major >= 8
+    }
+
+    fun isStormDriver10OrNewer(): Boolean {
+        val meta = installedCustomDriverData
+        val name = meta.name ?: ""
+        val ver = meta.version ?: ""
+        val isStorm = name.contains("STORM", ignoreCase = true) || ver.contains("STORM", ignoreCase = true)
+        if (!isStorm) return false
+        val regex = Regex("""\d+(\.\d+)*""")
+        val verNum = regex.find(ver)?.value ?: regex.find(name)?.value ?: "0"
+        val major = verNum.split(".").firstOrNull()?.toIntOrNull() ?: 0
+        return major >= 10
     }
 
     fun isAdreno8xx(): Boolean {
@@ -113,6 +135,24 @@ object GpuDriverHelper {
                libName.contains("purple", ignoreCase = true)
     }
 
+    fun isPanVkDriverActive(): Boolean {
+        val metadata = installedCustomDriverData
+        val libName = metadata.libraryName ?: ""
+        val vendor = metadata.vendor ?: ""
+        val name = metadata.name ?: ""
+        val description = metadata.description ?: ""
+        val activeDriverZipPath = try { StringSetting.DRIVER_PATH.getString() } catch (_: Exception) { "" }
+        return name.contains("PanVK", ignoreCase = true) ||
+               name.contains("Panfrost", ignoreCase = true) ||
+               vendor.contains("Panfrost", ignoreCase = true) ||
+               vendor.contains("PanVK", ignoreCase = true) ||
+               libName.contains("panvk", ignoreCase = true) ||
+               libName.contains("panfrost", ignoreCase = true) ||
+               description.contains("PanVK", ignoreCase = true) ||
+               activeDriverZipPath.contains("panvk", ignoreCase = true) ||
+               activeDriverZipPath.contains("panfrost", ignoreCase = true)
+    }
+
     fun isDriverCompatibleWithAdreno8xx(metadata: GpuDriverMetadata): Boolean {
         // System driver is always 100% compatible
         if (metadata.name == null) {
@@ -154,8 +194,9 @@ object GpuDriverHelper {
         initializeDirectories()
         hookLibPath = YuzuApplication.appContext.applicationInfo.nativeLibraryDir + "/"
 
-        if (!isAdrenoGpu()) {
-            // On non-Adreno GPUs (Mali / Immortalis on Dimensity, Xclipse, Tensor), custom drivers cannot be loaded.
+        val isPanVkOrStorm = isPanVkDriverActive() || (isMaliGpu() && isStormDriver8OrNewer())
+        if (!isAdrenoGpu() && !isPanVkOrStorm) {
+            // On non-Adreno GPUs without a PanVK custom driver, custom drivers cannot be loaded.
             // Clean up any stray Turnip driver files to prevent startup crashes.
             try {
                 driverInstallationPath?.let { path ->

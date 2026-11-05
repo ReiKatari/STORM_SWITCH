@@ -628,7 +628,7 @@ class HomeSettingsFragment : Fragment() {
             val f = java.io.File(logDir, "storm_switch_gpu.log")
             try {
                 f.writeText(buildString {
-                    appendLine("=== STORM SWITCH v${NativeLibrary.getBuildVersion()} GPU Log ===")
+                    appendLine("=== STORM SWITCH ${NativeLibrary.getBuildVersion()} GPU Log ===")
                     appendLine("Date: ${java.util.Date()}")
                     appendLine("GPU Model: ${try { NativeLibrary.getGpuModel() } catch (_: Exception) { "Unknown" }}")
                     appendLine("Vulkan API: ${try { NativeLibrary.getVulkanApiVersion() } catch (_: Exception) { "Unknown" }}")

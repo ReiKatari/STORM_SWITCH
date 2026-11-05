@@ -183,6 +183,7 @@
 #include "configuration/configure_input.h"
 
 #include "configuration/configure_per_game.h"
+#include "configuration/configure_profile_manager.h"
 
 #include "configuration/configure_tas.h"
 
@@ -1824,6 +1825,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
 
 
 
+    setWindowTitle(QStringLiteral("STORM SWITCH 16.2.4"));
     UpdateWindowTitle();
 
 
@@ -7298,6 +7300,9 @@ void MainWindow::SetupMenuIcons() {
     apply_action(ui->action_Grid_View, QStringLiteral("grid"), col_indigo);
 
     apply_action(ui->action_Carousel_View, QStringLiteral("carousel"), col_pink);
+    if (ui->action_Carousel_View) {
+        ui->action_Carousel_View->setVisible(false);
+    }
 
     apply_menu(ui->menuGame_Icon_Size, QStringLiteral("stats"), col_cyan);
 
@@ -7381,117 +7386,177 @@ void MainWindow::SetupMenuIcons() {
 
 
 
+        // Ensure Carousel view is hidden from View menu per Issue 6 (only Tree and Grid allowed)
+    if (ui->action_Carousel_View) {
+        ui->action_Carousel_View->setVisible(false);
+    }
+
+    // Direct access to key tools in Инструменты (menu_Tools) per Issue 6:
     if (!storm_games_world_action) {
-
         storm_games_world_action = new QAction(StormLang(
-
-            QStringLiteral("Каталог и менеджер игр STORM GAMES WORLD..."),
-
-            QStringLiteral("STORM GAMES WORLD Game Catalog and Manager..."),
-
-            QStringLiteral("STORM GAMES WORLD Spielekatalog und Manager..."),
-
-            QStringLiteral("Catalogue et gestionnaire de jeux STORM GAMES WORLD..."),
-
-            QStringLiteral("STORM GAMES WORLD 游戏目录与管理器..."),
-
-            QStringLiteral("STORM GAMES WORLD ゲームカタログとマネージャー...")
-
+            QStringLiteral("STORM GAMES WORLD (Каталог игр)..."),
+            QStringLiteral("STORM GAMES WORLD (Game Catalog)..."),
+            QStringLiteral("STORM GAMES WORLD (Spielekatalog)..."),
+            QStringLiteral("STORM GAMES WORLD (Catalogue de jeux)..."),
+            QStringLiteral("STORM GAMES WORLD (游戏目录)..."),
+            QStringLiteral("STORM GAMES WORLD (ゲームカタログ)...")
         ), this);
-
         storm_games_world_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+G")));
-
-        ui->menu_Tools->addAction(storm_games_world_action);
-
+        connect(storm_games_world_action, &QAction::triggered, this, &MainWindow::OnOpenStormGamesWorld);
     }
 
+    if (!user_profiles_action) {
+        user_profiles_action = new QAction(StormLang(
+            QStringLiteral("Менеджер профилей пользователей..."),
+            QStringLiteral("User Profiles Manager..."),
+            QStringLiteral("Benutzerprofil-Manager..."),
+            QStringLiteral("Gestionnaire de profils utilisateur..."),
+            QStringLiteral("用户配置文件管理器..."),
+            QStringLiteral("ユーザープロファイルマネージャー...")
+        ), this);
+        user_profiles_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+U")));
+        connect(user_profiles_action, &QAction::triggered, this, [this]() {
+            QDialog dlg(this);
+            dlg.setWindowTitle(StormLang(QStringLiteral("Менеджер профилей пользователей"), QStringLiteral("User Profiles Manager")));
+            auto* lay = new QVBoxLayout(&dlg);
+            auto* pm = new ConfigureProfileManager(*QtCommon::system, &dlg);
+            auto* bbox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dlg);
+            connect(bbox, &QDialogButtonBox::accepted, &dlg, [&dlg, pm] {
+                pm->ApplyConfiguration();
+                dlg.accept();
+            });
+            connect(bbox, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+            lay->addWidget(pm);
+            lay->addWidget(bbox);
+            dlg.resize(640, 480);
+            dlg.exec();
+        });
+    }
+
+    if (!auto_opt_action) {
+        auto_opt_action = new QAction(StormLang(
+            QStringLiteral("Авто-настройка и оптимизация (STORM GameFix)..."),
+            QStringLiteral("Auto-Optimization & Fixes (STORM GameFix)..."),
+            QStringLiteral("Auto-Optimierung und Fixes (STORM GameFix)..."),
+            QStringLiteral("Auto-optimisation et correctifs (STORM GameFix)..."),
+            QStringLiteral("自动设置与优化 (STORM GameFix)..."),
+            QStringLiteral("自動設定と最適化 (STORM GameFix)...")
+        ), this);
+        auto_opt_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+F")));
+        connect(auto_opt_action, &QAction::triggered, this, [this]() {
+            ShowGameFixDialog(m_current_addons_title_id, current_game_path, true /* force_show */);
+        });
+    }
+
+    if (!clear_shader_cache_action) {
+        clear_shader_cache_action = new QAction(StormLang(
+            QStringLiteral("Очистить кэш шейдеров..."),
+            QStringLiteral("Clear Shader Cache..."),
+            QStringLiteral("Shader-Cache leeren..."),
+            QStringLiteral("Effacer le cache de shaders..."),
+            QStringLiteral("清除着色器缓存..."),
+            QStringLiteral("シェーダーキャッシュをクリア...")
+        ), this);
+        connect(clear_shader_cache_action, &QAction::triggered, this, [this]() {
+            QMessageBox ask_box(this);
+            ask_box.setWindowTitle(StormLang(
+                QStringLiteral("Очистка кэша шейдеров"),
+                QStringLiteral("Clear Shader Cache"),
+                QStringLiteral("Shader-Cache leeren"),
+                QStringLiteral("Effacer le cache de shaders"),
+                QStringLiteral("清除着色器缓存"),
+                QStringLiteral("シェーダーキャッシュをクリア")));
+            ask_box.setText(StormLang(
+                QStringLiteral("<b>Вы уверены, что хотите очистить кэш шейдеров?</b><br><br>Скомпилированные пайплайны шейдеров будут удалены и созданы заново при следующем запуске игр."),
+                QStringLiteral("<b>Are you sure you want to clear the shader cache?</b><br><br>Compiled shader pipelines will be deleted and recreated on next launch.")));
+            ask_box.setIcon(QMessageBox::Question);
+            auto* ok_btn = ask_box.addButton(StormLang(QStringLiteral("Очистить"), QStringLiteral("Clear")), QMessageBox::AcceptRole);
+            ask_box.addButton(StormCancelText(), QMessageBox::RejectRole);
+            ask_box.exec();
+            if (ask_box.clickedButton() == ok_btn) {
+                const auto shader_cache_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::ShaderDir);
+                std::error_code ec;
+                if (std::filesystem::exists(shader_cache_dir)) {
+                    for (const auto& entry : std::filesystem::directory_iterator(shader_cache_dir, ec)) {
+                        std::filesystem::remove_all(entry.path(), ec);
+                    }
+                }
+                statusBar()->showMessage(StormLang(
+                    QStringLiteral("Кэш шейдеров успешно очищен"),
+                    QStringLiteral("Shader cache cleared successfully")), 4000);
+            }
+        });
+    }
+
+    // Apply icons
     apply_action(storm_games_world_action, QStringLiteral("download"), col_green);
+    apply_action(ui->action_Install_File_NAND, QStringLiteral("nand"), col_blue);
+    apply_action(user_profiles_action, QStringLiteral("users"), col_amber);
+    apply_action(auto_opt_action, QStringLiteral("shield"), col_cyan);
+    apply_action(clear_shader_cache_action, QStringLiteral("trash"), col_red);
+    apply_action(ui->action_Configure, QStringLiteral("config"), col_yellow);
 
+    // Re-populate menu_Tools in clean, logical groups with separators
+    ui->menu_Tools->clear();
+    // Group 1: Ecosystem & Installation
+    ui->menu_Tools->addAction(storm_games_world_action);
+    ui->menu_Tools->addAction(ui->action_Install_File_NAND);
+    ui->menu_Tools->addSeparator();
 
-
+    // Group 2: User Profiles & Optimization
+    ui->menu_Tools->addAction(user_profiles_action);
+    ui->menu_Tools->addAction(auto_opt_action);
+    ui->menu_Tools->addAction(clear_shader_cache_action);
     if (!storm_save_sync_action) {
-
         storm_save_sync_action = new QAction(StormLang(
-
             QStringLiteral("Синхронизация сохранений (STORM SAVE SYNC)..."),
-
             QStringLiteral("Save Synchronization (STORM SAVE SYNC)..."),
-
             QStringLiteral("Spielstand-Synchronisierung (STORM SAVE SYNC)..."),
-
             QStringLiteral("Synchronisation des sauvegardes (STORM SAVE SYNC)..."),
-
             QStringLiteral("存档同步 (STORM SAVE SYNC)..."),
-
             QStringLiteral("セーブデータ同期 (STORM SAVE SYNC)...")
-
         ), this);
-
         storm_save_sync_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+S")));
-
-        ui->menu_Tools->addAction(storm_save_sync_action);
-
+        connect(storm_save_sync_action, &QAction::triggered, this, &MainWindow::OnOpenStormSaveSync);
     }
-
     apply_action(storm_save_sync_action, QStringLiteral("refresh"), col_cyan);
+    ui->menu_Tools->addAction(storm_save_sync_action);
+    ui->menu_Tools->addSeparator();
 
+    // Group 3: Firmware & Decryption
+    ui->menu_Tools->addMenu(ui->menuInstall_Keys);
+    ui->menu_Tools->addMenu(ui->menuInstall_Firmware);
+    ui->menu_Tools->addAction(ui->action_Verify_installed_contents);
+    ui->menu_Tools->addAction(ui->action_Data_Manager);
+    ui->menu_Tools->addSeparator();
 
-
+    // Group 4: Screen & Media
+    ui->menu_Tools->addAction(ui->action_Capture_Screenshot);
+    ui->menu_Tools->addAction(ui->action_Translate_Screen);
+    ui->menu_Tools->addAction(ui->action_Mod_Manager);
+    ui->menu_Tools->addAction(ui->action_Cheats);
+    ui->menu_Tools->addMenu(ui->menu_Applets);
+    ui->menu_Tools->addMenu(ui->menuTAS);
     if (!log_viewer_action) {
-
         log_viewer_action = new QAction(StormLang(
-
             QStringLiteral("Журнал работы (Логи)..."),
-
             QStringLiteral("Log Viewer (Logs)..."),
-
             QStringLiteral("Ereignisprotokoll (Logs)..."),
-
             QStringLiteral("Journal des opérations (Logs)..."),
-
             QStringLiteral("运行日志 (Logs)..."),
-
             QStringLiteral("動作ログ (Logs)...")
-
         ), this);
-
         log_viewer_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+L")));
-
-        ui->menu_Tools->addAction(log_viewer_action);
-
+        connect(log_viewer_action, &QAction::triggered, this, [this]() {
+            OnOpenLogViewer();
+        });
     }
-
     apply_action(log_viewer_action, QStringLiteral("book"), col_blue);
+    ui->menu_Tools->addAction(log_viewer_action);
+    ui->menu_Tools->addSeparator();
 
-
-
-    if (!reset_gamefix_action) {
-
-        reset_gamefix_action = new QAction(StormLang(
-
-            QStringLiteral("Сбросить скрытые диалоги авто-исправлений..."),
-
-            QStringLiteral("Reset Hidden Auto-Fix Dialogs..."),
-
-            QStringLiteral("Ausgeblendete Auto-Fix-Dialoge zurücksetzen..."),
-
-            QStringLiteral("Réinitialiser les dialogues d'auto-correction masqués..."),
-
-            QStringLiteral("重置隐藏的自动修复对话框..."),
-
-            QStringLiteral("非表示の自動修正ダイアログをリセット...")
-
-        ), this);
-
-        ui->menu_Tools->addAction(reset_gamefix_action);
-
-        connect(reset_gamefix_action, &QAction::triggered, this, &MainWindow::OnResetGameFixSuppression);
-
-    }
-
-    apply_action(reset_gamefix_action, QStringLiteral("shield"), col_cyan);
-
-
+    // Group 5: Emulator Parameters
+    ui->menu_Tools->addAction(ui->action_Configure);
 
     // Multiplayer Menu
 
@@ -10181,12 +10246,18 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
 
     if (fm.hasMatch() && !fm.captured(1).isEmpty()) {
 
-        resolved_display_version = fm.captured(1);
+        if (fm.captured(1) != QStringLiteral("1.0.0") || resolved_display_version.isEmpty() || resolved_display_version == QStringLiteral("0")) {
+            resolved_display_version = fm.captured(1);
+        }
 
         if (raw_internal_version == 0 && !fm.captured(2).isEmpty()) {
 
             raw_internal_version = fm.captured(2).toUInt();
 
+        }
+
+        if ((resolved_display_version.isEmpty() || resolved_display_version == QStringLiteral("1.0.0")) && raw_internal_version > 0 && (raw_internal_version % 65536U) == 0 && (raw_internal_version / 65536U) <= 200) {
+            resolved_display_version = QStringLiteral("1.0.%1").arg(raw_internal_version / 65536U);
         }
 
     } else {
@@ -20592,17 +20663,18 @@ void MainWindow::UpdateWindowTitle(std::string_view filename, std::string_view d
 
                                    std::string_view internal_version, std::string_view gpu_vendor) {
 
-    static const std::string window_title =
+    const QString strict_idle_title = QStringLiteral("STORM SWITCH 16.2.4");
+    const QString build_ver = QStringLiteral("16.2.4");
 
-        fmt::format("{} {}", std::string{Common::g_build_name}, std::string{Common::g_build_version});
+    const bool no_game = filename.empty() ||
+                         filename == "0000000000000000" ||
+                         filename.find("0000000000000000") != std::string_view::npos ||
+                         filename.find("BID:") != std::string_view::npos ||
+                         (QtCommon::system && !QtCommon::system->IsPoweredOn());
 
+    if (no_game) {
 
-
-    if (filename.empty()) {
-
-        setWindowTitle(QString::fromStdString(window_title));
-
-        const QString build_ver = QString::fromStdString(std::string{Common::g_build_version});
+        setWindowTitle(strict_idle_title);
 
         if (m_tray_header_action) {
             const QString ready_str = StormLangStorm11(
@@ -20615,7 +20687,6 @@ void MainWindow::UpdateWindowTitle(std::string_view filename, std::string_view d
 
     } else {
 
-        const QString build_ver = QString::fromStdString(std::string{Common::g_build_version});
 
         const std::string upper_gpu = QString::fromStdString(std::string{gpu_vendor}).toUpper().toStdString();
 
@@ -20637,11 +20708,7 @@ void MainWindow::UpdateWindowTitle(std::string_view filename, std::string_view d
 
             }
 
-            return fmt::format("{} {} | {} | {} | {} | {}",
-
-                               std::string{Common::g_build_name},
-
-                               std::string{Common::g_build_version},
+            return fmt::format("STORM SWITCH 16.2.4 | {} | {} | {} | {}",
 
                                filename,
 
@@ -22788,17 +22855,17 @@ void MainWindow::UpdateGameFixStatusButton() {
 
         gamefix_status_button->setToolTip(StormLang(
 
-            QStringLiteral("🛡️ Активен профиль авто-исправления: %1\nНажмите для меню быстрых настроек (LSFG, DRS 100%, Reactive Flushing)"),
+            QStringLiteral("[!] Активен профиль авто-исправления: %1\nНажмите для меню быстрых настроек (LSFG, DRS 100%, Reactive Flushing)"),
 
-            QStringLiteral("🛡️ Active Auto-Fix profile: %1\nClick for Quick Settings menu (LSFG, DRS 100%, Reactive Flushing)"),
+            QStringLiteral("[!] Active Auto-Fix profile: %1\nClick for Quick Settings menu (LSFG, DRS 100%, Reactive Flushing)"),
 
-            QStringLiteral("🛡️ Aktives Auto-Fix-Profil: %1\nKlicken für Schnelleinstellungen"),
+            QStringLiteral("[!] Aktives Auto-Fix-Profil: %1\nKlicken für Schnelleinstellungen"),
 
-            QStringLiteral("🛡️ Profil Auto-Fix actif : %1\nCliquer pour les paramètres rapides"),
+            QStringLiteral("[!] Profil Auto-Fix actif : %1\nCliquer pour les paramètres rapides"),
 
-            QStringLiteral("🛡️ 已激活自动修复配置: %1\n点击打开快捷设置菜单"),
+            QStringLiteral("[!] 已激活自动修复配置: %1\n点击打开快捷设置菜单"),
 
-            QStringLiteral("🛡️ 自動修正プロファイル有効: %1\nクリックしてクイック設定メニューを表示")
+            QStringLiteral("[!] 自動修正プロファイル有効: %1\nクリックしてクイック設定メニューを表示")
 
         ).arg(QString::fromStdString(profile->game_name)));
 
@@ -22828,13 +22895,13 @@ void MainWindow::UpdateGameFixStatusButton() {
 
             QStringLiteral("🛡️ Auto-Fix profile available: %1\nClick to apply or open Quick Settings"),
 
-            QStringLiteral("🛡️ Auto-Fix-Profil verfügbar: %1\nKlicken zum Anwenden oder für Schnelleinstellungen"),
+            QStringLiteral("[!] Auto-Fix-Profil verfügbar: %1\nKlicken zum Anwenden oder für Schnelleinstellungen"),
 
-            QStringLiteral("🛡️ Profil Auto-Fix disponible : %1\nCliquer pour appliquer ou ouvrir les paramètres rapides"),
+            QStringLiteral("[!] Profil Auto-Fix disponible : %1\nCliquer pour appliquer ou ouvrir les paramètres rapides"),
 
-            QStringLiteral("🛡️ 自动修复配置可用: %1\n点击应用或打开快捷设置"),
+            QStringLiteral("[!] 自动修复配置可用: %1\n点击应用或打开快捷设置"),
 
-            QStringLiteral("🛡️ 自動修正プロファイル利用可能: %1\nクリックして適用またはクイック設定を開く")
+            QStringLiteral("[!] 自動修正プロファイル利用可能: %1\nクリックして適用またはクイック設定を開く")
 
         ).arg(QString::fromStdString(profile->game_name)));
 
@@ -23220,7 +23287,7 @@ void MainWindow::SaveFooterSettings() {
 
     for (int i = 0; i < static_cast<int>(m_status_groups.size()); ++i) {
 
-        if (m_status_groups[i] && !m_status_groups[i]->isVisible()) {
+        if (m_status_groups[i] && m_status_groups[i]->isHidden()) {
 
             hidden.append(QStringLiteral("grp_%1").arg(i));
 
@@ -23286,7 +23353,7 @@ void MainWindow::SaveFooterSettings() {
 
     for (const auto& [id, w] : btns) {
 
-        if (w && !w->isVisible()) {
+        if (w && w->isHidden()) {
 
             hidden.append(id);
 
@@ -23301,92 +23368,66 @@ void MainWindow::SaveFooterSettings() {
 
 
 void MainWindow::LoadFooterSettings() {
-
-    const std::string saved = UISettings::values.hidden_footer_items.GetValue();
-
-    if (saved.empty()) return;
-
-    const QStringList hidden = QString::fromStdString(saved).split(QLatin1Char(';'), Qt::SkipEmptyParts);
-
-    for (int i = 0; i < static_cast<int>(m_status_groups.size()); ++i) {
-
-        if (m_status_groups[i] && hidden.contains(QStringLiteral("grp_%1").arg(i))) {
-
-            m_status_groups[i]->setVisible(false);
-
-        }
-
-    }
-
     const std::vector<std::pair<QString, QWidget*>> btns = {
-
         {QStringLiteral("refresh"), refresh_button},
-
         {QStringLiteral("addons"), addons_status_button},
-
         {QStringLiteral("fullscreen"), fullscreen_button},
-
         {QStringLiteral("renderer"), renderer_status_button},
-
         {QStringLiteral("gpu_acc"), gpu_accuracy_button},
-
         {QStringLiteral("cpu_acc"), cpu_accuracy_button},
-
         {QStringLiteral("vsync"), vsync_mode_button},
-
         {QStringLiteral("dma"), dma_accuracy_button},
-
         {QStringLiteral("gpu_fence"), gpu_fence_button},
-
         {QStringLiteral("nvdec"), nvdec_status_button},
-
         {QStringLiteral("aa"), aa_status_button},
-
         {QStringLiteral("filter"), filter_status_button},
-
         {QStringLiteral("shader"), shader_status_button},
-
         {QStringLiteral("aspect"), aspect_ratio_button},
-
         {QStringLiteral("res_scale"), res_scale_button},
-
         {QStringLiteral("vram"), vram_mode_button},
-
         {QStringLiteral("anisotropy"), anisotropy_button},
-
         {QStringLiteral("disk_cache"), disk_cache_button},
-
         {QStringLiteral("astc_decode"), astc_decode_button},
-
         {QStringLiteral("astc_recompress"), astc_recompress_button},
-
         {QStringLiteral("dock"), dock_status_button},
-
         {QStringLiteral("airplane"), airplane_mode_button},
-
         {QStringLiteral("speed_limit"), speed_limit_button},
-
         {QStringLiteral("volume"), volume_button},
-
         {QStringLiteral("mute"), mute_button},
-
         {QStringLiteral("firmware"), firmware_label},
-
     };
 
-    for (const auto& [id, w] : btns) {
+    const std::string saved = UISettings::values.hidden_footer_items.GetValue();
+    QStringList hidden = QString::fromStdString(saved).split(QLatin1Char(';'), Qt::SkipEmptyParts);
 
-        if (w && hidden.contains(id)) {
-
-            w->setVisible(false);
-
+    if (saved.empty() || hidden.size() >= 20) {
+        UISettings::values.hidden_footer_items.SetValue("");
+        for (auto* g : m_status_groups) {
+            if (g) {
+                g->setVisible(true);
+                for (auto* child : g->findChildren<QWidget*>()) {
+                    child->setVisible(true);
+                }
+            }
         }
-
+        for (const auto& [id, w] : btns) {
+            if (w) w->setVisible(true);
+        }
+        return;
     }
 
+    for (int i = 0; i < static_cast<int>(m_status_groups.size()); ++i) {
+        if (m_status_groups[i] && hidden.contains(QStringLiteral("grp_%1").arg(i))) {
+            m_status_groups[i]->setVisible(false);
+        }
+    }
+
+    for (const auto& [id, w] : btns) {
+        if (w && hidden.contains(id)) {
+            w->setVisible(false);
+        }
+    }
 }
-
-
 
 void MainWindow::ShowFooterCustomizeMenu() {
 
@@ -23468,7 +23509,19 @@ void MainWindow::ShowFooterCustomizeMenu() {
 
         auto* act = context_menu.addAction(g.name, [this, g] {
 
-            g.widget->setVisible(!g.widget->isVisible());
+            const bool will_be_visible = g.widget->isHidden();
+
+            g.widget->setVisible(will_be_visible);
+
+            if (will_be_visible) {
+
+                for (auto* child : g.widget->findChildren<QWidget*>()) {
+
+                    child->setVisible(true);
+
+                }
+
+            }
 
             SaveFooterSettings();
 
@@ -23476,7 +23529,7 @@ void MainWindow::ShowFooterCustomizeMenu() {
 
         act->setCheckable(true);
 
-        act->setChecked(g.widget->isVisible());
+        act->setChecked(!g.widget->isHidden());
 
     }
 
@@ -23576,7 +23629,7 @@ void MainWindow::ShowFooterCustomizeMenu() {
 
         auto* act = context_menu.addAction(b.name, [this, b] {
 
-            b.widget->setVisible(!b.widget->isVisible());
+            b.widget->setVisible(b.widget->isHidden());
 
             SaveFooterSettings();
 
@@ -23584,7 +23637,7 @@ void MainWindow::ShowFooterCustomizeMenu() {
 
         act->setCheckable(true);
 
-        act->setChecked(b.widget->isVisible());
+        act->setChecked(!b.widget->isHidden());
 
     }
 
@@ -23610,7 +23663,17 @@ void MainWindow::ShowFooterCustomizeMenu() {
 
         for (const auto& g : groups) {
 
-            if (g.widget) g.widget->setVisible(true);
+            if (g.widget) {
+
+                g.widget->setVisible(true);
+
+                for (auto* child : g.widget->findChildren<QWidget*>()) {
+
+                    child->setVisible(true);
+
+                }
+
+            }
 
         }
 
@@ -23619,6 +23682,8 @@ void MainWindow::ShowFooterCustomizeMenu() {
             if (b.widget) b.widget->setVisible(true);
 
         }
+
+        UISettings::values.hidden_footer_items.SetValue("");
 
         SaveFooterSettings();
 
@@ -25775,8 +25840,9 @@ void MainWindow::UpdateSystemTrayStrings() {
         return;
     }
 
+    const QString build_ver = QString::fromStdString(std::string{Common::g_build_version});
+
     if (m_tray_header_action) {
-        const QString build_ver = QString::fromStdString(std::string{Common::g_build_version});
         const QString ready_str = StormLangStorm11(
             QStringLiteral("Готов к работе"), QStringLiteral("Ready"), QStringLiteral("Bereit"),
             QStringLiteral("Prêt"), QStringLiteral("就绪"), QStringLiteral("준비 완료"),
@@ -27370,9 +27436,16 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
 
         if (fm.hasMatch() && !fm.captured(1).isEmpty()) {
 
-            update_ver_str = fm.captured(1);
+            if (fm.captured(1) != QStringLiteral("1.0.0") || update_ver_str.isEmpty() || update_ver_str == QStringLiteral("0")) {
+                update_ver_str = fm.captured(1);
+            }
 
             update_internal_ver_str = fm.captured(2);
+
+            const u32 f_int = update_internal_ver_str.toUInt();
+            if ((update_ver_str.isEmpty() || update_ver_str == QStringLiteral("1.0.0")) && f_int > 0 && (f_int % 65536U) == 0 && (f_int / 65536U) <= 200) {
+                update_ver_str = QStringLiteral("1.0.%1").arg(f_int / 65536U);
+            }
 
         } else {
 

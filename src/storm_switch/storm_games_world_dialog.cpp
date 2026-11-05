@@ -760,7 +760,7 @@ void StormGamesWorldDialog::RefreshDownloadedFilesCache(const QString bitand dir
     static const QRegularExpression ver_rx(QStringLiteral(R"(\(\s*([^-\)]+?)\s*-\s*(\d+)\s*-\s*([0-9A-Fa-f]{16})\s*\))"));
     static const QStringList filters{
         QStringLiteral("*.nsp"), QStringLiteral("*.xci"), QStringLiteral("*.nsz"),
-        QStringLiteral("*.nca"), QStringLiteral("*.nro")
+        QStringLiteral("*.xcz"), QStringLiteral("*.nca"), QStringLiteral("*.nro")
     };
 
     QSet<QString> seen_paths;
@@ -862,6 +862,11 @@ void StormGamesWorldDialog::RefreshDownloadedFilesCache(const QString bitand dir
                     info.version = QStringLiteral("1.0.0");
                 }
             }
+
+            while (info.version.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
+                info.version.remove(0, 1);
+            }
+            info.version = info.version.trimmed();
 
             cached_dir_files.push_back(std::move(info));
         }
@@ -1221,9 +1226,8 @@ void StormGamesWorldDialog::SetupUI() {
     cover_label->setFixedSize(160, 160);
     cover_label->setAlignment(Qt::AlignCenter);
     cover_label->setStyleSheet(QStringLiteral(
-        "background: rgba(10, 15, 25, 0.85);"
+        "background: transparent;"
         "border: none;"
-        "border-radius: 10px;"
         "color: #7090B0;"
         "font-size: 11px;"
     ));
@@ -2023,11 +2027,18 @@ static QString ExtractInternalVersion(const QString& title, const QString& versi
 void StormGamesWorldDialog::DisplayGameDetails(const StormWorldGame& game) {
     title_label->setText(game.final_title.isEmpty() ? game.title : game.final_title);
     tid_label->setText(tr("Title ID: %1").arg(game.serial_id.isEmpty() ? tr("Не указан") : game.serial_id));
+    QString clean_gv = game.version.trimmed();
+    while (clean_gv.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
+        clean_gv.remove(0, 1);
+    }
+    clean_gv = clean_gv.trimmed();
+    if (clean_gv.isEmpty()) clean_gv = QStringLiteral("1.0.0");
+
     if (game.is_recommended) {
-        version_badge->setText(tr("Версия: %1 ★ Рекомендуемая").arg(game.version.isEmpty() ? QStringLiteral("1.0.0") : game.version));
+        version_badge->setText(tr("Версия: %1 ★ Рекомендуемая").arg(clean_gv));
         version_badge->setStyleSheet(QStringLiteral("background: rgba(0, 255, 102, 0.18); border: 1px solid #00FF66; border-radius: 4px; padding: 2px 8px; color: #00FF66; font-size: 11px; font-weight: bold;"));
     } else {
-        version_badge->setText(tr("Версия: %1").arg(game.version.isEmpty() ? QStringLiteral("1.0.0") : game.version));
+        version_badge->setText(tr("Версия: %1").arg(clean_gv));
         version_badge->setStyleSheet(QStringLiteral("background: rgba(0, 210, 255, 0.15); border: 1px solid #00D2FF; border-radius: 4px; padding: 2px 8px; color: #00F0FF; font-size: 11px; font-weight: bold;"));
     }
     const QString int_ver = ExtractInternalVersion(game.title, game.version);

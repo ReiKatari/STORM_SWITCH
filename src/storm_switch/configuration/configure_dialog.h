@@ -61,6 +61,7 @@ public:
 
     void ApplyConfiguration();
     void ReloadAllTabs();
+    void SetCategory(int category_index, int tab_index = 0);
 
 private slots:
     void OnLanguageChanged(const QString& locale);

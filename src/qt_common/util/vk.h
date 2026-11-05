@@ -58,12 +58,18 @@ namespace VkDeviceInfo {
 class Record {
 public:
     explicit Record(std::string_view name, const std::vector<VkPresentModeKHR>& vsync_modes,
-                    bool has_broken_compute);
+                    bool has_broken_compute, std::string_view driver_family = {},
+                    std::string_view driver_version = {}, std::string_view vulkan_version = {},
+                    const std::vector<std::string>& key_extensions = {});
     ~Record();
 
     const std::string name;
     const std::vector<VkPresentModeKHR> vsync_support;
     const bool has_broken_compute;
+    const std::string driver_family;
+    const std::string driver_version;
+    const std::string vulkan_version;
+    const std::vector<std::string> key_extensions;
 };
 
 // TODO(crueter): Port some configure_graphics.cpp stuff

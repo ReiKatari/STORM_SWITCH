@@ -64,6 +64,22 @@
                 android:scrollbarStyle="outsideInset"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
+            <!-- Reset to Recommended Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_reset_freedreno_recommended"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="12dp"
+                app:icon="@drawable/ic_restore"
+                app:iconTint="?attr/colorPrimary"
+                android:textColor="?attr/colorPrimary"
+                app:strokeColor="?attr/colorPrimary"
+                android:text="@string/freedreno_reset_recommended"
+                android:breakStrategy="simple"
+                android:hyphenationFrequency="none" />
+
             <!-- Current Settings Section -->
             <com.google.android.material.textview.MaterialTextView
                 style="@style/SynthwaveText.Header"

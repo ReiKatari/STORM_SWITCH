@@ -122,8 +122,8 @@ GameListSearchField::GameListSearchField(GameList* parent) : QWidget{parent} {
 void GameListSearchField::UpdateViewMode(bool is_grid) {
     if (view_mode_toggle) {
         if (is_grid) {
-            view_mode_toggle->setText(tr("Список"));
-            view_mode_toggle->setToolTip(tr("Переключить в режим списка"));
+            view_mode_toggle->setText(tr("Дерево"));
+            view_mode_toggle->setToolTip(tr("Переключить в режим дерева"));
         } else {
             view_mode_toggle->setText(tr("Сетка"));
             view_mode_toggle->setToolTip(tr("Переключить в режим сетки"));

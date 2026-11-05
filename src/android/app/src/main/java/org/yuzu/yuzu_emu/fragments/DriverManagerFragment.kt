@@ -13,6 +13,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
@@ -117,6 +118,12 @@ class DriverManagerFragment : Fragment() {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
 
+        updateRecommendedBanner()
+
+        binding.buttonInstallStormDriver.setOnClickListener {
+            installStormDriver10()
+        }
+
         binding.buttonInstall.setOnClickListener {
             getDriver.launch(arrayOf("application/zip"))
         }
@@ -170,6 +177,7 @@ class DriverManagerFragment : Fragment() {
         driverViewModel.updateDriverList()
         (binding.listDrivers.adapter as? DriverAdapter)
             ?.replaceList(driverViewModel.driverList.value)
+        updateRecommendedBanner()
     }
 
     private fun setInsets() =
@@ -391,4 +399,154 @@ class DriverManagerFragment : Fragment() {
             .setCancelable(false)
             .show()
     }
+
+    private fun updateRecommendedBanner() {
+        if (_binding == null) return
+        val model = (GpuDriverHelper.hookLibPath?.let { GpuDriverHelper.getGpuModel(hookLibPath = it) } ?: "").trim()
+        val modelLower = model.lowercase()
+        val (vendor, rec) = when {
+            modelLower.contains("mali") || modelLower.contains("immortalis") -> {
+                val name = if (model.isNotEmpty()) model else "Arm Mali"
+                name to "PanVK / STORM DRIVER 10.0.0"
+            }
+            modelLower.contains("xclipse") -> {
+                val name = if (model.isNotEmpty()) model else "Samsung Xclipse"
+                name to "STORM DRIVER 10.0.0 / System Xclipse RDNA"
+            }
+            modelLower.contains("adreno") -> {
+                val name = if (model.isNotEmpty()) model else "Qualcomm Adreno"
+                name to "Turnip / STORM DRIVER 10.0.0"
+            }
+            else -> {
+                val name = if (model.isNotEmpty()) model else "Universal GPU"
+                name to "STORM DRIVER 10.0.0"
+            }
+        }
+        binding.textGpuVendorRecommendation.text = getString(R.string.storm_driver_10_recommendation, vendor, rec)
+
+        val activePath = StringSetting.DRIVER_PATH.getString()
+        val customMeta = GpuDriverHelper.customDriverSettingData
+        val is10Active = customMeta.version?.contains("10.0") == true ||
+                         customMeta.name?.contains("10.0") == true ||
+                         activePath.contains("10.0", ignoreCase = true)
+
+        if (is10Active) {
+            binding.buttonInstallStormDriver.text = "⚡ STORM DRIVER 10.0.0 (Активен)"
+        } else {
+            binding.buttonInstallStormDriver.text = getString(R.string.install_storm_driver_10)
+        }
+    }
+
+    private fun installStormDriver10() {
+        val fileName = "STORM_DRIVER_10.0.0.zip"
+        val storagePath = "${GpuDriverHelper.driverStoragePath}$fileName"
+        val existingFile = File(storagePath)
+
+        if (existingFile.exists() && existingFile.length() > 0L) {
+            val meta = GpuDriverHelper.getMetadataFromZip(existingFile)
+            if (meta.name != null) {
+                val currentPath = StringSetting.DRIVER_PATH.getString()
+                if (currentPath.equals(storagePath, ignoreCase = true)) {
+                    android.widget.Toast.makeText(requireContext(), "⚡ STORM DRIVER 10.0.0 уже активен!", android.widget.Toast.LENGTH_SHORT).show()
+                    return
+                }
+                promptDriverApplication(storagePath, 1)
+                return
+            }
+        }
+
+        val dialogBinding = org.yuzu.yuzu_emu.databinding.DialogProgressBinding.inflate(layoutInflater)
+        dialogBinding.progressBar.isIndeterminate = true
+        dialogBinding.title.text = getString(R.string.installing_driver)
+        dialogBinding.status.text = getString(R.string.storm_driver_downloading)
+
+        val progressDialog = com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+            .setView(dialogBinding.root)
+            .setCancelable(false)
+            .create()
+
+        progressDialog.show()
+
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+            val downloadMirrors = listOf(
+                "https://github.com/ReiKatari/STORM_SWITCH/releases/download/16.2.4/STORM_DRIVER_10.0.0.zip",
+                "https://github.com/ReiKatari/STORM_SWITCH/releases/download/16.2.3/STORM_DRIVER_10.0.0.zip",
+                "https://github.com/ReiKatari/STORM_DRIVER/releases/download/10.0.0/STORM_DRIVER_10.0.0.zip",
+                "https://gh.con.sh/https://github.com/ReiKatari/STORM_SWITCH/releases/download/16.2.4/STORM_DRIVER_10.0.0.zip",
+                "https://ghfast.top/https://github.com/ReiKatari/STORM_SWITCH/releases/download/16.2.4/STORM_DRIVER_10.0.0.zip",
+                "https://gh.con.sh/https://github.com/ReiKatari/STORM_DRIVER/releases/download/10.0.0/STORM_DRIVER_10.0.0.zip",
+                "https://ghfast.top/https://github.com/ReiKatari/STORM_DRIVER/releases/download/10.0.0/STORM_DRIVER_10.0.0.zip"
+            )
+
+            var downloadedFile: File? = null
+            var downloadSuccess = false
+
+            val client = okhttp3.OkHttpClient.Builder()
+                .dns(org.yuzu.yuzu_emu.utils.SmartDns)
+                .connectTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
+                .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+                .followRedirects(true)
+                .followSslRedirects(true)
+                .retryOnConnectionFailure(true)
+                .build()
+
+            withContext(Dispatchers.IO) {
+                val tempTarget = File(requireContext().cacheDir, fileName)
+                for ((idx, url) in downloadMirrors.withIndex()) {
+                    try {
+                        withContext(Dispatchers.Main) {
+                            dialogBinding.status.text = if (idx > 0) {
+                                getString(R.string.release_dl_mirror_fmt, idx)
+                            } else {
+                                getString(R.string.downloading)
+                            }
+                        }
+
+                        val req = okhttp3.Request.Builder()
+                            .url(url)
+                            .header("User-Agent", "Mozilla/5.0 (Linux; Android 14) StormSwitch/16.2.4")
+                            .header("Accept", "application/octet-stream, */*")
+                            .build()
+
+                        client.newCall(req).execute().use { resp ->
+                            if (!resp.isSuccessful) throw IOException("HTTP ${resp.code}")
+                            val body = resp.body ?: throw IOException("Empty body")
+                            body.byteStream().use { input ->
+                                java.io.FileOutputStream(tempTarget).use { output ->
+                                    input.copyTo(output)
+                                }
+                            }
+                        }
+
+                        if (tempTarget.exists() && tempTarget.length() > 1024L) {
+                            downloadedFile = tempTarget
+                            downloadSuccess = true
+                            break
+                        }
+                    } catch (_: Exception) {}
+                }
+            }
+
+            progressDialog.dismiss()
+
+            if (!downloadSuccess || downloadedFile == null) {
+                android.widget.Toast.makeText(requireContext(), getString(R.string.driver_empty), android.widget.Toast.LENGTH_SHORT).show()
+                return@launch
+            }
+
+            try {
+                val uri = android.net.Uri.fromFile(downloadedFile!!)
+                if (GpuDriverHelper.copyDriverToInternalStorage(uri)) {
+                    refreshDriverList()
+                    val targetPath = "${GpuDriverHelper.driverStoragePath}$fileName"
+                    promptDriverApplication(targetPath, 1)
+                } else {
+                    android.widget.Toast.makeText(requireContext(), getString(R.string.select_gpu_driver_error), android.widget.Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                android.widget.Toast.makeText(requireContext(), e.localizedMessage ?: "Error", android.widget.Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
 }

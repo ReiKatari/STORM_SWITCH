@@ -54,10 +54,46 @@ void GameCard::paint(QPainter* painter, const QStyleOptionViewItem& option,
     const u32 icon_size = UISettings::values.game_icon_size.GetValue();
     const u64 program_id = index.data(GameListItemPath::ProgramIdRole).toULongLong();
 
-    // 2. Cover pixmap - zero computation in paint()!
+    // 2. Cover pixmap
     QPixmap icon_pixmap = index.data(GameListItemPath::ScaledPixmapRole).value<QPixmap>();
 
-    // Lazy async cover loading if not yet loaded
+    const qreal dpr = (painter->device() != nullptr) ? painter->device()->devicePixelRatioF() : 1.0;
+    const int cover_w = static_cast<int>(icon_size);
+    const int cover_h = static_cast<int>(icon_size);
+    const int target_px = static_cast<int>(std::round(cover_w * dpr));
+
+    // High-resolution fallback: if cached pixmap is missing or smaller than target_px, load full 256x256 source
+    if ((icon_pixmap.isNull() || icon_pixmap.width() < target_px) && program_id != 0) {
+        const QByteArray raw_icon = index.data(GameListItemPath::RawIconRole).toByteArray();
+        QImage sharp_img;
+        if (!raw_icon.isEmpty()) {
+            sharp_img.loadFromData(raw_icon);
+        }
+        if (sharp_img.isNull()) {
+            const QString icon_path = index.data(GameListItemPath::IconPathRole).toString();
+            if (!icon_path.isEmpty() && QFile::exists(icon_path)) {
+                sharp_img.load(icon_path);
+            }
+        }
+        if (sharp_img.isNull()) {
+            const auto cache_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::CacheDir) / "game_list";
+            const auto jpeg_file = cache_dir / fmt::format("{:016X}.jpeg", program_id);
+            const QString jp = QString::fromStdString(Common::FS::PathToUTF8String(jpeg_file));
+            if (QFile::exists(jp)) {
+                sharp_img.load(jp);
+            }
+        }
+        if (!sharp_img.isNull()) {
+            QImage scaled_img = sharp_img.scaled(target_px, target_px, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            icon_pixmap = QPixmap::fromImage(scaled_img);
+            icon_pixmap.setDevicePixelRatio(dpr);
+            if (auto* m = const_cast<QAbstractItemModel*>(index.model())) {
+                m->setData(index, icon_pixmap, GameListItemPath::ScaledPixmapRole);
+            }
+        }
+    }
+
+    // Lazy async cover loading if still not loaded
     if (icon_pixmap.isNull() && program_id != 0) {
         const QString icon_path = index.data(GameListItemPath::IconPathRole).toString();
         GameCoverLoader::Instance().RequestCover(
@@ -69,8 +105,6 @@ void GameCard::paint(QPainter* painter, const QStyleOptionViewItem& option,
         icon_pixmap = index.data(Qt::DecorationRole).value<QPixmap>();
     }
 
-    const int cover_w = static_cast<int>(icon_size);
-    const int cover_h = static_cast<int>(icon_size);
     const QRect iconRect = {
         cardRect.left() + (cardRect.width() - cover_w) / 2,
         cardRect.top() + cardMargin,
@@ -104,14 +138,23 @@ void GameCard::paint(QPainter* painter, const QStyleOptionViewItem& option,
         painter->restore();
     }
 
-    // 3. BADGES - ALL PRECOMPUTED IN MODEL ROLES (Item 20 & 21)
-    // Version badge (top-left or bottom-left)
-    const QString version_str = index.data(GameListItemPath::VersionRole).toString();
-    if (!version_str.isEmpty() && version_str != QStringLiteral("1.0.0")) {
-        DrawVersionBadge(painter, iconRect, version_str);
+    // 3. BADGES
+    // Version badge (bottom-left): e.g. "1.0.0 · 131072" or "1.0.0"
+    QString ver_badge = index.data(GameListItemPath::VersionRole).toString().trimmed();
+    while (ver_badge.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
+        ver_badge.remove(0, 1);
     }
+    ver_badge = ver_badge.trimmed();
+    if (ver_badge.isEmpty() || ver_badge == QStringLiteral("0")) {
+        ver_badge = QStringLiteral("1.0.0");
+    }
+    const u64 int_ver = index.data(GameListItemPath::InternalVersionRole).toULongLong();
+    if (int_ver > 0) {
+        ver_badge.append(QStringLiteral(" · %1").arg(int_ver));
+    }
+    DrawVersionBadge(painter, iconRect, ver_badge);
 
-    // "Own Profile" Gear Badge (Item 21)
+    // "Own Profile" Gear Badge (top-left)
     const bool has_custom_config = index.data(GameListItemPath::HasCustomConfigRole).toBool();
     if (has_custom_config) {
         DrawGearBadge(painter, iconRect);
@@ -120,32 +163,37 @@ void GameCard::paint(QPainter* painter, const QStyleOptionViewItem& option,
     // Update Available Badge (top-right)
     bool has_update = index.data(GameListItemPath::HasUpdateBadgeRole).toBool();
     if (!has_update && program_id != 0) {
-        // Fast one-time check from in-memory catalog
-        has_update = StormCatalogCache::Instance().HasUpdate(program_id, version_str);
+        has_update = StormCatalogCache::Instance().HasUpdate(program_id, ver_badge);
     }
     if (has_update) {
         DrawUpdateBadge(painter, iconRect);
     }
 
-    // DLC Count Badge (bottom-right)
-    const int addon_count = index.data(GameListItemPath::AddonCountRole).toInt();
-    if (addon_count > 0) {
-        DrawDlcBadge(painter, iconRect, addon_count);
+    // Addon Summary Badge (bottom-right): e.g. "1G+1U", "+1 UPD", "+2 DLC"
+    QString addon_text = index.data(GameListItemPath::AddonSummaryRole).toString().trimmed();
+    if (addon_text.isEmpty()) {
+        const int addon_count = index.data(GameListItemPath::AddonCountRole).toInt();
+        if (addon_count > 0) {
+            addon_text = QStringLiteral("+%1 DLC").arg(addon_count);
+        }
+    }
+    if (!addon_text.isEmpty()) {
+        DrawDlcBadge(painter, iconRect, addon_text);
     }
 
-    // Switch 2 Platform Badge (bottom-left)
+    // Switch 2 Platform Badge (top-left above or bottom-left)
     const int platform = index.data(GameListItemPath::PlatformRole).toInt();
     if (platform == 1) {
         DrawSwitch2Badge(painter, iconRect);
     }
 
-    // 4. Game Title below cover
+    // 4. Game Title below cover - two cleanly wrapped & elided lines, zero clipped 3rd line
     if (UISettings::values.show_game_name.GetValue()) {
         QRect textRect = cardRect;
-        textRect.setTop(iconRect.bottom() + cardMargin);
-        textRect.adjust(cardMargin, 0, -cardMargin, -cardMargin);
+        textRect.setTop(iconRect.bottom() + 4);
+        textRect.adjust(2, 0, -2, -2);
 
-        QString title = index.data(Qt::DisplayRole).toString().split(QLatin1Char('\n')).first();
+        QString full_title = index.data(Qt::DisplayRole).toString().split(QLatin1Char('\n')).first().trimmed();
 
         painter->setPen(textColor);
         QFont font = option.font;
@@ -153,7 +201,47 @@ void GameCard::paint(QPainter* painter, const QStyleOptionViewItem& option,
         font.setPixelSize(std::max(11.0, std::sqrt(static_cast<double>(icon_size))));
         painter->setFont(font);
 
-        painter->drawText(textRect, Qt::AlignHCenter | Qt::AlignTop | Qt::TextWordWrap, title);
+        QFontMetrics fm(font);
+        const int line_h = fm.lineSpacing();
+        const int max_w = std::max(20, textRect.width());
+
+        QString line1, line2;
+        if (fm.horizontalAdvance(full_title) <= max_w) {
+            line1 = full_title;
+        } else {
+            const QStringList words = full_title.split(QLatin1Char(' '), Qt::SkipEmptyParts);
+            int w_idx = 0;
+            while (w_idx < words.size()) {
+                const QString cand = line1.isEmpty() ? words[w_idx] : (line1 + QLatin1Char(' ') + words[w_idx]);
+                if (fm.horizontalAdvance(cand) <= max_w) {
+                    line1 = cand;
+                    w_idx++;
+                } else {
+                    break;
+                }
+            }
+            if (line1.isEmpty() && w_idx < words.size()) {
+                line1 = fm.elidedText(words[w_idx], Qt::ElideRight, max_w);
+                w_idx++;
+            }
+            QString remainder;
+            for (int i = w_idx; i < words.size(); ++i) {
+                if (!remainder.isEmpty()) remainder += QLatin1Char(' ');
+                remainder += words[i];
+            }
+            if (!remainder.isEmpty()) {
+                line2 = fm.elidedText(remainder, Qt::ElideRight, max_w);
+            }
+        }
+
+        if (!line1.isEmpty()) {
+            const QRect r1(textRect.left(), textRect.top(), textRect.width(), line_h);
+            painter->drawText(r1, Qt::AlignHCenter | Qt::AlignVCenter, line1);
+        }
+        if (!line2.isEmpty()) {
+            const QRect r2(textRect.left(), textRect.top() + line_h, textRect.width(), line_h);
+            painter->drawText(r2, Qt::AlignHCenter | Qt::AlignVCenter, line2);
+        }
     }
 
     painter->restore();
@@ -163,7 +251,11 @@ void GameCard::DrawVersionBadge(QPainter* painter, const QRect& iconRect, const 
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing, true);
 
-    const QString text = version.startsWith(QLatin1Char('v')) ? version : (QStringLiteral("v") + version);
+    QString text = version.trimmed();
+    while (text.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
+        text.remove(0, 1);
+    }
+    text = text.trimmed();
     QFont badge_font = painter->font();
     badge_font.setBold(true);
     badge_font.setPixelSize(9);
@@ -252,10 +344,12 @@ void GameCard::DrawUpdateBadge(QPainter* painter, const QRect& iconRect) const {
 }
 
 void GameCard::DrawDlcBadge(QPainter* painter, const QRect& iconRect, int dlc_count) const {
+    DrawDlcBadge(painter, iconRect, QStringLiteral("+%1 DLC").arg(dlc_count));
+}
+
+void GameCard::DrawDlcBadge(QPainter* painter, const QRect& iconRect, const QString& text) const {
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing, true);
-
-    const QString text = QStringLiteral("+%1 DLC").arg(dlc_count);
     QFont badge_font = painter->font();
     badge_font.setBold(true);
     badge_font.setPixelSize(9);
@@ -313,30 +407,12 @@ void GameCard::DrawSwitch2Badge(QPainter* painter, const QRect& iconRect) const 
 
 QRect GameCard::getCardRect(const QStyleOptionViewItem& option, const QModelIndex& index) const {
     const int cell_width = option.rect.width();
-    const int card_width = cell_width - m_padding;
-
-    int card_left, card_top, card_height;
-
-    if (m_columns >= 1) {
-        const int column = index.row() % m_columns;
-        const int row_width = m_columns * cell_width;
-        const int total_gap = row_width - cardMargin * 2 - m_columns * card_width;
-        const int gap = (m_columns > 1) ? (total_gap / (m_columns - 1)) : 0;
-        card_left =
-            option.rect.left() - column * cell_width + cardMargin + column * (card_width + gap) + 4;
-
-        card_top = option.rect.top() + cardMargin;
-        card_height = option.rect.height() - cardMargin - 1;
-    } else {
-        card_left = option.rect.left() + cardMargin + 4;
-        const int content_height = m_contentSize.height() - cardMargin;
-        const int cell_height = option.rect.height();
-
-        card_height = std::min(content_height, cell_height - cardMargin * 2) - 1;
-        card_top = option.rect.top() + (cell_height - card_height) / 2;
-    }
-
-    return QRect(card_left, card_top, card_width - cardMargin, card_height);
+    const int cell_height = option.rect.height();
+    const int card_w = std::max(20, cell_width - 8);
+    const int card_h = std::max(20, cell_height - 6);
+    const int left = option.rect.left() + (cell_width - card_w) / 2;
+    const int top = option.rect.top() + (cell_height - card_h) / 2;
+    return QRect(left, top, card_w, card_h);
 }
 
 bool GameCard::hitTest(const QPoint& point, const QModelIndex& index, const QWidget* widget,

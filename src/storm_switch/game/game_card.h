@@ -29,6 +29,7 @@ private:
     void DrawVersionBadge(QPainter* painter, const QRect& iconRect, const QString& version) const;
     void DrawGearBadge(QPainter* painter, const QRect& iconRect) const;
     void DrawUpdateBadge(QPainter* painter, const QRect& iconRect) const;
+    void DrawDlcBadge(QPainter* painter, const QRect& iconRect, const QString& text) const;
     void DrawDlcBadge(QPainter* painter, const QRect& iconRect, int dlc_count) const;
     void DrawSwitch2Badge(QPainter* painter, const QRect& iconRect) const;
 

@@ -322,7 +322,11 @@ QList<QStandardItem*> MakeGameListEntry(const std::string& path, const std::stri
             if (pum.hasMatch() && !pum.captured(1).isEmpty()) {
                 const u64 int_ver = pum.captured(2).toULongLong();
                 if (int_ver > 0) {
-                    ver_result = pum.captured(1);
+                    if (!IsBaseVersion(pum.captured(1))) {
+                        ver_result = pum.captured(1);
+                    } else if (IsBaseVersion(ver_result) && (int_ver % 65536ULL) == 0 && (int_ver / 65536ULL) <= 200) {
+                        ver_result = QStringLiteral("1.0.%1").arg(int_ver / 65536ULL);
+                    }
                 }
             }
 

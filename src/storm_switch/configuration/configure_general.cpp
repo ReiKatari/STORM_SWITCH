@@ -18,6 +18,7 @@
 #include "storm_switch/configuration/configuration_shared.h"
 #include "storm_switch/configuration/configure_general.h"
 #include "storm_switch/configuration/shared_widget.h"
+#include "storm_switch/common/storm_lang.h"
 
 ConfigureGeneral::ConfigureGeneral(const Core::System& system_,
                                    std::shared_ptr<std::vector<ConfigurationShared::Tab*>> group_,
@@ -107,9 +108,10 @@ void ConfigureGeneral::SetResetCallback(std::function<void()> callback) {
 
 void ConfigureGeneral::ResetDefaults() {
     QMessageBox::StandardButton answer = QMessageBox::question(
-        this, tr("STORM SWITCH"),
-        tr("This reset all settings and remove all per-game configurations. This will not delete "
-           "game directories, profiles, or input profiles. Proceed?"),
+        this, QStringLiteral("STORM SWITCH"),
+        StormLang(
+            QStringLiteral("Сбросить все настройки к значениям по умолчанию и удалить персональные конфигурации игр? Каталоги игр, профили и профили управления затронуты не будут. Продолжить?"),
+            QStringLiteral("This will reset all settings and remove all per-game configurations. This will not delete game directories, profiles, or input profiles. Proceed?")),
         QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
     if (answer == QMessageBox::No) {
         return;
@@ -146,7 +148,7 @@ void ConfigureGeneral::UpdateExternalContentList() {
 
 void ConfigureGeneral::AddExternalContentDirectory() {
     const QString dir_path = QFileDialog::getExistingDirectory(
-        this, tr("Select External Content Directory..."), QString());
+        this, StormLang(QStringLiteral("Выберите папку внешнего контента..."), QStringLiteral("Select External Content Directory...")), QString());
 
     if (dir_path.isEmpty()) {
         return;
@@ -159,8 +161,8 @@ void ConfigureGeneral::AddExternalContentDirectory() {
 
     for (int i = 0; i < ui->external_content_list->count(); ++i) {
         if (ui->external_content_list->item(i)->text() == normalized_path) {
-            QMessageBox::information(this, tr("Directory Already Added"),
-                                     tr("This directory is already in the list."));
+            QMessageBox::information(this, StormLang(QStringLiteral("Каталог уже добавлен"), QStringLiteral("Directory Already Added")),
+                                     StormLang(QStringLiteral("Этот каталог уже присутствует в списке."), QStringLiteral("This directory is already in the list.")));
             return;
         }
     }

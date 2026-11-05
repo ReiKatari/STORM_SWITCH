@@ -1265,16 +1265,16 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Super Mario Bros. Wonder",
         "• Вылет при переходе уровней и активации Чудо-цветка (нехватка стандартной памяти 4GB)\n• Микрофризы при компиляции анимаций персонажей",
         "• Crash on stage transitions and Wonder Flower effects (4GB memory limit)\n• Shader compilation stutter on character animations",
-        "✓ Конфигурация памяти: 4 ГБ DRAM (стабильная работа)\n✓ Точность ГПУ: Обычная (Normal 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Сжатие ASTC: Отключено\n✓ Реактивная очистка: Отключено\n✓ Барьеры обратной связи: Включено",
-        "✓ Memory Layout: 4GB DRAM (Stable operation)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Enabled",
+        "✓ Конфигурация памяти: 6 ГБ DRAM (предотвращение переполнения памяти)\n✓ Точность ГПУ: Обычная (Normal 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Сжатие ASTC: Отключено\n✓ Реактивная очистка: Отключено\n✓ Барьеры обратной связи: Отключено (устранение зависаний и вылетов)",
+        "✓ Memory Layout: 6GB DRAM (Prevents memory overflow)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Disabled (Eliminates freezes and crashes)",
         {
-            {"System\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "1"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\use_reactive_flushing", "false"},
             {"Renderer\\use_fast_gpu_time", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\astc_recompression", "0"},
-            {"Renderer\\barrier_feedback_loops", "true"},
+            {"Renderer\\barrier_feedback_loops", "false"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"}
         }

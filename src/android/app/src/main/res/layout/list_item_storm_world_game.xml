@@ -27,6 +27,8 @@
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/image_game_cover"
+                app:strokeWidth="0dp"
+                app:strokeColor="@android:color/transparent"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"

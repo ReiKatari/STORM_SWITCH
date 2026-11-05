@@ -176,8 +176,9 @@ public:
  * If this class receives valid title metadata, it will also display game icons and titles.
  */
 class GameListItemPath : public GameListItem {
-    QImage m_image;
+    mutable QImage m_image;
     mutable QPixmap m_pixmap;
+    mutable int m_cached_icon_size{0};
 
 public:
     static constexpr int TitleRole = SortRole + 1;
@@ -193,6 +194,10 @@ public:
     static constexpr int PlayTimeRole = SortRole + 11;
     static constexpr int FileSizeBytesRole = SortRole + 12;
     static constexpr int IconPathRole = SortRole + 13;
+    static constexpr int InternalVersionRole = SortRole + 14;
+    static constexpr int AddonSummaryRole = SortRole + 15;
+    static constexpr int RawIconRole = SortRole + 16;
+    static constexpr int IconRole = SortRole + 16;
 
     GameListItemPath() = default;
     GameListItemPath(const QString& game_path, const std::vector<u8>& picture_data,
@@ -262,10 +267,46 @@ public:
             }
         }
 
+        while (version_num.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
+            version_num.remove(0, 1);
+        }
+        version_num = version_num.trimmed();
+        if (version_num.isEmpty() || version_num == QStringLiteral("0")) {
+            version_num = QStringLiteral("1.0.0");
+        }
+
+        u64 internal_ver = 0;
+        static const QRegularExpression fn_pair_sub_regex{QStringLiteral(R"(\(([0-9]+\.[0-9]+(?:\.[0-9]+)*)\s*-\s*([0-9]+))")};
+        const auto pm = fn_pair_sub_regex.match(game_path);
+        if (pm.hasMatch() && !pm.captured(2).isEmpty()) {
+            internal_ver = pm.captured(2).toULongLong();
+        }
+        if (internal_ver == 0) {
+            static const QRegularExpression fn_vnum_sub_regex{QStringLiteral(R"(\[v([0-9]+)\])")};
+            const auto vm = fn_vnum_sub_regex.match(game_path);
+            if (vm.hasMatch()) {
+                internal_ver = vm.captured(1).toULongLong();
+            }
+        }
+
+        QString addon_summary;
+        static const QRegularExpression fn_tag_sub_regex{QStringLiteral(R"(\((1G(?:\+[0-9]+[UMD])+)\))"), QRegularExpression::CaseInsensitiveOption};
+        const auto am = fn_tag_sub_regex.match(game_path);
+        if (am.hasMatch() && am.hasCaptured(1)) {
+            addon_summary = am.captured(1).toUpper();
+        } else if (addon_count > 0) {
+            addon_summary = QStringLiteral("+%1 DLC").arg(addon_count);
+        }
+
         setData(version_num, VersionRole);
         setData(addon_count, AddonCountRole);
+        setData(qulonglong(internal_ver), InternalVersionRole);
+        setData(addon_summary, AddonSummaryRole);
         setData(qulonglong(play_time), PlayTimeRole);
         setData(qulonglong(size_bytes), FileSizeBytesRole);
+        if (!picture_data.empty()) {
+            setData(QByteArray(reinterpret_cast<const char*>(picture_data.data()), static_cast<int>(picture_data.size())), RawIconRole);
+        }
 
         // Check custom config (item 21)
         const std::string config_name = program_id == 0
@@ -305,6 +346,7 @@ public:
         if (role == ScaledPixmapRole || role == Qt::DecorationRole) {
             if (value.canConvert<QPixmap>()) {
                 m_pixmap = value.value<QPixmap>();
+                m_cached_icon_size = m_pixmap.width();
                 emit emitDataChanged();
                 return;
             }
@@ -317,25 +359,40 @@ public:
     }
 
     QVariant data(int role) const override {
+        const u32 target_size = UISettings::values.game_icon_size.GetValue();
         if (role == ScaledPixmapRole) {
-            if (!m_pixmap.isNull()) {
+            if (!m_pixmap.isNull() && (m_cached_icon_size == 0 || m_cached_icon_size >= static_cast<int>(target_size))) {
                 return m_pixmap;
             }
         }
 
-        if (role == Qt::DecorationRole) {
-            if (m_pixmap.isNull() && !m_image.isNull()) {
-                const u32 icon_size = UISettings::values.game_icon_size.GetValue();
-                if (m_image.width() != static_cast<int>(icon_size) || m_image.height() != static_cast<int>(icon_size)) {
-                    m_pixmap = QPixmap::fromImage(m_image.scaled(icon_size, icon_size, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-                } else {
-                    m_pixmap = QPixmap::fromImage(m_image);
+        if (role == Qt::DecorationRole || role == ScaledPixmapRole) {
+            if (m_pixmap.isNull() || (m_cached_icon_size > 0 && m_cached_icon_size != static_cast<int>(target_size))) {
+                if (m_image.isNull()) {
+                    const QByteArray raw = data(RawIconRole).toByteArray();
+                    if (!raw.isEmpty()) {
+                        m_image.loadFromData(raw);
+                    } else {
+                        const QString icon_path = data(IconPathRole).toString();
+                        if (!icon_path.isEmpty() && QFile::exists(icon_path)) {
+                            m_image.load(icon_path);
+                        }
+                    }
+                }
+                if (!m_image.isNull()) {
+                    const int icon_sz = static_cast<int>(target_size);
+                    if (m_image.width() != icon_sz || m_image.height() != icon_sz) {
+                        m_pixmap = QPixmap::fromImage(m_image.scaled(icon_sz, icon_sz, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+                    } else {
+                        m_pixmap = QPixmap::fromImage(m_image);
+                    }
+                    m_cached_icon_size = icon_sz;
                 }
             }
             if (!m_pixmap.isNull()) {
                 return m_pixmap;
             }
-            return GetDefaultImage(UISettings::values.game_icon_size.GetValue());
+            return GetDefaultImage(target_size);
         }
 
         if (role == Qt::ToolTipRole) {
@@ -397,7 +454,15 @@ public:
 private:
     QString GetLazyToolTip() const {
         const u64 program_id = data(ProgramIdRole).toULongLong();
-        const QString game_name = data(TitleRole).toString();
+        QString game_name = data(Qt::DisplayRole).toString().split(QLatin1Char('\n')).first().trimmed();
+        if (game_name.isEmpty()) {
+            game_name = data(TitleRole).toString().trimmed();
+        }
+        if (game_name.isEmpty()) {
+            std::string filename;
+            Common::SplitPath(data(FullPathRole).toString().toStdString(), nullptr, &filename, nullptr);
+            game_name = QString::fromStdString(filename);
+        }
         const QString game_type = data(FileTypeRole).toString();
         const QString game_path = data(FullPathRole).toString();
         const QString version_num = data(VersionRole).toString();

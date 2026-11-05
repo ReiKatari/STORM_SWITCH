@@ -320,9 +320,9 @@ inline const SettingImpact* GetSettingImpact(std::string_view key) {
 
 inline QString FormatLevelRu(ImpactLevel lvl) {
     switch (lvl) {
-    case ImpactLevel::High: return QStringLiteral("выс.");
-    case ImpactLevel::Med:  return QStringLiteral("сред.");
-    case ImpactLevel::Low:  return QStringLiteral("низк.");
+    case ImpactLevel::High: return QStringLiteral("Высокий");
+    case ImpactLevel::Med:  return QStringLiteral("Средний");
+    case ImpactLevel::Low:  return QStringLiteral("Низкий");
     default: return QStringLiteral("—");
     }
 }
@@ -330,30 +330,14 @@ inline QString FormatLevelRu(ImpactLevel lvl) {
 inline QString FormatLevelEn(ImpactLevel lvl) {
     switch (lvl) {
     case ImpactLevel::High: return QStringLiteral("High");
-    case ImpactLevel::Med:  return QStringLiteral("Med");
+    case ImpactLevel::Med:  return QStringLiteral("Medium");
     case ImpactLevel::Low:  return QStringLiteral("Low");
     default: return QStringLiteral("—");
     }
 }
 
 inline QString FormatImpactBadge(const SettingImpact& impact, bool is_russian = false) {
-    if (impact.performance == ImpactLevel::None && impact.heat == ImpactLevel::None &&
-        impact.compatibility == ImpactLevel::None && impact.quality == ImpactLevel::None) {
-        return QString();
-    }
-    if (is_russian) {
-        return QStringLiteral("[%1/%2/%3/%4]")
-            .arg(FormatLevelRu(impact.performance))
-            .arg(FormatLevelRu(impact.heat))
-            .arg(FormatLevelRu(impact.compatibility))
-            .arg(FormatLevelRu(impact.quality));
-    } else {
-        return QStringLiteral("[%1/%2/%3/%4]")
-            .arg(FormatLevelEn(impact.performance))
-            .arg(FormatLevelEn(impact.heat))
-            .arg(FormatLevelEn(impact.compatibility))
-            .arg(FormatLevelEn(impact.quality));
-    }
+    return QString();
 }
 
 inline QString FormatImpactTooltip(const SettingImpact& impact, bool is_russian = false) {

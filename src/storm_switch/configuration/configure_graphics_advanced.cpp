@@ -1,3 +1,5 @@
+#include <QGroupBox>
+#include <QVBoxLayout>
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -73,19 +75,34 @@ void ConfigureGraphicsAdvanced::Setup(const ConfigurationShared::Builder& builde
         }
     }
 
+    auto* sync_card = new QGroupBox(StormLang(
+        QStringLiteral("Синхронизация и точность GPU"),
+        QStringLiteral("GPU Synchronization & Accuracy")), this);
+    auto* sync_lay = new QVBoxLayout(sync_card);
+    sync_lay->setContentsMargins(10, 12, 10, 8);
+    sync_lay->setSpacing(6);
+
+    auto* memory_card = new QGroupBox(StormLang(
+        QStringLiteral("Видеопамять и конвейеры"),
+        QStringLiteral("VRAM & Pipeline Management")), this);
+    auto* mem_lay = new QVBoxLayout(memory_card);
+    mem_lay->setContentsMargins(10, 12, 10, 8);
+    mem_lay->setSpacing(6);
+
     for (const auto& [id, widget] : normal_hold) {
-        auto* w = qobject_cast<ConfigurationShared::Widget*>(widget);
-        if (w && w->IsInputOrSelectionControl()) {
-            normal_layout.addWidget(widget);
+        if (id == Settings::values.vram_usage_mode.Id() ||
+            id == Settings::values.enable_compute_pipelines.Id()) {
+            mem_lay->addWidget(widget);
+        } else {
+            sync_lay->addWidget(widget);
         }
     }
-    for (const auto& [id, widget] : normal_hold) {
-        auto* w = qobject_cast<ConfigurationShared::Widget*>(widget);
-        if (!w || !w->IsInputOrSelectionControl()) {
-            normal_layout.addWidget(widget);
-        }
+
+    normal_layout.addWidget(sync_card);
+    if (mem_lay->count() > 0) {
+        normal_layout.addWidget(memory_card);
     }
-    normal_layout.setSpacing(6);
+    normal_layout.setSpacing(10);
     if (ui->scrollArea) {
         ui->scrollArea->setWidgetResizable(true);
         ui->scrollArea->setFrameShape(QFrame::NoFrame);

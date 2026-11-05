@@ -774,6 +774,9 @@ private:
     QAction* storm_save_sync_action{nullptr};
     QAction* log_viewer_action{nullptr};
     QAction* reset_gamefix_action{nullptr};
+    QAction* user_profiles_action{nullptr};
+    QAction* auto_opt_action{nullptr};
+    QAction* clear_shader_cache_action{nullptr};
     QAction* quick_save_action{nullptr};
     QAction* quick_load_action{nullptr};
     QAction* save_state_manager_action{nullptr};

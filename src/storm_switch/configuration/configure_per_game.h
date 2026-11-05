@@ -47,6 +47,8 @@ namespace StormUI {
 class LiveFilterEngine;
 }
 
+class QStackedWidget;
+class QTabWidget;
 class QGraphicsScene;
 class QLineEdit;
 class QStandardItem;
@@ -100,6 +102,14 @@ private:
     QLineEdit* m_search_edit{nullptr};
     QPushButton* m_reset_hero_btn{nullptr};
     std::vector<QString> m_original_tab_titles;
+
+        QStackedWidget* m_category_stack{nullptr};
+    QTabWidget* m_general_tabs{nullptr};
+    QTabWidget* m_system_tabs{nullptr};
+    QTabWidget* m_graphics_tabs{nullptr};
+    QTabWidget* m_audio_tabs{nullptr};
+    QTabWidget* m_input_tabs{nullptr};
+    QTabWidget* m_network_tabs{nullptr};
 
     std::unique_ptr<QtConfig> game_config;
     class QListWidget* m_selector_list{nullptr};

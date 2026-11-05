@@ -179,8 +179,13 @@ void EmulationSession::SetNativeWindow(ANativeWindow* native_window) {
     return access(KgslPath, F_OK) == 0;
 }
 
+[[maybe_unused]] static bool CheckMaliPresent() {
+    return access("/dev/mali0", F_OK) == 0 || access("/dev/panfrost", F_OK) == 0 ||
+           access("/dev/panthor", F_OK) == 0;
+}
+
 [[maybe_unused]] bool SupportsCustomDriver() {
-    return android_get_device_api_level() >= 28 && CheckKgslPresent();
+    return android_get_device_api_level() >= 28 && (CheckKgslPresent() || CheckMaliPresent());
 }
 #endif
 
@@ -212,6 +217,15 @@ void EmulationSession::InitializeGpuDriver(const std::string& hook_lib_dir,
         if (!handle && hook_lib_dir.size()) {
             handle = adrenotools_open_libvulkan(RTLD_NOW, featureFlags, nullptr, hook_lib_dir.c_str(),
                                                 nullptr, nullptr, file_redirect_dir_, nullptr);
+        }
+    }
+
+    // Try to load a custom driver directly if adrenotools failed or on non-KGSL hardware (e.g. Mali PanVK)
+    if (!handle && custom_driver_name.size() && custom_driver_dir.size()) {
+        std::string full_custom_driver_path = custom_driver_dir + "/" + custom_driver_name;
+        handle = dlopen(full_custom_driver_path.c_str(), RTLD_NOW | RTLD_LOCAL);
+        if (handle) {
+            LOG_INFO(Frontend, "Loaded custom Vulkan driver directly via dlopen: {}", full_custom_driver_path);
         }
     }
 
@@ -409,12 +423,19 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
     Core::GameFixDatabase::SanitizeSettingsForHostHardware();
 
 #ifdef __ANDROID__
-    // Re-apply Android low-RAM clamping (<= 8GB -> 4GB DRAM) AFTER ApplyProfileDirectly so game profiles cannot override it
+    // Guard Android RAM: clamp 8GB DRAM -> 6GB DRAM on devices with <= 8GB host RAM to prevent OS OOM kills,
+    // and only clamp to 4GB DRAM on severely constrained devices with <= 4GB host RAM.
     const u64 host_ram_bytes_post = static_cast<u64>(sysconf(_SC_PHYS_PAGES)) * static_cast<u64>(sysconf(_SC_PAGESIZE));
-    if (host_ram_bytes_post > 0 && host_ram_bytes_post <= (8ULL * 1024ULL * 1024ULL * 1024ULL) &&
-        Settings::values.memory_layout_mode.GetValue() != Settings::MemoryLayout::Memory_4Gb) {
-        Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_4Gb);
-        LOG_INFO(Frontend, "Re-applied Android low-RAM clamping to 4GB DRAM (host RAM: {} MB)", host_ram_bytes_post / (1024ULL * 1024ULL));
+    if (host_ram_bytes_post > 0) {
+        if (host_ram_bytes_post <= (4ULL * 1024ULL * 1024ULL * 1024ULL) &&
+            Settings::values.memory_layout_mode.GetValue() != Settings::MemoryLayout::Memory_4Gb) {
+            Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_4Gb);
+            LOG_INFO(Frontend, "Re-applied Android low-RAM clamping to 4GB DRAM (host RAM: {} MB)", host_ram_bytes_post / (1024ULL * 1024ULL));
+        } else if (host_ram_bytes_post <= (8ULL * 1024ULL * 1024ULL * 1024ULL) &&
+                   Settings::values.memory_layout_mode.GetValue() == Settings::MemoryLayout::Memory_8Gb) {
+            Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_6Gb);
+            LOG_INFO(Frontend, "Clamped memory_layout_mode 8GB to 6GB on <=8GB Android device ({} MB)", host_ram_bytes_post / (1024ULL * 1024ULL));
+        }
     }
 #endif
 
@@ -1001,8 +1022,8 @@ void JNICALL Java_org_yuzu_yuzu_1emu_NativeLibrary_initializeGpuDriver(JNIEnv* e
 jboolean JNICALL Java_org_yuzu_yuzu_1emu_utils_GpuDriverHelper_supportsCustomDriverLoading(
     JNIEnv* env, jobject instance) {
 #ifdef ARCHITECTURE_arm64
-    // If the KGSL device exists custom drivers can be loaded using adrenotools
-    return SupportsCustomDriver();
+    // Adrenotools custom drivers are supported on Adreno (KGSL), and custom Vulkan drivers (e.g. PanVK) on Mali/ARM64
+    return SupportsCustomDriver() || android_get_device_api_level() >= 28;
 #else
     return false;
 #endif

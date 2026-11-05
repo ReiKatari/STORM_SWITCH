@@ -508,7 +508,7 @@
     <string name="renderer_anti_aliasing">Метод сглаживания</string>
 
 
-    <string name="advanced">Расширенные</string>
+    <string name="advanced">Расширенные настройки</string>
 
     <string name="renderer_accuracy">Режим ГПУ</string>
     <string name="renderer_accuracy_description">Управляет режимом эмуляции ГПУ. Большинство игр нормально отображаются в режиме Быстрый, но для некоторых требуется режим Точный. Частицы обычно корректно отображаются только в режиме Точный.</string>
@@ -1410,21 +1410,21 @@
     <string name="auto_optimization_defaults_restored_toast">🔄 Стандартные настройки по умолчанию успешно восстановлены!</string>
     <string name="show_device_load_overlay">Показывать оверлей нагрузки на устройство</string>
     <string name="show_device_load_overlay_description">Отображает в реальном времени нагрузку на ЦП, ГПУ, ОЗУ и 5-уровневый индикатор температуры устройства.</string>
-    <string name="game_fix_issues_header">⚠️ Известные проблемы и сбои игры</string>
-    <string name="game_fix_recommended_header">⚡ Рекомендуемые настройки STORM SWITCH</string>
+    <string name="game_fix_issues_header">Известные проблемы и сбои игры</string>
+    <string name="game_fix_recommended_header">Рекомендуемые настройки STORM SWITCH</string>
     <string name="game_fix_dont_ask_again">Больше не спрашивать для этой игры</string>
-    <string name="game_fix_apply_and_launch">⚡ Применить исправления и запустить</string>
+    <string name="game_fix_apply_and_launch">Применить исправления и запустить</string>
     <string name="game_fix_skip_and_launch">Запустить без изменений</string>
 
     <!-- Методы запуска и глобальные настройки -->
     <string name="launch_method_title">Метод запуска</string>
-    <string name="launch_mode_auto_fix">Авто-исправление</string>
+    <string name="launch_mode_auto_fix">Применить авто-фикс и запустить</string>
     <string name="launch_mode_auto_fix_description">Чистый эталонный профиль STORM SOFT для максимальной стабильности</string>
-    <string name="launch_mode_auto_fix_with_custom">Авто-исправление с персональными настройками</string>
-    <string name="launch_mode_auto_fix_with_custom_description">Оптимизация игры с сохранением ваших ручных настроек (User Priority)</string>
-    <string name="launch_mode_custom">Персональные настройки</string>
+    <string name="launch_mode_auto_fix_with_custom">Объединить с моими настройками игры</string>
+    <string name="launch_mode_auto_fix_with_custom_description">Оптимизация игры с сохранением ваших ручных настроек</string>
+    <string name="launch_mode_custom">Запустить с моими настройками игры</string>
     <string name="launch_mode_custom_description">Запуск исключительно с индивидуальными настройками из профиля игры</string>
-    <string name="launch_mode_global">Глобальные настройки</string>
+    <string name="launch_mode_global">Запустить с глобальными настройками</string>
     <string name="launch_mode_global_description">Запуск со стандартными глобальными настройками эмулятора</string>
     <string name="apply_global_to_all_games">Применить глобальные настройки ко всем играм</string>
     <string name="apply_global_to_all_games_description">Сбросить персональные профили игр и распространить глобальные настройки на всю библиотеку</string>
@@ -1467,7 +1467,7 @@
     <string name="frame_gen_description">Вставка интерполированных кадров между отрисованными с помощью Lossless Scaling. При включении автоматически активирует режим FIFO для идеальной синхронизации.</string>
     <string name="frame_gen_multiplier">Множитель кадров</string>
     <string name="frame_gen_multiplier_description">Сколько кадров выводить на каждый отрисованный кадр. Более высокие значения требуют больше ресурсов GPU. Значения выше частоты вашего экрана могут замедлить эмуляцию.</string>
-    <string name="frame_gen_multiplier_2x">2x (Удвоение кадров)</string>
+    <string name="frame_gen_multiplier_2x">2x (60 → 120 FPS)</string>
     <string name="frame_gen_multiplier_3x">3x (Утроение кадров)</string>
     <string name="frame_gen_multiplier_4x">4x (Учетверение кадров)</string>
     <string name="frame_gen_target_rate">Целевая частота кадров</string>
@@ -1689,7 +1689,7 @@
     <string name="apply_driver_globally">Глобально для всех</string>
     <string name="apply_driver_keep_custom">Не затрагивая персональные настройки</string>
     <string name="apply_driver_current_game">Для текущей игры</string>
-    <string name="game_fix_manual_override_warning">⚠️ Применены ручные настройки (приоритет): %s. Авто-исправление частично переопределено.</string>
+    <string name="game_fix_manual_override_warning">[!] Применены ручные настройки (приоритет): %s. Авто-исправление частично переопределено.</string>
     <string name="online_install_recommended">Онлайн-установка (рекомендуется)</string>
     <string name="select_keys_file">Выбрать файл ключей с устройства</string>
     <string name="select_keys_folder">Выбрать папку с ключами</string>
@@ -2143,11 +2143,11 @@
     <string name="gamebanana_no_mod_desc">Описание мода отсутствует.</string>
     <string name="gamebanana_avail_files_header">
 📦 Доступные файлы для скачивания:</string>
-    <string name="game_fix_toast_autofix_custom">⚡ Авто-исправление: Рекомендуемые параметры применены с сохранением ваших настроек</string>
-    <string name="game_fix_toast_autofix_clean">⚡ Авто-исправление: Применен чистый эталонный профиль</string>
-    <string name="game_fix_toast_custom_saved">⚡ Авто-исправление: Индивидуальные настройки сохранены</string>
-    <string name="game_fix_toast_launch_custom">🎮 Персональные настройки: Запуск с вашим профилем</string>
-    <string name="game_fix_toast_launch_global">🌐 Глобальные настройки: Запуск с общими настройками</string>
+    <string name="game_fix_toast_autofix_custom">Авто-исправление: Рекомендуемые параметры применены с сохранением ваших настроек</string>
+    <string name="game_fix_toast_autofix_clean">Авто-исправление: Применен чистый эталонный профиль</string>
+    <string name="game_fix_toast_custom_saved">Авто-исправление: Индивидуальные настройки сохранены</string>
+    <string name="game_fix_toast_launch_custom">Персональные настройки: Запуск с вашим профилем</string>
+    <string name="game_fix_toast_launch_global">Глобальные настройки: Запуск с общими настройками</string>
     <string name="overlay_style_neon_glow">Неоновое кибер-свечение (3D)</string>
     <string name="overlay_style_joycon">Оригинальный стиль Joy-Con (3D)</string>
     <string name="overlay_style_frost_glass">Матовое стекло Frost Glass (3D)</string>
@@ -2398,4 +2398,23 @@
     <string name="cpu_unsafe_disabled_explanation">Небезопасные флаги процессора активны только при выбранной точности ЦП «Небезопасно».</string>
     <string name="barrier_feedback_loops">Обратная связь барьеров (Barrier Feedback Loops)</string>
     <string name="barrier_feedback_loops_description">Исправляет прозрачность, воду и глубину резкости в играх вроде Unravel Two</string>
+    <string name="game_fix_status_badge">АВТО-ФИКС</string>
+    <string name="tier_flagship_elite">УЛЬТРА-ФЛАГМАН</string>
+    <string name="tier_flagship">ФЛАГМАН</string>
+    <string name="tier_high_midrange">ВЫСОКИЙ КЛАСС</string>
+    <string name="tier_midrange">СРЕДНИЙ КЛАСС</string>
+    <string name="tier_budget">БЮДЖЕТНЫЙ</string>
+    <string name="auto_opt_hw_summary">✓ Динамическое состояние • NCE • Реактивная очистка • Привязка ядер ЦП • Быстрое время ГПУ</string>
+    <string name="freedreno_reset_recommended">Сбросить к рекомендованным</string>
+    <string name="freedreno_reset_recommended_desc">Сбросить все отладочные переменные Freedreno к настройкам максимальной производительности</string>
+    <string name="freedreno_reset_done_toast">Настройки Freedreno сброшены к рекомендованным</string>
+    <!-- PanVK & STORM DRIVER 10.0.0 additions -->
+    <string name="tab_driver_all">Все драйверы</string>
+    <string name="tab_driver_storm">STORM DRIVER</string>
+    <string name="tab_driver_turnip">Turnip (Adreno)</string>
+    <string name="tab_driver_panvk">PanVK (Mali / Immortalis)</string>
+    <string name="tab_driver_qualcomm">Qualcomm Proprietary</string>
+    <string name="install_storm_driver_10">⚡ Скачать STORM DRIVER 10.0.0</string>
+    <string name="storm_driver_10_recommendation">ГПУ: %1$s • Рекомендуется: %2$s</string>
+    <string name="storm_driver_downloading">Загрузка STORM DRIVER 10.0.0…</string>
 </resources>
