@@ -16,6 +16,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.Dispatchers
 import org.yuzu.yuzu_emu.utils.DirectoryInitialization
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -35,6 +38,9 @@ class GamesViewModel : ViewModel() {
 
     val isReloading: StateFlow<Boolean> get() = _isReloading
     private val _isReloading = MutableStateFlow(false)
+
+    val refreshFinished: SharedFlow<Unit> get() = _refreshFinished.asSharedFlow()
+    private val _refreshFinished = MutableSharedFlow<Unit>(extraBufferCapacity = 4)
 
     private val reloading = AtomicBoolean(false)
 
@@ -127,24 +133,26 @@ class GamesViewModel : ViewModel() {
     }
 
     fun reloadGames(directoriesChanged: Boolean, firstStartup: Boolean = false) {
-        if (reloading.get()) {
+        if (!reloading.compareAndSet(false, true)) {
+            if (!firstStartup) {
+                _isReloading.value = true
+            }
             return
         }
-        reloading.set(true)
-        val hasExistingGames = _games.value.isNotEmpty()
-        if (!hasExistingGames) {
+        if (!firstStartup || _games.value.isEmpty()) {
             _isReloading.value = true
         }
 
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                try {
+            try {
+                withContext(Dispatchers.IO) {
                     while (!DirectoryInitialization.areDirectoriesReady) {
                         delay(50)
                     }
                     NativeLibrary.reloadKeys()
                     getGameDirsAndExternalContent()
                     val newGames = GameHelper.getGames()
+                    val hasExistingGames = _games.value.isNotEmpty()
                     val changed = if (newGames.isNotEmpty() || !hasExistingGames) {
                         setGames(newGames)
                     } else {
@@ -154,12 +162,13 @@ class GamesViewModel : ViewModel() {
                         _shouldScrollAfterReload.value = true
                         setShouldSwapData(true)
                     }
-                } catch (e: Throwable) {
-                    org.yuzu.yuzu_emu.utils.Log.error("[GamesViewModel] Error reloading games: ${e.message}")
-                } finally {
-                    reloading.set(false)
-                    _isReloading.value = false
                 }
+            } catch (e: Throwable) {
+                org.yuzu.yuzu_emu.utils.Log.error("[GamesViewModel] Error reloading games: ${e.message}")
+            } finally {
+                reloading.set(false)
+                _isReloading.value = false
+                _refreshFinished.tryEmit(Unit)
             }
         }
     }

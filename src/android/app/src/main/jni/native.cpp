@@ -354,6 +354,89 @@ void EmulationSession::SetAppletId(int applet_id) {
         static_cast<Service::AM::AppletId>(m_applet_id));
 }
 
+static void ApplyGameSpecificSafetyOverrides(u64 title_id, u64 host_ram_bytes) {
+    if (title_id == 0) return;
+    const u64 base_tid = title_id & ~0x1FFFULL;
+
+    // 1) Super Mario Bros. Wonder
+    if (title_id == 0x010015100B514000ULL || base_tid == 0x010015100B514000ULL) {
+        Settings::values.memory_layout_mode.SetGlobal(false);
+        Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_4Gb);
+        Settings::values.barrier_feedback_loops.SetGlobal(false);
+        Settings::values.barrier_feedback_loops.SetValue(true);
+        Settings::values.early_release_fences.SetGlobal(false);
+        Settings::values.early_release_fences.SetValue(false);
+        Settings::values.enable_frame_skipping.SetGlobal(false);
+        Settings::values.enable_frame_skipping.SetValue(false);
+        Settings::values.vram_budget_governor.SetGlobal(false);
+        Settings::values.vram_budget_governor.SetValue(false);
+        Settings::values.cpuopt_ignore_memory_aborts.SetGlobal(false);
+        Settings::values.cpuopt_ignore_memory_aborts.SetValue(true);
+        LOG_INFO(Frontend, "Guaranteed Super Mario Bros. Wonder safety overrides (4GB, barriers ON, early_fences OFF, frame_skip OFF, vram_gov OFF, ignore_aborts ON)");
+    }
+
+    // 2) Diablo II: Resurrected
+    if (title_id == 0x0100726014352000ULL || title_id == 0x01002A801458A000ULL || title_id == 0x0100916014D8C000ULL ||
+        base_tid == 0x0100726014352000ULL || base_tid == 0x01002A801458A000ULL || base_tid == 0x0100916014D8C000ULL) {
+        Settings::values.memory_layout_mode.SetGlobal(false);
+        if (host_ram_bytes > 0 && host_ram_bytes < 7ULL * 1024ULL * 1024ULL * 1024ULL) {
+            Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_6Gb);
+        } else {
+            Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_8Gb);
+        }
+        Settings::values.gpu_accuracy.SetGlobal(false);
+        Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::High);
+        Settings::values.use_reactive_flushing.SetGlobal(false);
+        Settings::values.use_reactive_flushing.SetValue(true);
+        Settings::values.use_fast_gpu_time.SetGlobal(false);
+        Settings::values.use_fast_gpu_time.SetValue(false);
+        Settings::values.vram_budget_governor.SetGlobal(false);
+        Settings::values.vram_budget_governor.SetValue(false);
+        Settings::values.vram_garbage_collection.SetGlobal(false);
+        Settings::values.vram_garbage_collection.SetValue(false);
+        Settings::values.early_release_fences.SetGlobal(false);
+        Settings::values.early_release_fences.SetValue(false);
+        Settings::values.enable_frame_skipping.SetGlobal(false);
+        Settings::values.enable_frame_skipping.SetValue(false);
+        Settings::values.dyna_state.SetGlobal(false);
+        Settings::values.dyna_state.SetValue(Settings::ExtendedDynamicState::Disabled);
+        Settings::values.barrier_feedback_loops.SetGlobal(false);
+        Settings::values.barrier_feedback_loops.SetValue(true);
+        Settings::values.airplane_mode.SetGlobal(false);
+        Settings::values.airplane_mode.SetValue(true);
+        LOG_INFO(Frontend, "Guaranteed Diablo II: Resurrected safety overrides (8GB/6GB DRAM, GPU High, Reactive Flush, airplane mode)");
+    }
+
+    // 3) Unravel Two
+    if (title_id == 0x01008C3005A32000ULL || title_id == 0x0100E5D00CC0C000ULL || title_id == 0x010099900B22E000ULL ||
+        base_tid == 0x01008C3005A32000ULL || base_tid == 0x0100E5D00CC0C000ULL || base_tid == 0x010099900B22E000ULL) {
+        Settings::values.cpu_backend.SetGlobal(false);
+        Settings::values.cpu_backend.SetValue(Settings::CpuBackend::Dynarmic);
+        Settings::values.nvdec_emulation.SetGlobal(false);
+        Settings::values.nvdec_emulation.SetValue(Settings::NvdecEmulation::Cpu);
+        Settings::values.gpu_accuracy.SetGlobal(false);
+        Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::High);
+        Settings::values.barrier_feedback_loops.SetGlobal(false);
+        Settings::values.barrier_feedback_loops.SetValue(true);
+        Settings::values.use_reactive_flushing.SetGlobal(false);
+        Settings::values.use_reactive_flushing.SetValue(true);
+        Settings::values.early_release_fences.SetGlobal(false);
+        Settings::values.early_release_fences.SetValue(false);
+        Settings::values.cpuopt_ignore_memory_aborts.SetGlobal(false);
+        Settings::values.cpuopt_ignore_memory_aborts.SetValue(true);
+        LOG_INFO(Frontend, "Guaranteed Unravel Two safety overrides (Dynarmic, NVDEC CPU, GPU High, Reactive Flush, ignore aborts)");
+    }
+
+    // 4) Switch 2 games
+    if ((title_id >> 48) == 0x0400 || Settings::IsCurrentProgramSwitch2()) {
+        Settings::values.cpu_backend.SetGlobal(false);
+        Settings::values.cpu_backend.SetValue(Settings::CpuBackend::Dynarmic);
+        Settings::values.cpuopt_ignore_memory_aborts.SetGlobal(false);
+        Settings::values.cpuopt_ignore_memory_aborts.SetValue(true);
+        LOG_INFO(Frontend, "Guaranteed Switch 2 safety overrides (Dynarmic + ignore memory aborts for PAuth)");
+    }
+}
+
 Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string& filepath,
                                                                const std::size_t program_index,
                                                                const bool frontend_initiated) {
@@ -411,13 +494,7 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
     }
 #endif
 
-    if (early_title_id == 0x010015100B514000ULL || (early_title_id & ~0x1FFFULL) == 0x010015100B514000ULL) {
-        Settings::values.memory_layout_mode.SetGlobal(false);
-        Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_4Gb);
-        Settings::values.barrier_feedback_loops.SetGlobal(false);
-        Settings::values.barrier_feedback_loops.SetValue(false);
-        LOG_INFO(Frontend, "Guaranteed Super Mario Bros. Wonder 4GB DRAM and disabled barrier feedback loops (early)");
-    }
+    ApplyGameSpecificSafetyOverrides(early_title_id, host_ram_bytes);
 
     if (Core::GameFixDatabase::AreFixesEnabled()) {
         bool applied_early = false;
@@ -452,7 +529,7 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
             Settings::values.memory_layout_mode.GetValue() != Settings::MemoryLayout::Memory_4Gb) {
             Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_4Gb);
             LOG_INFO(Frontend, "Re-applied Android low-RAM clamping to 4GB DRAM (host RAM: {} MB)", host_ram_bytes_post / (1024ULL * 1024ULL));
-        } else if (host_ram_bytes_post <= (8ULL * 1024ULL * 1024ULL * 1024ULL) &&
+        } else if (host_ram_bytes_post < (7ULL * 1024ULL * 1024ULL * 1024ULL) &&
                    Settings::values.memory_layout_mode.GetValue() == Settings::MemoryLayout::Memory_8Gb) {
             Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_6Gb);
             LOG_INFO(Frontend, "Clamped memory_layout_mode 8GB to 6GB on <=8GB Android device ({} MB)", host_ram_bytes_post / (1024ULL * 1024ULL));
@@ -505,13 +582,9 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
 
     {
         const u64 cur_tid = m_system.GetApplicationProcessProgramID();
-        if (cur_tid == 0x010015100B514000ULL || (cur_tid & ~0x1FFFULL) == 0x010015100B514000ULL) {
-            Settings::values.memory_layout_mode.SetGlobal(false);
-            Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_4Gb);
-            Settings::values.barrier_feedback_loops.SetGlobal(false);
-            Settings::values.barrier_feedback_loops.SetValue(false);
+        if (cur_tid != 0) {
+            ApplyGameSpecificSafetyOverrides(cur_tid, host_ram_bytes_post);
             m_system.ApplySettings();
-            LOG_INFO(Frontend, "Guaranteed Super Mario Bros. Wonder 4GB DRAM and disabled barrier feedback loops (post-load)");
         }
     }
 

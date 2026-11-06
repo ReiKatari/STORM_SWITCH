@@ -433,13 +433,17 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Unravel Two",
         "• Зависание на вступительных видеороликах (дедлок видеодекодера NVDEC)\n• Графические артефакты освещения, прозрачности воды и искажение шейдеров",
         "• Freeze during intro cutscenes (NVDEC video decoder deadlock)\n• Lighting, water transparency and shader corruption artifacts",
-        "✓ Программный декодер видео (NVDEC CPU: устранение зависания заставок)\n✓ Точность ГПУ: Обычная (Normal)\n✓ Обратные циклы барьеров: Отключено (стабильный переход между главами)\n✓ Реактивная очистка: Включено",
-        "✓ CPU NVDEC Video Decoding (Fixes intro video hang)\n✓ GPU Accuracy: Normal\n✓ Barrier Feedback Loops: Disabled (Smooth chapter transitions)\n✓ Reactive Flushing: Enabled",
+        "✓ Программный декодер видео (NVDEC CPU: устранение зависания заставок)\n✓ Точность ГПУ: Высокая (High: исправление прозрачности воды и шейдеров)\n✓ Обратные циклы барьеров: Включено (стабильный переход между главами)\n✓ Реактивная очистка: Включено\n✓ Ранний сброс заборов: Отключено\n✓ Движок ЦП: Dynarmic\n✓ Игнорирование сбоев памяти: Включено",
+        "✓ CPU NVDEC Video Decoding (Fixes intro video hang)\n✓ GPU Accuracy: High (Fixes water transparency and shader corruption)\n✓ Barrier Feedback Loops: Enabled (Smooth chapter transitions)\n✓ Reactive Flushing: Enabled\n✓ Early Release Fences: Disabled\n✓ CPU Backend: Dynarmic\n✓ Ignore Memory Aborts: Enabled",
         {
             {"Renderer\\nvdec_emulation", "1"},
-            {"Renderer\\gpu_accuracy", "1"},
-            {"Renderer\\barrier_feedback_loops", "false"},
-            {"Renderer\\use_reactive_flushing", "true"}
+            {"Renderer\\gpu_accuracy", "2"},
+            {"Renderer\\barrier_feedback_loops", "true"},
+            {"Renderer\\use_reactive_flushing", "true"},
+            {"Renderer\\early_release_fences", "false"},
+            {"Cpu\\cpu_backend", "0"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"}
         },
         {0x0100E5D00CC0C000ULL, 0x010099900B22E000ULL}
     },
@@ -770,7 +774,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Точность ГПУ: Высокая (восстанавливает все буквы и текст интерфейса)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Быстрое время ГПУ: Отключено (устраняет пропуск рендеринга шрифтов)\n✓ Сжатие ASTC: Отключено (устраняет полосы и квадраты)\n✓ Точность ЦП: Авто (устранение заторможенности)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание персонажа)\n✓ Реактивный сброс: Включено (синхронизация атласа шрифтов)\n✓ Обратное чтение буферов ГПУ: Отключено (устраняет 4 FPS / 200 ms)",
         "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ GPU Accuracy: High (Restores UI text and font glyphs)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ Fast GPU Time: Disabled (Prevents font rendering skips)\n✓ ASTC Recompression: Uncompressed (Fixes decal artifacts)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes character flickering)\n✓ Reactive Flushing: Enabled (Syncs font atlases)\n✓ GPU Buffer Readback: Disabled (Fixes 4 FPS / 200 ms)",
         {
-            {"System\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "2"},
+            {"Core\\memory_layout_mode", "2"},
             {"System\\airplane_mode", "true"},
             {"Services\\airplane_mode", "true"},
             {"Renderer\\gpu_accuracy", "2"},
@@ -785,18 +790,19 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\dyna_state", "0"},
             {"Renderer\\dma_accuracy", "3"},
             {"Renderer\\early_release_fences", "false"},
+            {"Renderer\\enable_frame_skipping", "false"},
             {"Renderer\\async_presentation", "true"},
             {"Renderer\\vram_garbage_collection", "false"},
             {"Cpu\\cpu_accuracy", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
-            {"Renderer\\vram_budget_governor", "true"},
+            {"Renderer\\vram_budget_governor", "false"},
             {"Renderer\\use_asynchronous_gpu_emulation", "true"}
         },
         {0x0100916014D8C000ULL, 0x0100726014352000ULL}
 ,
         {
             {"adreno", {
-                {"Renderer\\gpu_accuracy", "1"},
+                {"Renderer\\gpu_accuracy", "2"},
                 {"Renderer\\use_fast_gpu_time", "false"},
                 {"Renderer\\astc_recompression", "0"},
                 {"Renderer\\accelerate_astc", "0"},
@@ -1265,8 +1271,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Super Mario Bros. Wonder",
         "• Вылет при переходе уровней и активации Чудо-цветка\n• Микрофризы при компиляции анимаций персонажей",
         "• Crash on stage transitions and Wonder Flower effects\n• Shader compilation stutter on character animations",
-        "✓ Конфигурация памяти: 4 ГБ DRAM (стабильный запуск без сбоев памяти)\n✓ Точность ГПУ: Обычная (Normal 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Сжатие ASTC: Отключено\n✓ Реактивная очистка: Отключено\n✓ Барьеры обратной связи: Отключено (устранение зависаний и вылетов)",
-        "✓ Memory Layout: 4GB DRAM (Stable launch without memory faults)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Disabled (Eliminates freezes and crashes)",
+        "✓ Конфигурация памяти: 4 ГБ DRAM\n✓ Точность ГПУ: Обычная (Normal 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Сжатие ASTC: Отключено\n✓ Реактивная очистка: Отключено\n✓ Барьеры обратной связи: Включено (устранение графических глитчей)\n✓ Ранний сброс заборов: Отключено\n✓ Пропуск кадров: Отключено\n✓ Контроль бюджета VRAM: Отключено\n✓ Игнорирование сбоев памяти: Включено",
+        "✓ Memory Layout: 4GB DRAM\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Enabled (Eliminates graphical glitches)\n✓ Early Release Fences: Disabled\n✓ Frame Skipping: Disabled\n✓ VRAM Budget Governor: Disabled\n✓ Ignore Memory Aborts: Enabled",
         {
             {"Core\\memory_layout_mode", "0"},
             {"System\\memory_layout_mode", "0"},
@@ -1275,9 +1281,12 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\use_fast_gpu_time", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\astc_recompression", "0"},
-            {"Renderer\\barrier_feedback_loops", "false"},
+            {"Renderer\\barrier_feedback_loops", "true"},
+            {"Renderer\\early_release_fences", "false"},
+            {"Renderer\\enable_frame_skipping", "false"},
+            {"Renderer\\vram_budget_governor", "false"},
             {"Cpu\\cpuopt_fastmem", "true"},
-            {"Cpu\\cpuopt_ignore_memory_aborts", "false"}
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"}
         }
     },
 

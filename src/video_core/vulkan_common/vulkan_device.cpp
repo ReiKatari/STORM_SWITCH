@@ -746,19 +746,24 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
         properties.properties.limits.maxVertexInputBindings = 32;
     }
 
-    // Detect Adreno 6xx GPUs (Snapdragon 700/600/800 series with Adreno 6xx)
+    // Detect Adreno 6xx and Adreno 8xx GPUs (Snapdragon 8 Elite / SM8750 Adreno 830, etc.)
     const std::string_view dev_name{properties.properties.deviceName};
     const bool is_adreno_6xx = (is_turnip || is_qualcomm) &&
         (dev_name.find("Adreno (TM) 6") != std::string_view::npos ||
          dev_name.find("Adreno 6") != std::string_view::npos ||
          dev_name.find("FD6") != std::string_view::npos ||
          dev_name.find("adreno 6") != std::string_view::npos);
+    const bool is_adreno_8xx = (is_turnip || is_qualcomm) &&
+        (dev_name.find("Adreno (TM) 8") != std::string_view::npos ||
+         dev_name.find("Adreno 8") != std::string_view::npos ||
+         dev_name.find("FD8") != std::string_view::npos ||
+         dev_name.find("adreno 8") != std::string_view::npos);
 
     const auto dyna_state = Settings::values.dyna_state.GetValue();
     auto effective_dyna_state = dyna_state;
 
-    if (is_adreno_6xx || is_qualcomm || is_mali || is_xclipse) {
-        // Adreno 6xx, stock Qualcomm proprietary drivers, ARM Mali/Immortalis, and Samsung Xclipse
+    if (is_adreno_6xx || is_adreno_8xx || is_qualcomm || is_mali || is_xclipse) {
+        // Adreno 6xx/8xx, stock Qualcomm proprietary drivers, ARM Mali/Immortalis, and Samsung Xclipse
         // crash or corrupt pipelines on ExtendedDynamicState.
         LOG_INFO(Render_Vulkan, "Mobile GPU / driver auto-optimization: ExtendedDynamicState disabled for hardware pipeline stability");
         effective_dyna_state = Settings::ExtendedDynamicState::Disabled;
@@ -802,8 +807,8 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
         break;
     }
 
-    // VK_EXT_vertex_input_dynamic_state — broken on Adreno 6xx, stock Qualcomm proprietary drivers, Mali, and Xclipse
-    if (!Settings::values.vertex_input_dynamic_state.GetValue() || is_adreno_6xx || is_qualcomm || is_mali || is_xclipse) {
+    // VK_EXT_vertex_input_dynamic_state — broken on Adreno 6xx/8xx, stock Qualcomm proprietary drivers, Mali, and Xclipse
+    if (!Settings::values.vertex_input_dynamic_state.GetValue() || is_adreno_6xx || is_adreno_8xx || is_qualcomm || is_mali || is_xclipse) {
         RemoveExtensionFeature(extensions.vertex_input_dynamic_state, features.vertex_input_dynamic_state, VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME);
     }
 

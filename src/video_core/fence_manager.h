@@ -73,7 +73,7 @@ public:
 
     void SignalFence(std::function<void()>&& func) {
         const bool delay_fence = Settings::IsGPUFenceBehaviorStrict();
-        const bool early_release = Settings::values.early_release_fences.GetValue();
+        const bool early_release = Settings::values.early_release_fences.GetValue() && !Settings::IsGPULevelHigh() && !Settings::IsGPULevelExtreme();
         const bool should_flush = ShouldFlush();
         if constexpr (!can_async_check) {
             TryReleasePendingFences<false>();

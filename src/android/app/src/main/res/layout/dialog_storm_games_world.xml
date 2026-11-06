@@ -85,9 +85,11 @@
         android:paddingVertical="8dp">
 
         <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            app:boxBackgroundMode="outline"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:boxBackgroundColor="?attr/colorSurfaceVariant"
+            app:boxBackgroundColor="@android:color/transparent"
             app:boxCornerRadiusBottomEnd="8dp"
             app:boxCornerRadiusBottomStart="8dp"
             app:boxCornerRadiusTopEnd="8dp"
@@ -101,6 +103,8 @@
                 android:id="@+id/edit_search"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:background="@android:color/transparent"
                 android:hint="@string/storm_world_search_hint"
                 android:imeOptions="actionSearch"
                 android:inputType="text"

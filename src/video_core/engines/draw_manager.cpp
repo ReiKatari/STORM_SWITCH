@@ -71,7 +71,7 @@ void Maxwell3D::DrawManager::ProcessMethodCall(Maxwell3D& maxwell3d, u32 method,
 }
 
 void Maxwell3D::DrawManager::Clear(Maxwell3D& maxwell3d, u32 layer_count) {
-    if (maxwell3d.ShouldExecute() && maxwell3d.EvaluateCondition()) {
+    if (maxwell3d.ShouldExecute()) {
         maxwell3d.rasterizer->Clear(layer_count);
     }
 }

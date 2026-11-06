@@ -409,7 +409,8 @@ NvResult nvhost_gpu::SubmitGPFIFOImpl(IoctlSubmitGpfifo& params, Tegra::CommandL
             const auto& entry = entries.command_lists[i];
             std::array<u32, 16> words{};
             const size_t bytes = std::min<size_t>(entry.size * sizeof(u32), sizeof(words));
-            const bool mapped = channel_state->memory_manager && bytes &&
+            const bool mapped = channel_state && channel_state->memory_manager && entry.addr != 0 && bytes &&
+                channel_state->memory_manager->GpuToCpuAddress(entry.addr).has_value() &&
                 channel_state->memory_manager->IsFullyMappedRange(entry.addr, bytes);
             if (mapped) { channel_state->memory_manager->ReadBlockUnsafe(entry.addr, words.data(), bytes); }
             if (mapped && entry.size > 1000 && std::getenv("EDEN_NATIVE_FRAME_CAPTURE")) {
@@ -428,7 +429,9 @@ NvResult nvhost_gpu::SubmitGPFIFOImpl(IoctlSubmitGpfifo& params, Tegra::CommandL
         for (size_t i = 0; i < entries.command_lists.size(); ++i) {
             const auto& entry = entries.command_lists[i];
             const auto bytes = static_cast<size_t>(entry.size) * sizeof(u32);
-            if (!bytes || bytes > 0x100000 || !channel_state->memory_manager->IsFullyMappedRange(entry.addr, bytes)) continue;
+            if (!bytes || bytes > 0x100000 || !channel_state || !channel_state->memory_manager || entry.addr == 0 ||
+                !channel_state->memory_manager->GpuToCpuAddress(entry.addr).has_value() ||
+                !channel_state->memory_manager->IsFullyMappedRange(entry.addr, bytes)) continue;
             std::vector<u32> contents(static_cast<size_t>(entry.size));
             channel_state->memory_manager->ReadBlockUnsafe(entry.addr, contents.data(), bytes);
             std::ofstream dump("native-submit-" + std::to_string(channel_state->bind_id) + "-" + std::to_string(native_submit_logs) + "-" + std::to_string(i) + ".bin", std::ios::binary);

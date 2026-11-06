@@ -1837,7 +1837,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
 
 
 
-    setWindowTitle(QStringLiteral("STORM SWITCH 16.3.0"));
+    setWindowTitle(QStringLiteral("STORM SWITCH 16.3.1"));
     UpdateWindowTitle();
 
 
@@ -9975,12 +9975,68 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
 
             Core::GameFixDatabase::ApplyProfileDirectly(title_id, filename.toStdString());
 
+            // Guaranteed Desktop Safety Overrides (Immune to stale per-game .ini)
             if (title_id == 0x010015100B514000ULL || (title_id & ~0x1FFFULL) == 0x010015100B514000ULL) {
                 Settings::values.memory_layout_mode.SetGlobal(false);
                 Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_4Gb);
                 Settings::values.barrier_feedback_loops.SetGlobal(false);
-                Settings::values.barrier_feedback_loops.SetValue(false);
-                LOG_INFO(Frontend, "Guaranteed Super Mario Bros. Wonder 4GB DRAM on Desktop");
+                Settings::values.barrier_feedback_loops.SetValue(true);
+                Settings::values.early_release_fences.SetGlobal(false);
+                Settings::values.early_release_fences.SetValue(false);
+                Settings::values.enable_frame_skipping.SetGlobal(false);
+                Settings::values.enable_frame_skipping.SetValue(false);
+                Settings::values.vram_budget_governor.SetGlobal(false);
+                Settings::values.vram_budget_governor.SetValue(false);
+                Settings::values.cpuopt_ignore_memory_aborts.SetGlobal(false);
+                Settings::values.cpuopt_ignore_memory_aborts.SetValue(true);
+                LOG_INFO(Frontend, "Guaranteed Super Mario Bros. Wonder safety overrides on Desktop");
+            }
+
+            const u64 desktop_base_tid = title_id & ~0x1FFFULL;
+            if (title_id == 0x0100726014352000ULL || title_id == 0x01002A801458A000ULL || title_id == 0x0100916014D8C000ULL ||
+                desktop_base_tid == 0x0100726014352000ULL || desktop_base_tid == 0x01002A801458A000ULL || desktop_base_tid == 0x0100916014D8C000ULL) {
+                Settings::values.memory_layout_mode.SetGlobal(false);
+                Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_8Gb);
+                Settings::values.gpu_accuracy.SetGlobal(false);
+                Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::High);
+                Settings::values.use_reactive_flushing.SetGlobal(false);
+                Settings::values.use_reactive_flushing.SetValue(true);
+                Settings::values.use_fast_gpu_time.SetGlobal(false);
+                Settings::values.use_fast_gpu_time.SetValue(false);
+                Settings::values.vram_budget_governor.SetGlobal(false);
+                Settings::values.vram_budget_governor.SetValue(false);
+                Settings::values.vram_garbage_collection.SetGlobal(false);
+                Settings::values.vram_garbage_collection.SetValue(false);
+                Settings::values.early_release_fences.SetGlobal(false);
+                Settings::values.early_release_fences.SetValue(false);
+                Settings::values.enable_frame_skipping.SetGlobal(false);
+                Settings::values.enable_frame_skipping.SetValue(false);
+                Settings::values.dyna_state.SetGlobal(false);
+                Settings::values.dyna_state.SetValue(Settings::ExtendedDynamicState::Disabled);
+                Settings::values.barrier_feedback_loops.SetGlobal(false);
+                Settings::values.barrier_feedback_loops.SetValue(true);
+                Settings::values.airplane_mode.SetGlobal(false);
+                Settings::values.airplane_mode.SetValue(true);
+                LOG_INFO(Frontend, "Guaranteed Diablo II: Resurrected safety overrides on Desktop");
+            }
+
+            if (title_id == 0x01008C3005A32000ULL || title_id == 0x0100E5D00CC0C000ULL || title_id == 0x010099900B22E000ULL ||
+                desktop_base_tid == 0x01008C3005A32000ULL || desktop_base_tid == 0x0100E5D00CC0C000ULL || desktop_base_tid == 0x010099900B22E000ULL) {
+                Settings::values.cpu_backend.SetGlobal(false);
+                Settings::values.cpu_backend.SetValue(Settings::CpuBackend::Dynarmic);
+                Settings::values.nvdec_emulation.SetGlobal(false);
+                Settings::values.nvdec_emulation.SetValue(Settings::NvdecEmulation::Cpu);
+                Settings::values.gpu_accuracy.SetGlobal(false);
+                Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::High);
+                Settings::values.barrier_feedback_loops.SetGlobal(false);
+                Settings::values.barrier_feedback_loops.SetValue(true);
+                Settings::values.use_reactive_flushing.SetGlobal(false);
+                Settings::values.use_reactive_flushing.SetValue(true);
+                Settings::values.early_release_fences.SetGlobal(false);
+                Settings::values.early_release_fences.SetValue(false);
+                Settings::values.cpuopt_ignore_memory_aborts.SetGlobal(false);
+                Settings::values.cpuopt_ignore_memory_aborts.SetValue(true);
+                LOG_INFO(Frontend, "Guaranteed Unravel Two safety overrides on Desktop");
             }
 
             QtCommon::system->ApplySettings();
@@ -20680,7 +20736,7 @@ void MainWindow::UpdateWindowTitle(std::string_view filename, std::string_view d
                                    std::string_view internal_version, std::string_view gpu_vendor) {
 
     const QString build_ver = QString::fromUtf8(Common::g_build_version).isEmpty()
-                                  ? QStringLiteral("16.3.0")
+                                  ? QStringLiteral("16.3.1")
                                   : QString::fromUtf8(Common::g_build_version);
     const QString strict_idle_title = QStringLiteral("STORM SWITCH %1").arg(build_ver);
 

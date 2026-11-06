@@ -380,7 +380,11 @@ void MemoryManager::ReadBlockImpl(GPUVAddr gpu_src_addr, void* dest_buffer, std:
             rasterizer->FlushRegion(dev_addr_base, copy_amount, which);
         }
         u8* physical = memory.GetPointer<u8>(dev_addr_base);
-        std::memcpy(dest_buffer, physical, copy_amount);
+        if (!physical) [[unlikely]] {
+            std::memset(dest_buffer, 0, copy_amount);
+        } else {
+            std::memcpy(dest_buffer, physical, copy_amount);
+        }
         dest_buffer = static_cast<u8*>(dest_buffer) + copy_amount;
     };
     auto mapped_big = [&](std::size_t page_index, std::size_t offset, std::size_t copy_amount) {
@@ -392,7 +396,11 @@ void MemoryManager::ReadBlockImpl(GPUVAddr gpu_src_addr, void* dest_buffer, std:
             memory.ReadBlockUnsafe(dev_addr_base, dest_buffer, copy_amount);
         } else {
             u8* physical = memory.GetPointer<u8>(dev_addr_base);
-            std::memcpy(dest_buffer, physical, copy_amount);
+            if (!physical) [[unlikely]] {
+                std::memset(dest_buffer, 0, copy_amount);
+            } else {
+                std::memcpy(dest_buffer, physical, copy_amount);
+            }
         }
         dest_buffer = static_cast<u8*>(dest_buffer) + copy_amount;
     };
@@ -421,7 +429,9 @@ void MemoryManager::WriteBlockImpl(GPUVAddr gpu_dest_addr, const void* src_buffe
             rasterizer->InvalidateRegion(dev_addr_base, copy_amount, which);
         }
         u8* physical = memory.GetPointer<u8>(dev_addr_base);
-        std::memcpy(physical, src_buffer, copy_amount);
+        if (physical) [[likely]] {
+            std::memcpy(physical, src_buffer, copy_amount);
+        }
         src_buffer = static_cast<const u8*>(src_buffer) + copy_amount;
     };
     auto mapped_big = [&](std::size_t page_index, std::size_t offset, std::size_t copy_amount) {
@@ -433,7 +443,9 @@ void MemoryManager::WriteBlockImpl(GPUVAddr gpu_dest_addr, const void* src_buffe
             memory.WriteBlockUnsafe(dev_addr_base, src_buffer, copy_amount);
         } else {
             u8* physical = memory.GetPointer<u8>(dev_addr_base);
-            std::memcpy(physical, src_buffer, copy_amount);
+            if (physical) [[likely]] {
+                std::memcpy(physical, src_buffer, copy_amount);
+            }
         }
         src_buffer = static_cast<const u8*>(src_buffer) + copy_amount;
     };

@@ -153,6 +153,7 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/layout_search"
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    app:boxBackgroundMode="outline"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -172,6 +173,8 @@
                         android:id="@+id/input_search"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:background="@android:color/transparent"
                         android:hint="@string/gamebanana_search_hint"
                         android:imeOptions="actionSearch"
                         android:inputType="text"

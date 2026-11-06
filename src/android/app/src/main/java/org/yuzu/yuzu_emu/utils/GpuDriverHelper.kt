@@ -322,9 +322,10 @@ object GpuDriverHelper {
 
     // Per-TID Turnip driver hints (verified real TU_DEBUG flags only: nolrz, sysmem, gmem, nobin, noubwc, flushall, syncdraw)
     val PER_TID_TURNIP_DEBUG_HINTS: Map<String, List<String>> = mapOf(
-        // Diablo II: Resurrected - 'nobin' disables tile binning (concurrent binning race equivalent); 'nolrz' disables broken LRZ
-        "0100726014352000" to listOf("nobin", "nolrz"),
-        "01002A801458A000" to listOf("nobin", "nolrz"),
+        // Diablo II: Resurrected - 'nolrz' disables broken LRZ ('nobin' removed to preserve 3D depth/geometry on Adreno 830)
+        "0100726014352000" to listOf("nolrz"),
+        "01002A801458A000" to listOf("nolrz"),
+        "0100916014D8C000" to listOf("nolrz"),
         // The Legend of Zelda: Tears of the Kingdom - 'nolrz' resolves depth/stencil bias artifacts
         "0100F2C0115B6000" to listOf("nolrz"),
         // The Legend of Zelda: Breath of the Wild

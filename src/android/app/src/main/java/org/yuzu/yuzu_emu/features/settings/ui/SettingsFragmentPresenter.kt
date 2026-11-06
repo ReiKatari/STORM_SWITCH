@@ -795,6 +795,7 @@ class SettingsFragmentPresenter(
 
             add(BooleanSetting.RENDERER_REACTIVE_FLUSHING.key)
             add(BooleanSetting.RENDERER_BARRIER_FEEDBACK_LOOPS.key)
+            add(BooleanSetting.RESCALE_HACK.key)
 
             add(BooleanSetting.ENABLE_BUFFER_HISTORY.key)
 

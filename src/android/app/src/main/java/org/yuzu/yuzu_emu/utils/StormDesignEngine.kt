@@ -192,6 +192,22 @@ object StormDesignEngine {
         val surfaceContainer = resolveColor(context, com.google.android.material.R.attr.colorSurfaceVariant, surfaceColor)
         val outlineColor = resolveColor(context, com.google.android.material.R.attr.colorOutline, 0xFF334155.toInt())
 
+        val cardIdName = runCatching {
+            if (card.id != View.NO_ID) card.resources.getResourceEntryName(card.id) else ""
+        }.getOrDefault("")
+        val isSearchCard = cardIdName.contains("search", ignoreCase = true)
+
+        if (isSearchCard) {
+            val pillRadius = if (card.height > 0) card.height / 2f else maxOf(card.radius, 24f * density)
+            card.radius = pillRadius
+            card.cardElevation = 0f
+            card.strokeWidth = maxOf(1, (1.2f * density).roundToInt())
+            card.strokeColor = setAlpha(primaryColor, 0x66)
+            card.setCardBackgroundColor(setAlpha(surfaceContainer, 0xE6))
+            applyTouchFeedback(card, design, density)
+            return
+        }
+
         when (design) {
             DESIGN_HYPERION_GLASS_3D -> {
                 // Frosted glass specular top rim (1.5dp), 14dp rounded corners, deep elevated shadow (8dp)
@@ -355,9 +371,77 @@ object StormDesignEngine {
         applyTouchFeedback(chip, design, density)
     }
 
+    private fun isEmbeddedOrSearchEditText(editText: EditText): Boolean {
+        if (editText is com.google.android.material.textfield.TextInputEditText) {
+            return true
+        }
+        val idName = runCatching {
+            if (editText.id != View.NO_ID) editText.resources.getResourceEntryName(editText.id) else ""
+        }.getOrDefault("")
+        if (idName.contains("search", ignoreCase = true)) {
+            return true
+        }
+
+        var parent = editText.parent
+        var depth = 0
+        while (parent is View && depth < 4) {
+            val parentView = parent as View
+            if (parentView is com.google.android.material.textfield.TextInputLayout ||
+                parentView.javaClass.name.contains("SearchView") ||
+                parentView is androidx.appcompat.widget.SearchView ||
+                parentView is android.widget.SearchView
+            ) {
+                return true
+            }
+            val parentIdName = runCatching {
+                if (parentView.id != View.NO_ID) parentView.resources.getResourceEntryName(parentView.id) else ""
+            }.getOrDefault("")
+            if (parentIdName.contains("search", ignoreCase = true)) {
+                return true
+            }
+            parent = parentView.parent
+            depth++
+        }
+        return false
+    }
+
     private fun styleEditText(editText: EditText, design: Int) {
         val context = editText.context
         val density = context.resources.displayMetrics.density
+
+        if (isEmbeddedOrSearchEditText(editText)) {
+            editText.background = null
+            editText.gravity = android.view.Gravity.CENTER_VERTICAL or android.view.Gravity.START
+            editText.includeFontPadding = false
+
+            var isInsideSearchContainer = false
+            var p = editText.parent
+            var d = 0
+            while (p is View && d < 4) {
+                val pv = p as View
+                val pid = runCatching {
+                    if (pv.id != View.NO_ID) pv.resources.getResourceEntryName(pv.id) else ""
+                }.getOrDefault("")
+                if (pid.contains("search_container", ignoreCase = true) ||
+                    pid.contains("search_background", ignoreCase = true)
+                ) {
+                    isInsideSearchContainer = true
+                    break
+                }
+                p = pv.parent
+                d++
+            }
+            if (isInsideSearchContainer) {
+                editText.setPadding(0, 0, 0, 0)
+            }
+
+            val onSurfaceColor = resolveColor(context, com.google.android.material.R.attr.colorOnSurface, Color.WHITE)
+            val onSurfaceVariantColor = resolveColor(context, com.google.android.material.R.attr.colorOnSurfaceVariant, 0xFF94A3B8.toInt())
+            editText.setTextColor(onSurfaceColor)
+            editText.setHintTextColor(onSurfaceVariantColor)
+            return
+        }
+
         val primaryColor = resolveColor(context, com.google.android.material.R.attr.colorPrimary, 0xFF8B5CF6.toInt())
         val surfaceColor = resolveColor(context, com.google.android.material.R.attr.colorSurface, 0xFF121826.toInt())
 

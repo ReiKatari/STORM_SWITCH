@@ -461,9 +461,23 @@ object PerGameDrircGenerator {
 
         // 100% Real Compiled Mesa Turnip 26.2.0 (STORM DRIVER 8.0.0) Driconf Options:
         when (profileType) {
-            GameProfileType.DIABLO,
+            GameProfileType.DIABLO -> {
+                optionsBuilder.append("            <!-- TIER 1 / ISOMETRIC ARPGs (Diablo II: Resurrected - tu_dont_care_as_load omitted to preserve UI text & font glyphs) -->\n")
+                optionsBuilder.append("            <option name=\"tu_allow_concurrent_binning\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"disable_cb\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"disable_conservative_lrz\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"enable_lrz_fast_clear\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_override_uncached_as_cache_coherent\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"ubwc_coherency_quirk\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_use_tex_coord_round_nearest_even_mode\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_enable_d24s8_border_color_workaround\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_enable_fast_border_color_for_undefined_formats\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_ignore_frag_depth_direction\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"dual_color_blend_by_location\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_allow_oob_indirect_ubo_loads\" value=\"true\" />\n")
+            }
             GameProfileType.MARIO_RABBIDS -> {
-                optionsBuilder.append("            <!-- TIER 1 / SNOWDROP & ISOMETRIC ARPGs (100% Real Compiled Mesa Turnip 26.2.0 Options) -->\n")
+                optionsBuilder.append("            <!-- TIER 1 / SNOWDROP (100% Real Compiled Mesa Turnip 26.2.0 Options) -->\n")
                 optionsBuilder.append("            <option name=\"tu_allow_concurrent_binning\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"disable_cb\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_dont_care_as_load\" value=\"true\" />\n")

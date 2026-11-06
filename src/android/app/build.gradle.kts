@@ -149,9 +149,9 @@ android {
 
         targetSdk = 36
 
-        versionName = "16.3.0"
+        versionName = "16.3.1"
 
-        versionCode = 34290071
+        versionCode = 34290072
 
 
 

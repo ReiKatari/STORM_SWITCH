@@ -159,6 +159,9 @@ class GamesFragment : Fragment() {
                 gone = false
             )
         }
+        gamesViewModel.refreshFinished.collect(viewLifecycleOwner) {
+            (binding.swipeRefresh as? SwipeRefreshLayout)?.isRefreshing = false
+        }
         gamesViewModel.games.collect(viewLifecycleOwner) {
             if (it.isNotEmpty()) {
                 setAdapter(it)

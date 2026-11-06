@@ -43,47 +43,78 @@ object SettingsFile {
         }
     }
 
-    fun sanitizeMarioWonderConfig(file: File) {
+    fun sanitizeKnownBrokenCustomConfigs(game: Game, file: File) {
         try {
             if (!file.exists() || file.length() == 0L) return
+            val cleanProg = game.programIdHex.trim().uppercase()
             var text = file.readText(Charsets.UTF_8)
             var modified = false
-            // Force memory_layout_mode to 0 (4GB DRAM)
-            if (text.contains("memory_layout_mode")) {
-                val replaced = text.replace(Regex("memory_layout_mode\\s*=\\s*[1-9]"), "memory_layout_mode = 0")
-                if (replaced != text) {
-                    text = replaced
-                    modified = true
-                }
+
+            // Mario Wonder (010015100B514*)
+            if (cleanProg.startsWith("010015100B514")) {
+                val r1 = text.replace(Regex("barrier_feedback_loops\\s*=\\s*false", RegexOption.IGNORE_CASE), "barrier_feedback_loops = true")
+                if (r1 != text) { text = r1; modified = true }
+                val r2 = text.replace(Regex("early_release_fences\\s*=\\s*true", RegexOption.IGNORE_CASE), "early_release_fences = false")
+                if (r2 != text) { text = r2; modified = true }
+                val r3 = text.replace(Regex("enable_frame_skipping\\s*=\\s*true", RegexOption.IGNORE_CASE), "enable_frame_skipping = false")
+                if (r3 != text) { text = r3; modified = true }
+                val r4 = text.replace(Regex("cpuopt_ignore_memory_aborts\\s*=\\s*false", RegexOption.IGNORE_CASE), "cpuopt_ignore_memory_aborts = true")
+                if (r4 != text) { text = r4; modified = true }
             }
-            // Force barrier_feedback_loops to false
-            if (text.contains("barrier_feedback_loops")) {
-                val replaced = text.replace(Regex("barrier_feedback_loops\\s*=\\s*true", RegexOption.IGNORE_CASE), "barrier_feedback_loops = false")
-                if (replaced != text) {
-                    text = replaced
-                    modified = true
-                }
+
+            // Diablo II: Resurrected (0100726014352*, 01002A801458A*, 0100916014D8C*)
+            if (cleanProg.startsWith("0100726014352") ||
+                cleanProg.startsWith("01002A801458A") ||
+                cleanProg.startsWith("0100916014D8C")
+            ) {
+                val r1 = text.replace(Regex("memory_layout_mode\\s*=\\s*[01]"), "memory_layout_mode = 2")
+                if (r1 != text) { text = r1; modified = true }
+                val r2 = text.replace(Regex("gpu_accuracy\\s*=\\s*[01]"), "gpu_accuracy = 2")
+                if (r2 != text) { text = r2; modified = true }
+                val r3 = text.replace(Regex("vram_budget_governor\\s*=\\s*true", RegexOption.IGNORE_CASE), "vram_budget_governor = false")
+                if (r3 != text) { text = r3; modified = true }
+                val r4 = text.replace(Regex("early_release_fences\\s*=\\s*true", RegexOption.IGNORE_CASE), "early_release_fences = false")
+                if (r4 != text) { text = r4; modified = true }
+                val r5 = text.replace(Regex("enable_frame_skipping\\s*=\\s*true", RegexOption.IGNORE_CASE), "enable_frame_skipping = false")
+                if (r5 != text) { text = r5; modified = true }
             }
-            // Force cpuopt_ignore_memory_aborts to false so NCE/Dynarmic handles Wonder's page faults cleanly
-            if (text.contains("cpuopt_ignore_memory_aborts")) {
-                val replaced = text.replace(Regex("cpuopt_ignore_memory_aborts\\s*=\\s*true", RegexOption.IGNORE_CASE), "cpuopt_ignore_memory_aborts = false")
-                if (replaced != text) {
-                    text = replaced
-                    modified = true
-                }
+
+            // Unravel Two (01008C3005A32*, 0100E5D00CC0C*, 010099900B22E*)
+            if (cleanProg.startsWith("01008C3005A32") ||
+                cleanProg.startsWith("0100E5D00CC0C") ||
+                cleanProg.startsWith("010099900B22E")
+            ) {
+                val r1 = text.replace(Regex("cpu_backend\\s*=\\s*1"), "cpu_backend = 0")
+                if (r1 != text) { text = r1; modified = true }
+                val r2 = text.replace(Regex("nvdec_emulation\\s*=\\s*[02]"), "nvdec_emulation = 1")
+                if (r2 != text) { text = r2; modified = true }
+                val r3 = text.replace(Regex("barrier_feedback_loops\\s*=\\s*false", RegexOption.IGNORE_CASE), "barrier_feedback_loops = true")
+                if (r3 != text) { text = r3; modified = true }
+                val r4 = text.replace(Regex("gpu_accuracy\\s*=\\s*[01]"), "gpu_accuracy = 2")
+                if (r4 != text) { text = r4; modified = true }
+                val r5 = text.replace(Regex("early_release_fences\\s*=\\s*true", RegexOption.IGNORE_CASE), "early_release_fences = false")
+                if (r5 != text) { text = r5; modified = true }
             }
+
+            // Switch 2 (0400*)
+            if (cleanProg.startsWith("0400")) {
+                val r1 = text.replace(Regex("cpu_backend\\s*=\\s*1"), "cpu_backend = 0")
+                if (r1 != text) { text = r1; modified = true }
+            }
+
             if (modified) {
                 file.writeText(text, Charsets.UTF_8)
             }
         } catch (_: Exception) {}
     }
 
+    fun sanitizeMarioWonderConfig(file: File) {
+        // Backwards compatibility stub
+    }
+
     fun loadCustomConfig(game: Game) {
         val customFile = getCustomSettingsFile(game)
-        val cleanProg = game.programIdHex.trim().uppercase()
-        if (cleanProg == "010015100B514000" || cleanProg.startsWith("010015100B514")) {
-            sanitizeMarioWonderConfig(customFile)
-        }
+        sanitizeKnownBrokenCustomConfigs(game, customFile)
         val fileName = customFile.nameWithoutExtension.ifEmpty {
             try { FileUtil.getFilename(Uri.parse(game.path)) } catch (_: Exception) { "" }
         }

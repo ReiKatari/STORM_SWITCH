@@ -595,7 +595,7 @@ void RasterizerVulkan::DrawTexture() {
 }
 
 void RasterizerVulkan::Clear(u32 layer_count) {
-    if (!maxwell3d->ShouldExecute() || !maxwell3d->EvaluateCondition()) {
+    if (!maxwell3d->ShouldExecute()) {
         return;
     }
     FlushWork();
@@ -1161,7 +1161,7 @@ void RasterizerVulkan::FlushAndInvalidateRegion(DAddr addr, u64 size,
     const bool is_high_gpu = Settings::IsGPULevelHigh() || Settings::IsGPULevelExtreme();
     const bool is_reactive = Settings::values.use_reactive_flushing.GetValue();
     const bool is_d2r_quirk = IsDiablo2Resurrected();
-    if (is_high_gpu || is_reactive || (is_d2r_quirk && True(which & VideoCommon::CacheType::TextureCache))) {
+    if (is_high_gpu || is_reactive || is_d2r_quirk) {
         FlushRegion(addr, size, which);
     }
     InvalidateRegion(addr, size, which);

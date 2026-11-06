@@ -485,12 +485,6 @@ void PresentManager::CopyToSwapchain(Frame* frame) {
         if (use_present_thread && present_thread.get_stop_token().stop_requested()) {
             return;
         }
-        const auto& fb_layout = render_window.GetFramebufferLayout();
-        const VkExtent2D cur_ext = swapchain.GetExtent();
-        if (fb_layout.width > 0 && fb_layout.height > 0 &&
-            (cur_ext.width != fb_layout.width || cur_ext.height != fb_layout.height)) {
-            requires_recreation = true;
-        }
         try {
             // Recreate surface and swapchain if needed.
             if (requires_recreation) {
@@ -535,10 +529,7 @@ void PresentManager::CopyToSwapchainImpl(Frame* frame) {
     const auto& fb_layout = render_window.GetFramebufferLayout();
     const u32 target_w = (fb_layout.width > 0) ? fb_layout.width : frame->width;
     const u32 target_h = (fb_layout.height > 0) ? fb_layout.height : frame->height;
-    const VkExtent2D current_extent = swapchain.GetExtent();
-    const bool size_changed =
-        swapchain.GetWidth() != target_w || swapchain.GetHeight() != target_h ||
-        current_extent.width != target_w || current_extent.height != target_h;
+    const bool size_changed = swapchain.GetWidth() != target_w || swapchain.GetHeight() != target_h;
     if (is_suboptimal || size_changed) {
         RecreateSwapchain(frame);
     }
