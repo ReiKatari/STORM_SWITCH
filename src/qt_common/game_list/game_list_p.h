@@ -487,6 +487,9 @@ private:
             icon_base64 = QString::fromLatin1(bArray.toBase64());
         }
 
+        const QString custom_accent = QString::fromStdString(UISettings::values.accent_color.GetValue());
+        const QString tooltip_accent = custom_accent.isEmpty() ? QStringLiteral("#8B5CF6") : custom_accent;
+
         return QObject::tr(
             R"(<table style="border-collapse: collapse; width: 640px;">)"
             R"(<tr>)"
@@ -495,9 +498,9 @@ private:
             R"(</td>)"
             R"(<td style="vertical-align: middle;">)"
             R"(<div style="font-size: 11.5pt; font-weight: bold; color: #ffee00; line-height: 1.25; margin-bottom: 2px;">%2</div>)"
-            R"(<div style="font-size: 8.5pt; font-weight: bold; color: #00f0ff; margin-bottom: 6px;">[%3]</div>)"
+            R"(<div style="font-size: 8.5pt; font-weight: bold; color: %10; margin-bottom: 6px;">[%3]</div>)"
             R"(<table style="font-size: 8.5pt; width: 100%%; border-collapse: collapse;">)"
-            R"(<tr><td style="color: #8fa2b8; padding: 1px 6px 1px 0; width: 130px;"><b>ID приложения:</b></td><td style="color: #00f2fe; font-family: monospace;">%4</td></tr>)"
+            R"(<tr><td style="color: #8fa2b8; padding: 1px 6px 1px 0; width: 130px;"><b>ID приложения:</b></td><td style="color: %10; font-family: monospace;">%4</td></tr>)"
             R"(<tr><td style="color: #8fa2b8; padding: 1px 6px 1px 0;"><b>Версия:</b></td><td><b style="color: #00ffaa;">%5</b></td></tr>)"
             R"(<tr><td style="color: #8fa2b8; padding: 1px 6px 1px 0;"><b>Размер:</b></td><td style="color: #ffffff;">%6</td></tr>)"
             R"(<tr><td style="color: #8fa2b8; padding: 1px 6px 1px 0;"><b>Время игры:</b></td><td style="color: #ffffff;">%7</td></tr>)"
@@ -511,7 +514,7 @@ private:
             R"(</td>)"
             R"(</tr>)"
             R"(</table>)"
-        ).arg(icon_base64, game_name.toHtmlEscaped(), game_type.toHtmlEscaped(), formatted_title_id, version_num, formatted_size, readable_play_time, addons_info, game_path.toHtmlEscaped());
+        ).arg(icon_base64, game_name.toHtmlEscaped(), game_type.toHtmlEscaped(), formatted_title_id, version_num, formatted_size, readable_play_time, addons_info, game_path.toHtmlEscaped(), tooltip_accent);
     }
 };
 

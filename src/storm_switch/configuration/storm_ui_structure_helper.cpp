@@ -22,7 +22,9 @@
 #include <QTableWidget>
 #include <QTreeWidget>
 #include <QVBoxLayout>
+#include <QAbstractButton>
 #include "storm_switch/common/storm_lang.h"
+#include "storm_switch/common/storm_theme.h"
 
 namespace StormUI {
 
@@ -178,8 +180,13 @@ QWidget* StructureEngine::CreateSectionHeader(const QString& title, const QStrin
 
     if (!badge_text.isEmpty()) {
         auto* badge = new QLabel(badge_text, top_row);
-        badge->setStyleSheet(QStringLiteral("background: rgba(0, 240, 255, 0.15); border: 1px solid #00F0FF; "
-                                            "color: #00F0FF; border-radius: 4px; padding: 2px 6px; font-weight: bold; font-size: 8.5pt;"));
+        badge->setObjectName(QStringLiteral("StormSectionBadge"));
+        badge->setProperty("stormSectionBadge", true);
+        const auto badge_pal = StormTheme::GetThemePalette();
+        const QColor badge_acc(badge_pal.accent);
+        badge->setStyleSheet(QStringLiteral("background: rgba(%1, %2, %3, 0.15); border: 1px solid %4; "
+                                            "color: %4; border-radius: 4px; padding: 2px 6px; font-weight: bold; font-size: 8.5pt;")
+                                            .arg(badge_acc.red()).arg(badge_acc.green()).arg(badge_acc.blue()).arg(badge_pal.accent));
         top_lay->addWidget(badge);
     }
     top_lay->addStretch();
@@ -203,9 +210,18 @@ void StructureEngine::ModernizeDataView(QWidget* table_or_tree) {
         tv->setAlternatingRowColors(true);
         tv->setShowGrid(true);
         if (auto* h = tv->horizontalHeader()) {
-            h->setDefaultAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+            h->setDefaultAlignment(Qt::AlignCenter);
             h->setHighlightSections(false);
             h->setMinimumSectionSize(32);
+            QFont hf = h->font();
+            hf.setBold(true);
+            h->setFont(hf);
+        }
+        const auto pal = StormTheme::GetThemePalette();
+        for (auto* corner_btn : tv->findChildren<QAbstractButton*>()) {
+            corner_btn->setStyleSheet(QStringLiteral(
+                "background-color: %1; border: none; border-right: 1px solid %2; border-bottom: 1px solid %2;")
+                .arg(pal.surface, pal.border));
         }
     } else if (auto* trv = qobject_cast<QTreeView*>(table_or_tree)) {
         trv->setAlternatingRowColors(true);
@@ -414,7 +430,11 @@ QWidget* PerGameOverrideManager::CreateGameHeaderCard(quint64 title_id, const QS
 
     auto create_pill = [pills_row](const QString& text, const QString& tooltip = QString()) {
         auto* btn = new QPushButton(text, pills_row);
+        btn->setObjectName(QStringLiteral("StormGamePill"));
+        btn->setProperty("stormGamePill", true);
         btn->setCursor(Qt::PointingHandCursor);
+        const auto pill_pal = StormTheme::GetThemePalette();
+        const QColor pill_acc(pill_pal.accent);
         btn->setStyleSheet(QStringLiteral(
             "QPushButton {"
             "    background: rgba(255, 255, 255, 0.08);"
@@ -426,11 +446,11 @@ QWidget* PerGameOverrideManager::CreateGameHeaderCard(quint64 title_id, const QS
             "    font-size: 8.5pt;"
             "}"
             "QPushButton:hover {"
-            "    background: rgba(0, 240, 255, 0.20);"
-            "    border-color: #00F0FF;"
-            "    color: #00F0FF;"
+            "    background: rgba(%1, %2, %3, 0.20);"
+            "    border-color: %4;"
+            "    color: %4;"
             "}"
-        ));
+        ).arg(pill_acc.red()).arg(pill_acc.green()).arg(pill_acc.blue()).arg(pill_pal.accent));
         if (!tooltip.isEmpty()) btn->setToolTip(tooltip);
         return btn;
     };

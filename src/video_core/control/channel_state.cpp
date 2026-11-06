@@ -56,6 +56,15 @@ void ChannelState::Init(Core::System& system, u64 program_id_) {
     program_id = program_id_;
     payload.emplace(system, *memory_manager, *this);
     payload->maxwell_3d.SetNativeMacroContext(native_macro_context);
+    if (native_abi) {
+        memory_manager->EnableNativeTiling();
+        payload->maxwell_3d.SetNativeTuringMacroMode(true);
+        if (native_macro_context) {
+            payload->kepler_compute.SetNativeMacroMode(&native_macro_context->engine,
+                                                       native_macro_context->positions,
+                                                       native_macro_context.get());
+        }
+    }
     BindNvkDefaultSubchannels(*payload);
     initialized = true;
 }

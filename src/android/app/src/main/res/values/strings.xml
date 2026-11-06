@@ -2951,4 +2951,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="apply_driver_negative">Cancel</string>
     <string name="apply_driver_positive">Apply</string>
     <string name="game_fix_launch_method">@string/launch_method_title</string>
+
+    <!-- UI Design Styles -->
+    <string name="ui_design_style">UI Design</string>
+    <string name="ui_design_style_description">Volumetric 3D styling and tactile animations for the interface</string>
+    <string name="ui_design_style_hyperion" translatable="false">STORM HYPERION GLASS 3D</string>
+    <string name="ui_design_style_cyberdeck" translatable="false">STORM CYBER-DECK TACTILE</string>
+    <string name="ui_design_style_aurora" translatable="false">STORM AURORA QUANTUM</string>
+    <string name="ui_design_style_orbital" translatable="false">STORM ORBITAL SPATIAL UI</string>
+    <string name="ui_design_style_chrono" translatable="false">STORM CHRONO-NEXUS COMMANDER</string>
 </resources>

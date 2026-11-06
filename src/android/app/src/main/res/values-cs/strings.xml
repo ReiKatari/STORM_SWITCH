@@ -2066,4 +2066,13 @@
     <string name="profile_override_badge">nastaveno herním profilem</string>
     <string name="profile_override_revert">Obnovit globální</string>
     <string name="cpu_unsafe_disabled_explanation">Nebezpečné možnosti procesoru jsou aktivní pouze při nastavení přesnosti procesoru na \'Nebezpečné\'.</string>
+
+    <!-- UI Design Styles -->
+    <string name="ui_design_style">Design rozhraní</string>
+    <string name="ui_design_style_description">Objemový 3D styl a haptické animace pro rozhraní</string>
+    <string name="ui_design_style_hyperion">STORM HYPERION GLASS 3D</string>
+    <string name="ui_design_style_cyberdeck">STORM CYBER-DECK TACTILE</string>
+    <string name="ui_design_style_aurora">STORM AURORA QUANTUM</string>
+    <string name="ui_design_style_orbital">STORM ORBITAL SPATIAL UI</string>
+    <string name="ui_design_style_chrono">STORM CHRONO-NEXUS COMMANDER</string>
 </resources>

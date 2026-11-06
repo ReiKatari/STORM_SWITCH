@@ -23,6 +23,9 @@
 #include "core/file_sys/content_archive.h"
 #include "core/file_sys/program_metadata.h"
 #include "core/file_sys/nup_container.h"
+#include "video_core/nx2.h"
+#include "core/hle/service/nvdrv/devices/nx2_stub_device.h"
+#include "core/file_sys/card_image.h"
 
 #include "launch_timestamp_cache.h"
 #include "core/core_timing.h"
@@ -119,68 +122,106 @@ FileSys::VirtualFile GetGameFileFromPath(const FileSys::VirtualFilesystem& vfs,
 
 namespace {
 
-// Switch 2 titles boot as a loose ExeFS or packaged NSP/NSZ/XCI/NCA.
-bool IsSwitch2Program(const FileSys::VirtualFile& file) {
+constexpr bool IsSwitch2TitleId(u64 title_id) noexcept {
+    return (title_id >> 48) == 0x0400 || (title_id >> 40) == 0x040000;
+}
+
+bool HasSwitch2ExeFS(const FileSys::VirtualDir& exefs) {
+    if (exefs == nullptr) {
+        return false;
+    }
+    if (const auto pkg_npdm = exefs->GetFile("main.npdm"); pkg_npdm != nullptr) {
+        FileSys::ProgramMetadata metadata;
+        if (metadata.Load(pkg_npdm) == Loader::ResultStatus::Success &&
+            (metadata.IsSwitch2() || IsSwitch2TitleId(metadata.GetTitleID()))) {
+            return true;
+        }
+    }
+    for (const char* nso_name : {"sdk", "main", "subsdk0"}) {
+        const auto nso_file = exefs->GetFile(nso_name);
+        if (nso_file != nullptr && nso_file->GetSize() >= 0x100) {
+            std::vector<u8> buf((std::min<size_t>)(0x40000, nso_file->GetSize()));
+            nso_file->Read(buf.data(), buf.size(), 0);
+            constexpr std::string_view ounce_spec{"spec: Ounce"};
+            if (std::search(buf.begin(), buf.end(), ounce_spec.begin(), ounce_spec.end()) != buf.end()) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+// Switch 2 titles boot as a loose ExeFS or packaged NSP/NSZ/XCI/XCZ/NCA/NCZ/NUP.
+bool IsSwitch2Program(const FileSys::VirtualFile& file, u64 known_program_id = 0) {
+    if (IsSwitch2TitleId(known_program_id)) {
+        return true;
+    }
     if (file == nullptr) {
         return false;
     }
+    const std::string fname = file->GetName();
+    std::string lower_name = fname;
+    std::transform(lower_name.begin(), lower_name.end(), lower_name.begin(),
+                   [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
+
+    // FAST-PATH: check if filename explicitly carries a 16-hex Switch 2 Title ID (0400...)
+    // This avoids opening expensive containers (.nsp/.xci/.ncz) on disk!
+    for (size_t i = 0; i + 16 <= lower_name.size(); ++i) {
+        if (lower_name.compare(i, 4, "0400") == 0) {
+            bool all_hex = true;
+            for (size_t k = 0; k < 16; ++k) {
+                if (!std::isxdigit(static_cast<unsigned char>(lower_name[i + k]))) {
+                    all_hex = false;
+                    break;
+                }
+            }
+            const bool left_ok = (i == 0) || !std::isxdigit(static_cast<unsigned char>(lower_name[i - 1]));
+            const bool right_ok = (i + 16 == lower_name.size()) || !std::isxdigit(static_cast<unsigned char>(lower_name[i + 16]));
+            if (all_hex && left_ok && right_ok) {
+                return true;
+            }
+        }
+    }
+
     // Check packaged NUP (Switch 2 container)
     if (FileSys::NupContainer::IsNupFile(file)) {
         return true;
     }
-    const std::string fname = file->GetName();
-    // Check loose ExeFS directory only when booting loose main / main.npdm
-    if (fname == "main" || fname == "main.npdm") {
-        const auto dir = file->GetContainingDirectory();
-        const auto npdm = dir != nullptr ? dir->GetFile("main.npdm") : nullptr;
-        if (npdm != nullptr) {
-            FileSys::ProgramMetadata metadata;
-            if (metadata.Load(npdm) == Loader::ResultStatus::Success && metadata.IsSwitch2()) {
-                return true;
-            }
-        }
-        if (dir != nullptr) {
-            for (const char* nso_name : {"sdk", "main", "subsdk0"}) {
-                const auto nso_file = dir->GetFile(nso_name);
-                if (nso_file != nullptr && nso_file->GetSize() >= 0x100) {
-                    std::vector<u8> buf(std::min<size_t>(0x40000, nso_file->GetSize()));
-                    nso_file->Read(buf.data(), buf.size(), 0);
-                    constexpr std::string_view ounce_spec{"spec: Ounce"};
-                    if (std::search(buf.begin(), buf.end(), ounce_spec.begin(), ounce_spec.end()) != buf.end()) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
+
+    // Check loose ExeFS directory when booting loose main / main.npdm
+    if (lower_name == "main" || lower_name == "main.npdm") {
+        return HasSwitch2ExeFS(file->GetContainingDirectory());
     }
-    // Check raw NCA file only if extension is .nca
-    if (fname.size() >= 4 && (fname.ends_with(".nca") || fname.ends_with(".NCA"))) {
+    // Check raw NCA / NCZ file
+    if (lower_name.ends_with(".nca") || lower_name.ends_with(".ncz")) {
         FileSys::NCA nca(file);
         if (nca.GetStatus() == Loader::ResultStatus::Success) {
-            const u64 title_id = nca.GetTitleId();
-            if ((title_id >> 48) == 0x0400 || (title_id >> 40) == 0x040000) {
+            if (IsSwitch2TitleId(nca.GetTitleId()) || HasSwitch2ExeFS(nca.GetExeFS())) {
                 return true;
             }
         }
-        return false;
     }
-    // Check packaged NSP
-    if (fname.size() >= 4 && (fname.ends_with(".nsp") || fname.ends_with(".NSP"))) {
+    // Check packaged NSP / NSZ
+    if (lower_name.ends_with(".nsp") || lower_name.ends_with(".nsz")) {
         FileSys::NSP nsp(file);
         if (nsp.GetStatus() == Loader::ResultStatus::Success) {
-            const u64 title_id = nsp.GetProgramTitleID();
-            if ((title_id >> 48) == 0x0400 || (title_id >> 40) == 0x040000) {
+            if (IsSwitch2TitleId(nsp.GetProgramTitleID()) || HasSwitch2ExeFS(nsp.GetExeFS())) {
                 return true;
             }
-            const auto exefs = nsp.GetExeFS();
-            if (exefs != nullptr) {
-                const auto pkg_npdm = exefs->GetFile("main.npdm");
-                if (pkg_npdm != nullptr) {
-                    FileSys::ProgramMetadata metadata;
-                    if (metadata.Load(pkg_npdm) == Loader::ResultStatus::Success && metadata.IsSwitch2()) {
-                        return true;
-                    }
+        }
+    }
+    // Check cartridge image XCI / XCZ
+    if (lower_name.ends_with(".xci") || lower_name.ends_with(".xcz")) {
+        FileSys::XCI xci(file);
+        if (xci.GetStatus() == Loader::ResultStatus::Success) {
+            if (IsSwitch2TitleId(xci.GetProgramTitleID())) {
+                return true;
+            }
+            if (const auto prog_nca = xci.GetProgramNCAFile(); prog_nca != nullptr) {
+                FileSys::NCA nca(prog_nca);
+                if (nca.GetStatus() == Loader::ResultStatus::Success &&
+                    (IsSwitch2TitleId(nca.GetTitleId()) || HasSwitch2ExeFS(nca.GetExeFS()))) {
+                    return true;
                 }
             }
         }
@@ -402,17 +443,56 @@ struct System::Impl {
 
         const auto file = GetGameFileFromPath(virtual_filesystem, filepath);
 
+        // Pre-identify program_id FIRST so Switch 2 detection, memory layout (12 GiB), and clock
+        // (31.25 MHz) are configured before kernel/device_memory initialization for ALL formats (.nsz/.xci/.nsp).
+        if (params.program_id == 0 && file != nullptr) {
+            // First check if filename carries a 16-hex Title ID (0400... or 0100...) to avoid opening container
+            const std::string fname = file->GetName();
+            for (size_t i = 0; i + 16 <= fname.size(); ++i) {
+                if (fname.compare(i, 4, "0400") == 0 || fname.compare(i, 4, "0100") == 0) {
+                    bool all_hex = true;
+                    for (size_t k = 0; k < 16; ++k) {
+                        if (!std::isxdigit(static_cast<unsigned char>(fname[i + k]))) {
+                            all_hex = false;
+                            break;
+                        }
+                    }
+                    const bool left_ok = (i == 0) || !std::isxdigit(static_cast<unsigned char>(fname[i - 1]));
+                    const bool right_ok = (i + 16 == fname.size()) || !std::isxdigit(static_cast<unsigned char>(fname[i + 16]));
+                    if (all_hex && left_ok && right_ok) {
+                        try {
+                            params.program_id = std::stoull(fname.substr(i, 16), nullptr, 16);
+                            break;
+                        } catch (...) {}
+                    }
+                }
+            }
+            if (params.program_id == 0) {
+                auto temp_loader = Loader::GetLoader(system, file, params.program_id, params.program_index);
+                if (temp_loader) {
+                    temp_loader->ReadProgramId(params.program_id);
+                }
+            }
+        }
+
+        if (params.program_id != 0) {
+            Settings::SetCurrentProgramID(params.program_id);
+        }
+
         const bool switch2_program =
-            virtual_filesystem != nullptr &&
-            IsSwitch2Program(file);
+            IsSwitch2TitleId(params.program_id) ||
+            (virtual_filesystem != nullptr && IsSwitch2Program(file, params.program_id));
         Settings::SetCurrentProgramIsSwitch2(switch2_program);
+        Tegra::g_nx2_ampere.store(switch2_program, std::memory_order_relaxed);
+        Service::Nvidia::Devices::g_nx2_driver.store(switch2_program, std::memory_order_relaxed);
         Settings::SetAstcRecompressionOverride(std::nullopt);
 
         // Switch 2 titles size their heap from the total memory and need the 12 GiB layout. Set it
         // as a per-game value, so RestoreGlobalState brings back the configured setting on exit.
         if (switch2_program &&
             Settings::values.memory_layout_mode.GetValue() != Settings::MemoryLayout::Memory_12Gb) {
-            LOG_INFO(Core, "Switch 2 program: using the 12 GiB memory layout");
+            LOG_INFO(Core, "Switch 2 program ({:016X}): activating 12 GiB memory layout & Ampere T239 profile",
+                     params.program_id);
             Settings::values.memory_layout_mode.SetGlobal(false);
             Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_12Gb);
         }
@@ -428,18 +508,6 @@ struct System::Impl {
                                               : Common::WallClock::CNTFRQ;
         Common::g_wall_clock.SetGuestCNTFRQ(cntfrq);
         LOG_INFO(Core, "Guest counter frequency: {} Hz", cntfrq);
-
-        // Pre-identify program_id before system initialization to configure memory layout
-        if (params.program_id == 0 && file != nullptr) {
-            auto temp_loader = Loader::GetLoader(system, file, params.program_id, params.program_index);
-            if (temp_loader) {
-                temp_loader->ReadProgramId(params.program_id);
-            }
-        }
-
-        if (params.program_id != 0) {
-            Settings::SetCurrentProgramID(params.program_id);
-        }
 
         InitializeKernel(system);
 

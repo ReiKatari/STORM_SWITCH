@@ -304,6 +304,7 @@ public:
             {21, &INx2GpuSession::Start, "Start (guessed)"},
             {22, &INx2GpuSession::OpenSubSession, "OpenSubSession (guessed)"},
             {33, &INx2GpuSession::GetCount33, "Unknown33 (u32 count)"},
+            {41, &INx2GpuSession::QueryGpuStatusOrClock, "QueryGpuStatusOrClock"},
             {201, &INx2GpuSession::GetUserPartition, "GetUserPartition (newer SDKs)"},
             {202, &INx2GpuSession::GetGsvPartition, "GetGsvPartition (newer SDKs)"},
             {203, &INx2GpuSession::GetVaRange, "GetVaRange (guessed)"},
@@ -367,6 +368,12 @@ private:
     void GetCount33(HLERequestContext& ctx) {
         LOG_WARNING(Service, "(STUBBED) nx2:gpu TIPC 33 [2]={:#x}, returning 1", ctx.CommandBuffer()[2]);
         TipcReplyWords(ctx, {1});
+    }
+
+    void QueryGpuStatusOrClock(HLERequestContext& ctx) {
+        LOG_INFO(Service, "nx2:gpu TIPC 41 [2]={:#x}", ctx.CommandBuffer()[2]);
+        const u64 gpu_tick = system.CoreTiming().GetGlobalTimeNs().count();
+        TipcReplyWords(ctx, {static_cast<u32>(gpu_tick), static_cast<u32>(gpu_tick >> 32)});
     }
 
     // Used by nn::gpu::sdk::CreateGpuAddressSpace: three u64s after the result, a kind (< 5, 0 =
@@ -1033,6 +1040,13 @@ public:
             {11, &INx2Vi2Session::ReturnEvent, "Unknown11"},
             {31, &INx2Vi2Session::GetVsyncEvent, "GetVsyncEvent (guessed)"},
             {32, &INx2Vi2Session::GetVsyncEvent, "GetDisplayVsyncEvent (guessed)"},
+            {51, &INx2Vi2Session::GetDisplayResolution, "GetDisplayResolution"},
+            {101, &INx2Vi2Session::OpenDisplay, "OpenDisplay"},
+            {111, &INx2Vi2Session::CloseDisplay, "CloseDisplay"},
+            {201, &INx2Vi2Session::CreateManagedLayer, "CreateManagedLayer"},
+            {212, &INx2Vi2Session::DestroyManagedLayer, "DestroyManagedLayer"},
+            {251, &INx2Vi2Session::SetLayerScalingMode, "SetLayerScalingMode"},
+            {261, &INx2Vi2Session::GetBufferQueueEvent, "GetBufferQueueEvent"},
             // Title 1 calls these ~75 times a second with the display name "default"; the
             // auto stub's empty success reply works, but logged two lines per call (a 50 MB log
             // in an 18 minute session).
@@ -1400,6 +1414,49 @@ private:
         IPC::ResponseBuilder rb{ctx, 4};
         rb.Push(result.raw);
         rb.Push(mode);
+    }
+
+    void GetDisplayResolution(HLERequestContext& ctx) {
+        LOG_INFO(Service, "nx2:vi2 51 GetDisplayResolution");
+        TipcReplyWords(ctx, {1920, 1080});
+    }
+
+    void OpenDisplay(HLERequestContext& ctx) {
+        LOG_INFO(Service, "nx2:vi2 101 OpenDisplay");
+        TipcReplyWords(ctx, {1, 0});
+    }
+
+    void CloseDisplay(HLERequestContext& ctx) {
+        LOG_INFO(Service, "nx2:vi2 111 CloseDisplay");
+        IPC::ResponseBuilder rb{ctx, 2};
+        rb.Push(ResultSuccess);
+    }
+
+    void CreateManagedLayer(HLERequestContext& ctx) {
+        LOG_INFO(Service, "nx2:vi2 201 CreateManagedLayer");
+        TipcReplyWords(ctx, {1, 0});
+    }
+
+    void DestroyManagedLayer(HLERequestContext& ctx) {
+        LOG_INFO(Service, "nx2:vi2 212 DestroyManagedLayer");
+        IPC::ResponseBuilder rb{ctx, 2};
+        rb.Push(ResultSuccess);
+    }
+
+    void SetLayerScalingMode(HLERequestContext& ctx) {
+        LOG_INFO(Service, "nx2:vi2 251 SetLayerScalingMode");
+        IPC::ResponseBuilder rb{ctx, 2};
+        rb.Push(ResultSuccess);
+    }
+
+    void GetBufferQueueEvent(HLERequestContext& ctx) {
+        LOG_INFO(Service, "nx2:vi2 261 GetBufferQueueEvent, returning signalled buffer event");
+        auto* event = m_context.CreateEvent(fmt::format("nx2:vi2:BufferQueueEvent{}", m_events.size()));
+        event->Signal(system.Kernel());
+        m_events.push_back(event);
+        IPC::ResponseBuilder rb{ctx, 2, 1, 0};
+        rb.Push(ResultSuccess);
+        rb.PushCopyObjects(ctx, event->GetReadableEvent());
     }
 
     // The same reply as the auto stub (success, no data), without its log lines.
@@ -1977,14 +2034,21 @@ public:
             {111, &INx2GraphicsSystemSession::CreateNativeMemory, "CreateNativeMemory"},
             {112, &INx2GraphicsSystemSession::DestroyNativeMemory, "DestroyNativeMemory"},
             {114, &INx2GraphicsSystemSession::BindNativeMemory, "BindNativeMemory"},
+            {115, &INx2GraphicsSystemSession::Succeed, "FinalizeMemorySync"},
+            {301, &INx2GraphicsSystemSession::Handle301, "InitializeDisplay"},
             {314, &INx2GraphicsSystemSession::ConfigureWindowImagePool, "DestroyNativeWindowAliasImagePool"},
             {315, &INx2GraphicsSystemSession::ConfigureWindowImagePool, "CreateNativeWindowAliasImagePool"},
             {423, &INx2GraphicsSystemSession::BindNativeGpuMemory, "BindNativeGpuMemory"},
             {429, &INx2GraphicsSystemSession::CreateNativeImage, "CreateNativeImage"},
+            {401, &INx2GraphicsSystemSession::Handle401, "AttachSwapchainLayer"},
+            {402, &INx2GraphicsSystemSession::Succeed, "DetachSwapchainLayer"},
             {430, &INx2GraphicsSystemSession::DestroyNativeImage, "DestroyNativeImage"},
             {426, &INx2GraphicsSystemSession::QueryNativeImage, "MapNativeImage"},
             {428, &INx2GraphicsSystemSession::QueryNativeImage, "QueryNativeImage"},
+            {434, &INx2GraphicsSystemSession::Handle434, "QueryNativeImageState"},
             {435, &INx2GraphicsSystemSession::CalculateNativeImageSize, "CalculateNativeImageSize"},
+            {1101, &INx2GraphicsSystemSession::Handle1101, "OpenSubsystem1101"},
+            {1102, &INx2GraphicsSystemSession::Succeed, "CloseSubsystem1102"},
             {1402, &INx2GraphicsSystemSession::OpenNvsrvSession, "OpenNvsrvSession (guessed)"},
             {1510, &INx2GraphicsSystemSession::CalculateRequirements, "CalculateRequirements"},
             {991, &INx2GraphicsSystemSession::CalculateDecoderImagePoolBuffer,
@@ -2027,6 +2091,31 @@ private:
         }
         const u32 desc = cmd_buf[2];
         return 3 + ((desc & 1) ? 2 : 0) + ((desc >> 1) & 0xF) + ((desc >> 5) & 0xF);
+    }
+
+    void Succeed(HLERequestContext& ctx) {
+        IPC::ResponseBuilder rb{ctx, 2};
+        rb.Push(ResultSuccess);
+    }
+
+    void Handle301(HLERequestContext& ctx) {
+        LOG_INFO(Service, "nx2:gsv TIPC 301 (InitializeDisplay)");
+        TipcReplyWords(ctx, {1, 0});
+    }
+
+    void Handle401(HLERequestContext& ctx) {
+        LOG_INFO(Service, "nx2:gsv TIPC 401 (AttachSwapchainLayer)");
+        TipcReplyWords(ctx, {1, 0});
+    }
+
+    void Handle434(HLERequestContext& ctx) {
+        LOG_INFO(Service, "nx2:gsv TIPC 434 (QueryNativeImageState)");
+        TipcReplyWords(ctx, {0, 0, 0, 0});
+    }
+
+    void Handle1101(HLERequestContext& ctx) {
+        LOG_INFO(Service, "nx2:gsv TIPC 1101");
+        TipcReplyWords(ctx, {1, 0});
     }
 
     void Stub(HLERequestContext& ctx) {

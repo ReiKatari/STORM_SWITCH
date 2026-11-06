@@ -930,7 +930,7 @@ void StormSaveSyncDialog::ApplyStormStyles() {
         "    font-size: 12px;"
         "}"
         "QLineEdit:focus {"
-        "    border: 1px solid #00D2FF;"
+        "    border: 1px solid %1;"
         "    background: rgba(0, 210, 255, 0.08);"
         "}"
         "QComboBox {"
@@ -944,7 +944,7 @@ void StormSaveSyncDialog::ApplyStormStyles() {
         "QComboBox QAbstractItemView {"
         "    background-color: #141B26;"
         "    color: #FFFFFF;"
-        "    selection-background-color: #00D2FF;"
+        "    selection-background-color: %1;"
         "    selection-color: #000000;"
         "    border: 1px solid #20354E;"
         "}"
@@ -967,7 +967,7 @@ void StormSaveSyncDialog::ApplyStormStyles() {
         "    border-left: 1px solid rgba(0, 210, 255, 0.45);\n"
         "    border-right: 1px solid rgba(0, 210, 255, 0.45);\n"
         "    border-bottom: 3px solid rgba(0, 0, 0, 0.70);\n"
-        "    color: #00D2FF;\n"
+        "    color: %1;\n"
         "}\n"
         "QPushButton:pressed, QDialogButtonBox QPushButton:pressed, QToolButton:pressed {\n"
         "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #0d1522, stop:0.5 #131d2e, stop:1 #1a283e);\n"
@@ -1008,10 +1008,9 @@ void StormSaveSyncDialog::ApplyStormStyles() {
         "    font-size: 11px;"
         "}"
         "QProgressBar::chunk {"
-        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00D2FF, stop:1 #00F0FF);"
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 %1, stop:1 %2);"
         "    border-radius: 5px;"
-        "}"
-    ));
+        "}").arg(StormTheme::GetThemePalette().accent, QColor(StormTheme::GetThemePalette().accent).lighter(120).name()));
 }
 
 void StormSaveSyncDialog::StartHostServer() {

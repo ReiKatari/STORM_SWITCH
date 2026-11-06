@@ -79,6 +79,7 @@ class YuzuApplication : Application() {
         super.onCreate()
         application = this
         org.yuzu.yuzu_emu.utils.CrashHandler.install(this)
+        org.yuzu.yuzu_emu.utils.StormDesignEngine.install(this)
 
         try {
             registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {

@@ -18,6 +18,7 @@
 #include "core/hle/service/nvdrv/devices/nvhost_ctrl.h"
 #include "core/hle/service/nvdrv/devices/nvhost_ctrl_gpu.h"
 #include "core/hle/service/nvdrv/devices/nvhost_gpu.h"
+#include "core/hle/service/nvdrv/devices/nvhost_tsg_gpu.h"
 #include "core/hle/service/nvdrv/devices/nvhost_nvdec.h"
 #include "core/hle/service/nvdrv/devices/nvhost_nvdec_common.h"
 #include "core/hle/service/nvdrv/devices/nvhost_nvjpg.h"
@@ -147,6 +148,10 @@ Module::Module(Core::System& system)
     };
     builders["/dev/nvhost-gpu"] = [this, &system](DeviceFD fd) {
         auto device = std::make_shared<Devices::nvhost_gpu>(system, events_interface, container);
+        return open_files.emplace(fd, std::move(device)).first;
+    };
+    builders["/dev/nvhost-tsg-gpu"] = [this, &system](DeviceFD fd) {
+        auto device = std::make_shared<Devices::nvhost_tsg_gpu>(system, *this, container);
         return open_files.emplace(fd, std::move(device)).first;
     };
     builders["/dev/nvhost-ctrl-gpu"] = [this, &system](DeviceFD fd) {

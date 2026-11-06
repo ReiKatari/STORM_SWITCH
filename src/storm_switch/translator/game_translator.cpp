@@ -1,3 +1,4 @@
+#include "storm_switch/common/storm_theme.h"
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -469,17 +470,18 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
     resize(1160, 700);
     setMinimumSize(680, 460);
 
+    const auto gt_pal = StormTheme::GetThemePalette();
     setStyleSheet(QStringLiteral(
         "QDialog { background: #0B0F19; color: #FFFFFF; font-family: 'Segoe UI', sans-serif; }"
         "QTabWidget::pane { border: 1px solid #1E293B; background: #0D1424; border-radius: 8px; }"
         "QTabBar::tab { background: #121826; color: #FFFFFF; border: 1px solid #1E293B; border-bottom: none; "
         "               padding: 10px 20px; border-top-left-radius: 8px; border-top-right-radius: 8px; font-weight: 600; font-size: 13px; }"
-        "QTabBar::tab:selected { background: #0D1424; color: #00E5FF; border: 1px solid #00E5FF; border-bottom: 2px solid #0D1424; }"
-        "QGroupBox { color: #00E5FF; font-weight: bold; border: 1px solid #1E293B; border-radius: 8px; margin-top: 10px; padding-top: 14px; }"
+        "QTabBar::tab:selected { background: #0D1424; color: %1; border: 1px solid %1; border-bottom: 2px solid #0D1424; }"
+        "QGroupBox { color: %1; font-weight: bold; border: 1px solid #1E293B; border-radius: 8px; margin-top: 10px; padding-top: 14px; }"
         "QGroupBox::title { subcontrol-origin: margin; left: 12px; padding: 0 5px; }"
         "QLabel { color: #FFFFFF; font-size: 13px; font-weight: 500; }"
         "QLineEdit, QTextEdit, QSpinBox { background: #151D30; color: #FFFFFF; border: 1px solid #27354F; border-radius: 6px; padding: 6px 10px; font-size: 13px; }"
-        "QLineEdit:focus, QTextEdit:focus, QSpinBox:focus { border: 1px solid #00E5FF; }"
+        "QLineEdit:focus, QTextEdit:focus, QSpinBox:focus { border: 1px solid %1; }"
         "QComboBox { background: #151D30; color: #FFFFFF; border: 1px solid #27354F; border-radius: 6px; padding: 6px 12px; font-size: 13px; }"
         "QComboBox QAbstractItemView { background: #151D30; color: #FFFFFF; selection-background-color: #2563EB; }"
         "QPushButton { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #2563EB, stop:1 #00D4FF); color: #FFFFFF; border: 1px solid #00D4FF; border-radius: 6px; font-weight: 600; padding: 8px 16px; font-size: 13px; }"
@@ -489,12 +491,12 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
         "QPushButton#dangerBtn { background: #7F1D1D; border: 1px solid #DC2626; color: #FCA5A5; }"
         "QPushButton#dangerBtn:hover { background: #DC2626; color: #FFFFFF; }"
         "QPushButton#subtleBtn { background: #1E293B; border: 1px solid #334155; color: #FFFFFF; }"
-        "QPushButton#subtleBtn:hover { background: #2563EB; color: #FFFFFF; border-color: #00E5FF; }"
+        "QPushButton#subtleBtn:hover { background: #2563EB; color: #FFFFFF; border-color: %1; }"
         "QCheckBox { color: #FFFFFF; font-size: 13px; font-weight: 500; spacing: 8px; }"
         "QSlider::groove:horizontal { height: 6px; background: #1E293B; border-radius: 3px; }"
-        "QSlider::sub-page:horizontal { background: #00E5FF; border-radius: 3px; }"
+        "QSlider::sub-page:horizontal { background: %1; border-radius: 3px; }"
         "QSlider::handle:horizontal { background: #FFFFFF; width: 16px; margin: -5px 0; border-radius: 8px; }"
-    ));
+    ).arg(gt_pal.accent));
 
     m_network_mgr = new QNetworkAccessManager(this);
     m_hud_overlay = new TranslatorHUDOverlay();
@@ -560,7 +562,7 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
     service_layout->addWidget(m_auto_speak_check, 2, 0, 1, 2);
 
     m_status_label = new QLabel(tr("Готов к распознаванию"), tab_translate);
-    m_status_label->setStyleSheet(QStringLiteral("color: #00E5FF; font-weight: bold;"));
+    m_status_label->setStyleSheet(QStringLiteral("color: %1; font-weight: bold;").arg(gt_pal.accent));
     service_layout->addWidget(m_status_label, 2, 2, 1, 2, Qt::AlignRight);
 
     t1_layout->addWidget(service_box);
@@ -814,7 +816,7 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
 
     auto* t5_top_row = new QHBoxLayout();
     m_backlog_count_label = new QLabel(tr("Записей в истории: 0 / 100"), tab_backlog);
-    m_backlog_count_label->setStyleSheet(QStringLiteral("color: #00F0FF; font-weight: bold; font-size: 13px;"));
+    m_backlog_count_label->setStyleSheet(QStringLiteral("color: %1; font-weight: bold; font-size: 13px;").arg(StormTheme::GetThemePalette().accent));
     t5_top_row->addWidget(m_backlog_count_label);
     t5_top_row->addStretch(1);
 
@@ -839,9 +841,9 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
     m_backlog_list->setStyleSheet(QStringLiteral(
         "QListWidget { background-color: #0B1325; border: 1px solid #1E293B; border-radius: 8px; color: #E2E8F0; padding: 6px; font-size: 13px; }"
         "QListWidget::item { background: #131E35; border: 1px solid #1E2E4E; border-radius: 6px; margin-bottom: 6px; padding: 8px; }"
-        "QListWidget::item:hover { background: #1A2846; border-color: #00F0FF; }"
-        "QListWidget::item:selected { background: #20355A; border-color: #38BDF8; }"
-    ));
+        "QListWidget::item:hover { background: #1A2846; border-color: %1; }"
+        "QListWidget::item:selected { background: #20355A; border-color: %1; }"
+    ).arg(StormTheme::GetThemePalette().accent));
     t5_layout->addWidget(m_backlog_list, 1);
 
     auto* t5_hint = new QLabel(tr("💡 Двойной клик по реплике копирует её перевод. Система автоматически объединяет повторные и мерцающие кадры OCR (фильтр Левенштейна и Жаккара)."), tab_backlog);

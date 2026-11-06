@@ -376,6 +376,8 @@ struct Values {
 
     std::string theme;
 
+    Setting<std::string> ui_design{linkage, "hyperion_glass", "ui_design", Category::Ui};
+
     Setting<std::string> accent_color{linkage, "#8B5CF6", "accent_color", Category::Ui};
 
     Setting<std::string> ui_font{linkage, "Inter", "ui_font", Category::Ui};

@@ -1034,12 +1034,12 @@ GameFixProfile(
             "Unravel Two",
             "• Зависание на вступительных видеороликах (дедлок видеодекодера NVDEC)\n• Графические артефакты освещения, прозрачности воды и искажение шейдеров",
             "• Freeze during intro cutscenes (NVDEC video decoder deadlock)\n• Lighting, water transparency and shader corruption artifacts",
-            "✓ Программный декодер видео (NVDEC CPU: устранение зависания заставок)\n✓ Точность ГПУ: Обычная (Normal)\n✓ Обратные циклы барьеров: Включено\n✓ Реактивная очистка: Включено",
-            "✓ CPU NVDEC Video Decoding (Fixes intro video hang)\n✓ GPU Accuracy: Normal\n✓ Barrier Feedback Loops: Enabled\n✓ Reactive Flushing: Enabled",
+            "✓ Программный декодер видео (NVDEC CPU: устранение зависания заставок)\n✓ Точность ГПУ: Обычная (Normal)\n✓ Обратные циклы барьеров: Отключено (стабильный переход уровней)\n✓ Реактивная очистка: Включено",
+            "✓ CPU NVDEC Video Decoding (Fixes intro video hang)\n✓ GPU Accuracy: Normal\n✓ Barrier Feedback Loops: Disabled (Smooth level transitions)\n✓ Reactive Flushing: Enabled",
             mapOf(
                 "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\barrier_feedback_loops" to "false",
                 "Renderer\\use_reactive_flushing" to "true"
             ),
             listOf(0x0100E5D00CC0C000L, 0x010099900B22E000L)
@@ -6650,14 +6650,34 @@ GameFixProfile(
             "Trine 3: The Artifacts of Power",
             "• Падение FPS и зависание на черном экране при синхронных вызовах DMA fence на GPU Mali/TBDR\n• Нестабильный кадровый темп",
             "• Framerate drops and black screen hang from synchronous DMA fence stalls on Mali/TBDR GPUs\n• Unstable frame pacing",
-            "✓ Точность ГПУ: Обычная (Normal / устранение зависаний очереди)\n✓ Реактивная очистка: Отключено (стабильный FPS на Mali)\n✓ Асинхронные шейдеры: Включено\n✓ Масштабирование: Bilinear\n✓ Разрешение: 1X (720p/1080p)",
-            "✓ GPU Accuracy: Normal (Eliminates queue stalls)\n✓ Reactive Flushing: Disabled (Stable FPS on Mali)\n✓ Asynchronous Shaders: Enabled\n✓ Scaling: Bilinear\n✓ Resolution: 1X (720p/1080p)",
+            "✓ Точность ГПУ: Обычная (Normal / устранение зависаний очереди)\n✓ Сжатие ASTC: Отключено (Uncompressed / исправление текстур на Mali)\n✓ Асинхронные шейдеры: Отключено (устранение черного экрана на Mali)\n✓ Реактивная очистка: Отключено (стабильный FPS на Mali)\n✓ Масштабирование: Bilinear\n✓ Разрешение: 1X (720p/1080p)",
+            "✓ GPU Accuracy: Normal (Eliminates queue stalls)\n✓ ASTC Recompression: Uncompressed (Fixes textures on Mali)\n✓ Asynchronous Shaders: Disabled (Fixes black screen on Mali)\n✓ Reactive Flushing: Disabled (Stable FPS on Mali)\n✓ Scaling: Bilinear\n✓ Resolution: 1X (720p/1080p)",
             mapOf(
                 "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\use_asynchronous_shaders" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
-                "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\resolution_setup" to "2",
                 "Renderer\\scaling_filter" to "1"
+            )
+        ),
+        GameFixProfile(
+            0x01007E300B298000L,
+            "Trine 4: The Nightmare Prince",
+            "• Падение FPS, черный экран и сбой инициализации гостевой памяти NCE\n• Искажение/артефакты текстур при сжатии ASTC на мобильных GPU",
+            "• Framerate drops, black screen and NCE guest memory initialization fault\n• Texture artifacts under ASTC recompression on mobile GPUs",
+            "✓ Точность ГПУ: Обычная (Normal / синхронизация очередей)\n✓ Сжатие ASTC: Отключено (Uncompressed / устранение битых текстур)\n✓ Асинхронные шейдеры: Отключено (синхронная сборка пайплайнов)\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено",
+            "✓ GPU Accuracy: Normal (Sync queue pacing)\n✓ ASTC Recompression: Uncompressed (Fixes texture corruption)\n✓ Asynchronous Shaders: Disabled (Synchronous pipeline build)\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\use_asynchronous_shaders" to "false",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\resolution_setup" to "2",
+                "Renderer\\scaling_filter" to "1",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "Cpu\\cpu_accuracy" to "0"
             )
         ),
         GameFixProfile(
@@ -7344,9 +7364,13 @@ GameFixProfile(
                     if (keyName == "memory_layout_mode") sections["System"]?.remove("memory_layout_mode")
                     val section = sections.getOrPut(sectionName) { mutableMapOf() }
                     val userExplicitlyConfigured = section["$keyName\\use_global"]?.trim()?.equals("false", ignoreCase = true) == true
-                    if (userExplicitlyConfigured && section.containsKey(keyName)) {
+                    val isCriticalFixKey = keyName == "nvdec_emulation" || keyName == "gpu_accuracy" || keyName == "astc_recompression" || keyName == "barrier_feedback_loops"
+                    if (userExplicitlyConfigured && section.containsKey(keyName) && !isCriticalFixKey) {
                         Log.info("[GameFixDatabase] Preserving user custom per-game setting $fullKey = ${section[keyName]}")
                         continue
+                    }
+                    if (isCriticalFixKey && userExplicitlyConfigured && section.containsKey(keyName)) {
+                        Log.info("[GameFixDatabase] Overriding conflicting custom setting $fullKey: ${section[keyName]} -> $value for stability")
                     }
                     section[keyName] = value
                     section["$keyName\\use_global"] = "false"

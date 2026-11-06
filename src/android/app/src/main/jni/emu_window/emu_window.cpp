@@ -27,8 +27,9 @@
 void EmuWindow_Android::OnSurfaceChanged(ANativeWindow* surface) {
     if (!surface) {
         LOG_INFO(Frontend, "EmuWindow_Android::OnSurfaceChanged received null surface");
-        m_window_width = 0;
-        m_window_height = 0;
+        m_window_width = 0.0f;
+        m_window_height = 0.0f;
+        NotifyClientAreaSizeChanged({0, 0});
         window_info.render_surface = nullptr;
         m_last_frame_rate_hint = -1.0f;
         m_pending_frame_rate_hint = -1.0f;
@@ -39,8 +40,10 @@ void EmuWindow_Android::OnSurfaceChanged(ANativeWindow* surface) {
         return;
     }
 
-    m_window_width = ANativeWindow_getWidth(surface);
-    m_window_height = ANativeWindow_getHeight(surface);
+    m_window_width = static_cast<float>(ANativeWindow_getWidth(surface));
+    m_window_height = static_cast<float>(ANativeWindow_getHeight(surface));
+
+    NotifyClientAreaSizeChanged({static_cast<u32>(m_window_width), static_cast<u32>(m_window_height)});
 
     // Ensures that we emulate with the correct aspect ratio.
     UpdateCurrentFramebufferLayout(m_window_width, m_window_height);

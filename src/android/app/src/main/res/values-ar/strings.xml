@@ -2200,4 +2200,13 @@
     <string name="profile_override_badge">محدد بواسطة ملف تعريف اللعبة</string>
     <string name="profile_override_revert">استعادة الإعدادات العامة</string>
     <string name="cpu_unsafe_disabled_explanation">خيارات المعالج غير الآمنة نشطة فقط عند تعيين دقة المعالج على \'غير آمن\'.</string>
+
+    <!-- UI Design Styles -->
+    <string name="ui_design_style">تصميم واجهة المستخدم</string>
+    <string name="ui_design_style_description">تصميم ثلاثي الأبعاد مجسم ورسوم متحركة لمسية للواجهة</string>
+    <string name="ui_design_style_hyperion">STORM HYPERION GLASS 3D</string>
+    <string name="ui_design_style_cyberdeck">STORM CYBER-DECK TACTILE</string>
+    <string name="ui_design_style_aurora">STORM AURORA QUANTUM</string>
+    <string name="ui_design_style_orbital">STORM ORBITAL SPATIAL UI</string>
+    <string name="ui_design_style_chrono">STORM CHRONO-NEXUS COMMANDER</string>
 </resources>

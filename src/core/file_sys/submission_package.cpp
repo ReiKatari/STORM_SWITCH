@@ -316,7 +316,15 @@ void NSP::ReadNCAs(const std::vector<VirtualFile>& files) {
             if (is_nsz_container || name.ends_with(".ncz") || IsNczFile(temp_file)) {
                 temp_file = std::make_shared<NCZVirtualFile>(temp_file);
             }
-            auto temp_nca = std::make_shared<NCA>(temp_file);
+            auto ncz_cast = temp_file->IsNczFile() ? std::static_pointer_cast<NCZVirtualFile>(temp_file) : nullptr;
+            std::shared_ptr<NCA> temp_nca = nullptr;
+            // Prevent instantiating full NCA on solid-stream NCZ files during candidate discovery!
+            // Doing so triggers DecompressIfNCZ which decompresses multi-gigabyte solid streams to disk on the UI thread.
+            if (ncz_cast && ncz_cast->is_solid_stream) {
+                temp_nca = nullptr;
+            } else {
+                temp_nca = std::make_shared<NCA>(temp_file);
+            }
             candidates.push_back({potential_file, temp_file, temp_nca, name});
         }
     };
@@ -400,6 +408,19 @@ void NSP::ReadNCAs(const std::vector<VirtualFile>& files) {
                 }
                 if (next_file == nullptr) {
                     next_file = pfs->GetFile(fmt::format("{}.NCZ", upper_id));
+                }
+
+                // Check files list by case-insensitive name or hash substring before fallback
+                if (next_file == nullptr) {
+                    for (const auto& f : files) {
+                        if (!f) continue;
+                        const std::string fn = f->GetName();
+                        if (fn.size() >= 32 && (fn.find(id_string) != std::string::npos ||
+                                                fn.find(upper_id) != std::string::npos)) {
+                            next_file = f;
+                            break;
+                        }
+                    }
                 }
 
                 if (next_file != nullptr) {
@@ -562,8 +583,32 @@ void NSP::ReadNCAs(const std::vector<VirtualFile>& files) {
                         }
                     }
 
+                    // Pass 5: Solid NCZ fallback matching by name / size heuristic
+                    if (matched_file == nullptr) {
+                        for (const auto& cand : candidates) {
+                            if (used_files.contains(cand.name)) continue;
+                            if (cand.nca == nullptr && cand.v_file != nullptr) {
+                                const bool name_match = cand.name.find(id_string) != std::string::npos ||
+                                                        cand.name.find(upper_id) != std::string::npos;
+                                if (name_match || (rec.type == ContentRecordType::Program &&
+                                                   (cand.name.find("program") != std::string::npos ||
+                                                    cand.v_file->GetSize() > 100 * 1024 * 1024 ||
+                                                    candidates.size() == 1))) {
+                                    matched_file = cand.v_file;
+                                    matched_cand_name = cand.name;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
                     if (!matched_cand_name.empty()) {
                         used_files.insert(matched_cand_name);
+                    }
+
+                    // Lazily instantiate NCA only for the selected matched file
+                    if (matched_file != nullptr && matched_cand_nca == nullptr) {
+                        matched_cand_nca = std::make_shared<NCA>(matched_file);
                     }
 
                     next_file = matched_file;

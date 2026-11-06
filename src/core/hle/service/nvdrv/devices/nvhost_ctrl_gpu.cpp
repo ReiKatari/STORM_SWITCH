@@ -87,12 +87,18 @@ NvResult nvhost_ctrl_gpu::Ioctl1(DeviceFD fd, Ioctl command, std::span<const u8>
             default: return "UNKNOWN";
         }
     }();
+    if (nx2_caller || g_nx2_driver || Settings::IsCurrentProgramSwitch2()) {
+        return Nx2UnknownIoctl("nvhost-ctrl-gpu", command, input, output);
+    }
     UNIMPLEMENTED_MSG("Unimplemented ioctl={:08X} {}", command.raw, friendly_name);
     return NvResult::NotImplemented;
 }
 
 NvResult nvhost_ctrl_gpu::Ioctl2(DeviceFD fd, Ioctl command, std::span<const u8> input,
                                  std::span<const u8> inline_input, std::span<u8> output) {
+    if (nx2_caller || g_nx2_driver || Settings::IsCurrentProgramSwitch2()) {
+        return Nx2UnknownIoctl("nvhost-ctrl-gpu", command, input, output);
+    }
     UNIMPLEMENTED_MSG("Unimplemented ioctl={:08X}", command.raw);
     return NvResult::NotImplemented;
 }
@@ -272,6 +278,12 @@ NvResult nvhost_ctrl_gpu::GetCharacteristics1(IoctlCharacteristics& params) {
     params.gc.gr_compbit_store_base_hw = 0x0;
     params.gpu_characteristics_buf_size = 0xA0;
     params.gpu_characteristics_buf_addr = 0xdeadbeef; // Cannot be 0 (UNUSED)
+    if (Settings::IsCurrentProgramSwitch2() && params.gpu_characteristics_buf_size >= 0xA0) {
+        nx2_caller = true;
+        g_nx2_driver = true;
+        Tegra::g_nx2_ampere = true;
+        ApplyNx2Characteristics(params.gc);
+    }
     return NvResult::Success;
 }
 

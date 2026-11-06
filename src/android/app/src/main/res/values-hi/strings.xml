@@ -2923,4 +2923,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="profile_override_badge">गेम प्रोफ़ाइल द्वारा निर्दिष्ट</string>
     <string name="profile_override_revert">ग्लोबल पर रीसेट करें</string>
     <string name="cpu_unsafe_disabled_explanation">असुरक्षित CPU विकल्प केवल तभी सक्रिय होते हैं जब CPU सटीकता \'असुरक्षित\' पर सेट हो।</string>
+
+    <!-- UI Design Styles -->
+    <string name="ui_design_style">UI डिज़ाइन</string>
+    <string name="ui_design_style_description">इंटरफ़ेस के लिए वॉल्यूमेट्रिक 3D स्टाइलिंग और स्पर्श एनिमेशन</string>
+    <string name="ui_design_style_hyperion">STORM HYPERION GLASS 3D</string>
+    <string name="ui_design_style_cyberdeck">STORM CYBER-DECK TACTILE</string>
+    <string name="ui_design_style_aurora">STORM AURORA QUANTUM</string>
+    <string name="ui_design_style_orbital">STORM ORBITAL SPATIAL UI</string>
+    <string name="ui_design_style_chrono">STORM CHRONO-NEXUS COMMANDER</string>
 </resources>

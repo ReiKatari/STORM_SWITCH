@@ -75,27 +75,30 @@ public:
         // Recommended Badge
         if (asset.is_recommended) {
             auto* badge = new QLabel(tr("🌟 РЕКОМЕНДУЕТСЯ"), m_frame);
+            const auto otd_pal = StormTheme::GetThemePalette();
+            const QColor otd_acc(otd_pal.accent);
             badge->setStyleSheet(QStringLiteral(
-                "background-color: rgba(0, 240, 255, 0.16); "
-                "border: 1px solid #00F0FF; "
+                "background-color: rgba(%1, %2, %3, 0.16); "
+                "border: 1px solid %4; "
                 "border-radius: 10px; "
-                "color: #00F0FF; "
+                "color: %4; "
                 "font-family: 'Segoe UI'; "
                 "font-size: 11px; "
                 "font-weight: bold; "
-                "padding: 4px 10px;"));
+                "padding: 4px 10px;").arg(otd_acc.red()).arg(otd_acc.green()).arg(otd_acc.blue()).arg(otd_pal.accent));
             card_layout->addWidget(badge);
         }
 
         m_selected_badge = new QLabel(tr("✔ ВЫБРАНО"), m_frame);
+        const auto otd_pal = StormTheme::GetThemePalette();
         m_selected_badge->setStyleSheet(QStringLiteral(
-            "background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00E5FF, stop:1 #00B0FF); "
+            "background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 %1, stop:1 %2); "
             "color: #06101e; "
             "font-family: 'Segoe UI'; "
             "font-size: 11px; "
             "font-weight: bold; "
             "border-radius: 10px; "
-            "padding: 4px 10px;"));
+            "padding: 4px 10px;").arg(otd_pal.accent, QColor(otd_pal.accent).darker(120).name()));
         m_selected_badge->setVisible(false);
         card_layout->addWidget(m_selected_badge);
 
@@ -106,12 +109,13 @@ public:
     void SetSelected(bool selected) {
         m_is_selected = selected;
         if (m_is_selected) {
+            const auto otd_pal = StormTheme::GetThemePalette();
             m_frame->setStyleSheet(QStringLiteral(
                 "QFrame#CardFrame {"
-                "    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #162a3f, stop:1 #0c1b2c);"
-                "    border: 2px solid #00F0FF;"
+                "    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 %1, stop:1 %2);"
+                "    border: 2px solid %3;"
                 "    border-radius: 8px;"
-                "}"));
+                "}").arg(otd_pal.surface, otd_pal.bg, otd_pal.accent));
             m_title_label->setStyleSheet(QStringLiteral(
                 "font-family: 'Segoe UI'; font-size: 14px; font-weight: bold; color: #ffffff; background: transparent;"));
             m_sub_label->setStyleSheet(QStringLiteral(
@@ -284,7 +288,7 @@ void OnlineToolsDialog::SetupUI() {
                                     : tr("Онлайн-установка ключей дешифрования"),
                                 header_frame);
     m_header_title->setStyleSheet(
-        QStringLiteral("font-size: 16px; font-weight: bold; color: #00F0FF;"));
+        QStringLiteral("font-size: 16px; font-weight: bold; color: %1;").arg(StormTheme::GetThemePalette().accent));
     header_text_layout->addWidget(m_header_title);
 
     m_header_desc = new QLabel(

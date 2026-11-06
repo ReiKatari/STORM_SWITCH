@@ -2049,4 +2049,13 @@
     <string name="profile_override_badge">angitt av spillprofil</string>
     <string name="profile_override_revert">Tilbakestill til global</string>
     <string name="cpu_unsafe_disabled_explanation">Usikre CPU-valg er kun aktive når CPU-nøyaktighet er satt til \'Usikker\'.</string>
+
+    <!-- UI Design Styles -->
+    <string name="ui_design_style">UI-design</string>
+    <string name="ui_design_style_description">Volumetrisk 3D-stil og taktile animasjoner for grensesnittet</string>
+    <string name="ui_design_style_hyperion">STORM HYPERION GLASS 3D</string>
+    <string name="ui_design_style_cyberdeck">STORM CYBER-DECK TACTILE</string>
+    <string name="ui_design_style_aurora">STORM AURORA QUANTUM</string>
+    <string name="ui_design_style_orbital">STORM ORBITAL SPATIAL UI</string>
+    <string name="ui_design_style_chrono">STORM CHRONO-NEXUS COMMANDER</string>
 </resources>

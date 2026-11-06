@@ -1936,4 +1936,13 @@
     <string name="profile_override_badge">กำหนดโดยโปรไฟล์เกม</string>
     <string name="profile_override_revert">คืนค่าเป็นค่าส่วนกลาง</string>
     <string name="cpu_unsafe_disabled_explanation">ตัวเลือก CPU ที่ไม่ปลอดภัยจะทำงานเมื่อตั้งค่าความแม่นยำ CPU เป็น \'ไม่ปลอดภัย\' เท่านั้น</string>
+
+    <!-- UI Design Styles -->
+    <string name="ui_design_style">การออกแบบ UI</string>
+    <string name="ui_design_style_description">การจัดรูปแบบ 3D เชิงปริมาตรและภาพเคลื่อนไหวสัมผัสสำหรับอินเทอร์เฟซ</string>
+    <string name="ui_design_style_hyperion">STORM HYPERION GLASS 3D</string>
+    <string name="ui_design_style_cyberdeck">STORM CYBER-DECK TACTILE</string>
+    <string name="ui_design_style_aurora">STORM AURORA QUANTUM</string>
+    <string name="ui_design_style_orbital">STORM ORBITAL SPATIAL UI</string>
+    <string name="ui_design_style_chrono">STORM CHRONO-NEXUS COMMANDER</string>
 </resources>

@@ -284,16 +284,7 @@
         android:layout_weight="0.92"
         android:orientation="vertical">
 
-        <com.google.android.material.textview.MaterialTextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/launch_method_title"
-            android:textSize="11.5sp"
-            android:textStyle="bold"
-            android:textColor="?attr/colorOnSurface"
-            android:layout_marginBottom="6dp"
-            android:breakStrategy="simple"
-            android:hyphenationFrequency="none" />
+
 
         <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"

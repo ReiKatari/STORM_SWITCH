@@ -1269,7 +1269,8 @@ Result KProcess::LoadFromMetadata(KernelCore& kernel, const FileSys::ProgramMeta
     // Switch 2 applications get more memory than a 64-bit heap region holds (nninitStartup sizes
     // its heap as total memory minus ~6.3 GiB), so count the alias region as well, bounded by the
     // pool through the resource limit.
-    if (metadata.IsSwitch2()) {
+    if (metadata.IsSwitch2() || Settings::IsCurrentProgramSwitch2() ||
+        (metadata.GetTitleID() >> 48) == 0x0400 || (metadata.GetTitleID() >> 40) == 0x040000) {
         m_is_switch2 = true;
         m_max_process_memory = m_page_table.GetHeapRegionSize() + m_page_table.GetAliasRegionSize();
     }

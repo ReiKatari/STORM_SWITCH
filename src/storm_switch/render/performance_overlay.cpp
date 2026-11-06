@@ -1,3 +1,4 @@
+#include "storm_switch/common/storm_theme.h"
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -195,7 +196,8 @@ void PerformanceOverlay::SetupUI() {
     compact_stats_row->addWidget(m_compact_fps);
 
     m_compact_ft = new QLabel(tr("0.0 ms"), m_compact_widget);
-    m_compact_ft->setStyleSheet(QStringLiteral("font-size: 13px; font-weight: bold; color: #A78BFA;"));
+    const auto po_pal = StormTheme::GetThemePalette();
+    m_compact_ft->setStyleSheet(QStringLiteral("font-size: 13px; font-weight: bold; color: %1;").arg(po_pal.accent));
     compact_stats_row->addWidget(m_compact_ft);
 
     m_compact_dps = new QLabel(m_compact_widget);
@@ -285,7 +287,8 @@ void PerformanceOverlay::SetupMonitoringTab(QWidget* tab) {
     // Row 1: Frametime
     auto* ft_box = new QHBoxLayout();
     auto* ft_title = new QLabel(tr("Frametime:"), tab);
-    ft_title->setStyleSheet(QStringLiteral("font-weight: bold; color: #A78BFA; font-size: 13px;"));
+    const auto po_pal2 = StormTheme::GetThemePalette();
+    ft_title->setStyleSheet(QStringLiteral("font-weight: bold; color: %1; font-size: 13px;").arg(po_pal2.accent));
     ft_box->addWidget(ft_title);
 
     m_lbl_ft = new QLabel(tr("0.00 ms"), tab);
@@ -346,7 +349,7 @@ void PerformanceOverlay::SetupMonitoringTab(QWidget* tab) {
     info_box->addWidget(m_lbl_lsfg);
 
     m_lbl_shaders = new QLabel(tr("Шейдеры: 0"), tab);
-    m_lbl_shaders->setStyleSheet(QStringLiteral("color: #A78BFA;"));
+    m_lbl_shaders->setStyleSheet(QStringLiteral("color: %1;").arg(po_pal2.accent));
     info_box->addWidget(m_lbl_shaders);
 
     info_box->addStretch(1);
@@ -528,7 +531,7 @@ void PerformanceOverlay::SetupCfwTab(QWidget* tab) {
 
     m_chk_60fps_unlock = new QCheckBox(tr("Авто-разблокировка 60/120 FPS (Снятие лимита 30 FPS VSync)"), tab);
     m_chk_60fps_unlock->setChecked(Settings::values.auto_60fps_unlock.GetValue());
-    m_chk_60fps_unlock->setStyleSheet(QStringLiteral("font-weight: bold; color: #A78BFA;"));
+    m_chk_60fps_unlock->setStyleSheet(QStringLiteral("font-weight: bold; color: %1;").arg(StormTheme::GetThemePalette().accent));
     connect(m_chk_60fps_unlock, &QCheckBox::toggled, this, &PerformanceOverlay::OnAuto60FpsToggled);
     layout->addWidget(m_chk_60fps_unlock);
 

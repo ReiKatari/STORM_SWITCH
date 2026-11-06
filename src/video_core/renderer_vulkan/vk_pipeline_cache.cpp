@@ -339,7 +339,8 @@ size_t GetTotalPipelineWorkers(const Device& device) {
         }
     }
 
-    if (device.GetDriverID() == VK_DRIVER_ID_ARM_PROPRIETARY ||
+    if (device.IsMali() ||
+        device.GetDriverID() == VK_DRIVER_ID_ARM_PROPRIETARY ||
         device.GetVendorName() == "ARM" ||
         device.GetDriverName().find("panvk") != std::string::npos) {
         num_workers = std::clamp<size_t>(num_workers, 1ULL, 2ULL);

@@ -2056,4 +2056,13 @@
     <string name="profile_override_badge">játékprofil által megadva</string>
     <string name="profile_override_revert">Visszaállítás globálisra</string>
     <string name="cpu_unsafe_disabled_explanation">A nem biztonságos CPU-beállítások csak akkor aktívak, ha a CPU pontossága \'Nem biztonságos\'.</string>
+
+    <!-- UI Design Styles -->
+    <string name="ui_design_style">Kezelőfelület dizájn</string>
+    <string name="ui_design_style_description">Volumetrikus 3D stílus és tapintási animációk a felülethez</string>
+    <string name="ui_design_style_hyperion">STORM HYPERION GLASS 3D</string>
+    <string name="ui_design_style_cyberdeck">STORM CYBER-DECK TACTILE</string>
+    <string name="ui_design_style_aurora">STORM AURORA QUANTUM</string>
+    <string name="ui_design_style_orbital">STORM ORBITAL SPATIAL UI</string>
+    <string name="ui_design_style_chrono">STORM CHRONO-NEXUS COMMANDER</string>
 </resources>

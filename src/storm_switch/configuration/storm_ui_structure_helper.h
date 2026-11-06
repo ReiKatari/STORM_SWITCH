@@ -27,7 +27,7 @@ namespace StormUI {
 
 /// Visual options for volumetric structured cards
 struct CardStyleOptions {
-    QString accent_color = QStringLiteral("#00F0FF");
+    QString accent_color;
     QString card_bg = QStringLiteral("rgba(15, 23, 42, 0.65)");
     QString border_color = QStringLiteral("rgba(255, 255, 255, 0.08)");
     int border_radius = 8;

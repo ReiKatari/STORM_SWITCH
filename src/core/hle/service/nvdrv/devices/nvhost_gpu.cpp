@@ -17,6 +17,9 @@
 #include "core/hle/service/nvdrv/devices/ioctl_serialization.h"
 #include "core/hle/service/nvdrv/devices/nvhost_gpu.h"
 #include "core/hle/service/nvdrv/devices/native_gpu_context.h"
+#include "video_core/macro.h"
+#include "core/hle/service/nvdrv/devices/nx2_stub_device.h"
+#include "common/settings.h"
 #include "core/hle/service/nvdrv/nvdrv.h"
 #include "core/memory.h"
 #include "video_core/control/channel_state.h"
@@ -109,6 +112,9 @@ NvResult nvhost_gpu::Ioctl1(DeviceFD fd, Ioctl command, std::span<const u8> inpu
         }
         break;
     }
+    if (UsesNativeAbi() || g_nx2_driver || Settings::IsCurrentProgramSwitch2()) {
+        return Nx2UnknownIoctl("nvhost-gpu", command, input, output);
+    }
     LOG_WARNING(Service_NVDRV, "Unimplemented ioctl={:08X}", command.raw);
     return NvResult::NotImplemented;
 };
@@ -124,12 +130,19 @@ NvResult nvhost_gpu::Ioctl2(DeviceFD fd, Ioctl command, std::span<const u8> inpu
         }
         break;
     }
+    if (UsesNativeAbi() || g_nx2_driver || Settings::IsCurrentProgramSwitch2()) {
+        return Nx2UnknownIoctl("nvhost-gpu", command, input, output);
+    }
     LOG_WARNING(Service_NVDRV, "Unimplemented ioctl={:08X}", command.raw);
     return NvResult::NotImplemented;
 }
 
 NvResult nvhost_gpu::Ioctl3(DeviceFD fd, Ioctl command, std::span<const u8> input,
                             std::span<u8> output, std::span<u8> inline_output) {
+    if (UsesNativeAbi() || g_nx2_driver || Settings::IsCurrentProgramSwitch2()) {
+        std::fill(inline_output.begin(), inline_output.end(), u8{0});
+        return Nx2UnknownIoctl("nvhost-gpu", command, input, output);
+    }
     LOG_WARNING(Service_NVDRV, "Unimplemented ioctl={:08X}", command.raw);
     return NvResult::NotImplemented;
 }
@@ -137,6 +150,12 @@ NvResult nvhost_gpu::Ioctl3(DeviceFD fd, Ioctl command, std::span<const u8> inpu
 void nvhost_gpu::OnOpen(NvCore::SessionId session_id, DeviceFD fd) {
     sessions[fd] = session_id;
     channel_state->native_abi = UsesNativeAbi();
+    if (channel_state->native_abi && !channel_state->native_macro_context) {
+        auto default_macros = std::make_shared<Tegra::NativeMacroContext>();
+        default_macros->engine.native_turing = true;
+        default_macros->compute_engine.native_turing = true;
+        channel_state->native_macro_context = std::move(default_macros);
+    }
 }
 
 void nvhost_gpu::OnClose(DeviceFD fd) {
@@ -183,7 +202,12 @@ NvResult nvhost_gpu::SetChannelPriority(IoctlChannelSetPriority& params) {
     case ChannelPriority::Low: channel_timeslice = 1300; break;
     case ChannelPriority::Medium: channel_timeslice = 2600; break;
     case ChannelPriority::High: channel_timeslice = 5200; break;
-    default : return NvResult::BadParameter;
+    default:
+        if (UsesNativeAbi()) {
+            channel_timeslice = 2600;
+            break;
+        }
+        return NvResult::BadParameter;
     }
 
     return NvResult::Success;
@@ -292,13 +316,27 @@ NvResult nvhost_gpu::AllocateObjectContext(IoctlAllocObjCtx& params) {
     if (const auto native_slot = GetNativeGpuContextSlot(params.class_num)) {
         if (UsesNativeAbi()) { ctx_class_number_index = *native_slot; }
     }
+    const bool nx2_native = UsesNativeAbi() || g_nx2_driver || Settings::IsCurrentProgramSwitch2();
     if (ctx_class_number_index < 0) {
+        if (nx2_native) {
+            LOG_WARNING(Service_NVDRV,
+                        "Switch 2 AllocateObjectContext accepting native/default class {:#x}",
+                        params.class_num);
+            if (params.obj_id == 0) {
+                params.obj_id = params.class_num != 0 ? params.class_num : 1;
+            }
+            return NvResult::Success;
+        }
         LOG_ERROR(Service_NVDRV, "Invalid class number for object context: {:#x}",
                   params.class_num);
         return NvResult::BadParameter;
     }
 
     if (ctxObjs[ctx_class_number_index].has_value()) {
+        if (nx2_native) {
+            ctxObjs[ctx_class_number_index] = params;
+            return NvResult::Success;
+        }
         LOG_WARNING(Service_NVDRV, "Object context for class {:#x} already allocated on this channel",
                     params.class_num);
         return NvResult::AlreadyAllocated;
@@ -495,6 +533,10 @@ NvResult nvhost_gpu::ChannelSetTimeslice(IoctlSetTimeslice& params) {
     LOG_INFO(Service_NVDRV, "called, timeslice={:#x}", params.timeslice);
 
     if (params.timeslice < 1000 || params.timeslice > 5000) {
+        if (UsesNativeAbi()) {
+            channel_timeslice = std::clamp<u32>(params.timeslice, 1000, 5000);
+            return NvResult::Success;
+        }
         return NvResult::BadParameter;
     }
 
@@ -523,6 +565,7 @@ Kernel::KEvent* nvhost_gpu::QueryEvent(u32 event_id) {
 
 NvResult nvhost_gpu::BindToTsg(DeviceFD group, Kernel::KProcess* process, std::shared_ptr<Tegra::NativeMacroContext> macros) {
     const std::scoped_lock lock{tsg_mutex};
+    if (tsg_group == group) { return NvResult::Success; }
     if (tsg_group) { return NvResult::Busy; }
     bool owned{};
     for (const auto& [fd, session_id] : sessions) {
@@ -534,6 +577,11 @@ NvResult nvhost_gpu::BindToTsg(DeviceFD group, Kernel::KProcess* process, std::s
         channel_state->native_macro_context = std::move(macros);
         if (channel_state->payload) {
             channel_state->payload->maxwell_3d.SetNativeMacroContext(channel_state->native_macro_context);
+            channel_state->payload->maxwell_3d.SetNativeTuringMacroMode(true);
+            if (channel_state->native_macro_context) {
+                auto& ctx = *channel_state->native_macro_context;
+                channel_state->payload->kepler_compute.SetNativeMacroMode(&ctx.engine, ctx.positions, &ctx);
+            }
         }
     }
     tsg_group = group;
@@ -546,6 +594,9 @@ void nvhost_gpu::UnbindFromTsg(DeviceFD group) {
 }
 
 bool nvhost_gpu::UsesNativeAbi() const {
+    if (Settings::IsCurrentProgramSwitch2() || g_nx2_driver.load(std::memory_order_relaxed)) {
+        return true;
+    }
     for (const auto& [fd, session_id] : sessions) {
         const auto* session = core.GetSession(session_id);
         if (session && session->process && session->process->UsesPAuthReturns()) { return true; }

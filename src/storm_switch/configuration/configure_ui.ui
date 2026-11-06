@@ -162,6 +162,20 @@
 
             <item>
 
+             <layout class="QHBoxLayout" name="horizontalLayout_design">
+              <item>
+               <widget class="QLabel" name="design_label">
+                <property name="text">
+                 <string>UI Design:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QComboBox" name="design_combobox"/>
+              </item>
+             </layout>
+            </item>
+            <item>
              <layout class="QHBoxLayout" name="horizontalLayout_3">
 
               <item>

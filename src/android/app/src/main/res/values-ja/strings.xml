@@ -2291,4 +2291,13 @@
     <string name="profile_override_badge">ゲームプロファイルで指定</string>
     <string name="profile_override_revert">グローバル設定に戻す</string>
     <string name="cpu_unsafe_disabled_explanation">非安全な CPU 最適化は、CPU 精度が「非安全」に設定されている場合のみ有効です。</string>
+
+    <!-- UI Design Styles -->
+    <string name="ui_design_style">UIデザイン</string>
+    <string name="ui_design_style_description">インターフェース向けの立体的な3Dスタイリングと触覚アニメーション</string>
+    <string name="ui_design_style_hyperion">STORM HYPERION GLASS 3D</string>
+    <string name="ui_design_style_cyberdeck">STORM CYBER-DECK TACTILE</string>
+    <string name="ui_design_style_aurora">STORM AURORA QUANTUM</string>
+    <string name="ui_design_style_orbital">STORM ORBITAL SPATIAL UI</string>
+    <string name="ui_design_style_chrono">STORM CHRONO-NEXUS COMMANDER</string>
 </resources>

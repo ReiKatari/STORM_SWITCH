@@ -320,6 +320,15 @@ void QueryCacheBase<Traits>::CounterReport(GPUVAddr addr, QueryType counter_type
             if (native_trace) TraceNativeQuery(3, trace_asid, addr, cpu_addr, static_cast<u32>(counter_type), query_base->value, static_cast<u32>(query_base->flags));
             LOG_DEBUG(HW_GPU,
                       "Query report value not synchronized; writing current value fallback.");
+            if (True(query_base->flags & QueryFlagBits::HasTimestamp)) {
+                u64 timestamp = impl->gpu.GetTicks();
+                if (pointer_timestamp) {
+                    std::memcpy(pointer_timestamp, &timestamp, sizeof(timestamp));
+                }
+                if (pointer) {
+                    std::memcpy(pointer, &query_base->value, sizeof(query_base->value));
+                }
+            }
             if (!is_synced) [[likely]] {
                 std::scoped_lock lk(impl->unregister_mutex);
                 impl->pending_unregister.push_back(query_location);

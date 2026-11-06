@@ -3169,6 +3169,8 @@ public:
         return execute_on;
     }
 
+    [[nodiscard]] bool EvaluateCondition() const;
+
     VideoCore::RasterizerInterface& Rasterizer() {
         return *rasterizer;
     }

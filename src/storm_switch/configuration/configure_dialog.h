@@ -62,6 +62,8 @@ public:
     void ApplyConfiguration();
     void ReloadAllTabs();
     void SetCategory(int category_index, int tab_index = 0);
+    void ApplyDesignTheme();
+    void DoApplyDesignTheme();
 
 private slots:
     void OnLanguageChanged(const QString& locale);
@@ -117,6 +119,7 @@ private:
 
     std::vector<VkDeviceInfo::Record>& vk_records;
     bool m_is_changing_language{false};
+    bool m_theme_update_pending{false};
     QPushButton* m_restore_defaults_btn{nullptr};
     StormUI::LiveFilterEngine* m_live_filter_engine{nullptr};
     class QLineEdit* m_search_edit{nullptr};

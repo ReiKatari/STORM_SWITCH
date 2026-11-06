@@ -637,6 +637,22 @@
         <item>7</item>
     </integer-array>
 
+    <string-array name="uiDesignStyleNames">
+        <item>@string/ui_design_style_hyperion</item>
+        <item>@string/ui_design_style_cyberdeck</item>
+        <item>@string/ui_design_style_aurora</item>
+        <item>@string/ui_design_style_orbital</item>
+        <item>@string/ui_design_style_chrono</item>
+    </string-array>
+    <integer-array name="uiDesignStyleValues">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+    </integer-array>
+
+
     <string-array name="anisoEntries">
         <item>@string/auto</item>
         <item>@string/slider_default</item>

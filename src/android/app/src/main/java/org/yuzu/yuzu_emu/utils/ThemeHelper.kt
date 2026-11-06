@@ -412,6 +412,8 @@ object ThemeHelper {
 
                 Settings.PREF_BLACK_BACKGROUNDS
 
+            ,
+                Settings.PREF_UI_DESIGN_STYLE
             )
 
             if (key in relevantKeys) {

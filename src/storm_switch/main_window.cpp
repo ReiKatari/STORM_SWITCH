@@ -1,3 +1,4 @@
+#include "storm_switch/common/storm_design_engine.h"
 #include <filesystem>
 #include <system_error>
 #include <QFutureWatcher>
@@ -568,6 +569,9 @@ static inline void EnsureModalDialogScalableAndStyled(QWidget* w) {
     const QString cur_qss = dlg->styleSheet();
 
     if (!cur_qss.isEmpty() && !cur_qss.contains(QStringLiteral("isCancelButton"))) {
+        const auto pal = StormTheme::GetThemePalette();
+        const QString accent_color = pal.accent.isEmpty() ? QStringLiteral("#8B5CF6") : pal.accent;
+        const QString accent_dark = QColor(accent_color).darker(130).name();
 
         dlg->setStyleSheet(cur_qss + QStringLiteral(
 
@@ -579,15 +583,15 @@ static inline void EnsureModalDialogScalableAndStyled(QWidget* w) {
 
             "\nQCheckBox::indicator:hover, QGroupBox::indicator:hover, QRadioButton::indicator:hover, QTreeView::indicator:hover, QListView::indicator:hover, QTableView::indicator:hover {"
 
-            " border: 1px solid #00D2FF; }"
+            " border: 1px solid %1; }"
 
             "\nQCheckBox::indicator:checked, QGroupBox::indicator:checked, QRadioButton::indicator:checked, QTreeView::indicator:checked, QListView::indicator:checked, QTableView::indicator:checked {"
 
-            " background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #00F0FF, stop:1 #0088CC); border: 1px solid #00F0FF; image: none; }"
+            " background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 %1, stop:1 %2); border: 1px solid %1; image: none; }"
 
             "\nQCheckBox::indicator:unchecked, QGroupBox::indicator:unchecked, QRadioButton::indicator:unchecked, QTreeView::indicator:unchecked, QListView::indicator:unchecked, QTableView::indicator:unchecked {"
 
-            " background: #121826; border: 1px solid #475569; image: none; }") + StormCancelButtonQssRule());
+            " background: #121826; border: 1px solid #475569; image: none; }").arg(accent_color, accent_dark) + StormCancelButtonQssRule());
 
     }
 
@@ -1779,6 +1783,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
 
     default_theme_paths = QIcon::themeSearchPaths();
 
+    StormDesign::InstallGlobalAnimator();
     UpdateUITheme();
 
 
@@ -1825,7 +1830,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
 
 
 
-    setWindowTitle(QStringLiteral("STORM SWITCH 16.2.7"));
+    setWindowTitle(QStringLiteral("STORM SWITCH 16.2.9"));
     UpdateWindowTitle();
 
 
@@ -5999,38 +6004,23 @@ void MainWindow::InitializeWidgets() {
 
     footer_customize_button->setMinimumHeight(32);
 
+    const auto fcb_pal = StormTheme::GetThemePalette();
     footer_customize_button->setStyleSheet(QStringLiteral(
-
         "QPushButton#FooterCustomizeButton {"
-
         "  background-color: rgba(255, 255, 255, 0.08);"
-
-        "  color: #00f2fe;"
-
+        "  color: %1;"
         "  border: 1px solid rgba(255, 255, 255, 0.15);"
-
         "  border-radius: 4px;"
-
         "  font-size: 11pt;"
-
         "  font-weight: bold;"
-
         "  padding: 0px;"
-
         "}"
-
         "QPushButton#FooterCustomizeButton:hover {"
-
-        "  background-color: #00f2fe;"
-
-        "  color: #000000;"
-
-        "  border-color: #00f2fe;"
-
+        "  background-color: %1;"
+        "  color: #FFFFFF;"
+        "  border-color: %1;"
         "}"
-
-    ));
-
+    ).arg(fcb_pal.accent));
     connect(footer_customize_button, &QPushButton::clicked, this, &MainWindow::ShowFooterCustomizeMenu);
 
 
@@ -9846,6 +9836,18 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
 
 
 
+    if (params.program_id != 0) {
+
+        Settings::SetCurrentProgramID(params.program_id);
+
+        Settings::SetCurrentProgramIsSwitch2((params.program_id >> 48) == 0x0400 ||
+
+                                            (params.program_id >> 40) == 0x040000);
+
+    }
+
+
+
     if (title_id != 0 && type == StartGameType::Normal) {
 
         const auto file_path_hash = Common::CityHash64(utf8_str.constData(), static_cast<std::size_t>(utf8_str.size()));
@@ -13488,6 +13490,12 @@ void MainWindow::OnConfigure() {
 
     const auto old_theme = UISettings::values.theme;
 
+    const auto old_ui_design = UISettings::values.ui_design.GetValue();
+
+    const auto old_accent = UISettings::values.accent_color.GetValue();
+
+    const auto old_ui_font = UISettings::values.ui_font.GetValue();
+
     const bool old_discord_presence = UISettings::values.enable_discord_presence.GetValue();
 
     const auto old_language_index = Settings::values.language_index.GetValue();
@@ -13578,9 +13586,7 @@ void MainWindow::OnConfigure() {
 
             &MainWindow::OnLanguageChanged);
 
-    connect(&configure_dialog, &ConfigureDialog::ThemeChanged, this,
-
-            [this](const QString&) { UpdateUITheme(); });
+    // Defer UpdateUITheme until ConfigureDialog closes (<15ms live preview in modal dialog)
 
     connect(&configure_dialog, &ConfigureDialog::ExternalContentDirsChanged, this,
 
@@ -13608,9 +13614,41 @@ void MainWindow::OnConfigure() {
 
         !UISettings::values.reset_to_defaults) {
 
+        bool theme_changed = false;
+
         if (UISettings::values.theme != old_theme) {
 
             UISettings::values.theme = old_theme;
+
+            theme_changed = true;
+
+        }
+
+        if (UISettings::values.ui_design.GetValue() != old_ui_design) {
+
+            UISettings::values.ui_design = old_ui_design;
+
+            theme_changed = true;
+
+        }
+
+        if (UISettings::values.accent_color.GetValue() != old_accent) {
+
+            UISettings::values.accent_color = old_accent;
+
+            theme_changed = true;
+
+        }
+
+        if (UISettings::values.ui_font.GetValue() != old_ui_font) {
+
+            UISettings::values.ui_font = old_ui_font;
+
+            theme_changed = true;
+
+        }
+
+        if (theme_changed) {
 
             UpdateUITheme();
 
@@ -13636,6 +13674,13 @@ void MainWindow::OnConfigure() {
 
         UpdateStatusButtons();
 
+        if (UISettings::values.theme != old_theme ||
+            UISettings::values.ui_design.GetValue() != old_ui_design ||
+            UISettings::values.accent_color.GetValue() != old_accent ||
+            UISettings::values.ui_font.GetValue() != old_ui_font) {
+            UpdateUITheme();
+        }
+
     } else if (UISettings::values.configuration_applied) {
 
         // Configuration was already saved during ConfigurationApplied
@@ -13643,6 +13688,13 @@ void MainWindow::OnConfigure() {
         reapply_running_session_overrides();
 
         UpdateStatusButtons();
+
+        if (UISettings::values.theme != old_theme ||
+            UISettings::values.ui_design.GetValue() != old_ui_design ||
+            UISettings::values.accent_color.GetValue() != old_accent ||
+            UISettings::values.ui_font.GetValue() != old_ui_font) {
+            UpdateUITheme();
+        }
 
     } else if (UISettings::values.reset_to_defaults) {
 
@@ -13712,7 +13764,13 @@ void MainWindow::OnConfigure() {
 
 
 
-    if (UISettings::values.theme != old_theme) {
+    if (UISettings::values.theme != old_theme ||
+
+        UISettings::values.ui_design.GetValue() != old_ui_design ||
+
+        UISettings::values.accent_color.GetValue() != old_accent ||
+
+        UISettings::values.ui_font.GetValue() != old_ui_font) {
 
         UpdateUITheme();
 
@@ -15834,9 +15892,10 @@ void MainWindow::OnCheckUpdates(bool manual_check) {
 
 
 
-        auto* title = new QLabel(tr("<h2 style='margin:0; color:#00e5ff;'>⚡ Доступна новая версия: %1</h2>")
+        auto* title = new QLabel(tr("<h2 style='margin:0; color:%2;'>⚡ Доступна новая версия: %1</h2>")
 
-                                     .arg(best.release_name.isEmpty() ? best.tag_name : best.release_name), &dlg);
+                                     .arg(best.release_name.isEmpty() ? best.tag_name : best.release_name, StormTheme::GetThemePalette().accent), &dlg);
+
 
         auto* sub_info = new QLabel(tr("<span style='color:#FFFFFF;'>Текущая версия: <b>%1</b> &nbsp;|&nbsp; Новая версия: <b>%2</b></span>")
 
@@ -17833,113 +17892,25 @@ void MainWindow::OnSaveStateManager() {
 
 
 
+    const auto addon_pal = StormTheme::GetThemePalette();
+    const QColor addon_acc(StormTheme::GetThemePalette().accent);
     dlg.setStyleSheet(QStringLiteral(
+        "QDialog { background-color: %1; color: %2; font-family: 'Segoe UI', sans-serif; }"
+        "QLabel { color: %2; }"
+        "QLineEdit { background-color: %3; color: %2; border: 1px solid %4; border-radius: 6px; padding: 7px 12px; font-size: 9pt; }"
+        "QLineEdit:focus { border: 1.5px solid %5; }"
+        "QTableWidget { background-color: %3; color: %2; gridline-color: %4; border: 1px solid %4; border-radius: 8px; selection-background-color: rgba(%6, %7, %8, 0.25); selection-color: #ffffff; font-size: 9pt; }"
+        "QHeaderView::section { background-color: %9; color: %5; font-weight: bold; border: 1px solid %4; padding: 7px; font-size: 9pt; }"
+        "QPushButton { background-color: %9; color: %2; border: 1px solid %4; border-radius: 6px; padding: 7px 16px; font-weight: bold; font-size: 8.5pt; }"
+        "QPushButton:hover { background-color: %5; color: #FFFFFF; border-color: %5; }"
+        "QPushButton#CopyBtn { background-color: %9; color: %5; border: 1px solid %5; }"
+        "QPushButton#CopyBtn:hover { background-color: %5; color: #FFFFFF; }"
+        "QMenu { background-color: %9; color: %2; border: 1px solid %4; padding: 4px; }"
+        "QMenu::item:selected { background-color: %5; color: #FFFFFF; font-weight: bold; border-radius: 4px; }"
+    ).arg(addon_pal.bg, addon_pal.textPrimary, addon_pal.surface, addon_pal.border,
+         StormTheme::GetThemePalette().accent).arg(addon_acc.red()).arg(addon_acc.green()).arg(addon_acc.blue()).arg(addon_pal.card));
 
-        "QDialog {"
 
-        "  background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #0B0F19, stop:0.5 #111827, stop:1 #090D16);"
-
-        "  color: #FFFFFF;"
-
-        "  font-family: 'Segoe UI', sans-serif;"
-
-        "}"
-
-        "QLabel { color: #FFFFFF; background: transparent; }"
-
-        "QComboBox {"
-
-        "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1E293B, stop:1 #0F172A);"
-
-        "  color: #FFFFFF; border: 1.5px solid rgba(56, 189, 248, 0.45); border-radius: 8px;"
-
-        "  padding: 5px 12px; font-size: 9.5pt; font-weight: 600; min-height: 24px;"
-
-        "}"
-
-        "QComboBox:hover { border-color: #00E5FF; }"
-
-        "QComboBox QAbstractItemView {"
-
-        "  background-color: #0F172A; color: #FFFFFF; selection-background-color: #0284C7;"
-
-        "  border: 1.5px solid #38BDF8; border-radius: 6px; padding: 4px;"
-
-        "}"
-
-        "QListWidget {"
-
-        "  background-color: rgba(15, 23, 42, 0.78);"
-
-        "  border: 1px solid rgba(56, 189, 248, 0.28);"
-
-        "  border-radius: 12px; padding: 6px; outline: none;"
-
-        "}"
-
-        "QListWidget::item {"
-
-        "  background-color: rgba(30, 41, 59, 0.55);"
-
-        "  border: 1px solid rgba(148, 163, 184, 0.16);"
-
-        "  border-radius: 10px; margin: 4px 2px; padding: 6px; color: #FFFFFF;"
-
-        "}"
-
-        "QListWidget::item:hover {"
-
-        "  background-color: rgba(30, 58, 95, 0.65);"
-
-        "  border: 1px solid rgba(56, 189, 248, 0.55);"
-
-        "}"
-
-        "QListWidget::item:selected {"
-
-        "  background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 rgba(2, 132, 199, 0.42), stop:1 rgba(15, 23, 42, 0.85));"
-
-        "  border: 1.5px solid #00E5FF; color: #FFFFFF;"
-
-        "}"
-
-        "QLineEdit, QPlainTextEdit {"
-
-        "  background-color: rgba(15, 23, 42, 0.92); color: #FFFFFF;"
-
-        "  border: 1.5px solid rgba(56, 189, 248, 0.38); border-radius: 8px;"
-
-        "  padding: 5px 10px; font-size: 9.5pt;"
-
-        "}"
-
-        "QLineEdit:focus, QPlainTextEdit:focus { border: 1.5px solid #00E5FF; background-color: #131D31; }"
-
-        "QPushButton {"
-
-        "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1E293B, stop:1 #0F172A);"
-
-        "  color: #FFFFFF; border: 1px solid rgba(148, 163, 184, 0.32);"
-
-        "  border-bottom: 2px solid rgba(0, 0, 0, 0.65);"
-
-        "  border-radius: 8px; padding: 8px 14px; font-size: 9.5pt; font-weight: 600;"
-
-        "}"
-
-        "QPushButton:hover {"
-
-        "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #334155, stop:1 #1E293B);"
-
-        "  border-color: #38BDF8; color: #FFFFFF;"
-
-        "}"
-
-        "QPushButton:pressed { padding-top: 9px; padding-bottom: 7px; }"
-
-        "QPushButton:disabled { color: #FFFFFF; background: rgba(15, 23, 42, 0.4); border-color: rgba(71, 85, 105, 0.2); }"
-
-    ));
 
 
 
@@ -17959,11 +17930,11 @@ void MainWindow::OnSaveStateManager() {
 
         "QFrame {"
 
-        "  background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 229, 255, 0.14), stop:0.5 rgba(30, 41, 59, 0.65), stop:1 rgba(16, 185, 129, 0.12));"
+        "  background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 rgba(%1, %2, %3, 0.14), stop:0.5 rgba(30, 41, 59, 0.65), stop:1 rgba(16, 185, 129, 0.12));"
 
-        "  border: 1px solid rgba(0, 229, 255, 0.35); border-radius: 12px;"
+        "  border: 1px solid rgba(%1, %2, %3, 0.35); border-radius: 12px;"
 
-        "}"));
+        "}").arg(addon_acc.red()).arg(addon_acc.green()).arg(addon_acc.blue()));
 
     auto* header_layout = new QHBoxLayout(header_frame);
 
@@ -17993,7 +17964,7 @@ void MainWindow::OnSaveStateManager() {
 
         QStringLiteral("⚡ STORM SESS v2 クイックセーブマネージャー")), header_frame);
 
-    lbl_main_title->setStyleSheet(QStringLiteral("font-size: 12.5pt; font-weight: 800; color: #00E5FF; border: none; background: transparent;"));
+    lbl_main_title->setStyleSheet(QStringLiteral("font-size: 12.5pt; font-weight: 800; color: %1; border: none; background: transparent;").arg(StormTheme::GetThemePalette().accent));
 
     title_col->addWidget(lbl_main_title);
 
@@ -20693,7 +20664,7 @@ void MainWindow::UpdateWindowTitle(std::string_view filename, std::string_view d
                                    std::string_view internal_version, std::string_view gpu_vendor) {
 
     const QString build_ver = QString::fromUtf8(Common::g_build_version).isEmpty()
-                                  ? QStringLiteral("16.2.7")
+                                  ? QStringLiteral("16.2.9")
                                   : QString::fromUtf8(Common::g_build_version);
     const QString strict_idle_title = QStringLiteral("STORM SWITCH %1").arg(build_ver);
 
@@ -21051,11 +21022,14 @@ void MainWindow::UpdateStatusBar() {
 
     game_fps_label->setText(fpsText);
 
-    game_fps_label->setStyleSheet(QStringLiteral(
-
-        "QLabel { background-color: rgba(0, 229, 255, 0.10); color: #00e5ff; border: 1px solid rgba(0, 229, 255, 0.30); "
-
-        "border-radius: 4px; padding: 2px 6px; font-size: 7.2pt; font-weight: 700; }"));
+    {
+        const auto fps_pal = StormTheme::GetThemePalette();
+        const QColor fps_acc(fps_pal.accent);
+        game_fps_label->setStyleSheet(QStringLiteral(
+            "QLabel { background-color: rgba(%1, %2, %3, 0.12); color: %4; border: 1px solid rgba(%1, %2, %3, 0.30); "
+            "border-radius: 4px; padding: 2px 6px; font-size: 7.2pt; font-weight: 700; }")
+            .arg(fps_acc.red()).arg(fps_acc.green()).arg(fps_acc.blue()).arg(fps_pal.accent));
+    }
 
 
 
@@ -22851,39 +22825,24 @@ void MainWindow::UpdateGameFixStatusButton() {
 
         ));
 
+        const auto gfb_pal = StormTheme::GetThemePalette();
         gamefix_status_button->setStyleSheet(QStringLiteral(
-
             "QPushButton#TogglableStatusBarButton, QPushButton {"
-
-            "  background-color: #0b2433;"
-
-            "  color: #00e5ff;"
-
-            "  border: 1px solid #00e5ff;"
-
+            "  background-color: %1;"
+            "  color: %2;"
+            "  border: 1px solid %2;"
             "  border-radius: 4px;"
-
             "  padding: 2px 5px;"
-
             "  font-size: 6.8pt;"
-
             "  font-weight: 800;"
-
             "  min-height: 26px;"
-
             "  min-width: 36px;"
-
             "}"
-
             "QPushButton#TogglableStatusBarButton:hover, QPushButton:hover {"
-
-            "  background-color: #00e5ff;"
-
-            "  color: #000000;"
-
+            "  background-color: %2;"
+            "  color: #FFFFFF;"
             "}"
-
-        ));
+        ).arg(gfb_pal.surface, gfb_pal.accent));
 
         gamefix_status_button->setToolTip(StormLang(
 
@@ -28273,11 +28232,11 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
 
         } else if (r.type == tr("DLC")) {
 
-            item1->setForeground(QColor("#00e5ff"));
+            item1->setForeground(QColor(StormTheme::GetThemePalette().accent));
 
         } else if (r.type == tr("Mod")) {
 
-            item1->setForeground(QColor("#e040fb"));
+            item1->setForeground(QColor(StormTheme::GetThemePalette().accent).lighter(120));
 
         }
 
@@ -28803,11 +28762,11 @@ static void AdjustLinkColor() {
 
     if (is_dark)
 
-        new_pal.setColor(QPalette::Link, QColor(0, 190, 255, 255));
+        new_pal.setColor(QPalette::Link, QColor(StormTheme::GetThemePalette().accent));
 
     else
 
-        new_pal.setColor(QPalette::Link, QColor(0, 140, 200, 255));
+        new_pal.setColor(QPalette::Link, QColor(StormTheme::GetThemePalette().accent).darker(115));
 
 
 
@@ -28836,239 +28795,215 @@ static void AdjustLinkColor() {
 
 
 void MainWindow::UpdateUITheme() {
-
     const QString default_theme = QString::fromUtf8(UISettings::themes[size_t(UISettings::default_theme)].second);
-
     QString current_theme = QString::fromStdString(UISettings::values.theme);
 
-
-
     if (current_theme.isEmpty())
-
         current_theme = default_theme;
 
-
-
     // Backward compatibility mappings
-
     if (current_theme == QStringLiteral("storm_matrix")) {
-
         current_theme = QStringLiteral("storm_cyberpunk");
-
     } else if (current_theme == QStringLiteral("storm_aurora")) {
-
         current_theme = QStringLiteral("storm_flagship");
-
     } else if (current_theme == QStringLiteral("storm_warhammer_40k")) {
-
         current_theme = QStringLiteral("storm_warhammer40k");
-
     }
 
-
-
-#ifdef _WIN32
-
-    QIcon::setThemeName(current_theme);
-
-    AdjustLinkColor();
-
-#else
-
-    QIcon::setThemeName(current_theme);
-
-    QIcon::setThemeSearchPaths(QStringList(QStringLiteral(":/icons")));
-
-    AdjustLinkColor();
-
+    // Gate QIcon::setThemeName behind a static cache check to prevent CPU SVG cache purging
+    static QString s_last_icon_theme;
+    if (s_last_icon_theme != current_theme) {
+        s_last_icon_theme = current_theme;
+        QIcon::setThemeName(current_theme);
+#ifndef _WIN32
+        QIcon::setThemeSearchPaths(QStringList(QStringLiteral(":/icons")));
 #endif
-
-
+    }
+    AdjustLinkColor();
 
     if (current_theme != default_theme) {
-
         QString theme_uri{QStringLiteral(":%1/style.qss").arg(current_theme)};
-
         QFile f(theme_uri);
-
         if (!f.open(QFile::ReadOnly | QFile::Text)) {
-
             LOG_ERROR(Frontend, "Unable to open style \"{}\", fallback to the default theme",
-
                       UISettings::values.theme);
-
             current_theme = default_theme;
-
         }
-
     }
 
+    // In-memory cache for raw QSS stylesheets to eliminate redundant QRC file I/O
+    static std::unordered_map<std::string, QString> s_qss_raw_cache;
+    const std::string theme_key = current_theme.toStdString();
+    auto it = s_qss_raw_cache.find(theme_key);
+    QString raw_stylesheet;
+    if (it != s_qss_raw_cache.end()) {
+        raw_stylesheet = it->second;
+    } else {
+        QString theme_uri{QStringLiteral(":%1/style.qss").arg(current_theme)};
+        QFile f(theme_uri);
+        if (f.open(QFile::ReadOnly | QFile::Text)) {
+            QTextStream ts(&f);
+            raw_stylesheet = ts.readAll();
+            s_qss_raw_cache[theme_key] = raw_stylesheet;
+        } else {
+            LOG_ERROR(Frontend, "Unable to set style \"{}\", stylesheet file not found",
+                      UISettings::values.theme);
+        }
+    }
 
+    if (!raw_stylesheet.isEmpty()) {
+        QString stylesheet = raw_stylesheet + StormCancelButtonQssRule();
 
-    QString theme_uri{QStringLiteral(":%1/style.qss").arg(current_theme)};
+        const auto pal = StormTheme::GetThemePalette();
+        const QString accent_color = pal.accent.isEmpty() ? QStringLiteral("#8B5CF6") : pal.accent;
+        const QColor acc(accent_color);
+        const QString accent_light = acc.lighter(pal.is_light ? 115 : 130).name();
+        const QString accent_dark = acc.darker(pal.is_light ? 125 : 140).name();
+        const int r = acc.red();
+        const int g = acc.green();
+        const int b = acc.blue();
+        const QString rgb_str = QStringLiteral("%1, %2, %3").arg(r).arg(g).arg(b);
 
-    QFile f(theme_uri);
+        // Universal primary accent replacement across all 9 themes
+        for (const QString& token : {
+            QStringLiteral("#8B5CF6"), QStringLiteral("#b388ff"), QStringLiteral("#7c4dff"),
+            QStringLiteral("#7c3aed"), QStringLiteral("#9d71fa"), QStringLiteral("#00f2fe"),
+            QStringLiteral("#00F0FF"), QStringLiteral("#00e5ff"), QStringLiteral("#00d2ff"),
+            QStringLiteral("#00c6ff"), QStringLiteral("#0284c7"), QStringLiteral("#38bdf8"),
+            QStringLiteral("#3b82f6"), QStringLiteral("#06b6d4"), QStringLiteral("#6366f1")
+        }) {
+            stylesheet.replace(token, accent_color, Qt::CaseInsensitive);
+        }
 
-    if (f.open(QFile::ReadOnly | QFile::Text)) {
+        // Light / hover accent replacements
+        for (const QString& token : {
+            QStringLiteral("#a78bfa"), QStringLiteral("#d1b3ff"), QStringLiteral("#b493fc"),
+            QStringLiteral("#c4b5fd"), QStringLiteral("#ddd6fe"), QStringLiteral("#38f8ff"),
+            QStringLiteral("#4df6fe"), QStringLiteral("#5efce8"), QStringLiteral("#66f6ff"),
+            QStringLiteral("#7dd3fc"), QStringLiteral("#60a5fa"), QStringLiteral("#818cf8"),
+            QStringLiteral("#22d3ee"), QStringLiteral("#c084fc")
+        }) {
+            stylesheet.replace(token, accent_light, Qt::CaseInsensitive);
+        }
 
-        QTextStream ts(&f);
+        // Dark / pressed accent replacements
+        for (const QString& token : {
+            QStringLiteral("#6d28d9"), QStringLiteral("#5b21b6"), QStringLiteral("#4c1d95"),
+            QStringLiteral("#581c87"), QStringLiteral("#6b21a8"), QStringLiteral("#0369a1"),
+            QStringLiteral("#075985"), QStringLiteral("#1d4ed8"), QStringLiteral("#1e40af"),
+            QStringLiteral("#2563eb"), QStringLiteral("#0088cc"), QStringLiteral("#006699")
+        }) {
+            stylesheet.replace(token, accent_dark, Qt::CaseInsensitive);
+        }
 
-        QString stylesheet = ts.readAll() + StormCancelButtonQssRule();
-
-
-
-        // Dynamically inject active accent color (Laws 5 & 6)
-
-        const QString accent = QString::fromStdString(UISettings::values.accent_color.GetValue());
-
-        const QString accent_color = accent.isEmpty() ? QStringLiteral("#8B5CF6") : accent;
-
-        stylesheet.replace(QStringLiteral("#8B5CF6"), accent_color, Qt::CaseInsensitive);
-
-        stylesheet.replace(QStringLiteral("#a78bfa"), accent_color, Qt::CaseInsensitive);
-
-
+        // Translucent RGBA replacements across all themes
+        for (const QString& rgba_token : {
+            QStringLiteral("179, 136, 255"), QStringLiteral("139, 92, 246"), QStringLiteral("124, 58, 237"),
+            QStringLiteral("0, 240, 255"), QStringLiteral("0, 242, 254"), QStringLiteral("0, 229, 255"),
+            QStringLiteral("0, 210, 255"), QStringLiteral("14, 165, 233"), QStringLiteral("56, 189, 248"),
+            QStringLiteral("2, 132, 199")
+        }) {
+            stylesheet.replace(rgba_token, rgb_str, Qt::CaseInsensitive);
+        }
 
         stylesheet += QStringLiteral(
-
             "\n/* Dynamic Accent & Focus Rules */\n"
-
             ":focus { border-color: %1 !important; }\n"
-
             "QMenu::item:selected { background-color: %1 !important; color: #FFFFFF !important; }\n"
-
             "QScrollBar::handle:vertical:hover, QScrollBar::handle:horizontal:hover { background: %1 !important; }\n"
-
             "QProgressBar::chunk { background-color: %1 !important; }\n"
-
+            "QPushButton#FooterCustomizeButton { color: %1 !important; border: 1px solid rgba(255, 255, 255, 0.15); }\n"
+            "QPushButton#FooterCustomizeButton:hover { background-color: %1 !important; color: #FFFFFF !important; border-color: %1 !important; }\n"
         ).arg(accent_color);
 
-
-
         // Apply active font (Law 6)
-
         const QString font_family = QString::fromStdString(UISettings::values.ui_font.GetValue());
-
         if (!font_family.isEmpty()) {
-
             QFont app_font(font_family, 9);
-
             app_font.setStyleHint(QFont::SansSerif);
-
             qApp->setFont(app_font);
-
         }
 
+        // Apply matching QPalette so native Qt subwidgets never fall back to Windows white
+        QPalette app_palette = qApp->palette();
+        const QColor bg_col(pal.bg);
+        const QColor surface_col(pal.surface);
+        const QColor card_col(pal.card);
+        const QColor text_col(pal.textPrimary);
+        const QColor text_sec(pal.textSecondary);
+        const QColor accent_col(accent_color);
 
+        app_palette.setColor(QPalette::Window, bg_col);
+        app_palette.setColor(QPalette::WindowText, text_col);
+        app_palette.setColor(QPalette::Base, surface_col);
+        app_palette.setColor(QPalette::AlternateBase, card_col);
+        app_palette.setColor(QPalette::ToolTipBase, surface_col);
+        app_palette.setColor(QPalette::ToolTipText, text_col);
+        app_palette.setColor(QPalette::Text, text_col);
+        app_palette.setColor(QPalette::Button, surface_col);
+        app_palette.setColor(QPalette::ButtonText, text_col);
+        app_palette.setColor(QPalette::BrightText, Qt::white);
+        app_palette.setColor(QPalette::Highlight, accent_col);
+        app_palette.setColor(QPalette::HighlightedText, Qt::white);
+        app_palette.setColor(QPalette::PlaceholderText, text_sec);
+        qApp->setPalette(app_palette);
 
+        stylesheet.append(StormDesign::BuildMainWindowDesignOverlay(pal));
         qApp->setStyleSheet(stylesheet);
-
     } else {
-
         LOG_ERROR(Frontend, "Unable to set style \"{}\", stylesheet file not found",
-
                   UISettings::values.theme);
-
         qApp->setStyleSheet({});
-
         setStyleSheet({});
-
     }
-
-
 
 #ifdef _WIN32
-
     ApplyGlobalDarkTitlebar(UISettings::IsDarkTheme());
-
 #endif
 
-
-
     // Dynamically style system tray menu (Law 1)
-
     if (m_tray_menu) {
-
-        const QString accent = QString::fromStdString(UISettings::values.accent_color.GetValue());
-
-        const QString accent_color = accent.isEmpty() ? QStringLiteral("#8B5CF6") : accent;
-
-        const QString theme_bg = UISettings::IsDarkTheme() ? QStringLiteral("#141026") : QStringLiteral("#f8fafc");
-
-        const QString theme_fg = UISettings::IsDarkTheme() ? QStringLiteral("#E6EDF3") : QStringLiteral("#0f172a");
-
-        const QString hover_bg = UISettings::IsDarkTheme() ? QStringLiteral("#241e3d") : QStringLiteral("#e2e8f0");
-
+        const auto pal = StormTheme::GetThemePalette();
+        const QString accent_color = pal.accent.isEmpty() ? QStringLiteral("#8B5CF6") : pal.accent;
+        const QString theme_bg = pal.surface;
+        const QString theme_fg = pal.textPrimary;
+        const QString hover_bg = pal.card;
         m_tray_menu->setStyleSheet(QStringLiteral(
-
             "QMenu#StormSystemTrayMenu {"
-
             "  background-color: %1;"
-
             "  color: %2;"
-
             "  border: 1px solid %3;"
-
             "  padding: 4px 0px;"
-
             "  font-family: 'Segoe UI';"
-
             "  font-size: 9pt;"
-
+            "  border-radius: 8px;"
             "}"
-
             "QMenu#StormSystemTrayMenu::item {"
-
             "  background-color: transparent;"
-
             "  color: %2;"
-
             "  padding: 6px 20px 6px 14px;"
-
             "  margin: 0px;"
-
             "}"
-
             "QMenu#StormSystemTrayMenu::item:disabled {"
-
             "  color: #8B949E;"
-
             "  font-weight: 600;"
-
             "}"
-
             "QMenu#StormSystemTrayMenu::item:selected {"
-
             "  background-color: %4;"
-
             "  color: #FFFFFF;"
-
             "}"
-
             "QMenu#StormSystemTrayMenu::separator {"
-
             "  height: 1px;"
-
             "  background: %3;"
-
             "  margin: 4px 8px;"
-
             "}"
-
             "QMenu#StormSystemTrayMenu::icon {"
-
             "  width: 0px;"
-
             "  padding: 0px;"
-
             "  margin: 0px;"
-
             "}"
-
         ).arg(theme_bg, theme_fg, accent_color, hover_bg));
-
     }
-
 }
 
 

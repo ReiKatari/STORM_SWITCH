@@ -71,7 +71,10 @@ class SearchableRetroArchCombo : public QComboBox {
 public:
     explicit SearchableRetroArchCombo(QWidget* parent = nullptr) : QComboBox(parent) {
         setMinimumHeight(32);
-        setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+        setMinimumWidth(0);
+        setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
+        setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
+        setMinimumContentsLength(8);
     }
 
     void showPopup() override {
@@ -338,7 +341,7 @@ void ConfigureGraphics::UpdateDriverDetails(int device) {
 
     QString text = QStringLiteral(
         "<div style='line-height: 135%;'>"
-        "<b>%1:</b> <span style='color: #00d2ff; font-weight: bold;'>%2</span><br>"
+        "<b>%1:</b> <span style='color: %8; font-weight: bold;'>%2</span><br>"
         "<b>%3:</b> %4 (Vulkan API %5)<br>"
         "<b>%6:</b> <span style='color: #98c379;'>%7</span>"
         "</div>"
@@ -349,7 +352,8 @@ void ConfigureGraphics::UpdateDriverDetails(int device) {
         ver,
         vk_ver,
         StormLang(QStringLiteral("Ключевые расширения"), QStringLiteral("Key Extensions")),
-        exts_str
+        exts_str,
+        StormTheme::GetThemePalette().accent
     );
 
     m_driver_details_label->setText(text);
@@ -426,15 +430,17 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
     api_layout->addWidget(api_grid_widget);
 
     // 1-Click Performance Presets Bar
+    const auto presets_pal = StormTheme::GetThemePalette();
+    const QColor presets_acc(presets_pal.accent);
     auto* presets_frame = new QFrame(api_grid_widget);
     presets_frame->setStyleSheet(QStringLiteral(
         "QFrame {"
         "    background: rgba(15, 23, 42, 0.7);"
-        "    border: 1px solid rgba(0, 210, 255, 0.3);"
+        "    border: 1px solid rgba(%1, %2, %3, 0.30);"
         "    border-radius: 8px;"
         "    margin-bottom: 6px;"
         "}"
-    ));
+    ).arg(presets_acc.red()).arg(presets_acc.green()).arg(presets_acc.blue()));
     auto* presets_vbox = new QVBoxLayout(presets_frame);
     presets_vbox->setContentsMargins(10, 6, 10, 8);
     presets_vbox->setSpacing(6);
@@ -449,7 +455,7 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
         QStringLiteral("<b>ملفات تعريف الرسوميات والأداء بنقرة واحدة:</b>"),
         QStringLiteral("<b>Perfiles de gráficos y rendimiento en 1 clic:</b>")), presets_frame);
     presets_title->setObjectName(QStringLiteral("presetsTitleLabel"));
-    presets_title->setStyleSheet(QStringLiteral("color: #00F0FF; font-size: 11.5px; border: none; background: transparent;"));
+    presets_title->setStyleSheet(QStringLiteral("color: %1; font-size: 11.5px; border: none; background: transparent;").arg(presets_pal.accent));
     presets_vbox->addWidget(presets_title);
 
     auto* presets_hbox = new QHBoxLayout();
@@ -468,14 +474,14 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
             "    font-size: 11.5px;"
             "    padding: 5px 10px;"
             "    border-radius: 5px;"
-            "    border: 1px solid rgba(0, 210, 255, 0.35);"
+            "    border: 1px solid rgba(%1, %2, %3, 0.35);"
             "}"
             "QPushButton:hover {"
             "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0284C7, stop:1 #0369A1);"
             "    color: #FFFFFF;"
-            "    border: 1px solid #00F0FF;"
+            "    border: 1px solid %4;"
             "}"
-        ));
+        ).arg(presets_acc.red()).arg(presets_acc.green()).arg(presets_acc.blue()).arg(presets_pal.accent));
         connect(btn, &QPushButton::clicked, this, [this, apply_fn]() {
             apply_fn();
             Settings::UpdateGPUAccuracy();
@@ -756,7 +762,11 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
 
         auto* shader_label = new QLabel(shader_row);
         shader_label->setObjectName(QStringLiteral("retroarchShaderLabel"));
-        shader_label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+        shader_label->setMinimumWidth(0);
+        shader_label->setMinimumHeight(24);
+        shader_label->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
+        shader_label->setAttribute(Qt::WA_TranslucentBackground, true);
+        shader_label->setStyleSheet(QStringLiteral("background: transparent; background-color: transparent;"));
 
         auto* shader_combo = new SearchableRetroArchCombo(shader_row);
         shader_combo->setObjectName(QStringLiteral("retroarchShaderCombo"));
@@ -770,19 +780,54 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
         const int saved_idx = std::clamp(Settings::values.post_processing_shader.GetValue(), 0, shader_combo->count() - 1);
         shader_combo->setCurrentIndex(saved_idx);
 
+        QPushButton* shader_restore_btn = nullptr;
+        if (!Settings::IsConfiguringGlobal()) {
+            shader_restore_btn = ConfigurationShared::Widget::CreateRestoreGlobalButton(
+                Settings::values.post_processing_shader.UsingGlobal(), shader_row);
+            connect(shader_restore_btn, &QAbstractButton::clicked, this, [shader_combo, shader_restore_btn](bool) {
+                Settings::values.post_processing_shader.SetGlobal(true);
+                const int global_idx = std::clamp(Settings::values.post_processing_shader.GetValue(true),
+                                                  0, shader_combo->count() - 1);
+                const QSignalBlocker blocker(shader_combo);
+                shader_combo->setCurrentIndex(global_idx);
+                shader_restore_btn->setEnabled(false);
+                shader_restore_btn->setVisible(false);
+            });
+            connect(shader_combo, QOverload<int>::of(&QComboBox::activated), this, [shader_restore_btn](int) {
+                if (shader_restore_btn) {
+                    shader_restore_btn->setEnabled(true);
+                    shader_restore_btn->setVisible(true);
+                }
+            });
+        }
+
         connect(shader_combo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [](int idx) {
             if (idx < 0) return;
-            ConfigurationShared::NotifyGlobalSettingChanged();
+            if (Settings::IsConfiguringGlobal()) {
+                ConfigurationShared::NotifyGlobalSettingChanged();
+            }
         });
 
-        apply_funcs.push_back([shader_combo](bool) {
-            if (shader_combo && shader_combo->currentIndex() >= 0) {
+        apply_funcs.push_back([shader_combo, shader_restore_btn](bool) {
+            if (!shader_combo || shader_combo->currentIndex() < 0) {
+                return;
+            }
+            if (Settings::IsConfiguringGlobal()) {
                 StormShaders::ApplyShaderByIndex(shader_combo->currentIndex());
+            } else if (shader_restore_btn) {
+                const bool using_global = !shader_restore_btn->isEnabled();
+                Settings::values.post_processing_shader.SetGlobal(using_global);
+                if (!using_global) {
+                    Settings::values.post_processing_shader.SetValue(shader_combo->currentIndex());
+                }
             }
         });
 
         shader_row_layout->addWidget(shader_label, 1);
         shader_row_layout->addWidget(shader_combo, 1);
+        if (shader_restore_btn) {
+            shader_row_layout->addWidget(shader_restore_btn);
+        }
         graphics_layout.addWidget(shader_row);
     }
     for (const auto& [id, widget] : hold_graphics) {
@@ -918,9 +963,11 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
                     QStringLiteral("Steam で Lossless.dll が検出されました（Lossless Scaling）"),
                     QStringLiteral("Steam에서 Lossless.dll 감지됨 (Lossless Scaling)")));
             } else {
+                const QColor acc_c(pal.accent);
+                const QString acc_bg = QStringLiteral("rgba(%1, %2, %3, 0.10)").arg(acc_c.red()).arg(acc_c.green()).arg(acc_c.blue());
                 status_badge->setStyleSheet(QStringLiteral(
-                    "QLabel { background: rgba(0, 240, 255, 0.10); border: 1px solid %1; color: %2; border-radius: 6px; padding: 6px 10px; font-size: 11.5px; }"
-                ).arg(pal.accent, pal.textPrimary));
+                    "QLabel { background: %1; border: 1px solid %2; color: %3; border-radius: 6px; padding: 6px 10px; font-size: 11.5px; }"
+                ).arg(acc_bg, pal.accent, pal.textPrimary));
                 status_badge->setText(StormLang(
                     QStringLiteral("Встроенная Vulkan-интерполяция активна (опционально: подключить Lossless.dll)"),
                     QStringLiteral("Built-in Vulkan interpolation active (optional: link Lossless.dll)"),
@@ -1418,9 +1465,12 @@ void ConfigureGraphics::SetupPerformancePresets() {
 
     preset_layout->addWidget(preset_label);
     preset_layout->addWidget(m_preset_combobox, 1);
+    const auto pgroup_pal = StormTheme::GetThemePalette();
+    const QColor pgroup_acc(pgroup_pal.accent);
     preset_group->setStyleSheet(QStringLiteral(
         "QGroupBox { font-weight: bold; margin-top: 4px; margin-bottom: 6px; padding: 8px 10px; "
-        "border: 1px solid rgba(80, 150, 255, 0.35); border-radius: 8px; background: rgba(80, 150, 255, 0.06); }"));
+        "border: 1px solid rgba(%1, %2, %3, 0.35); border-radius: 8px; background: rgba(%1, %2, %3, 0.08); }")
+        .arg(pgroup_acc.red()).arg(pgroup_acc.green()).arg(pgroup_acc.blue()));
 
     if (ui->verticalLayout_2) {
         ui->verticalLayout_2->insertWidget(0, preset_group);
@@ -1589,19 +1639,23 @@ void ConfigureGraphics::ApplyPerformancePreset(int index) {
             QStringLiteral("تطبيق"),
             QStringLiteral("लागू करें")
         ), QMessageBox::AcceptRole);
+        const auto ok_pal = StormTheme::GetThemePalette();
+        const QColor ok_acc(ok_pal.accent);
+        const QColor ok_acc_dark = ok_acc.darker(130);
+        const QColor ok_acc_lighter = ok_acc.lighter(125);
         ok_btn->setStyleSheet(QStringLiteral(
             "QPushButton {"
             "  min-width: 135px; min-height: 36px; padding: 6px 22px;"
             "  font-weight: 700; font-size: 12px; border-radius: 7px;"
-            "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #3b82f6, stop:1 #1d4ed8);"
-            "  color: #FFFFFF; border: 1px solid #2563eb;"
+            "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %1, stop:1 %2);"
+            "  color: #FFFFFF; border: 1px solid %2;"
             "}"
             "QPushButton:hover {"
-            "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #60a5fa, stop:1 #2563eb);"
+            "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %3, stop:1 %1);"
             "}"
             "QPushButton:pressed {"
-            "  background: #1e40af;"
-            "}"));
+            "  background: %4;"
+            "}").arg(ok_acc.name(), ok_acc_dark.name(), ok_acc_lighter.name(), ok_acc.darker(150).name()));
 
         auto* cancel_btn = msg.addButton(StormCancelText(), QMessageBox::RejectRole);
         cancel_btn->setProperty("isCancelButton", true);

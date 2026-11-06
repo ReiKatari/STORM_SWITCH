@@ -17,6 +17,7 @@
 #include "common/fs/fs.h"
 #include "common/fs/path_util.h"
 #include "storm_switch/crash_report_dialog.h"
+#include "storm_switch/common/storm_theme.h"
 #include "storm_switch/configuration/storm_ui_structure_helper.h"
 
 CrashReportDialog::CrashReportDialog(QWidget* parent, const CrashReportInfo& info)
@@ -84,7 +85,10 @@ void CrashReportDialog::SetupUI(const CrashReportInfo& info) {
                  "• Очистите шейдерный кэш игры (ПКМ по игре в списке -> Очистить кэш шейдеров).");
     }
     auto* rec_box = new QLabel(tr("💡 <b>Рекомендации по устранению сбоя:</b><br>%1").arg(rec), this);
-    rec_box->setStyleSheet(QStringLiteral("background: rgba(14, 165, 233, 0.12); border: 1px solid #0284C7; border-radius: 6px; padding: 8px; color: #BAE6FD;"));
+    const auto cr_pal = StormTheme::GetThemePalette();
+    const QColor cr_acc(cr_pal.accent);
+    rec_box->setStyleSheet(QStringLiteral("background: rgba(%1, %2, %3, 0.15); border: 1px solid %4; border-radius: 6px; padding: 8px; color: %5;")
+        .arg(cr_acc.red()).arg(cr_acc.green()).arg(cr_acc.blue()).arg(cr_pal.accent).arg(cr_pal.textPrimary));
     main_layout->addWidget(rec_box);
 
     // Registers and Callstack
@@ -112,7 +116,7 @@ void CrashReportDialog::SetupUI(const CrashReportInfo& info) {
     btn_layout->addStretch(1);
 
     m_btn_restart = new QPushButton(tr("🔄 Перезапустить игру"), this);
-    m_btn_restart->setStyleSheet(QStringLiteral("background: #0284C7; color: #FFFFFF; font-weight: bold; border-color: #00D2FF;"));
+    m_btn_restart->setStyleSheet(QStringLiteral("background: %1; color: #FFFFFF; font-weight: bold; border-color: %1;").arg(cr_pal.accent));
     connect(m_btn_restart, &QPushButton::clicked, this, &CrashReportDialog::OnRestart);
     btn_layout->addWidget(m_btn_restart);
 

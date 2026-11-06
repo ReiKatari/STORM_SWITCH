@@ -2234,4 +2234,13 @@ Starte ein Spiel oder verbinde dich mit einem anderen Gerät.</string>
     <string name="profile_override_badge">durch Spielprofil festgelegt</string>
     <string name="profile_override_revert">Auf Standard zurücksetzen</string>
     <string name="cpu_unsafe_disabled_explanation">Unsichere CPU-Optionen sind nur aktiv, wenn die CPU-Genauigkeit auf \'Unsicher\' eingestellt ist.</string>
+
+    <!-- UI Design Styles -->
+    <string name="ui_design_style">UI-Design</string>
+    <string name="ui_design_style_description">Volumetrisches 3D-Styling und taktile Animationen für die Benutzeroberfläche</string>
+    <string name="ui_design_style_hyperion">STORM HYPERION GLASS 3D</string>
+    <string name="ui_design_style_cyberdeck">STORM CYBER-DECK TACTILE</string>
+    <string name="ui_design_style_aurora">STORM AURORA QUANTUM</string>
+    <string name="ui_design_style_orbital">STORM ORBITAL SPATIAL UI</string>
+    <string name="ui_design_style_chrono">STORM CHRONO-NEXUS COMMANDER</string>
 </resources>

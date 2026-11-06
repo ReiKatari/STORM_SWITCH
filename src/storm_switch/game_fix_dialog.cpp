@@ -477,11 +477,13 @@ void GameFixDialog::SetupUI() {
     tid_btn->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
     tid_btn->setCursor(Qt::PointingHandCursor);
     tid_btn->setToolTip(StormLang(QStringLiteral("Нажмите, чтобы скопировать Title ID"), QStringLiteral("Click to copy Title ID")));
+    const auto gfd_pal = StormTheme::GetThemePalette();
+    const QColor gfd_acc(gfd_pal.accent);
     tid_btn->setStyleSheet(QStringLiteral(
         "QPushButton {"
         "  background: rgba(255, 255, 255, 0.08);"
-        "  color: #00F0FF;"
-        "  border: 1px solid rgba(0, 240, 255, 0.35);"
+        "  color: %1;"
+        "  border: 1px solid rgba(%2, %3, %4, 0.35);"
         "  border-radius: 5px;"
         "  font-family: 'Consolas', 'Courier New', monospace;"
         "  font-weight: 700;"
@@ -489,9 +491,9 @@ void GameFixDialog::SetupUI() {
         "  padding: 5px 16px;"
         "}"
         "QPushButton:hover {"
-        "  background: rgba(0, 240, 255, 0.15);"
-        "  border-color: #00F0FF;"
-        "}"));
+        "  background: rgba(%2, %3, %4, 0.15);"
+        "  border-color: %1;"
+        "}").arg(gfd_pal.accent).arg(gfd_acc.red()).arg(gfd_acc.green()).arg(gfd_acc.blue()));
     connect(tid_btn, &QPushButton::clicked, [this]() {
         QApplication::clipboard()->setText(QStringLiteral("%1").arg(m_title_id, 16, 16, QLatin1Char('0')).toUpper());
     });
@@ -501,14 +503,14 @@ void GameFixDialog::SetupUI() {
         QStringLiteral("Рекомендуемые настройки STORM SWITCH"),
         QStringLiteral("Recommended STORM SWITCH Settings")), badge_row);
     profile_badge->setStyleSheet(QStringLiteral(
-        "background: #0D2B36;"
-        "color: #00E5FF;"
-        "border: 1px solid #00E5FF;"
+        "background: %1;"
+        "color: %2;"
+        "border: 1px solid %3;"
         "border-radius: 5px;"
         "font-weight: 700;"
         "font-size: 8.5pt;"
         "padding: 4px 10px;"
-    ));
+    ).arg(gfd_pal.surface, gfd_pal.textSecondary, gfd_pal.border));
     badge_lay->addWidget(profile_badge);
     badge_lay->addStretch();
     title_lay->addWidget(badge_row);
@@ -524,12 +526,12 @@ void GameFixDialog::SetupUI() {
     scroll_area->setFrameShape(QFrame::NoFrame);
     scroll_area->setStyleSheet(QStringLiteral(
         "QScrollArea { background: transparent; border: none; }"
-        "QScrollBar:vertical { background: #0D0E15; width: 8px; margin: 2px 0px; border-radius: 4px; border: none; }"
-        "QScrollBar::handle:vertical { background: rgba(139, 92, 246, 0.55); min-height: 28px; border-radius: 4px; }"
-        "QScrollBar::handle:vertical:hover { background: rgba(139, 92, 246, 0.85); }"
+        "QScrollBar:vertical { background: %1; width: 8px; margin: 2px 0px; border-radius: 4px; border: none; }"
+        "QScrollBar::handle:vertical { background: rgba(%2, %3, %4, 0.55); min-height: 28px; border-radius: 4px; }"
+        "QScrollBar::handle:vertical:hover { background: rgba(%2, %3, %4, 0.85); }"
         "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0px; background: none; border: none; }"
-        "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical { background: #0D0E15; border: none; }"
-    ));
+        "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical { background: %1; border: none; }"
+    ).arg(gfd_pal.bg).arg(gfd_acc.red()).arg(gfd_acc.green()).arg(gfd_acc.blue()));
     StormUI::StructureEngine::EnforceScrollMargins(scroll_area, 18);
 
     auto* scroll_content = new QWidget(scroll_area);
@@ -543,9 +545,9 @@ void GameFixDialog::SetupUI() {
         QStringLiteral("Recommended Fixes & Optimizations")), scroll_content);
     StormUI::StructureEngine::StyleAsVolumetricCard(fixes_card);
     fixes_card->setStyleSheet(QStringLiteral(
-        "QGroupBox { border: 1px solid #00E5FF; border-radius: 8px; margin-top: 14px; background: rgba(13, 43, 54, 0.45); }"
-        "QGroupBox::title { subcontrol-origin: margin; subcontrol-position: top left; padding: 2px 8px; color: #00E5FF; font-weight: 700; background: #0D2B36; border-radius: 4px; border: 1px solid #00E5FF; }"
-    ));
+        "QGroupBox { border: 1px solid %1; border-radius: 8px; margin-top: 14px; background: rgba(%2, %3, %4, 0.25); }"
+        "QGroupBox::title { subcontrol-origin: margin; subcontrol-position: top left; padding: 2px 8px; color: %1; font-weight: 700; background: %5; border-radius: 4px; border: 1px solid %1; }"
+    ).arg(gfd_pal.accent).arg(gfd_acc.red()).arg(gfd_acc.green()).arg(gfd_acc.blue()).arg(gfd_pal.surface));
     auto* fixes_lay = new QVBoxLayout(fixes_card);
     fixes_lay->setSpacing(8);
 
@@ -587,6 +589,54 @@ void GameFixDialog::SetupUI() {
     m_changes_table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     m_changes_table->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
     StormUI::StructureEngine::ModernizeDataView(m_changes_table);
+    m_changes_table->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter);
+    {
+        QFont hdr_font = m_changes_table->horizontalHeader()->font();
+        hdr_font.setBold(true);
+        hdr_font.setWeight(QFont::ExtraBold);
+        m_changes_table->horizontalHeader()->setFont(hdr_font);
+        for (int col = 0; col < m_changes_table->columnCount(); ++col) {
+            if (auto* hi = m_changes_table->horizontalHeaderItem(col)) {
+                hi->setTextAlignment(Qt::AlignCenter);
+                hi->setFont(hdr_font);
+            }
+        }
+        const auto tbl_pal = StormTheme::GetThemePalette();
+        const QString tbl_qss = QStringLiteral(
+            "QTableWidget {"
+            "  background-color: %1;"
+            "  alternate-background-color: %2;"
+            "  color: %3;"
+            "  gridline-color: %4;"
+            "  border: 1px solid %4;"
+            "  border-radius: 8px;"
+            "}"
+            "QHeaderView::section {"
+            "  background-color: %5;"
+            "  color: %3;"
+            "  font-weight: 800;"
+            "  text-align: center;"
+            "  qproperty-alignment: AlignCenter;"
+            "  border: none;"
+            "  border-right: 1px solid %4;"
+            "  border-bottom: 1px solid %4;"
+            "  padding: 6px 10px;"
+            "}"
+            "QTableCornerButton::section, QTableView QTableCornerButton::section, QTableWidget QTableCornerButton::section {"
+            "  background-color: %5;"
+            "  border: none;"
+            "  border-right: 1px solid %4;"
+            "  border-bottom: 1px solid %4;"
+            "}"
+        ).arg(tbl_pal.inputBg, tbl_pal.card, tbl_pal.textPrimary, tbl_pal.border, tbl_pal.surface);
+        m_changes_table->setStyleSheet(tbl_qss);
+        m_changes_table->verticalHeader()->setDefaultAlignment(Qt::AlignCenter);
+        for (auto* corner_btn : m_changes_table->findChildren<QAbstractButton*>()) {
+            corner_btn->setStyleSheet(QStringLiteral(
+                "background-color: %1; border: none; border-right: 1px solid %2; border-bottom: 1px solid %2;")
+                .arg(tbl_pal.surface, tbl_pal.border));
+        }
+    }
     m_changes_table->setMinimumHeight(140);
 
     PopulateProfileData();
@@ -684,11 +734,14 @@ void GameFixDialog::SetupUI() {
     apply_and_launch_btn->setCursor(Qt::PointingHandCursor);
     apply_and_launch_btn->setDefault(true);
     apply_and_launch_btn->setProperty("primary", true);
+    const QColor gfd_acc_light = gfd_acc.lighter(125);
+    const QColor gfd_acc_dark = gfd_acc.darker(130);
+    const QColor gfd_acc_darker = gfd_acc.darker(150);
     apply_and_launch_btn->setStyleSheet(QStringLiteral(
-        "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #8B5CF6, stop:0.5 #7C3AED, stop:1 #6D28D9); color: #FFFFFF; font-weight: 700; font-size: 12px; border-radius: 9px; padding: 7px 18px; border: 1.5px solid #7C3AED; border-top: 1.5px solid #A78BFA; border-bottom: 2px solid #5B21B6; min-height: 36px; }"
-        "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #A78BFA, stop:1 #8B5CF6); border-color: #C4B5FD; border-top-color: #DDD6FE; }"
-        "QPushButton:pressed { background: #6D28D9; border-color: #5B21B6; padding-top: 8px; }"
-    ));
+        "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %1, stop:0.5 %2, stop:1 %3); color: #FFFFFF; font-weight: 700; font-size: 12px; border-radius: 9px; padding: 7px 18px; border: 1.5px solid %2; border-top: 1.5px solid %4; border-bottom: 2px solid %5; min-height: 36px; }"
+        "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %4, stop:1 %1); border-color: %4; border-top-color: #FFFFFF; }"
+        "QPushButton:pressed { background: %3; border-color: %5; padding-top: 8px; }"
+    ).arg(gfd_pal.accent, gfd_acc_dark.name(), gfd_acc_darker.name(), gfd_acc_light.name(), gfd_acc.darker(170).name()));
     connect(apply_and_launch_btn, &QPushButton::clicked, this, [this]() {
         m_apply_fixes = true;
         m_save_to_ini = true;

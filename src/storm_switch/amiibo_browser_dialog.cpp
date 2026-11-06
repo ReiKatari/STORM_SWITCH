@@ -1,3 +1,4 @@
+#include "storm_switch/common/storm_theme.h"
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -51,44 +52,51 @@ void AmiiboBrowserDialog::SetupUi() {
     setWindowState(Qt::WindowMaximized);
     setMinimumSize(640, 440);
 
-    // Apply dark cyber styling
+    // Apply dynamic theme styling
+    const auto abd_pal = StormTheme::GetThemePalette();
+    const QColor abd_acc(abd_pal.accent);
+    const QString abd_r12 = QStringLiteral("rgba(%1, %2, %3, 0.12)").arg(abd_acc.red()).arg(abd_acc.green()).arg(abd_acc.blue());
+    const QString abd_r20 = QStringLiteral("rgba(%1, %2, %3, 0.20)").arg(abd_acc.red()).arg(abd_acc.green()).arg(abd_acc.blue());
+    const QString abd_r25 = QStringLiteral("rgba(%1, %2, %3, 0.25)").arg(abd_acc.red()).arg(abd_acc.green()).arg(abd_acc.blue());
+    const QString abd_r35 = QStringLiteral("rgba(%1, %2, %3, 0.35)").arg(abd_acc.red()).arg(abd_acc.green()).arg(abd_acc.blue());
+
     setStyleSheet(QStringLiteral(
         "QDialog {"
-        "  background-color: #0b0e14;"
-        "  color: #FFFFFF;"
+        "  background-color: %1;"
+        "  color: %2;"
         "}"
         "QGroupBox {"
         "  font-weight: bold;"
-        "  border: 1px solid rgba(255, 255, 255, 0.12);"
+        "  border: 1px solid %3;"
         "  border-radius: 6px;"
         "  margin-top: 10px;"
         "  padding-top: 14px;"
-        "  background-color: #111622;"
-        "  color: #00f0ff;"
+        "  background-color: %4;"
+        "  color: %5;"
         "}"
         "QGroupBox::title {"
         "  subcontrol-origin: margin;"
         "  subcontrol-position: top left;"
         "  padding: 0 6px;"
-        "  color: #00f0ff;"
+        "  color: %5;"
         "}"
         "QLineEdit, QComboBox {"
-        "  background-color: #161d2d;"
-        "  border: 1px solid rgba(255, 255, 255, 0.15);"
+        "  background-color: %6;"
+        "  border: 1px solid %3;"
         "  border-radius: 4px;"
         "  padding: 5px 8px;"
-        "  color: #ffffff;"
+        "  color: %2;"
         "  font-size: 9pt;"
         "}"
         "QLineEdit:focus, QComboBox:focus {"
-        "  border: 1px solid #00f0ff;"
-        "  background-color: #1a2336;"
+        "  border: 1px solid %5;"
+        "  background-color: %4;"
         "}"
         "QListWidget {"
-        "  background-color: #111622;"
-        "  border: 1px solid rgba(255, 255, 255, 0.12);"
+        "  background-color: %4;"
+        "  border: 1px solid %3;"
         "  border-radius: 6px;"
-        "  color: #ffffff;"
+        "  color: %2;"
         "  padding: 4px;"
         "}"
         "QListWidget::item {"
@@ -97,52 +105,53 @@ void AmiiboBrowserDialog::SetupUi() {
         "  margin-bottom: 2px;"
         "}"
         "QListWidget::item:hover {"
-        "  background-color: rgba(0, 240, 255, 0.12);"
-        "  color: #00f0ff;"
+        "  background-color: %7;"
+        "  color: %5;"
         "}"
         "QListWidget::item:selected {"
-        "  background-color: rgba(0, 240, 255, 0.25);"
+        "  background-color: %8;"
         "  color: #ffffff;"
-        "  border: 1px solid #00f0ff;"
+        "  border: 1px solid %5;"
         "}"
         "QPushButton {"
-        "  background-color: #1a2336;"
-        "  border: 1px solid rgba(0, 240, 255, 0.35);"
+        "  background-color: %6;"
+        "  border: 1px solid %9;"
         "  border-radius: 5px;"
-        "  color: #ffffff;"
+        "  color: %2;"
         "  padding: 6px 14px;"
         "  font-weight: bold;"
         "  font-size: 8.5pt;"
         "}"
         "QPushButton:hover {"
-        "  background-color: rgba(0, 240, 255, 0.20);"
-        "  border-color: #00f0ff;"
-        "  color: #00f0ff;"
+        "  background-color: %10;"
+        "  border-color: %5;"
+        "  color: #ffffff;"
         "}"
         "QPushButton:pressed {"
-        "  background-color: #00f0ff;"
+        "  background-color: %5;"
         "  color: #000000;"
         "}"
         "QTextEdit {"
-        "  background-color: #161d2d;"
-        "  border: 1px solid rgba(255, 255, 255, 0.10);"
+        "  background-color: %6;"
+        "  border: 1px solid %3;"
         "  border-radius: 4px;"
-        "  color: #FFFFFF;"
+        "  color: %2;"
         "  font-size: 8.5pt;"
         "}"
         "QProgressBar {"
-        "  border: 1px solid rgba(255, 255, 255, 0.12);"
+        "  border: 1px solid %3;"
         "  border-radius: 3px;"
         "  text-align: center;"
-        "  background-color: #111622;"
-        "  color: #ffffff;"
+        "  background-color: %4;"
+        "  color: %2;"
         "  max-height: 14px;"
         "}"
         "QProgressBar::chunk {"
-        "  background-color: #00f0ff;"
+        "  background-color: %5;"
         "  border-radius: 2px;"
         "}"
-    ));
+    ).arg(abd_pal.bg, abd_pal.textPrimary, abd_pal.border, abd_pal.surface, abd_pal.accent)
+     .arg(abd_pal.card, abd_r12, abd_r25, abd_r35).arg(abd_r20));
 
     auto* main_layout = new QVBoxLayout(this);
     main_layout->setContentsMargins(12, 12, 12, 12);
@@ -241,7 +250,7 @@ void AmiiboBrowserDialog::SetupUi() {
     details_layout->addWidget(m_image_label);
 
     m_name_label = new QLabel(tr("Имя: —"), this);
-    m_name_label->setStyleSheet(QStringLiteral("font-size: 11pt; font-weight: bold; color: #00f0ff;"));
+    m_name_label->setStyleSheet(QStringLiteral("font-size: 11pt; font-weight: bold; color: %1;").arg(abd_pal.accent));
     details_layout->addWidget(m_name_label);
 
     m_series_label = new QLabel(tr("Серия Amiibo: —"), this);
@@ -268,7 +277,7 @@ void AmiiboBrowserDialog::SetupUi() {
     tg_layout->setSpacing(6);
 
     auto* tg_title = new QLabel(tr("🎮 Выбранная игра:"), this);
-    tg_title->setStyleSheet(QStringLiteral("font-weight: bold; color: #00f0ff;"));
+    tg_title->setStyleSheet(QStringLiteral("font-weight: bold; color: %1;").arg(abd_pal.accent));
     tg_layout->addWidget(tg_title);
 
     m_target_game_combo = new QComboBox(this);
@@ -329,11 +338,11 @@ void AmiiboBrowserDialog::SetupUi() {
     m_reward_card = new QWidget(this);
     m_reward_card->setStyleSheet(QStringLiteral(
         "QWidget#AmiiboRewardCard {"
-        "  background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #121a29, stop:1 #0c121d);"
-        "  border: 1px solid #00f0ff;"
+        "  background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 %1, stop:1 %2);"
+        "  border: 1px solid %3;"
         "  border-radius: 8px;"
         "}"
-    ));
+    ).arg(abd_pal.surface, abd_pal.bg, abd_pal.accent));
     m_reward_card->setObjectName(QStringLiteral("AmiiboRewardCard"));
     auto* card_layout = new QVBoxLayout(m_reward_card);
     card_layout->setContentsMargins(10, 8, 10, 8);
@@ -346,13 +355,13 @@ void AmiiboBrowserDialog::SetupUi() {
 
     m_reward_category_badge = new QLabel(tr("УНИВЕРСАЛЬНЫЙ БОНУС"), m_reward_card);
     m_reward_category_badge->setStyleSheet(QStringLiteral(
-        "background-color: #004d40; color: #00f0ff; border: 1px solid #00f0ff; border-radius: 4px; padding: 2px 6px; font-weight: bold; font-size: 8pt;"
-    ));
+        "background-color: %1; color: %2; border: 1px solid %2; border-radius: 4px; padding: 2px 6px; font-weight: bold; font-size: 8pt;"
+    ).arg(abd_pal.card, abd_pal.accent));
     card_header->addWidget(m_reward_category_badge, 0, Qt::AlignRight);
     card_layout->addLayout(card_header);
 
     m_reward_name_label = new QLabel(tr("Выберите фигурку для просмотра наград"), m_reward_card);
-    m_reward_name_label->setStyleSheet(QStringLiteral("font-size: 10pt; font-weight: bold; color: #00f0ff;"));
+    m_reward_name_label->setStyleSheet(QStringLiteral("font-size: 10pt; font-weight: bold; color: %1;").arg(abd_pal.accent));
     m_reward_name_label->setWordWrap(true);
     card_layout->addWidget(m_reward_name_label);
 
@@ -409,7 +418,7 @@ void AmiiboBrowserDialog::SetupUi() {
     m_load_btn = new QPushButton(tr("⚡ Загрузить в игру"), this);
     m_load_btn->setCursor(Qt::PointingHandCursor);
     m_load_btn->setEnabled(false);
-    m_load_btn->setStyleSheet(QStringLiteral("background-color: #006064; border-color: #00e5ff; color: #ffffff;"));
+    m_load_btn->setStyleSheet(QStringLiteral("background-color: %1; border-color: %2; color: %3;").arg(abd_pal.card, abd_pal.accent, abd_pal.textPrimary));
     connect(m_load_btn, &QPushButton::clicked, this, &AmiiboBrowserDialog::OnLoadAmiiboClicked);
     act_btn_layout->addWidget(m_load_btn);
 
@@ -859,7 +868,8 @@ void AmiiboBrowserDialog::DisplayAmiiboDetails(const AmiiboEntry& entry) {
         m_status_badge->setStyleSheet(QStringLiteral("color: #00e676; font-weight: bold; padding: 2px 6px; background-color: #004d40; border-radius: 3px;"));
     } else {
         m_status_badge->setText(tr("Статус: 🌐 Доступно для загрузки"));
-        m_status_badge->setStyleSheet(QStringLiteral("color: #00e5ff; font-weight: bold; padding: 2px 6px; background-color: #006064; border-radius: 3px;"));
+        const auto abd_pal2 = StormTheme::GetThemePalette();
+        m_status_badge->setStyleSheet(QStringLiteral("color: %1; font-weight: bold; padding: 2px 6px; background-color: %2; border-radius: 3px;").arg(abd_pal2.accent, abd_pal2.surface));
     }
 
     // Update target game specific reward card

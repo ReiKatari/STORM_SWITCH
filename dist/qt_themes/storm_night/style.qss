@@ -5,7 +5,7 @@
 
 QWidget {
     color: #ffffff;
-    background-color: #FFFFFF;
+    background-color: #080E1A;
     font-family: "Segoe UI", "Outfit", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
     font-size: 9pt;
     outline: none;
@@ -87,7 +87,7 @@ QTreeView::indicator:checked:disabled, QTableView::indicator:checked:disabled, Q
 }
 
 QMainWindow, QDialog, QStackedWidget {
-    background-color: #FFFFFF;
+    background-color: #080E1A;
 }
 
 QScrollArea, QScrollArea > QWidget > QWidget {
@@ -342,7 +342,7 @@ QComboBox QAbstractItemView {
 /* Tab Widget & Tab Bar */
 QTabWidget::pane {
     border: 1px solid #1c1c24;
-    background-color: #FFFFFF;
+    background-color: #080E1A;
     border-radius: 6px;
     top: -1px;
 }
@@ -360,7 +360,7 @@ QTabBar::tab {
 }
 
 QTabBar::tab:selected {
-    background-color: #FFFFFF;
+    background-color: #0F1A2E;
     color: #00f2fe;
     border-color: #00f2fe;
     border-bottom: 2px solid #000000;
@@ -385,7 +385,7 @@ QListWidget#selectorList::item {
 
 /* Tree & List Views (Game List) */
 QTreeView, QListView, QTableView {
-    background-color: #FFFFFF;
+    background-color: #080E1A;
     alternate-background-color: #06060a;
     color: #FFFFFF;
     border: 1px solid #14141c;

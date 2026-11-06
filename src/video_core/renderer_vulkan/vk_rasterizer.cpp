@@ -595,6 +595,9 @@ void RasterizerVulkan::DrawTexture() {
 }
 
 void RasterizerVulkan::Clear(u32 layer_count) {
+    if (!maxwell3d->ShouldExecute() || !maxwell3d->EvaluateCondition()) {
+        return;
+    }
     FlushWork();
     gpu_memory->FlushCaching();
 

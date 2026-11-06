@@ -219,8 +219,12 @@ bool KeplerCompute::ProcessNativeMethod(Core::System& system, u32 method, u32 ar
                             memory_manager.GpuToCpuAddress(address).value_or(0), 0, value, 1U << 26);
                     });
                 } else {
+                    VideoCommon::QueryPropertiesFlags query_flags = VideoCommon::QueryPropertiesFlags::IsAFence;
+                    if ((flags & (1U << 28)) || (flags & (1U << 27)) || (flags & (1U << 26))) {
+                        query_flags |= VideoCommon::QueryPropertiesFlags::HasTimeout;
+                    }
                     rasterizer->Query(address, VideoCommon::QueryType::Payload,
-                        VideoCommon::QueryPropertiesFlags::IsAFence, payload, 0);
+                        query_flags, payload, 0);
                 }
                 return true;
             }, [&](const auto& descriptor) { return DispatchNativeCompute(descriptor); });

@@ -23,8 +23,8 @@ IDI_ICON1               ICON                    "../../dist/AppIcon.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
-FILEVERSION     16,2,7,0
-PRODUCTVERSION  16,2,7,0
+FILEVERSION     16,2,9,0
+PRODUCTVERSION  16,2,9,0
 FILEFLAGSMASK   0x3fL
 #ifdef _DEBUG
 FILEFLAGS       0x1L
@@ -41,12 +41,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName",      "STORM TEAM\0"
             VALUE "FileDescription",  "STORM SWITCH\0"
-            VALUE "FileVersion",      "16.2.7.0\0"
+            VALUE "FileVersion",      "16.2.9.0\0"
             VALUE "InternalName",     "storm_switch\0"
             VALUE "LegalCopyright",   "STORM TEAM\0"
             VALUE "OriginalFilename", "storm_switch.exe\0"
             VALUE "ProductName",      "STORM SWITCH\0"
-            VALUE "ProductVersion",   "16.2.7\0"
+            VALUE "ProductVersion",   "16.2.9\0"
         END
     END
     BLOCK "VarFileInfo"

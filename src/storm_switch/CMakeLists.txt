@@ -80,6 +80,9 @@ add_executable(yuzu
     configuration/configure_debug_tab.ui
     configuration/configure_dialog.cpp
     configuration/configure_dialog.h
+    common/storm_design_engine.cpp
+    common/storm_design_engine.h
+    common/storm_theme.h
     configuration/storm_ui_structure_helper.cpp
     configuration/storm_ui_structure_helper.h
     configuration/configure_filesystem.cpp

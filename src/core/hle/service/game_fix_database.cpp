@@ -433,12 +433,12 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Unravel Two",
         "• Зависание на вступительных видеороликах (дедлок видеодекодера NVDEC)\n• Графические артефакты освещения, прозрачности воды и искажение шейдеров",
         "• Freeze during intro cutscenes (NVDEC video decoder deadlock)\n• Lighting, water transparency and shader corruption artifacts",
-        "✓ Программный декодер видео (NVDEC CPU: устранение зависания заставок)\n✓ Точность ГПУ: Обычная (Normal)\n✓ Обратные циклы барьеров: Включено\n✓ Реактивная очистка: Включено",
-        "✓ CPU NVDEC Video Decoding (Fixes intro video hang)\n✓ GPU Accuracy: Normal\n✓ Barrier Feedback Loops: Enabled\n✓ Reactive Flushing: Enabled",
+        "✓ Программный декодер видео (NVDEC CPU: устранение зависания заставок)\n✓ Точность ГПУ: Обычная (Normal)\n✓ Обратные циклы барьеров: Отключено (стабильный переход между главами)\n✓ Реактивная очистка: Включено",
+        "✓ CPU NVDEC Video Decoding (Fixes intro video hang)\n✓ GPU Accuracy: Normal\n✓ Barrier Feedback Loops: Disabled (Smooth chapter transitions)\n✓ Reactive Flushing: Enabled",
         {
             {"Renderer\\nvdec_emulation", "1"},
             {"Renderer\\gpu_accuracy", "1"},
-            {"Renderer\\barrier_feedback_loops", "true"},
+            {"Renderer\\barrier_feedback_loops", "false"},
             {"Renderer\\use_reactive_flushing", "true"}
         },
         {0x0100E5D00CC0C000ULL, 0x010099900B22E000ULL}
@@ -6049,12 +6049,29 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Trine 3: The Artifacts of Power",
         "• Падение FPS и зависание на черном экране при синхронных вызовах DMA fence на GPU Mali/TBDR\n• Нестабильный кадровый темп",
         "• Framerate drops and black screen hang from synchronous DMA fence stalls on Mali/TBDR GPUs\n• Unstable frame pacing",
-        "✓ Точность ГПУ: Обычная (Normal / устранение зависаний очереди)\n✓ Реактивная очистка: Отключено (стабильный FPS на Mali)\n✓ Асинхронные шейдеры: Включено\n✓ Масштабирование: Bilinear\n✓ Разрешение: 1X (720p/1080p)",
-        "✓ GPU Accuracy: Normal (Eliminates queue stalls)\n✓ Reactive Flushing: Disabled (Stable FPS on Mali)\n✓ Asynchronous Shaders: Enabled\n✓ Scaling: Bilinear\n✓ Resolution: 1X (720p/1080p)",
+        "✓ Точность ГПУ: Обычная (Normal / устранение зависаний очереди)\n✓ Реактивная очистка: Отключено (стабильный FPS на Mali)\n✓ Асинхронные шейдеры: Отключено (устранение черного экрана на Mali)\n✓ ASTC рекомпрессия: Без сжатия\n✓ Масштабирование: Bilinear\n✓ Разрешение: 1X (720p/1080p)",
+        "✓ GPU Accuracy: Normal (Eliminates queue stalls)\n✓ Reactive Flushing: Disabled (Stable FPS on Mali)\n✓ Asynchronous Shaders: Disabled (Fixes black screen on Mali)\n✓ ASTC Recompression: Uncompressed\n✓ Scaling: Bilinear\n✓ Resolution: 1X (720p/1080p)",
         {
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\use_reactive_flushing", "false"},
-            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\use_asynchronous_shaders", "false"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\resolution_setup", "2"},
+            {"Renderer\\scaling_filter", "1"}
+        }
+    },
+    {
+        0x01007E300B298000ULL,
+        "Trine 4: The Nightmare Prince",
+        "• Падение FPS и сбои адресации памяти на GPU Mali/TBDR\n• Черный экран при отложенном рендеринге",
+        "• Framerate drops and memory mapping faults on Mali/TBDR GPUs\n• Black screen on deferred rendering passes",
+        "✓ Точность ГПУ: Обычная (Normal)\n✓ Реактивная очистка: Отключено\n✓ Асинхронные шейдеры: Отключено\n✓ ASTC рекомпрессия: Без сжатия\n✓ Масштабирование: Bilinear\n✓ Разрешение: 1X (720p/1080p)",
+        "✓ GPU Accuracy: Normal\n✓ Reactive Flushing: Disabled\n✓ Asynchronous Shaders: Disabled\n✓ ASTC Recompression: Uncompressed\n✓ Scaling: Bilinear\n✓ Resolution: 1X (720p/1080p)",
+        {
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\use_asynchronous_shaders", "false"},
+            {"Renderer\\astc_recompression", "0"},
             {"Renderer\\resolution_setup", "2"},
             {"Renderer\\scaling_filter", "1"}
         }

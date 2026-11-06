@@ -95,11 +95,24 @@ Nx2VideoDecoder::Nx2VideoDecoder(std::string_view mime) : impl{std::make_unique<
         return;
     }
     impl->context.emplace(*impl->decoder);
-    if (Settings::values.nvdec_emulation.GetValue() == Settings::NvdecEmulation::Gpu) {
-        impl->hardware.emplace();
-        impl->hardware->InitializeForDecoder(*impl->context, *impl->decoder);
+    const auto nvdec_mode = Settings::values.nvdec_emulation.GetValue();
+    if (nvdec_mode == Settings::NvdecEmulation::Gpu || nvdec_mode == Settings::NvdecEmulation::Hybrid) {
+        try {
+            impl->hardware.emplace();
+            if (!impl->hardware->InitializeForDecoder(*impl->context, *impl->decoder)) {
+                impl->hardware.reset();
+            }
+        } catch (...) {
+            impl->hardware.reset();
+        }
     }
     impl->open = impl->context->OpenContext(*impl->decoder);
+    if (!impl->open && impl->hardware.has_value()) {
+        LOG_WARNING(HW_GPU, "nx2 video: Hardware decode failed to open for {}, retrying with CPU software fallback", mime);
+        impl->hardware.reset();
+        impl->context.emplace(*impl->decoder);
+        impl->open = impl->context->OpenContext(*impl->decoder);
+    }
     LOG_INFO(HW_GPU, "nx2 video: decoder for \"{}\" {}", mime, impl->open ? "open" : "failed to open");
 }
 

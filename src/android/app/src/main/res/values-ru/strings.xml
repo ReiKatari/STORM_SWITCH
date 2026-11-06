@@ -2417,4 +2417,13 @@
     <string name="install_storm_driver_10">⚡ Скачать STORM DRIVER 10.0.0</string>
     <string name="storm_driver_10_recommendation">ГПУ: %1$s • Рекомендуется: %2$s</string>
     <string name="storm_driver_downloading">Загрузка STORM DRIVER 10.0.0…</string>
+
+    <!-- UI Design Styles -->
+    <string name="ui_design_style">Дизайн интерфейса</string>
+    <string name="ui_design_style_description">Объёмный 3D-стиль оформления и тактильные анимации интерфейса</string>
+    <string name="ui_design_style_hyperion">STORM HYPERION GLASS 3D</string>
+    <string name="ui_design_style_cyberdeck">STORM CYBER-DECK TACTILE</string>
+    <string name="ui_design_style_aurora">STORM AURORA QUANTUM</string>
+    <string name="ui_design_style_orbital">STORM ORBITAL SPATIAL UI</string>
+    <string name="ui_design_style_chrono">STORM CHRONO-NEXUS COMMANDER</string>
 </resources>

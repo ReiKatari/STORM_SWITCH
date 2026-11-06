@@ -3106,9 +3106,11 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
     fun onAspectRatioChanged() {
         NativeLibrary.applySettings()
         updateScreenLayout()
-        _binding?.surfaceEmulation?.holder?.surface?.let { s ->
-            if (s.isValid) {
-                NativeLibrary.surfaceChanged(s)
+        _binding?.surfaceEmulation?.post {
+            _binding?.surfaceEmulation?.holder?.surface?.let { s ->
+                if (s.isValid) {
+                    NativeLibrary.surfaceChanged(s)
+                }
             }
         }
     }
@@ -3196,10 +3198,13 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 emulationState.newSurface(holder.surface)
             }
         }
-        synchronized(emulationState) {
-            if (emulationState.isRunning) {
-                NativeLibrary.surfaceChanged(holder.surface)
+        if (holder.surface.isValid) {
+            if (this::emulationState.isInitialized) {
+                synchronized(emulationState) {
+                    emulationState.updateSurfaceReference(holder.surface)
+                }
             }
+            NativeLibrary.surfaceChanged(holder.surface)
         }
         updatePausedFrameVisibility()
     }

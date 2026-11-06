@@ -635,6 +635,45 @@ void Maxwell3D::ProcessQueryGet() {
     }
 }
 
+bool Maxwell3D::EvaluateCondition() const {
+    const GPUVAddr condition_address{regs.render_enable.Address()};
+    switch (regs.render_enable_override) {
+    case Regs::RenderEnable::Override::AlwaysRender:
+        return true;
+    case Regs::RenderEnable::Override::NeverRender:
+        return false;
+    case Regs::RenderEnable::Override::UseRenderEnable: {
+        switch (regs.render_enable.mode) {
+        case Regs::RenderEnable::Mode::True:
+            return true;
+        case Regs::RenderEnable::Mode::False:
+            return false;
+        case Regs::RenderEnable::Mode::Conditional: {
+            Regs::ReportSemaphore::Compare cmp;
+            memory_manager.ReadBlock(condition_address, &cmp, sizeof(cmp));
+            return cmp.initial_sequence != 0U && cmp.initial_mode != 0U;
+        }
+        case Regs::RenderEnable::Mode::IfEqual: {
+            Regs::ReportSemaphore::Compare cmp;
+            memory_manager.ReadBlock(condition_address, &cmp, sizeof(cmp));
+            return cmp.initial_sequence == cmp.current_sequence &&
+                   cmp.initial_mode == cmp.current_mode;
+        }
+        case Regs::RenderEnable::Mode::IfNotEqual: {
+            Regs::ReportSemaphore::Compare cmp;
+            memory_manager.ReadBlock(condition_address, &cmp, sizeof(cmp));
+            return cmp.initial_sequence != cmp.current_sequence ||
+                   cmp.initial_mode != cmp.current_mode;
+        }
+        default:
+            return true;
+        }
+    }
+    default:
+        return true;
+    }
+}
+
 void Maxwell3D::ProcessQueryCondition() {
     if (rasterizer->AccelerateConditionalRendering()) {
         execute_on = true;

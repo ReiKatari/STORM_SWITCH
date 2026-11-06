@@ -2243,4 +2243,13 @@ Inicia un juego o conéctate a otro dispositivo.</string>
     <string name="profile_override_badge">definido por perfil de juego</string>
     <string name="profile_override_revert">Restablecer a global</string>
     <string name="cpu_unsafe_disabled_explanation">Las opciones no seguras de CPU solo están activas cuando la precisión de CPU está en \'No seguro\'.</string>
+
+    <!-- UI Design Styles -->
+    <string name="ui_design_style">Diseño de la interfaz</string>
+    <string name="ui_design_style_description">Estilo 3D volumétrico y animaciones táctiles para la interfaz</string>
+    <string name="ui_design_style_hyperion">STORM HYPERION GLASS 3D</string>
+    <string name="ui_design_style_cyberdeck">STORM CYBER-DECK TACTILE</string>
+    <string name="ui_design_style_aurora">STORM AURORA QUANTUM</string>
+    <string name="ui_design_style_orbital">STORM ORBITAL SPATIAL UI</string>
+    <string name="ui_design_style_chrono">STORM CHRONO-NEXUS COMMANDER</string>
 </resources>

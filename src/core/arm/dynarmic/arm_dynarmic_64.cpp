@@ -239,16 +239,8 @@ void DynarmicCallbacks64::ExceptionRaised(u64 pc, Dynarmic::A64::Exception excep
 #endif
         return;
     case Dynarmic::A64::Exception::NoExecuteFault:
-        if (pc == 0) {
-            const u64 lr = m_parent.m_jit->GetRegister(30);
-            if (lr == 0) {
-                LOG_CRITICAL(Core_ARM, "Cannot execute instruction at PC=0 and LR=0; halting cleanly");
-                ReturnException(pc, PrefetchAbort);
-                m_parent.m_jit->HaltExecution(BreakLoop);
-                return;
-            }
-        }
-        if (Settings::values.cpuopt_ignore_memory_aborts.GetValue() && !m_debugger_enabled) {
+        if ((Settings::values.cpuopt_ignore_memory_aborts.GetValue() || Settings::IsCurrentProgramSwitch2()) &&
+            !m_debugger_enabled) {
             thread_local u64 tls_last_noexec_lr = 0;
             thread_local u32 tls_noexec_repeat_count = 0;
             const u64 lr = m_parent.m_jit->GetRegister(30);
@@ -266,9 +258,9 @@ void DynarmicCallbacks64::ExceptionRaised(u64 pc, Dynarmic::A64::Exception excep
                 m_parent.m_jit->HaltExecution(BreakLoop);
                 return;
             }
-            if (try_unwind_to_caller(lr, tls_last_noexec_lr)) {
+            if (tls_noexec_repeat_count < 16 && try_unwind_to_caller(lr, tls_last_noexec_lr)) {
                 tls_last_noexec_lr = m_parent.m_jit->GetPC();
-                tls_noexec_repeat_count = 1;
+                ++tls_noexec_repeat_count;
                 return;
             }
         }
@@ -278,22 +270,13 @@ void DynarmicCallbacks64::ExceptionRaised(u64 pc, Dynarmic::A64::Exception excep
         m_parent.m_jit->HaltExecution(BreakLoop);
         return;
     default:
-        if (pc == 0) {
-            const u64 lr = m_parent.m_jit->GetRegister(30);
-            if (lr == 0) {
-                LOG_CRITICAL(Core_ARM, "Guest trap at PC=0 and LR=0; halting cleanly");
-                ReturnException(pc, InstructionBreakpoint);
-                m_parent.m_jit->HaltExecution(BreakLoop);
-                return;
-            }
-        }
         if (m_debugger_enabled) {
             ReturnException(pc, InstructionBreakpoint);
             m_parent.m_jit->HaltExecution(BreakLoop);
             return;
         }
 
-        if (Settings::values.cpuopt_ignore_memory_aborts.GetValue()) {
+        if (Settings::values.cpuopt_ignore_memory_aborts.GetValue() || Settings::IsCurrentProgramSwitch2()) {
             const u64 lr = m_parent.m_jit->GetRegister(30);
             // 1. Try direct LR return if LR points outside the abort stub
             if (is_valid_return_target(lr)) {

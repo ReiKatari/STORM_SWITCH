@@ -2121,4 +2121,13 @@
     <string name="profile_override_badge">impostato da profilo gioco</string>
     <string name="profile_override_revert">Ripristina globale</string>
     <string name="cpu_unsafe_disabled_explanation">Le opzioni CPU non sicure sono attive solo quando la precisione CPU è impostata su \'Non sicuro\'.</string>
+
+    <!-- UI Design Styles -->
+    <string name="ui_design_style">Design dell\'interfaccia</string>
+    <string name="ui_design_style_description">Stile 3D volumetrico e animazioni tattili per l\'interfaccia</string>
+    <string name="ui_design_style_hyperion">STORM HYPERION GLASS 3D</string>
+    <string name="ui_design_style_cyberdeck">STORM CYBER-DECK TACTILE</string>
+    <string name="ui_design_style_aurora">STORM AURORA QUANTUM</string>
+    <string name="ui_design_style_orbital">STORM ORBITAL SPATIAL UI</string>
+    <string name="ui_design_style_chrono">STORM CHRONO-NEXUS COMMANDER</string>
 </resources>

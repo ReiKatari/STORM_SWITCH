@@ -1,3 +1,4 @@
+#include "storm_switch/common/storm_theme.h"
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -131,7 +132,8 @@ void ConfigurePerGameAmiibo::SetupUi() {
     details_layout->addWidget(m_image_label);
 
     m_name_label = new QLabel(tr("Имя: —"), this);
-    m_name_label->setStyleSheet(QStringLiteral("font-size: 11pt; font-weight: bold; color: #00f0ff;"));
+    const auto amiibo_pal = StormTheme::GetThemePalette();
+    m_name_label->setStyleSheet(QStringLiteral("font-size: 11pt; font-weight: bold; color: %1;").arg(amiibo_pal.accent));
     details_layout->addWidget(m_name_label);
 
     m_series_label = new QLabel(tr("Серия: —"), this);
@@ -148,11 +150,11 @@ void ConfigurePerGameAmiibo::SetupUi() {
     m_reward_card = new QWidget(this);
     m_reward_card->setStyleSheet(QStringLiteral(
         "QWidget#AmiiboRewardCard {"
-        "  background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #121a29, stop:1 #0c121d);"
-        "  border: 1px solid #00f0ff;"
+        "  background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 %1, stop:1 %2);"
+        "  border: 1px solid %3;"
         "  border-radius: 8px;"
         "}"
-    ));
+    ).arg(amiibo_pal.surface, amiibo_pal.bg, amiibo_pal.accent));
     m_reward_card->setObjectName(QStringLiteral("AmiiboRewardCard"));
     auto* card_layout = new QVBoxLayout(m_reward_card);
     card_layout->setContentsMargins(10, 8, 10, 8);
@@ -165,13 +167,13 @@ void ConfigurePerGameAmiibo::SetupUi() {
 
     m_reward_category_badge = new QLabel(tr("УНИВЕРСАЛЬНЫЙ БОНУС"), m_reward_card);
     m_reward_category_badge->setStyleSheet(QStringLiteral(
-        "background-color: #004d40; color: #00f0ff; border: 1px solid #00f0ff; border-radius: 4px; padding: 2px 6px; font-weight: bold; font-size: 8pt;"
-    ));
+        "background-color: %1; color: %2; border: 1px solid %2; border-radius: 4px; padding: 2px 6px; font-weight: bold; font-size: 8pt;"
+    ).arg(amiibo_pal.card, amiibo_pal.accent));
     card_header->addWidget(m_reward_category_badge, 0, Qt::AlignRight);
     card_layout->addLayout(card_header);
 
     m_reward_name_label = new QLabel(tr("Выберите фигурку для просмотра наград"), m_reward_card);
-    m_reward_name_label->setStyleSheet(QStringLiteral("font-size: 10pt; font-weight: bold; color: #00f0ff;"));
+    m_reward_name_label->setStyleSheet(QStringLiteral("font-size: 10pt; font-weight: bold; color: %1;").arg(amiibo_pal.accent));
     m_reward_name_label->setWordWrap(true);
     card_layout->addWidget(m_reward_name_label);
 
@@ -646,7 +648,8 @@ void ConfigurePerGameAmiibo::DisplayAmiiboDetails(const AmiiboEntry& entry) {
         m_install_btn->setText(tr("❌ Отключить для игры"));
     } else {
         m_status_badge->setText(tr("Статус: 🌐 Нажмите галочку для скачивания и включения"));
-        m_status_badge->setStyleSheet(QStringLiteral("color: #00e5ff; font-weight: bold; padding: 3px 8px; background-color: #006064; border-radius: 4px;"));
+        const auto amiibo_pal2 = StormTheme::GetThemePalette();
+        m_status_badge->setStyleSheet(QStringLiteral("color: %1; font-weight: bold; padding: 3px 8px; background-color: %2; border-radius: 4px;").arg(amiibo_pal2.accent, amiibo_pal2.surface));
         m_install_btn->setText(tr("⚡ Скачать и включить"));
     }
 

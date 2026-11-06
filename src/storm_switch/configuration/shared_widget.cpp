@@ -167,7 +167,8 @@ QPushButton* Widget::CreateRestoreGlobalButton(bool using_global, QWidget* paren
 
 QLabel* Widget::CreateLabel(const QString& text) {
     QLabel* qt_label = new QLabel(text, this->parent);
-    qt_label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    qt_label->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
+    qt_label->setMinimumWidth(0);
     qt_label->setMinimumHeight(24);
     qt_label->setAttribute(Qt::WA_TranslucentBackground, true);
     qt_label->setStyleSheet(QStringLiteral("background: transparent; background-color: transparent;"));
@@ -226,7 +227,10 @@ QWidget* Widget::CreateCombobox(std::function<std::string()>& serializer,
     const auto type = setting.EnumIndex();
 
     combobox = new QComboBox(this);
-    combobox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    combobox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
+    combobox->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
+    combobox->setMinimumContentsLength(8);
+    combobox->setMinimumWidth(0);
     combobox->setMinimumHeight(32);
 
     if (combobox_enumerations.contains(type)) {
@@ -511,7 +515,8 @@ QWidget* Widget::CreateSlider(bool reversed, float multiplier, const QString& gi
     layout->addWidget(feedback);
 
     container->setMinimumHeight(28);
-    container->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    container->setMinimumWidth(0);
+    container->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
 
     layout->setContentsMargins(0, 0, 0, 0);
 

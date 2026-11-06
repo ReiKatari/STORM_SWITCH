@@ -149,9 +149,9 @@ android {
 
         targetSdk = 36
 
-        versionName = "16.2.7"
+        versionName = "16.2.9"
 
-        versionCode = 34226837
+        versionCode = 34226839
 
 
 
@@ -186,12 +186,6 @@ android {
                         "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
 
                         "-DENABLE_UPDATE_CHECKER=ON",
-
-                        "-DBUILD_VERSION=16.2.7",
-
-                        "-DGIT_TAG=16.2.7",
-
-                        "-DGIT_RELEASE=16.2.7",
 
                         "-DBUILD_TESTING=OFF",
 
@@ -939,7 +933,7 @@ fun getGitVersion(): String {
 
     }
 
-    return "16.2.7"
+    return "16.2.9"
 
 }
 

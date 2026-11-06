@@ -62,6 +62,7 @@ private slots:
 
     void OnLanguageChanged(int index);
 
+    void OnDesignChanged(int index);
     void OnThemeChanged(int index);
 
     void OnAccentChanged(int index);
@@ -74,6 +75,7 @@ signals:
 
     void LanguageChanged(const QString& locale);
 
+    void DesignChanged(const QString& design);
     void ThemeChanged(const QString& theme);
 
     void AccentChanged(const QString& accent);

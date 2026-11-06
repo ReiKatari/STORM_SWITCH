@@ -2104,4 +2104,13 @@
     <string name="profile_override_badge">게임 프로필에 의해 지정됨</string>
     <string name="profile_override_revert">전역 설정으로 복원</string>
     <string name="cpu_unsafe_disabled_explanation">안전하지 않은 CPU 최적화는 CPU 정확도가 \'안전하지 않음\'으로 설정된 경우에만 활성화됩니다.</string>
+
+    <!-- UI Design Styles -->
+    <string name="ui_design_style">UI 디자인</string>
+    <string name="ui_design_style_description">인터페이스를 위한 입체적인 3D 스타일링 및 촉각 애니메이션</string>
+    <string name="ui_design_style_hyperion">STORM HYPERION GLASS 3D</string>
+    <string name="ui_design_style_cyberdeck">STORM CYBER-DECK TACTILE</string>
+    <string name="ui_design_style_aurora">STORM AURORA QUANTUM</string>
+    <string name="ui_design_style_orbital">STORM ORBITAL SPATIAL UI</string>
+    <string name="ui_design_style_chrono">STORM CHRONO-NEXUS COMMANDER</string>
 </resources>

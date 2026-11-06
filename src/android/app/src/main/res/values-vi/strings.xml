@@ -2043,4 +2043,13 @@
     <string name="profile_override_badge">được đặt bởi hồ sơ trò chơi</string>
     <string name="profile_override_revert">Khôi phục toàn cục</string>
     <string name="cpu_unsafe_disabled_explanation">Các tùy chọn CPU không an toàn chỉ hoạt động khi độ chính xác CPU được đặt thành \'Không an toàn\'.</string>
+
+    <!-- UI Design Styles -->
+    <string name="ui_design_style">Thiết kế giao diện</string>
+    <string name="ui_design_style_description">Kiểu dáng 3D đa chiều và hiệu ứng động xúc giác cho giao diện</string>
+    <string name="ui_design_style_hyperion">STORM HYPERION GLASS 3D</string>
+    <string name="ui_design_style_cyberdeck">STORM CYBER-DECK TACTILE</string>
+    <string name="ui_design_style_aurora">STORM AURORA QUANTUM</string>
+    <string name="ui_design_style_orbital">STORM ORBITAL SPATIAL UI</string>
+    <string name="ui_design_style_chrono">STORM CHRONO-NEXUS COMMANDER</string>
 </resources>

@@ -2058,4 +2058,13 @@
     <string name="profile_override_badge">definisano profilom igre</string>
     <string name="profile_override_revert">Vrati na globalno</string>
     <string name="cpu_unsafe_disabled_explanation">Nesigurne CPU opcije su aktivne samo kada je preciznost procesora podešena na \'Nesigurno\'.</string>
+
+    <!-- UI Design Styles -->
+    <string name="ui_design_style">Дизајн интерфејса</string>
+    <string name="ui_design_style_description">Волуметријски 3D стил и тактилне анимације за интерфејс</string>
+    <string name="ui_design_style_hyperion">STORM HYPERION GLASS 3D</string>
+    <string name="ui_design_style_cyberdeck">STORM CYBER-DECK TACTILE</string>
+    <string name="ui_design_style_aurora">STORM AURORA QUANTUM</string>
+    <string name="ui_design_style_orbital">STORM ORBITAL SPATIAL UI</string>
+    <string name="ui_design_style_chrono">STORM CHRONO-NEXUS COMMANDER</string>
 </resources>

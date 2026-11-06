@@ -445,7 +445,7 @@ public:
                 .arg(game.serial_id.isEmpty() ? tr("—") : game.serial_id)
                 .arg(game.dlc_count),
             header_box);
-        meta_lbl->setStyleSheet(QStringLiteral("font-size: 12px; color: #00F0FF; font-family: monospace; font-weight: bold;"));
+        meta_lbl->setStyleSheet(QStringLiteral("font-size: 12px; color: %1; font-family: monospace; font-weight: bold;").arg(StormTheme::GetThemePalette().accent));
         header_text_layout->addWidget(meta_lbl);
 
         header_layout->addLayout(header_text_layout, 1);
@@ -493,7 +493,7 @@ public:
                 item->setTextAlignment(1, Qt::AlignCenter);
                 item->setTextAlignment(3, Qt::AlignCenter);
                 item->setTextAlignment(4, Qt::AlignCenter);
-                item->setForeground(1, QBrush(QColor(QStringLiteral("#00D2FF"))));
+                item->setForeground(1, QBrush(QColor(StormTheme::GetThemePalette().accent)));
                 item->setForeground(2, QBrush(QColor(QStringLiteral("#FFFFFF"))));
                 item->setForeground(4, QBrush(QColor(QStringLiteral("#00FF66"))));
             }
@@ -527,7 +527,7 @@ public:
                     item->setTextAlignment(1, Qt::AlignCenter);
                     item->setTextAlignment(3, Qt::AlignCenter);
                     item->setTextAlignment(4, Qt::AlignCenter);
-                    item->setForeground(1, QBrush(QColor(QStringLiteral("#00D2FF"))));
+                    item->setForeground(1, QBrush(QColor(StormTheme::GetThemePalette().accent)));
                     item->setForeground(2, QBrush(QColor(QStringLiteral("#FFFFFF"))));
                     item->setForeground(4, QBrush(QColor(QStringLiteral("#00FF66"))));
                 }
@@ -1688,7 +1688,7 @@ void StormGamesWorldDialog::SetupUI() {
     dir_bar->setSpacing(8);
 
     auto* dir_label = new QLabel(tr("📁 Папка для сохранения:"), this);
-    dir_label->setStyleSheet(QStringLiteral("font-weight: bold; color: #00F0FF;"));
+    dir_label->setStyleSheet(QStringLiteral("font-weight: bold; color: %1;").arg(StormTheme::GetThemePalette().accent));
     dir_bar->addWidget(dir_label);
 
     download_dir_edit = new QLineEdit(GetDefaultDownloadDir(), this);
@@ -1776,7 +1776,7 @@ void StormGamesWorldDialog::SetupUI() {
     meta_layout->addWidget(title_label);
 
     tid_label = new QLabel(tr("Title ID: —"), details_panel);
-    tid_label->setStyleSheet(QStringLiteral("font-family: monospace; color: #00F0FF; font-size: 12px;"));
+    tid_label->setStyleSheet(QStringLiteral("font-family: monospace; color: %1; font-size: 12px;").arg(StormTheme::GetThemePalette().accent));
     meta_layout->addWidget(tid_label);
 
     auto* badges_layout = new QHBoxLayout();
@@ -2419,11 +2419,11 @@ void StormGamesWorldDialog::PopulateGameList(const QString bitand filter) {
 
         if (g.dlc_count > 0 and g.mod_count > 0) {
             item->setText(3, tr("📦 %1 DLC  •  ⚡ +%2 MOD").arg(g.dlc_count).arg(g.mod_count));
-            item->setForeground(3, QBrush(QColor(QStringLiteral("#00F0FF"))));
+            item->setForeground(3, QBrush(QColor(StormTheme::GetThemePalette().accent)));
             item->setToolTip(3, tr("Дополнений: %1, Модификаций: %2 (нажмите для списка дополнений)").arg(g.dlc_count).arg(g.mod_count));
         } else if (g.dlc_count > 0) {
             item->setText(3, tr("📦 %1 DLC").arg(g.dlc_count));
-            item->setForeground(3, QBrush(QColor(QStringLiteral("#00F0FF"))));
+            item->setForeground(3, QBrush(QColor(StormTheme::GetThemePalette().accent)));
             item->setToolTip(3, tr("Нажмите для просмотра списка дополнений"));
         } else if (g.mod_count > 0) {
             item->setText(3, tr("⚡ +%1 MOD").arg(g.mod_count));
@@ -2438,7 +2438,7 @@ void StormGamesWorldDialog::PopulateGameList(const QString bitand filter) {
         item->setForeground(4, QBrush(QColor(QStringLiteral("#FFFFFF"))));
 
         item->setText(5, g.serial_id.isEmpty() ? tr("—") : g.serial_id);
-        item->setForeground(5, QBrush(QColor(QStringLiteral("#00F0FF"))));
+        item->setForeground(5, QBrush(QColor(StormTheme::GetThemePalette().accent)));
 
         // Center align columns 1 to 6
         item->setTextAlignment(1, Qt::AlignCenter);

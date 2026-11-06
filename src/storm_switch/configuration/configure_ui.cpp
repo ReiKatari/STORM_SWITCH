@@ -5,6 +5,7 @@
 
 
 #include "storm_switch/configuration/configure_ui.h"
+#include "storm_switch/common/storm_design_engine.h"
 
 #include "storm_switch/common/storm_lang.h"
 
@@ -194,6 +195,32 @@ ConfigureUi::ConfigureUi(Core::System& system_, QWidget* parent)
 
 
 
+    if (ui->design_label) {
+
+        ui->design_label->setText(StormDesign::GetDesignSelectorLabel());
+
+        ui->design_label->setToolTip(StormDesign::GetLocalizedDesignTooltip());
+
+    }
+
+    if (ui->design_combobox) {
+
+        ui->design_combobox->setToolTip(StormDesign::GetLocalizedDesignTooltip());
+
+        for (const auto& [id, _] : StormDesign::kDesigns) {
+
+            ui->design_combobox->addItem(StormDesign::GetLocalizedDesignName(id), QString::fromUtf8(id));
+
+        }
+
+        connect(ui->design_combobox, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+
+                &ConfigureUi::OnDesignChanged);
+
+    }
+
+
+
     for (const auto& theme : UISettings::themes) {
 
         ui->theme_combobox->addItem(QString::fromUtf8(theme.first),
@@ -349,6 +376,16 @@ ConfigureUi::~ConfigureUi() = default;
 
 void ConfigureUi::ApplyConfiguration() {
 
+    if (ui->design_combobox && ui->design_combobox->currentIndex() >= 0) {
+
+        UISettings::values.ui_design =
+
+            ui->design_combobox->itemData(ui->design_combobox->currentIndex()).toString().toStdString();
+
+    }
+
+
+
     UISettings::values.theme =
 
         ui->theme_combobox->itemData(ui->theme_combobox->currentIndex()).toString().toStdString();
@@ -408,6 +445,20 @@ void ConfigureUi::RequestGameListUpdate() {
 
 
 void ConfigureUi::SetConfiguration() {
+
+    if (ui->design_combobox) {
+
+        const QSignalBlocker blocker(ui->design_combobox);
+
+        const auto cur_design = QString::fromStdString(UISettings::values.ui_design.GetValue());
+
+        const int idx = ui->design_combobox->findData(cur_design);
+
+        ui->design_combobox->setCurrentIndex(idx >= 0 ? idx : 0);
+
+    }
+
+
 
     {
 
@@ -540,6 +591,44 @@ void ConfigureUi::RetranslateUI() {
         ui->language_label->setText(tr("Interface language:"));
 
     }
+
+    if (ui->design_label) {
+
+        ui->design_label->setText(StormDesign::GetDesignSelectorLabel());
+
+        ui->design_label->setToolTip(StormDesign::GetLocalizedDesignTooltip());
+
+    }
+
+    if (ui->design_combobox) {
+
+        ui->design_combobox->setToolTip(StormDesign::GetLocalizedDesignTooltip());
+
+        const QSignalBlocker blocker(ui->design_combobox);
+
+        const QString cur_id = ui->design_combobox->currentData().toString();
+
+        ui->design_combobox->clear();
+
+        for (const auto& [id, _] : StormDesign::kDesigns) {
+
+            ui->design_combobox->addItem(StormDesign::GetLocalizedDesignName(id), QString::fromUtf8(id));
+
+        }
+
+        int cur_idx = ui->design_combobox->findData(cur_id);
+
+        if (cur_idx < 0) {
+
+            cur_idx = ui->design_combobox->findData(QString::fromStdString(UISettings::values.ui_design.GetValue()));
+
+        }
+
+        ui->design_combobox->setCurrentIndex(cur_idx >= 0 ? cur_idx : 0);
+
+    }
+
+
 
     if (ui->theme_label) {
 
@@ -793,6 +882,18 @@ void ConfigureUi::OnLanguageChanged(int index) {
 }
 
 
+
+void ConfigureUi::OnDesignChanged(int index) {
+    if (index < 0 || index >= ui->design_combobox->count())
+        return;
+
+    const auto design_id = ui->design_combobox->itemData(index).toString();
+    if (!design_id.isEmpty()) {
+        UISettings::values.ui_design = design_id.toStdString();
+        emit DesignChanged(design_id);
+        emit ThemeChanged(ui->theme_combobox->currentData().toString());
+    }
+}
 
 void ConfigureUi::OnThemeChanged(int index) {
 

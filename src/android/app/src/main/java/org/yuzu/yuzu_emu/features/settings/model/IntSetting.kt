@@ -89,6 +89,41 @@ enum class IntSetting(override val key: String) : AbstractIntSetting {
     THEME("theme"),
     THEME_MODE("theme_mode"),
     STATIC_THEME_COLOR("static_theme_color"),
+    UI_DESIGN_STYLE("ui_design_style") {
+        override fun getInt(needsGlobal: Boolean): Int {
+            val prefValue = try {
+                val pref = androidx.preference.PreferenceManager.getDefaultSharedPreferences(org.yuzu.yuzu_emu.YuzuApplication.appContext)
+                pref.getInt(Settings.PREF_UI_DESIGN_STYLE, -1)
+            } catch (_: Throwable) {
+                -1
+            }
+            if (prefValue in 0..4) {
+                return prefValue
+            }
+            return try {
+                super.getInt(needsGlobal).coerceIn(0, 4)
+            } catch (_: Throwable) {
+                0
+            }
+        }
+
+        override fun setInt(value: Int) {
+            val clamped = value.coerceIn(0, 4)
+            try {
+                val pref = androidx.preference.PreferenceManager.getDefaultSharedPreferences(org.yuzu.yuzu_emu.YuzuApplication.appContext)
+                pref.edit().putInt(Settings.PREF_UI_DESIGN_STYLE, clamped).apply()
+            } catch (_: Throwable) {}
+            try {
+                super.setInt(clamped)
+            } catch (_: Throwable) {}
+        }
+
+        override val defaultValue: Int = 0
+
+        override fun reset() {
+            setInt(defaultValue)
+        }
+    },
     APP_LANGUAGE("app_language"),
     OVERLAY_SCALE("control_scale"),
     OVERLAY_OPACITY("control_opacity"),
@@ -130,6 +165,9 @@ enum class IntSetting(override val key: String) : AbstractIntSetting {
     THERMAL_EMERGENCY_LIMIT("thermal_emergency_limit"),
     SAVE_STATES_MODE("save_states_mode")
     ;
+
+    val int: Int
+        get() = getInt()
 
     override fun getInt(needsGlobal: Boolean): Int = NativeConfig.getInt(key, needsGlobal)
 

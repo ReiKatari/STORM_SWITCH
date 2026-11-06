@@ -1,3 +1,4 @@
+#include "storm_switch/common/storm_theme.h"
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -179,12 +180,13 @@ void FloatingTranslateButton::leaveEvent(QEvent* /*event*/) {
 
 void FloatingTranslateButton::contextMenuEvent(QContextMenuEvent* event) {
     QMenu menu(this);
+    const auto ftb_pal = StormTheme::GetThemePalette();
     menu.setStyleSheet(QStringLiteral(
-        "QMenu { background: #0D1424; color: #FFFFFF; border: 1px solid #00E5FF; border-radius: 8px; padding: 6px; }"
+        "QMenu { background: %1; color: %2; border: 1px solid %3; border-radius: 8px; padding: 6px; }"
         "QMenu::item { padding: 8px 24px; border-radius: 4px; font-weight: 500; font-size: 13px; }"
-        "QMenu::item:selected { background: #2563EB; color: #FFFFFF; }"
-        "QMenu::separator { height: 1px; background: #1E293B; margin: 4px 8px; }"
-    ));
+        "QMenu::item:selected { background: %3; color: #FFFFFF; }"
+        "QMenu::separator { height: 1px; background: %4; margin: 4px 8px; }"
+    ).arg(ftb_pal.surface, ftb_pal.textPrimary, ftb_pal.accent, ftb_pal.border));
 
     auto* act_translate = menu.addAction(tr("⚡ Перевести экран сейчас"));
     auto* act_settings = menu.addAction(tr("⚙️ Настройки переводчика..."));

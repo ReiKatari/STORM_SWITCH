@@ -153,21 +153,11 @@ class GameFixDialogFragment : DialogFragment() {
 
         binding.cardLaunchAutoFix.setOnClickListener {
             val ctx = context
-            val hadCustom = GameFixDatabase.isUserCustomConfig(currentGame)
-            val mode = if (hadCustom) GameFixDatabase.LaunchMode.AUTO_FIX_WITH_CUSTOM else GameFixDatabase.LaunchMode.AUTO_FIX
-            handleLaunch(mode) {
-                GameFixDatabase.selectedLaunchMode = mode
-                if (hadCustom) {
-                    GameFixDatabase.applyFixWithCustomOverrides(currentGame)
-                } else {
-                    GameFixDatabase.applyCleanFix(currentGame)
-                }
+            handleLaunch(GameFixDatabase.LaunchMode.AUTO_FIX) {
+                GameFixDatabase.selectedLaunchMode = GameFixDatabase.LaunchMode.AUTO_FIX
+                GameFixDatabase.applyCleanFix(currentGame)
                 if (ctx != null) {
-                    val msg = if (hadCustom) {
-                        ctx.getString(R.string.game_fix_toast_autofix_custom)
-                    } else {
-                        ctx.getString(R.string.game_fix_toast_autofix_clean)
-                    }
+                    val msg = ctx.getString(R.string.game_fix_toast_autofix_clean)
                     Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show()
                 }
             }

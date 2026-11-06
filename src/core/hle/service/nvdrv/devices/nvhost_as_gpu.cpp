@@ -1,3 +1,4 @@
+#include "common/settings.h"
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -96,12 +97,18 @@ NvResult nvhost_as_gpu::Ioctl1(DeviceFD fd, Ioctl command, std::span<const u8> i
         break;
     }
 
+    if (g_nx2_driver || Settings::IsCurrentProgramSwitch2()) {
+        return Nx2UnknownIoctl("nvhost-as-gpu", command, input, output);
+    }
     UNIMPLEMENTED_MSG("Unimplemented ioctl={:08X}", command.raw);
     return NvResult::NotImplemented;
 }
 
 NvResult nvhost_as_gpu::Ioctl2(DeviceFD fd, Ioctl command, std::span<const u8> input,
                                std::span<const u8> inline_input, std::span<u8> output) {
+    if (g_nx2_driver || Settings::IsCurrentProgramSwitch2()) {
+        return Nx2UnknownIoctl("nvhost-as-gpu", command, input, output);
+    }
     UNIMPLEMENTED_MSG("Unimplemented ioctl={:08X}", command.raw);
     return NvResult::NotImplemented;
 }
@@ -120,6 +127,10 @@ NvResult nvhost_as_gpu::Ioctl3(DeviceFD fd, Ioctl command, std::span<const u8> i
         break;
     default:
         break;
+    }
+    if (g_nx2_driver || Settings::IsCurrentProgramSwitch2()) {
+        std::fill(inline_output.begin(), inline_output.end(), u8{0});
+        return Nx2UnknownIoctl("nvhost-as-gpu", command, input, output);
     }
     UNIMPLEMENTED_MSG("Unimplemented ioctl={:08X}", command.raw);
     return NvResult::NotImplemented;

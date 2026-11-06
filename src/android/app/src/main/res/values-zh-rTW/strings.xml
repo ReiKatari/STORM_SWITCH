@@ -2130,4 +2130,13 @@
     <string name="profile_override_badge">由遊戲設定檔指定</string>
     <string name="profile_override_revert">恢復為全域設定</string>
     <string name="cpu_unsafe_disabled_explanation">不安全 CPU 選項僅在 CPU 精確度設為「不安全」時啟用。</string>
+
+    <!-- UI Design Styles -->
+    <string name="ui_design_style">UI 設計</string>
+    <string name="ui_design_style_description">介面的立體 3D 風格與觸覺動畫</string>
+    <string name="ui_design_style_hyperion">STORM HYPERION GLASS 3D</string>
+    <string name="ui_design_style_cyberdeck">STORM CYBER-DECK TACTILE</string>
+    <string name="ui_design_style_aurora">STORM AURORA QUANTUM</string>
+    <string name="ui_design_style_orbital">STORM ORBITAL SPATIAL UI</string>
+    <string name="ui_design_style_chrono">STORM CHRONO-NEXUS COMMANDER</string>
 </resources>

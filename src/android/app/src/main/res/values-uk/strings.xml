@@ -2122,4 +2122,13 @@
     <string name="profile_override_badge">задано профілем гри</string>
     <string name="profile_override_revert">Скинути до загальних</string>
     <string name="cpu_unsafe_disabled_explanation">Небезпечні прапорці процесора активні лише при вибраній точності ЦП «Небезпечно».</string>
+
+    <!-- UI Design Styles -->
+    <string name="ui_design_style">Дизайн інтерфейсу</string>
+    <string name="ui_design_style_description">Об\'ємний 3D-стиль оформлення та тактильні анімації для інтерфейсу</string>
+    <string name="ui_design_style_hyperion">STORM HYPERION GLASS 3D</string>
+    <string name="ui_design_style_cyberdeck">STORM CYBER-DECK TACTILE</string>
+    <string name="ui_design_style_aurora">STORM AURORA QUANTUM</string>
+    <string name="ui_design_style_orbital">STORM ORBITAL SPATIAL UI</string>
+    <string name="ui_design_style_chrono">STORM CHRONO-NEXUS COMMANDER</string>
 </resources>
