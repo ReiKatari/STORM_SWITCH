@@ -9,8 +9,12 @@
 
 #ifdef _WIN32
 #include <cstring>
+#include <filesystem>
+#include <fstream>
+#include <string>
 #include <processthreadsapi.h>
 #include <windows.h>
+#include "common/fs/path_util.h"
 #else
 #include <cstring>
 #include <errno.h>
@@ -24,6 +28,112 @@
 #include "video_core/vulkan_common/vulkan_instance.h"
 #include "video_core/vulkan_common/vulkan_library.h"
 #include "storm_switch/startup_checks.h"
+
+#ifdef _WIN32
+namespace {
+
+std::filesystem::path GetVulkanStampPath(const char* arg0) {
+    std::error_code ec;
+    std::filesystem::path exe_dir;
+    wchar_t exe_buf[MAX_PATH];
+    if (GetModuleFileNameW(nullptr, exe_buf, MAX_PATH) > 0) {
+        exe_dir = std::filesystem::path(exe_buf).parent_path();
+    } else if (arg0 && *arg0) {
+        exe_dir = std::filesystem::u8path(arg0).parent_path();
+    }
+
+    // 1. Portable mode: check if user folder exists next to executable
+    if (!exe_dir.empty()) {
+        const auto portable_user = exe_dir / L"user";
+        if (std::filesystem::is_directory(portable_user, ec)) {
+            return portable_user / L"cache" / L"vulkan_check_ok.stamp";
+        }
+    }
+
+    // 2. Check Common::FS::GetEdenPath if initialized
+    try {
+        const auto& eden_cache = Common::FS::GetEdenPath(Common::FS::EdenPath::CacheDir);
+        if (!eden_cache.empty()) {
+            return eden_cache / "vulkan_check_ok.stamp";
+        }
+    } catch (...) {
+    }
+
+    // 3. Fallback to %APPDATA%/storm_switch/cache/vulkan_check_ok.stamp
+    const wchar_t* appdata = _wgetenv(L"APPDATA");
+    if (appdata && *appdata) {
+        return std::filesystem::path(appdata) / L"storm_switch" / L"cache" / L"vulkan_check_ok.stamp";
+    }
+
+    if (!exe_dir.empty()) {
+        return exe_dir / L"cache" / L"vulkan_check_ok.stamp";
+    }
+
+    return {};
+}
+
+std::string GetVulkanDllSignature() {
+    wchar_t sys_dir[MAX_PATH];
+    std::wstring vk_dll_path;
+    if (GetSystemDirectoryW(sys_dir, MAX_PATH) > 0) {
+        vk_dll_path = std::wstring(sys_dir) + L"\\vulkan-1.dll";
+    } else {
+        vk_dll_path = L"C:\\Windows\\System32\\vulkan-1.dll";
+    }
+
+    WIN32_FILE_ATTRIBUTE_DATA attr;
+    if (!GetFileAttributesExW(vk_dll_path.c_str(), GetFileExInfoStandard, &attr)) {
+        return {};
+    }
+
+    ULARGE_INTEGER file_size;
+    file_size.HighPart = attr.nFileSizeHigh;
+    file_size.LowPart = attr.nFileSizeLow;
+
+    ULARGE_INTEGER mtime;
+    mtime.HighPart = attr.ftLastWriteTime.dwHighDateTime;
+    mtime.LowPart = attr.ftLastWriteTime.dwLowDateTime;
+
+    return fmt::format("{}:{}", file_size.QuadPart, mtime.QuadPart);
+}
+
+bool ReadVulkanStamp(const std::filesystem::path& stamp_path, std::string& out_stamp) {
+    std::error_code ec;
+    if (stamp_path.empty() || !std::filesystem::exists(stamp_path, ec)) {
+        return false;
+    }
+    std::ifstream file(stamp_path);
+    if (!file.is_open()) {
+        return false;
+    }
+    std::string line;
+    if (std::getline(file, line)) {
+        while (!line.empty() && (line.back() == '\r' || line.back() == '\n' || line.back() == ' ')) {
+            line.pop_back();
+        }
+        out_stamp = line;
+        return !out_stamp.empty();
+    }
+    return false;
+}
+
+void WriteVulkanStamp(const std::filesystem::path& stamp_path, const std::string& sig) {
+    if (stamp_path.empty() || sig.empty()) {
+        return;
+    }
+    std::error_code ec;
+    std::filesystem::create_directories(stamp_path.parent_path(), ec);
+    if (ec) {
+        return;
+    }
+    std::ofstream file(stamp_path, std::ios::trunc);
+    if (file.is_open()) {
+        file << sig << '\n';
+    }
+}
+
+} // anonymous namespace
+#endif
 
 void CheckVulkan() {
     // Just start the Vulkan loader, this will crash if something is wrong
@@ -72,6 +182,20 @@ bool CheckEnvVars(bool* is_child) {
 bool StartupChecks(const char* arg0, bool* has_broken_vulkan, bool perform_vulkan_check) {
 #ifdef _WIN32
     if (perform_vulkan_check) {
+        const std::filesystem::path stamp_path = GetVulkanStampPath(arg0);
+        const std::string current_sig = GetVulkanDllSignature();
+
+        if (!stamp_path.empty() && !current_sig.empty()) {
+            std::string cached_sig;
+            if (ReadVulkanStamp(stamp_path, cached_sig) && cached_sig == current_sig) {
+                // Instant cached path: Vulkan loader verified on this system previously
+                if (has_broken_vulkan) {
+                    *has_broken_vulkan = false;
+                }
+                return false;
+            }
+        }
+
         SetEnvironmentVariableA(STARTUP_CHECK_ENV_VAR, ENV_VAR_ENABLED_TEXT);
         SetEnvironmentVariableA(IS_CHILD_ENV_VAR, ENV_VAR_ENABLED_TEXT);
 
@@ -89,7 +213,16 @@ bool StartupChecks(const char* arg0, bool* has_broken_vulkan, bool perform_vulka
             }
 
             // Vulkan is broken if the child crashed (return value is not zero)
-            *has_broken_vulkan = (exit_code != 0);
+            if (has_broken_vulkan) {
+                *has_broken_vulkan = (exit_code != 0);
+            }
+
+            if (exit_code == 0 && !stamp_path.empty() && !current_sig.empty()) {
+                WriteVulkanStamp(stamp_path, current_sig);
+            } else if (has_broken_vulkan && *has_broken_vulkan && !stamp_path.empty()) {
+                std::error_code ec;
+                std::filesystem::remove(stamp_path, ec);
+            }
 
             if (CloseHandle(process_info.hProcess) == 0) {
                 fmt::print(stderr, "CloseHandle failed with error {}\n", GetLastError());
@@ -98,7 +231,9 @@ bool StartupChecks(const char* arg0, bool* has_broken_vulkan, bool perform_vulka
                 fmt::print(stderr, "CloseHandle failed with error {}\n", GetLastError());
             }
         } else {
-            *has_broken_vulkan = false;
+            if (has_broken_vulkan) {
+                *has_broken_vulkan = false;
+            }
         }
 
         SetEnvironmentVariableA(STARTUP_CHECK_ENV_VAR, nullptr);

@@ -305,6 +305,9 @@ void GameList::OnPopulate() {
 }
 
 void GameList::PopulateAsync(QVector<UISettings::GameDir>& game_dirs) {
+    if (tree_view) {
+        tree_view->setSortingEnabled(false);
+    }
     item_model->PopulateAsync(game_dirs);
 }
 
@@ -452,6 +455,9 @@ void GameList::OnFilterCloseClicked() {
 }
 
 void GameList::OnPopulatingCompleted(const QStringList& watch_list) {
+    if (m_isTreeMode && tree_view) {
+        tree_view->setSortingEnabled(true);
+    }
     emit ShowList(!item_model->IsEmpty());
 
     if (!m_isTreeMode && grid_view) {

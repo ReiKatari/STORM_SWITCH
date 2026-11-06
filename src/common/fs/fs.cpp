@@ -16,6 +16,44 @@ namespace Common::FS {
 
 namespace fs = std::filesystem;
 
+#ifdef _WIN32
+static fs::path ToSafePlatformPath(const fs::path& path, bool force_long_prefix = false) {
+    std::wstring w = path.lexically_normal().native();
+    for (auto& c : w) {
+        if (c == L'/') {
+            c = L'\\';
+        }
+    }
+    if ((force_long_prefix || w.size() >= 240) && !w.starts_with(L"\\\\?\\") && !w.starts_with(L"\\\\.\\")) {
+        if (w.starts_with(L"\\\\")) {
+            return fs::path(L"\\\\?\\UNC\\" + w.substr(2));
+        } else if (w.size() >= 2 && w[1] == L':') {
+            return fs::path(L"\\\\?\\" + w);
+        }
+    }
+    return path;
+}
+
+static fs::path StripLongPathPrefix(const fs::path& path) {
+    const std::wstring w = path.native();
+    if (w.starts_with(L"\\\\?\\UNC\\")) {
+        return fs::path(L"\\\\" + w.substr(8));
+    }
+    if (w.starts_with(L"\\\\?\\") || w.starts_with(L"\\\\.\\")) {
+        return fs::path(w.substr(4));
+    }
+    return path;
+}
+#else
+[[maybe_unused]] static inline const fs::path& ToSafePlatformPath(const fs::path& path, bool /*force_long_prefix*/ = false) {
+    return path;
+}
+
+[[maybe_unused]] static inline const fs::path& StripLongPathPrefix(const fs::path& path) {
+    return path;
+}
+#endif
+
 // File Operations
 
 bool NewFile(const fs::path& path, u64 size) {
@@ -410,66 +448,142 @@ bool RenameDir(const fs::path& old_path, const fs::path& new_path) {
 }
 
 void IterateDirEntries(const std::filesystem::path& path, const DirEntryCallable& callback, DirEntryFilter filter) {
-    if (!ValidatePath(path)) {
-        LOG_ERROR(Common_Filesystem, "Input path is not valid, path={}", PathToUTF8String(path));
-        return;
-    }
-    if (!Exists(path)) {
-        LOG_ERROR(Common_Filesystem, "Filesystem object at path={} does not exist", PathToUTF8String(path));
-        return;
-    }
-    if (!IsDir(path)) {
-        LOG_ERROR(Common_Filesystem, "Filesystem object at path={} is not a directory", PathToUTF8String(path));
-        return;
-    }
+    try {
+        if (path.empty()) {
+            LOG_ERROR(Common_Filesystem, "Input path is empty");
+            return;
+        }
+        if (path.native().size() < 240 && !ValidatePath(path)) {
+            LOG_ERROR(Common_Filesystem, "Input path is not valid, path={}", PathToUTF8String(path));
+            return;
+        }
+        const auto safe_path = ToSafePlatformPath(path, true);
+        if (!Exists(safe_path)) {
+            LOG_ERROR(Common_Filesystem, "Filesystem object at path={} does not exist", PathToUTF8String(path));
+            return;
+        }
+        if (!IsDir(safe_path)) {
+            LOG_ERROR(Common_Filesystem, "Filesystem object at path={} is not a directory", PathToUTF8String(path));
+            return;
+        }
 
-    std::error_code ec;
-    bool callback_error = false;
-    for (auto const& entry : fs::directory_iterator(path, ec)) {
-        if ((True(filter & DirEntryFilter::File) && entry.status().type() == fs::file_type::regular)
-        || (True(filter & DirEntryFilter::Directory) && entry.status().type() == fs::file_type::directory)) {
-            if (!callback(entry)) {
-                callback_error = true;
+        std::error_code ec;
+        bool callback_error = false;
+        fs::directory_iterator it(safe_path, fs::directory_options::skip_permission_denied, ec);
+        const fs::directory_iterator end;
+
+        while (!ec && it != end) {
+            std::error_code type_ec;
+            const bool want_file = True(filter & DirEntryFilter::File) && it->is_regular_file(type_ec);
+            const bool want_dir = !want_file && True(filter & DirEntryFilter::Directory) && it->is_directory(type_ec);
+            if (!type_ec && (want_file || want_dir)) {
+#ifdef _WIN32
+                const auto stripped = StripLongPathPrefix(it->path());
+                if (stripped != it->path() && stripped.native().size() < 244) {
+                    fs::directory_entry clean_entry(stripped, type_ec);
+                    if (!callback(clean_entry)) {
+                        callback_error = true;
+                        break;
+                    }
+                } else
+#endif
+                {
+                    if (!callback(*it)) {
+                        callback_error = true;
+                        break;
+                    }
+                }
+            }
+            it.increment(ec);
+            if (ec) {
+                ec.clear();
+                break;
             }
         }
-    }
 
-    if (callback_error || ec) {
-        LOG_ERROR(Common_Filesystem, "Failed to visit all the directory entries of path={}, ec_message={}, callback_error={}", PathToUTF8String(path), ec.message(), callback_error);
-    } else {
-        LOG_DEBUG(Common_Filesystem, "Visited all the directory entries of path={}", PathToUTF8String(path));
+        if (callback_error || ec) {
+            LOG_ERROR(Common_Filesystem, "Failed to visit all the directory entries of path={}, ec_message={}, callback_error={}", PathToUTF8String(path), ec.message(), callback_error);
+        } else {
+            LOG_DEBUG(Common_Filesystem, "Visited all the directory entries of path={}", PathToUTF8String(path));
+        }
+    } catch (const std::exception& e) {
+        LOG_ERROR(Common_Filesystem, "Exception during IterateDirEntries for path={}: {}", PathToUTF8String(path), e.what());
+    } catch (...) {
+        LOG_ERROR(Common_Filesystem, "Unknown exception during IterateDirEntries for path={}", PathToUTF8String(path));
     }
 }
 
 void IterateDirEntriesRecursively(const std::filesystem::path& path, const DirEntryCallable& callback, DirEntryFilter filter) {
-    if (!ValidatePath(path)) {
-        LOG_ERROR(Common_Filesystem, "Input path is not valid, path={}", PathToUTF8String(path));
-        return;
-    }
-    if (!Exists(path)) {
-        LOG_ERROR(Common_Filesystem, "Filesystem object at path={} does not exist", PathToUTF8String(path));
-        return;
-    }
-    if (!IsDir(path)) {
-        LOG_ERROR(Common_Filesystem, "Filesystem object at path={} is not a directory", PathToUTF8String(path));
-        return;
-    }
+    try {
+        if (path.empty()) {
+            LOG_ERROR(Common_Filesystem, "Input path is empty");
+            return;
+        }
+        if (path.native().size() < 240 && !ValidatePath(path)) {
+            LOG_ERROR(Common_Filesystem, "Input path is not valid, path={}", PathToUTF8String(path));
+            return;
+        }
+        const auto safe_path = ToSafePlatformPath(path, true);
+        if (!Exists(safe_path)) {
+            LOG_ERROR(Common_Filesystem, "Filesystem object at path={} does not exist", PathToUTF8String(path));
+            return;
+        }
+        if (!IsDir(safe_path)) {
+            LOG_ERROR(Common_Filesystem, "Filesystem object at path={} is not a directory", PathToUTF8String(path));
+            return;
+        }
 
-    std::error_code ec;
-    bool callback_error = false;
-    // MSVC should now be fixed... right... right?!?!?!
-    for (const auto& entry : fs::recursive_directory_iterator(path, ec)) {
-        if ((True(filter & DirEntryFilter::File) && entry.status().type() == fs::file_type::regular)
-        || (True(filter & DirEntryFilter::Directory) && entry.status().type() == fs::file_type::directory)) {
-            if (!callback(entry)) {
-                callback_error = true;
+        std::error_code ec;
+        bool callback_error = false;
+        fs::recursive_directory_iterator it(safe_path, fs::directory_options::skip_permission_denied, ec);
+        const fs::recursive_directory_iterator end;
+
+        while (!ec && it != end) {
+            std::error_code type_ec;
+            const bool want_file = True(filter & DirEntryFilter::File) && it->is_regular_file(type_ec);
+            const bool want_dir = !want_file && True(filter & DirEntryFilter::Directory) && it->is_directory(type_ec);
+            if (!type_ec && (want_file || want_dir)) {
+#ifdef _WIN32
+                const auto stripped = StripLongPathPrefix(it->path());
+                if (stripped != it->path() && stripped.native().size() < 244) {
+                    fs::directory_entry clean_entry(stripped, type_ec);
+                    if (!callback(clean_entry)) {
+                        callback_error = true;
+                        break;
+                    }
+                } else
+#endif
+                {
+                    if (!callback(*it)) {
+                        callback_error = true;
+                        break;
+                    }
+                }
+            }
+            it.increment(ec);
+            if (ec) {
+                ec.clear();
+                std::error_code pop_ec;
+                if (it.depth() > 0) {
+                    it.pop(pop_ec);
+                    if (pop_ec) {
+                        break;
+                    }
+                } else {
+                    break;
+                }
             }
         }
-    }
-    if (callback_error || ec) {
-        LOG_ERROR(Common_Filesystem, "Failed to visit all the directory entries of path={}, ec_message={}, callback_error={}", PathToUTF8String(path), ec.message(), callback_error);
-    } else {
-        LOG_DEBUG(Common_Filesystem, "Visited all the directory entries of path={}", PathToUTF8String(path));
+
+        if (callback_error || ec) {
+            LOG_ERROR(Common_Filesystem, "Failed to visit all the directory entries of path={}, ec_message={}, callback_error={}", PathToUTF8String(path), ec.message(), callback_error);
+        } else {
+            LOG_DEBUG(Common_Filesystem, "Visited all the directory entries of path={}", PathToUTF8String(path));
+        }
+    } catch (const std::exception& e) {
+        LOG_ERROR(Common_Filesystem, "Exception during IterateDirEntriesRecursively for path={}: {}", PathToUTF8String(path), e.what());
+    } catch (...) {
+        LOG_ERROR(Common_Filesystem, "Unknown exception during IterateDirEntriesRecursively for path={}", PathToUTF8String(path));
     }
 }
 
@@ -488,7 +602,7 @@ bool Exists(const fs::path& path) {
         return fs::exists(path_str, ec);
     }
 #else
-    return fs::exists(path, ec);
+    return fs::exists(ToSafePlatformPath(path), ec);
 #endif
 }
 
@@ -505,7 +619,7 @@ bool IsFile(const fs::path& path) {
         return fs::is_regular_file(path_str, ec);
     }
 #else
-    return fs::is_regular_file(path, ec);
+    return fs::is_regular_file(ToSafePlatformPath(path), ec);
 #endif
 }
 
@@ -522,7 +636,7 @@ bool IsDir(const fs::path& path) {
         return fs::is_directory(path_str, ec);
     }
 #else
-    return fs::is_directory(path, ec);
+    return fs::is_directory(ToSafePlatformPath(path), ec);
 #endif
 }
 
@@ -556,7 +670,7 @@ bool SetCurrentDir(const fs::path& path) {
 fs::file_type GetEntryType(const fs::path& path) {
     std::error_code ec;
 
-    const auto file_status = fs::status(path, ec);
+    const auto file_status = fs::status(ToSafePlatformPath(path), ec);
 
     if (ec) {
         LOG_ERROR(Common_Filesystem, "Failed to retrieve the entry type of path={}, ec_message={}",
@@ -576,7 +690,7 @@ u64 GetSize(const fs::path& path) {
 
     std::error_code ec;
 
-    const auto file_size = fs::file_size(path, ec);
+    const auto file_size = fs::file_size(ToSafePlatformPath(path), ec);
 
     if (ec) {
         LOG_ERROR(Common_Filesystem, "Failed to retrieve the file size of path={}, ec_message={}",

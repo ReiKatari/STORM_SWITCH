@@ -322,6 +322,13 @@ static FileSys::VirtualFile VfsDirectoryCreateFileWrapper(const FileSys::Virtual
 
 }
 
+static void EnsureVkDeviceRecordsPopulated(std::vector<VkDeviceInfo::Record>& records, QWindow* window_handle) {
+    if (!records.empty()) {
+        return;
+    }
+    VkDeviceInfo::PopulateRecords(records, window_handle);
+}
+
 
 
 // Frontend //
@@ -1830,7 +1837,7 @@ MainWindow::MainWindow(bool has_broken_vulkan)
 
 
 
-    setWindowTitle(QStringLiteral("STORM SWITCH 16.2.9"));
+    setWindowTitle(QStringLiteral("STORM SWITCH 16.3.0"));
     UpdateWindowTitle();
 
 
@@ -2003,7 +2010,10 @@ MainWindow::MainWindow(bool has_broken_vulkan)
 
     } else {
 
-        VkDeviceInfo::PopulateRecords(vk_device_records, this->window()->windowHandle());
+        // Defer heavy Vulkan device enumeration off startup critical path (150ms after show/game list)
+        QTimer::singleShot(150, this, [this] {
+            EnsureVkDeviceRecordsPopulated(vk_device_records, this->window()->windowHandle());
+        });
 
     }
 
@@ -9710,6 +9720,8 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
 
                           StartGameType type) {
 
+    EnsureVkDeviceRecordsPopulated(vk_device_records, this->window()->windowHandle());
+
     if (emulation_running || (QtCommon::emu_thread && QtCommon::emu_thread->isRunning()) || QtCommon::system->IsPoweredOn()) {
 
         LOG_WARNING(Frontend, "Emulation is already running or powering on. Ignoring BootGame request.");
@@ -13576,6 +13588,8 @@ void MainWindow::OnConfigure() {
 
 
 
+    EnsureVkDeviceRecordsPopulated(vk_device_records, this->window()->windowHandle());
+
     ConfigureDialog configure_dialog(this, hotkey_registry, input_subsystem.get(),
 
                                      vk_device_records, *QtCommon::system,
@@ -15133,6 +15147,8 @@ void MainWindow::OpenPerGameConfiguration(u64 title_id, const std::string& file_
 
 
     Settings::SetConfiguringGlobal(false);
+
+    EnsureVkDeviceRecordsPopulated(vk_device_records, this->window()->windowHandle());
 
     ConfigurePerGame dialog(this, title_id, file_name, vk_device_records, *QtCommon::system);
 
@@ -20664,7 +20680,7 @@ void MainWindow::UpdateWindowTitle(std::string_view filename, std::string_view d
                                    std::string_view internal_version, std::string_view gpu_vendor) {
 
     const QString build_ver = QString::fromUtf8(Common::g_build_version).isEmpty()
-                                  ? QStringLiteral("16.2.9")
+                                  ? QStringLiteral("16.3.0")
                                   : QString::fromUtf8(Common::g_build_version);
     const QString strict_idle_title = QStringLiteral("STORM SWITCH %1").arg(build_ver);
 

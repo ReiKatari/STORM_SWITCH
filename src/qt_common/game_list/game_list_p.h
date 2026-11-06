@@ -308,11 +308,25 @@ public:
             setData(QByteArray(reinterpret_cast<const char*>(picture_data.data()), static_cast<int>(picture_data.size())), RawIconRole);
         }
 
-        // Check custom config (item 21)
+        // Check custom config (item 21) with one-time directory cache (0 disk I/O per game)
         const std::string config_name = program_id == 0
             ? Common::FS::PathToUTF8String(std::filesystem::path(Common::FS::ToU8String(game_path.toStdString())).filename()).append(".ini")
             : fmt::format("{:016X}.ini", program_id);
-        const bool has_custom_config = Common::FS::Exists(Common::FS::GetEdenPath(Common::FS::EdenPath::ConfigDir) / "custom" / config_name);
+        static const auto custom_config_names = []() {
+            std::unordered_set<std::string> set;
+            const auto custom_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::ConfigDir) / "custom";
+            std::error_code ec;
+            if (std::filesystem::exists(custom_dir, ec)) {
+                for (const auto& entry : std::filesystem::directory_iterator(custom_dir, std::filesystem::directory_options::skip_permission_denied, ec)) {
+                    std::error_code fec;
+                    if (entry.is_regular_file(fec)) {
+                        set.insert(entry.path().filename().string());
+                    }
+                }
+            }
+            return set;
+        }();
+        const bool has_custom_config = custom_config_names.contains(config_name);
         setData(has_custom_config, HasCustomConfigRole);
 
         // Check platform (Switch 1 vs Switch 2)
@@ -321,24 +335,13 @@ public:
                                 game_path.contains(QStringLiteral("nx2"), Qt::CaseInsensitive);
         setData(is_switch2 ? 1 : 0, PlatformRole);
 
-        // Path to cached icon
+        // Path to cached icon (0 synchronous disk seeks during construction; loaded lazily in data())
         const auto cache_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::CacheDir) / "game_list";
         const auto icon_file = cache_dir / "icons" / fmt::format("{:016X}.png", program_id);
-        const auto jpeg_file = cache_dir / fmt::format("{:016X}.jpeg", program_id);
-        if (Common::FS::Exists(icon_file)) {
-            setData(QString::fromStdString(Common::FS::PathToUTF8String(icon_file)), IconPathRole);
-        } else if (Common::FS::Exists(jpeg_file)) {
-            setData(QString::fromStdString(Common::FS::PathToUTF8String(jpeg_file)), IconPathRole);
-        }
+        setData(QString::fromStdString(Common::FS::PathToUTF8String(icon_file)), IconPathRole);
 
         if (!picture_data.empty()) {
             m_image.loadFromData(picture_data.data(), static_cast<u32>(picture_data.size()));
-        } else {
-            if (Common::FS::Exists(icon_file)) {
-                m_image.load(QString::fromStdString(Common::FS::PathToUTF8String(icon_file)));
-            } else if (Common::FS::Exists(jpeg_file)) {
-                m_image.load(QString::fromStdString(Common::FS::PathToUTF8String(jpeg_file)));
-            }
         }
     }
 
@@ -376,6 +379,16 @@ public:
                         const QString icon_path = data(IconPathRole).toString();
                         if (!icon_path.isEmpty() && QFile::exists(icon_path)) {
                             m_image.load(icon_path);
+                        } else {
+                            const u64 pid = data(ProgramIdRole).toULongLong();
+                            if (pid != 0) {
+                                const auto cache_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::CacheDir) / "game_list";
+                                const auto jpeg_file = cache_dir / fmt::format("{:016X}.jpeg", pid);
+                                const auto jpeg_path = QString::fromStdString(Common::FS::PathToUTF8String(jpeg_file));
+                                if (QFile::exists(jpeg_path)) {
+                                    m_image.load(jpeg_path);
+                                }
+                            }
                         }
                     }
                 }

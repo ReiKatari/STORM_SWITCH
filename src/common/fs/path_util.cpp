@@ -233,7 +233,7 @@ bool ValidatePath(const fs::path& path) {
     }
 
 #ifdef _WIN32
-    if (path.u16string().size() >= MAX_PATH) {
+    if (path.u16string().size() >= 4096) {
         LOG_ERROR(Common_Filesystem, "Input path is too long, path={}", PathToUTF8String(path));
         return false;
     }

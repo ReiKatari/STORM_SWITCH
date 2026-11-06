@@ -34,6 +34,16 @@ object GameHelper {
     private const val KEY_OLD_GAME_PATH = "game_path"
     const val KEY_GAMES = "Games"
 
+    private val ignoredDirectoryNames: Set<String> = setOf(
+        "work", "romfs", "exefs", "cheats", "mods", "load", "atmosphere",
+        ".git", "cache", "shaders", "screenshots", "backup", "textures"
+    )
+
+    fun isIgnoredDirectory(name: String): Boolean {
+        val clean = name.trim().lowercase(Locale.ROOT)
+        return ignoredDirectoryNames.contains(clean) || clean.startsWith(".")
+    }
+
     var cachedGameList = mutableListOf<Game>()
 
     private lateinit var preferences: SharedPreferences
@@ -306,13 +316,7 @@ object GameHelper {
             // Verify whether any previously cached games still actually exist on disk
             val verified = cachedGameList.filter { game ->
                 try {
-                    val uri = Uri.parse(game.path)
-                    if (uri.scheme == "content") {
-                        DocumentFile.fromSingleUri(YuzuApplication.appContext, uri)?.exists() == true
-                    } else {
-                        val localPath = if (uri.scheme == "file") uri.path ?: "" else game.path
-                        File(localPath).exists() || File(Uri.decode(localPath)).exists()
-                    }
+                    FileUtil.exists(game.path, suppressLog = true)
                 } catch (_: Exception) {
                     false
                 }
@@ -479,6 +483,9 @@ object GameHelper {
 
         files.forEach {
             if (it.isDirectory) {
+                if (isIgnoredDirectory(it.filename)) {
+                    return@forEach
+                }
                 scanContentContainersRecursive(
                     FileUtil.listFiles(it.uri),
                     depth - 1,
@@ -515,6 +522,9 @@ object GameHelper {
 
         for (it in files) {
             if (it.isDirectory) {
+                if (isIgnoredDirectory(it.filename)) {
+                    continue
+                }
                 scanAndAddGamesRecursive(
                     games,
                     FileUtil.listFiles(it.uri),
@@ -553,18 +563,37 @@ object GameHelper {
                                     version = old.version,
                                     internalVersion = old.internalVersion,
                                     isHomebrew = old.isHomebrew,
-                                    addonCount = old.addonCount
+                                    addonCount = old.addonCount,
+                                    lastModified = old.lastModified,
+                                    fileSize = old.fileSize
                                 )
                             } else old
                         }
                         val isCartridge = extension == "xci" || extension == "xcz"
                         if (cached != null) {
-                            // Instant cache hit: already verified base game, no redundant JNI isBaseGame call
-                            if (isCartridge || (!isUpdateOrDlcPath(filePath) && !isUpdateOrDlcPath(it.filename))) {
-                                games.add(cached)
+                            val matchesSize = cached.fileSize <= 0L || it.fileSize <= 0L || cached.fileSize == it.fileSize
+                            val matchesMtime = cached.lastModified <= 0L || it.lastModified <= 0L || cached.lastModified == it.lastModified
+
+                            if (matchesSize && matchesMtime) {
+                                // Fast Cache Hit in O(1): reuse cached Game directly without JNI GameMetadata or DocumentFile.exists()!
+                                if (cached.fileSize <= 0L && it.fileSize > 0L) {
+                                    cached.fileSize = it.fileSize
+                                }
+                                if (cached.lastModified <= 0L && it.lastModified > 0L) {
+                                    cached.lastModified = it.lastModified
+                                }
+                                if (isCartridge || (!isUpdateOrDlcPath(filePath) && !isUpdateOrDlcPath(it.filename))) {
+                                    games.add(cached)
+                                }
+                            } else {
+                                // File changed on disk! Re-query metadata
+                                val game = getGame(it.uri, true, false, lastModified = it.lastModified, fileSize = it.fileSize)
+                                if (game != null) {
+                                    games.add(game)
+                                }
                             }
                         } else {
-                            val game = getGame(it.uri, true, false)
+                            val game = getGame(it.uri, true, false, lastModified = it.lastModified, fileSize = it.fileSize)
                             if (game != null) {
                                 games.add(game)
                             }
@@ -580,7 +609,8 @@ object GameHelper {
     private fun addGamesRecursive(
         games: MutableList<Game>,
         files: Array<MinimalDocumentFile>,
-        depth: Int
+        depth: Int,
+        cachedMapByPath: Map<String, Game> = emptyMap()
     ) {
         if (depth <= 0) {
             return
@@ -588,10 +618,14 @@ object GameHelper {
 
         files.forEach {
             if (it.isDirectory) {
+                if (isIgnoredDirectory(it.filename)) {
+                    return@forEach
+                }
                 addGamesRecursive(
                     games,
                     FileUtil.listFiles(it.uri),
-                    depth - 1
+                    depth - 1,
+                    cachedMapByPath
                 )
             } else {
                 val extension = if (it.filename.isNotEmpty() && it.filename.contains('.')) {
@@ -601,9 +635,33 @@ object GameHelper {
                 }
                 if (Game.extensions.contains(extension)) {
                     try {
-                        val game = getGame(it.uri, true, false)
-                        if (game != null) {
-                            games.add(game)
+                        val filePath = it.uri.toString()
+                        val cached = cachedMapByPath[filePath]
+                        val isCartridge = extension == "xci" || extension == "xcz"
+                        if (cached != null) {
+                            val matchesSize = cached.fileSize <= 0L || it.fileSize <= 0L || cached.fileSize == it.fileSize
+                            val matchesMtime = cached.lastModified <= 0L || it.lastModified <= 0L || cached.lastModified == it.lastModified
+                            if (matchesSize && matchesMtime) {
+                                if (cached.fileSize <= 0L && it.fileSize > 0L) {
+                                    cached.fileSize = it.fileSize
+                                }
+                                if (cached.lastModified <= 0L && it.lastModified > 0L) {
+                                    cached.lastModified = it.lastModified
+                                }
+                                if (isCartridge || (!isUpdateOrDlcPath(filePath) && !isUpdateOrDlcPath(it.filename))) {
+                                    games.add(cached)
+                                }
+                            } else {
+                                val game = getGame(it.uri, true, false, lastModified = it.lastModified, fileSize = it.fileSize)
+                                if (game != null) {
+                                    games.add(game)
+                                }
+                            }
+                        } else {
+                            val game = getGame(it.uri, true, false, lastModified = it.lastModified, fileSize = it.fileSize)
+                            if (game != null) {
+                                games.add(game)
+                            }
                         }
                     } catch (e: Throwable) {
                         Log.error("[GameHelper] Failed to parse game ${it.filename}: ${e.message}")
@@ -721,7 +779,9 @@ object GameHelper {
     fun getGame(
         uri: Uri,
         addedToLibrary: Boolean = false,
-        registerFilesystemProvider: Boolean = true
+        registerFilesystemProvider: Boolean = true,
+        lastModified: Long = 0L,
+        fileSize: Long = 0L
     ): Game? {
         val filePath = if (uri.scheme == "file") (android.net.Uri.decode(uri.path ?: uri.toString())) else uri.toString()
         val filename = FileUtil.getFilename(uri)
@@ -815,15 +875,18 @@ object GameHelper {
             } catch (_: Throwable) {}
         }
 
+        val actualFileSize = if (fileSize > 0L) fileSize else FileUtil.getFileSize(filePath)
         val newGame = Game(
-            name,
-            filePath,
-            programId,
-            GameMetadata.getDeveloper(filePath),
-            resolvedVersion,
-            resolvedInternalVersion,
-            GameMetadata.getIsHomebrew(filePath),
-            resolvedAddonCount
+            title = name,
+            path = filePath,
+            programId = programId,
+            developer = GameMetadata.getDeveloper(filePath),
+            version = resolvedVersion,
+            internalVersion = resolvedInternalVersion,
+            isHomebrew = GameMetadata.getIsHomebrew(filePath),
+            addonCount = resolvedAddonCount,
+            lastModified = lastModified,
+            fileSize = actualFileSize
         )
 
 

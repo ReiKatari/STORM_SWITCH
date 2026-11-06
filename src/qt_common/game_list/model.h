@@ -1,3 +1,4 @@
+#include <unordered_set>
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -86,6 +87,7 @@ private:
     void Repopulate();
 
     bool m_flat = false;
+    std::unordered_set<std::string> m_existing_full_paths;
 
     std::shared_ptr<FileSys::VfsFilesystem> vfs;
     FileSys::ManualContentProvider* provider;

@@ -254,10 +254,26 @@ void IOFile::Open(const fs::path& path, FileAccessMode mode, FileType type, File
     errno = 0;
 
 #ifdef _WIN32
+    std::wstring win_open_path = path.native();
+    if (win_open_path.size() >= 240) {
+        std::wstring norm = path.lexically_normal().native();
+        for (auto& c : norm) {
+            if (c == L'/') {
+                c = L'\\';
+            }
+        }
+        if (!norm.starts_with(L"\\\\?\\") && !norm.starts_with(L"\\\\.\\")) {
+            if (norm.starts_with(L"\\\\")) {
+                win_open_path = L"\\\\?\\UNC\\" + norm.substr(2);
+            } else if (norm.size() >= 2 && norm[1] == L':') {
+                win_open_path = L"\\\\?\\" + norm;
+            }
+        }
+    }
     if (flag != FileShareFlag::ShareNone) {
-        file = _wfsopen(path.c_str(), AccessModeToWStr(mode, type), ToWindowsFileShareFlag(flag));
+        file = _wfsopen(win_open_path.c_str(), AccessModeToWStr(mode, type), ToWindowsFileShareFlag(flag));
     } else {
-        _wfopen_s(&file, path.c_str(), AccessModeToWStr(mode, type));
+        _wfopen_s(&file, win_open_path.c_str(), AccessModeToWStr(mode, type));
     }
 #elif __ANDROID__
     std::string resolved_path = path;
@@ -400,10 +416,25 @@ u64 IOFile::GetSize() const {
         return 0;
     }
 
-    // Flush any unwritten buffered data into the file prior to retrieving the file size.
-    std::fflush(file);
+    if (file_access_mode != FileAccessMode::Read) {
+        // Flush any unwritten buffered data into the file prior to retrieving the file size.
+        std::fflush(file);
+    }
 
-#ifdef __ANDROID__
+#ifdef _WIN32
+    const s64 len = _filelengthi64(fileno(file));
+    if (len >= 0) {
+        return static_cast<u64>(len);
+    }
+    std::error_code ec;
+    const auto file_size = fs::file_size(file_path, ec);
+    if (ec) {
+        LOG_ERROR(Common_Filesystem, "Failed to retrieve the file size of path={}, ec_message={}",
+                  PathToUTF8String(file_path), ec.message());
+        return 0;
+    }
+    return file_size;
+#elif defined(__ANDROID__)
     u64 file_size = 0;
     if (Android::IsContentUri(file_path)) {
         file_size = Android::GetSize(file_path);

@@ -70,6 +70,9 @@ class GamesViewModel : ViewModel() {
                     } catch (_: Exception) {}
                 }
                 if (deserializedGames.isNotEmpty()) {
+                    if (GameHelper.cachedGameList.isEmpty()) {
+                        GameHelper.cachedGameList.addAll(deserializedGames)
+                    }
                     setGames(deserializedGames)
                 }
             }
@@ -147,7 +150,7 @@ class GamesViewModel : ViewModel() {
                     } else {
                         false
                     }
-                    if (changed || !hasExistingGames) {
+                    if (changed) {
                         _shouldScrollAfterReload.value = true
                         setShouldSwapData(true)
                     }

@@ -134,7 +134,15 @@ object FileUtil {
             if (file.exists() && file.isDirectory) {
                 file.listFiles()?.forEach { f ->
                     val mime = if (f.isDirectory) DocumentsContract.Document.MIME_TYPE_DIR else "application/octet-stream"
-                    results.add(MinimalDocumentFile(f.name, mime, Uri.fromFile(f)))
+                    results.add(
+                        MinimalDocumentFile(
+                            filename = f.name,
+                            mimeType = mime,
+                            uri = Uri.fromFile(f),
+                            lastModified = f.lastModified(),
+                            fileSize = if (f.isDirectory) 0L else f.length()
+                        )
+                    )
                 }
             }
             return results.toTypedArray()
@@ -166,7 +174,15 @@ object FileUtil {
                     } else {
                         Uri.fromFile(f)
                     }
-                    results.add(MinimalDocumentFile(f.name, mime, childUri))
+                    results.add(
+                        MinimalDocumentFile(
+                            filename = f.name,
+                            mimeType = mime,
+                            uri = childUri,
+                            lastModified = f.lastModified(),
+                            fileSize = if (f.isDirectory) 0L else f.length()
+                        )
+                    )
                 }
                 if (results.isNotEmpty()) {
                     return results.toTypedArray()
@@ -178,7 +194,9 @@ object FileUtil {
         val columns = arrayOf(
             DocumentsContract.Document.COLUMN_DOCUMENT_ID,
             DocumentsContract.Document.COLUMN_DISPLAY_NAME,
-            DocumentsContract.Document.COLUMN_MIME_TYPE
+            DocumentsContract.Document.COLUMN_MIME_TYPE,
+            DocumentsContract.Document.COLUMN_LAST_MODIFIED,
+            DocumentsContract.Document.COLUMN_SIZE
         )
         var c: Cursor? = null
         try {
@@ -190,12 +208,26 @@ object FileUtil {
             val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(uri, docId)
             c = resolver.query(childrenUri, columns, null, null, null)
             if (c != null) {
+                val docIdCol = c.getColumnIndex(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
+                val nameCol = c.getColumnIndex(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
+                val mimeCol = c.getColumnIndex(DocumentsContract.Document.COLUMN_MIME_TYPE)
+                val lastModCol = c.getColumnIndex(DocumentsContract.Document.COLUMN_LAST_MODIFIED)
+                val sizeCol = c.getColumnIndex(DocumentsContract.Document.COLUMN_SIZE)
+
                 while (c.moveToNext()) {
-                    val documentId = c.getString(0)
-                    val documentName = c.getString(1)
-                    val documentMimeType = c.getString(2)
+                    val documentId = if (docIdCol >= 0) c.getString(docIdCol) else c.getString(0)
+                    val documentName = (if (nameCol >= 0) c.getString(nameCol) else c.getString(1)) ?: ""
+                    val documentMimeType = (if (mimeCol >= 0) c.getString(mimeCol) else c.getString(2)) ?: ""
+                    val lastModified = if (lastModCol >= 0 && !c.isNull(lastModCol)) c.getLong(lastModCol) else 0L
+                    val fileSize = if (sizeCol >= 0 && !c.isNull(sizeCol)) c.getLong(sizeCol) else 0L
                     val documentUri = DocumentsContract.buildDocumentUriUsingTree(uri, documentId)
-                    val document = MinimalDocumentFile(documentName, documentMimeType, documentUri)
+                    val document = MinimalDocumentFile(
+                        filename = documentName,
+                        mimeType = documentMimeType,
+                        uri = documentUri,
+                        lastModified = lastModified,
+                        fileSize = fileSize
+                    )
                     results.add(document)
                 }
             }
@@ -212,7 +244,15 @@ object FileUtil {
                     treeDoc.listFiles().forEach { doc ->
                         val name = doc.name ?: ""
                         val mime = doc.type ?: if (doc.isDirectory) DocumentsContract.Document.MIME_TYPE_DIR else ""
-                        results.add(MinimalDocumentFile(name, mime, doc.uri))
+                        results.add(
+                            MinimalDocumentFile(
+                                filename = name,
+                                mimeType = mime,
+                                uri = doc.uri,
+                                lastModified = doc.lastModified(),
+                                fileSize = doc.length()
+                            )
+                        )
                     }
                 }
             } catch (e: Exception) {

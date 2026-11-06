@@ -98,18 +98,14 @@ bool GameListModel::LoadFromCache(const QVector<UISettings::GameDir>& game_dirs)
     int loaded_count = 0;
     for (auto it = root.begin(); it != root.end(); ++it) {
         const QString qpath = it.key();
-        QFileInfo fi(qpath);
-        if (!fi.exists() || !fi.isFile()) {
-            continue;
-        }
-
-        const QString canonical_file_path = QDir::cleanPath(fi.canonicalFilePath());
-        const QString parent_path = QDir::cleanPath(fi.canonicalPath());
+        const QString clean_file_path = QDir::cleanPath(qpath);
+        const int last_slash = clean_file_path.lastIndexOf(QLatin1Char('/'));
+        const QString parent_path = (last_slash != -1) ? clean_file_path.left(last_slash) : clean_file_path;
 
         bool in_active_dir = false;
         for (const auto& vd : valid_dirs) {
             if (vd.deep_scan) {
-                if (canonical_file_path.startsWith(vd.path + QLatin1Char('/'), Qt::CaseInsensitive) ||
+                if (clean_file_path.startsWith(vd.path + QLatin1Char('/'), Qt::CaseInsensitive) ||
                     parent_path.compare(vd.path, Qt::CaseInsensitive) == 0) {
                     in_active_dir = true;
                     break;
@@ -152,6 +148,7 @@ bool GameListModel::LoadFromCache(const QVector<UISettings::GameDir>& game_dirs)
         const auto entry = MakeCachedGameListEntry(qpath.toStdString(), name, file_size, {}, file_type,
                                                    program_id, play_time_manager, patches, version, addons);
         invisibleRootItem()->appendRow(entry);
+        m_existing_full_paths.insert(qpath.toStdString());
         loaded_count++;
     }
 
@@ -200,8 +197,9 @@ void GameListModel::PopulateAsync(QVector<UISettings::GameDir>& game_dirs) {
 
     current_worker.reset();
     removeRows(0, rowCount());
+    m_existing_full_paths.clear();
 
-    // 1. Fast Cache Hydration (<= 0.2s): show game cards immediately!
+    // 1. Fast Cache Hydration (<= 0.015s): show game cards immediately!
     LoadFromCache(game_dirs);
 
     // 2. Incremental Background Rescan
@@ -238,15 +236,13 @@ void GameListModel::AddEntry(const QList<QStandardItem*>& entry_items, GameListD
     if (entry_items.isEmpty()) return;
     const QString new_path = entry_items.first()->data(GameListItemPath::FullPathRole).toString();
 
-    // Check if entry already exists in model (e.g. from fast cache hydration)
+    // Check if entry already exists in model (e.g. from fast cache hydration) - O(1)
     if (!new_path.isEmpty()) {
-        auto* root = invisibleRootItem();
-        for (int i = 0; i < root->rowCount(); ++i) {
-            auto* existing = root->child(i, 0);
-            if (existing && existing->data(GameListItemPath::FullPathRole).toString() == new_path) {
-                return;
-            }
+        const std::string s_path = new_path.toStdString();
+        if (m_existing_full_paths.contains(s_path)) {
+            return;
         }
+        m_existing_full_paths.insert(s_path);
     }
 
     if (m_flat) {

@@ -32,7 +32,9 @@ class Game(
     var version: String = "",
     var internalVersion: String = "",
     val isHomebrew: Boolean = false,
-    var addonCount: Int = 0
+    var addonCount: Int = 0,
+    var lastModified: Long = 0L,
+    var fileSize: Long = 0L
 ) : Parcelable {
     val keyAddedToLibraryTime get() = "${path}_AddedToLibraryTime"
     val keyLastPlayedTime get() = "${path}_LastPlayed"
