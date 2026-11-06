@@ -257,7 +257,13 @@ object StormDesignEngine {
             }
         }
 
-        applyTouchFeedback(card, design, density)
+        val isExpandableContainer =
+            card.findViewById<View>(R.id.radio_group) != null ||
+                card.findViewById<View>(R.id.slider_container) != null ||
+                card.findViewById<View>(R.id.switch_container) != null
+        if (!isExpandableContainer && (card.isClickable || card.isFocusable)) {
+            applyTouchFeedback(card, design, density)
+        }
     }
 
     private fun styleButton(button: MaterialButton, design: Int) {

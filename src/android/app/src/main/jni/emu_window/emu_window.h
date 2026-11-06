@@ -41,6 +41,7 @@ public:
     ~EmuWindow_Android() = default;
 
     void OnSurfaceChanged(ANativeWindow* surface);
+    void UpdateCurrentFramebufferLayout(u32 width, u32 height) override;
     void OnFrameDisplayed() override;
 
     void OnTouchPressed(int id, float x, float y);

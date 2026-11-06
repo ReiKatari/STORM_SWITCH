@@ -171,6 +171,15 @@ ANativeWindow* EmulationSession::NativeWindow() const {
 }
 
 void EmulationSession::SetNativeWindow(ANativeWindow* native_window) {
+    if (m_native_window == native_window) {
+        if (native_window != nullptr) {
+            ANativeWindow_release(native_window);
+        }
+        return;
+    }
+    if (m_native_window != nullptr) {
+        ANativeWindow_release(m_native_window);
+    }
     m_native_window = native_window;
 }
 
@@ -1001,14 +1010,12 @@ extern "C" {
 
 void Java_org_yuzu_yuzu_1emu_NativeLibrary_surfaceChanged(JNIEnv* env, jobject instance,
                                                           [[maybe_unused]] jobject surf) {
-    EmulationSession::GetInstance().SetNativeWindow(ANativeWindow_fromSurface(env, surf));
+    ANativeWindow* window = (surf != nullptr) ? ANativeWindow_fromSurface(env, surf) : nullptr;
+    EmulationSession::GetInstance().SetNativeWindow(window);
     EmulationSession::GetInstance().SurfaceChanged();
 }
 
 void Java_org_yuzu_yuzu_1emu_NativeLibrary_surfaceDestroyed(JNIEnv* env, jobject instance) {
-    if (auto* native_window = EmulationSession::GetInstance().NativeWindow(); native_window) {
-        ANativeWindow_release(native_window);
-    }
     EmulationSession::GetInstance().SetNativeWindow(nullptr);
     EmulationSession::GetInstance().SurfaceChanged();
 }

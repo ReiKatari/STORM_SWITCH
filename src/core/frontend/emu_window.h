@@ -126,7 +126,7 @@ public:
      * Convenience method to update the current frame layout
      * Read from the current settings to determine which layout to use.
      */
-    void UpdateCurrentFramebufferLayout(u32 width, u32 height);
+    virtual void UpdateCurrentFramebufferLayout(u32 width, u32 height);
 
 protected:
     explicit EmuWindow();

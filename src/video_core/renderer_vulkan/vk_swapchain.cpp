@@ -392,8 +392,6 @@ void Swapchain::CreateSwapchain(const VkSurfaceCapabilitiesKHR& capabilities) {
     swapchain = std::move(new_swapchain);
 
     extent = swapchain_ci.imageExtent;
-    width = extent.width;
-    height = extent.height;
 
     images = swapchain.GetImages();
     image_count = static_cast<u32>(images.size());

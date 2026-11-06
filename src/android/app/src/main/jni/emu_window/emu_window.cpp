@@ -21,6 +21,7 @@
 #include "input_common/drivers/virtual_amiibo.h"
 #include "input_common/drivers/virtual_gamepad.h"
 #include "input_common/main.h"
+#include "jni/android_settings.h"
 #include "jni/emu_window/emu_window.h"
 #include "jni/native.h"
 
@@ -45,12 +46,32 @@ void EmuWindow_Android::OnSurfaceChanged(ANativeWindow* surface) {
 
     NotifyClientAreaSizeChanged({static_cast<u32>(m_window_width), static_cast<u32>(m_window_height)});
 
-    // Ensures that we emulate with the correct aspect ratio.
-    UpdateCurrentFramebufferLayout(m_window_width, m_window_height);
+    // Ensures that we emulate with the correct aspect ratio and vertical alignment.
+    UpdateCurrentFramebufferLayout(static_cast<u32>(m_window_width),
+                                   static_cast<u32>(m_window_height));
 
     window_info.render_surface = reinterpret_cast<void*>(surface);
     m_first_frame = false;
     UpdateFrameRateHint();
+}
+
+void EmuWindow_Android::UpdateCurrentFramebufferLayout(u32 width, u32 height) {
+    if (width == 0 || height == 0) {
+        return;
+    }
+    auto layout = Layout::DefaultFrameLayout(width, height);
+    const u32 screen_h = layout.screen.GetHeight();
+    if (screen_h > 0 && screen_h < height) {
+        const s32 align = AndroidSettings::values.vertical_alignment.GetValue();
+        if (align == 0) { // Top
+            layout.screen.top = 0;
+            layout.screen.bottom = screen_h;
+        } else if (align == 2) { // Bottom
+            layout.screen.top = height - screen_h;
+            layout.screen.bottom = height;
+        }
+    }
+    NotifyFramebufferLayoutChanged(layout);
 }
 
 void EmuWindow_Android::OnTouchPressed(int id, float x, float y) {

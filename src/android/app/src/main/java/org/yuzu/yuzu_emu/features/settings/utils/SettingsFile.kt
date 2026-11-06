@@ -102,6 +102,21 @@ object SettingsFile {
                 if (r1 != text) { text = r1; modified = true }
             }
 
+            // One-time heal for pre-16.3.2 JNI enum virtual-base cast bug that poisoned
+            // aspect_ratio\use_global=false + aspect_ratio=0 inside per-game .ini files.
+            if (!text.contains("storm_jni_enum_healed=1")) {
+                if (Regex("aspect_ratio\\\\use_global\\s*=\\s*false", RegexOption.IGNORE_CASE).containsMatchIn(text) &&
+                    Regex("(?m)^\\s*aspect_ratio\\s*=\\s*0\\s*$").containsMatchIn(text)
+                ) {
+                    text = text.replace(
+                        Regex("aspect_ratio\\\\use_global\\s*=\\s*false", RegexOption.IGNORE_CASE),
+                        Regex.escapeReplacement("aspect_ratio\\use_global=true")
+                    )
+                }
+                text = text.trimEnd() + "\n# storm_jni_enum_healed=1\n"
+                modified = true
+            }
+
             if (modified) {
                 file.writeText(text, Charsets.UTF_8)
             }

@@ -368,6 +368,12 @@ void PresentManager::RecreateSwapchain(Frame* frame) {
     const u32 target_w = (layout.width > 0) ? layout.width : frame->width;
     const u32 target_h = (layout.height > 0) ? layout.height : frame->height;
     swapchain.Create(*surface, target_w, target_h); // Pass raw pointer
+    if (swapchain.GetImageViewFormat() != VK_FORMAT_UNDEFINED) {
+        blit_supported = CanBlitToSwapchain(device.GetPhysical(), swapchain.GetImageViewFormat());
+    }
+    if (swapchain.GetImageFormat() != VK_FORMAT_UNDEFINED) {
+        storage_supported = CanStoreToFrame(device.GetPhysical(), swapchain.GetImageFormat());
+    }
     SetImageCount();
 }
 
@@ -424,11 +430,42 @@ void PresentManager::SetImageCount() {
     }
 }
 
+void PresentManager::DrainSkippedFrame(Frame* frame) {
+    if (!frame || scheduler.IsLost()) {
+        return;
+    }
+    vk::CommandBuffer cmdbuf{frame->cmdbuf};
+    cmdbuf.Begin({
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+        .pNext = nullptr,
+        .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+        .pInheritanceInfo = nullptr,
+    });
+    cmdbuf.End();
+    const VkSemaphore wait_sem = *frame->render_ready;
+    static constexpr VkPipelineStageFlags wait_stage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+    const VkSubmitInfo submit_info{
+        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+        .pNext = nullptr,
+        .waitSemaphoreCount = 1,
+        .pWaitSemaphores = &wait_sem,
+        .pWaitDstStageMask = &wait_stage,
+        .commandBufferCount = 1,
+        .pCommandBuffers = cmdbuf.address(),
+        .signalSemaphoreCount = 0,
+        .pSignalSemaphores = nullptr,
+    };
+    std::scoped_lock submit_lock{scheduler.submit_mutex};
+    if (device.GetGraphicsQueue().Submit(submit_info, *frame->present_done) == VK_SUCCESS) {
+        frame->is_submitted = true;
+    }
+}
+
 void PresentManager::CopyToSwapchain(Frame* frame) {
     if (Settings::values.enable_frame_skipping.GetValue()) {
         static u32 skip_counter = 0;
         if ((++skip_counter % 2) != 0) {
-            const vk::CommandBuffer cmdbuf{frame->cmdbuf};
+            vk::CommandBuffer cmdbuf{frame->cmdbuf};
             cmdbuf.Begin({
                 .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
                 .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
@@ -455,11 +492,12 @@ void PresentManager::CopyToSwapchain(Frame* frame) {
     }
 
     const bool current_fg = Settings::values.frame_gen.GetValue() || Settings::values.enable_frame_interpolation.GetValue();
-    bool requires_recreation = (current_fg != last_frame_gen_enabled);
-    if (requires_recreation) {
+    bool requires_recreation = (current_fg != last_frame_gen_enabled) || surface_was_lost || !surface;
+    if (current_fg != last_frame_gen_enabled) {
         last_frame_gen_enabled = current_fg;
     }
 
+    int retry_count = 0;
     while (true) {
         if (scheduler.IsLost()) {
             return;
@@ -468,31 +506,32 @@ void PresentManager::CopyToSwapchain(Frame* frame) {
             return;
         }
 #ifdef __ANDROID__
-        while (render_window.GetWindowInfo().render_surface == nullptr) {
-            if (scheduler.IsLost()) {
-                return;
-            }
-            if (use_present_thread && present_thread.get_stop_token().stop_requested()) {
-                return;
-            }
-            std::this_thread::sleep_for(std::chrono::milliseconds(20));
-            requires_recreation = true;
+        if (render_window.GetWindowInfo().render_surface == nullptr) {
+            surface_was_lost = true;
+            DrainSkippedFrame(frame);
+            return;
         }
 #endif
-        if (scheduler.IsLost()) {
-            return;
-        }
-        if (use_present_thread && present_thread.get_stop_token().stop_requested()) {
-            return;
-        }
         try {
             // Recreate surface and swapchain if needed.
             if (requires_recreation) {
 #ifdef __ANDROID__
+                // Must tear down existing VkSwapchainKHR and VkSurfaceKHR BEFORE calling
+                // vkCreateAndroidSurfaceKHR, because Android allows only one connected Vulkan
+                // surface per ANativeWindow (otherwise VK_ERROR_INITIALIZATION_FAILED is thrown).
+                device.GetLogical().WaitIdle();
+                swapchain.Create(nullptr, 0, 0);
+                surface.reset();
+                if (render_window.GetWindowInfo().render_surface == nullptr) {
+                    surface_was_lost = true;
+                    DrainSkippedFrame(frame);
+                    return;
+                }
                 surface = CreateSurface(instance, render_window.GetWindowInfo());
 #endif
                 RecreateSwapchain(frame);
                 requires_recreation = false;
+                surface_was_lost = false;
             }
 
             // Draw to swapchain.
@@ -503,15 +542,20 @@ void PresentManager::CopyToSwapchain(Frame* frame) {
                 LOG_CRITICAL(Render_Vulkan, "STORM Vulkan Device Recovery: Device lost detected, stopping present thread safely...");
                 return;
             }
+            requires_recreation = true;
+            surface_was_lost = true;
+            if (++retry_count >= 3) {
+                LOG_WARNING(Render_Vulkan, "Deferring frame presentation until Android surface stabilizes ({})", except.what());
+                DrainSkippedFrame(frame);
+                return;
+            }
             if (res != VK_ERROR_SURFACE_LOST_KHR &&
                 res != VK_ERROR_OUT_OF_DATE_KHR &&
                 res != VK_SUBOPTIMAL_KHR &&
                 res != VK_ERROR_NATIVE_WINDOW_IN_USE_KHR) {
                 LOG_ERROR(Render_Vulkan, "Unexpected Vulkan exception in present: {}", except.what());
-                std::this_thread::sleep_for(std::chrono::milliseconds(16));
+                std::this_thread::sleep_for(std::chrono::milliseconds(8));
             }
-
-            requires_recreation = true;
         }
     }
 }
@@ -538,7 +582,7 @@ void PresentManager::CopyToSwapchainImpl(Frame* frame) {
         RecreateSwapchain(frame);
     }
 
-    const vk::CommandBuffer cmdbuf{frame->cmdbuf};
+    vk::CommandBuffer cmdbuf{frame->cmdbuf};
     cmdbuf.Begin({
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
         .pNext = nullptr,
@@ -628,7 +672,50 @@ void PresentManager::CopyToSwapchainImpl(Frame* frame) {
     cmdbuf.PipelineBarrier(vk::PIPELINE_STAGE_GRAPHICS_COMPUTE_TRANSFER, VK_PIPELINE_STAGE_TRANSFER_BIT, {},
                            {}, {}, pre_barriers);
 
-    if (blit_supported) {
+    const bool can_blit = blit_supported ||
+                          (swapchain.GetImageFormat() != VK_FORMAT_UNDEFINED &&
+                           CanBlitToSwapchain(device.GetPhysical(), swapchain.GetImageFormat()));
+    if (can_blit && !blit_supported) {
+        blit_supported = true;
+    }
+
+    if (!can_blit || frame->width != extent.width || frame->height != extent.height) {
+        static constexpr VkClearColorValue black_clear{{0.0f, 0.0f, 0.0f, 1.0f}};
+        static constexpr std::array<VkImageSubresourceRange, 1> clear_ranges{{
+            VkImageSubresourceRange{
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .baseMipLevel = 0,
+                .levelCount = 1,
+                .baseArrayLayer = 0,
+                .layerCount = VK_REMAINING_ARRAY_LAYERS,
+            },
+        }};
+        cmdbuf.ClearColorImage(image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, black_clear, clear_ranges);
+        const std::array clear_barriers{
+            VkImageMemoryBarrier{
+                .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+                .pNext = nullptr,
+                .srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
+                .dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
+                .oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                .newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                .image = image,
+                .subresourceRange{
+                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                    .baseMipLevel = 0,
+                    .levelCount = 1,
+                    .baseArrayLayer = 0,
+                    .layerCount = VK_REMAINING_ARRAY_LAYERS,
+                },
+            },
+        };
+        cmdbuf.PipelineBarrier(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, {},
+                               {}, {}, clear_barriers);
+    }
+
+    if (can_blit) {
         cmdbuf.BlitImage(*frame->image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, image,
                          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                          MakeImageBlit(frame->width, frame->height, extent.width, extent.height),

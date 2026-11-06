@@ -48,9 +48,11 @@ class QuickSettings(val emulationFragment: EmulationFragment) {
                 org.yuzu.yuzu_emu.model.GameFixDatabase.markConfigAsUserCustom(currentGame)
             }
             NativeConfig.saveGlobalConfig()
-            try {
-                NativeLibrary.applySettings()
-            } catch (_: Throwable) {}
+            emulationFragment.view?.post {
+                try {
+                    NativeLibrary.applySettings()
+                } catch (_: Throwable) {}
+            }
         }
     }
 

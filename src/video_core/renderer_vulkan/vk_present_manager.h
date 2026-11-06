@@ -70,6 +70,8 @@ public:
 private:
     void PresentThread(std::stop_token token);
 
+    void DrainSkippedFrame(Frame* frame);
+
     void CopyToSwapchain(Frame* frame);
 
     void CopyToSwapchainImpl(Frame* frame);
@@ -101,6 +103,7 @@ private:
     bool use_present_thread;
     std::size_t image_count{};
     bool last_frame_gen_enabled{};
+    bool surface_was_lost{};
 };
 
 } // namespace Vulkan

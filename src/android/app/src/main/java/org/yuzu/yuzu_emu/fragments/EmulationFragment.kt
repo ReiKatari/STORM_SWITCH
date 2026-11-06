@@ -3043,76 +3043,31 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
 
     fun updateScreenLayout() {
         val b = _binding ?: return
-        val verticalAlignment =
-            EmulationVerticalAlignment.from(IntSetting.VERTICAL_ALIGNMENT.getInt())
-        val aspectRatio = when (IntSetting.RENDERER_ASPECT_RATIO.getInt()) {
-            0 -> Rational(16, 9)
-            1 -> Rational(4, 3)
-            2 -> Rational(21, 9)
-            3 -> Rational(16, 10)
-            4 -> null // Stretch to fit screen
-            5 -> Rational(32, 9)
-            6 -> Rational(1, 1)
-            7 -> Rational(3, 2)
-            8 -> Rational(5, 4)
-            9 -> Rational(18, 9)
-            10 -> Rational(39, 18) // 19.5:9
-            11 -> Rational(20, 9)
-            12 -> Rational(21, 10)
-            13 -> Rational(24, 10)
-            14 -> Rational(32, 10)
-            15 -> Rational(48, 9)
-            16 -> null // Auto Window
-            else -> Rational(16, 9)
+        // Keep SurfaceView full-screen (MATCH_PARENT x MATCH_PARENT) at all times so Vulkan
+        // WindowAdaptPass & EmuWindow_Android::UpdateCurrentFramebufferLayout handle all 17
+        // aspect ratios + vertical alignments cleanly without SurfaceView / OEM WSI mismatches
+        // or CoordinatorLayout relayout jitter under QuickSettings.
+        b.surfaceEmulation.setAspectRatio(null)
+        val existing = b.surfaceEmulation.layoutParams as? FrameLayout.LayoutParams
+        if (existing == null ||
+            existing.width != ViewGroup.LayoutParams.MATCH_PARENT ||
+            existing.height != ViewGroup.LayoutParams.MATCH_PARENT ||
+            existing.gravity != Gravity.CENTER
+        ) {
+            val params = FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            params.gravity = Gravity.CENTER
+            b.surfaceEmulation.layoutParams = params
         }
-        when (verticalAlignment) {
-            EmulationVerticalAlignment.Top -> {
-                b.surfaceEmulation.setAspectRatio(aspectRatio)
-                val params = FrameLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                )
-                params.gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
-                b.surfaceEmulation.layoutParams = params
-            }
-
-            EmulationVerticalAlignment.Center -> {
-                b.surfaceEmulation.setAspectRatio(aspectRatio)
-                val params = FrameLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT
-                )
-                params.gravity = Gravity.CENTER
-                b.surfaceEmulation.layoutParams = params
-            }
-
-            EmulationVerticalAlignment.Bottom -> {
-                b.surfaceEmulation.setAspectRatio(aspectRatio)
-                val params = FrameLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                )
-                params.gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
-                b.surfaceEmulation.layoutParams = params
-            }
-        }
-        if (this::emulationState.isInitialized) {
-            emulationState.updateSurface()
-        }
+        NativeLibrary.applySettings()
         emulationActivity?.buildPictureInPictureParams()
         updateOrientation()
     }
 
     fun onAspectRatioChanged() {
-        NativeLibrary.applySettings()
         updateScreenLayout()
-        _binding?.surfaceEmulation?.post {
-            _binding?.surfaceEmulation?.holder?.surface?.let { s ->
-                if (s.isValid) {
-                    NativeLibrary.surfaceChanged(s)
-                }
-            }
-        }
     }
 
 
