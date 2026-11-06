@@ -519,6 +519,18 @@ class DriverViewModel : ViewModel() {
                         selectedDriverPath = ""
                         selectedDriverFile = File("")
                         selectedDriverMetadata = GpuDriverMetadata()
+                        if (isCustomDriverForGame && game != null) {
+                            isCustomDriverForGame = false
+                            GpuDriverHelper.resetPerGameDriverToGlobal(game)
+                            deleteGameShadersInternal(game)
+                        } else {
+                            StringSetting.DRIVER_PATH.global = true
+                            StringSetting.DRIVER_PATH.setString("")
+                            NativeConfig.saveGlobalConfig()
+                            if (game != null) {
+                                deleteGameShadersInternal(game)
+                            }
+                        }
                     }
                 }
                 val installedMetadata = GpuDriverHelper.installedCustomDriverData

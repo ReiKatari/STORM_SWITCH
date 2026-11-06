@@ -1431,22 +1431,27 @@ GameFixProfile(
 GameFixProfile(
             0x01003D100E9C6000L,
             "The Witcher 3: Wild Hunt",
-            "• Зависание физики волос/одежды Геральта в Новиграде",
-            "• HairWorks and physics freezes in Novigrad",
-            "✓ Эксклюзивы быстрой памяти: Включено",
-            "✓ Fastmem Exclusives: Enabled",
+            "• Вылеты памяти (OOM) и зависания диспетчера потоков REDengine\n• Мерцание теней и воды в Новиграде",
+            "• REDengine thread deadlocks and host OOM memory crashes\n• Shadow and water flickering in Novigrad",
+            "✓ Память: 6 ГБ DRAM (устраняет сбой аллокатора памяти)\n✓ Fastmem Exclusives: Отключено (устраняет дедлоки потоков REDengine)\n✓ Игнорировать прерывания памяти: Включено\n✓ Точность ГПУ: Обычная\n✓ Обратные циклы барьеров: Включено",
+            "✓ Memory Layout: 6GB DRAM (Prevents host allocator OOM)\n✓ Fastmem Exclusives: Disabled (Fixes REDengine thread deadlocks)\n✓ Ignore Memory Aborts: Enabled\n✓ GPU Accuracy: Normal\n✓ Barrier Feedback Loops: Enabled",
             mapOf(
                 "System\\memory_layout_mode" to "0",
+                "System\\airplane_mode" to "true",
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "false",
-                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\accelerate_astc" to "1",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\barrier_feedback_loops" to "true",
-                "Cpu\\cpuopt_fastmem_exclusives" to "true",
+                "Cpu\\cpu_accuracy" to "0",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "Cpu\\cpuopt_fastmem_exclusives" to "false",
                 "Renderer\\fsr_sharpening_slider" to "85"
-            )
+            ),
+            listOf(0x0100BFF00E256000L, 0x0100E67012924000L)
         ),
                 // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/4150
 GameFixProfile(
@@ -3627,7 +3632,8 @@ GameFixProfile(
                 "System\\memory_layout_mode" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
-            )
+            ),
+            listOf(0x0100D560130C6000L)
         ),
         GameFixProfile(
             0x0100D5600DE44000L,
@@ -3682,7 +3688,8 @@ GameFixProfile(
                 "System\\memory_layout_mode" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
-            )
+            ),
+            listOf(0x010078D000F88000L)
         ),
         GameFixProfile(
             0x0100B1A01B20A000L,
@@ -6650,7 +6657,58 @@ GameFixProfile(
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0"
             ),
-            listOf(0x0100C4000FC1A000L, 0x010091600E5BC000L)
+            listOf(0x0100183010F12000L, 0x01007D300F6E2000L, 0x0100C4000FC1A000L, 0x010091600E5BC000L)
+        ),
+        GameFixProfile(
+            0x01000C100DF0C000L,
+            "Sniper Elite 4",
+            "• Задержка ввода (input lag) и неравномерность кадрового темпа (frame pacing)\n• Просадки FPS при синхронной компиляции шейдеров Asura engine",
+            "• Input lag and frame pacing stuttering with unoptimized GPU fences\n• Framerate drops during synchronous Asura engine shader compilation",
+            "✓ Точность ГПУ: Обычная (Normal / устранение задержек выборки глубины)\n✓ Быстрое время ГПУ: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено",
+            "✓ GPU Accuracy: Normal (Eliminates depth readback latency)\n✓ Fast GPU Time: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "Cpu\\cpu_accuracy" to "0"
+            ),
+            listOf(0x01005AD011C6E000L)
+        ),
+        GameFixProfile(
+            0x0100C3800B8A0000L,
+            "Power Rangers: Battle for the Grid",
+            "• Микрофризы и задержка ввода при блокирующих синхронизациях GPU fence\n• Просадки FPS в динамичных боевых сценах Unity",
+            "• Input lag and frame pacing stuttering with blocking GPU fence waits\n• Framerate drops in fast-paced Unity combat sequences",
+            "✓ Точность ГПУ: Обычная (Normal / неблокирующая синхронизация)\n✓ Быстрое время ГПУ: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено",
+            "✓ GPU Accuracy: Normal (Non-blocking fence pacing)\n✓ Fast GPU Time: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "Cpu\\cpu_accuracy" to "0"
+            ),
+            listOf(0x01005A300BFD6000L, 0x0100B1A00C9BC000L, 0x0100CD800D32E000L)
+        ),
+        GameFixProfile(
+            0x0100412019772000L,
+            "Naruto x Boruto Ultimate Ninja STORM CONNECTIONS",
+            "• Просадки FPS и фризы при динамическом инстансинге вершин в дзюцу\n• Задержка ввода из-за синхронного сброса командных буферов",
+            "• Pipeline stalls during dynamic vertex attribute instancing in jutsu animations\n• Input lag from synchronous command buffer flushes",
+            "✓ Точность ГПУ: Обычная (Normal / оптимизированный конвейер)\n✓ Быстрое время ГПУ: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено",
+            "✓ GPU Accuracy: Normal (Optimized pipeline throughput)\n✓ Fast GPU Time: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Cpu\\cpuopt_fastmem" to "true",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true",
+                "Cpu\\cpu_accuracy" to "0"
+            ),
+            listOf(0x010014C01A242000L, 0x0100999019806000L)
         ),
         GameFixProfile(
             0x01007B600D338000L,

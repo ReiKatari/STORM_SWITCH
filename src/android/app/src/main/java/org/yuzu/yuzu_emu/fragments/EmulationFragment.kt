@@ -1136,6 +1136,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                     isQuickSettingsMenuOpen = true
                 } else if (newState == BottomSheetBehavior.STATE_HIDDEN) {
                     isQuickSettingsMenuOpen = false
+                    emulationActivity?.buildPictureInPictureParams()
                 }
             }
 
@@ -2654,7 +2655,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 val frametimeSec = perfStats[FRAMETIME]
                 if (frametimeSec > 0.0) {
                     org.yuzu.yuzu_emu.utils.AdpfManager.reportActualWorkDuration((frametimeSec * 1_000_000_000.0).toLong())
-                } else {
+                } else if (!org.yuzu.yuzu_emu.utils.AdpfManager.isSessionActive() && !NativeLibrary.isPaused()) {
                     context?.let { org.yuzu.yuzu_emu.utils.AdpfManager.initSession(it, 60f) }
                 }
             }
@@ -3062,7 +3063,9 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
             b.surfaceEmulation.layoutParams = params
         }
         NativeLibrary.applySettings()
-        emulationActivity?.buildPictureInPictureParams()
+        if (!isQuickSettingsMenuOpen) {
+            emulationActivity?.buildPictureInPictureParams()
+        }
         updateOrientation()
     }
 

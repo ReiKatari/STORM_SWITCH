@@ -105,8 +105,8 @@ object StormDesignEngine {
             val decor = window.decorView
             styleViewHierarchy(decor, design, themeIndex)
 
-            // Attach debounced layout listener if not already registered
-            if (!activeListeners.containsKey(activity)) {
+            // Attach debounced layout listener if not already registered (skip live EmulationActivity HUD loop)
+            if (!activity.javaClass.name.contains("EmulationActivity", ignoreCase = true) && !activeListeners.containsKey(activity)) {
                 var isTraversing = false
                 val listener = ViewTreeObserver.OnGlobalLayoutListener {
                     if (isTraversing) return@OnGlobalLayoutListener

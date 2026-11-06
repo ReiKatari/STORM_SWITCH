@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.checkbox.MaterialCheckBox xmlns:android="http://schemas.android.com/apk/res/android"
+<CheckedTextView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@android:id/text1"
     android:layout_width="match_parent"
@@ -7,10 +7,17 @@
     android:minHeight="50dp"
     android:paddingStart="16dp"
     android:paddingEnd="16dp"
+    android:paddingVertical="6dp"
     android:gravity="center_vertical"
+    android:drawableStart="?android:attr/listChoiceIndicatorMultiple"
+    android:drawablePadding="16dp"
+    app:drawableTint="?attr/colorPrimary"
     android:textColor="?attr/colorOnSurface"
     android:textSize="15sp"
-    android:background="?attr/selectableItemBackground"
-    android:buttonTint="?attr/colorPrimary"
-    app:buttonTint="?attr/colorPrimary"
-    android:ellipsize="marquee" />
+    android:maxLines="2"
+    android:ellipsize="end"
+    android:breakStrategy="simple"
+    android:hyphenationFrequency="none"
+    android:focusable="false"
+    android:clickable="false"
+    android:background="?attr/selectableItemBackground" />

@@ -48,12 +48,10 @@ class QuickSettings(val emulationFragment: EmulationFragment) {
                 org.yuzu.yuzu_emu.model.GameFixDatabase.markConfigAsUserCustom(currentGame)
             }
             NativeConfig.saveGlobalConfig()
-            emulationFragment.view?.post {
-                try {
-                    NativeLibrary.applySettings()
-                } catch (_: Throwable) {}
-            }
         }
+        try {
+            NativeLibrary.applySettings()
+        } catch (_: Throwable) {}
     }
 
     fun addPerGameConfigStatusIndicator(container: ViewGroup) {
@@ -108,6 +106,8 @@ class QuickSettings(val emulationFragment: EmulationFragment) {
             val radioButton = com.google.android.material.radiobutton.MaterialRadioButton(emulationFragment.requireContext())
             radioButton.text = optionName
             radioButton.id = View.generateViewId()
+            radioButton.isFocusable = false
+            radioButton.isFocusableInTouchMode = false
             radioButton.isChecked = index == currentIndex
             radioButton.setPadding(16, 8, 16, 8)
 

@@ -2487,8 +2487,7 @@ bool Image::BlitScaleHelper(bool scale_up) {
             runtime->blit_image_helper.BlitColor(&*blit_framebuffer, src_view,
                 dst_region, src_region, operation, BLIT_OPERATION);
         }
-    } else if (aspect_mask == (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT) &&
-               runtime->device.IsExtShaderStencilExportSupported()) {
+    } else if ((aspect_mask & VK_IMAGE_ASPECT_DEPTH_BIT) != 0) {
         if (!blit_framebuffer) {
             blit_framebuffer.emplace(*runtime, nullptr, dst_view, extent, scale_up);
         }

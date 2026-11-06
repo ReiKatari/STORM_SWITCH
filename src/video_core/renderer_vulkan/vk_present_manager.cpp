@@ -368,6 +368,13 @@ void PresentManager::RecreateSwapchain(Frame* frame) {
     const u32 target_w = (layout.width > 0) ? layout.width : frame->width;
     const u32 target_h = (layout.height > 0) ? layout.height : frame->height;
     swapchain.Create(*surface, target_w, target_h); // Pass raw pointer
+#ifdef __ANDROID__
+    const auto actual_extent = swapchain.GetExtent();
+    if (actual_extent.width > 0 && actual_extent.height > 0 &&
+        (actual_extent.width != layout.width || actual_extent.height != layout.height)) {
+        render_window.UpdateCurrentFramebufferLayout(actual_extent.width, actual_extent.height);
+    }
+#endif
     if (swapchain.GetImageViewFormat() != VK_FORMAT_UNDEFINED) {
         blit_supported = CanBlitToSwapchain(device.GetPhysical(), swapchain.GetImageViewFormat());
     }

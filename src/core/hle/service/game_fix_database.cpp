@@ -1147,22 +1147,27 @@ static const std::vector<GameFixProfile> s_profiles = {
 {
         0x01003D100E9C6000ULL,
         "The Witcher 3: Wild Hunt",
-        "• Зависание физики волос/одежды Геральта в Новиграде",
-        "• HairWorks and physics freezes in Novigrad",
-        "✓ Fastmem Exclusives: Включено",
-        "✓ Fastmem Exclusives: Enabled",
+        "• Вылеты памяти (OOM) и зависания диспетчера потоков REDengine\n• Мерцание теней и воды в Новиграде",
+        "• REDengine thread deadlocks and host OOM memory crashes\n• Shadow and water flickering in Novigrad",
+        "✓ Память: 6 ГБ DRAM (устраняет сбой аллокатора памяти)\n✓ Fastmem Exclusives: Отключено (устраняет дедлоки потоков REDengine)\n✓ Игнорировать прерывания памяти: Включено\n✓ Точность ГПУ: Обычная\n✓ Обратные циклы барьеров: Включено",
+        "✓ Memory Layout: 6GB DRAM (Prevents host allocator OOM)\n✓ Fastmem Exclusives: Disabled (Fixes REDengine thread deadlocks)\n✓ Ignore Memory Aborts: Enabled\n✓ GPU Accuracy: Normal\n✓ Barrier Feedback Loops: Enabled",
         {
             {"System\\memory_layout_mode", "0"},
+            {"System\\airplane_mode", "true"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_reactive_flushing", "false"},
-            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\accelerate_astc", "1"},
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\barrier_feedback_loops", "true"},
-            {"Cpu\\cpuopt_fastmem_exclusives", "true"},
+            {"Cpu\\cpu_accuracy", "0"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
+            {"Cpu\\cpuopt_fastmem_exclusives", "false"},
             {"Renderer\\fsr_sharpening_slider", "85"}
-        }
+        },
+        {0x0100BFF00E256000ULL, 0x0100E67012924000ULL}
     },
         // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/4150
 {
@@ -3362,7 +3367,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"System\\memory_layout_mode", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"}
-        }
+        },
+        {0x0100D560130C6000ULL}
     },
     {
         0x0100D5600DE44000ULL,
@@ -3417,7 +3423,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"System\\memory_layout_mode", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"}
-        }
+        },
+        {0x010078D000F88000ULL}
     },
     {
         0x0100B1A01B20A000ULL,
@@ -6114,7 +6121,8 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"}
-        }
+        },
+        {0x01005AD011C6E000ULL}
     },
     {
         0x0100C3800B8A0000ULL,
@@ -6131,7 +6139,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"}
         },
-        {0x01005A300BFD6000ULL, 0x0100B1A00C9BC000ULL}
+        {0x01005A300BFD6000ULL, 0x0100B1A00C9BC000ULL, 0x0100CD800D32E000ULL}
     },
     {
         0x010046E00B51E000ULL,
@@ -6149,7 +6157,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"}
         },
-        {0x0100C4000FC1A000ULL, 0x010091600E5BC000ULL}
+        {0x0100183010F12000ULL, 0x01007D300F6E2000ULL, 0x0100C4000FC1A000ULL, 0x010091600E5BC000ULL}
     },
     {
         0x0100412019772000ULL,
@@ -6166,7 +6174,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
             {"Cpu\\cpu_accuracy", "0"}
         },
-        {0x010014C01A242000ULL}
+        {0x010014C01A242000ULL, 0x0100999019806000ULL}
     },
 
 };

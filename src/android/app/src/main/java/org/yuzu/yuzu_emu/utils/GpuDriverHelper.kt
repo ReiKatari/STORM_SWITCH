@@ -99,6 +99,8 @@ object GpuDriverHelper {
             android.os.Build.BOARD.contains("sun", ignoreCase = true) ||
             android.os.Build.DEVICE.contains("sun", ignoreCase = true) ||
             android.os.Build.PRODUCT.contains("sun", ignoreCase = true) ||
+            soc.contains("8850", ignoreCase = true) ||
+            soc.contains("8835", ignoreCase = true) ||
             soc.contains("8750", ignoreCase = true) ||
             soc.contains("8735", ignoreCase = true)
         ) {
@@ -109,7 +111,37 @@ object GpuDriverHelper {
             if (model.contains("810")) {
                 return false
             }
-            if (model.contains("830") || model.contains("825") || model.contains("Adreno (TM) 8", ignoreCase = true) || model.contains("Adreno 8", ignoreCase = true)) {
+            if (model.contains("840") || model.contains("850") || model.contains("830") || model.contains("825") ||
+                model.contains("Adreno (TM) 8", ignoreCase = true) || model.contains("Adreno 8", ignoreCase = true)) {
+                return true
+            }
+        } catch (_: Throwable) {}
+        return false
+    }
+
+    /**
+     * Detects Snapdragon 8 Elite Gen 5+ (SM8850 / SM8835 — Adreno 840 / 850+).
+     * Legacy A830-only Turnip / PurpleVK builds report 'Adreno (TM) 840 (...)/unknown' and write
+     * A830 UBWC macrotile headers into A840 swapchain AHardwareBuffers, squishing the live viewport
+     * to 2/3 top-left with bottom UBWC stripes unless the driver explicitly supports Adreno 840 / SM8850.
+     */
+    fun isAdreno840OrNewer(): Boolean {
+        val soc = if (android.os.Build.VERSION.SDK_INT >= 31) android.os.Build.SOC_MODEL else ""
+        if (soc.contains("SM8850", ignoreCase = true) ||
+            soc.contains("SM8845", ignoreCase = true) ||
+            soc.contains("SM8835", ignoreCase = true) ||
+            soc.equals("8850", ignoreCase = true) ||
+            android.os.Build.HARDWARE.contains("canoe", ignoreCase = true)
+        ) {
+            return true
+        }
+        try {
+            val model = hookLibPath?.let { getGpuModel(hookLibPath = it) } ?: ""
+            if (model.contains("840") || model.contains("850") ||
+                model.contains("Adreno (TM) 84", ignoreCase = true) || model.contains("Adreno 84", ignoreCase = true) ||
+                model.contains("Adreno (TM) 85", ignoreCase = true) || model.contains("Adreno 85", ignoreCase = true) ||
+                model.contains("Adreno (TM) 9", ignoreCase = true) || model.contains("Adreno 9", ignoreCase = true)
+            ) {
                 return true
             }
         } catch (_: Throwable) {}
@@ -163,8 +195,19 @@ object GpuDriverHelper {
         val desc = metadata.description ?: ""
         val name = metadata.name ?: ""
         val version = metadata.packageVersion ?: ""
+        val drvVer = metadata.version ?: ""
+        val combinedMeta = "$name $desc $version $drvVer"
 
-        // Verified STORM DRIVER 3.2.0+
+        // Adreno 840+ (Snapdragon 8 Elite Gen 5 / SM8850) requires explicit A840 / SM8850 driver support.
+        // A830-only Turnip / PurpleVK builds report '/unknown' and corrupt A840 UBWC swapchains.
+        if (isAdreno840OrNewer()) {
+            return combinedMeta.contains("840", ignoreCase = true) ||
+                   combinedMeta.contains("8850", ignoreCase = true) ||
+                   combinedMeta.contains("Gen 5", ignoreCase = true) ||
+                   combinedMeta.contains("A840", ignoreCase = true)
+        }
+
+        // Verified STORM DRIVER 3.2.0+ for Adreno 830 / 825 (SM8750 / SM8735)
         if (name.contains("STORM", ignoreCase = true)) {
             val verNum = version.replace("[^0-9.]".toRegex(), "")
             if (verNum.isNotEmpty()) {
@@ -254,7 +297,7 @@ object GpuDriverHelper {
         }
 
         val customLib = installedCustomDriverData.libraryName
-        if (!customLib.isNullOrEmpty() && isTurnipDriverActive()) {
+        if (!customLib.isNullOrEmpty() && (isTurnipDriverActive() || isPanVkDriverActive())) {
             val installDir = File(driverInstallationPath!!)
             val drircFile = File(installDir, "drirc.xml")
             val drircConfFile = File(installDir, "00-storm.conf")
@@ -350,7 +393,9 @@ object GpuDriverHelper {
 
     fun applyPerGameDriverConfig(programIdHex: String, gameTitle: String) {
         val customLib = installedCustomDriverData.libraryName
-        if (customLib.isNullOrEmpty() || driverInstallationPath.isNullOrEmpty() || !isTurnipDriverActive()) {
+        val turnipActive = isTurnipDriverActive()
+        val panVkActive = isPanVkDriverActive()
+        if (customLib.isNullOrEmpty() || driverInstallationPath.isNullOrEmpty() || (!turnipActive && !panVkActive)) {
             NativeFreedrenoConfig.clearFreedrenoEnv("DRIRC_CONFIGDIR")
             NativeFreedrenoConfig.clearFreedrenoEnv("MESA_DRIRC_DIR")
             NativeFreedrenoConfig.clearFreedrenoEnv("MESA_DRIRC_FILE")
@@ -415,7 +460,11 @@ object GpuDriverHelper {
             NativeFreedrenoConfig.setFreedrenoEnv("HOME", YuzuApplication.appContext.filesDir.absolutePath)
 
             // Synchronize detected vendor with GameFixDatabase
-            org.yuzu.yuzu_emu.model.GameFixDatabase.setDetectedGpuVendor("adreno")
+            val isMaliOrPanVk = panVkActive || isMaliGpu()
+            org.yuzu.yuzu_emu.model.GameFixDatabase.setDetectedGpuVendor(if (isMaliOrPanVk) "mali" else "adreno")
+            if (!turnipActive) {
+                return
+            }
 
             if (isDiablo || isMarioRabbids) {
                 NativeFreedrenoConfig.setFreedrenoEnv("MESA_VK_DYNAMIC_ATTACHMENT_FEEDBACK_LOOP_ENABLE", "1")
@@ -429,6 +478,9 @@ object GpuDriverHelper {
             val perTidHints = PER_TID_TURNIP_DEBUG_HINTS[normalizedTid]
             val existingTuDebug = if (NativeFreedrenoConfig.isFreedrenoEnvSet("TU_DEBUG")) NativeFreedrenoConfig.getFreedrenoEnv("TU_DEBUG") else ""
             val flags = existingTuDebug.split(",").map { it.trim() }.filter { it.isNotEmpty() && it != "noconcurrentunresolves" }.toMutableSet()
+            if (isAdreno840OrNewer()) {
+                flags.add("noubwc")
+            }
 
             if (perTidHints != null && perTidHints.isNotEmpty()) {
                 flags.addAll(perTidHints)

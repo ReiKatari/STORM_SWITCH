@@ -18,6 +18,8 @@ object AdpfManager {
     private var currentTargetNanos: Long = 16_666_666L // Default 60 FPS target
     private var isInitialized = false
 
+    fun isSessionActive(): Boolean = isInitialized
+
     fun initSession(context: Context, targetFps: Float = 60f) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
             return

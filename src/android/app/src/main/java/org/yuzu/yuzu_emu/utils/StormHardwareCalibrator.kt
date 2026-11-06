@@ -124,13 +124,23 @@ object StormHardwareCalibrator {
         // Adreno 8xx flagship (Snapdragon 8 Elite SM8750 / Adreno 830, Snapdragon 8s Gen 4 SM8735 / Adreno 825)
         // Note: Snapdragon 7s Gen 3 (SM7635) has Adreno 810, which is midrange, not Elite!
         val isAdreno810 = isAdreno && (combined.contains("7635") || combined.contains("adreno (tm) 810") || combined.contains("adreno 810") || combined.contains("volcano"))
+        val isAdreno840 = isAdreno && !isAdreno810 && (
+            combined.contains("sm8850") || socModel.contains("8850") ||
+            combined.contains("sm8835") || socModel.contains("8835") ||
+            combined.contains("adreno (tm) 84") || combined.contains("adreno 84") ||
+            combined.contains("adreno (tm) 85") || combined.contains("adreno 85") ||
+            hw.contains("canoe")
+        )
         val isAdreno830 = isAdreno && !isAdreno810 && (
+            isAdreno840 ||
             combined.contains("8750") ||
             combined.contains("8735") ||
             combined.contains("adreno (tm) 830") ||
             combined.contains("adreno 830") ||
             combined.contains("adreno (tm) 825") ||
             combined.contains("adreno 825") ||
+            combined.contains("adreno (tm) 8") ||
+            combined.contains("adreno 8") ||
             hw.contains("sun") ||
             hw.contains("pakala") ||
             hw.contains("s931") || hw.contains("s936") || hw.contains("s938")
@@ -177,7 +187,8 @@ object StormHardwareCalibrator {
         val isDimensity8xxx = !isDimensity9400 && !isDimensity9300Or9200 && (
             combined.contains("mt6897") || combined.contains("8300") || combined.contains("mali-g615") ||
             combined.contains("mt6896") || combined.contains("8200") || combined.contains("8250") ||
-            combined.contains("mt6895") || combined.contains("8100") || combined.contains("8050") || combined.contains("mt6893")
+            combined.contains("mt6895") || combined.contains("8100") || combined.contains("8050") ||
+            combined.contains("8020") || combined.contains("mt6893") || combined.contains("mt6891") || combined.contains("mali-g77")
         )
 
         // Samsung Exynos: strictly distinguish AMD RDNA Xclipse GPUs (2500/2400/2200/1580/1480) from Mali-based Exynos (2100/1380/1280/990)
@@ -229,6 +240,7 @@ object StormHardwareCalibrator {
         }
 
         val socName = when {
+            isAdreno840 -> "Qualcomm Snapdragon 8 Elite Gen 5 (SM8850 / Adreno 840)"
             isAdreno830 && combined.contains("8735") -> "Qualcomm Snapdragon 8s Gen 4 (SM8735 / Adreno 825)"
             isAdreno830 -> "Qualcomm Snapdragon 8 Elite (SM8750 / Adreno 830)"
             combined.contains("sg3250") || combined.contains("g3x") -> "Qualcomm Snapdragon G3x Gen 2 (Adreno A32)"
@@ -276,6 +288,7 @@ object StormHardwareCalibrator {
         }
 
         val gpuName = when {
+            isAdreno840 -> "Qualcomm Adreno 840 (Snapdragon 8 Elite Gen 5 / Vulkan 1.4)"
             isAdreno830 && combined.contains("8735") -> "Qualcomm Adreno 825 (Snapdragon 8s Gen 4)"
             isAdreno830 -> "Qualcomm Adreno 830 (Snapdragon 8 Elite / Turnip Vulkan 1.3 / 1.4)"
             combined.contains("8650") -> "Qualcomm Adreno 750 (Snapdragon 8 Gen 3 / Turnip)"

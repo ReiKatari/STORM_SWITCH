@@ -84,6 +84,9 @@ class SettingsDialogFragment : DialogFragment(), DialogInterface.OnClickListener
                 false
             }
         }
+        (dialog as? androidx.appcompat.app.AlertDialog)?.listView?.apply {
+            isSmoothScrollbarEnabled = false
+        }
         dialog?.window?.let { window ->
             org.yuzu.yuzu_emu.utils.ThemeHelper.applySystemBarsTheme(window, requireContext())
         }
