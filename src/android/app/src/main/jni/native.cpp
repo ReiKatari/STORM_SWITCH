@@ -419,21 +419,13 @@ static void ApplyGameSpecificSafetyOverrides(u64 title_id, u64 host_ram_bytes) {
     // 3) Unravel Two
     if (title_id == 0x01008C3005A32000ULL || title_id == 0x0100E5D00CC0C000ULL || title_id == 0x010099900B22E000ULL ||
         base_tid == 0x01008C3005A32000ULL || base_tid == 0x0100E5D00CC0C000ULL || base_tid == 0x010099900B22E000ULL) {
-        Settings::values.cpu_backend.SetGlobal(false);
-        Settings::values.cpu_backend.SetValue(Settings::CpuBackend::Dynarmic);
         Settings::values.nvdec_emulation.SetGlobal(false);
         Settings::values.nvdec_emulation.SetValue(Settings::NvdecEmulation::Cpu);
-        Settings::values.gpu_accuracy.SetGlobal(false);
-        Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::High);
-        Settings::values.barrier_feedback_loops.SetGlobal(false);
-        Settings::values.barrier_feedback_loops.SetValue(true);
-        Settings::values.use_reactive_flushing.SetGlobal(false);
-        Settings::values.use_reactive_flushing.SetValue(true);
         Settings::values.early_release_fences.SetGlobal(false);
         Settings::values.early_release_fences.SetValue(false);
         Settings::values.cpuopt_ignore_memory_aborts.SetGlobal(false);
         Settings::values.cpuopt_ignore_memory_aborts.SetValue(true);
-        LOG_INFO(Frontend, "Guaranteed Unravel Two safety overrides (Dynarmic, NVDEC CPU, GPU High, Reactive Flush, ignore aborts)");
+        LOG_INFO(Frontend, "Guaranteed Unravel Two safety overrides (Zero-delay NVDEC CPU, fences, ignore aborts; NCE & GPU settings preserved)");
     }
 
     // 4) Switch 2 games

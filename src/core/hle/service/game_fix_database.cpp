@@ -431,17 +431,15 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x01008C3005A32000ULL,
         "Unravel Two",
-        "• Зависание на вступительных видеороликах (дедлок видеодекодера NVDEC)\n• Графические артефакты освещения, прозрачности воды и искажение шейдеров",
-        "• Freeze during intro cutscenes (NVDEC video decoder deadlock)\n• Lighting, water transparency and shader corruption artifacts",
-        "✓ Программный декодер видео (NVDEC CPU: устранение зависания заставок)\n✓ Точность ГПУ: Высокая (High: исправление прозрачности воды и шейдеров)\n✓ Обратные циклы барьеров: Включено (стабильный переход между главами)\n✓ Реактивная очистка: Включено\n✓ Ранний сброс заборов: Отключено\n✓ Движок ЦП: Dynarmic\n✓ Игнорирование сбоев памяти: Включено",
-        "✓ CPU NVDEC Video Decoding (Fixes intro video hang)\n✓ GPU Accuracy: High (Fixes water transparency and shader corruption)\n✓ Barrier Feedback Loops: Enabled (Smooth chapter transitions)\n✓ Reactive Flushing: Enabled\n✓ Early Release Fences: Disabled\n✓ CPU Backend: Dynarmic\n✓ Ignore Memory Aborts: Enabled",
+        "• Зависание на вступительных видеороликах и чёрный экран при переходе к геймплею\n• Потеря рендер-пасса PhyreEngine при принудительных обратных барьерах",
+        "• Freeze during intro cutscenes and black screen on cutscene-to-gameplay transition\n• PhyreEngine render-pass drop when forcing barrier feedback loops",
+        "✓ Программный декодер видео без задержки (NVDEC CPU FF_THREAD_SLICE: 0 кадров буферизации)\n✓ Точность ГПУ: Обычная (Normal)\n✓ Обратные циклы барьеров: Отключено (сохранение 3D-рендера PhyreEngine)\n✓ Ранний сброс заборов: Отключено\n✓ Игнорирование сбоев памяти: Включено",
+        "✓ Zero-Delay CPU NVDEC Video Decoding (FF_THREAD_SLICE: 0-frame buffering)\n✓ GPU Accuracy: Normal\n✓ Barrier Feedback Loops: Disabled (Preserves PhyreEngine 3D render pass)\n✓ Early Release Fences: Disabled\n✓ Ignore Memory Aborts: Enabled",
         {
             {"Renderer\\nvdec_emulation", "1"},
-            {"Renderer\\gpu_accuracy", "2"},
-            {"Renderer\\barrier_feedback_loops", "true"},
-            {"Renderer\\use_reactive_flushing", "true"},
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\barrier_feedback_loops", "false"},
             {"Renderer\\early_release_fences", "false"},
-            {"Cpu\\cpu_backend", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"}
         },

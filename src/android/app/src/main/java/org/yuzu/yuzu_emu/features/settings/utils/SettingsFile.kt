@@ -84,16 +84,26 @@ object SettingsFile {
                 cleanProg.startsWith("0100E5D00CC0C") ||
                 cleanProg.startsWith("010099900B22E")
             ) {
-                val r1 = text.replace(Regex("cpu_backend\\s*=\\s*1"), "cpu_backend = 0")
-                if (r1 != text) { text = r1; modified = true }
-                val r2 = text.replace(Regex("nvdec_emulation\\s*=\\s*[02]"), "nvdec_emulation = 1")
-                if (r2 != text) { text = r2; modified = true }
-                val r3 = text.replace(Regex("barrier_feedback_loops\\s*=\\s*false", RegexOption.IGNORE_CASE), "barrier_feedback_loops = true")
-                if (r3 != text) { text = r3; modified = true }
-                val r4 = text.replace(Regex("gpu_accuracy\\s*=\\s*[01]"), "gpu_accuracy = 2")
-                if (r4 != text) { text = r4; modified = true }
-                val r5 = text.replace(Regex("early_release_fences\\s*=\\s*true", RegexOption.IGNORE_CASE), "early_release_fences = false")
-                if (r5 != text) { text = r5; modified = true }
+                val rNvdec = text.replace(Regex("nvdec_emulation\\s*=\\s*[02]"), "nvdec_emulation = 1")
+                if (rNvdec != text) { text = rNvdec; modified = true }
+                val rFences = text.replace(Regex("early_release_fences\\s*=\\s*true", RegexOption.IGNORE_CASE), "early_release_fences = false")
+                if (rFences != text) { text = rFences; modified = true }
+
+                val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(
+                    org.yuzu.yuzu_emu.YuzuApplication.appContext
+                )
+                val healKey = "storm_unravel2_1634_healed_$cleanProg"
+                if (!prefs.getBoolean(healKey, false) && !text.contains("storm_unravel2_1634_healed=1")) {
+                    val rCpu = text.replace(Regex("cpu_backend\\s*=\\s*0"), "cpu_backend = 1")
+                    if (rCpu != text) { text = rCpu; modified = true }
+                    val rBfl = text.replace(Regex("barrier_feedback_loops\\s*=\\s*true", RegexOption.IGNORE_CASE), "barrier_feedback_loops = false")
+                    if (rBfl != text) { text = rBfl; modified = true }
+                    val rGpu = text.replace(Regex("gpu_accuracy\\s*=\\s*2"), "gpu_accuracy = 1")
+                    if (rGpu != text) { text = rGpu; modified = true }
+                    text = text.trimEnd() + "\n# storm_unravel2_1634_healed=1\n"
+                    modified = true
+                    prefs.edit().putBoolean(healKey, true).apply()
+                }
             }
 
             // Switch 2 (0400*)

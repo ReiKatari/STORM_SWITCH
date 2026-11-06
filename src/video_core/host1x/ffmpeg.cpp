@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <algorithm>
+#include <chrono>
 #include <cstring>
 #include <string_view>
 #include <thread>
@@ -288,7 +289,11 @@ DecoderContext::DecoderContext(const Decoder bitand decoder) : m_decoder{decoder
     m_codec_context = avcodec_alloc_context3(m_decoder.GetCodec());
     const int cpu_threads = std::clamp(static_cast<int>(std::thread::hardware_concurrency()), 2, 8);
     m_codec_context->thread_count = cpu_threads;
-    m_codec_context->thread_type = FF_THREAD_FRAME | FF_THREAD_SLICE;
+    // Tegra X1 NVDEC -> VIC is a synchronous 0-delay packet-to-frame pipeline over a 4-surface
+    // ring without EOF flush packets. FF_THREAD_FRAME buffers ~7 packets before emitting frame 0,
+    // causing black screens in cutscenes and stranding the final frames at cutscene end.
+    m_codec_context->thread_type = FF_THREAD_SLICE;
+    m_codec_context->flags |= AV_CODEC_FLAG_LOW_DELAY;
     m_codec_context->flags2 |= AV_CODEC_FLAG2_FAST;
 }
 
@@ -344,7 +349,16 @@ bool DecoderContext::SendPacket(const Packet& packet) {
 
 std::shared_ptr<Frame> DecoderContext::ReceiveFrame() {
     auto ReceiveImpl = [&](AVFrame* frame) -> int {
-        const int ret = avcodec_receive_frame(m_codec_context, frame);
+        int ret = avcodec_receive_frame(m_codec_context, frame);
+#if defined(__ANDROID__)
+        if (ret == AVERROR(EAGAIN) && m_decoder.GetCodec() && m_decoder.GetCodec()->name &&
+            std::string_view{m_decoder.GetCodec()->name}.find("mediacodec") != std::string_view::npos) {
+            for (int attempt = 0; attempt < 12 && ret == AVERROR(EAGAIN); ++attempt) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                ret = avcodec_receive_frame(m_codec_context, frame);
+            }
+        }
+#endif
         if (ret < 0 && ret != AVERROR_EOF && ret != AVERROR(EAGAIN)) {
             LOG_ERROR(HW_GPU, "avcodec_receive_frame error: {}", AVError(ret));
         }
