@@ -76,8 +76,12 @@ public:
 
     template <typename Func>
     void ApplyOpOnPAddr(PAddr address, Common::ScratchBuffer<u32>& buffer, Func&& operation) {
+        const size_t page_index = address >> page_bits;
+        if (page_index >= compressed_device_addr.size()) [[unlikely]] {
+            return;
+        }
         DAddr subbits = DAddr(address & page_mask);
-        const u32 base = compressed_device_addr[(address >> page_bits)];
+        const u32 base = compressed_device_addr[page_index];
         if ((base >> MULTI_FLAG_BITS) == 0) [[likely]] {
             const DAddr d_address = (DAddr(base) << page_bits) + subbits;
             operation(d_address);
@@ -142,7 +146,7 @@ private:
     static constexpr size_t device_virtual_bits = Traits::device_virtual_bits;
     static constexpr size_t device_as_size = 1ULL << device_virtual_bits;
     static constexpr size_t physical_min_bits = 32;
-    static constexpr size_t physical_max_bits = 34;
+    static constexpr size_t physical_max_bits = 35; // 32 GiB covers Switch 2 12 GiB + 8 GiB GSV DRAM
     static constexpr size_t page_bits = 12;
     static constexpr size_t page_size = 1ULL << page_bits;
     static constexpr size_t page_mask = page_size - 1ULL;

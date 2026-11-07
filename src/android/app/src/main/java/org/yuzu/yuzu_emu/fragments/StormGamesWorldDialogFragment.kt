@@ -718,8 +718,10 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 }
 
                 scheduleDownloadedStatusCheck(appCtx)
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
             } catch (e: Exception) {
-                Log.error("[StormGamesWorld] Catalog fetch error: ${e.message}")
+                Log.warning("[StormGamesWorld] Catalog fetch error: ${e.message}")
                 withContext(Dispatchers.Main) {
                     if (_binding == null) return@withContext
                     binding.progressLoading.isVisible = false
@@ -2468,7 +2470,35 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             }
         }
 
-        suspend fun syncCatalogInBackground(context: Context): List<StormWorldGameItem> = withContext(Dispatchers.IO) {
+        private val syncFlightLock = Any()
+        private val catalogSyncScope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + Dispatchers.IO)
+        @Volatile
+        private var activeSyncDeferred: kotlinx.coroutines.Deferred<List<StormWorldGameItem>>? = null
+
+        suspend fun syncCatalogInBackground(context: Context): List<StormWorldGameItem> {
+            val appCtx = context.applicationContext ?: context
+            val deferred = synchronized(syncFlightLock) {
+                val current = activeSyncDeferred
+                if (current != null && current.isActive) {
+                    current
+                } else {
+                    val created = catalogSyncScope.async {
+                        try {
+                            syncCatalogInternal(appCtx)
+                        } finally {
+                            synchronized(syncFlightLock) {
+                                activeSyncDeferred = null
+                            }
+                        }
+                    }
+                    activeSyncDeferred = created
+                    created
+                }
+            }
+            return deferred.await()
+        }
+
+        private suspend fun syncCatalogInternal(context: Context): List<StormWorldGameItem> = withContext(Dispatchers.IO) {
             // Prewarm installed library index in background so opening SGW is 0 ms instant
             try {
                 prewarmInstalledLibraryIndex(context)
@@ -2763,7 +2793,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             } catch (e: kotlinx.coroutines.CancellationException) {
                 throw e
             } catch (e: Exception) {
-                Log.error("[StormGamesWorld] Sync error: ${e.message}")
+                Log.warning("[StormGamesWorld] Sync fallback to cache (${e.message})")
                 getCachedCatalog(context)
             }
         }

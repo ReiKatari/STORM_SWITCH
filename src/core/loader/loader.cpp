@@ -100,10 +100,6 @@ bool HasApplicationProgramContent(const std::shared_ptr<FileSys::NSP>& nsp) {
 } // namespace
 
 FileType IdentifyFile(FileSys::VirtualFile file) {
-    if (const auto romdir_type =
-            IdentifyFileLoader<AppLoader_DeconstructedRomDirectory>(file)) {
-        return *romdir_type;
-    }
     if (const auto nsp_type = IdentifyFileLoader<AppLoader_NSP>(file)) {
         return *nsp_type;
     } else if (const auto xci_type = IdentifyFileLoader<AppLoader_XCI>(file)) {
@@ -114,6 +110,9 @@ FileType IdentifyFile(FileSys::VirtualFile file) {
         return *nro_type;
     } else if (const auto nca_type = IdentifyFileLoader<AppLoader_NCA>(file)) {
         return *nca_type;
+    } else if (const auto romdir_type =
+                   IdentifyFileLoader<AppLoader_DeconstructedRomDirectory>(file)) {
+        return *romdir_type;
     } else if (const auto nax_type = IdentifyFileLoader<AppLoader_NAX>(file)) {
         return *nax_type;
     } else if (const auto kip_type = IdentifyFileLoader<AppLoader_KIP>(file)) {

@@ -201,6 +201,17 @@ bool Maxwell3D::IsMethodExecutable(u32 method) {
     case MAXWELL3D_REG_INDEX(fragment_barrier):
     case MAXWELL3D_REG_INDEX(invalidate_texture_data_cache):
     case MAXWELL3D_REG_INDEX(tiled_cache_barrier):
+    case 0x154:
+    case 0x155:
+    case 0x156:
+    case 0x157:
+    case 0x158:
+    case 0x159:
+    case 0x15a:
+    case 0x15b:
+    case 0x15c:
+    case 0x15d:
+    case 0x37b:
         return true;
     default:
         return false;
@@ -386,8 +397,13 @@ void Maxwell3D::ProcessDirtyRegisters(u32 method, u32 argument) {
 }
 
 void Maxwell3D::ProcessMethodCall(u32 method, u32 argument, u32 nonshadow_argument, bool is_last_call) {
-    if (GetNativeMacroEngine().native_turing && method == MAXWELL3D_REG_INDEX(clear_surface)) {
-        LOG_INFO(HW_GPU, "Native GPU surface clear: value={:#x}", argument);
+    if (GetNativeMacroEngine().native_turing) {
+        if (method == MAXWELL3D_REG_INDEX(clear_surface)) {
+            LOG_DEBUG(HW_GPU, "Native GPU surface clear: value={:#x}", argument);
+        }
+        if (GetNativeMacroEngine().HandleNativeDmaMethod(memory_manager, rasterizer, method, argument, nullptr)) {
+            return;
+        }
     }
     switch (method) {
     case RootTables::SelectMethod:

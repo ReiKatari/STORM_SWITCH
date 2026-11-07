@@ -10,6 +10,8 @@
 #include <cstdint>
 #include <span>
 #include <string_view>
+#include <utility>
+#include <vector>
 
 namespace Tegra {
 
@@ -83,6 +85,13 @@ public:
     template <typename Read, typename Emit>
     Result Execute(std::span<const Word> code, Word start,
                    std::span<const Word> parameters, Read read, Emit emit) {
+        std::vector<Word> fifo(parameters.begin(), parameters.end());
+        return Execute(code, start, fifo, std::move(read), std::move(emit));
+    }
+
+    template <typename Read, typename Emit>
+    Result Execute(std::span<const Word> code, Word start,
+                   std::vector<Word>& parameters, Read read, Emit emit) {
         std::array<Word, 24> regs{};
         Word initialized{}, carry{}, method{}, increment{};
         Word pc = start, loop_count{}, loop_start{}, loop_end{};
@@ -176,7 +185,13 @@ public:
                     value = Word(product); carry = Word(product >> 32); break;
                 }
                 case 5: value = carry; break;
-                case 7: fail("unsupported extended operation"); break;
+                case 7:
+                    if (x == 0x1000) {
+                        value = 0;
+                    } else {
+                        fail("unsupported extended operation");
+                    }
+                    break;
                 case 8: value = Word(std::countl_zero(x)); break;
                 case 9: value = x << (y & 31); break;
                 case 10: value = x >> (y & 31); break;

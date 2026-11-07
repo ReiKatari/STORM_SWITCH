@@ -45,7 +45,16 @@ inline std::optional<NativeMemoryKind> SelectNativeMemoryKind(u8 requested, u8 f
     if (requested == 0xc && fallback == 3) {
         return NativeMemoryKind{static_cast<u8>(Tegra::PTEKind::S8Z24), 3};
     }
-    return std::nullopt;
+    if (fallback == 0) {
+        return NativeMemoryKind{static_cast<u8>(Tegra::PTEKind::PITCH), 0};
+    }
+    if (fallback == 1) {
+        return NativeMemoryKind{static_cast<u8>(Tegra::PTEKind::Z16), 1};
+    }
+    if (fallback == 3) {
+        return NativeMemoryKind{static_cast<u8>(Tegra::PTEKind::S8Z24), 3};
+    }
+    return NativeMemoryKind{static_cast<u8>(Tegra::PTEKind::GENERIC_16BX2), fallback != 7 ? fallback : u8{6}};
 }
 
 } // namespace Service::Nvidia::Devices

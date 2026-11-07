@@ -1,3 +1,4 @@
+#include "common/settings.h"
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -134,8 +135,9 @@ Module::Module(Core::System& system)
     Devices::Nx2GpuMemoryRegistry::Get().Reset();
     Tegra::Nx2ClearSemaphoreRegions();
     Tegra::Nx2ClearSparseRegions();
-    Devices::g_nx2_driver = false;
-    Tegra::g_nx2_ampere = false;
+    const bool is_nx2_session = Settings::IsCurrentProgramSwitch2();
+    Devices::g_nx2_driver = is_nx2_session;
+    Tegra::g_nx2_ampere = is_nx2_session;
     Core::g_nx2_present_count = 0;
     nx2_stub_builder = [this, &system](DeviceFD fd, const std::string& name) {
         auto device = std::make_shared<Devices::nx2_stub_device>(system, name);
@@ -206,7 +208,8 @@ NvResult Module::VerifyFD(DeviceFD fd) const {
 
 DeviceFD Module::Open(const std::string& device_name, NvCore::SessionId session_id) {
     auto it = builders.find(device_name);
-    if (it == builders.end() && device_name.starts_with("/dev/nvhost-")) {
+    if (it == builders.end() &&
+        device_name.starts_with("/dev/nvhost-")) {
         // Newer nvgpu nodes used by Switch 2 drivers (e.g. /dev/nvhost-tsg-gpu): serve them with
         // a logged stub instead of failing the open.
         LOG_WARNING(Service_NVDRV, "Opening unknown device {} as a Switch 2 stub", device_name);

@@ -546,6 +546,9 @@ bool VfsRawCopyD(const VirtualDir& src, const VirtualDir& dest, std::size_t bloc
 }
 
 VirtualDir GetOrCreateDirectoryRelative(const VirtualDir& rel, std::string_view path) {
+    if (rel == nullptr) {
+        return nullptr;
+    }
     const auto res = rel->GetDirectoryRelative(path);
     if (res == nullptr)
         return rel->CreateDirectoryRelative(path);

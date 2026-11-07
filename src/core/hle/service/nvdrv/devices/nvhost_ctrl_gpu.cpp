@@ -14,6 +14,7 @@
 #include "core/core_timing.h"
 #include "core/hle/service/nvdrv/devices/ioctl_serialization.h"
 #include "core/hle/service/nvdrv/devices/nvhost_ctrl_gpu.h"
+#include "core/hle/service/nvdrv/devices/native_gpu_characteristics.h"
 #include "core/hle/service/nvdrv/devices/nx2_stub_device.h"
 #include "video_core/nx2.h"
 #include "core/hle/service/nvdrv/nvdrv.h"
@@ -109,6 +110,30 @@ NvResult nvhost_ctrl_gpu::Ioctl3(DeviceFD fd, Ioctl command, std::span<const u8>
     case 'G':
         switch (command.cmd) {
         case 0x5: {
+            if (Settings::IsCurrentProgramSwitch2() &&
+                inline_output.size() >= NativeGpuCharacteristicsSize) {
+                nx2_caller = true;
+                g_nx2_driver = true;
+                Tegra::g_nx2_ampere = true;
+                if (input.size() < 0x10 || output.size() < 0x10) {
+                    return NvResult::BadParameter;
+                }
+                IoctlCharacteristics legacy{};
+                GetCharacteristics3(legacy, {});
+                const auto native = MakeNativeGpuCharacteristics(
+                    std::span<const u8, 0xa0>{reinterpret_cast<const u8*>(&legacy.gc), 0xa0});
+                std::fill(output.begin(), output.end(), u8{});
+                std::fill(inline_output.begin(), inline_output.end(), u8{});
+                std::memcpy(output.data(), input.data(), 0x10);
+                const u64_le size{NativeGpuCharacteristicsSize};
+                std::memcpy(output.data(), &size, sizeof(size));
+                const size_t out_copy = (std::min)(output.size() - 0x10, native.size());
+                std::memcpy(output.data() + 0x10, native.data(), out_copy);
+                std::memcpy(inline_output.data(), native.data(), native.size());
+                LOG_INFO(Service_NVDRV, "Switch 2 NativeGpuCharacteristics reported (ioctl={:#x}, out={:#x}, inl={:#x})",
+                         command.raw, output.size(), inline_output.size());
+                return NvResult::Success;
+            }
             const auto result = WrapFixedInlOut(this, &nvhost_ctrl_gpu::GetCharacteristics3,
                                                 input, output, inline_output);
             if (nx2_caller) {
@@ -132,10 +157,11 @@ NvResult nvhost_ctrl_gpu::Ioctl3(DeviceFD fd, Ioctl command, std::span<const u8>
     default:
         break;
     }
-    if (nx2_caller && command.group == 'G' && command.cmd == 0x1F) {
+    const bool is_nx2 = nx2_caller || g_nx2_driver || Settings::IsCurrentProgramSwitch2();
+    if (is_nx2 && command.group == 'G' && command.cmd == 0x1F) {
         return Nx2GetEngineInfo(input, output, inline_output);
     }
-    if (nx2_caller) {
+    if (is_nx2) {
         // Switch 2 NvRm uses ioctls Switch 1 never had; answer them with a zeroed success so
         // device setup can continue, and log each one.
         LOG_WARNING(Service_NVDRV, "(STUBBED) Switch 2 ioctl={:08X} group={:01X} command={:01X}",
@@ -206,18 +232,13 @@ void ApplyNx2Characteristics(GC& gc) {
     gc.gpfifo_class = 0xC56F;      // AMPERE_CHANNEL_GPFIFO_A
     gc.dma_copy_class = 0xC7B5;    // AMPERE_DMA_COPY_B
     gc.chipname = 0x6631306167;    // "ga10f"
-    gc.flags |= 0x100;             // NVGPU_GPU_FLAGS_SUPPORT_TSG: NvRm binds channels to a TSG
-    gc.flags |= 1ULL << 22;        // NVGPU_GPU_FLAGS_SUPPORT_TSG_SUBCONTEXTS (see below)
-    gc.flags |= 1ULL << 26;        // NVGPU_GPU_FLAGS_SUPPORT_SYNCPOINT_ADDRESS: syncpoint shim
-    // NVGPU_GPU_FLAGS_SUPPORT_MAPPING_MODIFY: NVN2 gives a texture in a compressible pool its
-    // address only after NvRmGpuMappingModify switched the pool's mapping to the texture's kind.
-    // Without the flag NvRm fails that call and the texture stays at GPU address 0 (title 1's
-    // movie and the passes rendered into compressible pools never showed).
-    gc.flags |= 1ULL << 34;
+    gc.flags |= (1ULL << 8)        // NVGPU_GPU_FLAGS_SUPPORT_TSG
+              | (1ULL << 22)       // NVGPU_GPU_FLAGS_SUPPORT_TSG_SUBCONTEXTS
+              | (1ULL << 26)       // NVGPU_GPU_FLAGS_SUPPORT_SYNCPOINT_ADDRESS
+              | (1ULL << 34);      // NVGPU_GPU_FLAGS_SUPPORT_MAPPING_MODIFY (never set bit 40 USERMODE_SUBMIT!)
 
-    // The Switch 2 layout keeps nine s16 interface versions at 0x70..0x80 (like nvgpu's
-    // *_ioctl_nr_last); its NvRm requires e.g. [0x78] >= 6 and enables features above 0xa, 0x1f
-    // and 0x26. In the Switch 1 layout these bytes are max_fbps_count..max_tex_per_tpc.
+    // Switch 2 keeps nine s16 interface versions at 0x70..0x80; Ounce NvRm requires e.g. [0x78] >= 6
+    // and enables TSG subcontexts / channel setup_bind features above 0xa, 0x1f and 0x26.
     auto* const raw = reinterpret_cast<u8*>(&gc);
     for (size_t off = 0x70; off <= 0x80; off += 2) {
         const s16 version = 0x40;

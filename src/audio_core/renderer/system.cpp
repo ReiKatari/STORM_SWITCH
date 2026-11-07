@@ -441,6 +441,7 @@ void System::Stop() {
         std::scoped_lock l{lock};
         state = State::Stopped;
         active = false;
+        PoolMapper::ClearUseState(memory_pool_workbuffer, memory_pool_count);
     }
 
     if (execution_mode == ExecutionMode::Auto) {
@@ -453,6 +454,7 @@ void System::Resynchronize() {
     reset_command_buffers = true;
     adsp_behind = false;
     audio_renderer.ClearRemainCommandCount(session_id);
+    PoolMapper::ClearUseState(memory_pool_workbuffer, memory_pool_count);
 
     const auto voice_count = voice_context.GetCount();
     for (u32 i = 0; i < voice_count; ++i) {
@@ -480,6 +482,10 @@ Result System::Update(std::span<const u8> input, std::span<u8> performance, std:
     if (result.IsError()) {
         LOG_ERROR(Service_Audio, "Failed to update BehaviorInfo!");
         return result;
+    }
+
+    if (!active || adsp_behind) {
+        PoolMapper::ClearUseState(memory_pool_workbuffer, memory_pool_count);
     }
 
     result = info_updater.UpdateMemoryPools(memory_pool_workbuffer, memory_pool_count);
@@ -647,6 +653,7 @@ void System::SendCommandToDsp() {
                 adsp_rendered_event->Signal(core.Kernel());
             }
         } else {
+            PoolMapper::ClearUseState(memory_pool_workbuffer, memory_pool_count);
             audio_renderer.ClearRemainCommandCount(session_id);
             terminate_event.Set();
         }

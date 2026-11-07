@@ -583,8 +583,11 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                                     // For intent launches, check if surface is ready and start emulation
                                     binding.root.post {
                                         if (binding.surfaceEmulation.holder.surface?.isValid == true) {
+                                            val frame = binding.surfaceEmulation.holder.surfaceFrame
                                             emulationState.newSurface(
-                                                binding.surfaceEmulation.holder.surface
+                                                binding.surfaceEmulation.holder.surface,
+                                                frame.width(),
+                                                frame.height()
                                             )
                                         }
                                     }
@@ -1137,6 +1140,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 } else if (newState == BottomSheetBehavior.STATE_HIDDEN) {
                     isQuickSettingsMenuOpen = false
                     emulationActivity?.buildPictureInPictureParams()
+                    updateOrientation()
                 }
             }
 
@@ -3020,10 +3024,13 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
 
     @SuppressLint("SourceLockedOrientationActivity")
     private fun updateOrientation() {
+        if (isQuickSettingsMenuOpen) {
+            return
+        }
         emulationActivity?.let {
             val orientationSetting =
                 EmulationOrientation.from(IntSetting.RENDERER_SCREEN_LAYOUT.getInt())
-            it.requestedOrientation = when (orientationSetting) {
+            val targetOrientation = when (orientationSetting) {
                 EmulationOrientation.Unspecified -> ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
                 EmulationOrientation.SensorLandscape ->
                     ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
@@ -3038,6 +3045,9 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 EmulationOrientation.Portrait -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
                 EmulationOrientation.ReversePortrait ->
                     ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT
+            }
+            if (it.requestedOrientation != targetOrientation) {
+                it.requestedOrientation = targetOrientation
             }
         }
     }
@@ -3065,8 +3075,8 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         NativeLibrary.applySettings()
         if (!isQuickSettingsMenuOpen) {
             emulationActivity?.buildPictureInPictureParams()
+            updateOrientation()
         }
-        updateOrientation()
     }
 
     fun onAspectRatioChanged() {
@@ -3153,16 +3163,16 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         lifecycleScope.launch {
             driverViewModel.isInteractionAllowed.first { it }
             if (holder.surface.isValid && this@EmulationFragment::emulationState.isInitialized) {
-                emulationState.newSurface(holder.surface)
+                emulationState.newSurface(holder.surface, width, height)
             }
         }
         if (holder.surface.isValid) {
             if (this::emulationState.isInitialized) {
                 synchronized(emulationState) {
-                    emulationState.updateSurfaceReference(holder.surface)
+                    emulationState.updateSurfaceReference(holder.surface, width, height)
                 }
             }
-            NativeLibrary.surfaceChanged(holder.surface)
+            NativeLibrary.surfaceChanged(holder.surface, width, height)
         }
         updatePausedFrameVisibility()
     }
@@ -3469,21 +3479,23 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
             windowInsets
         }
 
+        val initialQuickSettingsPaddingTop = binding.quickSettingsSheet.paddingTop
         ViewCompat.setOnApplyWindowInsetsListener(binding.quickSettingsSheet) { v, insets ->
-            val systemBarsInsets: Insets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-           if (v.layoutDirection == View.LAYOUT_DIRECTION_LTR) {
+            val navInsets = insets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.navigationBars())
+            val systemBars = insets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.systemBars())
+            if (v.layoutDirection == View.LAYOUT_DIRECTION_LTR) {
                 v.setPadding(
-                    systemBarsInsets.left,
-                    systemBarsInsets.top,
+                    systemBars.left,
+                    initialQuickSettingsPaddingTop,
                     0,
-                    systemBarsInsets.bottom
+                    navInsets.bottom
                 )
             } else {
                 v.setPadding(
                     0,
-                    systemBarsInsets.top,
-                    systemBarsInsets.right,
-                    systemBarsInsets.bottom
+                    initialQuickSettingsPaddingTop,
+                    systemBars.right,
+                    navInsets.bottom
                 )
             }
             insets
@@ -3496,6 +3508,8 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
     ) {
         private var state: State
         private var surface: Surface? = null
+        private var surfaceWidth: Int = 0
+        private var surfaceHeight: Int = 0
         lateinit var emulationThread: Thread
 
         init {
@@ -3572,7 +3586,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 return
             }
 
-            NativeLibrary.surfaceChanged(currentSurface)
+            NativeLibrary.surfaceChanged(currentSurface, surfaceWidth, surfaceHeight)
             Log.debug("[EmulationFragment] Resuming emulation.")
             NativeLibrary.unpauseEmulation()
             NativeLibrary.playTimeManagerStart()
@@ -3591,25 +3605,37 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
 
         // Surface callbacks
         @Synchronized
-        fun newSurface(surface: Surface?) {
+        fun newSurface(surface: Surface?, width: Int = 0, height: Int = 0) {
             this.surface = surface
+            if (width > 0 && height > 0) {
+                this.surfaceWidth = width
+                this.surfaceHeight = height
+            }
             if (this.surface != null) {
                 runWithValidSurface()
             }
         }
 
         @Synchronized
-        fun updateSurface() {
+        fun updateSurface(width: Int = 0, height: Int = 0) {
+            if (width > 0 && height > 0) {
+                this.surfaceWidth = width
+                this.surfaceHeight = height
+            }
             if (surface != null && state == State.RUNNING) {
-                NativeLibrary.surfaceChanged(surface)
+                NativeLibrary.surfaceChanged(surface, surfaceWidth, surfaceHeight)
             }
         }
 
         @Synchronized
-        fun updateSurfaceReference(surface: Surface?) {
+        fun updateSurfaceReference(surface: Surface?, width: Int = 0, height: Int = 0) {
             this.surface = surface
+            if (width > 0 && height > 0) {
+                this.surfaceWidth = width
+                this.surfaceHeight = height
+            }
             if (this.surface != null && state == State.RUNNING) {
-                NativeLibrary.surfaceChanged(this.surface)
+                NativeLibrary.surfaceChanged(this.surface, surfaceWidth, surfaceHeight)
             }
         }
 
@@ -3648,7 +3674,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
 
             when (state) {
                 State.STOPPED -> {
-                    NativeLibrary.surfaceChanged(currentSurface)
+                    NativeLibrary.surfaceChanged(currentSurface, surfaceWidth, surfaceHeight)
                     emulationThread = Thread({
                         Log.debug("[EmulationFragment] Starting emulation thread.")
                         NativeLibrary.run(gamePath, programIndex, true)
@@ -3658,7 +3684,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 }
 
                 State.PAUSED -> {
-                    NativeLibrary.surfaceChanged(currentSurface)
+                    NativeLibrary.surfaceChanged(currentSurface, surfaceWidth, surfaceHeight)
                     Log.debug(
                         "[EmulationFragment] Surface restored while emulation paused; " +
                             "native surface updated, waiting for explicit resume."

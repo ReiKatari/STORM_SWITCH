@@ -297,7 +297,7 @@ void Maxwell3D::DrawManager::ProcessDraw(Maxwell3D& maxwell3d, bool draw_indexed
                 for (size_t stage = 0; stage < programs.size(); ++stage) {
                     if (!maxwell3d.regs.IsShaderConfigEnabled(stage)) continue;
                     const auto& pipeline = maxwell3d.regs.pipelines[stage];
-                    programs[stage] = (GPUVAddr{pipeline.reserved[0] & 0xff} << 32) | pipeline.reserved[1];
+                    programs[stage] = (GPUVAddr{pipeline.reserved[0] & 0x1ffff} << 32) | pipeline.reserved[1];
                 }
                 if (captured.size() < 4096 && captured.insert(programs).second) {
                     std::ofstream registers("native-graphics-registers.bin", std::ios::binary);
@@ -307,7 +307,7 @@ void Maxwell3D::DrawManager::ProcessDraw(Maxwell3D& maxwell3d, bool draw_indexed
                         const auto& pipeline = maxwell3d.regs.pipelines[stage];
                         // C797 uses per-stage program addresses at 0x2014/0x2018,
                         // unlike Maxwell's program-region plus 0x2004 offset.
-                        const GPUVAddr address = (GPUVAddr{pipeline.reserved[0] & 0xff} << 32) | pipeline.reserved[1];
+                        const GPUVAddr address = (GPUVAddr{pipeline.reserved[0] & 0x1ffff} << 32) | pipeline.reserved[1];
                         LOG_INFO(HW_GPU, "Native graphics shader stage={}, address={:#x}", stage, address);
                         if (!maxwell3d.memory_manager.IsFullyMappedRange(address, 0x1000)) continue;
                         std::array<u8, 0x1000> bytes{};
@@ -329,9 +329,7 @@ void Maxwell3D::DrawManager::ProcessDrawIndirect(Maxwell3D& maxwell3d) {
     UpdateTopology(maxwell3d);
     if (maxwell3d.ShouldExecute()) {
         auto& native = maxwell3d.GetNativeMacroEngine();
-        if (native.native_turing) {
-            native.native_execution_failed = true;
-            LOG_ERROR(HW_GPU, "Native graphics shader translation required: indirect draw");
+        if (native.native_turing && native.native_execution_failed) {
             return;
         }
         maxwell3d.rasterizer->DrawIndirect();

@@ -84,23 +84,23 @@ object SettingsFile {
                 cleanProg.startsWith("0100E5D00CC0C") ||
                 cleanProg.startsWith("010099900B22E")
             ) {
-                val rNvdec = text.replace(Regex("nvdec_emulation\\s*=\\s*[02]"), "nvdec_emulation = 1")
-                if (rNvdec != text) { text = rNvdec; modified = true }
                 val rFences = text.replace(Regex("early_release_fences\\s*=\\s*true", RegexOption.IGNORE_CASE), "early_release_fences = false")
                 if (rFences != text) { text = rFences; modified = true }
 
                 val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(
                     org.yuzu.yuzu_emu.YuzuApplication.appContext
                 )
-                val healKey = "storm_unravel2_1634_healed_$cleanProg"
-                if (!prefs.getBoolean(healKey, false) && !text.contains("storm_unravel2_1634_healed=1")) {
+                val healKey = "storm_unravel2_1635_healed_$cleanProg"
+                if (!prefs.getBoolean(healKey, false) && !text.contains("storm_unravel2_1635_healed=1")) {
                     val rCpu = text.replace(Regex("cpu_backend\\s*=\\s*0"), "cpu_backend = 1")
                     if (rCpu != text) { text = rCpu; modified = true }
+                    val rNvdec = text.replace(Regex("nvdec_emulation\\s*=\\s*1"), "nvdec_emulation = 2")
+                    if (rNvdec != text) { text = rNvdec; modified = true }
                     val rBfl = text.replace(Regex("barrier_feedback_loops\\s*=\\s*true", RegexOption.IGNORE_CASE), "barrier_feedback_loops = false")
                     if (rBfl != text) { text = rBfl; modified = true }
                     val rGpu = text.replace(Regex("gpu_accuracy\\s*=\\s*2"), "gpu_accuracy = 1")
                     if (rGpu != text) { text = rGpu; modified = true }
-                    text = text.trimEnd() + "\n# storm_unravel2_1634_healed=1\n"
+                    text = text.trimEnd() + "\n# storm_unravel2_1635_healed=1\n"
                     modified = true
                     prefs.edit().putBoolean(healKey, true).apply()
                 }

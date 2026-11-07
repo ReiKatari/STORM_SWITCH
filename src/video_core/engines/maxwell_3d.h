@@ -3179,6 +3179,10 @@ public:
         return *rasterizer;
     }
 
+    MemoryManager& AccessMemoryManager() {
+        return memory_manager;
+    }
+
     struct DirtyState {
         using Flags = std::bitset<(std::numeric_limits<u8>::max)() + 1>;
         using Table = std::array<u8, Regs::NUM_REGS>;

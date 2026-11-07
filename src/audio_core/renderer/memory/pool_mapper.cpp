@@ -204,11 +204,19 @@ MemoryPoolInfo::ResultState PoolMapper::Update(MemoryPoolInfo& pool,
         return MemoryPoolInfo::ResultState::MapFailed;
 
     case MemoryPoolInfo::State::RequestDetach:
+        if (pool.GetCpuAddress() == 0 && pool.GetSize() == 0) {
+            out_params.state = MemoryPoolInfo::State::Detached;
+            return MemoryPoolInfo::ResultState::Success;
+        }
         if (pool.GetCpuAddress() != in_params.address || pool.GetSize() != in_params.size) {
+            LOG_WARNING(Service_Audio,
+                        "RequestDetach pool mismatch: pool=({:#x}, {:#x}) vs in=({:#x}, {:#x})",
+                        pool.GetCpuAddress(), pool.GetSize(), in_params.address, in_params.size);
             return MemoryPoolInfo::ResultState::BadParam;
         }
 
         if (pool.IsUsed()) {
+            pool.SetUsed(false);
             return MemoryPoolInfo::ResultState::InUse;
         }
 

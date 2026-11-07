@@ -158,6 +158,10 @@ public:
     }
 
 private:
+    void StubReplyZeroed(HLERequestContext& ctx) {
+        TipcReplyWords(ctx, {0});
+    }
+
     // Newer SDKs (title 1) open with TIPC 0(u64 token) and abort unless the reply echoes it.
     void Handshake(HLERequestContext& ctx) {
         const auto* w = ctx.CommandBuffer();
@@ -1053,12 +1057,27 @@ public:
             {104, &INx2Vi2Session::SucceedQuietly, "Unknown104 (display \"default\")"},
             {105, &INx2Vi2Session::SucceedQuietly, "Unknown105 (display \"default\")"},
             {106, &INx2Vi2Session::GetBufferMaxResolution, "GetBufferMaxResolution"},
+            {107, &INx2Vi2Session::SucceedQuietly, "Unknown107 (display \"default\")"},
+            {265, &INx2Vi2Session::SucceedQuietly, "Unknown265 (display \"default\")"},
+            {267, &INx2Vi2Session::SucceedQuietly, "Unknown267 (display \"default\")"},
+            {271, &INx2Vi2Session::SucceedQuietly, "Unknown271 (display \"default\")"},
+            {351, &INx2Vi2Session::SucceedQuietly, "Unknown351"},
             {228, &INx2Vi2Session::CancelClientBuffer, "CancelClientBuffer"},
             {229, &INx2Vi2Session::PresentClientBuffer, "PresentClientBuffer"},
         });
     }
 
     ~INx2Vi2Session() override {
+        if (m_release_timer) {
+            system.CoreTiming().UnscheduleEvent(m_release_timer);
+            auto& syncpoints = system.Host1x().GetSyncpointManager();
+            while (syncpoints.GetGuestSyncpointValue(m_release_syncpoint) != m_release_value) {
+                syncpoints.IncrementGuest(m_release_syncpoint);
+            }
+            if (auto nvdrv = system.ServiceManager().GetService<Nvidia::NVDRV>("nvdrv", true)) {
+                nvdrv->GetModule()->GetContainer().GetSyncpointManager().FreeSyncpoint(m_release_syncpoint);
+            }
+        }
         // The vsync callback may be running on the HostTiming thread: empty its event list under
         // its lock first (it holds the state, not this session), then close the events.
         {
@@ -1107,7 +1126,10 @@ private:
         const auto waited = std::chrono::steady_clock::now();
         Composite(w[5], ~w[22], w[24]);
         const auto composited = std::chrono::steady_clock::now();
-        PaceToVblank();
+        const auto release = PresentQueue() ? QueueRelease(w[12]) : std::array<u32, 4>{};
+        if (!PresentQueue()) {
+            PaceToVblank();
+        }
         const auto paced = std::chrono::steady_clock::now();
         // Where each frame's time goes on the present thread, averaged per 600 presents: the
         // game is blocked here while Eden's GPU thread catches up (fence) and composites.
@@ -1141,7 +1163,53 @@ private:
         }
         constexpr u64 AvailableSlots = 0x7fff;
         TipcReplyWords(ctx, {static_cast<u32>(AvailableSlots),
-                             static_cast<u32>(AvailableSlots >> 32), 0, 0, 0, 0});
+                             static_cast<u32>(AvailableSlots >> 32),
+                             release[0], release[1], release[2], release[3]});
+    }
+
+    static bool PresentQueue() {
+        static const bool enabled = [] {
+            const char* value = std::getenv("EDEN_NX2_PRESENT_QUEUE");
+            return value == nullptr || value[0] != '0';
+        }();
+        return enabled;
+    }
+
+    static u32 SwapInterval(u32 timing) {
+        const u32 interval = (timing >> 16) & 0xff;
+        return interval >= 1 && interval <= 4 ? interval : 1;
+    }
+
+    std::array<u32, 4> QueueRelease(u32 timing) {
+        if (m_release_syncpoint == ~0U) {
+            auto nvdrv = system.ServiceManager().GetService<Nvidia::NVDRV>("nvdrv", true);
+            if (!nvdrv) {
+                return {};
+            }
+            m_release_syncpoint = nvdrv->GetModule()->GetContainer().GetSyncpointManager().AllocateSyncpoint(true);
+            m_release_value = system.Host1x().GetSyncpointManager().GetGuestSyncpointValue(m_release_syncpoint);
+            m_release_timer = Core::Timing::CreateEvent(
+                "nx2:vi2 buffer release",
+                [&syncpoints = system.Host1x().GetSyncpointManager(), id = m_release_syncpoint](
+                    s64, std::chrono::nanoseconds) -> std::optional<std::chrono::nanoseconds> {
+                    syncpoints.IncrementGuest(id);
+                    return std::nullopt;
+                });
+            LOG_INFO(Service, "nx2:vi2 display release syncpoint {}", m_release_syncpoint);
+        }
+        const u32 swap_interval = SwapInterval(timing);
+        const u32 hz = timing & 0xffff;
+        const u32 refresh_rate = hz >= 30 && hz <= 240 ? hz : 60;
+        const auto now = system.CoreTiming().GetGlobalTimeNs();
+        std::chrono::nanoseconds interval{};
+        if (Settings::values.use_speed_limit.GetValue() && Settings::SpeedLimit() != 0) {
+            interval = std::chrono::nanoseconds{
+                100'000'000'000LL * swap_interval / refresh_rate / Settings::SpeedLimit()};
+        }
+        m_release_time = interval.count() == 0 ? now : (std::max)(now, m_release_time);
+        system.CoreTiming().ScheduleEvent(m_release_time, m_release_timer, true);
+        m_release_time += interval;
+        return {~m_release_syncpoint, 0, ++m_release_value, 0};
     }
 
     // The console's compositor frees a buffer only once its frame's GPU fence has passed, which
@@ -1416,6 +1484,7 @@ private:
         rb.Push(mode);
     }
 
+
     void GetDisplayResolution(HLERequestContext& ctx) {
         LOG_INFO(Service, "nx2:vi2 51 GetDisplayResolution");
         TipcReplyWords(ctx, {1920, 1080});
@@ -1527,6 +1596,10 @@ private:
     };
     std::shared_ptr<VsyncState> m_vsync = std::make_shared<VsyncState>();
     std::shared_ptr<Core::Timing::EventType> m_vsync_timer;
+    std::shared_ptr<Core::Timing::EventType> m_release_timer;
+    std::chrono::nanoseconds m_release_time{};
+    u32 m_release_syncpoint{~0U};
+    u32 m_release_value{};
     u64 m_presents{};
     u64 m_shown_layout{}; // image and crop size last logged
     std::shared_ptr<std::atomic<bool>> m_capture_pending = std::make_shared<std::atomic<bool>>(false);
@@ -2066,6 +2139,9 @@ public:
             {1211, &INx2GraphicsSystemSession::CreateNativeImage, "CreateChatImagePool (guessed)"},
             {1291, &INx2GraphicsSystemSession::CalculateChatImagePoolSize,
              "CalculateChatImagePoolSize (guessed)"},
+            {201, &INx2GraphicsSystemSession::CheckPermission, "CheckPermission201"},
+            {1501, &INx2GraphicsSystemSession::CheckPermission, "CheckPermission1501"},
+            {1502, &INx2GraphicsSystemSession::CheckPermission, "CheckPermission1502"},
             {911, &INx2GraphicsSystemSession::CreateDecoderImage, "CreateDecoderImage"},
             {961, &INx2GraphicsSystemSession::GetCpuImageDescriptor, "GetCpuUserImageDescriptor"},
         });
@@ -2117,6 +2193,12 @@ private:
         LOG_INFO(Service, "nx2:gsv TIPC 1101");
         TipcReplyWords(ctx, {1, 0});
     }
+
+    void CheckPermission(HLERequestContext& ctx) {
+        LOG_DEBUG(Service, "nx2:gsv TIPC {} permission check", ctx.GetCommand());
+        TipcReplyWords(ctx, {});
+    }
+
 
     void Stub(HLERequestContext& ctx) {
         const auto* cmd_buf = ctx.CommandBuffer();
@@ -2192,6 +2274,11 @@ private:
         LOG_WARNING(Service, "(STUBBED) nx2:gsv TIPC 204, version={} max_syncpoints={:#x}",
                     version_requested, max_syncpoints);
 
+        if (m_syncpt_events[0] == nullptr) {
+            m_syncpt_events[0] = m_context.CreateEvent("nx2:gsv:SyncptRequest");
+            m_syncpt_events[1] = m_context.CreateEvent("nx2:gsv:SyncptNotify");
+        }
+
         auto rw = ctx.GetObjectFromHandle<Kernel::KTransferMemory>(ctx.GetCopyHandle(0));
         auto ro = ctx.GetObjectFromHandle<Kernel::KTransferMemory>(ctx.GetCopyHandle(1));
         if (rw.IsNotNull() && ro.IsNotNull() && ro->GetSize() >= 0x2000) {
@@ -2223,10 +2310,6 @@ private:
             LOG_ERROR(Service, "nx2:gsv TIPC 204: missing syncpt transfer memory");
         }
 
-        if (m_syncpt_events[0] == nullptr) {
-            m_syncpt_events[0] = m_context.CreateEvent("nx2:gsv:SyncptRequest");
-            m_syncpt_events[1] = m_context.CreateEvent("nx2:gsv:SyncptNotify");
-        }
         IPC::ResponseBuilder rb{ctx, 2, 2, 0};
         rb.Push(ResultSuccess);
         rb.PushCopyObjects(ctx, *m_syncpt_events[0]); // signalled by the client
@@ -2242,6 +2325,10 @@ private:
             const u64 address = m_syncpt_ro + SyncptValuesOffset + id * 8;
             if (m_syncpt_memory->Read64(address) != value) {
                 m_syncpt_memory->Write64(address, value);
+                if (m_syncpt_log_count < 16) {
+                    ++m_syncpt_log_count;
+                    LOG_DEBUG(Service, "nx2:gsv syncpt[{}] -> {:#x}", id, value);
+                }
                 changed = true;
             }
         }
@@ -2249,13 +2336,16 @@ private:
     }
 
     // Answers every armed wait: the value page is current, so the client rechecks its threshold
-    // and rearms if it still has to wait. Acknowledging without a value change costs the client a
-    // wakeup per poll, which keeps waits whose syncpoint we never see from hanging.
+    // and rearms if it still has to wait. Also signals when values change, when client signals
+    // request event[0], or periodically to prevent lost wakeups across concurrent guest threads.
     void PollSyncpts() {
-        if (m_syncpt_memory == nullptr) {
+        if (m_syncpt_memory == nullptr || m_syncpt_events[1] == nullptr) {
             return;
         }
-        UpdateSyncptValues();
+        const bool changed = UpdateSyncptValues();
+        const bool req_signaled =
+            m_syncpt_events[0] != nullptr &&
+            m_syncpt_events[0]->GetReadableEvent().Reset(system.Kernel()).IsSuccess();
         bool acked = false;
         const u32 words = (m_syncpt_count + 63) / 64;
         for (u32 w = 0; w < words; ++w) {
@@ -2266,9 +2356,12 @@ private:
                 acked = true;
             }
         }
-        m_syncpt_memory->Write64(m_syncpt_ro + SyncptRoSummaryOffset,
-                                 m_syncpt_memory->Read64(m_syncpt_rw + SyncptRwSummaryOffset));
-        if (acked) {
+        const u64 rw_summary = m_syncpt_memory->Read64(m_syncpt_rw + SyncptRwSummaryOffset);
+        if (m_syncpt_memory->Read64(m_syncpt_ro + SyncptRoSummaryOffset) != rw_summary) {
+            m_syncpt_memory->Write64(m_syncpt_ro + SyncptRoSummaryOffset, rw_summary);
+            acked = true;
+        }
+        if (acked || changed || req_signaled || ((++m_syncpt_keepalive & 3u) == 0u)) {
             m_syncpt_events[1]->Signal(system.Kernel());
         }
     }
@@ -2563,7 +2656,7 @@ private:
         ReturnRawSession(system, ctx, std::move(nvsrv));
     }
 
-    static constexpr std::chrono::nanoseconds SyncptPollInterval{std::chrono::microseconds{500}};
+    static constexpr std::chrono::nanoseconds SyncptPollInterval{std::chrono::microseconds{250}};
 
     std::shared_ptr<Nx2NativeObjects> m_objects{std::make_shared<Nx2NativeObjects>()};
     KernelHelpers::ServiceContext m_context;
@@ -2572,6 +2665,8 @@ private:
     u64 m_syncpt_rw{};
     u64 m_syncpt_ro{};
     u32 m_syncpt_count{};
+    u32 m_syncpt_keepalive{};
+    u32 m_syncpt_log_count{};
     std::shared_ptr<Core::Timing::EventType> m_syncpt_poll;
 };
 

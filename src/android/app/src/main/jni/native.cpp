@@ -287,11 +287,23 @@ int EmulationSession::ShadersBuilding() {
     return m_shaders_building;
 }
 
+void EmulationSession::OnSurfaceChanged(ANativeWindow* surface, u32 width, u32 height) {
+    SetNativeWindow(surface);
+    if (width > 0 && height > 0) {
+        m_surface_width = width;
+        m_surface_height = height;
+    }
+    if (!IsRunning()) {
+        return;
+    }
+    m_window->OnSurfaceChanged(m_native_window, m_surface_width, m_surface_height);
+}
+
 void EmulationSession::SurfaceChanged() {
     if (!IsRunning()) {
         return;
     }
-    m_window->OnSurfaceChanged(m_native_window);
+    m_window->OnSurfaceChanged(m_native_window, m_surface_width, m_surface_height);
 }
 
 void EmulationSession::ConfigureFilesystemProvider(const std::string& filepath) {
@@ -363,25 +375,54 @@ void EmulationSession::SetAppletId(int applet_id) {
         static_cast<Service::AM::AppletId>(m_applet_id));
 }
 
-static void ApplyGameSpecificSafetyOverrides(u64 title_id, u64 host_ram_bytes) {
-    if (title_id == 0) return;
+static void ApplyGameSpecificSafetyOverrides(u64 title_id, u64 host_ram_bytes,
+                                              std::string_view hint_text = {}) {
     const u64 base_tid = title_id & ~0x1FFFULL;
+    std::string lower_hint{hint_text};
+    std::transform(lower_hint.begin(), lower_hint.end(), lower_hint.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    const bool is_wonder_hint =
+        (title_id == 0) &&
+        (lower_hint.find("wonder") != std::string::npos &&
+         lower_hint.find("mario") != std::string::npos &&
+         lower_hint.find("0400") == std::string::npos &&
+         lower_hint.find("ns2") == std::string::npos);
 
-    // 1) Super Mario Bros. Wonder
-    if (title_id == 0x010015100B514000ULL || base_tid == 0x010015100B514000ULL) {
+    if (title_id == 0 && !is_wonder_hint) return;
+
+    // 1) Super Mario Bros. Wonder (010015100B514000)
+    if (title_id == 0x010015100B514000ULL || base_tid == 0x010015100B514000ULL || is_wonder_hint) {
         Settings::values.memory_layout_mode.SetGlobal(false);
         Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_4Gb);
+        Settings::values.gpu_accuracy.SetGlobal(false);
+        Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::Normal);
+        Settings::values.use_reactive_flushing.SetGlobal(false);
+        Settings::values.use_reactive_flushing.SetValue(false);
+        Settings::values.use_fast_gpu_time.SetGlobal(false);
+        Settings::values.use_fast_gpu_time.SetValue(true);
         Settings::values.barrier_feedback_loops.SetGlobal(false);
         Settings::values.barrier_feedback_loops.SetValue(true);
         Settings::values.early_release_fences.SetGlobal(false);
         Settings::values.early_release_fences.SetValue(false);
         Settings::values.enable_frame_skipping.SetGlobal(false);
         Settings::values.enable_frame_skipping.SetValue(false);
+        Settings::values.drs_resolution_lock.SetGlobal(false);
+        Settings::values.drs_resolution_lock.SetValue(false);
+        Settings::values.sync_memory_operations.SetGlobal(false);
+        Settings::values.sync_memory_operations.SetValue(false);
         Settings::values.vram_budget_governor.SetGlobal(false);
         Settings::values.vram_budget_governor.SetValue(false);
+        Settings::values.dynamic_performance_scaler.SetGlobal(false);
+        Settings::values.dynamic_performance_scaler.SetValue(false);
+        Settings::values.smart_shader_throttle.SetGlobal(false);
+        Settings::values.smart_shader_throttle.SetValue(false);
+        Settings::values.use_video_framerate.SetGlobal(false);
+        Settings::values.use_video_framerate.SetValue(false);
+        Settings::values.enable_gpu_buffer_readback.SetGlobal(false);
+        Settings::values.enable_gpu_buffer_readback.SetValue(false);
         Settings::values.cpuopt_ignore_memory_aborts.SetGlobal(false);
         Settings::values.cpuopt_ignore_memory_aborts.SetValue(true);
-        LOG_INFO(Frontend, "Guaranteed Super Mario Bros. Wonder safety overrides (4GB, barriers ON, early_fences OFF, frame_skip OFF, vram_gov OFF, ignore_aborts ON)");
+        LOG_INFO(Frontend, "Guaranteed Super Mario Bros. Wonder full safety overrides (4GB, Normal GPU, drs_lock OFF, sync_mem OFF, early_fences OFF, frame_skip OFF)");
     }
 
     // 2) Diablo II: Resurrected
@@ -419,13 +460,13 @@ static void ApplyGameSpecificSafetyOverrides(u64 title_id, u64 host_ram_bytes) {
     // 3) Unravel Two
     if (title_id == 0x01008C3005A32000ULL || title_id == 0x0100E5D00CC0C000ULL || title_id == 0x010099900B22E000ULL ||
         base_tid == 0x01008C3005A32000ULL || base_tid == 0x0100E5D00CC0C000ULL || base_tid == 0x010099900B22E000ULL) {
-        Settings::values.nvdec_emulation.SetGlobal(false);
-        Settings::values.nvdec_emulation.SetValue(Settings::NvdecEmulation::Cpu);
         Settings::values.early_release_fences.SetGlobal(false);
         Settings::values.early_release_fences.SetValue(false);
+        Settings::values.use_fast_gpu_time.SetGlobal(false);
+        Settings::values.use_fast_gpu_time.SetValue(false);
         Settings::values.cpuopt_ignore_memory_aborts.SetGlobal(false);
         Settings::values.cpuopt_ignore_memory_aborts.SetValue(true);
-        LOG_INFO(Frontend, "Guaranteed Unravel Two safety overrides (Zero-delay NVDEC CPU, fences, ignore aborts; NCE & GPU settings preserved)");
+        LOG_INFO(Frontend, "Guaranteed Unravel Two safety overrides (GPU/MediaCodec NVDEC preserved, fences & fast_gpu_time disabled, ignore aborts)");
     }
 
     // 4) Switch 2 games
@@ -495,7 +536,7 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
     }
 #endif
 
-    ApplyGameSpecificSafetyOverrides(early_title_id, host_ram_bytes);
+    ApplyGameSpecificSafetyOverrides(early_title_id, host_ram_bytes, !early_title.empty() ? std::string_view{early_title} : std::string_view{filepath});
 
     if (Core::GameFixDatabase::AreFixesEnabled()) {
         bool applied_early = false;
@@ -1001,15 +1042,15 @@ jint InitFFmpegOnLoad(JavaVM* vm) {
 extern "C" {
 
 void Java_org_yuzu_yuzu_1emu_NativeLibrary_surfaceChanged(JNIEnv* env, jobject instance,
-                                                          [[maybe_unused]] jobject surf) {
+                                                          [[maybe_unused]] jobject surf,
+                                                          jint width, jint height) {
     ANativeWindow* window = (surf != nullptr) ? ANativeWindow_fromSurface(env, surf) : nullptr;
-    EmulationSession::GetInstance().SetNativeWindow(window);
-    EmulationSession::GetInstance().SurfaceChanged();
+    EmulationSession::GetInstance().OnSurfaceChanged(
+        window, static_cast<u32>(std::max(0, width)), static_cast<u32>(std::max(0, height)));
 }
 
 void Java_org_yuzu_yuzu_1emu_NativeLibrary_surfaceDestroyed(JNIEnv* env, jobject instance) {
-    EmulationSession::GetInstance().SetNativeWindow(nullptr);
-    EmulationSession::GetInstance().SurfaceChanged();
+    EmulationSession::GetInstance().OnSurfaceChanged(nullptr, 0, 0);
 }
 
 void Java_org_yuzu_yuzu_1emu_NativeLibrary_setAppDirectory(JNIEnv* env, jobject instance,

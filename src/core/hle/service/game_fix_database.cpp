@@ -436,8 +436,9 @@ static const std::vector<GameFixProfile> s_profiles = {
         "✓ Программный декодер видео без задержки (NVDEC CPU FF_THREAD_SLICE: 0 кадров буферизации)\n✓ Точность ГПУ: Обычная (Normal)\n✓ Обратные циклы барьеров: Отключено (сохранение 3D-рендера PhyreEngine)\n✓ Ранний сброс заборов: Отключено\n✓ Игнорирование сбоев памяти: Включено",
         "✓ Zero-Delay CPU NVDEC Video Decoding (FF_THREAD_SLICE: 0-frame buffering)\n✓ GPU Accuracy: Normal\n✓ Barrier Feedback Loops: Disabled (Preserves PhyreEngine 3D render pass)\n✓ Early Release Fences: Disabled\n✓ Ignore Memory Aborts: Enabled",
         {
-            {"Renderer\\nvdec_emulation", "1"},
+            {"Renderer\\nvdec_emulation", "2"},
             {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\barrier_feedback_loops", "false"},
             {"Renderer\\early_release_fences", "false"},
             {"Cpu\\cpuopt_fastmem", "true"},
@@ -1287,7 +1288,13 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\barrier_feedback_loops", "true"},
             {"Renderer\\early_release_fences", "false"},
             {"Renderer\\enable_frame_skipping", "false"},
+            {"Renderer\\drs_resolution_lock", "false"},
+            {"Renderer\\sync_memory_operations", "false"},
             {"Renderer\\vram_budget_governor", "false"},
+            {"Renderer\\dynamic_performance_scaler", "false"},
+            {"Renderer\\smart_shader_throttle", "false"},
+            {"Renderer\\use_video_framerate", "false"},
+            {"Renderer\\enable_gpu_buffer_readback", "false"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"}
         }
@@ -5428,8 +5435,9 @@ static const std::vector<GameFixProfile> s_profiles = {
         "",
         "",
         {
-            {"Renderer\\nvdec_emulation", "1"},
+            {"Renderer\\nvdec_emulation", "2"},
             {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\astc_recompression", "0"}
         }
@@ -5589,8 +5597,9 @@ static const std::vector<GameFixProfile> s_profiles = {
         "",
         "",
         {
-            {"Renderer\\nvdec_emulation", "1"},
+            {"Renderer\\nvdec_emulation", "2"},
             {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\use_asynchronous_shaders", "true"}
         }
     },

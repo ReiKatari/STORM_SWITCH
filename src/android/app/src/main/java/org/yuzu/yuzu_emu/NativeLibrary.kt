@@ -141,6 +141,27 @@ object NativeLibrary {
             val p = java.io.File(clean).parent
             if (p != null) return p
         }
+        if (path.startsWith("content://")) {
+            val treeParent = YuzuApplication.documentsTree?.getParentDirectory(path)
+            if (!treeParent.isNullOrEmpty() && treeParent != path) {
+                return treeParent
+            }
+            val docMarker = "/document/"
+            val docIdx = path.indexOf(docMarker)
+            if (docIdx > 0) {
+                val prefix = path.substring(0, docIdx + docMarker.length)
+                val docId = path.substring(docIdx + docMarker.length)
+                val lastEncSlash = docId.lastIndexOf("%2F", ignoreCase = true)
+                if (lastEncSlash > 0) {
+                    return prefix + docId.substring(0, lastEncSlash)
+                }
+                val lastSlash = docId.lastIndexOf('/')
+                if (lastSlash > 0) {
+                    return prefix + docId.substring(0, lastSlash)
+                }
+            }
+            return ""
+        }
         return if (DocumentsTree.isNativePath(path)) {
             YuzuApplication.documentsTree?.getParentDirectory(path) ?: path
         } else {
@@ -208,7 +229,8 @@ object NativeLibrary {
     external fun run(path: String?, programIndex: Int, frontendInitiated: Boolean)
 
     // Surface Handling
-    external fun surfaceChanged(surf: Surface?)
+    external fun surfaceChanged(surf: Surface?, width: Int, height: Int)
+    fun surfaceChanged(surf: Surface?) = surfaceChanged(surf, 0, 0)
 
     external fun surfaceDestroyed()
 

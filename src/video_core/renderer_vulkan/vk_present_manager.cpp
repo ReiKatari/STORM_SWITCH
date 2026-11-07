@@ -365,8 +365,8 @@ void PresentManager::PresentThread(std::stop_token token) {
 
 void PresentManager::RecreateSwapchain(Frame* frame) {
     const auto& layout = render_window.GetFramebufferLayout();
-    const u32 target_w = (layout.width > 0) ? layout.width : frame->width;
-    const u32 target_h = (layout.height > 0) ? layout.height : frame->height;
+    const u32 target_w = (layout.width > 0) ? layout.width : (frame ? frame->width : 0);
+    const u32 target_h = (layout.height > 0) ? layout.height : (frame ? frame->height : 0);
     swapchain.Create(*surface, target_w, target_h); // Pass raw pointer
 #ifdef __ANDROID__
     const auto actual_extent = swapchain.GetExtent();
@@ -589,6 +589,16 @@ void PresentManager::CopyToSwapchainImpl(Frame* frame) {
         RecreateSwapchain(frame);
     }
 
+    const VkExtent2D extent = swapchain.GetExtent();
+#ifdef __ANDROID__
+    if (extent.width > 0 && extent.height > 0) {
+        const auto& cur_layout = render_window.GetFramebufferLayout();
+        if (extent.width != cur_layout.width || extent.height != cur_layout.height) {
+            render_window.UpdateCurrentFramebufferLayout(extent.width, extent.height);
+        }
+    }
+#endif
+
     vk::CommandBuffer cmdbuf{frame->cmdbuf};
     cmdbuf.Begin({
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -598,7 +608,6 @@ void PresentManager::CopyToSwapchainImpl(Frame* frame) {
     });
 
     const VkImage image{swapchain.CurrentImage()};
-    const VkExtent2D extent = swapchain.GetExtent();
     const std::array pre_barriers{
         VkImageMemoryBarrier{
             .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,

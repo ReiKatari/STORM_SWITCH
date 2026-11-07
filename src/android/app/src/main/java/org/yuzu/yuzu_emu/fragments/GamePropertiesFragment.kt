@@ -360,6 +360,34 @@ class GamePropertiesFragment : Fragment() {
 
                         add(SubMenuPropertySecondaryAction(
                             isShown = configExists,
+                            descriptionId = R.string.reset_to_default,
+                            iconId = R.drawable.ic_delete,
+                            action = {
+                                MessageDialogFragment.newInstance(
+                                    activity = requireActivity(),
+                                    titleId = R.string.reset_to_default,
+                                    descriptionId = R.string.reset_to_default_description,
+                                    positiveAction = {
+                                        val configFile = File(
+                                            DirectoryInitialization.userDirectory +
+                                                    "/config/custom/" + args.game.settingsName + ".ini"
+                                        )
+                                        if (configFile.exists()) {
+                                            configFile.delete()
+                                        }
+                                        Toast.makeText(
+                                            YuzuApplication.appContext,
+                                            R.string.settings_reset,
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                        reloadList()
+                                    }
+                                ).show(parentFragmentManager, MessageDialogFragment.TAG)
+                            }
+                        ))
+
+                        add(SubMenuPropertySecondaryAction(
+                            isShown = configExists,
                             descriptionId = R.string.share_game_settings,
                             iconId = R.drawable.ic_share,
                             action = {

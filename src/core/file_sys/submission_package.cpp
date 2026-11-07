@@ -295,7 +295,8 @@ void NSP::ReadNCAs(const std::vector<VirtualFile>& files) {
     struct CandidateNca {
         VirtualFile raw_file;
         VirtualFile v_file;
-        std::shared_ptr<NCA> nca;
+        NcaHeaderSummary summary;
+        mutable std::shared_ptr<NCA> nca;
         std::string name;
     };
     std::vector<CandidateNca> candidates;
@@ -316,16 +317,9 @@ void NSP::ReadNCAs(const std::vector<VirtualFile>& files) {
             if (is_nsz_container || name.ends_with(".ncz") || IsNczFile(temp_file)) {
                 temp_file = std::make_shared<NCZVirtualFile>(temp_file);
             }
-            auto ncz_cast = temp_file->IsNczFile() ? std::static_pointer_cast<NCZVirtualFile>(temp_file) : nullptr;
-            std::shared_ptr<NCA> temp_nca = nullptr;
-            // Prevent instantiating full NCA on solid-stream NCZ files during candidate discovery!
-            // Doing so triggers DecompressIfNCZ which decompresses multi-gigabyte solid streams to disk on the UI thread.
-            if (ncz_cast && ncz_cast->is_solid_stream) {
-                temp_nca = nullptr;
-            } else {
-                temp_nca = std::make_shared<NCA>(temp_file);
-            }
-            candidates.push_back({potential_file, temp_file, temp_nca, name});
+            // Peek only the 0..0x4000 uncompressed NCA header (0.01ms, zero ZSTD/solid stream decompression!)
+            const NcaHeaderSummary summary = NCA::PeekHeaderSummary(temp_file);
+            candidates.push_back({potential_file, temp_file, summary, nullptr, name});
         }
     };
 
@@ -471,50 +465,56 @@ void NSP::ReadNCAs(const std::vector<VirtualFile>& files) {
                     const bool is_base_program_record =
                         (rec.type == ContentRecordType::Program && (cnmt.GetTitleID() & 0x800) == 0);
 
+                    const CandidateNca* best_cand = nullptr;
                     auto IsBetterProgramCandidate = [&](const CandidateNca& cand) -> bool {
-                        if (!matched_cand_nca) {
+                        if (best_cand == nullptr) {
                             return true;
                         }
+                        const bool cur_is_update = best_cand->summary.is_update || ((best_cand->summary.title_id & 0xFFF) == 0x800);
+                        const bool new_is_update = cand.summary.is_update || ((cand.summary.title_id & 0xFFF) == 0x800);
                         if (is_base_program_record) {
-                            const bool cur_is_base = !matched_cand_nca->IsUpdate();
-                            const bool new_is_base = !cand.nca->IsUpdate();
+                            const bool cur_is_base = !cur_is_update;
+                            const bool new_is_base = !new_is_update;
                             if (new_is_base != cur_is_base) {
                                 return new_is_base;
                             }
-                            const bool cur_ok =
-                                (matched_cand_nca->GetStatus() == Loader::ResultStatus::Success);
-                            const bool new_ok =
-                                (cand.nca->GetStatus() == Loader::ResultStatus::Success);
-                            if (new_ok != cur_ok) {
-                                return new_ok;
-                            }
-                        } else {
-                            const bool cur_is_update = matched_cand_nca->IsUpdate() ||
-                                (matched_cand_nca->GetStatus() == Loader::ResultStatus::ErrorMissingBKTRBaseRomFS);
-                            const bool new_is_update = cand.nca->IsUpdate() ||
-                                (cand.nca->GetStatus() == Loader::ResultStatus::ErrorMissingBKTRBaseRomFS);
+                        } else if (rec.type == ContentRecordType::Program && cnmt.GetType() == TitleType::Update) {
                             if (new_is_update != cur_is_update) {
                                 return new_is_update;
                             }
                         }
-                        const std::size_t cur_sz =
-                            matched_file ? matched_file->GetSize() : 0;
-                        const std::size_t new_sz =
-                            cand.v_file ? cand.v_file->GetSize() : 0;
+                        const std::size_t cur_sz = best_cand->v_file ? best_cand->v_file->GetSize() : 0;
+                        const std::size_t new_sz = cand.v_file ? cand.v_file->GetSize() : 0;
                         return new_sz > cur_sz;
                     };
 
+                    const bool is_update_program_record =
+                        (rec.type == ContentRecordType::Program && cnmt.GetType() == TitleType::Update);
+
                     // Pass 1: Exact Title ID + Content Type match
                     for (const auto& cand : candidates) {
-                        if (used_files.contains(cand.name)) continue;
-                        if (cand.nca && (cand.nca->GetStatus() == Loader::ResultStatus::Success ||
-                            cand.nca->GetStatus() == Loader::ResultStatus::ErrorMissingBKTRBaseRomFS)) {
-                            if (cand.nca->GetTitleId() == cnmt.GetTitleID() && MatchesType(cand.nca->GetType())) {
+                        if (used_files.contains(cand.name) || !cand.summary.valid) continue;
+                        if (cand.summary.title_id == cnmt.GetTitleID() && MatchesType(cand.summary.type)) {
+                            if (IsBetterProgramCandidate(cand)) {
+                                best_cand = &cand;
+                                if (!is_base_program_record && !is_update_program_record) {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    // Pass 2: Base Title ID + Content Type match (matches DLCs and repacked 1G+1U titles)
+                    if (best_cand == nullptr) {
+                        for (const auto& cand : candidates) {
+                            if (used_files.contains(cand.name) || !cand.summary.valid) continue;
+                            const bool base_matches =
+                                (FileSys::GetBaseTitleID(cand.summary.title_id) ==
+                                 FileSys::GetBaseTitleID(cnmt.GetTitleID()));
+                            if (base_matches && MatchesType(cand.summary.type)) {
                                 if (IsBetterProgramCandidate(cand)) {
-                                    matched_file = cand.v_file;
-                                    matched_cand_nca = cand.nca;
-                                    matched_cand_name = cand.name;
-                                    if (!is_base_program_record) {
+                                    best_cand = &cand;
+                                    if (!is_base_program_record && !is_update_program_record) {
                                         break;
                                     }
                                 }
@@ -522,41 +522,15 @@ void NSP::ReadNCAs(const std::vector<VirtualFile>& files) {
                         }
                     }
 
-                    // Pass 2: Base Title ID + Content Type match (matches DLCs and base/update titles)
-                    if (matched_file == nullptr) {
-                        for (const auto& cand : candidates) {
-                            if (used_files.contains(cand.name)) continue;
-                            if (cand.nca && (cand.nca->GetStatus() == Loader::ResultStatus::Success ||
-                                cand.nca->GetStatus() == Loader::ResultStatus::ErrorMissingBKTRBaseRomFS)) {
-                                bool base_matches = (FileSys::GetBaseTitleID(cand.nca->GetTitleId()) == FileSys::GetBaseTitleID(cnmt.GetTitleID()));
-                                if (base_matches && MatchesType(cand.nca->GetType())) {
-                                    if (IsBetterProgramCandidate(cand)) {
-                                        matched_file = cand.v_file;
-                                        matched_cand_nca = cand.nca;
-                                        matched_cand_name = cand.name;
-                                        if (!is_base_program_record) {
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
                     // Pass 3: Exact Title ID match without strict type check
-                    if (matched_file == nullptr) {
+                    if (best_cand == nullptr) {
                         for (const auto& cand : candidates) {
-                            if (used_files.contains(cand.name)) continue;
-                            if (cand.nca && (cand.nca->GetStatus() == Loader::ResultStatus::Success ||
-                                cand.nca->GetStatus() == Loader::ResultStatus::ErrorMissingBKTRBaseRomFS)) {
-                                if (cand.nca->GetTitleId() == cnmt.GetTitleID()) {
-                                    if (IsBetterProgramCandidate(cand)) {
-                                        matched_file = cand.v_file;
-                                        matched_cand_nca = cand.nca;
-                                        matched_cand_name = cand.name;
-                                        if (!is_base_program_record) {
-                                            break;
-                                        }
+                            if (used_files.contains(cand.name) || !cand.summary.valid) continue;
+                            if (cand.summary.title_id == cnmt.GetTitleID()) {
+                                if (IsBetterProgramCandidate(cand)) {
+                                    best_cand = &cand;
+                                    if (!is_base_program_record && !is_update_program_record) {
+                                        break;
                                     }
                                 }
                             }
@@ -564,42 +538,52 @@ void NSP::ReadNCAs(const std::vector<VirtualFile>& files) {
                     }
 
                     // Pass 4: Generic Content Type match
-                    if (matched_file == nullptr) {
+                    if (best_cand == nullptr) {
                         for (const auto& cand : candidates) {
-                            if (used_files.contains(cand.name)) continue;
-                            if (cand.nca && (cand.nca->GetStatus() == Loader::ResultStatus::Success ||
-                                cand.nca->GetStatus() == Loader::ResultStatus::ErrorMissingBKTRBaseRomFS)) {
-                                if (MatchesType(cand.nca->GetType())) {
-                                    if (IsBetterProgramCandidate(cand)) {
-                                        matched_file = cand.v_file;
-                                        matched_cand_nca = cand.nca;
-                                        matched_cand_name = cand.name;
-                                        if (!is_base_program_record) {
-                                            break;
-                                        }
+                            if (used_files.contains(cand.name) || !cand.summary.valid) continue;
+                            if (MatchesType(cand.summary.type)) {
+                                if (IsBetterProgramCandidate(cand)) {
+                                    best_cand = &cand;
+                                    if (!is_base_program_record && !is_update_program_record) {
+                                        break;
                                     }
                                 }
                             }
                         }
                     }
 
-                    // Pass 5: Solid NCZ fallback matching by name / size heuristic
-                    if (matched_file == nullptr) {
+                    // Pass 5: Fallback matching by name / size heuristic when header keys are missing
+                    if (best_cand == nullptr) {
                         for (const auto& cand : candidates) {
-                            if (used_files.contains(cand.name)) continue;
-                            if (cand.nca == nullptr && cand.v_file != nullptr) {
-                                const bool name_match = cand.name.find(id_string) != std::string::npos ||
-                                                        cand.name.find(upper_id) != std::string::npos;
-                                if (name_match || (rec.type == ContentRecordType::Program &&
-                                                   (cand.name.find("program") != std::string::npos ||
-                                                    cand.v_file->GetSize() > 100 * 1024 * 1024 ||
-                                                    candidates.size() == 1))) {
-                                    matched_file = cand.v_file;
-                                    matched_cand_name = cand.name;
-                                    break;
+                            if (used_files.contains(cand.name) || cand.v_file == nullptr) continue;
+                            const bool name_match = cand.name.find(id_string) != std::string::npos ||
+                                                    cand.name.find(upper_id) != std::string::npos;
+                            if (name_match || (rec.type == ContentRecordType::Program &&
+                                               (cand.name.find("program") != std::string::npos ||
+                                                cand.v_file->GetSize() > 100 * 1024 * 1024 ||
+                                                candidates.size() == 1))) {
+                                if (IsBetterProgramCandidate(cand)) {
+                                    best_cand = &cand;
+                                    if (!is_base_program_record && !is_update_program_record) {
+                                        break;
+                                    }
                                 }
                             }
                         }
+                    }
+
+                    if (best_cand != nullptr) {
+                        matched_file = best_cand->v_file;
+                        matched_cand_name = best_cand->name;
+                        if (!best_cand->nca && matched_file != nullptr) {
+                            const auto ncz_cast = matched_file->IsNczFile()
+                                                      ? std::static_pointer_cast<NCZVirtualFile>(matched_file)
+                                                      : nullptr;
+                            if (!ncz_cast || !ncz_cast->is_solid_stream) {
+                                best_cand->nca = std::make_shared<NCA>(matched_file);
+                            }
+                        }
+                        matched_cand_nca = best_cand->nca;
                     }
 
                     if (!matched_cand_name.empty()) {

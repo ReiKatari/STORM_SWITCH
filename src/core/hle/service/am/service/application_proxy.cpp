@@ -11,7 +11,10 @@
 #include "core/hle/service/am/service/common_state_getter.h"
 #include "core/hle/service/am/service/debug_functions.h"
 #include "core/hle/service/am/service/display_controller.h"
+#include "common/settings.h"
 #include "core/hle/service/am/service/graphics_scale_controller.h"
+#include "core/hle/service/am/service/graphics_scaling_parameters_functions.h"
+#include "core/hle/service/am/service/performance_functions.h"
 #include "core/hle/service/am/service/library_applet_creator.h"
 #include "core/hle/service/am/service/process_winding_controller.h"
 #include "core/hle/service/am/service/self_controller.h"
@@ -36,9 +39,9 @@ IApplicationProxy::IApplicationProxy(Core::System& system_, std::shared_ptr<Appl
         {11, D<&IApplicationProxy::GetLibraryAppletCreator>, "GetLibraryAppletCreator"},
         {20, D<&IApplicationProxy::GetApplicationFunctions>, "GetApplicationFunctions"},
         // Switch 2-only getters; see nx2_stub_interface.h.
-        {40, &IApplicationProxy::GetNx2Interface, "Nx2Getter40"},
+        {40, &IApplicationProxy::DispatchCmd40, "GetPerformanceFunctions"},
         {50, &IApplicationProxy::GetNx2Interface, "Nx2Getter50"},
-        {60, D<&IApplicationProxy::GetGraphicsScaleController>, "GetGraphicsScaleController (Switch 2)"},
+        {60, &IApplicationProxy::DispatchCmd60, "GetGraphicsScalingParametersFunctions"},
         {70, &IApplicationProxy::GetNx2Interface, "Nx2Getter70"},
         {80, &IApplicationProxy::GetNx2Interface, "Nx2Getter80"},
         {90, &IApplicationProxy::GetNx2Interface, "Nx2Getter90"},
@@ -55,6 +58,36 @@ Result IApplicationProxy::GetGraphicsScaleController(
     Out<SharedPointer<IGraphicsScaleController>> out_controller) {
     LOG_DEBUG(Service_AM, "called");
     *out_controller = std::make_shared<IGraphicsScaleController>(system);
+    R_SUCCEED();
+}
+
+void IApplicationProxy::DispatchCmd40(HLERequestContext& ctx) {
+    if (Settings::IsCurrentProgramSwitch2()) {
+        GetNx2Interface(ctx);
+        return;
+    }
+    (this->*D<&IApplicationProxy::GetPerformanceFunctions>)(ctx);
+}
+
+void IApplicationProxy::DispatchCmd60(HLERequestContext& ctx) {
+    if (Settings::IsCurrentProgramSwitch2()) {
+        (this->*D<&IApplicationProxy::GetGraphicsScaleController>)(ctx);
+        return;
+    }
+    (this->*D<&IApplicationProxy::GetGraphicsScalingParametersFunctions>)(ctx);
+}
+
+Result IApplicationProxy::GetPerformanceFunctions(
+    Out<SharedPointer<IPerformanceFunctions>> out_functions) {
+    LOG_DEBUG(Service_AM, "called");
+    *out_functions = std::make_shared<IPerformanceFunctions>(system);
+    R_SUCCEED();
+}
+
+Result IApplicationProxy::GetGraphicsScalingParametersFunctions(
+    Out<SharedPointer<IGraphicsScalingParametersFunctions>> out_functions) {
+    LOG_DEBUG(Service_AM, "called");
+    *out_functions = std::make_shared<IGraphicsScalingParametersFunctions>(system, m_applet);
     R_SUCCEED();
 }
 

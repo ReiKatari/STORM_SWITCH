@@ -100,12 +100,14 @@ public:
         }
 
         // 4. Canonicalize ARMv8.3 PAC / ARMv8.5 BTI hint instructions in System Hint space
-        // Preserve only YIELD (0xD503203F), WFE (0xD503205F), WFI (0xD503207F).
-        if ((inst & 0xFFFFF01FU) == 0xD503201FU) [[unlikely]] {
+        // Preserve YIELD, WFE, WFI, SEV, SEVL, and never strip PAC hints on Switch 2 (ARMv8.3 PAuth).
+        if (!Settings::IsCurrentProgramSwitch2() && (inst & 0xFFFFF01FU) == 0xD503201FU) [[unlikely]] {
             if (inst != A64_NOP &&
                 inst != A64_YIELD &&
                 inst != A64_WFE &&
-                inst != A64_WFI) {
+                inst != A64_WFI &&
+                inst != A64_SEV &&
+                inst != A64_SEVL) {
                 s_rewritten_inst_count.fetch_add(1, std::memory_order_relaxed);
                 return A64_NOP;
             }
@@ -139,9 +141,11 @@ public:
                            (inst == A64_WFE || (inst & A64_WFET_MASK) == A64_WFET_VAL)) {
                     page[i] = A64_YIELD;
                     ++rewritten;
-                } else if ((inst & 0xFFFFF01FU) == 0xD503201FU &&
+                } else if (!Settings::IsCurrentProgramSwitch2() &&
+                           (inst & 0xFFFFF01FU) == 0xD503201FU &&
                            inst != A64_NOP && inst != A64_YIELD &&
-                           inst != A64_WFE && inst != A64_WFI) {
+                           inst != A64_WFE && inst != A64_WFI &&
+                           inst != A64_SEV && inst != A64_SEVL) {
                     page[i] = A64_NOP;
                     ++rewritten;
                 }
@@ -186,14 +190,16 @@ public:
             config.optimizations |= Dynarmic::OptimizationFlag::GetSetElimination;
             config.optimizations |= Dynarmic::OptimizationFlag::ConstProp;
             config.optimizations |= Dynarmic::OptimizationFlag::MiscIROpt;
-            if (Settings::values.cpuopt_unsafe_ignore_standard_fpcr.GetValue()) {
-                config.optimizations |= Dynarmic::OptimizationFlag::Unsafe_IgnoreStandardFPCRValue;
-            }
-            if (Settings::values.cpuopt_unsafe_unfuse_fma.GetValue()) {
-                config.optimizations |= Dynarmic::OptimizationFlag::Unsafe_UnfuseFMA;
-            }
-            if (Settings::values.cpuopt_unsafe_reduce_fp_error.GetValue()) {
-                config.optimizations |= Dynarmic::OptimizationFlag::Unsafe_ReducedErrorFP;
+            if (accuracy == Settings::CpuAccuracy::Unsafe && !Settings::IsCurrentProgramSwitch2()) {
+                if (Settings::values.cpuopt_unsafe_ignore_standard_fpcr.GetValue()) {
+                    config.optimizations |= Dynarmic::OptimizationFlag::Unsafe_IgnoreStandardFPCRValue;
+                }
+                if (Settings::values.cpuopt_unsafe_unfuse_fma.GetValue()) {
+                    config.optimizations |= Dynarmic::OptimizationFlag::Unsafe_UnfuseFMA;
+                }
+                if (Settings::values.cpuopt_unsafe_reduce_fp_error.GetValue()) {
+                    config.optimizations |= Dynarmic::OptimizationFlag::Unsafe_ReducedErrorFP;
+                }
             }
         }
     }
@@ -219,14 +225,16 @@ public:
             config.optimizations |= Dynarmic::OptimizationFlag::GetSetElimination;
             config.optimizations |= Dynarmic::OptimizationFlag::ConstProp;
             config.optimizations |= Dynarmic::OptimizationFlag::MiscIROpt;
-            if (Settings::values.cpuopt_unsafe_ignore_standard_fpcr.GetValue()) {
-                config.optimizations |= Dynarmic::OptimizationFlag::Unsafe_IgnoreStandardFPCRValue;
-            }
-            if (Settings::values.cpuopt_unsafe_unfuse_fma.GetValue()) {
-                config.optimizations |= Dynarmic::OptimizationFlag::Unsafe_UnfuseFMA;
-            }
-            if (Settings::values.cpuopt_unsafe_reduce_fp_error.GetValue()) {
-                config.optimizations |= Dynarmic::OptimizationFlag::Unsafe_ReducedErrorFP;
+            if (accuracy == Settings::CpuAccuracy::Unsafe && !Settings::IsCurrentProgramSwitch2()) {
+                if (Settings::values.cpuopt_unsafe_ignore_standard_fpcr.GetValue()) {
+                    config.optimizations |= Dynarmic::OptimizationFlag::Unsafe_IgnoreStandardFPCRValue;
+                }
+                if (Settings::values.cpuopt_unsafe_unfuse_fma.GetValue()) {
+                    config.optimizations |= Dynarmic::OptimizationFlag::Unsafe_UnfuseFMA;
+                }
+                if (Settings::values.cpuopt_unsafe_reduce_fp_error.GetValue()) {
+                    config.optimizations |= Dynarmic::OptimizationFlag::Unsafe_ReducedErrorFP;
+                }
             }
         }
     }

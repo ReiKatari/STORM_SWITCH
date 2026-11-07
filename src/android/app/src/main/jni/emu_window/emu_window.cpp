@@ -25,7 +25,7 @@
 #include "jni/emu_window/emu_window.h"
 #include "jni/native.h"
 
-void EmuWindow_Android::OnSurfaceChanged(ANativeWindow* surface) {
+void EmuWindow_Android::OnSurfaceChanged(ANativeWindow* surface, u32 override_width, u32 override_height) {
     if (!surface) {
         LOG_INFO(Frontend, "EmuWindow_Android::OnSurfaceChanged received null surface");
         m_window_width = 0.0f;
@@ -41,14 +41,29 @@ void EmuWindow_Android::OnSurfaceChanged(ANativeWindow* surface) {
         return;
     }
 
-    m_window_width = static_cast<float>(ANativeWindow_getWidth(surface));
-    m_window_height = static_cast<float>(ANativeWindow_getHeight(surface));
+    const u32 native_w = static_cast<u32>(ANativeWindow_getWidth(surface));
+    const u32 native_h = static_cast<u32>(ANativeWindow_getHeight(surface));
 
-    NotifyClientAreaSizeChanged({static_cast<u32>(m_window_width), static_cast<u32>(m_window_height)});
+    u32 target_w = std::max<u32>(override_width, native_w);
+    u32 target_h = std::max<u32>(override_height, native_h);
+
+    if (override_width == 0 && m_last_physical_width > 0) {
+        target_w = std::max<u32>(m_last_physical_width, native_w);
+    }
+    if (override_height == 0 && m_last_physical_height > 0) {
+        target_h = std::max<u32>(m_last_physical_height, native_h);
+    }
+
+    m_last_physical_width = target_w;
+    m_last_physical_height = target_h;
+
+    m_window_width = static_cast<float>(target_w);
+    m_window_height = static_cast<float>(target_h);
+
+    NotifyClientAreaSizeChanged({target_w, target_h});
 
     // Ensures that we emulate with the correct aspect ratio and vertical alignment.
-    UpdateCurrentFramebufferLayout(static_cast<u32>(m_window_width),
-                                   static_cast<u32>(m_window_height));
+    UpdateCurrentFramebufferLayout(target_w, target_h);
 
     window_info.render_surface = reinterpret_cast<void*>(surface);
     m_first_frame = false;
@@ -59,6 +74,8 @@ void EmuWindow_Android::UpdateCurrentFramebufferLayout(u32 width, u32 height) {
     if (width == 0 || height == 0) {
         return;
     }
+    m_last_physical_width = std::max(m_last_physical_width, width);
+    m_last_physical_height = std::max(m_last_physical_height, height);
     auto layout = Layout::DefaultFrameLayout(width, height);
     const u32 screen_h = layout.screen.GetHeight();
     if (screen_h > 0 && screen_h < height) {

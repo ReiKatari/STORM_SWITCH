@@ -3,6 +3,7 @@
 
 #include "common/bit_field.h"
 #include "common/common_types.h"
+#include "common/logging.h"
 #include "shader_recompiler/frontend/maxwell/translate/impl/impl.h"
 
 namespace Shader::Maxwell {
@@ -28,17 +29,24 @@ void TranslatorVisitor::PIXLD(u64 insn) {
     } const pixld{insn};
 
     if (pixld.dest_pred != IR::Pred::PT) {
-        throw NotImplementedException("Destination predicate");
-    }
-    if (pixld.addr_reg != IR::Reg::RZ || pixld.addr_offset != 0) {
-        throw NotImplementedException("Non-zero source register");
+        LOG_WARNING(Shader, "PIXLD destination predicate {} ignored", static_cast<u64>(pixld.dest_pred.Value()));
     }
     switch (pixld.mode) {
+    case Mode::CovMask:
+    case Mode::Covered:
+        X(pixld.dest_reg, ir.Imm32(1U));
+        break;
+    case Mode::Offset:
+    case Mode::CentroidOffset:
+        X(pixld.dest_reg, ir.Imm32(0U));
+        break;
     case Mode::MyIndex:
         X(pixld.dest_reg, ir.SampleId());
         break;
     default:
-        throw NotImplementedException("Mode {}", pixld.mode.Value());
+        LOG_WARNING(Shader, "PIXLD unimplemented mode {}", static_cast<u64>(pixld.mode.Value()));
+        X(pixld.dest_reg, ir.Imm32(0U));
+        break;
     }
 }
 

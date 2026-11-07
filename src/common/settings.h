@@ -1170,6 +1170,16 @@ bool CurrentProgramIsSwitch2();
 inline bool IsCurrentProgramSwitch2() {
     return CurrentProgramIsSwitch2();
 }
+inline bool IsEglantineProgram() {
+    if (!CurrentProgramIsSwitch2()) {
+        return false;
+    }
+    const u64 tid = GetCurrentProgramID();
+    return tid == 0x040000B00006C000ULL || tid == 0x0400C3F00006E000ULL;
+}
+inline bool IsBananaNativeProgram() {
+    return CurrentProgramIsSwitch2() && !IsEglantineProgram();
+}
 AstcRecompression GetAstcRecompression();
 void SetAstcRecompressionOverride(std::optional<AstcRecompression> recompression);
 

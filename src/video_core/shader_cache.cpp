@@ -19,6 +19,9 @@
 #include "video_core/engines/maxwell_3d.h"
 #include "video_core/host1x/gpu_device_memory_manager.h"
 #include "video_core/memory_manager.h"
+#include <atomic>
+#include "common/settings.h"
+#include "video_core/nx2.h"
 #include "video_core/shader_cache.h"
 #include "video_core/shader_environment.h"
 #include "video_core/texture_cache/util.h"
@@ -88,13 +91,15 @@ bool ShaderCache::RefreshStages(std::array<u64, 6>& unique_hashes) try {
 } catch (const Shader::Exception& error) {
     auto& native = maxwell3d->GetNativeMacroEngine();
     if (!native.native_turing) throw;
-    native.native_execution_failed = true;
     last_shaders_valid = false;
-    LOG_ERROR(HW_GPU, "Native graphics shader rejected: {}", error.what());
+    static std::atomic<u32> rejected_gfx_shaders{0};
+    if (rejected_gfx_shaders.fetch_add(1, std::memory_order_relaxed) < 32) {
+        LOG_WARNING(HW_GPU, "Native graphics shader skipped: {}", error.what());
+    }
     return false;
 }
 
-const ShaderInfo* ShaderCache::ComputeShader() {
+const ShaderInfo* ShaderCache::ComputeShader() try {
     const GPUVAddr program_base{kepler_compute->regs.code_loc.Address()};
     const auto& qmd{kepler_compute->launch_description};
     const GPUVAddr shader_addr{program_base + qmd.program_start};
@@ -108,6 +113,15 @@ const ShaderInfo* ShaderCache::ComputeShader() {
     }
     ComputeEnvironment env{*kepler_compute, *gpu_memory, program_base, qmd.program_start};
     return MakeShaderInfo(env, *cpu_shader_addr);
+} catch (const Shader::Exception& error) {
+    if (!VideoCore::Nx2IsActive() && !Settings::IsCurrentProgramSwitch2()) {
+        throw;
+    }
+    static std::atomic<u32> rejected_comp_shaders{0};
+    if (rejected_comp_shaders.fetch_add(1, std::memory_order_relaxed) < 32) {
+        LOG_WARNING(HW_GPU, "Native compute shader skipped: {}", error.what());
+    }
+    return nullptr;
 }
 
 void ShaderCache::GetGraphicsEnvironments(GraphicsEnvironments& result,
@@ -124,7 +138,7 @@ void ShaderCache::GetGraphicsEnvironments(GraphicsEnvironments& result,
         const auto& config = maxwell3d->regs.pipelines[index];
         const u32 start_address{native ? 0 : config.offset};
         const GPUVAddr address = native
-            ? (static_cast<u64>(config.reserved[0] & 0xff) << 32) | config.reserved[1]
+            ? (static_cast<u64>(config.reserved[0] & 0x1ffff) << 32) | config.reserved[1]
             : base_addr;
         env = GraphicsEnvironment{*maxwell3d, *gpu_memory, program, address, start_address};
         env.SetCachedSize(shader_infos[index]->size_bytes);

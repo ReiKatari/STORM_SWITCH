@@ -238,20 +238,20 @@ extern "C" SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
         {"input-profile", no_argument, 0, 'i'},
         {"null-render", no_argument, 0, 'n'},
         {"singlecore", no_argument, 0, 's'},
-        {"filter", no_argument, 0, 'x'},
+        {"filter", required_argument, 0, 'x'},
         {0, 0, 0, 0},
         // clang-format on
     };
 
     while (optind < argc) {
-        int arg = getopt_long(argc, argv, "g:fhvcip::c:u:d:", long_options, &option_index);
+        int arg = getopt_long(argc, argv, "g:fhvi:p::c:m:u:d:nsx:", long_options, &option_index);
         if (arg != -1) {
             switch (char(arg)) {
             case 'd':
                 override_gdb_port = uint16_t(atoi(optarg));
                 break;
             case 'c':
-                config_path = optarg;
+                if (optarg != nullptr) config_path = optarg;
                 break;
             case 'f':
                 fullscreen = true;
@@ -316,8 +316,9 @@ extern "C" SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
                 force_single_core = true;
                 break;
             case 'x':
-                log_filter = argv[optind];
-                ++optind;
+                if (optarg != nullptr) {
+                    log_filter = optarg;
+                }
                 break;
             }
         } else {

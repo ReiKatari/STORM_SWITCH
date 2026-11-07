@@ -1040,8 +1040,9 @@ GameFixProfile(
             "✓ CPU Backend: NCE (Native ARM64 execution)\n✓ Zero-Delay CPU NVDEC Video Decoding (FF_THREAD_SLICE)\n✓ GPU Accuracy: Normal\n✓ Barrier Feedback Loops: Disabled (Clean PhyreEngine 3D rendering)\n✓ Early Release Fences: Disabled\n✓ Ignore Memory Aborts: Enabled",
             mapOf(
                 "Cpu\\cpu_backend" to "1",
-                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\nvdec_emulation" to "2",
                 "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\barrier_feedback_loops" to "false",
                 "Renderer\\early_release_fences" to "false",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true"
@@ -6033,8 +6034,9 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\nvdec_emulation" to "2",
                 "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\astc_recompression" to "0"
             )
@@ -6188,8 +6190,9 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\nvdec_emulation" to "2",
                 "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
         ),

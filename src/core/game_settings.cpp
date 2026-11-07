@@ -127,6 +127,65 @@ void LoadOverrides(std::uint64_t program_id, const VideoCore::RendererBase& rend
     Core::GameFixDatabase::SetDetectedGpuVendor(env.vendor_string);
     Core::GameFixDatabase::ReapplyVendorOverrides(program_id);
 
+    const u64 base_tid = program_id & ~0x1FFFULL;
+    if (program_id == 0x010015100B514000ULL || base_tid == 0x010015100B514000ULL) {
+        // Super Mario Bros. Wonder (agl engine): toxic global experimental toggles deadlock fence/query timing
+        Settings::values.early_release_fences.SetGlobal(false);
+        Settings::values.early_release_fences.SetValue(false);
+        Settings::values.enable_frame_skipping.SetGlobal(false);
+        Settings::values.enable_frame_skipping.SetValue(false);
+        Settings::values.drs_resolution_lock.SetGlobal(false);
+        Settings::values.drs_resolution_lock.SetValue(false);
+        Settings::values.sync_memory_operations.SetGlobal(false);
+        Settings::values.sync_memory_operations.SetValue(false);
+        Settings::values.vram_budget_governor.SetGlobal(false);
+        Settings::values.vram_budget_governor.SetValue(false);
+        Settings::values.dynamic_performance_scaler.SetGlobal(false);
+        Settings::values.dynamic_performance_scaler.SetValue(false);
+        Settings::values.smart_shader_throttle.SetGlobal(false);
+        Settings::values.smart_shader_throttle.SetValue(false);
+        Settings::values.use_video_framerate.SetGlobal(false);
+        Settings::values.use_video_framerate.SetValue(false);
+        Settings::values.enable_gpu_buffer_readback.SetGlobal(false);
+        Settings::values.enable_gpu_buffer_readback.SetValue(false);
+        Settings::values.barrier_feedback_loops.SetGlobal(false);
+        Settings::values.barrier_feedback_loops.SetValue(true);
+    }
+
+    if (Settings::IsCurrentProgramSwitch2() || ((program_id >> 52) == 0x040)) {
+        // Nintendo Switch 2 (Ampere / nx2:gsv / GpuSplit): enforce clean hardware fences & accurate 31.25 MHz timestamps
+        Settings::values.early_release_fences.SetGlobal(false);
+        Settings::values.early_release_fences.SetValue(false);
+        Settings::values.enable_frame_skipping.SetGlobal(false);
+        Settings::values.enable_frame_skipping.SetValue(false);
+        Settings::values.drs_resolution_lock.SetGlobal(false);
+        Settings::values.drs_resolution_lock.SetValue(false);
+        Settings::values.sync_memory_operations.SetGlobal(false);
+        Settings::values.sync_memory_operations.SetValue(false);
+        Settings::values.use_fast_gpu_time.SetGlobal(false);
+        Settings::values.use_fast_gpu_time.SetValue(false);
+        Settings::values.dynamic_performance_scaler.SetGlobal(false);
+        Settings::values.dynamic_performance_scaler.SetValue(false);
+        Settings::values.smart_shader_throttle.SetGlobal(false);
+        Settings::values.smart_shader_throttle.SetValue(false);
+        Settings::values.use_video_framerate.SetGlobal(false);
+        Settings::values.use_video_framerate.SetValue(false);
+        Settings::values.enable_gpu_buffer_readback.SetGlobal(false);
+        Settings::values.enable_gpu_buffer_readback.SetValue(false);
+        if (Settings::values.gpu_accuracy.GetValue() != Settings::GpuAccuracy::Normal) {
+            Settings::values.gpu_accuracy.SetGlobal(false);
+            Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::Normal);
+        }
+        if (Settings::values.gpu_fence_behavior.GetValue() != Settings::GpuFenceBehavior::Default) {
+            Settings::values.gpu_fence_behavior.SetGlobal(false);
+            Settings::values.gpu_fence_behavior.SetValue(Settings::GpuFenceBehavior::Default);
+        }
+        if (Settings::values.cpu_accuracy.GetValue() == Settings::CpuAccuracy::Unsafe) {
+            Settings::values.cpu_accuracy.SetGlobal(false);
+            Settings::values.cpu_accuracy.SetValue(Settings::CpuAccuracy::Auto);
+        }
+    }
+
     switch (static_cast<TitleID>(program_id)) {
         case TitleID::NinjaGaidenRagebound:
             Settings::values.use_squashed_iterated_blend = true;

@@ -24,7 +24,13 @@ namespace Core {
 class System;
 }
 
+namespace VideoCore {
+class RasterizerInterface;
+}
+
 namespace Tegra {
+
+class MemoryManager;
 
 namespace Engines {
 class Maxwell3D;
@@ -229,7 +235,7 @@ struct MacroEngine {
     MacroEngine(bool is_interpreted_) noexcept : is_interpreted{is_interpreted_} {}
     // Store the uploaded macro code to compile them when they're called.
     inline void AddCode(u32 method, u32 data) noexcept {
-        if (native_turing && VideoCore::Nx2IsActive()) {
+        if (native_turing) {
             if (native_write_offset < native_code.size()) native_code[native_write_offset++] = data;
             ++native_code_generation;
             return;
@@ -238,8 +244,8 @@ struct MacroEngine {
     }
     // Clear the code associated with a method.
     inline void ClearCode(u32 method) noexcept {
-        if (native_turing && VideoCore::Nx2IsActive()) {
-            native_write_offset = method < 0x1000 ? method * 3 : static_cast<u32>(native_code.size());
+        if (native_turing) {
+            native_write_offset = u64{method} * 3 < native_code.size() ? method * 3 : static_cast<u32>(native_code.size());
             ++native_code_generation;
             return;
         }
@@ -248,6 +254,9 @@ struct MacroEngine {
     }
     // Compiles the macro if its not in the cache, and executes the compiled macro
     void Execute(Core::System& system, Engines::Maxwell3D& maxwell3d, u32 method, std::span<const u32> parameters);
+    bool HandleNativeDmaMethod(MemoryManager& memory_manager,
+                               VideoCore::RasterizerInterface* rasterizer,
+                               u32 method, u32 value, std::vector<u32>* fifo);
     AnyCachedMacro Compile(Core::System& system, Engines::Maxwell3D& maxwell3d, std::span<const u32> code);
     struct CacheInfo {
         AnyCachedMacro program;
@@ -259,7 +268,12 @@ struct MacroEngine {
     bool native_turing{};
     bool native_execution_failed{};
     u32 native_write_offset{};
-    std::array<u32, 0x3000> native_code{};
+    u32 mme_dma_addr_a{};
+    u32 mme_dma_addr_b{};
+    u32 mme_data_ram_addr{};
+    u32 mme_fifo_config{};
+    std::vector<u32> native_fifo;
+    std::array<u32, 0x8000 * 3> native_code{};
     TuringMacroInterpreter native_interpreter;
     u64 native_code_generation{};
     std::shared_ptr<TuringMacroJit> native_jit;

@@ -699,9 +699,10 @@ void ArmNce::SetContext(const Kernel::Svc::ThreadContext& ctx) {
 }
 
 void ArmNce::SignalInterrupt(Kernel::KThread* thread) {
-    // Add break loop condition (never return early before checking params->is_running,
-    // otherwise a pre-run SignalInterrupt prevents subsequent SIGURG preemption).
-    m_guest_ctx.esr_el1.fetch_or(static_cast<u64>(HaltReason::BreakLoop));
+    constexpr u64 break_loop = static_cast<u64>(HaltReason::BreakLoop);
+    if ((m_guest_ctx.esr_el1.fetch_or(break_loop) & break_loop) != 0) {
+        return;
+    }
 
     auto* params = &thread->GetNativeExecutionParameters();
     LockThreadParameters(params);

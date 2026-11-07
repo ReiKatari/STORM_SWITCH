@@ -43,6 +43,7 @@ void nvhost_tsg_gpu::OnClose(DeviceFD fd) {
         channel->UnbindFromTsg(group_fd);
     }
     channels.clear();
+    subcontext_macros.clear();
     if (process) {
         process->Close(system.Kernel());
         process = nullptr;
@@ -77,7 +78,21 @@ NvResult nvhost_tsg_gpu::Ioctl1(DeviceFD fd, Ioctl command, std::span<const u8> 
                     return NvResult::BadParameter;
                 }
                 const auto channel = std::static_pointer_cast<nvhost_gpu>(device);
-                const auto result = channel->BindToTsg(fd, process, native_macros);
+                std::shared_ptr<Tegra::NativeMacroContext> macros_for_channel = native_macros;
+                if (command.cmd == 0x0b) {
+                    const u32 subcontext_id = input.size() >= 8 ? words[1] : 0U;
+                    const u32 key = subcontext_id != 0U
+                                        ? subcontext_id
+                                        : (0x80000000U | static_cast<u32>(channel_fd));
+                    auto& slot = subcontext_macros[key];
+                    if (!slot) {
+                        slot = std::make_shared<Tegra::NativeMacroContext>();
+                        slot->engine.native_turing = true;
+                        slot->compute_engine.native_turing = true;
+                    }
+                    macros_for_channel = slot;
+                }
+                const auto result = channel->BindToTsg(fd, process, macros_for_channel);
                 if (result != NvResult::Success && result != NvResult::Busy) {
                     return result;
                 }
@@ -108,7 +123,7 @@ NvResult nvhost_tsg_gpu::Ioctl1(DeviceFD fd, Ioctl command, std::span<const u8> 
         if (command.cmd == 0x0f) {
             std::fill(output.begin(), output.end(), u8{0});
             std::copy_n(input.begin(), (std::min)(input.size(), output.size()), output.begin());
-            const u32 veid = static_cast<u32>((channels.size() + 1) & 0x3F);
+            const u32 veid = ((next_veid++ - 1u) % 63u) + 1u;
             if (output.size() >= 12) {
                 std::memcpy(output.data() + 8, &veid, sizeof(veid));
             }

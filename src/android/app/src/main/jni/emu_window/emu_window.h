@@ -40,7 +40,7 @@ public:
 
     ~EmuWindow_Android() = default;
 
-    void OnSurfaceChanged(ANativeWindow* surface);
+    void OnSurfaceChanged(ANativeWindow* surface, u32 override_width = 0, u32 override_height = 0);
     void UpdateCurrentFramebufferLayout(u32 width, u32 height) override;
     void OnFrameDisplayed() override;
 
@@ -67,6 +67,8 @@ private:
 
     float m_window_width{};
     float m_window_height{};
+    u32 m_last_physical_width = 0;
+    u32 m_last_physical_height = 0;
 
     std::shared_ptr<Common::DynamicLibrary> m_driver_library;
 

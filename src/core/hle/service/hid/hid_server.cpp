@@ -133,7 +133,7 @@ IHidServer::IHidServer(Core::System& system_, std::shared_ptr<ResourceManager> r
         {211, C<&IHidServer::IsVibrationDeviceMounted>, "IsVibrationDeviceMounted"},
         {212, C<&IHidServer::SendVibrationValueInBool>, "SendVibrationValueInBool"},
         {213, C<&IHidServer::Unknown213>, "Unknown213"},
-        {214, C<&IHidServer::SendNx2VibrationValues>, "SendNx2VibrationValues"},
+        {214, &IHidServer::DispatchVibration214, "SendNativeVibrationValues"},
         {220, C<&IHidServer::Unknown220>, "Unknown220"},
         {300, C<&IHidServer::ActivateConsoleSixAxisSensor>, "ActivateConsoleSixAxisSensor"},
         {301, C<&IHidServer::StartConsoleSixAxisSensor>, "StartConsoleSixAxisSensor"},
@@ -998,6 +998,14 @@ Result IHidServer::SendVibrationValues(
     }
 
     R_SUCCEED();
+}
+
+void IHidServer::DispatchVibration214(HLERequestContext& ctx) {
+    if (Settings::IsCurrentProgramSwitch2()) {
+        (this->*C<&IHidServer::SendNx2VibrationValues>)(ctx);
+        return;
+    }
+    (this->*C<&IHidServer::SendNativeVibrationValues>)(ctx);
 }
 
 Result IHidServer::SendNativeVibrationValues(

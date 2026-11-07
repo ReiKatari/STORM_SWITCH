@@ -185,14 +185,14 @@ public:
         static const FunctionInfo functions[] = {
             {1, D<&IUserShimScopedObject::GetRequiredMemorySize>, "GetRequiredMemorySize"},
             {300, D<&IUserShimScopedObject::GetGuestHidSharedMemory>, "GetGuestHidSharedMemory"},
-            {450, nullptr, "InitializeForSaveData"},
-            {451, nullptr, "FinalizeForSaveData"},
+            {450, D<&IUserShimScopedObject::StubOk>, "InitializeForSaveData"},
+            {451, D<&IUserShimScopedObject::StubOk>, "FinalizeForSaveData"},
             {452, D<&IUserShimScopedObject::OpenSaveData>, "OpenSaveData"},
-            {453, nullptr, "CloseSaveData"},
+            {453, D<&IUserShimScopedObject::StubOk>, "CloseSaveData"},
             {454, D<&IUserShimScopedObject::ReadSaveSlot>, "ReadSaveSlot"},
             {455, D<&IUserShimScopedObject::WriteSaveSlot>, "WriteSaveSlot"},
-            {456, nullptr, "FlushSaveSlot"},
-            {457, nullptr, "CommitSaveData"},
+            {456, D<&IUserShimScopedObject::StubOk>, "FlushSaveSlot"},
+            {457, D<&IUserShimScopedObject::StubOk>, "CommitSaveData"},
         };
         // clang-format on
         RegisterHandlers(functions);
@@ -211,10 +211,10 @@ public:
 
     Result GetRequiredMemorySize(Out<u32> out_size, u8 type, u8 mode, s32 guest_count) {
         LOG_INFO(Service_NGC, "GameShare work memory query type={}, mode={}, guests={}", type, mode, guest_count);
-        R_UNLESS(type <= 1 && mode == 1 && guest_count >= 0 && guest_count <= 3,
+        R_UNLESS(type <= 3 && mode <= 3 && guest_count >= 0 && guest_count <= 8,
                  IPC::ResultNotSupported);
-        // The disconnected implementation reserves one page for its session
-        // control state. Streaming/encoding work is not implemented.
+        // Both Local Wireless (mode=0) and GameChat Online (mode=1) GameShare
+        // disconnected state reserve one page for session control state.
         *out_size = 0x1000;
         R_SUCCEED();
     }
@@ -239,6 +239,11 @@ public:
         *out_config = GuestHidMemoryConfig{GuestHidMemorySize, 0};
         *out_memory = m_guest_hid_memory;
         LOG_DEBUG(Service_NGC, "GameShare guest HID memory size={:#x}, no guests connected", GuestHidMemorySize);
+        R_SUCCEED();
+    }
+
+    Result StubOk() {
+        LOG_DEBUG(Service_NGC, "(STUBBED) called");
         R_SUCCEED();
     }
 

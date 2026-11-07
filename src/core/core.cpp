@@ -483,8 +483,6 @@ struct System::Impl {
             IsSwitch2TitleId(params.program_id) ||
             (virtual_filesystem != nullptr && IsSwitch2Program(file, params.program_id));
         Settings::SetCurrentProgramIsSwitch2(switch2_program);
-        Tegra::g_nx2_ampere.store(switch2_program, std::memory_order_relaxed);
-        Service::Nvidia::Devices::g_nx2_driver.store(switch2_program, std::memory_order_relaxed);
         Settings::SetAstcRecompressionOverride(std::nullopt);
 
         // Switch 2 titles size their heap from the total memory and need the 12 GiB layout. Set it
@@ -503,6 +501,31 @@ struct System::Impl {
             const char* value = std::getenv("EDEN_NX2_CNTFRQ");
             return value != nullptr ? std::strtoull(value, nullptr, 10) : 0ULL;
         }();
+        if (switch2_program) {
+            Settings::values.early_release_fences.SetGlobal(false);
+            Settings::values.early_release_fences.SetValue(false);
+            Settings::values.enable_frame_skipping.SetGlobal(false);
+            Settings::values.enable_frame_skipping.SetValue(false);
+            Settings::values.drs_resolution_lock.SetGlobal(false);
+            Settings::values.drs_resolution_lock.SetValue(false);
+            Settings::values.sync_memory_operations.SetGlobal(false);
+            Settings::values.sync_memory_operations.SetValue(false);
+            Settings::values.use_fast_gpu_time.SetGlobal(false);
+            Settings::values.use_fast_gpu_time.SetValue(false);
+            Settings::values.dynamic_performance_scaler.SetGlobal(false);
+            Settings::values.dynamic_performance_scaler.SetValue(false);
+            Settings::values.smart_shader_throttle.SetGlobal(false);
+            Settings::values.smart_shader_throttle.SetValue(false);
+            Settings::values.use_video_framerate.SetGlobal(false);
+            Settings::values.use_video_framerate.SetValue(false);
+            Settings::values.enable_gpu_buffer_readback.SetGlobal(false);
+            Settings::values.enable_gpu_buffer_readback.SetValue(false);
+            if (Settings::values.gpu_accuracy.GetValue() != Settings::GpuAccuracy::Normal) {
+                Settings::values.gpu_accuracy.SetGlobal(false);
+                Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::Normal);
+            }
+        }
+
         const u64 cntfrq = forced_cntfrq != 0 ? forced_cntfrq
                            : switch2_program  ? Common::WallClock::Switch2CNTFRQ
                                               : Common::WallClock::CNTFRQ;

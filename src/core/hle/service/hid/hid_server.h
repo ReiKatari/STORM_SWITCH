@@ -178,6 +178,7 @@ private:
         InArray<Core::HID::VibrationDeviceHandle, BufferAttr_HipcPointer> vibration_handles,
         InArray<Core::HID::VibrationValue, BufferAttr_HipcPointer> vibration_values);
 
+    void DispatchVibration214(HLERequestContext& ctx);
     Result SendNx2VibrationValues(
         ClientAppletResourceUserId aruid,
         InArray<Core::HID::VibrationDeviceHandle, BufferAttr_HipcPointer> handles,

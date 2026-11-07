@@ -80,7 +80,7 @@ NvResult nvhost_gpu::Ioctl1(DeviceFD fd, Ioctl command, std::span<const u8> inpu
         case 0x3:
             return WrapFixed(this, &nvhost_gpu::ChannelSetTimeout, input, output);
         case 0x8:
-            return WrapFixedVariable(this, &nvhost_gpu::SubmitGPFIFOBase1, input, output, false);
+            return WrapFixedVariable(this, &nvhost_gpu::SubmitGPFIFOBase1, input, output, fd, false);
         case 0x9:
             return WrapFixed(this, &nvhost_gpu::AllocateObjectContext, input, output);
         case 0xb:
@@ -94,7 +94,7 @@ NvResult nvhost_gpu::Ioctl1(DeviceFD fd, Ioctl command, std::span<const u8> inpu
         case 0x1a:
             return WrapFixed(this, &nvhost_gpu::AllocGPFIFOEx2, input, output, fd);
         case 0x1b:
-            return WrapFixedVariable(this, &nvhost_gpu::SubmitGPFIFOBase1, input, output, true);
+            return WrapFixedVariable(this, &nvhost_gpu::SubmitGPFIFOBase1, input, output, fd, true);
         case 0x1d:
             return WrapFixed(this, &nvhost_gpu::ChannelSetTimeslice, input, output);
         default:
@@ -115,7 +115,7 @@ NvResult nvhost_gpu::Ioctl1(DeviceFD fd, Ioctl command, std::span<const u8> inpu
     if (UsesNativeAbi() || g_nx2_driver || Settings::IsCurrentProgramSwitch2()) {
         return Nx2UnknownIoctl("nvhost-gpu", command, input, output);
     }
-    LOG_WARNING(Service_NVDRV, "Unimplemented ioctl={:08X}", command.raw);
+    LOG_WARNING(Service_NVDRV, "Unimplemented nvhost-gpu ioctl={:08X}", command.raw);
     return NvResult::NotImplemented;
 };
 
@@ -133,7 +133,7 @@ NvResult nvhost_gpu::Ioctl2(DeviceFD fd, Ioctl command, std::span<const u8> inpu
     if (UsesNativeAbi() || g_nx2_driver || Settings::IsCurrentProgramSwitch2()) {
         return Nx2UnknownIoctl("nvhost-gpu", command, input, output);
     }
-    LOG_WARNING(Service_NVDRV, "Unimplemented ioctl={:08X}", command.raw);
+    LOG_WARNING(Service_NVDRV, "Unimplemented nvhost-gpu ioctl2={:08X}", command.raw);
     return NvResult::NotImplemented;
 }
 
@@ -143,7 +143,7 @@ NvResult nvhost_gpu::Ioctl3(DeviceFD fd, Ioctl command, std::span<const u8> inpu
         std::fill(inline_output.begin(), inline_output.end(), u8{0});
         return Nx2UnknownIoctl("nvhost-gpu", command, input, output);
     }
-    LOG_WARNING(Service_NVDRV, "Unimplemented ioctl={:08X}", command.raw);
+    LOG_WARNING(Service_NVDRV, "Unimplemented nvhost-gpu ioctl3={:08X}", command.raw);
     return NvResult::NotImplemented;
 }
 
@@ -203,7 +203,7 @@ NvResult nvhost_gpu::SetChannelPriority(IoctlChannelSetPriority& params) {
     case ChannelPriority::Medium: channel_timeslice = 2600; break;
     case ChannelPriority::High: channel_timeslice = 5200; break;
     default:
-        if (UsesNativeAbi()) {
+        if (UsesNativeAbi() || g_nx2_driver || Settings::IsCurrentProgramSwitch2()) {
             channel_timeslice = 2600;
             break;
         }
@@ -313,21 +313,19 @@ NvResult nvhost_gpu::AllocateObjectContext(IoctlAllocObjCtx& params) {
 
     s32_le ctx_class_number_index = 
         GetObjectContextClassNumberIndex(static_cast<CtxClasses>(params.class_num));
+    const bool nx2_or_native = UsesNativeAbi() || g_nx2_driver || Settings::IsCurrentProgramSwitch2();
     if (const auto native_slot = GetNativeGpuContextSlot(params.class_num)) {
-        if (UsesNativeAbi()) { ctx_class_number_index = *native_slot; }
+        if (nx2_or_native) { ctx_class_number_index = *native_slot; }
     }
     const bool nx2_native = UsesNativeAbi() || g_nx2_driver || Settings::IsCurrentProgramSwitch2();
     if (ctx_class_number_index < 0) {
         if (nx2_native) {
-            LOG_WARNING(Service_NVDRV,
-                        "Switch 2 AllocateObjectContext accepting native/default class {:#x}",
-                        params.class_num);
             if (params.obj_id == 0) {
                 params.obj_id = params.class_num != 0 ? params.class_num : 1;
             }
             return NvResult::Success;
         }
-        LOG_ERROR(Service_NVDRV, "Invalid class number for object context: {:#x}",
+        LOG_DEBUG(Service_NVDRV, "Invalid class number for object context: {:#x}",
                   params.class_num);
         return NvResult::BadParameter;
     }
@@ -401,9 +399,9 @@ NvResult nvhost_gpu::SubmitGPFIFOImpl(IoctlSubmitGpfifo& params, Tegra::CommandL
         system.GPU().InitChannel(*channel_state, channel_state->program_id);
     }
 
-    if (UsesNativeAbi() && native_submit_logs++ < 8) {
-        LOG_DEBUG(Service_NVDRV, "native submit channel={}, initialized={}, entries={}, flags={:#x}, fence={}:{}",
-                  channel_state->bind_id, channel_state->initialized, entries.command_lists.size(),
+    if (UsesNativeAbi() && native_submit_logs++ < 16) {
+        LOG_DEBUG(Service_NVDRV, "native submit channel={} sp={}, initialized={}, entries={}, flags={:#x}, fence={}:{}",
+                  channel_state->bind_id, channel_syncpoint, channel_state->initialized, entries.command_lists.size(),
                   params.flags.raw, params.fence.id, params.fence.value);
         for (size_t i = 0; i < std::min<size_t>(entries.command_lists.size(), 4); ++i) {
             const auto& entry = entries.command_lists[i];
@@ -420,8 +418,7 @@ NvResult nvhost_gpu::SubmitGPFIFOImpl(IoctlSubmitGpfifo& params, Tegra::CommandL
                 dump.write(reinterpret_cast<const char*>(contents.data()), contents.size() * sizeof(u32));
             }
             LOG_DEBUG(Service_NVDRV, "native pushbuffer entry={} raw={:#x}, address={:#x}, words={}, mapped={}, data={:08x}",
-                      i, entry.raw, static_cast<u64>(entry.addr), static_cast<u64>(entry.size),
-                      mapped, fmt::join(words, ","));
+                      i, entry.raw, static_cast<u64>(entry.addr), static_cast<u64>(entry.size), mapped, fmt::join(words, ","));
         }
     }
 
@@ -436,6 +433,44 @@ NvResult nvhost_gpu::SubmitGPFIFOImpl(IoctlSubmitGpfifo& params, Tegra::CommandL
             channel_state->memory_manager->ReadBlockUnsafe(entry.addr, contents.data(), bytes);
             std::ofstream dump("native-submit-" + std::to_string(channel_state->bind_id) + "-" + std::to_string(native_submit_logs) + "-" + std::to_string(i) + ".bin", std::ios::binary);
             dump.write(reinterpret_cast<const char*>(contents.data()), bytes);
+        }
+    }
+
+    const bool nx2_snapshot = (UsesNativeAbi() || g_nx2_driver || Settings::IsCurrentProgramSwitch2()) &&
+                              channel_state && channel_state->memory_manager &&
+                              !entries.command_lists.empty();
+    if (nx2_snapshot) {
+        size_t total_words = 0;
+        bool can_snapshot = true;
+        for (const auto& entry : entries.command_lists) {
+            const u32 count = static_cast<u32>(entry.size);
+            if (count == 0) {
+                continue;
+            }
+            const size_t bytes = static_cast<size_t>(count) * sizeof(u32);
+            if (entry.addr == 0 || total_words + count > 0x400000 ||
+                !channel_state->memory_manager->GpuToCpuAddress(entry.addr).has_value() ||
+                !channel_state->memory_manager->IsFullyMappedRange(entry.addr, bytes)) {
+                can_snapshot = false;
+                break;
+            }
+            total_words += count;
+        }
+        if (can_snapshot && total_words > 0) {
+            entries.submitted_offsets.resize(entries.command_lists.size());
+            entries.submitted_words.resize(total_words);
+            u32 word_cursor = 0;
+            for (size_t i = 0; i < entries.command_lists.size(); ++i) {
+                const auto& entry = entries.command_lists[i];
+                entries.submitted_offsets[i] = word_cursor;
+                const u32 count = static_cast<u32>(entry.size);
+                if (count > 0) {
+                    channel_state->memory_manager->ReadBlockUnsafe(
+                        entry.addr, entries.submitted_words.data() + word_cursor,
+                        static_cast<size_t>(count) * sizeof(u32));
+                    word_cursor += count;
+                }
+            }
         }
     }
 
@@ -485,8 +520,20 @@ NvResult nvhost_gpu::SubmitGPFIFOImpl(IoctlSubmitGpfifo& params, Tegra::CommandL
     return NvResult::Success;
 }
 
+Core::Memory::Memory& nvhost_gpu::GetSessionMemory(DeviceFD fd) {
+    if (const auto it = sessions.find(fd); it != sessions.end()) {
+        if (auto* const session = core.GetSession(it->second);
+            session != nullptr && session->process != nullptr) {
+            return session->process->GetMemory();
+        }
+    }
+    LOG_ERROR(Service_NVDRV, "No session for fd={}, falling back to application memory", fd);
+    return system.ApplicationMemory();
+}
+
 NvResult nvhost_gpu::SubmitGPFIFOBase1(IoctlSubmitGpfifo& params,
-                                       std::span<Tegra::CommandListHeader> commands, bool kickoff) {
+                                       std::span<Tegra::CommandListHeader> commands, DeviceFD fd,
+                                       bool kickoff) {
     if (params.num_entries > commands.size()) {
         LOG_ERROR(Service_NVDRV, "num_entries ({}) exceeds commands size ({})",
                   params.num_entries, commands.size());
@@ -495,8 +542,8 @@ NvResult nvhost_gpu::SubmitGPFIFOBase1(IoctlSubmitGpfifo& params,
 
     Tegra::CommandList entries(params.num_entries);
     if (kickoff) {
-        system.ApplicationMemory().ReadBlock(params.address, entries.command_lists.data(),
-                                             params.num_entries * sizeof(Tegra::CommandListHeader));
+        GetSessionMemory(fd).ReadBlock(params.address, entries.command_lists.data(),
+                                       params.num_entries * sizeof(Tegra::CommandListHeader));
     } else {
         std::memcpy(entries.command_lists.data(), commands.data(),
                     params.num_entries * sizeof(Tegra::CommandListHeader));
@@ -536,7 +583,7 @@ NvResult nvhost_gpu::ChannelSetTimeslice(IoctlSetTimeslice& params) {
     LOG_INFO(Service_NVDRV, "called, timeslice={:#x}", params.timeslice);
 
     if (params.timeslice < 1000 || params.timeslice > 5000) {
-        if (UsesNativeAbi()) {
+        if (UsesNativeAbi() || g_nx2_driver || Settings::IsCurrentProgramSwitch2()) {
             channel_timeslice = std::clamp<u32>(params.timeslice, 1000, 5000);
             return NvResult::Success;
         }
@@ -559,7 +606,7 @@ Kernel::KEvent* nvhost_gpu::QueryEvent(u32 event_id) {
     case 7:
         // The native SDK requests this event immediately before configuring
         // CHANNEL_SET_ERROR_NOTIFIER, then wraps it in its channel error wait.
-        return UsesNativeAbi() ? error_notifier_event : nullptr;
+        return (UsesNativeAbi() || g_nx2_driver || Settings::IsCurrentProgramSwitch2()) ? error_notifier_event : nullptr;
     default:
         LOG_CRITICAL(Service_NVDRV, "Unknown Ctrl GPU Event {}", event_id);
         return nullptr;
@@ -597,9 +644,6 @@ void nvhost_gpu::UnbindFromTsg(DeviceFD group) {
 }
 
 bool nvhost_gpu::UsesNativeAbi() const {
-    if (Settings::IsCurrentProgramSwitch2() || g_nx2_driver.load(std::memory_order_relaxed)) {
-        return true;
-    }
     for (const auto& [fd, session_id] : sessions) {
         const auto* session = core.GetSession(session_id);
         if (session && session->process && session->process->UsesPAuthReturns()) { return true; }

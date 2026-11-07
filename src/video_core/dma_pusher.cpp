@@ -107,8 +107,10 @@ bool DmaPusher::Step() {
         } else if (Settings::IsDMALevelNormal()) {
             use_safe = memory_manager.IsMemoryDirty(dma_state.dma_get, header.size * sizeof(u32));
         }
-        const bool submitted = command_resume_offset == 0 &&
-                               dma_pushbuffer_subindex < command_list.submitted_offsets.size() &&
+        const bool submitted = dma_pushbuffer_subindex < command_list.submitted_offsets.size() &&
+                               command_list.submitted_offsets[dma_pushbuffer_subindex] +
+                                       size_t{header.size} <=
+                                   command_list.submitted_words.size() &&
                                !IsGpuWrittenCommands(dma_state.dma_get,
                                                      size_t{header.size} * sizeof(u32)) &&
                                !(use_safe && memory_manager.IsMemoryDirty(dma_state.dma_get,

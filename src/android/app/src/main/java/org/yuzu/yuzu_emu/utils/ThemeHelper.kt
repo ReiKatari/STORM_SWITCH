@@ -113,35 +113,20 @@ object ThemeHelper {
 
 
     fun getSelectedStaticThemeColor(): Int {
-
         val themeIndex = IntSetting.THEME_MODE.getInt()
-
         return when (themeIndex) {
-
             0 -> R.style.Theme_Storm_Dark
-
             1 -> R.style.Theme_Storm_Night
-
             2 -> R.style.Theme_Storm_Day
-
             3 -> R.style.Theme_Storm_Midnight
-
-            4 -> R.style.Theme_Storm_Fantasy
-
+            4 -> R.style.Theme_Storm_Matrix
             5 -> R.style.Theme_Storm_Cyberpunk
-
-            6 -> R.style.Theme_Storm_Warhammer40k
-
-            7 -> R.style.Theme_Storm_Elemental
-
-            8 -> R.style.Theme_Storm_Storm
-
-            9 -> R.style.Theme_Storm_Warhammer40k
-
+            6 -> R.style.Theme_Storm_Fantasy
+            7 -> R.style.Theme_Storm_Warhammer40k
+            8 -> R.style.Theme_Storm_Elemental
+            9 -> R.style.Theme_Storm_Flagship
             else -> R.style.Theme_Storm_Midnight
-
         }
-
     }
 
 

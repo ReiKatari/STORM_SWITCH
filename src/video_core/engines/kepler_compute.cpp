@@ -33,7 +33,9 @@ KeplerCompute::KeplerCompute(MemoryManager& memory_manager_)
     // Everything ProcessNativeMethod acts on besides storing the value; the QMD and 0x5a
     // trace range too while native draw diagnostics trace it.
     native_plain_methods.set();
-    for (const u32 method : {0x45U, 0x46U, 0x47U, 0x48U, 0xaeU, 0xafU, 0xb0U, 0x107U, 0x6c3U,
+    for (const u32 method : {0x45U, 0x46U, 0x47U, 0x48U, 0xaeU, 0xafU, 0xb0U, 0x107U,
+                             0x154U, 0x155U, 0x156U, 0x157U, 0x158U, 0x159U, 0x15aU,
+                             0x15bU, 0x15cU, 0x15dU, 0x37bU, 0x6c3U,
                              static_cast<u32>(KEPLER_COMPUTE_REG_INDEX(exec_upload)),
                              static_cast<u32>(KEPLER_COMPUTE_REG_INDEX(data_upload))}) {
         native_plain_methods[method] = false;
@@ -85,6 +87,10 @@ bool KeplerCompute::ProcessNativeMethod(Core::System& system, u32 method, u32 ar
         const auto emit = [&](u32 address, u32 value) {
             static u32 diagnostic_writes{};
             if (diagnostic_writes++ < 4096) LOG_DEBUG(HW_GPU, "Native compute MME emit method={:#x}, value={:#x}", address, value);
+            if (native_macro->HandleNativeDmaMethod(memory_manager, rasterizer, address, value,
+                                                    &native_parameters)) {
+                return true;
+            }
             if (address >= 0xe00) return false;
             CallMethod(system, address, value, true);
             return true;
@@ -107,9 +113,8 @@ bool KeplerCompute::ProcessNativeMethod(Core::System& system, u32 method, u32 ar
                 [&](u32 address) { return address < native_registers.size() ? native_registers[address] : 0U; },
                 emit);
             if (!result.success) {
-                native_macro->native_execution_failed = true;
-                LOG_ERROR(HW_GPU, "Native MME (JIT) failed: compute start={:#x}, consumed={}/{}, error={}",
-                          start, result.consumed, native_parameters.size(), result.error);
+                LOG_WARNING(HW_GPU, "Native compute MME (JIT) skipped: start={:#x}, pc={:#x}, consumed={}/{}, error={}",
+                            start, result.pc, result.consumed, native_parameters.size(), result.error);
             }
             native_parameters.clear();
             return true;
@@ -120,10 +125,11 @@ bool KeplerCompute::ProcessNativeMethod(Core::System& system, u32 method, u32 ar
             [&](u32 address) { return address < native_registers.size() ? native_registers[address] : 0U; },
             emit);
         if (!result.success) {
-            native_macro->native_execution_failed = true;
-            std::ofstream dump("native-compute-mme.bin", std::ios::binary);
-            dump.write(reinterpret_cast<const char*>(native_macro->native_code.data()), sizeof(native_macro->native_code));
-            LOG_ERROR(HW_GPU, "Native MME failed: compute start={:#x}, pc={:#x}, consumed={}/{}, error={}, parameters={:08x}",
+            if (std::getenv("EDEN_NATIVE_DRAW_DIAGNOSTICS")) {
+                std::ofstream dump("native-compute-mme.bin", std::ios::binary);
+                dump.write(reinterpret_cast<const char*>(native_macro->native_code.data()), sizeof(native_macro->native_code));
+            }
+            LOG_WARNING(HW_GPU, "Native compute MME skipped: start={:#x}, pc={:#x}, consumed={}/{}, error={}, parameters={:08x}",
                 native_macro_positions[entry], result.pc, result.consumed, native_parameters.size(), result.error,
                 fmt::join(native_parameters, ","));
         }
@@ -131,6 +137,9 @@ bool KeplerCompute::ProcessNativeMethod(Core::System& system, u32 method, u32 ar
         return true;
     }
     native_registers[method] = argument;
+    if (native_macro->HandleNativeDmaMethod(memory_manager, rasterizer, method, argument, nullptr)) {
+        return true;
+    }
     if (method == 0x5a || (method >= 0xc6 && method <= 0x108)) {
         VideoCommon::TraceNativeQuery(12, memory_manager.GetID(), method, 0, 0, argument, 0);
     }
@@ -140,7 +149,7 @@ bool KeplerCompute::ProcessNativeMethod(Core::System& system, u32 method, u32 ar
         const GPUVAddr program = (GPUVAddr{native_registers[0xc8 + 49] & 0x1ffff} << 32) |
             native_registers[0xc8 + 48];
         const u32 control = native_registers[0xa7];
-        LOG_WARNING(HW_GPU, "Native inline QMD: address={:#x}, program={:#x}, control={:#x}, grid={}/{}/{}",
+        LOG_DEBUG(HW_GPU, "Native inline QMD: address={:#x}, program={:#x}, control={:#x}, grid={}/{}/{}",
             address, program, control, native_registers[0xc8 + 12],
             native_registers[0xc8 + 13] & 0xffff, native_registers[0xc8 + 14] & 0xffff);
         if (std::getenv("EDEN_NATIVE_DRAW_DIAGNOSTICS")) {
@@ -198,11 +207,15 @@ bool KeplerCompute::ProcessNativeMethod(Core::System& system, u32 method, u32 ar
         const auto error = native_qmd.Signal(qmd_address, argument,
             [&](u64 address, NativeQmdScheduler::Descriptor& descriptor) {
                 if (!memory_manager.IsFullyMappedRange(address, sizeof(descriptor))) return false;
+                if (rasterizer != nullptr &&
+                    memory_manager.IsMemoryDirty(address, sizeof(descriptor), VideoCommon::CacheType::BufferCache)) {
+                    memory_manager.FlushRegion(address, sizeof(descriptor), VideoCommon::CacheType::BufferCache);
+                }
                 memory_manager.ReadBlockUnsafe(address, descriptor.data(), sizeof(descriptor));
                 for (u32 slot = 0; slot < 2; ++slot) {
                     const u32 flags = descriptor[25 + slot * 4];
                     if (!(flags & (1U << 23))) continue;
-                    const GPUVAddr destination = (GPUVAddr{flags & 0xff} << 32) | descriptor[24 + slot * 4];
+                    const GPUVAddr destination = (GPUVAddr{flags & 0x1ffff} << 32) | descriptor[24 + slot * 4];
                     VideoCommon::TraceNativeQuery(7 + slot, memory_manager.GetID(), destination,
                         memory_manager.GpuToCpuAddress(destination).value_or(0),
                         descriptor[4], descriptor[26 + slot * 4], flags);
@@ -232,20 +245,19 @@ bool KeplerCompute::ProcessNativeMethod(Core::System& system, u32 method, u32 ar
             LOG_DEBUG(HW_GPU, "Native QMD control action={:#x}, QMD={:#x}", argument, qmd_address);
             return true;
         }
-        native_macro->native_execution_failed = true;
-        LOG_ERROR(HW_GPU, "Native QMD failed: {}", error);
-        std::array<u32, 128> qmd{};
-        if (memory_manager.IsFullyMappedRange(qmd_address, sizeof(qmd))) {
-            memory_manager.ReadBlockUnsafe(qmd_address, qmd.data(), sizeof(qmd));
-            std::ofstream dump("native-qmd.bin", std::ios::binary);
-            dump.write(reinterpret_cast<const char*>(qmd.data()), sizeof(qmd));
-            std::ofstream macros("native-dispatch-mme.bin", std::ios::binary);
-            macros.write(reinterpret_cast<const char*>(native_macro->native_code.data()), sizeof(native_macro->native_code));
-            std::ofstream registers("native-dispatch-registers.bin", std::ios::binary);
-            registers.write(reinterpret_cast<const char*>(native_registers.data()), sizeof(native_registers));
+        LOG_WARNING(HW_GPU, "Native QMD skipped: {}", error);
+        if (std::getenv("EDEN_NATIVE_DRAW_DIAGNOSTICS")) {
+            std::array<u32, 128> qmd{};
+            if (memory_manager.IsFullyMappedRange(qmd_address, sizeof(qmd))) {
+                memory_manager.ReadBlockUnsafe(qmd_address, qmd.data(), sizeof(qmd));
+                std::ofstream dump("native-qmd.bin", std::ios::binary);
+                dump.write(reinterpret_cast<const char*>(qmd.data()), sizeof(qmd));
+                std::ofstream macros("native-dispatch-mme.bin", std::ios::binary);
+                macros.write(reinterpret_cast<const char*>(native_macro->native_code.data()), sizeof(native_macro->native_code));
+                std::ofstream registers("native-dispatch-registers.bin", std::ios::binary);
+                registers.write(reinterpret_cast<const char*>(native_registers.data()), sizeof(native_registers));
+            }
         }
-        LOG_ERROR(HW_GPU, "Native compute dispatch unsupported: method={:#x}, value={:#x}, QMD={:#x}, words={:08x}", method, argument,
-                  qmd_address, fmt::join(qmd, ","));
         return true;
     }
     default:
@@ -353,22 +365,22 @@ bool KeplerCompute::DispatchNativeCompute(const NativeQmdScheduler::Descriptor& 
     regs.code_loc.address_high = qmd[49] & 0x1ffff;
     for (u32 slot = 0; slot < NumConstBuffers; ++slot) {
         const u32 high = qmd[33 + slot * 2];
-        if (high & 0x1ff00) {
-            LOG_ERROR(HW_GPU, "Native compute constant address exceeds supported GPU width");
-            return false;
-        }
         auto& buffer = launch_description.const_buffer_config[slot];
         buffer.address_low = qmd[32 + slot * 2];
-        buffer.address_high.Assign(high & 0xff);
+        buffer.address_high.Assign(high & 0x7fff);
         buffer.size.Assign(((high >> 19) & 0x1fff) << 4);
     }
-    if (!launch_description.block_dim_x || !launch_description.block_dim_y || !launch_description.block_dim_z)
-        return false;
+    if (!launch_description.block_dim_x || !launch_description.block_dim_y || !launch_description.block_dim_z) {
+        return true;
+    }
     try {
         rasterizer->DispatchCompute();
     } catch (const Shader::Exception& error) {
-        LOG_ERROR(HW_GPU, "Native compute shader rejected: {}", error.what());
-        return false;
+        static u32 rejected_count{};
+        if (rejected_count++ < 32) {
+            LOG_WARNING(HW_GPU, "Native compute dispatch skipped: {}", error.what());
+        }
+        return true;
     }
     return true;
 }

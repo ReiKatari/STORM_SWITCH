@@ -32,6 +32,7 @@ public:
     ANativeWindow* NativeWindow() const;
     void SetNativeWindow(ANativeWindow* native_window);
     void SurfaceChanged();
+    void OnSurfaceChanged(ANativeWindow* surface, u32 width = 0, u32 height = 0);
 
     void InitializeGpuDriver(const std::string& hook_lib_dir, const std::string& custom_driver_dir,
                              const std::string& custom_driver_name,
@@ -70,6 +71,8 @@ private:
     // Window management
     std::unique_ptr<EmuWindow_Android> m_window;
     ANativeWindow* m_native_window{};
+    u32 m_surface_width{0};
+    u32 m_surface_height{0};
 
     // Core emulation
     Core::System m_system;

@@ -177,6 +177,20 @@ bool RealVfsFilesystem::DeleteFile(std::string_view path_) {
 
 VirtualDir RealVfsFilesystem::OpenDirectory(std::string_view path_, OpenMode perms) {
     const auto path = FS::SanitizePath(path_, FS::DirectorySeparator::PlatformDefault);
+    if (perms == OpenMode::Read) {
+        std::string lower = path;
+        std::transform(lower.begin(), lower.end(), lower.begin(),
+                       [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+        if (lower.ends_with(".nsp") || lower.ends_with(".nsz") || lower.ends_with(".xci") ||
+            lower.ends_with(".xcz") || lower.ends_with(".nca") || lower.ends_with(".ncz") ||
+            lower.ends_with(".nro") || lower.ends_with(".nso") || lower.ends_with(".kip") ||
+            lower.ends_with(".nup")) {
+            return nullptr;
+        }
+        if (FS::Exists(path) && !FS::IsDir(path)) {
+            return nullptr;
+        }
+    }
     return std::shared_ptr<RealVfsDirectory>(new RealVfsDirectory(*this, path, perms));
 }
 

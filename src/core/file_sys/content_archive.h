@@ -72,10 +72,19 @@ inline bool IsDirectoryLogoPartition(const VirtualDir& pfs) {
            pfs->GetFile("StartupMovie.gif") != nullptr;
 }
 
+struct NcaHeaderSummary {
+    bool valid = false;
+    u64 title_id = 0;
+    NCAContentType type = NCAContentType::Program;
+    bool is_update = false;
+};
+
 // An implementation of VfsDirectory that represents a Nintendo Content Archive (NCA) container.
 // After construction, use GetStatus to determine if the file is valid and ready to be used.
 class NCA : public ReadOnlyVfsDirectory {
 public:
+    static NcaHeaderSummary PeekHeaderSummary(const VirtualFile& file);
+
     explicit NCA(VirtualFile file, const NCA* base_nca = nullptr);
     ~NCA() override;
 

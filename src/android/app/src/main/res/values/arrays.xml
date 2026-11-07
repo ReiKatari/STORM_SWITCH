@@ -635,6 +635,8 @@
         <item>5</item>
         <item>6</item>
         <item>7</item>
+        <item>8</item>
+        <item>9</item>
     </integer-array>
 
     <string-array name="uiDesignStyleNames">

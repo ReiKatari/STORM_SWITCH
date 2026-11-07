@@ -250,14 +250,6 @@ void RasterizerVulkan::PrepareDraw(bool is_indexed, Func&& draw_func) {
     SCOPE_EXIT {
         gpu.TickWork();
     };
-    bool submitted = false;
-    SCOPE_EXIT {
-        auto& native = maxwell3d->GetNativeMacroEngine();
-        if (native.native_turing && !submitted) {
-            native.native_execution_failed = true;
-            LOG_ERROR(HW_GPU, "Native graphics draw failed; refusing submission completion");
-        }
-    };
     FlushWork();
     gpu_memory->FlushCaching();
 
@@ -287,7 +279,6 @@ void RasterizerVulkan::PrepareDraw(bool is_indexed, Func&& draw_func) {
     HandleTransformFeedback();
     query_cache.CounterEnable(VideoCommon::QueryType::ZPassPixelCount64, maxwell3d->regs.zpass_pixel_count_enable);
     draw_func();
-    submitted = true;
     static u32 native_capture_count{};
     if (maxwell3d->GetNativeMacroEngine().native_turing &&
         std::getenv("EDEN_NATIVE_DRAW_CAPTURE") && native_capture_count < 16) {
@@ -600,6 +591,9 @@ void RasterizerVulkan::Clear(u32 layer_count) {
     }
     FlushWork();
     gpu_memory->FlushCaching();
+    if (!maxwell3d->EvaluateCondition()) {
+        return;
+    }
 
     auto& regs = maxwell3d->regs;
     const bool use_color = regs.clear_surface.R || regs.clear_surface.G || regs.clear_surface.B ||

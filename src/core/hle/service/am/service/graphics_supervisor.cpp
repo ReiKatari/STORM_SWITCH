@@ -1,3 +1,4 @@
+#include "common/settings.h"
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -20,6 +21,7 @@
 #include "core/hle/kernel/k_process.h"
 #include "core/hle/kernel/svc_results.h"
 #include "core/hle/service/am/service/graphics_supervisor.h"
+#include "core/hle/service/nx2_gsv.h"
 #include "core/hle/service/am/service/graphics_session.h"
 #include "core/hle/service/am/service/gpu_session.h"
 #include "core/hle/service/am/service/graphics_supervisor_protocol.h"
@@ -97,7 +99,7 @@ public:
             return ServiceFrameworkBase::HandleSyncRequest(session, ctx);
         }
         const auto guard = LockService();
-        LOG_DEBUG(Service_AM, "syncpoint unsupported command={}, words={:08x}", ctx.GetCommand(),
+        LOG_WARNING(Service_AM, "syncpoint unsupported command={}, words={:08x}", ctx.GetCommand(),
                   fmt::join(std::span<const u32>(ctx.CommandBuffer() + 2, std::min<u32>(ctx.CommandBuffer()[1], 32)), ","));
         InvokeRequestTipc(ctx);
         IPC::ResponseBuilder rb{ctx, 2};
@@ -173,11 +175,17 @@ public:
             {11, &IVi2Session::GetNotificationEvent, "GetNotificationEvent"},
             {13, &IVi2Session::ReleaseNotificationEvent, "ReleaseNotificationEvent"},
             {21, &IVi2Session::GetNotifications, "GetNotifications"},
+            {31, &IVi2Session::GetVsyncEvent, "GetVsyncEvent"},
+            {32, &IVi2Session::GetVsyncEvent, "GetDisplayVsyncEvent"},
             {3, &IVi2Session::GetSessionLimit, "GetSessionLimit"},
             {5, &IVi2Session::GetSessionLimit, "GetRequestGroupLimit"},
             {51, &IVi2Session::ConfigureRequestGroups, "ConfigureRequestGroups"},
             {101, &IVi2Session::OpenDisplay, "OpenDisplay"},
             {102, &IVi2Session::CloseDisplay, "CloseDisplay"},
+            {104, &IVi2Session::SucceedQuietly, "Unknown104"},
+            {105, &IVi2Session::SucceedQuietly, "Unknown105"},
+            {106, &IVi2Session::GetBufferMaxResolution, "GetBufferMaxResolution"},
+            {261, &IVi2Session::SucceedQuietly, "Unknown261"},
             {111, &IVi2Session::OpenEndpoint, "OpenEndpoint"},
             {112, &IVi2Session::CloseEndpoint, "CloseEndpoint"},
             {201, &IVi2Session::RegisterClientState, "RegisterClientState"},
@@ -193,6 +201,11 @@ public:
     }
 
     ~IVi2Session() override {
+        {
+            std::scoped_lock lk{m_vsync->mutex};
+            m_vsync->events.clear();
+        }
+        if (m_vsync_timer) system.CoreTiming().UnscheduleEvent(m_vsync_timer);
         if (m_release_poll) system.CoreTiming().UnscheduleEvent(m_release_poll);
         if (m_display_service) {
             for (auto& state : m_client_states) {
@@ -200,6 +213,7 @@ public:
             }
         }
         if (m_default_display) { m_display_service->CloseDisplay(*m_default_display); }
+        for (auto* ev : m_vsync_events) { m_context.CloseEvent(ev); }
         m_context.CloseEvent(m_event);
     }
 
@@ -208,11 +222,13 @@ public:
             return ServiceFrameworkBase::HandleSyncRequest(session, ctx);
         }
         const auto guard = LockService();
-        LOG_DEBUG(Service_AM, "VI2 unsupported command={}, words={:08x}", ctx.GetCommand(),
-                  fmt::join(std::span<const u32>(ctx.CommandBuffer() + 2, std::min<u32>(ctx.CommandBuffer()[1], 32)), ","));
+        LOG_WARNING(Service_AM, "VI2 stubbing unsupported command={}, words={:08x}", ctx.GetCommand(),
+                    fmt::join(std::span<const u32>(ctx.CommandBuffer() + 2, std::min<u32>(ctx.CommandBuffer()[1], 32)), ","));
         InvokeRequestTipc(ctx);
-        IPC::ResponseBuilder rb{ctx, 2};
-        rb.Push(Kernel::ResultNotImplemented.raw);
+        IPC::ResponseBuilder rb{ctx, 6};
+        rb.Push(ResultSuccess.raw);
+        rb.Push<u64>(0);
+        rb.Push<u64>(0);
         return system.IsPoweredOn() ? ctx.WriteToOutgoingCommandBuffer() : ResultSuccess;
     }
 private:
@@ -237,7 +253,7 @@ private:
         // The native display token is an eight-byte name; command 101 returns
         // only a result. Retain the real VI display ID for later operations.
         R_UNLESS(name == 0x00746c7561666564ULL, Kernel::ResultNotFound);
-        R_UNLESS(flags == 1, Kernel::ResultNotImplemented);
+        if (flags != 1) { LOG_WARNING(Service_AM, "OpenDefaultDisplay SDK20 flags={:#x}", flags); }
         R_UNLESS(m_display_references < 1024, Kernel::ResultOutOfResource);
         if (!m_display_service) {
             const auto root = system.ServiceManager().GetService<VI::IManagerRootService>("vi:m", true);
@@ -694,6 +710,63 @@ private:
     u32 m_request_group_limit{};
     std::optional<u64> m_default_endpoint;
     std::array<u32, 32> m_notifications{};
+    void SucceedQuietly(HLERequestContext& ctx) {
+        IPC::ResponseBuilder rb{ctx, 2};
+        rb.Push(ResultSuccess.raw);
+    }
+
+    void GetBufferMaxResolution(HLERequestContext& ctx) {
+        const auto* packet = ctx.CommandBuffer();
+        const u64 name = u64{packet[2]} | (u64{packet[3]} << 32);
+        constexpr u64 DefaultDisplay = 0x00746c7561666564ULL;
+        Result result = Kernel::ResultInvalidCombination;
+        u64 mode{};
+        if (packet[0] == 0x7a && packet[1] == 2) {
+            result = Kernel::ResultNotFound;
+            if (name == DefaultDisplay) {
+                static const char* forced = std::getenv("EDEN_VI2_MAX_RESOLUTION_MODE");
+                mode = forced ? std::strtoull(forced, nullptr, 0) : (Settings::IsDockedMode() ? 4ULL : 2ULL);
+                result = ResultSuccess;
+            }
+        }
+        IPC::ResponseBuilder rb{ctx, 4};
+        rb.Push(result.raw);
+        rb.Push(mode);
+    }
+
+    void GetVsyncEvent(HLERequestContext& ctx) {
+        auto* event = m_context.CreateEvent(fmt::format("Vi2Vsync{}", m_vsync_events.size()));
+        m_vsync_events.push_back(event);
+        {
+            std::scoped_lock lk{m_vsync->mutex};
+            m_vsync->events.push_back(event);
+        }
+        if (!m_vsync_timer) {
+            m_vsync_timer = Core::Timing::CreateEvent(
+                "Vi2VsyncTimer",
+                [vsync_state = m_vsync, &kernel = system.Kernel()](
+                    s64, std::chrono::nanoseconds) -> std::optional<std::chrono::nanoseconds> {
+                    std::scoped_lock lk{vsync_state->mutex};
+                    for (auto* vsync : vsync_state->events) {
+                        vsync->Signal(kernel);
+                    }
+                    return std::nullopt;
+                });
+            static const std::chrono::nanoseconds VblankInterval{1'000'000'000LL / 60LL};
+            system.CoreTiming().ScheduleLoopingEvent(VblankInterval, VblankInterval, m_vsync_timer);
+        }
+        IPC::ResponseBuilder rb{ctx, 2, 1, 0};
+        rb.Push(ResultSuccess.raw);
+        rb.PushCopyObjects(ctx, event->GetReadableEvent());
+    }
+
+    struct VsyncState {
+        std::mutex mutex;
+        std::vector<Kernel::KEvent*> events;
+    };
+    std::shared_ptr<VsyncState> m_vsync = std::make_shared<VsyncState>();
+    std::shared_ptr<Core::Timing::EventType> m_vsync_timer;
+    std::vector<Kernel::KEvent*> m_vsync_events;
     const u64 m_aruid;
     KernelHelpers::ServiceContext m_context;
     Kernel::KEvent* m_event{};
@@ -769,6 +842,97 @@ Result IGraphicsSupervisor::HandleSyncRequest(Kernel::KServerSession& session,
         return ServiceFrameworkBase::HandleSyncRequest(session, ctx);
     }
     const auto guard = LockService();
+    const u32 cmd = ctx.GetCommand();
+    const auto* w = ctx.CommandBuffer();
+    if (cmd == 5 || cmd == 601 || cmd == 901 || cmd == 1001 || cmd == 1201) {
+        InvokeRequestTipc(ctx);
+        IPC::ResponseBuilder rb{ctx, 2};
+        rb.Push(ResultSuccess.raw);
+        return system.IsPoweredOn() ? ctx.WriteToOutgoingCommandBuffer() : ResultSuccess;
+    }
+    if (cmd == 902 || cmd == 906 || cmd == 1002 || cmd == 602 || cmd == 1202) {
+        InvokeRequestTipc(ctx);
+        static auto s_nx2_objects = std::make_shared<Nx2NativeObjects>();
+        Kernel::KClientSession* client{};
+        Result res = ResultSuccess;
+        if (cmd == 902 || cmd == 906 || cmd == 1002) {
+            res = CreateGraphicsSession(
+                system, ctx,
+                std::make_shared<INx2VideoSession>(system, s_nx2_objects,
+                                                   cmd == 1002 ? "nx2:vdec2" : "nx2:vdec"),
+                &client);
+        } else if (cmd == 1202) {
+            res = CreateGraphicsSession(system, ctx, std::make_shared<INx2ChatGsvSession>(system), &client);
+        } else {
+            res = CreateGraphicsSession(
+                system, ctx,
+                std::make_shared<INx2StubInterface>(system, INx2StubInterface::InternName("nx2:camera")),
+                &client);
+        }
+        IPC::ResponseBuilder rb{ctx, 2, 0, 1};
+        rb.Push(res.raw);
+        ctx.AddMoveObject(client);
+        return system.IsPoweredOn() ? ctx.WriteToOutgoingCommandBuffer() : ResultSuccess;
+    }
+    if (cmd == 991 || cmd == 1291) {
+        InvokeRequestTipc(ctx);
+        const u64 unit_size = cmd == 991 ? Nx2CalculateDecoderImageLayout(w + 2).size
+                                         : Nx2CalculateImageLayout(w + 2).size;
+        const u32 count = (w[18] > 1U ? w[18] : 1U);
+        const u64 size = unit_size * count;
+        const u64 alignment = 64 * 128;
+        IPC::ResponseBuilder rb{ctx, 6};
+        rb.Push(ResultSuccess.raw);
+        rb.Push<u64>(size);
+        rb.Push<u64>(alignment);
+        return system.IsPoweredOn() ? ctx.WriteToOutgoingCommandBuffer() : ResultSuccess;
+    }
+    if (cmd == 911 || cmd == 1211) {
+        InvokeRequestTipc(ctx);
+        CreateNativeImage(ctx);
+        return system.IsPoweredOn() ? ctx.WriteToOutgoingCommandBuffer() : ResultSuccess;
+    }
+    if (cmd == 426 || cmd == 428) {
+        const u32 handle_id = w[2];
+        InvokeRequestTipc(ctx);
+        std::array<u32, 16> pref{};
+        u64 img_size = 0x1000;
+        u64 mem_addr = 0;
+        {
+            const std::scoped_lock images_lock{m_image_registry->mutex};
+            const auto it = std::ranges::find(m_image_registry->images, handle_id, &NativeImage::id);
+            if (it != m_image_registry->images.end()) {
+                pref = it->preference;
+                img_size = it->size;
+                if (m_nv_module) {
+                    if (const auto h = m_nv_module->GetContainer().GetNvMapFile().GetHandle(it->memory_id)) {
+                        mem_addr = h->address;
+                    }
+                }
+            }
+        }
+        const auto layout = Nx2CalculateImageLayout(pref.data());
+        const u64 gpu_addr = cmd == 426 ? mem_addr : 0;
+        std::array<u32, 37> out_words{};
+        out_words[0] = static_cast<u32>(gpu_addr);
+        out_words[1] = static_cast<u32>(gpu_addr >> 32);
+        u32* const desc = out_words.data() + 4;
+        desc[0] = 1;
+        desc[1] = pref[1];
+        desc[2] = pref[2];
+        desc[4] = layout.block_height_log2;
+        desc[5] = static_cast<u32>(layout.pitch / 64);
+        desc[8] = 1;
+        desc[9] = 1;
+        desc[11] = static_cast<u32>(img_size);
+        IPC::ResponseBuilder rb{ctx, static_cast<u32>(2 + out_words.size())};
+        rb.Push(ResultSuccess.raw);
+        for (const u32 ow : out_words) {
+            rb.Push<u32>(ow);
+        }
+        return system.IsPoweredOn() ? ctx.WriteToOutgoingCommandBuffer() : ResultSuccess;
+    }
+    LOG_WARNING(Service_AM, "IGraphicsSupervisor unsupported TIPC command={}, w0={:#x}, w1={:#x}, w2={:#x}, w3={:#x}", ctx.GetCommand(), ctx.CommandBuffer()[0], ctx.CommandBuffer()[1], ctx.CommandBuffer()[2], ctx.CommandBuffer()[3]);
     InvokeRequestTipc(ctx);
     // Unsupported TIPC must return an error instead of leaving request data as a reply.
     IPC::ResponseBuilder rb{ctx, 2};
@@ -790,9 +954,11 @@ void IGraphicsSupervisor::Initialize(HLERequestContext& ctx) {
             result = Kernel::ResultInvalidState;
         } else if (request->applet_resource_user_id != m_aruid) {
             result = Kernel::ResultInvalidArgument;
-        } else if (request->flags != 0x8000000000000005ULL || !empty_remote_memory) {
+        } else if (!empty_remote_memory) {
+            LOG_WARNING(Service_AM, "IGraphicsSupervisor::Initialize non-empty remote memory flags={:#x}", request->flags);
             result = Kernel::ResultNotImplemented;
         } else {
+            if (request->flags != 0x8000000000000005ULL) { LOG_WARNING(Service_AM, "IGraphicsSupervisor::Initialize SDK20 flags={:#x}", request->flags); }
             m_phase = Phase::Initialized;
             result = ResultSuccess;
         }
@@ -1222,7 +1388,7 @@ void IGraphicsSupervisor::CreateNativeMemory(HLERequestContext& ctx) {
 Result IGraphicsSupervisor::BindNativeMemoryBacking(u32 id, u64 address, u64 size, u64 flags, u64 offset) {
     R_UNLESS(m_nv_module && std::ranges::find(m_native_memories, id) != m_native_memories.end(),
              Kernel::ResultNotFound);
-    R_UNLESS((flags == 0 || flags == 2) && offset == 0, Kernel::ResultNotImplemented);
+    if (!((flags == 0 || flags == 2) && offset == 0)) { LOG_WARNING(Service_AM, "BindNativeMemoryBacking SDK20 flags={:#x} offset={:#x}", flags, offset); }
     auto handle = m_nv_module->GetContainer().GetNvMapFile().GetHandle(id);
     R_UNLESS(handle && !handle->allocated, Kernel::ResultInvalidState);
     R_UNLESS(size && size == handle->size && address != 0 && address + size > address,
@@ -1337,31 +1503,49 @@ void IGraphicsSupervisor::CreateNativeImage(HLERequestContext& ctx) {
     const auto* packet = ctx.CommandBuffer();
     Result result = Kernel::ResultInvalidCombination;
     u32 id{};
-    if (packet[0] == 0x1bd && packet[1] == 18 && packet[3] == 1) {
+    const u32 cni_cmd = ctx.GetCommand();
+    if (packet[0] == 16 + cni_cmd && packet[1] == 18) {
         result = Kernel::ResultInvalidState;
-        if (m_phase == Phase::Ready && m_gpu_context_ready && m_image_formats_initialized && m_nv_module) {
-            const auto requirements = CalculateNativeImageRequirements(std::span{packet + 2, 16}, packet[18]);
-            result = Kernel::ResultNotImplemented;
-            if (requirements) {
-                result = Kernel::ResultNotFound;
-                auto& nvmap = m_nv_module->GetContainer().GetNvMapFile();
-                const auto memory = nvmap.GetHandle(packet[19]);
-                if (std::ranges::find(m_native_memories, packet[19]) != m_native_memories.end() &&
-                    memory && memory->allocated) {
-                    result = Kernel::ResultInvalidSize;
-                    if (memory->size >= requirements->size) {
-                        result = Kernel::ResultOutOfResource;
-                        if (m_image_registry->images.size() < 1024 && m_next_native_image_id != 0 &&
-                            memory->Duplicate(true) == Nvidia::NvResult::Success) {
-                            NativeImage image{m_next_native_image_id++, packet[19], {}, requirements->size};
-                            std::copy_n(packet + 2, image.preference.size(), image.preference.begin());
-                            id = image.id;
+        if (m_phase == Phase::Ready && m_image_formats_initialized && m_nv_module) {
+            const u32 count = (packet[18] > 1U ? packet[18] : 1U);
+            const u64 total_req = cni_cmd == 911
+                ? Nx2CalculateDecoderImageLayout(packet + 2).size * count
+                : CalculateNativeImageRequirements(std::span{packet + 2, 16}, count)->size;
+            const u64 unit_req = total_req / count;
+            result = Kernel::ResultNotFound;
+            auto& nvmap = m_nv_module->GetContainer().GetNvMapFile();
+            const auto memory = nvmap.GetHandle(packet[19]);
+            if (std::ranges::find(m_native_memories, packet[19]) != m_native_memories.end() &&
+                memory && memory->allocated) {
+                result = Kernel::ResultInvalidSize;
+                if (memory->size >= total_req) {
+                    result = Kernel::ResultOutOfResource;
+                    if (m_image_registry->images.size() + count <= 1024 && m_next_native_image_id != 0) {
+                        bool dup_ok = true;
+                        u32 dup_count = 0;
+                        for (u32 i = 0; i < count; ++i) {
+                            if (memory->Duplicate(true) != Nvidia::NvResult::Success) {
+                                dup_ok = false;
+                                break;
+                            }
+                            ++dup_count;
+                        }
+                        if (dup_ok) {
                             if (!m_image_registry->module) {
                                 m_image_registry->module = m_nv_module;
                                 m_image_registry->memory_session = m_nv_module->GetContainer().OpenSession(m_process);
                             }
-                            m_image_registry->images.push_back(image);
+                            id = m_next_native_image_id;
+                            for (u32 i = 0; i < count; ++i) {
+                                NativeImage image{m_next_native_image_id++, packet[19], {}, unit_req};
+                                std::copy_n(packet + 2, image.preference.size(), image.preference.begin());
+                                m_image_registry->images.push_back(image);
+                            }
                             result = ResultSuccess;
+                        } else {
+                            for (u32 i = 0; i < dup_count; ++i) {
+                                m_image_registry->ReleaseMemory(packet[19]);
+                            }
                         }
                     }
                 }

@@ -463,7 +463,7 @@ void IterateDirEntries(const std::filesystem::path& path, const DirEntryCallable
             return;
         }
         if (!IsDir(safe_path)) {
-            LOG_ERROR(Common_Filesystem, "Filesystem object at path={} is not a directory", PathToUTF8String(path));
+            LOG_DEBUG(Common_Filesystem, "Filesystem object at path={} is not a directory", PathToUTF8String(path));
             return;
         }
 
@@ -529,7 +529,7 @@ void IterateDirEntriesRecursively(const std::filesystem::path& path, const DirEn
             return;
         }
         if (!IsDir(safe_path)) {
-            LOG_ERROR(Common_Filesystem, "Filesystem object at path={} is not a directory", PathToUTF8String(path));
+            LOG_DEBUG(Common_Filesystem, "Filesystem object at path={} is not a directory", PathToUTF8String(path));
             return;
         }
 

@@ -249,6 +249,13 @@ AppLoader_DeconstructedRomDirectory::AppLoader_DeconstructedRomDirectory(
 }
 
 FileType AppLoader_DeconstructedRomDirectory::IdentifyType(const FileSys::VirtualFile& dir_file) {
+    if (!dir_file) {
+        return FileType::Error;
+    }
+    const std::string name = dir_file->GetName();
+    if (name != "main" && name != "main.npdm" && name != "rtld") {
+        return FileType::Error;
+    }
     if (FileSys::IsDirectoryExeFS(dir_file->GetContainingDirectory())) {
         return FileType::DeconstructedRomDirectory;
     }

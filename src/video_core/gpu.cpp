@@ -179,13 +179,16 @@ struct GPU::Impl {
 
     [[nodiscard]] u64 GetTicks() const {
         const u64 gpu_tick = system.CoreTiming().GetGPUTicks();
-        if (Settings::values.drs_resolution_lock.GetValue()) {
-            return gpu_tick / 512;
+        if (VideoCore::Nx2IsActive() || Settings::IsCurrentProgramSwitch2()) {
+            return gpu_tick;
         }
         const auto clock = Settings::values.gpu_clock.GetValue();
         const u64 mult = GpuClockMultiplier(clock);
         if (Settings::values.use_fast_gpu_time.GetValue() ||
             Settings::values.storm_lowend_turbo.GetValue()) {
+            if (Settings::values.drs_resolution_lock.GetValue()) {
+                return gpu_tick / (512 * mult);
+            }
             return gpu_tick / (256 * mult);
         }
         return gpu_tick / mult;

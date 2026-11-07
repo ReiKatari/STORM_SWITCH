@@ -188,6 +188,11 @@ class SettingsFragment : Fragment() {
                         true
                     }
 
+                    R.id.action_reset -> {
+                        settingsViewModel.setShouldShowResetSettingsDialog(true)
+                        true
+                    }
+
                     else -> false
                 }
             }

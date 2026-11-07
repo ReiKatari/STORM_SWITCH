@@ -83,6 +83,7 @@ ISelfController::ISelfController(Core::System& system_, std::shared_ptr<Applet> 
         {240, D<&ISelfController::Unknown240>, "Unknown240"},
         {1000, nullptr, "GetDebugStorageChannel"},
         {2000, &ISelfController::GetGraphicsSupervisor, "GetGraphicsSupervisor"},
+        {2400, &ISelfController::Unknown2400, "Unknown2400"},
     };
     // clang-format on
 
@@ -91,6 +92,13 @@ ISelfController::ISelfController(Core::System& system_, std::shared_ptr<Applet> 
     std::scoped_lock lk{m_applet->lock};
     m_applet->display_layer_manager.Initialize(system, m_process, m_applet->applet_id,
                                                m_applet->library_applet_mode);
+}
+
+void ISelfController::Unknown2400(HLERequestContext& ctx) {
+    LOG_DEBUG(Service_AM, "(STUBBED) Switch 2 ISelfController::2400");
+    IPC::ResponseBuilder rb{ctx, 4};
+    rb.Push(ResultSuccess);
+    rb.Push<u64>(0);
 }
 
 void ISelfController::GetNx2GraphicsSystemSession(HLERequestContext& ctx) {

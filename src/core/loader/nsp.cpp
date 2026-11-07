@@ -13,6 +13,7 @@
 #include "core/file_sys/content_archive.h"
 #include "core/file_sys/control_metadata.h"
 #include "core/file_sys/nca_metadata.h"
+#include "core/file_sys/partition_filesystem.h"
 #include "core/file_sys/patch_manager.h"
 #include "core/file_sys/registered_cache.h"
 #include "core/file_sys/romfs.h"
@@ -130,29 +131,22 @@ AppLoader_NSP::AppLoader_NSP(FileSys::VirtualFile file_,
 AppLoader_NSP::~AppLoader_NSP() = default;
 
 FileType AppLoader_NSP::IdentifyType(const FileSys::VirtualFile& nsp_file) {
-    const FileSys::NSP nsp(nsp_file);
-
-    if (nsp.GetStatus() != ResultStatus::Success) {
+    if (nsp_file == nullptr) {
+        return FileType::Error;
+    }
+    const auto pfs = std::make_shared<FileSys::PartitionFilesystem>(nsp_file);
+    if (pfs->GetStatus() != ResultStatus::Success) {
         return FileType::Error;
     }
 
-    const bool is_nsz = nsp_file && (nsp_file->GetName().ends_with(".nsz") || nsp_file->GetName().ends_with(".NSZ"));
+    const bool is_nsz = nsp_file->GetName().ends_with(".nsz") || nsp_file->GetName().ends_with(".NSZ");
     const FileType return_type = is_nsz ? FileType::NSZ : FileType::NSP;
 
-    // Extracted Type case
-    if (nsp.IsExtractedType() && nsp.GetExeFS() != nullptr &&
-        FileSys::IsDirectoryExeFS(nsp.GetExeFS())) {
+    if (FileSys::IsDirectoryExeFS(pfs)) {
         return return_type;
     }
 
-    // Non-extracted NSPs can legitimately contain only update/DLC content.
-    // Identify the container format itself; bootability is validated by Load().
-    if (!nsp.GetNCAs().empty()) {
-        return return_type;
-    }
-
-    // Fallback when NCAs couldn't be parsed (e.g. missing keys) but the PFS still contains NCAs.
-    for (const auto& entry : nsp.GetFiles()) {
+    for (const auto& entry : pfs->GetFiles()) {
         if (entry == nullptr) {
             continue;
         }

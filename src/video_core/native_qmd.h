@@ -82,7 +82,7 @@ public:
             for (Word slot = 0; slot < 2; ++slot) {
                 const Word flags = qmd[25 + slot * 4];
                 if (!(flags & (1U << 23))) continue;
-                const Address destination = (Address{flags & 0xff} << 32) | qmd[24 + slot * 4];
+                const Address destination = (Address{flags & 0x1ffff} << 32) | qmd[24 + slot * 4];
                 bool released{};
                 if constexpr (std::is_invocable_r_v<bool, Release, Address, Word, Word>) {
                     released = release(destination, qmd[26 + slot * 4], flags);

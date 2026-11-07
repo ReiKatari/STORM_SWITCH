@@ -8,4 +8,10 @@
         android:title="@string/home_search"
         app:showAsAction="always" />
 
+    <item
+        android:id="@+id/action_reset"
+        android:icon="@drawable/ic_restore"
+        android:title="@string/reset_to_default"
+        app:showAsAction="always" />
+
 </menu>

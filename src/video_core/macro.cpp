@@ -28,6 +28,7 @@
 #include "video_core/engines/maxwell_3d.h"
 #include "video_core/engines/maxwell_3d.h"
 #include "video_core/dirty_flags.h"
+#include "video_core/memory_manager.h"
 #include "video_core/rasterizer_interface.h"
 #include "video_core/macro.h"
 
@@ -1368,9 +1369,163 @@ static void Dump(u64 hash, std::span<const u32> code, bool decompiled = false) {
     macro_file.write(reinterpret_cast<const char*>(code.data()), code.size_bytes());
 }
 
+bool MacroEngine::HandleNativeDmaMethod(MemoryManager& memory_manager,
+                                        VideoCore::RasterizerInterface* rasterizer,
+                                        u32 method, u32 value, std::vector<u32>* fifo) {
+    const auto flush_gpu_read = [&](GPUVAddr addr, std::size_t bytes) {
+        if (addr == 0 || bytes == 0 || rasterizer == nullptr) {
+            return;
+        }
+        if (memory_manager.IsMemoryDirty(addr, bytes, VideoCommon::CacheType::BufferCache)) {
+            memory_manager.FlushRegion(addr, bytes, VideoCommon::CacheType::BufferCache);
+        }
+    };
+    const auto write_gpu_bytes = [&](GPUVAddr addr, const void* src, std::size_t bytes) {
+        if (addr == 0 || bytes == 0) {
+            return;
+        }
+        if (rasterizer != nullptr) {
+            rasterizer->AccelerateInlineToMemory(
+                addr, bytes, std::span<const u8>{ static_cast<const u8*>(src), bytes });
+        } else {
+            memory_manager.WriteBlock(addr, src, bytes);
+        }
+    };
+    switch (method) {
+    case 0x154: // NVC597_SET_MME_MEM_ADDRESS_A / NVC797_SET_MME_MEM_ADDRESS_A
+        mme_dma_addr_a = value & 0x1ffffU;
+        return true;
+    case 0x155: // NVC597_SET_MME_MEM_ADDRESS_B
+        mme_dma_addr_b = value;
+        return true;
+    case 0x156: // NVC597_SET_MME_DATA_RAM_ADDRESS
+        mme_data_ram_addr = value;
+        return true;
+    case 0x157: { // NVC597_MME_DMA_READ
+        const u32 max_words = mme_data_ram_addr < native_interpreter.dram.size()
+                                  ? static_cast<u32>(native_interpreter.dram.size() - mme_data_ram_addr)
+                                  : 0U;
+        const u32 count = std::min<u32>(value, max_words);
+        const GPUVAddr addr = (GPUVAddr{mme_dma_addr_a} << 32) | GPUVAddr{mme_dma_addr_b};
+        if (count > 0 && addr != 0) {
+            const std::size_t bytes = std::size_t{count} * sizeof(u32);
+            flush_gpu_read(addr, bytes);
+            if (memory_manager.IsFullyMappedRange(addr, bytes)) {
+                memory_manager.ReadBlock(addr, &native_interpreter.dram[mme_data_ram_addr], bytes);
+            } else {
+                for (u32 i = 0; i < count; ++i) {
+                    native_interpreter.dram[mme_data_ram_addr + i] =
+                        memory_manager.Read<u32>(addr + i * sizeof(u32));
+                }
+            }
+        }
+        mme_data_ram_addr += count;
+        return true;
+    }
+    case 0x158: { // NVC597_MME_DMA_READ_FIFOED
+        const u32 count = std::min<u32>(value, 0x4000U);
+        if (fifo != nullptr && count > 0) {
+            const GPUVAddr addr = (GPUVAddr{mme_dma_addr_a} << 32) | GPUVAddr{mme_dma_addr_b};
+            const std::size_t old_size = fifo->size();
+            fifo->resize(old_size + count, 0U);
+            if (addr != 0) {
+                const std::size_t bytes = std::size_t{count} * sizeof(u32);
+                flush_gpu_read(addr, bytes);
+                if (memory_manager.IsFullyMappedRange(addr, bytes)) {
+                    memory_manager.ReadBlock(addr, fifo->data() + old_size, bytes);
+                } else {
+                    for (u32 i = 0; i < count; ++i) {
+                        (*fifo)[old_size + i] = memory_manager.Read<u32>(addr + i * sizeof(u32));
+                    }
+                }
+            }
+        }
+        return true;
+    }
+    case 0x159: { // NVC597_MME_DMA_WRITE
+        const u32 max_words = mme_data_ram_addr < native_interpreter.dram.size()
+                                  ? static_cast<u32>(native_interpreter.dram.size() - mme_data_ram_addr)
+                                  : 0U;
+        const u32 count = std::min<u32>(value, max_words);
+        const GPUVAddr addr = (GPUVAddr{mme_dma_addr_a} << 32) | GPUVAddr{mme_dma_addr_b};
+        if (count > 0 && addr != 0) {
+            write_gpu_bytes(addr, &native_interpreter.dram[mme_data_ram_addr],
+                            std::size_t{count} * sizeof(u32));
+        }
+        mme_data_ram_addr += count;
+        return true;
+    }
+    case 0x15a: { // NVC597_MME_DMA_REDUCTION
+        const u32 op = value & 0x7U;
+        const bool is_signed = ((value >> 4) & 0x3U) == 1U;
+        const bool is_64 = ((value >> 8) & 0x1U) != 0U;
+        const GPUVAddr addr = (GPUVAddr{mme_dma_addr_a} << 32) | GPUVAddr{mme_dma_addr_b};
+        if (addr == 0 || mme_data_ram_addr >= native_interpreter.dram.size()) {
+            return true;
+        }
+        flush_gpu_read(addr, is_64 ? sizeof(u64) : sizeof(u32));
+        if (is_64) {
+            if (mme_data_ram_addr + 1 >= native_interpreter.dram.size()) {
+                return true;
+            }
+            u64 cur{};
+            if (memory_manager.IsFullyMappedRange(addr, sizeof(u64))) {
+                memory_manager.ReadBlock(addr, &cur, sizeof(u64));
+            }
+            const u64 arg = (u64{native_interpreter.dram[mme_data_ram_addr + 1]} << 32) |
+                            u64{native_interpreter.dram[mme_data_ram_addr]};
+            u64 res = cur;
+            switch (op) {
+            case 0: res = cur + arg; break;
+            case 1: res = is_signed ? static_cast<u64>(std::min(static_cast<s64>(cur), static_cast<s64>(arg))) : std::min(cur, arg); break;
+            case 2: res = is_signed ? static_cast<u64>(std::max(static_cast<s64>(cur), static_cast<s64>(arg))) : std::max(cur, arg); break;
+            case 3: res = (cur >= arg) ? 0ULL : (cur + 1ULL); break;
+            case 4: res = (cur == 0ULL || cur > arg) ? arg : (cur - 1ULL); break;
+            case 5: res = cur & arg; break;
+            case 6: res = cur | arg; break;
+            case 7: res = cur ^ arg; break;
+            }
+            write_gpu_bytes(addr, &res, sizeof(u64));
+        } else {
+            u32 cur{};
+            if (memory_manager.IsFullyMappedRange(addr, sizeof(u32))) {
+                memory_manager.ReadBlock(addr, &cur, sizeof(u32));
+            }
+            const u32 arg = native_interpreter.dram[mme_data_ram_addr];
+            u32 res = cur;
+            switch (op) {
+            case 0: res = cur + arg; break;
+            case 1: res = is_signed ? static_cast<u32>(std::min(static_cast<s32>(cur), static_cast<s32>(arg))) : std::min(cur, arg); break;
+            case 2: res = is_signed ? static_cast<u32>(std::max(static_cast<s32>(cur), static_cast<s32>(arg))) : std::max(cur, arg); break;
+            case 3: res = (cur >= arg) ? 0U : (cur + 1U); break;
+            case 4: res = (cur == 0U || cur > arg) ? arg : (cur - 1U); break;
+            case 5: res = cur & arg; break;
+            case 6: res = cur | arg; break;
+            case 7: res = cur ^ arg; break;
+            }
+            write_gpu_bytes(addr, &res, sizeof(u32));
+        }
+        return true;
+    }
+    case 0x15b: // NVC597_MME_DMA_SYSMEMBAR
+    case 0x37b: // NVC797_MME_DMA_WRITE_METHOD_BARRIER
+        return true;
+    case 0x15c: // NVC597_MME_DMA_SYNC
+        if (mme_data_ram_addr < native_interpreter.dram.size()) {
+            native_interpreter.dram[mme_data_ram_addr] = value;
+        }
+        return true;
+    case 0x15d: // NVC597_SET_MME_DATA_FIFO_CONFIG
+        mme_fifo_config = value & 0x7U;
+        return true;
+    default:
+        return false;
+    }
+}
+
 void MacroEngine::Execute(Core::System& system, Engines::Maxwell3D& maxwell3d, u32 method,
                           std::span<const u32> parameters) {
-    if (native_turing && VideoCore::Nx2IsActive()) {
+    if (native_turing) {
         maxwell3d.RefreshParameters();
         const auto context = reinterpret_cast<std::uintptr_t>(this);
         static std::unordered_set<std::uintptr_t> captured_contexts;
@@ -1380,7 +1535,15 @@ void MacroEngine::Execute(Core::System& system, Engines::Maxwell3D& maxwell3d, u
         }
         LOG_DEBUG(HW_GPU, "Native MME context={:#x}", context);
         LOG_DEBUG(HW_GPU, "Native MME start={:#x}, parameters={}, data={:08x}", method, parameters.size(), fmt::join(parameters, ","));
+        if (native_fifo.capacity() < 64) {
+            native_fifo.reserve(64);
+        }
+        native_fifo.assign(parameters.begin(), parameters.end());
         const auto emit = [&](u32 address, u32 value) {
+            if (HandleNativeDmaMethod(maxwell3d.AccessMemoryManager(), &maxwell3d.Rasterizer(),
+                                      address, value, &native_fifo)) {
+                return true;
+            }
             if (address >= 0xe00) return false;
             maxwell3d.CallMethod(system, address, value, true);
             return true;
@@ -1398,34 +1561,30 @@ void MacroEngine::Execute(Core::System& system, Engines::Maxwell3D& maxwell3d, u
                 native_jit = std::make_shared<TuringMacroJit>();
             }
             native_jit->Prepare(native_code, native_code_generation);
-            std::vector<u32> fifo(parameters.begin(), parameters.end());
             const auto result = native_jit->Execute(
-                method, fifo, std::span<u32>{native_interpreter.dram},
+                method, native_fifo, std::span<u32>{native_interpreter.dram},
                 [&](u32 address) {
                     return address < Maxwell3D::Regs::NUM_REGS ? maxwell3d.GetRegisterValue(address) : 0U;
                 },
                 emit);
             if (!result.success) {
-                native_execution_failed = true;
-                LOG_ERROR(HW_GPU, "Native MME (JIT) failed: start={:#x}, consumed={}/{}, error={}",
-                          method, result.consumed, parameters.size(), result.error);
+                LOG_WARNING(HW_GPU, "Native MME (JIT) skipped: start={:#x}, pc={:#x}, consumed={}/{}, error={}",
+                            method, result.pc, result.consumed, native_fifo.size(), result.error);
             }
             return;
         }
 #endif
-        const auto result = native_interpreter.Execute(native_code, method, parameters,
+        const auto result = native_interpreter.Execute(
+            native_code, method, native_fifo,
             [&](u32 address) { return address < Maxwell3D::Regs::NUM_REGS ? maxwell3d.GetRegisterValue(address) : 0U; },
-            [&](u32 address, u32 value) {
-                if (address >= 0xe00) return false;
-                maxwell3d.CallMethod(system, address, value, true);
-                return true;
-            });
+            emit);
         if (!result.success) {
-            native_execution_failed = true;
-            std::ofstream dump("native-mme-" + std::to_string(method) + ".bin", std::ios::binary);
-            dump.write(reinterpret_cast<const char*>(native_code.data()), sizeof(native_code));
-            LOG_ERROR(HW_GPU, "Native MME failed: start={:#x}, pc={:#x}, consumed={}/{}, error={}",
-                      method, result.pc, result.consumed, parameters.size(), result.error);
+            if (std::getenv("EDEN_NATIVE_DRAW_DIAGNOSTICS")) {
+                std::ofstream dump("native-mme-" + std::to_string(method) + ".bin", std::ios::binary);
+                dump.write(reinterpret_cast<const char*>(native_code.data()), sizeof(native_code));
+            }
+            LOG_WARNING(HW_GPU, "Native MME skipped: start={:#x}, pc={:#x}, consumed={}/{}, error={}",
+                        method, result.pc, result.consumed, native_fifo.size(), result.error);
         }
         return;
     }

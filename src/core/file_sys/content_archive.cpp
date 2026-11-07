@@ -117,6 +117,33 @@ static VirtualFile DecompressIfNCZ(VirtualFile file) {
 }
 }
 
+NcaHeaderSummary NCA::PeekHeaderSummary(const VirtualFile& file_) {
+    NcaHeaderSummary summary{};
+    if (file_ == nullptr) {
+        return summary;
+    }
+    NcaReader header_reader;
+    if (R_FAILED(header_reader.Initialize(file_, GetCryptoConfiguration(),
+                                          GetNcaCompressionConfiguration()))) {
+        return summary;
+    }
+    summary.valid = true;
+    summary.title_id = header_reader.GetProgramId();
+    summary.type = static_cast<NCAContentType>(header_reader.GetContentType());
+    const s32 fs_count = header_reader.GetFsCount();
+    for (s32 i = 0; i < fs_count; ++i) {
+        NcaFsHeader fs_header{};
+        if (R_SUCCEEDED(header_reader.ReadHeader(&fs_header, i))) {
+            if (fs_header.encryption_type == NcaFsHeader::EncryptionType::AesCtrEx ||
+                fs_header.encryption_type == NcaFsHeader::EncryptionType::AesCtrExSkipLayerHash) {
+                summary.is_update = true;
+                break;
+            }
+        }
+    }
+    return summary;
+}
+
 NCA::NCA(VirtualFile file_, const NCA* base_nca)
     : file(DecompressIfNCZ(std::move(file_))), keys{Core::Crypto::KeyManager::Instance()} {
     if (file == nullptr) {

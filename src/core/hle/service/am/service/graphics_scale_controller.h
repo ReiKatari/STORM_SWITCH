@@ -22,6 +22,7 @@ public:
         static const FunctionInfo functions[] = {
             {10, D<&IGraphicsScaleController::GetCurrentGraphicsScale>, "GetCurrentGraphicsScale"},
             {20, D<&IGraphicsScaleController::SetGraphicsScaleChangedNotificationEnabled>, "SetGraphicsScaleChangedNotificationEnabled"},
+            {1050, D<&IGraphicsScaleController::Unknown1050>, "Unknown1050"},
         };
         // clang-format on
         RegisterHandlers(functions);
@@ -37,6 +38,11 @@ private:
 
     Result SetGraphicsScaleChangedNotificationEnabled(bool enabled) {
         LOG_DEBUG(Service_AM, "called, enabled={}", enabled);
+        R_SUCCEED();
+    }
+
+    Result Unknown1050() {
+        LOG_DEBUG(Service_AM, "Unknown1050 called");
         R_SUCCEED();
     }
 };

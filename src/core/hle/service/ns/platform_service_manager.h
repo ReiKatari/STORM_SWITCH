@@ -70,6 +70,7 @@ private:
                                           Out<bool> out_fonts_are_loaded, Out<u32> out_font_count,
                                           Set::LanguageCode language_code);
     Result IsRunningOnOunce(Out<bool> out_is_ounce);
+    void RequestLoadNxFont(HLERequestContext& ctx);
 
     struct Impl;
     std::unique_ptr<Impl> impl;

@@ -28,10 +28,12 @@ public:
     void OnClose(DeviceFD fd) override;
 private:
     std::shared_ptr<Tegra::NativeMacroContext> native_macros;
+    std::map<u32, std::shared_ptr<Tegra::NativeMacroContext>> subcontext_macros;
     Module& module;
     NvCore::Container& core;
     Kernel::KProcess* process{};
     DeviceFD group_fd{-1};
+    u32 next_veid{1};
     std::map<DeviceFD, std::shared_ptr<nvhost_gpu>> channels;
 };
 

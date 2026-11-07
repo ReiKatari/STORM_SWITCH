@@ -181,7 +181,7 @@ public:
         struct ConstBufferConfig {
             u32 address_low;
             union {
-                BitField<0, 8, u32> address_high;
+                BitField<0, 15, u32> address_high;
                 BitField<15, 17, u32> size;
             };
             GPUVAddr Address() const {

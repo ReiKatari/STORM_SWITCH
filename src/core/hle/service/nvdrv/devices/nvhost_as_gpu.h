@@ -78,7 +78,7 @@ public:
     static_assert(sizeof(VaRegion) == 0x18);
 
 private:
-    bool m_extended_abi{true};
+    bool m_extended_abi{};
     bool m_syncpoint_shim_reserved{};
     DeviceFD m_fd{-1};
     Kernel::KProcess* m_owner_process{};
@@ -249,7 +249,7 @@ private:
         bool initialised{};
         bool absolute_big_page_limit{}; //!< Switch 2 layout: big-page limit is va_range_end
     } vm;
-    std::unique_ptr<Tegra::MemoryManager> gmmu;
+    std::shared_ptr<Tegra::MemoryManager> gmmu;
 
     struct IoctlNx2SyncpointShimInfo {
         u64_le address;
