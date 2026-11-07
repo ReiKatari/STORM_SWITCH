@@ -498,6 +498,10 @@
     <string name="web_username">Веб-имя пользователя</string>
     <string name="web_username_description">Имя пользователя, отображаемое в мультиплеерных лобби. Должно быть от 4 до 20 символов и содержать только буквы, цифры, дефисы, точки, подчёркивания и пробелы.</string>
     <string name="network">Сеть</string>
+    <string name="nx2_online_server">Сервер Switch 2 Online / NPLN</string>
+    <string name="nx2_online_server_description">IP-адрес локального или LAN сервера (например, 127.0.0.1) для Switch 2 NPLN и сетевых тестов (playDB-CNT).</string>
+    <string name="nx2_online_hosts">Маски хостов Switch 2 Online</string>
+    <string name="nx2_online_hosts_description">Разделенные запятыми маски доменов, перенаправляемых на сервер-заглушку (*.fromsoftware-game.net,*.srv.nintendo.net,*.npln.srv.nintendo.net).</string>
 
     <!-- Graphics settings strings -->
     <string name="renderer_resolution">Разрешение (портативное/в док-станции)</string>

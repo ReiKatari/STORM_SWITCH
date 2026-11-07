@@ -14,7 +14,10 @@ enum class StringSetting(override val key: String) : AbstractStringSetting {
     PROGRAM_ARGS("program_args"),
 
     WEB_TOKEN("eden_token"),
-    WEB_USERNAME("eden_username")
+    WEB_USERNAME("eden_username"),
+
+    NX2_ONLINE_SERVER("nx2_online_server"),
+    NX2_ONLINE_HOSTS("nx2_online_hosts")
     ;
 
     override fun getString(needsGlobal: Boolean): String = NativeConfig.getString(key, needsGlobal)

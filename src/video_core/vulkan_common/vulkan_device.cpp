@@ -1849,11 +1849,19 @@ void Device::CollectPhysicalMemoryInfo() {
             memory_size = 7_GiB;
             break;
         }
+#if defined(__ANDROID__)
+        // Mobile Android integrated GPU memory cap (4-6 GiB) to prevent LMKD OOM
+        const u64 max_mobile_cap = (Settings::values.vram_usage_mode.GetValue() == Settings::VramUsageMode::Aggressive) ? 6_GiB : 4_GiB;
+        memory_size = (std::min<u64>)(memory_size, max_mobile_cap);
+#endif
         if (available_memory > 0) {
             device_access_memory = static_cast<u64>(std::clamp<s64>(available_memory, static_cast<s64>(2_GiB), static_cast<s64>(memory_size)));
         } else {
-            device_access_memory = static_cast<u64>(std::min<u64>(memory_size, 4_GiB));
+            device_access_memory = static_cast<u64>((std::min<u64>)(memory_size, 4_GiB));
         }
+#if defined(__ANDROID__)
+        device_access_memory = (std::min<u64>)(device_access_memory, max_mobile_cap);
+#endif
         if (device_access_memory == 0) {
             device_access_memory = 4_GiB;
         }

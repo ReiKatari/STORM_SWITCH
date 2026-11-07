@@ -11,6 +11,7 @@
 #include "shader_recompiler/exception.h"
 #include "core/core.h"
 #include "video_core/engines/kepler_compute.h"
+#include "video_core/engines/native_upscale.h"
 #include "video_core/engines/maxwell_3d.h"
 #include "video_core/memory_manager.h"
 #ifdef ARCHITECTURE_x86_64
@@ -372,6 +373,26 @@ bool KeplerCompute::DispatchNativeCompute(const NativeQmdScheduler::Descriptor& 
     }
     if (!launch_description.block_dim_x || !launch_description.block_dim_y || !launch_description.block_dim_z) {
         return true;
+    }
+
+    // Inspect Switch 2 DLSS / Tensor upscale passes
+    if (VideoCore::Nx2IsActive()) {
+        if (launch_description.const_buffer_enable_mask.Value() & 1) {
+            const GPUVAddr cbuf0_addr = (static_cast<GPUVAddr>(launch_description.const_buffer_config[0].address_high.Value()) << 32) |
+                                         launch_description.const_buffer_config[0].address_low;
+            const u32 cbuf0_size = launch_description.const_buffer_config[0].size.Value();
+            if (cbuf0_addr != 0 && cbuf0_size >= 0x300) {
+                constexpr u32 CameraJitterXOffset = 0x1b0;
+                constexpr u32 CameraJitterYOffset = 0x1b4;
+                float jitter_x = 0.0f;
+                float jitter_y = 0.0f;
+                memory_manager.ReadBlockUnsafe(cbuf0_addr + CameraJitterXOffset, &jitter_x, sizeof(float));
+                memory_manager.ReadBlockUnsafe(cbuf0_addr + CameraJitterYOffset, &jitter_y, sizeof(float));
+                if (std::abs(jitter_x) > 0.0f || std::abs(jitter_y) > 0.0f) {
+                    LOG_DEBUG(HW_GPU, "Switch 2 DLSS network pass detected: jitter=({}, {})", jitter_x, jitter_y);
+                }
+            }
+        }
     }
     try {
         rasterizer->DispatchCompute();

@@ -28,7 +28,47 @@
 namespace Service::AOC {
 
 static bool CheckAOCTitleIDMatchesBase(u64 title_id, u64 base) {
-    return FileSys::GetBaseTitleID(title_id) == base;
+    if (FileSys::GetBaseTitleID(title_id) == base) {
+        return true;
+    }
+    // Switch 2 Edition (0400...) mapping to Switch 1 DLC (0100...)
+    if ((base & 0xFF00000000000000ULL) == 0x0400000000000000ULL) {
+        const u64 mapped_base = (base & 0x00FFFFFFFFFFFFFFULL) | 0x0100000000000000ULL;
+        if (FileSys::GetBaseTitleID(title_id) == mapped_base) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static u64 GetCallerAOCBaseTitleID(Core::System& system, const ClientProcessId& process_id) {
+    u64 program_id = system.GetApplicationProcessProgramID();
+    const auto& process_list = system.Kernel().GetProcessList();
+    for (const auto& proc_ref : process_list) {
+        const auto* process = proc_ref.GetPointerUnsafe();
+        if (process != nullptr && process->GetProcessId() == process_id.pid) {
+            program_id = process->GetProgramId();
+            break;
+        }
+    }
+    if (FileSys::GetBaseTitleID(program_id) ==
+        FileSys::GetBaseTitleID(system.GetApplicationProcessProgramID())) {
+        FileSys::NACP control;
+        if (system.GetAppLoader().ReadControlData(control) == Loader::ResultStatus::Success &&
+            control.GetDLCBaseTitleId() != 0) {
+            return control.GetDLCBaseTitleId();
+        }
+    }
+    const FileSys::PatchManager pm{program_id, system.GetFileSystemController(),
+                                   system.GetContentProvider()};
+    const auto metadata = pm.GetControlMetadata();
+    if (metadata.first && metadata.first->GetDLCBaseTitleId() != 0) {
+        return metadata.first->GetDLCBaseTitleId();
+    }
+    if ((program_id & 0xFF00000000000000ULL) == 0x0400000000000000ULL) {
+        return (program_id & 0x00FFFFFFFFFFFFFFULL) | 0x0100000000000000ULL;
+    }
+    return FileSys::GetAOCBaseTitleID(program_id);
 }
 
 static std::vector<u64> AccumulateAOCTitleIDs(Core::System& system) {
@@ -272,7 +312,7 @@ Result IAddOnContentManager::GetAddOnContentLostErrorCode(Out<u32> out_error_cod
 }
 
 Result IAddOnContentManager::CountAddOnContent(Out<u32> out_count, ClientProcessId process_id) {
-    const auto current = system.GetApplicationProcessProgramID();
+    const auto current = GetCallerAOCBaseTitleID(system, process_id);
     const auto base_id = FileSys::GetBaseTitleID(current);
 
     const auto& disabled = Settings::values.disabled_addons[base_id];
@@ -323,7 +363,7 @@ Result IAddOnContentManager::CountAddOnContent(Out<u32> out_count, ClientProcess
 Result IAddOnContentManager::ListAddOnContent(Out<u32> out_count,
                                               OutBuffer<BufferAttr_HipcMapAlias> out_addons,
                                               u32 offset, u32 count, ClientProcessId process_id) {
-    const auto current = FileSys::GetBaseTitleID(system.GetApplicationProcessProgramID());
+    const auto current = FileSys::GetBaseTitleID(GetCallerAOCBaseTitleID(system, process_id));
 
     // Dynamic refresh in case DLCs were registered after service init
     if (add_on_content.empty()) {
@@ -334,7 +374,7 @@ Result IAddOnContentManager::ListAddOnContent(Out<u32> out_count,
     const auto& disabled = Settings::values.disabled_addons[current];
     if (std::find(disabled.begin(), disabled.end(), "DLC") == disabled.end()) {
         for (u64 content_id : add_on_content) {
-            if (FileSys::GetBaseTitleID(content_id) != current) {
+            if (!CheckAOCTitleIDMatchesBase(content_id, current)) {
                 continue;
             }
 
@@ -380,22 +420,10 @@ Result IAddOnContentManager::ListAddOnContent(Out<u32> out_count,
 
 Result IAddOnContentManager::GetAddOnContentBaseId(Out<u64> out_title_id,
                                                    ClientProcessId process_id) {
-    const auto title_id = system.GetApplicationProcessProgramID();
-    const FileSys::PatchManager pm{title_id, system.GetFileSystemController(),
-                                   system.GetContentProvider()};
+    *out_title_id = GetCallerAOCBaseTitleID(system, process_id);
 
-    const auto res = pm.GetControlMetadata();
-    if (res.first == nullptr) {
-        *out_title_id = FileSys::GetAOCBaseTitleID(title_id);
-    } else {
-        *out_title_id = res.first->GetDLCBaseTitleId();
-        if (*out_title_id == 0) {
-            *out_title_id = FileSys::GetAOCBaseTitleID(title_id);
-        }
-    }
-
-    LOG_INFO(Service_AOC, "GetAddOnContentBaseId: title_id={:016X} returned out_title_id={:016X} (process_id={})",
-             title_id, *out_title_id, process_id.pid);
+    LOG_INFO(Service_AOC, "GetAddOnContentBaseId: returned out_title_id={:016X} (process_id={})",
+             *out_title_id, process_id.pid);
 
     R_SUCCEED();
 }

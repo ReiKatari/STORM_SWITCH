@@ -29,6 +29,9 @@ namespace Tegra::Host1x {
 namespace {
 
 std::optional<NvdecCommon::VideoCodec> CodecFromMime(std::string_view mime) {
+    if (mime.find("av01") != std::string_view::npos || mime.find("av1") != std::string_view::npos) {
+        return NvdecCommon::VideoCodec::AV1;
+    }
     if (mime.find("vp9") != std::string_view::npos) {
         return NvdecCommon::VideoCodec::VP9;
     }

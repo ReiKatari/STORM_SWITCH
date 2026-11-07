@@ -997,7 +997,7 @@ void EmitContext::DefineGlobalMemoryFunctions(const Info& info) {
             OpBranchConditional(cond, then_label, else_label);
             AddLabel(then_label);
             const Id ssbo_offset{OpUConvert(U32[1], OpISub(U64, addr, ssbo_addr))};
-            if (aliasing || count == 1) {
+            if ((aliasing && (shift <= 2 || profile.min_ssbo_alignment >= (1ULL << shift))) || count == 1) {
                 const Id ssbo_id{ssbos[index].*ssbo_member};
                 const Id ssbo_index{OpShiftRightLogical(U32[1], ssbo_offset, Const(shift))};
                 const Id ssbo_pointer{OpAccessChain(element_pointer, ssbo_id, zero, ssbo_index)};

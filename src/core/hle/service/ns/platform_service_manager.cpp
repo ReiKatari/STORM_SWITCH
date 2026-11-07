@@ -127,7 +127,8 @@ IPlatformServiceManager::IPlatformServiceManager(Core::System& system_, const ch
         {106, nullptr, "GetFunctionBlackListVersion"},
         {1000, nullptr, "LoadNgWordDataForPlatformRegionChina"},
         {1001, nullptr, "GetNgWordDataSizeForPlatformRegionChina"},
-        {2100, &IPlatformServiceManager::RequestLoadNxFont, "RequestLoadNxFont"},
+        {2020, &IPlatformServiceManager::GetBuiltInFontDataSet, "GetBuiltInFontDataSet (Switch 2)"},
+        {2100, &IPlatformServiceManager::OpenFont, "OpenFont"},
     };
     // clang-format on
     RegisterHandlers(functions);
@@ -177,22 +178,43 @@ IPlatformServiceManager::IPlatformServiceManager(Core::System& system_, const ch
     }
 }
 
-class INx2FontService final : public ServiceFramework<INx2FontService> {
+class IFontService final : public ServiceFramework<IFontService> {
 public:
-    explicit INx2FontService(Core::System& system_, std::vector<FontRegion> regions_)
-        : ServiceFramework{system_, "nx2:pl:font"}, regions{std::move(regions_)} {
+    explicit IFontService(Core::System& system_, Kernel::KTransferMemory* memory_,
+                          std::vector<FontRegion> regions_)
+        : ServiceFramework{system_, "IFontService"},
+          memory{memory_},
+          regions{std::move(regions_)} {
+        if (memory) {
+            memory->Open(kernel);
+        }
         static const FunctionInfo functions[] = {
-            {0, &INx2FontService::GetFontData, "GetFontData"},
+            {0, &IFontService::GetFontData, "GetFontData"},
+            {1, &IFontService::GetFontDataSet, "GetFontDataSet"},
         };
         RegisterHandlers(functions);
     }
 
+    ~IFontService() override {
+        if (memory) {
+            memory->Close(kernel);
+        }
+    }
+
 private:
+    struct Descriptor {
+        u32_le flags{};
+        u32_le offset{};
+        u32_le size{};
+    };
+    static_assert(sizeof(Descriptor) == 12);
+
     void GetFontData(HLERequestContext& ctx) {
         IPC::RequestParser rp{ctx};
-        const u32 type = rp.Pop<u32>() & 0xff;
+        const u32 arguments = rp.Pop<u32>();
+        const auto type = static_cast<u8>(arguments);
         const bool found = type < regions.size() && regions[type].size != 0;
-        const FontRegion region = found ? regions[type] : EMPTY_REGION;
+        const auto region = found ? regions[type] : EMPTY_REGION;
         IPC::ResponseBuilder rb{ctx, 6};
         rb.Push(ResultSuccess);
         rb.Push<u32>(found ? 1 : 0);
@@ -201,43 +223,96 @@ private:
         rb.Push<u32>(region.size);
     }
 
+    void GetFontDataSet(HLERequestContext& ctx) {
+        const auto types = ctx.ReadBuffer();
+        const auto capacity = ctx.GetWriteBufferSize() / sizeof(Descriptor);
+        std::vector<Descriptor> descriptors;
+        for (const auto type : types) {
+            if (descriptors.size() == capacity) break;
+            if (type < regions.size()) {
+                descriptors.push_back({0, regions[type].offset, regions[type].size});
+            }
+        }
+        ctx.WriteBuffer(descriptors);
+        IPC::ResponseBuilder rb{ctx, 4};
+        rb.Push(ResultSuccess);
+        rb.Push<u32>(descriptors.empty() ? 0 : 1);
+        rb.Push<u32>(static_cast<u32>(descriptors.size()));
+    }
+
+    Kernel::KTransferMemory* memory;
     std::vector<FontRegion> regions;
 };
 
 IPlatformServiceManager::~IPlatformServiceManager() = default;
 
-void IPlatformServiceManager::RequestLoadNxFont(HLERequestContext& ctx) {
+void IPlatformServiceManager::GetBuiltInFontDataSet(HLERequestContext& ctx) {
+    struct Descriptor {
+        u32_le flags;
+        u32_le offset;
+        u32_le size;
+    };
+    static_assert(sizeof(Descriptor) == 12);
+    const auto types = ctx.ReadBuffer();
+    const auto capacity = (std::min<std::size_t>)(6, ctx.GetWriteBufferSize() / sizeof(Descriptor));
+    std::vector<Descriptor> descriptors;
+    for (const auto type : types) {
+        if (descriptors.size() == capacity) break;
+        if (type < impl->shared_font_regions.size()) {
+            const auto& region = impl->shared_font_regions[type];
+            descriptors.push_back({0, region.offset, region.size});
+        }
+    }
+    ctx.WriteBuffer(descriptors);
+    IPC::ResponseBuilder rb{ctx, 4};
+    rb.Push(ResultSuccess);
+    rb.Push<u32>(descriptors.empty() ? 0 : 1);
+    rb.Push<u32>(static_cast<u32>(descriptors.size()));
+}
+
+void IPlatformServiceManager::OpenFont(HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx};
-    [[maybe_unused]] const u32 flags = rp.Pop<u32>();
-    const u32 requested_size = rp.Pop<u32>();
-    auto transfer_object = ctx.GetObjectFromHandle<Kernel::KTransferMemory>(ctx.GetCopyHandle(0));
-    auto* const transfer = transfer_object.GetPointerUnsafe();
-    if (!transfer || !transfer->GetOwner()) {
+    const auto kind = static_cast<u8>(rp.Pop<u32>());
+    const u32 size = rp.Pop<u32>();
+    auto memory = ctx.GetObjectFromHandle<Kernel::KTransferMemory>(ctx.GetCopyHandle(0));
+    const Result result = kind != 0 ? Kernel::ResultInvalidEnumValue
+                          : memory.IsNull() || memory->GetOwner() == nullptr
+                              ? Kernel::ResultInvalidHandle
+                          : size > memory->GetSize()
+                              ? Kernel::ResultInvalidSize
+                              : ResultSuccess;
+    if (result.IsError()) {
         IPC::ResponseBuilder rb{ctx, 2};
-        rb.Push(Kernel::ResultInvalidHandle);
+        rb.Push(result);
         return;
     }
-    auto& memory = transfer->GetOwner()->GetMemory();
-    const auto address = transfer->GetSourceAddress();
-    const u64 max_bytes = requested_size != 0 ? requested_size : SHARED_FONT_MEM_SIZE;
+    auto& owner_memory = memory->GetOwner()->GetMemory();
+    const auto address = memory->GetSourceAddress();
+    const u64 max_bytes = size != 0 ? size : SHARED_FONT_MEM_SIZE;
     std::vector<FontRegion> out_regions;
     out_regions.reserve(impl->shared_font_regions.size());
     u64 dst_offset = 0;
-    for (const auto& src_region : impl->shared_font_regions) {
-        if (src_region.size != 0 &&
-            u64{src_region.offset} + u64{src_region.size} <= impl->shared_font.size() &&
-            dst_offset + src_region.size <= max_bytes) {
-            memory.WriteBlock(address + dst_offset,
-                              impl->shared_font.data() + src_region.offset, src_region.size);
-            out_regions.push_back(FontRegion{static_cast<u32>(dst_offset), src_region.size});
-            dst_offset = (dst_offset + src_region.size + 7ULL) & ~7ULL;
+    for (size_t i = 0; i < impl->shared_font_regions.size(); ++i) {
+        const auto& region = impl->shared_font_regions[i];
+        if (region.size != 0 &&
+            u64{region.offset} + u64{region.size} <= impl->shared_font.size() &&
+            dst_offset + region.size <= max_bytes) {
+            owner_memory.WriteBlock(address + dst_offset,
+                                    impl->shared_font.data() + region.offset,
+                                    region.size);
+            out_regions.push_back(FontRegion{static_cast<u32>(dst_offset), region.size});
+            dst_offset = (dst_offset + region.size + 7ULL) & ~7ULL;
         } else {
             out_regions.push_back(EMPTY_REGION);
         }
     }
     IPC::ResponseBuilder rb{ctx, 2, 0, 1};
     rb.Push(ResultSuccess);
-    rb.PushIpcInterface<INx2FontService>(ctx, system, std::move(out_regions));
+    rb.PushIpcInterface<IFontService>(ctx, system, memory.GetPointerUnsafe(), std::move(out_regions));
+}
+
+void IPlatformServiceManager::RequestLoadNxFont(HLERequestContext& ctx) {
+    OpenFont(ctx);
 }
 
 Result IPlatformServiceManager::RequestLoad(SharedFontType type) {

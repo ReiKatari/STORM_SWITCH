@@ -40,6 +40,11 @@ public:
     static constexpr u32 A64_WFET_MASK = 0xFFFFFFE0U;
     static constexpr u32 A64_WFET_VAL  = 0xD5031000U;
 
+    // ARMv8.5-A BTI (Branch Target Identification) Hint encodings:
+    // BTI (0xD503241F), BTI c (0xD503245F), BTI j (0xD503249F), BTI jc (0xD50324DF)
+    static constexpr u32 A64_BTI_MASK  = 0xFFFFFF3FU;
+    static constexpr u32 A64_BTI_VAL   = 0xD503241FU;
+
     // Redundant MOV Xd, Xm (encoded as ORR Xd, XZR, Xm: 0xAA0003E0 | (Rm << 16) | Rd)
     static constexpr u32 A64_MOV_REG_MASK = 0xFFE0FFE0U;
     static constexpr u32 A64_MOV_REG_VAL  = 0xAA0003E0U;
@@ -100,6 +105,12 @@ public:
         }
 
         // 4. Canonicalize ARMv8.3 PAC / ARMv8.5 BTI hint instructions in System Hint space
+        // ARMv8.5-A BTI hint instructions are zero-cost hint NOPs on Switch 2 SDK 20.x-23.x binaries
+        if ((inst & A64_BTI_MASK) == A64_BTI_VAL) [[unlikely]] {
+            s_rewritten_inst_count.fetch_add(1, std::memory_order_relaxed);
+            return A64_NOP;
+        }
+
         // Preserve YIELD, WFE, WFI, SEV, SEVL, and never strip PAC hints on Switch 2 (ARMv8.3 PAuth).
         if (!Settings::IsCurrentProgramSwitch2() && (inst & 0xFFFFF01FU) == 0xD503201FU) [[unlikely]] {
             if (inst != A64_NOP &&
@@ -140,6 +151,9 @@ public:
                 } else if (wfe_to_yield &&
                            (inst == A64_WFE || (inst & A64_WFET_MASK) == A64_WFET_VAL)) {
                     page[i] = A64_YIELD;
+                    ++rewritten;
+                } else if ((inst & A64_BTI_MASK) == A64_BTI_VAL) {
+                    page[i] = A64_NOP;
                     ++rewritten;
                 } else if (!Settings::IsCurrentProgramSwitch2() &&
                            (inst & 0xFFFFF01FU) == 0xD503201FU &&

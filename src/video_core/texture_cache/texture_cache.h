@@ -23,6 +23,7 @@
 #include "video_core/texture_cache/image_view_base.h"
 #include "video_core/texture_cache/samples_helper.h"
 #include "video_core/texture_cache/texture_cache_base.h"
+#include "video_core/texture_cache/memory_budget.h"
 #include "video_core/texture_cache/util.h"
 #include "video_core/textures/decoders.h"
 
@@ -118,6 +119,15 @@ TextureCache<P>::TextureCache(Runtime& runtime_, Tegra::MaxwellDeviceMemoryManag
 
 template <class P>
 void TextureCache<P>::RunGarbageCollector() {
+    const bool is_s2 = Settings::IsCurrentProgramSwitch2();
+    constexpr u64 WonderSwitch2ProgramId = 0x010015100B514000ULL;
+    const bool is_wonder_s2 = is_s2 && (Settings::GetCurrentProgramID() & ~0x1FFFULL) == (WonderSwitch2ProgramId & ~0x1FFFULL);
+    const auto limits = ClampTextureCacheThresholds(
+        {expected_memory, critical_memory, minimum_memory}, is_wonder_s2 || is_s2, 4_GiB);
+    expected_memory = limits.expected;
+    critical_memory = limits.critical;
+    minimum_memory = limits.minimum;
+
     const bool vram_gc = Settings::values.vram_garbage_collection.GetValue();
     bool high_priority_mode = false;
     bool aggressive_mode = false;
@@ -2721,6 +2731,9 @@ template <class P>
 void TextureCache<P>::MarkModification(ImageBase& image) noexcept {
     image.flags |= ImageFlagBits::GpuModified | ImageFlagBits::EverGpuModified;
     image.modification_tick = ++modification_tick;
+    if (VideoCore::Nx2IsActive() && image.cpu_addr != 0) {
+        Tegra::Nx2MarkGpuWritten(image.cpu_addr, image.guest_size_bytes);
+    }
 }
 
 template <class P>

@@ -709,6 +709,10 @@ class SettingsFragmentPresenter(
 
                 add(StringSetting.WEB_USERNAME.key)
 
+                add(StringSetting.NX2_ONLINE_SERVER.key)
+
+                add(StringSetting.NX2_ONLINE_HOSTS.key)
+
             }
 
         }

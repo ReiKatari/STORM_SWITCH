@@ -700,9 +700,9 @@ void ArmNce::SetContext(const Kernel::Svc::ThreadContext& ctx) {
 
 void ArmNce::SignalInterrupt(Kernel::KThread* thread) {
     constexpr u64 break_loop = static_cast<u64>(HaltReason::BreakLoop);
-    if ((m_guest_ctx.esr_el1.fetch_or(break_loop) & break_loop) != 0) {
-        return;
-    }
+    // Unconditionally set break_loop without early return so threads interrupted
+    // before entering guest code never miss subsequent SIGURG wakeups
+    m_guest_ctx.esr_el1.fetch_or(break_loop);
 
     auto* params = &thread->GetNativeExecutionParameters();
     LockThreadParameters(params);

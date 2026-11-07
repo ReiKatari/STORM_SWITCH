@@ -152,6 +152,17 @@ void LoadOverrides(std::uint64_t program_id, const VideoCore::RendererBase& rend
         Settings::values.barrier_feedback_loops.SetValue(true);
     }
 
+    if (program_id == 0x010099900B224000ULL || base_tid == 0x010099900B224000ULL ||
+        program_id == 0x01008C3005A32000ULL || base_tid == 0x01008C3005A32000ULL) {
+        // Unravel Two: requires reliable hardware fences, accurate GPU timestamps, and disabled feedback loops
+        Settings::values.early_release_fences.SetGlobal(false);
+        Settings::values.early_release_fences.SetValue(false);
+        Settings::values.use_fast_gpu_time.SetGlobal(false);
+        Settings::values.use_fast_gpu_time.SetValue(false);
+        Settings::values.barrier_feedback_loops.SetGlobal(false);
+        Settings::values.barrier_feedback_loops.SetValue(false);
+    }
+
     if (Settings::IsCurrentProgramSwitch2() || ((program_id >> 52) == 0x040)) {
         // Nintendo Switch 2 (Ampere / nx2:gsv / GpuSplit): enforce clean hardware fences & accurate 31.25 MHz timestamps
         Settings::values.early_release_fences.SetGlobal(false);

@@ -1714,8 +1714,12 @@ jstring Java_org_yuzu_yuzu_1emu_NativeLibrary_getEmulationBuildId(JNIEnv* env, j
 void Java_org_yuzu_yuzu_1emu_NativeLibrary_applySettings(JNIEnv* env, jobject jobj) {
     Settings::UpdateGPUAccuracy();
     Settings::UpdateRescalingInfo();
-    EmulationSession::GetInstance().System().ApplySettings();
-    EmulationSession::GetInstance().System().HIDCore().ReloadInputDevices();
+    auto& system = EmulationSession::GetInstance().System();
+    system.ApplySettings();
+    if (system.IsPoweredOn()) {
+        system.GetAppletManager().OperationModeChanged();
+    }
+    system.HIDCore().ReloadInputDevices();
     EmulationSession::GetInstance().SurfaceChanged();
 }
 

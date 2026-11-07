@@ -159,9 +159,14 @@ public:
             return;
         }
 
-        scheduler.Finish();
+        while (!retired_buffers.empty() && scheduler.IsFree(retired_buffers.front().first)) {
+            retired_buffers.erase(retired_buffers.begin());
+        }
+        if (buffer) {
+            retired_buffers.emplace_back(scheduler.CurrentTick(), std::move(buffer));
+        }
 
-        num_indices = num_indices_;
+        num_indices = (std::max)(num_indices_, num_indices + num_indices / 2);
         index_type = IndexTypeFromNumElements(device, num_indices);
 
         const u32 num_quads = GetQuadsNum(num_indices);
@@ -255,6 +260,7 @@ protected:
     MemoryCommit memory_commit{};
     VkIndexType index_type{};
     u32 num_indices = 0;
+    std::vector<std::pair<u64, vk::Buffer>> retired_buffers;
 };
 
 class QuadArrayIndexBuffer : public QuadIndexBuffer {
@@ -598,6 +604,16 @@ void BufferCacheRuntime::BindVertexBuffer(u32 index, VkBuffer buffer, u32 offset
     if (index >= device.GetMaxVertexInputBindings()) {
         return;
     }
+    if (stride == 69 && vertex_repack_pass && size >= 69 && buffer != VK_NULL_HANDLE) {
+        const u32 vertex_count = size / 69;
+        const auto [repack_buf, repack_offset] = vertex_repack_pass->Repack(vertex_count, buffer, offset, size);
+        if (repack_buf != VK_NULL_HANDLE) {
+            buffer = repack_buf;
+            offset = static_cast<u32>(repack_offset);
+            stride = 72;
+            size = vertex_count * 72;
+        }
+    }
     if (buffer == VK_NULL_HANDLE && !device.HasNullDescriptor()) {
         ReserveNullBuffer();
         buffer = *null_buffer;
@@ -621,6 +637,23 @@ void BufferCacheRuntime::BindVertexBuffers(VideoCommon::HostBindings<Buffer>& bi
     boost::container::static_vector<VkBuffer, VideoCommon::NUM_VERTEX_BUFFERS> buffer_handles(bindings.buffers.size());
     for (u32 i = 0; i < bindings.buffers.size(); ++i) {
         auto handle = bindings.buffers[i]->Handle();
+        VkDeviceSize offset = bindings.offsets[i];
+        VkDeviceSize size = bindings.sizes[i];
+        VkDeviceSize stride = bindings.strides[i];
+        if (stride == 69 && vertex_repack_pass && size >= 69 && handle != VK_NULL_HANDLE) {
+            const u32 vertex_count = static_cast<u32>(size / 69);
+            const auto [repack_buf, repack_offset] =
+                vertex_repack_pass->Repack(vertex_count, handle, static_cast<u32>(offset), static_cast<u32>(size));
+            if (repack_buf != VK_NULL_HANDLE) {
+                handle = repack_buf;
+                offset = repack_offset;
+                stride = 72;
+                size = static_cast<VkDeviceSize>(vertex_count) * 72;
+                bindings.offsets[i] = offset;
+                bindings.strides[i] = stride;
+                bindings.sizes[i] = size;
+            }
+        }
         if (handle == VK_NULL_HANDLE) {
             bindings.offsets[i] = 0;
             bindings.sizes[i] = VK_WHOLE_SIZE;

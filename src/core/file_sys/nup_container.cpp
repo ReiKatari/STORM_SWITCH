@@ -129,6 +129,7 @@ static_assert(sizeof(TlvHeader) == TlvHeaderSize);
 
 enum MetaType : u16 {
     MetaNpdm = 0x0001,
+    MetaNacp = 0x0002,
     MetaIcon = 0x0003,
     MetaDisplayVersion = 0x0004,
     MetaTitleName = 0x0005,
@@ -449,6 +450,11 @@ bool NupContainer::ParseMeta(PackageInfo& package) {
         case MetaNpdm:
             package.npdm.assign(payload, payload + header.size);
             break;
+        case MetaNacp:
+            if (header.size == 0x4000) {
+                package.nacp.assign(payload, payload + header.size);
+            }
+            break;
         case MetaIcon:
             package.icon.assign(payload, payload + header.size);
             break;
@@ -592,6 +598,14 @@ VirtualDir NupContainer::GetRomFSDir(std::size_t package_index) {
         romfs_dir_cache[package_index] = BuildPackageDir(packages[package_index].romfs_dir);
     }
     return romfs_dir_cache[package_index];
+}
+
+VirtualDir NupContainer::GetAddonRomFS(u64 program_id) {
+    const auto idx = FindPackage(PackageKind::Addon, program_id);
+    if (!idx) {
+        return nullptr;
+    }
+    return GetRomFSDir(*idx);
 }
 
 VirtualDir NupContainer::MergeShadowDirs(const VirtualDir& base, const VirtualDir& overlay) {

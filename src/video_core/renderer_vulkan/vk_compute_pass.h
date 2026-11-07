@@ -55,6 +55,23 @@ private:
     vk::ShaderModule module;
 };
 
+class VertexRepackPass final : public ComputePass {
+public:
+    explicit VertexRepackPass(const Device& device_, Scheduler& scheduler_,
+                              DescriptorPool& descriptor_pool_,
+                              StagingBufferPool& staging_buffer_pool_,
+                              ComputePassDescriptorQueue& compute_pass_descriptor_queue_);
+    ~VertexRepackPass();
+
+    std::pair<VkBuffer, VkDeviceSize> Repack(u32 vertex_count, VkBuffer src_buffer,
+                                             u32 src_offset, u64 src_size);
+
+private:
+    Scheduler& scheduler;
+    StagingBufferPool& staging_buffer_pool;
+    ComputePassDescriptorQueue& compute_pass_descriptor_queue;
+};
+
 class Uint8Pass final : public ComputePass {
 public:
     explicit Uint8Pass(const Device& device_, Scheduler& scheduler_,

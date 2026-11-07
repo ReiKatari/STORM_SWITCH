@@ -1,3 +1,4 @@
+#include "common/settings.h"
 // SPDX-FileCopyrightText: Copyright 2024 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
@@ -22,11 +23,19 @@ Common::Rectangle<f32> NormalizeCrop(const FramebufferConfig& framebuffer, u32 t
         right = static_cast<f32>(framebuffer.crop_rect.right);
         bottom = static_cast<f32>(framebuffer.crop_rect.bottom);
     } else {
-        // Otherwise, fall back to framebuffer dimensions.
-        left = 0;
-        top = 0;
-        right = static_cast<f32>(framebuffer.width);
-        bottom = static_cast<f32>(framebuffer.height);
+        // Switch 2 handheld mode renders into top-left 1920x1080 of a 4K surface
+        if (!Settings::IsDockedMode() && framebuffer.width == 3840 && framebuffer.height == 2160) {
+            left = 0.f;
+            top = 0.f;
+            right = 1920.f;
+            bottom = 1080.f;
+        } else {
+            // Otherwise, fall back to framebuffer dimensions.
+            left = 0;
+            top = 0;
+            right = static_cast<f32>(framebuffer.width);
+            bottom = static_cast<f32>(framebuffer.height);
+        }
     }
 
     // Apply transformation flags.

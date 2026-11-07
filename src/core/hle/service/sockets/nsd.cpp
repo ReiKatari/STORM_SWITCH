@@ -73,11 +73,60 @@ static std::string ResolveImpl(const std::string& fqdn_in) {
     return fqdn_in;
 }
 
+
+static bool MatchWildcardHostNsd(std::string_view str, std::string_view pattern) {
+    if (pattern.empty()) return str.empty();
+    if (pattern == "*") return true;
+    if (pattern.starts_with("*.")) {
+        std::string_view suffix = pattern.substr(1);
+        if (str.size() >= suffix.size() &&
+            str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0) {
+            return true;
+        }
+        std::string_view base = pattern.substr(2);
+        return str == base;
+    }
+    return str == pattern;
+}
+
+static bool IsNx2OnlineHost(const std::string& host) {
+    std::string hosts_str;
+    if (const char* env = std::getenv("STORM_NX2_ONLINE_HOSTS")) {
+        if (env[0] != '\0') hosts_str = env;
+    }
+    if (hosts_str.empty()) {
+        if (const char* env = std::getenv("EDEN_NX2_ONLINE_HOSTS")) {
+            if (env[0] != '\0') hosts_str = env;
+        }
+    }
+    if (hosts_str.empty()) {
+        hosts_str = Settings::values.nx2_online_hosts.GetValue();
+    }
+    if (hosts_str.empty()) return false;
+
+    std::string_view sv{hosts_str};
+    size_t start = 0;
+    while (start < sv.size()) {
+        const size_t end = sv.find_first_of(",;", start);
+        std::string_view token = (end == std::string_view::npos) ? sv.substr(start) : sv.substr(start, end - start);
+        while (!token.empty() && std::isspace(static_cast<unsigned char>(token.front()))) token.remove_prefix(1);
+        while (!token.empty() && std::isspace(static_cast<unsigned char>(token.back()))) token.remove_suffix(1);
+        if (!token.empty() && MatchWildcardHostNsd(host, token)) {
+            return true;
+        }
+        if (end == std::string_view::npos) break;
+        start = end + 1;
+    }
+    return false;
+}
+
 static Result ResolveCommon(const std::string& fqdn_in, std::array<char, 0x100>& fqdn_out) {
-    if (Settings::values.airplane_mode.GetValue() ||
-        fqdn_in.find("battle.net") != std::string::npos ||
-        fqdn_in.find("blizzard.com") != std::string::npos) {
-        return ResultNotImplemented;
+    if (!IsNx2OnlineHost(fqdn_in)) {
+        if (Settings::values.airplane_mode.GetValue() ||
+            fqdn_in.find("battle.net") != std::string::npos ||
+            fqdn_in.find("blizzard.com") != std::string::npos) {
+            return ResultNotImplemented;
+        }
     }
     const auto res = ResolveImpl(fqdn_in);
     if (res.size() >= fqdn_out.size()) {

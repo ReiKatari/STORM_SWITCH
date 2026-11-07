@@ -15,6 +15,7 @@ enum class VideoCodec : u64 {
     VP8 = 0x5,
     H265 = 0x7,
     VP9 = 0x9,
+    AV1 = 0xB,
 };
 
 struct Offset {

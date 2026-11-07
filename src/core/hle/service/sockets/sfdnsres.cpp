@@ -1,3 +1,6 @@
+#include "common/settings.h"
+#include <cctype>
+#include <cstdio>
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -186,6 +189,86 @@ static std::vector<u8> SerializeAddrInfoAsHostEnt(const std::vector<Network::Add
     return data;
 }
 
+
+static bool MatchWildcardHost(std::string_view str, std::string_view pattern) {
+    if (pattern.empty()) return str.empty();
+    if (pattern == "*") return true;
+    if (pattern.starts_with("*.")) {
+        std::string_view suffix = pattern.substr(1);
+        if (str.size() >= suffix.size() &&
+            str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0) {
+            return true;
+        }
+        std::string_view base = pattern.substr(2);
+        return str == base;
+    }
+    return str == pattern;
+}
+
+static std::string GetNx2OnlineServer() {
+    if (const char* env = std::getenv("STORM_NX2_ONLINE_SERVER")) {
+        if (env[0] != '\0') return env;
+    }
+    if (const char* env = std::getenv("EDEN_NX2_ONLINE_SERVER")) {
+        if (env[0] != '\0') return env;
+    }
+    return Settings::values.nx2_online_server.GetValue();
+}
+
+static std::string GetNx2OnlineHosts() {
+    if (const char* env = std::getenv("STORM_NX2_ONLINE_HOSTS")) {
+        if (env[0] != '\0') return env;
+    }
+    if (const char* env = std::getenv("EDEN_NX2_ONLINE_HOSTS")) {
+        if (env[0] != '\0') return env;
+    }
+    return Settings::values.nx2_online_hosts.GetValue();
+}
+
+static std::optional<Network::IPv4Address> GetNx2RedirectAddress(const std::string& host) {
+    const std::string server = GetNx2OnlineServer();
+    if (server.empty()) {
+        return std::nullopt;
+    }
+    const std::string hosts_str = GetNx2OnlineHosts();
+    if (hosts_str.empty()) {
+        return std::nullopt;
+    }
+
+    std::string_view sv{hosts_str};
+    bool matched = false;
+    size_t start = 0;
+    while (start < sv.size()) {
+        const size_t end = sv.find_first_of(",;", start);
+        std::string_view token = (end == std::string_view::npos) ? sv.substr(start) : sv.substr(start, end - start);
+        while (!token.empty() && std::isspace(static_cast<unsigned char>(token.front()))) token.remove_prefix(1);
+        while (!token.empty() && std::isspace(static_cast<unsigned char>(token.back()))) token.remove_suffix(1);
+        if (!token.empty() && MatchWildcardHost(host, token)) {
+            matched = true;
+            break;
+        }
+        if (end == std::string_view::npos) break;
+        start = end + 1;
+    }
+
+    if (!matched) {
+        return std::nullopt;
+    }
+
+    std::string ip_str = server;
+    const size_t colon = ip_str.find(':');
+    if (colon != std::string::npos) {
+        ip_str = ip_str.substr(0, colon);
+    }
+
+    unsigned int b0 = 0, b1 = 0, b2 = 0, b3 = 0;
+    if (std::sscanf(ip_str.c_str(), "%u.%u.%u.%u", &b0, &b1, &b2, &b3) == 4 &&
+        b0 <= 255 && b1 <= 255 && b2 <= 255 && b3 <= 255) {
+        return Network::IPv4Address{static_cast<u8>(b0), static_cast<u8>(b1), static_cast<u8>(b2), static_cast<u8>(b3)};
+    }
+    return Network::IPv4Address{127, 0, 0, 1};
+}
+
 static std::pair<u32, GetAddrInfoError> GetHostByNameRequestImpl(HLERequestContext& ctx) {
     struct InputParameters {
         u8 use_nsd_resolve;
@@ -205,6 +288,29 @@ static std::pair<u32, GetAddrInfoError> GetHostByNameRequestImpl(HLERequestConte
     const auto host_buffer = ctx.ReadBuffer(0);
     const std::string host = Common::StringFromBuffer(host_buffer);
     // For now, ignore options, which are in input buffer 1 for GetHostByNameRequestWithOptions.
+
+    // Check Switch 2 / NPLN loopback and stand-in redirection
+    if (auto redirect_ip = GetNx2RedirectAddress(host)) {
+        LOG_INFO(Service, "NPLN Loopback redirecting '{}' to {}.{}.{}.{}", host,
+                 (*redirect_ip)[0], (*redirect_ip)[1], (*redirect_ip)[2], (*redirect_ip)[3]);
+        std::vector<Network::AddrInfo> fake_vec{
+            Network::AddrInfo{
+                .family = Network::Domain::INET,
+                .socket_type = Network::Type::STREAM,
+                .protocol = Network::Protocol::TCP,
+                .addr = Network::SockAddrIn{
+                    .family = Network::Domain::INET,
+                    .ip = *redirect_ip,
+                    .portno = 0,
+                },
+                .canon_name = host,
+            }
+        };
+        const std::vector<u8> data = SerializeAddrInfoAsHostEnt(fake_vec, host);
+        const u32 data_size = u32(data.size());
+        ctx.WriteBuffer(data, 0);
+        return {data_size, GetAddrInfoError::SUCCESS};
+    }
 
     // Prevent resolution of Nintendo servers and telemetry
     if (IsBlockedHost(host)) {
@@ -321,6 +427,29 @@ static std::pair<u32, GetAddrInfoError> GetAddrInfoRequestImpl(HLERequestContext
 
     const auto host_buffer = ctx.ReadBuffer(0);
     const std::string host = Common::StringFromBuffer(host_buffer);
+
+    // Check Switch 2 / NPLN loopback and stand-in redirection
+    if (auto redirect_ip = GetNx2RedirectAddress(host)) {
+        LOG_INFO(Service, "NPLN Loopback redirecting '{}' to {}.{}.{}.{}", host,
+                 (*redirect_ip)[0], (*redirect_ip)[1], (*redirect_ip)[2], (*redirect_ip)[3]);
+        std::vector<Network::AddrInfo> fake_vec{
+            Network::AddrInfo{
+                .family = Network::Domain::INET,
+                .socket_type = Network::Type::STREAM,
+                .protocol = Network::Protocol::TCP,
+                .addr = Network::SockAddrIn{
+                    .family = Network::Domain::INET,
+                    .ip = *redirect_ip,
+                    .portno = 0,
+                },
+                .canon_name = host,
+            }
+        };
+        const std::vector<u8> data = SerializeAddrInfo(fake_vec, host);
+        const u32 data_size = u32(data.size());
+        ctx.WriteBuffer(data, 0);
+        return {data_size, GetAddrInfoError::SUCCESS};
+    }
 
     // Prevent resolution of Nintendo servers
     if (IsBlockedHost(host)) {

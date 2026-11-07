@@ -1036,8 +1036,8 @@ GameFixProfile(
             "Unravel Two",
             "• Зависание на 0 FPS после заставок и чёрный экран при переходе к игре\n• Сбой 3D-рендера PhyreEngine на мобильных ГПУ при активных обратных барьерах",
             "• 0 FPS freeze after cutscenes and black screen when entering gameplay\n• PhyreEngine 3D render pass drop on mobile GPUs with barrier feedback loops",
-            "✓ Движок ЦП: NCE (нативное исполнение кода ARM64)\n✓ Программный декодер видео без задержки (NVDEC CPU FF_THREAD_SLICE)\n✓ Точность ГПУ: Обычная (Normal)\n✓ Обратные циклы барьеров: Отключено (чистый 3D-рендер PhyreEngine)\n✓ Ранний сброс заборов: Отключено\n✓ Игнорирование сбоев памяти: Включено",
-            "✓ CPU Backend: NCE (Native ARM64 execution)\n✓ Zero-Delay CPU NVDEC Video Decoding (FF_THREAD_SLICE)\n✓ GPU Accuracy: Normal\n✓ Barrier Feedback Loops: Disabled (Clean PhyreEngine 3D rendering)\n✓ Early Release Fences: Disabled\n✓ Ignore Memory Aborts: Enabled",
+            "✓ Движок ЦП: NCE (нативное исполнение кода ARM64)\n✓ Аппаратный декодер видео NVDEC (GPU / MediaCodec)\n✓ Точность ГПУ: Обычная (Normal)\n✓ Обратные циклы барьеров: Отключено (чистый 3D-рендер PhyreEngine)\n✓ Ранний сброс заборов: Отключено\n✓ Игнорирование сбоев памяти: Включено",
+            "✓ CPU Backend: NCE (Native ARM64 execution)\n✓ Hardware GPU/MediaCodec NVDEC Video Decoding\n✓ GPU Accuracy: Normal\n✓ Barrier Feedback Loops: Disabled (Clean PhyreEngine 3D rendering)\n✓ Early Release Fences: Disabled\n✓ Ignore Memory Aborts: Enabled",
             mapOf(
                 "Cpu\\cpu_backend" to "1",
                 "Renderer\\nvdec_emulation" to "2",
@@ -1047,7 +1047,7 @@ GameFixProfile(
                 "Renderer\\early_release_fences" to "false",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true"
             ),
-            listOf(0x0100E5D00CC0C000L, 0x010099900B22E000L)
+            listOf(0x0100E5D00CC0C000L, 0x010099900B22E000L, 0x010099900B224000L)
         ),
  GameFixProfile(
             0x01FF434243555253L, // Castlevania: Belmont's Curse (Deterministic Homebrew ID)
@@ -6762,6 +6762,84 @@ GameFixProfile(
                 "Renderer\\scaling_filter" to "1"
             )
         ),
+        GameFixProfile(
+            0x040015100B514000L,
+            "Super Mario Bros. Wonder Switch 2 Edition",
+            "• Вылет при переходе уровней и активации Чудо-цветка в режиме Switch 2\n• Микрофризы при компиляции анимаций персонажей",
+            "• Crash on stage transitions and Wonder Flower effects in Switch 2 mode\n• Shader compilation stutter on character animations",
+            "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Точность ГПУ: Обычная (Normal 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Барьеры обратной связи: Включено\n✓ Игнорирование сбоев памяти: Включено",
+            "✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Ignore Memory Aborts: Enabled",
+            mapOf(
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\early_release_fences" to "false",
+                "Cpu\\cpuopt_ignore_memory_aborts" to "true"
+            ),
+            listOf(0x040015100B5B4000L)
+        ),
+        GameFixProfile(
+            0x04004D300C5AE000L,
+            "Kirby and the Forgotten Land Switch 2 Edition",
+            "• Искажение апскейла DLSS при нативном рендере Switch 2 (четверть экрана)\n• Артефакты динамических отражений",
+            "• DLSS active rectangle upscale distortion in Switch 2 native render (quarter-screen)\n• Dynamic reflection shimmering",
+            "✓ Точность ГПУ: Высокая (High)\n✓ Реактивная очистка: Включено\n✓ Анизотропная фильтрация: 16x\n✓ Декодирование DLSS: Включено",
+            "✓ GPU Accuracy: High\n✓ Reactive Flushing: Enabled\n✓ Anisotropic Filtering: 16x\n✓ DLSS Native Upscale: Enabled",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\max_anisotropy" to "5"
+            ),
+            listOf(0x04004D300C5AF000L)
+        ),
+        GameFixProfile(
+            0x04006000040C2000L,
+            "Yoshi and the Mysterious Book",
+            "• Горизонтальные полосы рендера из-за 64-битного операнда IMAD.HI Ampere\n• Утечки видеопамяти при кэшировании текстур окружения",
+            "• Horizontal resolve stripes due to Ampere 64-bit IMAD.HI addend\n• VRAM texture cache churn on environmental dioramas",
+            "✓ Память: 6 ГБ DRAM\n✓ Точность ГПУ: Высокая (High)\n✓ Асинхронные шейдеры: Включено",
+            "✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Enabled",
+            mapOf(
+                "System\\memory_layout_mode" to "1",
+                "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\use_asynchronous_shaders" to "true"
+            ),
+            listOf(0x040089000C1B0000L)
+        ),
+        GameFixProfile(
+            0x0400A3A01EE4C000L,
+            "Pokémon Pokopia",
+            "• Просадки кадровой частоты ниже 30 FPS и нестабильность рендера на Snapdragon / Mali\n• Сбои декомпозиции 64/128-бит SSBO буферов растительности",
+            "• Frame drops below 30 FPS and render instability on Snapdragon / Mali GPUs\n• SSBO misaligned 64/128-bit vector foliage buffer faults",
+            "✓ Память: 6 ГБ DRAM\n✓ Точность ГПУ: Обычная (Normal 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Асинхронные шейдеры: Включено",
+            "✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Asynchronous Shaders: Enabled",
+            mapOf(
+                "System\\memory_layout_mode" to "1",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\use_asynchronous_shaders" to "true"
+            ),
+            listOf(0x0400A3A01EE4C001L)
+        ),
+        GameFixProfile(
+            0x0400DB000C0DE000L,
+            "The Duskbloods Network Test",
+            "• Ошибка подключения к серверу авторизации NPLN и матчмейкинга FromSoftware\n• Сбой TLS-рукопожатия при сетевом тесте",
+            "• Connection failure to NPLN authentication server and FromSoftware matchmaking\n• TLS handshake abort during network test",
+            "✓ Сервер-заглушка NPLN: Включено (playDB-CNT stand-in)\n✓ Перенаправление доменов *.fromsoftware-game.net\n✓ Точность ГПУ: Высокая (High)",
+            "✓ NPLN Stand-in Server: Enabled (playDB-CNT stand-in)\n✓ Redirect *.fromsoftware-game.net domains\n✓ GPU Accuracy: High",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "2",
+                "System\\memory_layout_mode" to "1",
+                "Renderer\\use_fast_gpu_time" to "false"
+            ),
+            listOf(0x0400D5B000010000L)
+        )
         )
     }
 
@@ -6896,6 +6974,11 @@ GameFixProfile(
         return profiles.firstOrNull { profile ->
             val nameLower = profile.gameName.lowercase(java.util.Locale.ROOT)
             val keywords = when {
+                nameLower.contains("pokopia") -> listOf("pokopia", "pokemon pokopia", "0400a3a01ee4c000")
+                nameLower.contains("duskblood") -> listOf("duskblood", "the duskbloods", "0400db000c0de000")
+                nameLower.contains("wonder") && (nameLower.contains("switch 2") || nameLower.contains("edition")) -> listOf("wonder switch 2", "040015100b514000")
+                nameLower.contains("kirby") && (nameLower.contains("switch 2") || nameLower.contains("edition") || nameLower.contains("native")) -> listOf("kirby switch 2", "kirby native", "04004d300c5ae000")
+                nameLower.contains("mysterious book") -> listOf("mysterious book", "yoshi mysterious", "04006000040c2000")
                 nameLower.contains("crypt custodian") -> listOf("crypt custodian", "0100a4601eca8000", "0100a4601eca8800")
                 nameLower.contains("diablo ii") -> listOf("diablo ii", "diablo 2", "resurrected", "01002a801458a000", "0100916014d8c000", "0100726014352000")
                 nameLower.contains("unravel") -> listOf("unravel", "01008c3005a32000", "0100e5d00cc0c000", "010099900b22e000")

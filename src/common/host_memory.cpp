@@ -144,8 +144,12 @@ public:
             return false;
         }
 
-        // Allocate backing file map
+        // Allocate backing file map: try SEC_COMMIT first, then SEC_RESERVE fallback if commit limit exceeded
         backing_handle = pfn_CreateFileMapping2(INVALID_HANDLE_VALUE, nullptr, FILE_MAP_WRITE | FILE_MAP_READ, PAGE_READWRITE, SEC_COMMIT, backing_size, nullptr, nullptr, 0);
+        if (!backing_handle) {
+            LOG_WARNING(HW_Memory, "Failed to commit {} MiB of backing memory, falling back to SEC_RESERVE", backing_size >> 20);
+            backing_handle = pfn_CreateFileMapping2(INVALID_HANDLE_VALUE, nullptr, FILE_MAP_WRITE | FILE_MAP_READ, PAGE_READWRITE, SEC_RESERVE, backing_size, nullptr, nullptr, 0);
+        }
         if (!backing_handle) {
             LOG_CRITICAL(HW_Memory, "Failed to allocate {} MiB of backing memory", backing_size >> 20);
             return false;
@@ -181,7 +185,13 @@ public:
     void* Allocate(size_t size) {
         auto* ptr = VirtualAlloc(nullptr, size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
         if (ptr == nullptr) {
-            LOG_CRITICAL(HW_Memory, "Failed to allocate fallback buffer with size {:#x}, error {}", size, GetLastError());
+            // Lazy fallback: reserve without upfront commit if host commit limit is reached
+            ptr = VirtualAlloc(nullptr, size, MEM_RESERVE, PAGE_READWRITE);
+            if (ptr != nullptr) {
+                LOG_WARNING(HW_Memory, "Allocated fallback buffer with MEM_RESERVE (lazy commit) for size {:#x}", size);
+            } else {
+                LOG_CRITICAL(HW_Memory, "Failed to allocate fallback buffer with size {:#x}, error {}", size, GetLastError());
+            }
         }
         return ptr;
     }
@@ -571,7 +581,7 @@ public:
                 close(fd);
             }
         } else {
-            backing_base = static_cast<u8*>(mmap(nullptr, backing_size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_NOCORE, fd, 0));
+            backing_base = static_cast<u8*>(mmap(nullptr, backing_size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_NORESERVE | MAP_NOCORE, fd, 0));
         }
         if (backing_base == MAP_FAILED) {
             LOG_CRITICAL(HW_Memory, "mmap failed: {}", strerror(errno));

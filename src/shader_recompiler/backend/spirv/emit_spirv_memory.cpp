@@ -76,6 +76,16 @@ void WriteStorageByCasLoop(EmitContext& ctx, const IR::Value& binding, const IR:
     ctx.OpFunctionCall(ctx.TypeVoid(), ctx.write_storage_cas_loop_func, pointer, value, bit_offset,
                        bit_count);
 }
+bool VectorViewIsExact(EmitContext& ctx, const IR::Value& offset, u32 size) {
+    if (!ctx.profile.support_descriptor_aliasing) {
+        return false;
+    }
+    if (offset.IsImmediate()) {
+        return offset.U32() % size == 0;
+    }
+    return ctx.profile.min_ssbo_alignment >= size;
+}
+
 } // Anonymous namespace
 
 void EmitLoadGlobalU8(EmitContext&) {
@@ -211,7 +221,7 @@ Id EmitLoadStorage32(EmitContext& ctx, const IR::Value& binding, const IR::Value
 }
 
 Id EmitLoadStorage64(EmitContext& ctx, const IR::Value& binding, const IR::Value& offset) {
-    if (ctx.profile.support_descriptor_aliasing) {
+    if (VectorViewIsExact(ctx, offset, sizeof(u32[2]))) {
         return LoadStorage(ctx, binding, offset, ctx.U32[2], ctx.storage_types.U32x2,
                            sizeof(u32[2]), &StorageDefinitions::U32x2);
     } else {
@@ -221,7 +231,7 @@ Id EmitLoadStorage64(EmitContext& ctx, const IR::Value& binding, const IR::Value
 }
 
 Id EmitLoadStorage128(EmitContext& ctx, const IR::Value& binding, const IR::Value& offset) {
-    if (ctx.profile.support_descriptor_aliasing) {
+    if (VectorViewIsExact(ctx, offset, sizeof(u32[4]))) {
         return LoadStorage(ctx, binding, offset, ctx.U32[4], ctx.storage_types.U32x4,
                            sizeof(u32[4]), &StorageDefinitions::U32x4);
     } else {
@@ -283,7 +293,7 @@ void EmitWriteStorage32(EmitContext& ctx, const IR::Value& binding, const IR::Va
 
 void EmitWriteStorage64(EmitContext& ctx, const IR::Value& binding, const IR::Value& offset,
                         Id value) {
-    if (ctx.profile.support_descriptor_aliasing) {
+    if (VectorViewIsExact(ctx, offset, sizeof(u32[2]))) {
         WriteStorage(ctx, binding, offset, value, ctx.storage_types.U32x2, sizeof(u32[2]),
                      &StorageDefinitions::U32x2);
     } else {
@@ -296,7 +306,7 @@ void EmitWriteStorage64(EmitContext& ctx, const IR::Value& binding, const IR::Va
 
 void EmitWriteStorage128(EmitContext& ctx, const IR::Value& binding, const IR::Value& offset,
                          Id value) {
-    if (ctx.profile.support_descriptor_aliasing) {
+    if (VectorViewIsExact(ctx, offset, sizeof(u32[4]))) {
         WriteStorage(ctx, binding, offset, value, ctx.storage_types.U32x4, sizeof(u32[4]),
                      &StorageDefinitions::U32x4);
     } else {

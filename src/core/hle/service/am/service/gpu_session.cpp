@@ -25,6 +25,7 @@
 #include "core/hle/service/nvdrv/devices/nvhost_as_gpu.h"
 #include "core/hle/service/nvdrv/devices/native_gpu_kind.h"
 #include "core/hle/service/nvdrv/devices/nx2_stub_device.h"
+#include "video_core/nx2.h"
 
 namespace Service::AM {
 struct GpuDeviceRegistry {
@@ -65,6 +66,7 @@ public:
             {213, &IGpuWorker::NormalUnmapGpuMemory4K, "NormalUnmapGpuMemory4K"},
             {214, &IGpuWorker::CreateGpuOnlyRegion, "CreateGpuOnlyRegion"},
             {215, &IGpuWorker::DestroyGpuOnlyRegion, "DestroyGpuOnlyRegion"},
+            {216, &IGpuWorker::ExecuteSparseMapRequests, "ExecuteSparseMapRequests"},
         };
         RegisterHandlersTipc(functions);
     }
@@ -356,6 +358,45 @@ private:
         IPC::ResponseBuilder rb{ctx, 2};
         rb.Push(result.raw);
     }
+    void ExecuteSparseMapRequests(HLERequestContext& ctx) {
+        const auto* packet = ctx.CommandBuffer();
+        const std::scoped_lock device_lock{m_devices->mutex};
+        const u32 as_id = packet[2];
+        const u32 slot = packet[1] >= 8 ? packet[8] : (packet[1] >= 7 ? packet[7] : 0);
+
+        const auto in_buffer = ctx.ReadBuffer();
+        if (!in_buffer.empty()) {
+            constexpr size_t RequestSize = 40;
+            const size_t num_requests = in_buffer.size() / RequestSize;
+            for (size_t i = 0; i < num_requests; ++i) {
+                const u8* req_ptr = in_buffer.data() + i * RequestSize;
+                u64 virtual_address = 0;
+                u64 physical_address = 0;
+                u64 size = 0;
+                u32 flags = 0;
+                std::memcpy(&virtual_address, req_ptr, sizeof(u64));
+                std::memcpy(&physical_address, req_ptr + 8, sizeof(u64));
+                std::memcpy(&size, req_ptr + 16, sizeof(u64));
+                std::memcpy(&flags, req_ptr + 24, sizeof(u32));
+
+                if (virtual_address != 0 && size != 0) {
+                    if (physical_address != 0) {
+                        Nvidia::Devices::Nx2GpuMemoryRegistry::Get().MapAt(virtual_address, physical_address, size);
+                        Tegra::Nx2MarkGpuWritten(virtual_address, size);
+                    } else {
+                        Nvidia::Devices::Nx2GpuMemoryRegistry::Get().Unmap(virtual_address, size);
+                    }
+                }
+            }
+        }
+
+        if (slot < m_devices->events.size() && m_devices->events[slot]) {
+            m_devices->events[slot]->Signal(kernel);
+        }
+        IPC::ResponseBuilder rb{ctx, 2};
+        rb.Push(ResultSuccess);
+    }
+
     void DestroyGpuOnlyRegion(HLERequestContext& ctx) {
         const auto* packet = ctx.CommandBuffer();
         const std::scoped_lock device_lock{m_devices->mutex};

@@ -382,6 +382,20 @@ abstract class SettingsItem(
                     errorId = R.string.multiplayer_username_error
                 )
             )
+            put(
+                StringInputSetting(
+                    StringSetting.NX2_ONLINE_SERVER,
+                    titleId = R.string.nx2_online_server,
+                    descriptionId = R.string.nx2_online_server_description
+                )
+            )
+            put(
+                StringInputSetting(
+                    StringSetting.NX2_ONLINE_HOSTS,
+                    titleId = R.string.nx2_online_hosts,
+                    descriptionId = R.string.nx2_online_hosts_description
+                )
+            )
             put(DateTimeSetting(LongSetting.CUSTOM_RTC, titleId = R.string.set_custom_rtc))
             put(
                 SingleChoiceSetting(

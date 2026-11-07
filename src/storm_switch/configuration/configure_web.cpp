@@ -68,11 +68,17 @@ void ConfigureWeb::changeEvent(QEvent* event) {
 void ConfigureWeb::RetranslateUI() {
     ui->retranslateUi(this);
     ui->groupBoxWebConfig->setTitle(tr("Веб-сервис STORM SWITCH"));
+    ui->groupBoxNx2Online->setTitle(tr("Сервер Switch 2 Online / NPLN (playDB-CNT)"));
+    ui->label_nx2_server->setText(tr("Сервер / IP (хост-заглушка):"));
+    ui->label_nx2_hosts->setText(tr("Маски хостов:"));
+    ui->label_nx2_info->setText(tr("Перенаправляет сетевой трафик Switch 2 NPLN и сетевых тестов (The Duskbloods CNT) на локальный сервер-заглушку."));
 }
 
 void ConfigureWeb::SetConfiguration() {
     ui->edit_username->setText(QString::fromStdString(Settings::values.eden_username.GetValue()));
     ui->edit_token->setText(QString::fromStdString(Settings::values.eden_token.GetValue()));
+    ui->edit_nx2_online_server->setText(QString::fromStdString(Settings::values.nx2_online_server.GetValue()));
+    ui->edit_nx2_online_hosts->setText(QString::fromStdString(Settings::values.nx2_online_hosts.GetValue()));
 
     VerifyLogin();
 
@@ -96,6 +102,8 @@ void ConfigureWeb::ApplyConfiguration() {
     UISettings::values.enable_discord_presence = ui->toggle_discordrpc->isChecked();
     Settings::values.eden_username = ui->edit_username->text().toStdString();
     Settings::values.eden_token = ui->edit_token->text().toStdString();
+    Settings::values.nx2_online_server = ui->edit_nx2_online_server->text().trimmed().toStdString();
+    Settings::values.nx2_online_hosts = ui->edit_nx2_online_hosts->text().trimmed().toStdString();
 }
 
 #include <QPainter>

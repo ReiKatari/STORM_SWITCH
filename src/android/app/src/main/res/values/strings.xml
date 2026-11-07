@@ -559,6 +559,10 @@
     <string name="web_username">Web Username</string>
     <string name="web_username_description">Username to be shown in multiplayer lobbies. It must be 4–20 characters, containing only alphanumeric characters, dashes, periods, underscores, and spaces.</string>
     <string name="network">Network</string>
+    <string name="nx2_online_server">Switch 2 Online / NPLN Server</string>
+    <string name="nx2_online_server_description">Stand-in loopback or LAN server IP address (e.g. 127.0.0.1) for Switch 2 NPLN and Network Tests (playDB-CNT).</string>
+    <string name="nx2_online_hosts">Switch 2 Online Host Masks</string>
+    <string name="nx2_online_hosts_description">Comma-separated domain patterns redirected to the stand-in server (e.g. *.fromsoftware-game.net,*.srv.nintendo.net,*.npln.srv.nintendo.net).</string>
 
     <!-- Graphics settings strings -->
     <string name="renderer_resolution">Resolution (Handheld/Docked)</string>

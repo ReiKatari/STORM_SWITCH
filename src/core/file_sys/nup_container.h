@@ -88,6 +88,7 @@ public:
         u32 meta_size{};
 
         std::vector<u8> npdm;
+        std::vector<u8> nacp;
         std::string title_name;
         std::vector<std::pair<std::string, std::string>> localized_titles;
         std::vector<u8> icon;
@@ -124,6 +125,7 @@ public:
 
     VirtualDir GetExeFSDir(std::size_t package_index);
     VirtualDir GetRomFSDir(std::size_t package_index);
+    VirtualDir GetAddonRomFS(u64 program_id);
 
     /// Stream-hashes every member file against its stored SHA-256.
     Loader::ResultStatus VerifyIntegrity(

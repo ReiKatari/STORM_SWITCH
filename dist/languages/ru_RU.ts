@@ -6752,7 +6752,27 @@ Drag points to change position, or double-click table cells to edit values.</sou
       <comment>Tooltip</comment>
       <translation>Должно быть 48 символов в нижнем регистре (a–z)</translation>
     </message>
-  <message><source>Token:</source><translation>Токен:</translation></message><message><source>Username:</source><translation>Имя пользователя:</translation></message></context>
+  <message><source>Token:</source><translation>Токен:</translation></message><message><source>Username:</source><translation>Имя пользователя:</translation></message>    <message>
+      <location filename="../../src/storm_switch/configuration/configure_web.ui" line="175" />
+      <source>Switch 2 Online / NPLN Server (playDB-CNT)</source>
+      <translation>Сервер Switch 2 Online / NPLN (playDB-CNT)</translation>
+    </message>
+    <message>
+      <location filename="../../src/storm_switch/configuration/configure_web.ui" line="185" />
+      <source>Server / IP (Stand-in Host):</source>
+      <translation>Сервер / IP (хост-заглушка):</translation>
+    </message>
+    <message>
+      <location filename="../../src/storm_switch/configuration/configure_web.ui" line="195" />
+      <source>Host Masks:</source>
+      <translation>Маски хостов:</translation>
+    </message>
+    <message>
+      <location filename="../../src/storm_switch/configuration/configure_web.ui" line="205" />
+      <source>Routes Switch 2 NPLN and network test traffic (e.g. The Duskbloods CNT) to local stand-in server.</source>
+      <translation>Перенаправляет сетевой трафик Switch 2 NPLN и сетевых тестов (The Duskbloods CNT) на локальный сервер-заглушку.</translation>
+    </message>
+  </context>
   <context>
     <name>ControllerDialog</name>
     <message>

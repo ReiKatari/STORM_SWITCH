@@ -166,6 +166,13 @@ Decoder::Decoder(Tegra::Host1x::NvdecCommon::VideoCodec codec) {
             return AV_CODEC_ID_VP8;
         case Tegra::Host1x::NvdecCommon::VideoCodec::VP9:
             return AV_CODEC_ID_VP9;
+        case Tegra::Host1x::NvdecCommon::VideoCodec::AV1:
+#ifdef AV_CODEC_ID_AV1
+            return AV_CODEC_ID_AV1;
+#else
+            LOG_WARNING(Service_NVDRV, "FFmpeg built without AV1 support");
+            return AV_CODEC_ID_NONE;
+#endif
         default:
             LOG_ERROR(Service_NVDRV, "Unknown codec {}", codec);
             return AV_CODEC_ID_NONE;
@@ -181,6 +188,9 @@ Decoder::Decoder(Tegra::Host1x::NvdecCommon::VideoCodec codec) {
         // Disabled: causes crashes in Diablo II
         // case AV_CODEC_ID_VP8:  mc_name = "vp8_mediacodec";  break;
         case AV_CODEC_ID_VP9:  mc_name = "vp9_mediacodec";  break;
+#ifdef AV_CODEC_ID_AV1
+        case AV_CODEC_ID_AV1:  mc_name = "av1_mediacodec";  break;
+#endif
         default: break;
         }
         if (mc_name) {
@@ -445,7 +455,11 @@ bool DecodeApi::Initialize(Tegra::Host1x::NvdecCommon::VideoCodec codec) {
     const std::string_view decoder_name = m_decoder->GetCodec() ? m_decoder->GetCodec()->name : "";
     is_mediacodec = decoder_name == "h264_mediacodec" ||
                     decoder_name == "vp8_mediacodec" ||
-                    decoder_name == "vp9_mediacodec";
+                    decoder_name == "vp9_mediacodec"
+#ifdef AV_CODEC_ID_AV1
+                    || decoder_name == "av1_mediacodec"
+#endif
+                    ;
 #endif
 
     // Enable GPU decoding if requested.

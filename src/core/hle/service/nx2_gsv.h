@@ -320,6 +320,7 @@ public:
             {213, &INx2GpuSession::SubUnmapJob, "NormalUnmapGpuMemory4K"},
             {214, &INx2GpuSession::SubCreateGpuOnlyRegion, "CreateSparseRegion"},
             {215, &INx2GpuSession::SubDestroySparseRegion, "DestroySparseRegion"},
+            {216, &INx2GpuSession::SubExecuteSparseMapRequests, "ExecuteSparseMapRequests"},
         });
         if (LazySparseRegions()) {
             Tegra::Nx2SetSparseBacking(
@@ -573,6 +574,44 @@ private:
         } else {
             LOG_WARNING(Service, "nx2:gpu 214 unexpected region [{:#x}, {:#x}]", start, last);
         }
+        EventFor(slot)->Signal(system.Kernel());
+        IPC::ResponseBuilder rb{ctx, 2};
+        rb.Push(ResultSuccess);
+    }
+
+    // Sub 216 (nn::gpu::sdk::ExecuteSparseMapRequests): tile remapping with safe null fallback
+    void SubExecuteSparseMapRequests(HLERequestContext& ctx) {
+        const auto* w = ctx.CommandBuffer();
+        const u32 slot = w[1] >= 8 ? w[8] : (w[1] >= 7 ? w[7] : 0);
+        LOG_DEBUG(Service, "nx2:gpu 216 ExecuteSparseMapRequests words {:#x} {:#x} {:#x} {:#x}, slot={}",
+                  w[1], w[2], w[3], w[4], slot);
+
+        const auto in_buffer = ctx.ReadBuffer();
+        if (!in_buffer.empty()) {
+            constexpr size_t RequestSize = 40;
+            const size_t num_requests = in_buffer.size() / RequestSize;
+            for (size_t i = 0; i < num_requests; ++i) {
+                const u8* req_ptr = in_buffer.data() + i * RequestSize;
+                u64 virtual_address = 0;
+                u64 physical_address = 0;
+                u64 size = 0;
+                u32 flags = 0;
+                std::memcpy(&virtual_address, req_ptr, sizeof(u64));
+                std::memcpy(&physical_address, req_ptr + 8, sizeof(u64));
+                std::memcpy(&size, req_ptr + 16, sizeof(u64));
+                std::memcpy(&flags, req_ptr + 24, sizeof(u32));
+
+                if (virtual_address != 0 && size != 0) {
+                    if (physical_address != 0) {
+                        Nvidia::Devices::Nx2GpuMemoryRegistry::Get().MapAt(virtual_address, physical_address, size);
+                        Tegra::Nx2MarkGpuWritten(virtual_address, size);
+                    } else {
+                        Nvidia::Devices::Nx2GpuMemoryRegistry::Get().Unmap(virtual_address, size);
+                    }
+                }
+            }
+        }
+
         EventFor(slot)->Signal(system.Kernel());
         IPC::ResponseBuilder rb{ctx, 2};
         rb.Push(ResultSuccess);

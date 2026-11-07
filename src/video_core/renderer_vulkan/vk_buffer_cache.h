@@ -215,6 +215,7 @@ private:
     vk::Buffer null_buffer;
 
     std::unique_ptr<Uint8Pass> uint8_pass;
+    std::unique_ptr<VertexRepackPass> vertex_repack_pass;
     QuadIndexedPass quad_index_pass;
 
     bool limit_dynamic_storage_buffers = false;

@@ -100,8 +100,9 @@ inline LoweredProgram LowerToMaxwellWith(std::span<const Instruction> code, u32 
             // RET, BRA, NOP and ISETP/FSETP (predicate outputs) have no destination GPR; bits 16..23
             // are not a write to R0. IMAD.WIDE writes a register pair.
             const bool no_destination = opcode == 0x950 || opcode == 0x947 || opcode == 0x918 ||
+                                        opcode == 0x324 || opcode == 0x924 || opcode == 0x357 ||
                                         (opcode & 0x1ff) == 0x00c || (opcode & 0x1ff) == 0x00b;
-            const bool pair = opcode == 0x225 || opcode == 0x625 || opcode == 0x825;
+            const bool pair = opcode == 0x225 || opcode == 0x625 || opcode == 0x825 || opcode == 0x34e;
             if (active_link && !no_destination &&
                 (insn.Bits(16, 8) == *active_link || (pair && insn.Bits(16, 8) + 1 == *active_link)))
                 return fail(index, "native callee overwrites link register");
@@ -2106,6 +2107,39 @@ inline LoweredProgram LowerToMaxwellWith(std::span<const Instruction> code, u32 
             result.instructions.push_back(translated);
             break;
         }
+        case 0x324:
+        case 0x924: { // OUT (geometry emit/cut), register or immediate stream
+            const u32 type = insn.Bits(78, 2);
+            if (!type || (insn.words[2] & ~0xc000U)) {
+                return fail(index, "native geometry output mode");
+            }
+            // Maxwell encoding: output handle at bit 8, stream at bit 20, emit at bit 39, cut at bit 40
+            const u64 emit_bit = (type & 1) ? (1ULL << 39) : 0ULL;
+            const u64 cut_bit  = (type & 2) ? (1ULL << 40) : 0ULL;
+            const u32 stream   = insn.Bits(80, 2);
+            emit(0x5f90000000000000ULL | predicate | emit_bit | cut_bit | (static_cast<u64>(stream) << 20));
+            break;
+        }
+        case 0x34e: { // LEPC: 64-bit address of the next instruction
+            // In geometry shader prologues, consumed immediately by 0x357.
+            // Native instruction addresses do not map directly in lowered Maxwell code.
+            // Emit dummy zero write to target register pair so register liveness analysis passes.
+            const u32 dst = insn.Bits(16, 8);
+            if (dst < 255) {
+                emit(0x5c10000000000000ULL | predicate | dst | (255ULL << 8) | (255ULL << 20));
+                if (dst + 1 < 255) {
+                    emit(0x5c10000000000000ULL | predicate | (dst + 1) | (255ULL << 8) | (255ULL << 20));
+                }
+            }
+            break;
+        }
+        case 0x357: {
+            // Takes LEPC-derived address in geometry shader prologues; no Maxwell counterpart needed.
+            if (insn.Bits(16, 8) || insn.Bits(32, 32) || insn.words[2] || native_predicate != 7) {
+                return fail(index, "native geometry prologue mode");
+            }
+            break;
+        }
         case 0x387: case 0x983: { // Local spill: 32, 64 or 128 bits at [Ra + immediate byte offset].
             // The size is bits 73-75 (4, 5, 6 = 32, 64, 128 bits); wider accesses become 32-bit ones.
             // A load's bit 85 (.LU) is a cache hint.
@@ -2204,7 +2238,7 @@ inline LoweredProgram LowerToMaxwellWith(std::span<const Instruction> code, u32 
             }
             break;
         }
-        case 0x308: case 0xb08: case 0xd08: { // MUFU (register, constant or uniform register source)
+        case 0x308: case 0x908: case 0xb08: case 0xd08: { // MUFU (register, immediate, constant or uniform register source)
             const u32 operation = insn.Bits(74, 6);
             // Bit 91 is part of the uniform-register form's encoding.
             if (operation > 8 || operation == 6 || operation == 7 ||

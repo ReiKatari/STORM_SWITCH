@@ -24,6 +24,11 @@ namespace Service::AM {
 namespace {
 
 bool ShouldCreateGuestApplet(AppletId applet_id) {
+    const u32 raw_id = static_cast<u32>(applet_id);
+    if ((raw_id & 0xFF) == static_cast<u32>(AppletId::SoftwareKeyboard) ||
+        ((raw_id & ~0xFFU) != 0 && (raw_id & 0xFF) <= 0x20)) {
+        applet_id = static_cast<AppletId>(raw_id & 0xFF);
+    }
 #define X(Name, name)                                                                              \
     if (applet_id == AppletId::Name) {                                                             \
         return Settings::values.name##_applet_mode.GetValue() == Settings::AppletMode::LLE;       \
@@ -51,6 +56,11 @@ bool ShouldCreateGuestApplet(AppletId applet_id) {
 }
 
 AppletProgramId AppletIdToProgramId(AppletId applet_id) {
+    const u32 raw_id = static_cast<u32>(applet_id);
+    if ((raw_id & 0xFF) == static_cast<u32>(AppletId::SoftwareKeyboard) ||
+        ((raw_id & ~0xFFU) != 0 && (raw_id & 0xFF) <= 0x20)) {
+        applet_id = static_cast<AppletId>(raw_id & 0xFF);
+    }
     switch (applet_id) {
     case AppletId::OverlayDisplay:
         return AppletProgramId::OverlayDisplay;
@@ -182,6 +192,11 @@ ILibraryAppletCreator::~ILibraryAppletCreator() = default;
 Result ILibraryAppletCreator::CreateLibraryApplet(
     Out<SharedPointer<ILibraryAppletAccessor>> out_library_applet_accessor, AppletId applet_id,
     LibraryAppletMode library_applet_mode) {
+    const u32 raw_id = static_cast<u32>(applet_id);
+    if ((raw_id & 0xFF) == static_cast<u32>(AppletId::SoftwareKeyboard) ||
+        ((raw_id & ~0xFFU) != 0 && (raw_id & 0xFF) <= 0x20)) {
+        applet_id = static_cast<AppletId>(raw_id & 0xFF);
+    }
     LOG_DEBUG(Service_AM, "called with applet_id={} applet_mode={}", applet_id,
               library_applet_mode);
 
@@ -208,6 +223,11 @@ Result ILibraryAppletCreator::CreateLibraryApplet(
 Result ILibraryAppletCreator::CreateLibraryAppletEx(
     Out<SharedPointer<ILibraryAppletAccessor>> out_library_applet_accessor, AppletId applet_id,
     LibraryAppletMode library_applet_mode, u64 thread_id) {
+    const u32 raw_id = static_cast<u32>(applet_id);
+    if ((raw_id & 0xFF) == static_cast<u32>(AppletId::SoftwareKeyboard) ||
+        ((raw_id & ~0xFFU) != 0 && (raw_id & 0xFF) <= 0x20)) {
+        applet_id = static_cast<AppletId>(raw_id & 0xFF);
+    }
     LOG_DEBUG(Service_AM, "called with applet_id={} applet_mode={} thread_id={}", applet_id,
               library_applet_mode, thread_id);
 

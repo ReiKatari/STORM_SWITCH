@@ -589,71 +589,72 @@ void SetCurrentThreadName(const char* name) {
 
 #ifdef _WIN32
 namespace {
-void ApplyTopologicalCpuSetPinning(bool prefer_performance_cores) {
-    ULONG buffer_len = 0;
-    GetSystemCpuSetInformation(nullptr, 0, &buffer_len, GetCurrentProcess(), 0);
-    if (buffer_len == 0) {
-        return;
-    }
-    std::vector<u8> buffer(buffer_len);
-    auto* info = reinterpret_cast<SYSTEM_CPU_SET_INFORMATION*>(buffer.data());
-    if (!GetSystemCpuSetInformation(info, buffer_len, &buffer_len, GetCurrentProcess(), 0)) {
-        return;
-    }
+struct WindowsCpuSets {
+    std::vector<ULONG> performance;
+    std::vector<ULONG> efficiency;
+    bool hybrid = false;
+};
 
-    std::vector<ULONG> p_core_sets;
-    std::vector<ULONG> e_core_sets;
-    std::vector<ULONG> ccd0_sets;
-    std::vector<ULONG> ccd1_sets;
-
-    BYTE max_efficiency = 0;
-    BYTE min_efficiency = 255;
-    BYTE first_cache_idx = 255;
-
-    ULONG offset = 0;
-    while (offset + sizeof(SYSTEM_CPU_SET_INFORMATION) <= buffer_len) {
-        const auto* cur = reinterpret_cast<const SYSTEM_CPU_SET_INFORMATION*>(buffer.data() + offset);
-        if (cur->Size == 0) break;
-        if (cur->Type == CpuSetInformation) {
-            max_efficiency = (std::max)(max_efficiency, cur->CpuSet.EfficiencyClass);
-            min_efficiency = (std::min)(min_efficiency, cur->CpuSet.EfficiencyClass);
-            if (first_cache_idx == 255) {
-                first_cache_idx = cur->CpuSet.LastLevelCacheIndex;
-            }
+const WindowsCpuSets& CpuSets() {
+    static const WindowsCpuSets sets = [] {
+        WindowsCpuSets result;
+        if (const char* text = std::getenv("STORM_HYBRID_CORES");
+            text != nullptr && std::strtol(text, nullptr, 10) == 0) {
+            return result;
         }
-        offset += cur->Size;
-    }
-
-    offset = 0;
-    while (offset + sizeof(SYSTEM_CPU_SET_INFORMATION) <= buffer_len) {
-        const auto* cur = reinterpret_cast<const SYSTEM_CPU_SET_INFORMATION*>(buffer.data() + offset);
-        if (cur->Size == 0) break;
-        if (cur->Type == CpuSetInformation) {
-            if (max_efficiency > min_efficiency) {
-                if (cur->CpuSet.EfficiencyClass == max_efficiency) {
-                    p_core_sets.push_back(cur->CpuSet.Id);
-                } else {
-                    e_core_sets.push_back(cur->CpuSet.Id);
-                }
-            }
-            if (cur->CpuSet.LastLevelCacheIndex == first_cache_idx) {
-                ccd0_sets.push_back(cur->CpuSet.Id);
-            } else {
-                ccd1_sets.push_back(cur->CpuSet.Id);
-            }
+        if (const char* text = std::getenv("EDEN_HYBRID_CORES");
+            text != nullptr && std::strtol(text, nullptr, 10) == 0) {
+            return result;
         }
-        offset += cur->Size;
-    }
+        using PFN_GetSystemCpuSetInformation = BOOL(WINAPI*)(PSYSTEM_CPU_SET_INFORMATION, ULONG,
+                                                             PULONG, HANDLE, ULONG);
+        const HMODULE kernel32 = GetModuleHandleW(L"kernel32.dll");
+        if (kernel32 == nullptr) return result;
+        const auto get = reinterpret_cast<PFN_GetSystemCpuSetInformation>(
+            reinterpret_cast<void*>(GetProcAddress(kernel32, "GetSystemCpuSetInformation")));
+        if (get == nullptr) return result;
 
-    const std::vector<ULONG>* chosen = nullptr;
-    if (!p_core_sets.empty() && !e_core_sets.empty()) {
-        chosen = prefer_performance_cores ? &p_core_sets : &e_core_sets;
-    }
+        ULONG length = 0;
+        get(nullptr, 0, &length, GetCurrentProcess(), 0);
+        if (length == 0) return result;
 
-    if (chosen && !chosen->empty()) {
-        SetThreadSelectedCpuSets(GetCurrentThread(), chosen->data(),
-                                 static_cast<ULONG>(chosen->size()));
-    }
+        std::vector<u8> buffer(length);
+        if (!get(reinterpret_cast<PSYSTEM_CPU_SET_INFORMATION>(buffer.data()), length, &length,
+                 GetCurrentProcess(), 0)) {
+            return result;
+        }
+        struct Entry {
+            ULONG id;
+            u8 efficiency_class;
+        };
+        std::vector<Entry> entries;
+        u8 best = 0;
+        for (ULONG offset = 0; offset + sizeof(SYSTEM_CPU_SET_INFORMATION) <= length;) {
+            const auto* info =
+                reinterpret_cast<const SYSTEM_CPU_SET_INFORMATION*>(buffer.data() + offset);
+            if (info->Size == 0) break;
+            if (info->Type == CpuSetInformation) {
+                entries.push_back({info->CpuSet.Id, static_cast<u8>(info->CpuSet.EfficiencyClass)});
+                best = (std::max<u8>)(best, static_cast<u8>(info->CpuSet.EfficiencyClass));
+            }
+            offset += info->Size;
+        }
+        for (const Entry& entry : entries) {
+            (entry.efficiency_class == best ? result.performance : result.efficiency)
+                .push_back(entry.id);
+        }
+        result.hybrid = !result.efficiency.empty() && result.performance.size() >= 2;
+        return result;
+    }();
+    return sets;
+}
+
+void SelectCurrentThreadCpuSets(const std::vector<ULONG>& ids) {
+    using PFN_SetThreadSelectedCpuSets = BOOL(WINAPI*)(HANDLE, const ULONG*, ULONG);
+    static const auto set = reinterpret_cast<PFN_SetThreadSelectedCpuSets>(reinterpret_cast<void*>(
+        GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "SetThreadSelectedCpuSets")));
+    if (set == nullptr) return;
+    set(GetCurrentThread(), ids.empty() ? nullptr : ids.data(), static_cast<ULONG>(ids.size()));
 }
 } // Anonymous namespace
 #endif
@@ -675,7 +676,9 @@ void SetCurrentThreadToPerformanceCores() {
     SetThreadInformation(GetCurrentThread(), static_cast<THREAD_INFORMATION_CLASS>(1), &power_state,
                          sizeof(power_state));
     if (Settings::values.cpu_affinity_pinning.GetValue()) {
-        ApplyTopologicalCpuSetPinning(true);
+        if (const WindowsCpuSets& sets = CpuSets(); sets.hybrid) {
+            SelectCurrentThreadCpuSets(sets.performance);
+        }
     }
 #endif
 }
@@ -697,7 +700,9 @@ void SetCurrentThreadToEfficiencyCores() {
     SetThreadInformation(GetCurrentThread(), static_cast<THREAD_INFORMATION_CLASS>(1), &power_state,
                          sizeof(power_state));
     if (Settings::values.cpu_affinity_pinning.GetValue()) {
-        ApplyTopologicalCpuSetPinning(false);
+        if (const WindowsCpuSets& sets = CpuSets(); sets.hybrid) {
+            SelectCurrentThreadCpuSets(sets.efficiency);
+        }
     }
 #endif
 }

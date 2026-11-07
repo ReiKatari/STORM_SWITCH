@@ -71,6 +71,8 @@ private:
                                           Set::LanguageCode language_code);
     Result IsRunningOnOunce(Out<bool> out_is_ounce);
     void RequestLoadNxFont(HLERequestContext& ctx);
+    void GetBuiltInFontDataSet(HLERequestContext& ctx);
+    void OpenFont(HLERequestContext& ctx);
 
     struct Impl;
     std::unique_ptr<Impl> impl;

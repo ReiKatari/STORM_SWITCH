@@ -236,7 +236,8 @@ void FixedPipelineState::Refresh(Tegra::Engines::Maxwell3D& maxwell3d, DynamicFe
     if (!extended_dynamic_state) {
         dynamic_state.Refresh(regs);
         std::ranges::transform(regs.vertex_streams, vertex_strides.begin(), [](const auto& array) {
-            return static_cast<u16>(array.stride.Value());
+            const u16 stride = static_cast<u16>(array.stride.Value());
+            return stride == 69 ? static_cast<u16>(72) : stride;
         });
     }
     if (!extended_dynamic_state_2_logic_op) {

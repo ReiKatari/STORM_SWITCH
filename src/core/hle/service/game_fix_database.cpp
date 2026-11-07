@@ -433,8 +433,8 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Unravel Two",
         "• Зависание на вступительных видеороликах и чёрный экран при переходе к геймплею\n• Потеря рендер-пасса PhyreEngine при принудительных обратных барьерах",
         "• Freeze during intro cutscenes and black screen on cutscene-to-gameplay transition\n• PhyreEngine render-pass drop when forcing barrier feedback loops",
-        "✓ Программный декодер видео без задержки (NVDEC CPU FF_THREAD_SLICE: 0 кадров буферизации)\n✓ Точность ГПУ: Обычная (Normal)\n✓ Обратные циклы барьеров: Отключено (сохранение 3D-рендера PhyreEngine)\n✓ Ранний сброс заборов: Отключено\n✓ Игнорирование сбоев памяти: Включено",
-        "✓ Zero-Delay CPU NVDEC Video Decoding (FF_THREAD_SLICE: 0-frame buffering)\n✓ GPU Accuracy: Normal\n✓ Barrier Feedback Loops: Disabled (Preserves PhyreEngine 3D render pass)\n✓ Early Release Fences: Disabled\n✓ Ignore Memory Aborts: Enabled",
+        "✓ Аппаратный декодер видео NVDEC (GPU / MediaCodec)\n✓ Точность ГПУ: Обычная (Normal)\n✓ Обратные циклы барьеров: Отключено (сохранение 3D-рендера PhyreEngine)\n✓ Ранний сброс заборов: Отключено\n✓ Игнорирование сбоев памяти: Включено",
+        "✓ Hardware GPU/MediaCodec NVDEC Video Decoding\n✓ GPU Accuracy: Normal\n✓ Barrier Feedback Loops: Disabled (Preserves PhyreEngine 3D render pass)\n✓ Early Release Fences: Disabled\n✓ Ignore Memory Aborts: Enabled",
         {
             {"Renderer\\nvdec_emulation", "2"},
             {"Renderer\\gpu_accuracy", "1"},
@@ -444,7 +444,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"}
         },
-        {0x0100E5D00CC0C000ULL, 0x010099900B22E000ULL}
+        {0x0100E5D00CC0C000ULL, 0x010099900B22E000ULL, 0x010099900B224000ULL}
     },
     {
         0x0100EC9010258000ULL,
@@ -6183,7 +6183,107 @@ static const std::vector<GameFixProfile> s_profiles = {
         },
         {0x010014C01A242000ULL, 0x0100999019806000ULL}
     },
-
+    {
+        0x040015100B514000ULL,
+        "Super Mario Bros. Wonder (Switch 2 Edition)",
+        "• Deadlock в таймингах заборов agl engine при экспериментальных опциях\n• Ошибки загрузки системных шрифтов Switch 2\n• Микрофризы на Pipe-Rock Plateau из-за сброса текстурного кэша",
+        "• Deadlock in agl engine fence timing with experimental options\n• Switch 2 system font service loading errors\n• Pipe-Rock Plateau texture cache churn micro-stutters",
+        "✓ Точность ГПУ: Обычная (Normal)\n✓ Тайминги GPU: Аппаратные 31.25 МГц\n✓ Обратные циклы барьеров: Включено\n✓ Ранний сброс заборов: Отключено\n✓ Динамический регулятор производительности: Отключено\n✓ Поддержка шрифтов Switch 2 IFontService",
+        "✓ GPU Accuracy: Normal\n✓ Accurate Hardware GPU Timings (31.25 MHz)\n✓ Barrier Feedback Loops: Enabled\n✓ Early Release Fences: Disabled\n✓ Dynamic Performance Scaler: Disabled\n✓ Switch 2 IFontService Font Support",
+        {
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\use_fast_gpu_time", "false"},
+            {"Renderer\\early_release_fences", "false"},
+            {"Renderer\\barrier_feedback_loops", "true"},
+            {"Renderer\\drs_resolution_lock", "false"},
+            {"Renderer\\sync_memory_operations", "false"},
+            {"Renderer\\vram_budget_governor", "false"},
+            {"Renderer\\dynamic_performance_scaler", "false"},
+            {"Renderer\\smart_shader_throttle", "false"},
+            {"Renderer\\enable_frame_skipping", "false"},
+            {"Renderer\\nvdec_emulation", "2"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"}
+        },
+        {0x010015100B514000ULL}
+    },
+    {
+        0x04004D300C5AE000ULL,
+        "Kirby and the Forgotten Land (Switch 2 Edition)",
+        "• Искажение и четверть-экранный рендеринг при нативном апскейле DLSS\n• Просадки кадровой частоты анимаций дальних врагов\n• Артефакты шейдеров отражения",
+        "• Quarter-screen distortion on native DLSS active region upscale\n• Distant enemy animation frame drops\n• Puddle reflection shader artifacts",
+        "✓ Точность ГПУ: Высокая (High)\n✓ Апскейлинг DLSS: Декодирование активных областей\n✓ Реактивная очистка: Включено\n✓ Быстрое время ГПУ: Отключено\n✓ Анизотропная фильтрация: 16x",
+        "✓ GPU Accuracy: High\n✓ DLSS Active Region Upscale Decoding\n✓ Reactive Flushing: Enabled\n✓ Fast GPU Time: Disabled\n✓ Anisotropic Filtering: 16x",
+        {
+            {"Renderer\\gpu_accuracy", "2"},
+            {"Renderer\\use_fast_gpu_time", "false"},
+            {"Renderer\\use_reactive_flushing", "true"},
+            {"Renderer\\anisotropy", "4"},
+            {"Renderer\\early_release_fences", "false"},
+            {"Renderer\\dynamic_performance_scaler", "false"},
+            {"Renderer\\nvdec_emulation", "2"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"}
+        },
+        {0x01004D300C5AE000ULL}
+    },
+    {
+        0x04006000040C2000ULL,
+        "Yoshi and the Mysterious Book",
+        "• Горизонтальные полосы рендеринга из-за Ampere IMAD.HI 64-бит сложения\n• Утечки VRAM в геометрии Unreal Engine\n• Размытие текстур заднего плана",
+        "• Horizontal resolve stripes from Ampere IMAD.HI 64-bit addend\n• Unreal Engine geometry VRAM leak\n• Background blur texture shimmering",
+        "✓ Точность ГПУ: Высокая (High)\n✓ Ampere IMAD.HI 64-бит коррекция\n✓ Асинхронные шейдеры: Включено\n✓ Быстрое время ГПУ: Отключено\n✓ Память: 8GB DRAM",
+        "✓ GPU Accuracy: High\n✓ Ampere IMAD.HI 64-bit Correction\n✓ Asynchronous Shaders: Enabled\n✓ Fast GPU Time: Disabled\n✓ Memory Layout: 8GB DRAM",
+        {
+            {"Renderer\\gpu_accuracy", "2"},
+            {"Renderer\\use_fast_gpu_time", "false"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\use_disk_shader_cache", "true"},
+            {"Renderer\\early_release_fences", "false"},
+            {"Renderer\\dynamic_performance_scaler", "false"},
+            {"Renderer\\nvdec_emulation", "2"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"}
+        },
+        {0x01006000040C2000ULL}
+    },
+    {
+        0x0400A3A01EE4C000ULL,
+        "Pokémon Pokopia",
+        "• Ошибки нехватки памяти при компиляции шейдерных блоков размером более 4 ГБ\n• Зависание при вводе имени персонажа в swkbd\n• Просадки кадров на мобильных ГПУ Adreno / Mali",
+        "• OOM on compiling mega shader blobs exceeding 4 GiB\n• Character name entry softlock in software keyboard\n• Framerate drops on mobile Adreno / Mali GPUs",
+        "✓ Точность ГПУ: Обычная (Normal)\n✓ Поддержка swkbd v16 (0x160012)\n✓ Оптимизация кэша шейдеров >4GB\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено",
+        "✓ GPU Accuracy: Normal\n✓ Software Keyboard v16 (0x160012) Support\n✓ Mega Shader Blob >4GB Caching\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
+        {
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\use_fast_gpu_time", "false"},
+            {"Renderer\\early_release_fences", "false"},
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\use_disk_shader_cache", "true"},
+            {"Renderer\\nvdec_emulation", "2"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"}
+        },
+        {0x040074A01BF12000ULL}
+    },
+    {
+        0x0400DB100C300000ULL,
+        "The Duskbloods (Network Test)",
+        "• Ошибка сбоя подключения к игровым серверам FromSoftware (*.fromsoftware-game.net)\n• Блокировка DNS-запросов к *.srv.nintendo.net\n• Тайм-ауты сетевых сокетов при рукопожатии NPLN",
+        "• Connection error to FromSoftware game servers (*.fromsoftware-game.net)\n• DNS lookup block on *.srv.nintendo.net\n• Network socket timeouts on NPLN TLS handshake",
+        "✓ Перенаправление DNS на локальный сервер playDB-CNT loopback\n✓ Разрешение запросов *.fromsoftware-game.net и *.srv.nintendo.net\n✓ Точность ГПУ: Обычная (Normal)\n✓ Быстрое время ГПУ: Отключено\n✓ Режим полета: Отключено",
+        "✓ DNS Redirection to Local playDB-CNT Loopback Server\n✓ Whitelist for *.fromsoftware-game.net and *.srv.nintendo.net\n✓ GPU Accuracy: Normal\n✓ Fast GPU Time: Disabled\n✓ Airplane Mode: Disabled",
+        {
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\use_fast_gpu_time", "false"},
+            {"Renderer\\early_release_fences", "false"},
+            {"Renderer\\nvdec_emulation", "2"},
+            {"System\\airplane_mode", "false"},
+            {"Cpu\\cpuopt_fastmem", "true"},
+            {"Cpu\\cpuopt_ignore_memory_aborts", "true"}
+        },
+        {0x0400DB100C300800ULL}
+    },
 };
 
 static const std::unordered_map<std::string, std::string> s_baseline_ini = {

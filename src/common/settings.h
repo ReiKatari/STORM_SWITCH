@@ -1030,6 +1030,8 @@ struct Values {
     // WebService
     Setting<std::string> web_api_url{linkage, "api.ynet-fun.xyz", "web_api_url",
                                      Category::WebService};
+    Setting<std::string> nx2_online_server{linkage, std::string(), "nx2_online_server", Category::WebService};
+    Setting<std::string> nx2_online_hosts{linkage, "*.fromsoftware-game.net,*.srv.nintendo.net,*.npln.srv.nintendo.net", "nx2_online_hosts", Category::WebService};
     Setting<std::string> eden_username{linkage, "STORM SWITCH", "eden_username",
                                        Category::WebService};
     Setting<std::string> eden_token{linkage, "",

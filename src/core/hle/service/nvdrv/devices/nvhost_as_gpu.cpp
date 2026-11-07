@@ -269,6 +269,10 @@ void nvhost_as_gpu::Nx2BackSparse(u64 gpu_address, u64 cpu_address, u64 size) {
     if (gpu_address + size > start + region_size) {
         return;
     }
+    if (cpu_address == 0) {
+        system.Host1x().MemoryManager().Unmap(device_address + (gpu_address - start), size);
+        return;
+    }
     system.Host1x().MemoryManager().Map(device_address + (gpu_address - start), cpu_address, size,
                                         session->asid, true);
 }
