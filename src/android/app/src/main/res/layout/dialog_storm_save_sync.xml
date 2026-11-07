@@ -323,6 +323,8 @@
             <!-- Search Saves -->
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        app:boxStrokeWidth="0dp"
+        app:boxStrokeWidthFocused="0dp"
                 app:boxBackgroundMode="outline"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

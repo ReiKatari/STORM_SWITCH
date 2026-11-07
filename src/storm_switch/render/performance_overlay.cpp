@@ -39,6 +39,8 @@
 #include "qt_common/abstract/frontend.h"
 #include "storm_switch/main_window.h"
 #include "storm_switch/render/performance_overlay.h"
+#include "storm_switch/common/storm_design_engine.h"
+#include "storm_switch/common/storm_vector_icons.h"
 #include "video_core/gpu.h"
 #include "video_core/shader_notify.h"
 
@@ -104,21 +106,32 @@ protected:
             fillPath.closeSubpath();
 
             QLinearGradient fillGrad(0, 0, 0, h);
-            fillGrad.setColorAt(0.0, QColor(0, 210, 255, 90));
-            fillGrad.setColorAt(1.0, QColor(0, 210, 255, 5));
+            fillGrad.setColorAt(0.0, m_fill_top);
+            fillGrad.setColorAt(1.0, m_fill_bot);
             painter.fillPath(fillPath, fillGrad);
         }
 
-        // Draw neon Cyan line
-        QPen linePen(QColor(0, 210, 255), 2);
+        // Draw stylized graph line
+        QPen linePen(m_line_color, 2);
         painter.setPen(linePen);
         painter.drawPolyline(points.data(), points.size());
+    }
+
+public:
+    void SetColors(const QColor& line, const QColor& fill_top, const QColor& fill_bot) {
+        m_line_color = line;
+        m_fill_top = fill_top;
+        m_fill_bot = fill_bot;
+        update();
     }
 
 private:
     static constexpr size_t NUM_FPS_SAMPLES_GRAPH = 120;
     std::deque<double> m_samples;
     double m_max_fps = 60.0;
+    QColor m_line_color{0, 210, 255};
+    QColor m_fill_top{0, 210, 255, 90};
+    QColor m_fill_bot{0, 210, 255, 5};
 };
 
 PerformanceOverlay::PerformanceOverlay(MainWindow* parent)
@@ -127,7 +140,9 @@ PerformanceOverlay::PerformanceOverlay(MainWindow* parent)
     setWindowFlags(Qt::FramelessWindowHint | Qt::Tool);
     raise();
 
+    m_visual_preset = static_cast<OverlayVisualPreset>(std::clamp(UISettings::values.perf_overlay_style.GetValue(), 0, 9));
     SetupUI();
+    ApplyVisualPreset();
 
     resetPosition(m_mainWindow->pos());
     connect(parent, &MainWindow::positionChanged, this, &PerformanceOverlay::resetPosition);
@@ -175,7 +190,7 @@ void PerformanceOverlay::SetupUI() {
     compact_layout->setSpacing(6);
 
     auto* compact_header = new QHBoxLayout();
-    auto* compact_title = new QLabel(tr("⚡ STORM OSD"), m_compact_widget);
+    auto* compact_title = new QLabel(tr("STORM OSD"), m_compact_widget);
     compact_title->setStyleSheet(QStringLiteral("color: #00D2FF; font-weight: bold; font-size: 11px;"));
     compact_header->addWidget(compact_title);
     compact_header->addStretch(1);
@@ -223,7 +238,7 @@ void PerformanceOverlay::SetupUI() {
 
     // Header bar
     auto* exp_header = new QHBoxLayout();
-    auto* exp_title = new QLabel(tr("⚡ STORM SWITCH - Tesla OSD"), m_expanded_widget);
+    auto* exp_title = new QLabel(tr("STORM SWITCH - Tesla OSD"), m_expanded_widget);
     exp_title->setStyleSheet(QStringLiteral("font-size: 14px; font-weight: bold; color: #00D2FF;"));
     exp_header->addWidget(exp_title);
 
@@ -243,30 +258,82 @@ void PerformanceOverlay::SetupUI() {
     exp_layout->addLayout(exp_header);
 
     connect(btn_to_compact, &QPushButton::clicked, this, &PerformanceOverlay::OnToggleExpand);
+    btn_to_compact->setText(tr("Свернуть в HUD"));
+    btn_exp_close->setText(QString{});
+    btn_exp_close->setIcon(StormVectorIcons::CreateClearCrossIcon(14, 14));
     connect(btn_exp_close, &QPushButton::clicked, this, &QWidget::close);
+
+    // Tesla OSD Quick Action Buttons Bar
+    m_quick_actions_panel = new QWidget(m_expanded_widget);
+    m_quick_actions_panel->setObjectName(QStringLiteral("OsdQuickActionsPanel"));
+    auto* qa_layout = new QHBoxLayout(m_quick_actions_panel);
+    qa_layout->setContentsMargins(0, 2, 0, 4);
+    qa_layout->setSpacing(4);
+
+    auto make_quick_btn = [this, qa_layout](const QIcon& icon, const QString& tip, auto slot_fn) -> QPushButton* {
+        auto* btn = new QPushButton(m_quick_actions_panel);
+        btn->setIcon(icon);
+        btn->setToolTip(tip);
+        btn->setCursor(Qt::PointingHandCursor);
+        btn->setFixedSize(28, 26);
+        connect(btn, &QPushButton::clicked, this, slot_fn);
+        qa_layout->addWidget(btn);
+        return btn;
+    };
+
+    m_btn_rewind = make_quick_btn(StormVectorIcons::CreateRewindIcon(), tr("Перемотка"), &PerformanceOverlay::OnQuickRewind);
+    m_btn_fast_forward = make_quick_btn(StormVectorIcons::CreateFastForwardIcon(), tr("Ускорение"), &PerformanceOverlay::OnQuickFastForward);
+    m_btn_frame_step = make_quick_btn(StormVectorIcons::CreateFrameStepIcon(), tr("Покадровый шаг"), &PerformanceOverlay::OnQuickFrameStep);
+    m_btn_quick_save = make_quick_btn(StormVectorIcons::CreateQuickSaveIcon(), tr("Быстрое сохранение"), &PerformanceOverlay::OnQuickSaveAction);
+    m_btn_quick_load = make_quick_btn(StormVectorIcons::CreateQuickLoadIcon(), tr("Быстрая загрузка"), &PerformanceOverlay::OnQuickLoadAction);
+    m_btn_ai_translate = make_quick_btn(StormVectorIcons::CreateAiTranslateIcon(), tr("ИИ-Переводчик"), &PerformanceOverlay::OnQuickAiTranslate);
+    m_btn_shader_fix = make_quick_btn(StormVectorIcons::CreateShaderFixIcon(), tr("Автофикс шейдеров"), &PerformanceOverlay::OnQuickShaderFix);
+    m_btn_turbo = make_quick_btn(StormVectorIcons::CreateTurboIcon(), tr("Турбо"), &PerformanceOverlay::OnQuickTurbo);
+    m_btn_pause_cooling = make_quick_btn(StormVectorIcons::CreatePauseCoolingIcon(), tr("Охлаждение/Пауза"), &PerformanceOverlay::OnQuickPauseCooling);
+
+    // Visual Style Selector ComboBox
+    m_style_combo = new QComboBox(m_quick_actions_panel);
+    m_style_combo->setObjectName(QStringLiteral("OsdStyleCombo"));
+    m_style_combo->setCursor(Qt::PointingHandCursor);
+    m_style_combo->setToolTip(tr("Стиль OSD HUD"));
+    m_style_combo->addItem(QStringLiteral("Aurora Glass 3D"), 0);
+    m_style_combo->addItem(QStringLiteral("Switch 2 Pro Magnetic"), 1);
+    m_style_combo->addItem(QStringLiteral("Cyberpunk Edge Neon"), 2);
+    m_style_combo->addItem(QStringLiteral("OLED Ghost Wireframe"), 3);
+    m_style_combo->addItem(QStringLiteral("Titanium Mecha Tactical"), 4);
+    m_style_combo->addItem(QStringLiteral("Hyrule Relic Gold"), 5);
+    m_style_combo->addItem(QStringLiteral("Sanctuary Blood Rune"), 6);
+    m_style_combo->addItem(QStringLiteral("Arcade Candy 3D"), 7);
+    m_style_combo->addItem(QStringLiteral("Liquid Quartz Frost"), 8);
+    m_style_combo->addItem(QStringLiteral("Retro Pixel Matrix"), 9);
+    m_style_combo->setCurrentIndex(static_cast<int>(m_visual_preset));
+    connect(m_style_combo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &PerformanceOverlay::OnStyleComboChanged);
+    qa_layout->addWidget(m_style_combo, 1);
+
+    exp_layout->addWidget(m_quick_actions_panel);
 
     // Tab widget
     m_tabs = new QTabWidget(m_expanded_widget);
 
     auto* tab_monitoring = new QWidget();
     SetupMonitoringTab(tab_monitoring);
-    m_tabs->addTab(tab_monitoring, tr("📊 Мониторинг"));
+    m_tabs->addTab(tab_monitoring, tr("Мониторинг"));
 
     auto* tab_cheats = new QWidget();
     SetupCheatsTab(tab_cheats);
-    m_tabs->addTab(tab_cheats, tr("🎮 Читы"));
+    m_tabs->addTab(tab_cheats, tr("Читы"));
 
     auto* tab_saves = new QWidget();
     SetupSaveStatesTab(tab_saves);
-    m_tabs->addTab(tab_saves, tr("💾 Сохранения"));
+    m_tabs->addTab(tab_saves, tr("Сохранения"));
 
     auto* tab_amiibo = new QWidget();
     SetupAmiiboTab(tab_amiibo);
-    m_tabs->addTab(tab_amiibo, tr("🎯 Amiibo"));
+    m_tabs->addTab(tab_amiibo, tr("Amiibo"));
 
     auto* tab_cfw = new QWidget();
     SetupCfwTab(tab_cfw);
-    m_tabs->addTab(tab_cfw, tr("⚡ CFW твики"));
+    m_tabs->addTab(tab_cfw, tr("CFW твики"));
 
     exp_layout->addWidget(m_tabs, 1);
 
@@ -612,7 +679,7 @@ void PerformanceOverlay::updateStats(const Core::PerfStatsResults& results,
     if (!std::isnan(fps)) {
         static constexpr double FPS_SAMPLE_THRESHOLD = 3.0;
 
-        QString fpsText = tr("%1 fps").arg(std::round(fps), 0, 'f', 0);
+        QString fpsText = StormFormat::Fps(fps);
         m_compact_fps->setText(fpsText);
         if (m_lbl_fps) m_lbl_fps->setText(fpsText);
 
@@ -629,7 +696,7 @@ void PerformanceOverlay::updateStats(const Core::PerfStatsResults& results,
             double sum = std::accumulate(m_fpsSamples.end() - back_search, m_fpsSamples.end(), 0.0);
             double avg = sum / back_search;
 
-            if (m_lbl_fps_avg) m_lbl_fps_avg->setText(tr("Avg: %1").arg(avg, 0, 'f', 0));
+            if (m_lbl_fps_avg) m_lbl_fps_avg->setText(tr("Avg: %1").arg(StormFormat::FloatNumber(avg, 0)));
         }
 
         if (!m_fpsSamples.empty()) {
@@ -637,8 +704,8 @@ void PerformanceOverlay::updateStats(const Core::PerfStatsResults& results,
             double min_fps = *min_it;
             double max_fps = *max_it;
 
-            if (m_lbl_fps_min) m_lbl_fps_min->setText(tr("Min: %1").arg(min_fps, 0, 'f', 0));
-            if (m_lbl_fps_max) m_lbl_fps_max->setText(tr("Max: %1").arg(max_fps, 0, 'f', 0));
+            if (m_lbl_fps_min) m_lbl_fps_min->setText(tr("Min: %1").arg(StormFormat::FloatNumber(min_fps, 0)));
+            if (m_lbl_fps_max) m_lbl_fps_max->setText(tr("Max: %1").arg(StormFormat::FloatNumber(max_fps, 0)));
 
             if (m_lbl_fps_1low) {
                 std::vector<double> sorted_fps(m_fpsSamples.begin(), m_fpsSamples.end());
@@ -648,7 +715,7 @@ void PerformanceOverlay::updateStats(const Core::PerfStatsResults& results,
                 for (size_t i = 0; i < low_count; ++i) {
                     low_sum += sorted_fps[i];
                 }
-                m_lbl_fps_1low->setText(tr("1% Low: %1").arg(low_sum / static_cast<double>(low_count), 0, 'f', 0));
+                m_lbl_fps_1low->setText(tr("1% Low: %1").arg(StormFormat::FloatNumber(low_sum / static_cast<double>(low_count), 0)));
             }
 
             m_compact_fpsGraph->setSamples(m_fpsSamples, max_fps);
@@ -661,7 +728,7 @@ void PerformanceOverlay::updateStats(const Core::PerfStatsResults& results,
         static constexpr double FT_SAMPLE_THRESHOLD = 500.0;
 
         double ft_ms = results.frametime * 1000.0;
-        QString ftText = tr("%1 ms").arg(ft_ms, 0, 'f', 2);
+        QString ftText = StormFormat::Frametime(ft_ms);
         m_compact_ft->setText(ftText);
         if (m_lbl_ft) m_lbl_ft->setText(ftText);
 
@@ -674,8 +741,8 @@ void PerformanceOverlay::updateStats(const Core::PerfStatsResults& results,
         if (!m_frametimeSamples.empty()) {
             auto [min_it, max_it] =
                 std::minmax_element(m_frametimeSamples.begin(), m_frametimeSamples.end());
-            if (m_lbl_ft_min) m_lbl_ft_min->setText(tr("Min: %1").arg(*min_it, 0, 'f', 1));
-            if (m_lbl_ft_max) m_lbl_ft_max->setText(tr("Max: %1").arg(*max_it, 0, 'f', 1));
+            if (m_lbl_ft_min) m_lbl_ft_min->setText(tr("Min: %1").arg(StormFormat::FloatNumber(*min_it, 1)));
+            if (m_lbl_ft_max) m_lbl_ft_max->setText(tr("Max: %1").arg(StormFormat::FloatNumber(*max_it, 1)));
         }
 
         if (m_frametimeSamples.size() >= 2) {
@@ -684,14 +751,14 @@ void PerformanceOverlay::updateStats(const Core::PerfStatsResults& results,
                                          m_frametimeSamples.end(), 0.0);
             double avg = sum / back_search;
 
-            if (m_lbl_ft_avg) m_lbl_ft_avg->setText(tr("Avg: %1").arg(avg, 0, 'f', 1));
+            if (m_lbl_ft_avg) m_lbl_ft_avg->setText(tr("Avg: %1").arg(StormFormat::FloatNumber(avg, 1)));
         }
     }
 
     // Dynamic Performance Scaler status (live adaptive scale factor)
     if (Settings::values.dynamic_performance_scaler.GetValue()) {
         const float scale = Core::DynamicPerformanceScaler::GetEffectiveScaleFactor();
-        QString dpsText = tr("DPS: %1x").arg(scale, 0, 'f', 2);
+        QString dpsText = tr("DPS: %1").arg(StormFormat::Multiplier(scale));
         m_compact_dps->setText(dpsText);
         m_compact_dps->setVisible(true);
         if (m_lbl_dps) m_lbl_dps->setText(dpsText);
@@ -1115,14 +1182,261 @@ void PerformanceOverlay::OnAutoHealGraphicsArtifacts() {
     }
 }
 
+void PerformanceOverlay::SetVisualPreset(OverlayVisualPreset preset) {
+    m_visual_preset = preset;
+    UISettings::values.perf_overlay_style = static_cast<int>(preset);
+    if (m_style_combo && m_style_combo->currentIndex() != static_cast<int>(preset)) {
+        const QSignalBlocker b(m_style_combo);
+        m_style_combo->setCurrentIndex(static_cast<int>(preset));
+    }
+    ApplyVisualPreset();
+}
+
+void PerformanceOverlay::ApplyVisualPreset() {
+    QColor line_col(0, 210, 255);
+    QColor fill_top(0, 210, 255, 90);
+    QColor fill_bot(0, 210, 255, 5);
+    QString border_color = QStringLiteral("#00D2FF");
+    QString bg_color = QStringLiteral("rgba(11, 15, 25, 245)");
+    QString tab_sel_color = QStringLiteral("#00D2FF");
+
+    switch (m_visual_preset) {
+    case OverlayVisualPreset::StormAuroraGlass3D:
+        line_col = QColor(0, 210, 255);
+        fill_top = QColor(168, 85, 247, 100);
+        fill_bot = QColor(0, 210, 255, 10);
+        border_color = QStringLiteral("#00D2FF");
+        bg_color = QStringLiteral("rgba(11, 15, 25, 240)");
+        tab_sel_color = QStringLiteral("#00D2FF");
+        break;
+    case OverlayVisualPreset::Switch2ProMagnetic:
+        line_col = QColor(255, 59, 48);
+        fill_top = QColor(255, 59, 48, 90);
+        fill_bot = QColor(0, 229, 255, 20);
+        border_color = QStringLiteral("#FF3B30");
+        bg_color = QStringLiteral("rgba(18, 22, 32, 245)");
+        tab_sel_color = QStringLiteral("#00E5FF");
+        break;
+    case OverlayVisualPreset::CyberpunkEdgeNeon:
+        line_col = QColor(255, 230, 0);
+        fill_top = QColor(255, 230, 0, 95);
+        fill_bot = QColor(255, 0, 85, 25);
+        border_color = QStringLiteral("#FFE600");
+        bg_color = QStringLiteral("rgba(10, 10, 14, 250)");
+        tab_sel_color = QStringLiteral("#FFE600");
+        break;
+    case OverlayVisualPreset::OledGhostWireframe:
+        line_col = QColor(226, 232, 240);
+        fill_top = QColor(255, 255, 255, 50);
+        fill_bot = QColor(255, 255, 255, 5);
+        border_color = QStringLiteral("rgba(255, 255, 255, 0.45)");
+        bg_color = QStringLiteral("rgba(0, 0, 0, 252)");
+        tab_sel_color = QStringLiteral("#FFFFFF");
+        break;
+    case OverlayVisualPreset::TitaniumMechaTactical:
+        line_col = QColor(245, 158, 11);
+        fill_top = QColor(245, 158, 11, 90);
+        fill_bot = QColor(217, 119, 6, 15);
+        border_color = QStringLiteral("#F59E0B");
+        bg_color = QStringLiteral("rgba(21, 24, 30, 245)");
+        tab_sel_color = QStringLiteral("#F59E0B");
+        break;
+    case OverlayVisualPreset::HyruleRelicGold:
+        line_col = QColor(251, 191, 36);
+        fill_top = QColor(251, 191, 36, 95);
+        fill_bot = QColor(16, 185, 129, 20);
+        border_color = QStringLiteral("#FBBF24");
+        bg_color = QStringLiteral("rgba(15, 21, 18, 245)");
+        tab_sel_color = QStringLiteral("#10B981");
+        break;
+    case OverlayVisualPreset::SanctuaryBloodRune:
+        line_col = QColor(239, 68, 68);
+        fill_top = QColor(239, 68, 68, 100);
+        fill_bot = QColor(153, 27, 27, 25);
+        border_color = QStringLiteral("#DC2626");
+        bg_color = QStringLiteral("rgba(17, 9, 12, 245)");
+        tab_sel_color = QStringLiteral("#EF4444");
+        break;
+    case OverlayVisualPreset::ArcadeCandyTactile3D:
+        line_col = QColor(236, 72, 153);
+        fill_top = QColor(139, 92, 246, 100);
+        fill_bot = QColor(6, 182, 212, 20);
+        border_color = QStringLiteral("#EC4899");
+        bg_color = QStringLiteral("rgba(30, 16, 42, 245)");
+        tab_sel_color = QStringLiteral("#06B6D4");
+        break;
+    case OverlayVisualPreset::LiquidQuartzFrost:
+        line_col = QColor(56, 189, 248);
+        fill_top = QColor(56, 189, 248, 80);
+        fill_bot = QColor(2, 132, 199, 15);
+        border_color = QStringLiteral("#38BDF8");
+        bg_color = QStringLiteral("rgba(15, 28, 48, 230)");
+        tab_sel_color = QStringLiteral("#38BDF8");
+        break;
+    case OverlayVisualPreset::RetroPixelMatrix:
+        line_col = QColor(34, 197, 94);
+        fill_top = QColor(34, 197, 94, 90);
+        fill_bot = QColor(21, 128, 61, 15);
+        border_color = QStringLiteral("#22C55E");
+        bg_color = QStringLiteral("rgba(5, 16, 8, 250)");
+        tab_sel_color = QStringLiteral("#22C55E");
+        break;
+    }
+
+    if (m_compact_fpsGraph) {
+        m_compact_fpsGraph->SetColors(line_col, fill_top, fill_bot);
+    }
+    if (m_fpsGraph) {
+        m_fpsGraph->SetColors(line_col, fill_top, fill_bot);
+    }
+
+    setStyleSheet(QStringLiteral(
+        "QWidget { color: #FFFFFF; font-family: 'Segoe UI', sans-serif; font-size: 12px; }"
+        "QTabWidget::pane { border: 1.5px solid %1; background: %2; border-radius: 8px; }"
+        "QTabBar::tab { background: rgba(15, 23, 42, 0.85); color: #FFFFFF; padding: 6px 12px; border: 1px solid rgba(255, 255, 255, 0.15); "
+        "border-top-left-radius: 6px; border-top-right-radius: 6px; margin-right: 2px; font-weight: bold; }"
+        "QTabBar::tab:selected { background: rgba(30, 41, 59, 0.95); color: %3; border-bottom: 2.5px solid %3; }"
+        "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(30, 41, 59, 0.9), stop:1 rgba(15, 23, 42, 0.9)); "
+        "border: 1px solid rgba(255, 255, 255, 0.20); border-radius: 6px; color: #FFFFFF; padding: 5px 10px; font-weight: 600; }"
+        "QPushButton:hover { border: 1.5px solid %1; color: %3; background: rgba(30, 41, 59, 1.0); }"
+        "QPushButton:pressed { background: %1; color: #FFFFFF; }"
+        "QPushButton:disabled { background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(255, 255, 255, 0.10); color: #64748B; }"
+        "QComboBox { background: rgba(15, 23, 42, 0.9); border: 1px solid %1; border-radius: 6px; padding: 4px 8px; color: #FFFFFF; }"
+        "QComboBox::drop-down { border: none; width: 18px; }"
+        "QCheckBox { spacing: 6px; }"
+        "QCheckBox::indicator { width: 15px; height: 15px; border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 3px; background: rgba(15, 23, 42, 0.9); }"
+        "QCheckBox::indicator:checked { background: %1; border: 1px solid %1; }"
+    ).arg(border_color, bg_color, tab_sel_color));
+
+    update();
+}
+
 void PerformanceOverlay::paintEvent(QPaintEvent* event) {
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
 
-    // Cyber translucent background with neon cyan border
-    painter.setBrush(QColor(11, 15, 25, 240));
-    painter.setPen(QPen(QColor(0, 210, 255, 120), 1.5));
-    painter.drawRoundedRect(rect().adjusted(1, 1, -1, -1), 10.0, 10.0);
+    QColor bg_col(11, 15, 25, 240);
+    QColor border_col(0, 210, 255, 140);
+    qreal r = 10.0;
+
+    switch (m_visual_preset) {
+    case OverlayVisualPreset::StormAuroraGlass3D:
+        bg_col = QColor(11, 15, 25, 240);
+        border_col = QColor(0, 210, 255, 180);
+        r = 12.0;
+        break;
+    case OverlayVisualPreset::Switch2ProMagnetic:
+        bg_col = QColor(18, 22, 32, 245);
+        border_col = QColor(255, 59, 48, 200);
+        r = 14.0;
+        break;
+    case OverlayVisualPreset::CyberpunkEdgeNeon:
+        bg_col = QColor(10, 10, 14, 250);
+        border_col = QColor(255, 230, 0, 220);
+        r = 4.0;
+        break;
+    case OverlayVisualPreset::OledGhostWireframe:
+        bg_col = QColor(0, 0, 0, 252);
+        border_col = QColor(255, 255, 255, 120);
+        r = 6.0;
+        break;
+    case OverlayVisualPreset::TitaniumMechaTactical:
+        bg_col = QColor(21, 24, 30, 245);
+        border_col = QColor(245, 158, 11, 200);
+        r = 5.0;
+        break;
+    case OverlayVisualPreset::HyruleRelicGold:
+        bg_col = QColor(15, 21, 18, 245);
+        border_col = QColor(251, 191, 36, 210);
+        r = 8.0;
+        break;
+    case OverlayVisualPreset::SanctuaryBloodRune:
+        bg_col = QColor(17, 9, 12, 245);
+        border_col = QColor(220, 38, 38, 210);
+        r = 6.0;
+        break;
+    case OverlayVisualPreset::ArcadeCandyTactile3D:
+        bg_col = QColor(30, 16, 42, 245);
+        border_col = QColor(236, 72, 153, 210);
+        r = 16.0;
+        break;
+    case OverlayVisualPreset::LiquidQuartzFrost:
+        bg_col = QColor(15, 28, 48, 230);
+        border_col = QColor(56, 189, 248, 190);
+        r = 10.0;
+        break;
+    case OverlayVisualPreset::RetroPixelMatrix:
+        bg_col = QColor(5, 16, 8, 250);
+        border_col = QColor(34, 197, 94, 220);
+        r = 2.0;
+        break;
+    }
+
+    painter.setBrush(bg_col);
+    painter.setPen(QPen(border_col, 1.5));
+    painter.drawRoundedRect(rect().adjusted(1, 1, -1, -1), r, r);
+
+    // Scanlines texture for RetroPixelMatrix
+    if (m_visual_preset == OverlayVisualPreset::RetroPixelMatrix) {
+        painter.setPen(QPen(QColor(34, 197, 94, 15), 1));
+        for (int y = 2; y < height() - 2; y += 3) {
+            painter.drawLine(2, y, width() - 2, y);
+        }
+    }
+}
+
+void PerformanceOverlay::OnQuickRewind() {
+    const bool cur = Settings::values.use_speed_limit.GetValue();
+    Settings::values.use_speed_limit.SetValue(!cur);
+}
+
+void PerformanceOverlay::OnQuickFastForward() {
+    if (Settings::values.speed_limit.GetValue() < 200) {
+        Settings::values.speed_limit.SetValue(200);
+    } else {
+        Settings::values.speed_limit.SetValue(100);
+    }
+}
+
+void PerformanceOverlay::OnQuickFrameStep() {
+    if (m_mainWindow) {
+        m_mainWindow->OnPauseGame();
+    }
+}
+
+void PerformanceOverlay::OnQuickSaveAction() {
+    OnSaveSlot(0);
+}
+
+void PerformanceOverlay::OnQuickLoadAction() {
+    OnLoadSlot(0);
+}
+
+void PerformanceOverlay::OnQuickAiTranslate() {
+    if (m_mainWindow) {
+        m_mainWindow->OnTranslateScreen();
+    }
+}
+
+void PerformanceOverlay::OnQuickShaderFix() {
+    OnAutoHealGraphicsArtifacts();
+}
+
+void PerformanceOverlay::OnQuickTurbo() {
+    const auto cur = Settings::values.speed_limit.GetValue();
+    Settings::values.speed_limit.SetValue(cur >= 200 ? 100 : 300);
+}
+
+void PerformanceOverlay::OnQuickPauseCooling() {
+    if (m_mainWindow) {
+        m_mainWindow->OnPauseContinueGame();
+    }
+}
+
+void PerformanceOverlay::OnStyleComboChanged(int index) {
+    if (index >= 0 && index < 10) {
+        SetVisualPreset(static_cast<OverlayVisualPreset>(index));
+    }
 }
 
 void PerformanceOverlay::mousePressEvent(QMouseEvent* event) {

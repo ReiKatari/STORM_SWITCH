@@ -63,7 +63,7 @@ void ConfigurePerGameAmiibo::SetupUi() {
     filter_layout->setSpacing(8);
 
     m_search_edit = new QLineEdit(this);
-    m_search_edit->setPlaceholderText(tr("🔍 Поиск Amiibo для этой игры..."));
+    m_search_edit->setPlaceholderText(tr("Поиск Amiibo для этой игры..."));
     m_search_edit->setClearButtonEnabled(true);
     connect(m_search_edit, &QLineEdit::textChanged, this, &ConfigurePerGameAmiibo::OnSearchFilterChanged);
     filter_layout->addWidget(m_search_edit, 3);

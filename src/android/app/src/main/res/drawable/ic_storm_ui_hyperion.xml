@@ -1,0 +1,34 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- HYPERION DOCKED CONSOLE ICON -->
+    <path
+        android:pathData="M4,4 L20,4 C21.1,4 22,4.9 22,6 L22,15 C22,16.1 21.1,17 20,17 L4,17 C2.9,17 2,16.1 2,15 L2,6 C2,4.9 2.9,4 4,4 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="2"
+                android:startY="4"
+                android:endX="22"
+                android:endY="17"
+                android:type="linear">
+                <item android:color="#C084FC" android:offset="0.0" />
+                <item android:color="#8B5CF6" android:offset="0.5" />
+                <item android:color="#581C87" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Dock base stand -->
+    <path
+        android:fillColor="#E9D5FF"
+        android:pathData="M6,17 L18,17 L19,20 L5,20 Z" />
+    <!-- Console Display Glow -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M5,7 L19,7 L19,14 L5,14 Z" />
+    <path
+        android:fillColor="#8B5CF6"
+        android:pathData="M10,9 L15,10.5 L10,12 Z" />
+</vector>

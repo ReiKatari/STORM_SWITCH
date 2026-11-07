@@ -1,0 +1,30 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- TITANIUM CYBER DECK ICON -->
+    <path
+        android:pathData="M3,5 L21,5 C21.55,5 22,5.45 22,6 L22,17 C22,17.55 21.55,18 21,18 L3,18 C2.45,18 2,17.55 2,17 L2,6 C2,5.45 2.45,5 3,5 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="2"
+                android:startY="5"
+                android:endX="22"
+                android:endY="18"
+                android:type="linear">
+                <item android:color="#00E5FF" android:offset="0.0" />
+                <item android:color="#0077B6" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Cyber Decal Lines -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.2"
+        android:pathData="M5,8 L19,8 M5,11 L13,11 M5,14 L10,14 M16,11 L19,14" />
+    <path
+        android:fillColor="#00E5FF"
+        android:pathData="M16,13 L17.5,14.5 L19,13 L17.5,11.5 Z" />
+</vector>

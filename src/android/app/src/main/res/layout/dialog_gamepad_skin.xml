@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="?attr/colorSurface">
+
+    <!-- Dialog Header -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp">
+
+        <ImageView
+            android:id="@+id/icon_dialog_header"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:src="@drawable/ic_storm_ui_gamepad_skin"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="10dp" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/text_dialog_title"
+            style="@style/TextAppearance.Material3.TitleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/icon_dialog_header"
+            android:layout_centerVertical="true"
+            android:text="@string/controller_skin_dialog_title"
+            android:textStyle="bold"
+            android:textColor="?attr/colorOnSurface" />
+
+    </RelativeLayout>
+
+    <!-- 3D Interactive Controller Preview View -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="220dp"
+        app:cardCornerRadius="18dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="1.5dp"
+        app:strokeColor="?attr/colorOutline"
+        app:cardBackgroundColor="?attr/colorSurfaceVariant">
+
+        <org.yuzu.yuzu_emu.views.GamepadSkinPreviewView
+            android:id="@+id/gamepad_preview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Quick Flip Button & Auto-Skin Toggle Row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="8dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_flip_view"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="@string/controller_flip_view"
+            android:textSize="12sp"
+            app:icon="@drawable/ic_refresh"
+            app:iconSize="16dp" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/switch_auto_skin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/controller_auto_game_skin"
+            android:textSize="12sp"
+            android:textColor="?attr/colorOnSurface" />
+
+    </LinearLayout>
+
+    <!-- Skins Recycler List -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_skins"
+        android:layout_width="match_parent"
+        android:layout_height="240dp"
+        android:clipToPadding="false"
+        android:scrollbars="vertical"
+        android:layout_marginBottom="12dp" />
+
+    <!-- Bottom Done Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_done"
+        style="@style/Widget.Material3.Button"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="@android:string/ok"
+        app:cornerRadius="12dp" />
+
+</LinearLayout>

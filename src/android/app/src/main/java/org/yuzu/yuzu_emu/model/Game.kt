@@ -60,14 +60,14 @@ class Game(
 
     val programIdHex: String
         get() {
-            val cleanId = programId.trim()
+            val cleanId = programId.trim().removePrefix("0x").removePrefix("0X")
             val parsedHex = cleanId.toULongOrNull(16) ?: cleanId.toULongOrNull(10)
             return if (parsedHex != null && parsedHex != 0uL) {
                 String.format(java.util.Locale.ROOT, "%016X", parsedHex.toLong())
-            } else if (cleanId.isNotEmpty() && cleanId != "0" && cleanId != "0000000000000000") {
-                cleanId
+            } else if (cleanId.isNotEmpty() && cleanId != "0") {
+                cleanId.padStart(16, '0').uppercase(java.util.Locale.ROOT)
             } else {
-                "0"
+                "0000000000000000"
             }
         }
 

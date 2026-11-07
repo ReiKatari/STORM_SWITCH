@@ -82,6 +82,7 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
 
     // External listener for EmulationFragment joypad overlay auto-hide
     var touchEventListener: ((MotionEvent) -> Unit)? = null
+    var onCustomAction: ((String) -> Unit)? = null
 
     override fun onCheckIsTextEditor(): Boolean = true
 
@@ -295,6 +296,9 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
                 button.button,
                 button.status
             )
+            if (button.status == NativeInput.ButtonState.PRESSED) {
+                onCustomAction?.invoke(button.overlayControlData.id)
+            }
             playHaptics(event)
             invalidate(button.bounds)
         }
@@ -811,6 +815,258 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
                             R.drawable.button_r3,
                             R.drawable.button_r3_depressed,
                             NativeButton.RStick,
+                            data,
+                            position
+                        )
+                    )
+                }
+
+                OverlayControl.BUTTON_GL.id -> {
+                    overlayButtons.add(
+                        initializeOverlayButton(
+                            context,
+                            windowSize,
+                            R.drawable.l_shoulder,
+                            R.drawable.l_shoulder_depressed,
+                            NativeButton.L,
+                            data,
+                            position
+                        )
+                    )
+                }
+
+                OverlayControl.BUTTON_GR.id -> {
+                    overlayButtons.add(
+                        initializeOverlayButton(
+                            context,
+                            windowSize,
+                            R.drawable.r_shoulder,
+                            R.drawable.r_shoulder_depressed,
+                            NativeButton.R,
+                            data,
+                            position
+                        )
+                    )
+                }
+
+                OverlayControl.BUTTON_SL.id -> {
+                    overlayButtons.add(
+                        initializeOverlayButton(
+                            context,
+                            windowSize,
+                            R.drawable.facebutton_plus,
+                            R.drawable.facebutton_plus_depressed,
+                            NativeButton.SLLeft,
+                            data,
+                            position
+                        )
+                    )
+                }
+
+                OverlayControl.BUTTON_SR.id -> {
+                    overlayButtons.add(
+                        initializeOverlayButton(
+                            context,
+                            windowSize,
+                            R.drawable.facebutton_plus,
+                            R.drawable.facebutton_plus_depressed,
+                            NativeButton.SRLeft,
+                            data,
+                            position
+                        )
+                    )
+                }
+
+                OverlayControl.BUTTON_REWIND.id -> {
+                    overlayButtons.add(
+                        initializeOverlayButton(
+                            context,
+                            windowSize,
+                            R.drawable.facebutton_minus,
+                            R.drawable.facebutton_minus_depressed,
+                            NativeButton.Minus,
+                            data,
+                            position
+                        )
+                    )
+                }
+
+                OverlayControl.BUTTON_FAST_FORWARD.id -> {
+                    overlayButtons.add(
+                        initializeOverlayButton(
+                            context,
+                            windowSize,
+                            R.drawable.facebutton_plus,
+                            R.drawable.facebutton_plus_depressed,
+                            NativeButton.Plus,
+                            data,
+                            position
+                        )
+                    )
+                }
+
+                OverlayControl.BUTTON_FRAME_STEP.id -> {
+                    overlayButtons.add(
+                        initializeOverlayButton(
+                            context,
+                            windowSize,
+                            R.drawable.facebutton_screenshot,
+                            R.drawable.facebutton_screenshot_depressed,
+                            NativeButton.Capture,
+                            data,
+                            position
+                        )
+                    )
+                }
+
+                OverlayControl.BUTTON_QUICK_SAVE.id -> {
+                    overlayButtons.add(
+                        initializeOverlayButton(
+                            context,
+                            windowSize,
+                            R.drawable.facebutton_a,
+                            R.drawable.facebutton_a_depressed,
+                            NativeButton.A,
+                            data,
+                            position
+                        )
+                    )
+                }
+
+                OverlayControl.BUTTON_QUICK_LOAD.id -> {
+                    overlayButtons.add(
+                        initializeOverlayButton(
+                            context,
+                            windowSize,
+                            R.drawable.facebutton_b,
+                            R.drawable.facebutton_b_depressed,
+                            NativeButton.B,
+                            data,
+                            position
+                        )
+                    )
+                }
+
+                OverlayControl.BUTTON_AI_TRANSLATOR.id -> {
+                    overlayButtons.add(
+                        initializeOverlayButton(
+                            context,
+                            windowSize,
+                            R.drawable.facebutton_x,
+                            R.drawable.facebutton_x_depressed,
+                            NativeButton.X,
+                            data,
+                            position
+                        )
+                    )
+                }
+
+                OverlayControl.BUTTON_AUTO_FIX.id -> {
+                    overlayButtons.add(
+                        initializeOverlayButton(
+                            context,
+                            windowSize,
+                            R.drawable.facebutton_y,
+                            R.drawable.facebutton_y_depressed,
+                            NativeButton.Y,
+                            data,
+                            position
+                        )
+                    )
+                }
+
+                OverlayControl.BUTTON_TURBO_HOLD.id -> {
+                    overlayButtons.add(
+                        initializeOverlayButton(
+                            context,
+                            windowSize,
+                            R.drawable.facebutton_plus,
+                            R.drawable.facebutton_plus_depressed,
+                            NativeButton.Plus,
+                            data,
+                            position
+                        )
+                    )
+                }
+
+                OverlayControl.BUTTON_PAUSE_COOLING.id -> {
+                    overlayButtons.add(
+                        initializeOverlayButton(
+                            context,
+                            windowSize,
+                            R.drawable.facebutton_minus,
+                            R.drawable.facebutton_minus_depressed,
+                            NativeButton.Minus,
+                            data,
+                            position
+                        )
+                    )
+                }
+
+                OverlayControl.BUTTON_GAME_CHAT.id -> {
+                    overlayButtons.add(
+                        initializeOverlayButton(
+                            context,
+                            windowSize,
+                            R.drawable.facebutton_home,
+                            R.drawable.facebutton_home_depressed,
+                            NativeButton.Home,
+                            data,
+                            position
+                        )
+                    )
+                }
+
+                OverlayControl.BUTTON_GYRO_TOGGLE.id -> {
+                    overlayButtons.add(
+                        initializeOverlayButton(
+                            context,
+                            windowSize,
+                            R.drawable.facebutton_screenshot,
+                            R.drawable.facebutton_screenshot_depressed,
+                            NativeButton.Capture,
+                            data,
+                            position
+                        )
+                    )
+                }
+
+                OverlayControl.BUTTON_MOUSE_MODE.id -> {
+                    overlayButtons.add(
+                        initializeOverlayButton(
+                            context,
+                            windowSize,
+                            R.drawable.button_r3,
+                            R.drawable.button_r3_depressed,
+                            NativeButton.RStick,
+                            data,
+                            position
+                        )
+                    )
+                }
+
+                OverlayControl.BUTTON_MACRO_M1.id -> {
+                    overlayButtons.add(
+                        initializeOverlayButton(
+                            context,
+                            windowSize,
+                            R.drawable.button_l3,
+                            R.drawable.button_l3_depressed,
+                            NativeButton.LStick,
+                            data,
+                            position
+                        )
+                    )
+                }
+
+                OverlayControl.BUTTON_HIDE_HUD.id -> {
+                    overlayButtons.add(
+                        initializeOverlayButton(
+                            context,
+                            windowSize,
+                            R.drawable.facebutton_minus,
+                            R.drawable.facebutton_minus_depressed,
+                            NativeButton.Minus,
                             data,
                             position
                         )
@@ -1462,12 +1718,30 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
                 OverlayControl.BUTTON_HOME.id,
                 OverlayControl.BUTTON_CAPTURE.id,
                 OverlayControl.BUTTON_PLUS.id,
-                OverlayControl.BUTTON_MINUS.id -> 0.07f
+                OverlayControl.BUTTON_MINUS.id,
+                OverlayControl.BUTTON_SL.id,
+                OverlayControl.BUTTON_SR.id,
+                OverlayControl.BUTTON_GAME_CHAT.id,
+                OverlayControl.BUTTON_GYRO_TOGGLE.id,
+                OverlayControl.BUTTON_MOUSE_MODE.id,
+                OverlayControl.BUTTON_MACRO_M1.id,
+                OverlayControl.BUTTON_HIDE_HUD.id,
+                OverlayControl.BUTTON_REWIND.id,
+                OverlayControl.BUTTON_FAST_FORWARD.id,
+                OverlayControl.BUTTON_FRAME_STEP.id,
+                OverlayControl.BUTTON_QUICK_SAVE.id,
+                OverlayControl.BUTTON_QUICK_LOAD.id,
+                OverlayControl.BUTTON_AI_TRANSLATOR.id,
+                OverlayControl.BUTTON_AUTO_FIX.id,
+                OverlayControl.BUTTON_TURBO_HOLD.id,
+                OverlayControl.BUTTON_PAUSE_COOLING.id -> 0.08f
 
+                OverlayControl.BUTTON_GL.id,
+                OverlayControl.BUTTON_GR.id,
                 OverlayControl.BUTTON_L.id,
                 OverlayControl.BUTTON_R.id,
                 OverlayControl.BUTTON_ZL.id,
-                OverlayControl.BUTTON_ZR.id -> 0.26f
+                OverlayControl.BUTTON_ZR.id -> 0.24f
 
                 OverlayControl.BUTTON_STICK_L.id,
                 OverlayControl.BUTTON_STICK_R.id -> 0.155f
@@ -1487,15 +1761,39 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
                 OverlayControl.BUTTON_Y.id,
                 OverlayControl.BUTTON_R.id,
                 OverlayControl.BUTTON_ZR.id,
+                OverlayControl.BUTTON_GR.id,
+                OverlayControl.BUTTON_SR.id,
                 OverlayControl.BUTTON_PLUS.id,
                 OverlayControl.BUTTON_HOME.id,
-                OverlayControl.BUTTON_STICK_R.id -> true
+                OverlayControl.BUTTON_STICK_R.id,
+                OverlayControl.BUTTON_GAME_CHAT.id,
+                OverlayControl.BUTTON_QUICK_LOAD.id,
+                OverlayControl.BUTTON_AI_TRANSLATOR.id,
+                OverlayControl.BUTTON_AUTO_FIX.id,
+                OverlayControl.BUTTON_HIDE_HUD.id -> true
                 else -> false
             }
 
-            // Initialize the InputOverlayDrawableButton.
-            val defaultStateBitmap = getBitmap(context, defaultResId, scale, isPressed = false, isRightSide = isRightSide)
-            val pressedStateBitmap = getBitmap(context, pressedResId, scale, isPressed = true, isRightSide = isRightSide)
+            // Initialize the InputOverlayDrawableButton using high-perf procedural vector renderer
+            val currentTheme = org.yuzu.yuzu_emu.overlay.model.OverlayTheme.fromId(IntSetting.OVERLAY_SKIN_THEME.getInt())
+            val dm = context.resources.displayMetrics
+            val minScreenDimension = min(dm.widthPixels, dm.heightPixels)
+            val btnPixelSize = (scale * minScreenDimension).toInt().coerceIn(48, 512)
+
+            val defaultStateBitmap = OverlayControlIconRenderer.createBitmapForControl(
+                overlayControlData.id,
+                btnPixelSize,
+                currentTheme,
+                isPressed = false,
+                isRightSide = isRightSide
+            )
+            val pressedStateBitmap = OverlayControlIconRenderer.createBitmapForControl(
+                overlayControlData.id,
+                btnPixelSize,
+                currentTheme,
+                isPressed = true,
+                isRightSide = isRightSide
+            )
             val overlayDrawable = InputOverlayDrawableButton(
                 res,
                 defaultStateBitmap,

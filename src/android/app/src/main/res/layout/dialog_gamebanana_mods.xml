@@ -165,8 +165,8 @@
                     app:boxCornerRadiusTopEnd="8dp"
                     app:boxCornerRadiusTopStart="8dp"
                     app:boxStrokeColor="?attr/colorPrimary"
-                    app:boxStrokeWidth="1.5dp"
-                    app:boxStrokeWidthFocused="2dp"
+                    app:boxStrokeWidth="0dp"
+                    app:boxStrokeWidthFocused="0dp"
                     app:hintTextColor="?attr/colorPrimary">
 
                     <com.google.android.material.textfield.TextInputEditText

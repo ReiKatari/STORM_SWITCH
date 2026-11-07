@@ -1124,6 +1124,23 @@ class SettingsFragmentPresenter(
 
 
         sl.apply {
+            add(HeaderSetting(R.string.controller_skins_header))
+            add(
+                SwitchSetting(
+                    BooleanSetting.CONTROLLER_AUTO_GAME_SKIN,
+                    titleId = R.string.controller_auto_game_skin,
+                    descriptionId = R.string.controller_auto_game_skin_desc
+                )
+            )
+            add(
+                IntSingleChoiceSetting(
+                    IntSetting.CONTROLLER_SKIN_STYLE,
+                    titleId = R.string.controller_skin_style,
+                    descriptionId = R.string.controller_skin_style_desc,
+                    choices = context.resources.getStringArray(R.array.controllerSkinStyleNames),
+                    values = context.resources.getIntArray(R.array.controllerSkinStyleValues).toTypedArray()
+                )
+            )
 
             add(
 

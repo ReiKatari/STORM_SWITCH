@@ -86,7 +86,7 @@
 
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-            app:boxBackgroundMode="outline"
+            app:boxBackgroundMode="none" app:boxStrokeWidth="0dp" app:boxStrokeWidthFocused="0dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:boxBackgroundColor="@android:color/transparent"

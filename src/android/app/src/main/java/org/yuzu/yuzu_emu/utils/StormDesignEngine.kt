@@ -48,11 +48,18 @@ import kotlin.math.roundToInt
  */
 object StormDesignEngine {
 
-    const val DESIGN_HYPERION_GLASS_3D = 0
-    const val DESIGN_CYBER_DECK_TACTILE = 1
-    const val DESIGN_AURORA_QUANTUM = 2
+    const val DESIGN_TITANIUM_CYBER_DECK = 0
+    const val DESIGN_HYPERION_DOCKED_CONSOLE = 1
+    const val DESIGN_VALKYRIE_TACTICAL_RIG = 2
+    const val DESIGN_SOLARIS_SWITCH_2_PRO = 3
+    const val DESIGN_AETHER_FROSTED_STUDIO = 4
+
+    // Backwards compatibility aliases
+    const val DESIGN_CYBER_DECK_TACTILE = 0
+    const val DESIGN_HYPERION_GLASS_3D = 1
+    const val DESIGN_CHRONO_NEXUS_COMMANDER = 2
     const val DESIGN_ORBITAL_SPATIAL_UI = 3
-    const val DESIGN_CHRONO_NEXUS_COMMANDER = 4
+    const val DESIGN_AURORA_QUANTUM = 4
 
     private val activeListeners =
         Collections.synchronizedMap(WeakHashMap<Activity, ViewTreeObserver.OnGlobalLayoutListener>())
@@ -209,51 +216,49 @@ object StormDesignEngine {
         }
 
         when (design) {
-            DESIGN_HYPERION_GLASS_3D -> {
-                // Frosted glass specular top rim (1.5dp), 14dp rounded corners, deep elevated shadow (8dp)
+            DESIGN_TITANIUM_CYBER_DECK -> {
+                // 0: TITANIUM CYBER DECK - Precision 6dp corners, titanium cyan #00E5FF border
+                card.radius = 6f * density
+                card.cardElevation = 4f * density
+                card.strokeWidth = maxOf(1, (2f * density).roundToInt())
+                card.strokeColor = 0xFF00E5FF.toInt()
+                card.setCardBackgroundColor(surfaceContainer)
+            }
+
+            DESIGN_HYPERION_DOCKED_CONSOLE -> {
+                // 1: HYPERION DOCKED CONSOLE - 14dp corners, purple-neon #8B5CF6 glow
                 card.radius = 14f * density
                 card.cardElevation = 8f * density
-                card.strokeWidth = maxOf(1, (1.5f * density).roundToInt())
-                val specularStroke = blend(Color.WHITE, primaryColor, 0.25f)
-                card.strokeColor = setAlpha(specularStroke, 0x66)
+                card.strokeWidth = maxOf(1, (1.8f * density).roundToInt())
+                card.strokeColor = 0xFF8B5CF6.toInt()
                 card.setCardBackgroundColor(setAlpha(surfaceContainer, 0xDF))
             }
 
-            DESIGN_CYBER_DECK_TACTILE -> {
-                // Sharp precision tactical 4dp corners, dual-tone cybernetic border, recessed input wells
-                card.radius = 4f * density
+            DESIGN_VALKYRIE_TACTICAL_RIG -> {
+                // 2: VALKYRIE TACTICAL RIG - Tactical 8dp chamfers, emerald #10B981 & amber accents
+                card.radius = 8f * density
                 card.cardElevation = 4f * density
-                card.strokeWidth = maxOf(1, (2.5f * density).roundToInt())
-                card.strokeColor = primaryColor
+                card.strokeWidth = maxOf(1, (2f * density).roundToInt())
+                card.strokeColor = 0xFF10B981.toInt()
                 card.setCardBackgroundColor(surfaceContainer)
             }
 
-            DESIGN_AURORA_QUANTUM -> {
-                // Fluid organic 24dp pill/capsule corners, luminous accent rim, plasma sheen
-                card.radius = 24f * density
+            DESIGN_SOLARIS_SWITCH_2_PRO -> {
+                // 3: SOLARIS SWITCH 2 PRO - 18dp rounded console dock, magnetic scarlet #FF4B3A
+                card.radius = 18f * density
                 card.cardElevation = 6f * density
                 card.strokeWidth = maxOf(1, (2f * density).roundToInt())
-                card.strokeColor = setAlpha(primaryColor, 0xCC)
-                val blendedSurface = blend(surfaceContainer, primaryColor, 0.08f)
-                card.setCardBackgroundColor(blendedSurface)
-            }
-
-            DESIGN_ORBITAL_SPATIAL_UI -> {
-                // VisionOS spatial floating lens (18dp corners), high Z-depth floating cards (12dp)
-                card.radius = 18f * density
-                card.cardElevation = 12f * density
-                card.strokeWidth = maxOf(1, (2f * density).roundToInt())
-                card.strokeColor = setAlpha(blend(primaryColor, Color.WHITE, 0.35f), 0x99)
+                card.strokeColor = 0xFFFF4B3A.toInt()
                 card.setCardBackgroundColor(setAlpha(surfaceContainer, 0xF0))
             }
 
-            DESIGN_CHRONO_NEXUS_COMMANDER -> {
-                // Heavy flagship command-deck 8dp armored bevel, high-contrast command cards
-                card.radius = 8f * density
-                card.cardElevation = 6f * density
-                card.strokeWidth = maxOf(1, (3f * density).roundToInt())
-                card.strokeColor = outlineColor
-                card.setCardBackgroundColor(surfaceContainer)
+            DESIGN_AETHER_FROSTED_STUDIO -> {
+                // 4: AETHER FROSTED STUDIO - Frosted sapphire glass 24dp pill corners, teal #14B8A6
+                card.radius = 24f * density
+                card.cardElevation = 10f * density
+                card.strokeWidth = maxOf(1, (1.5f * density).roundToInt())
+                card.strokeColor = 0xFF14B8A6.toInt()
+                card.setCardBackgroundColor(setAlpha(surfaceContainer, 0xE0))
             }
         }
 
@@ -327,12 +332,26 @@ object StormDesignEngine {
         val density = context.resources.displayMetrics.density
         val primaryColor = resolveColor(context, com.google.android.material.R.attr.colorPrimary, 0xFF8B5CF6.toInt())
 
+        val idName = runCatching {
+            if (layout.id != View.NO_ID) layout.resources.getResourceEntryName(layout.id) else ""
+        }.getOrDefault("")
+        val isSearch = idName.contains("search", ignoreCase = true) ||
+            layout.findViewById<View>(R.id.search_text) != null ||
+            layout.findViewById<View>(R.id.edit_search) != null ||
+            layout.findViewById<View>(R.id.input_search) != null
+        if (isSearch) {
+            layout.boxStrokeWidth = 0
+            layout.boxStrokeWidthFocused = 0
+            layout.isHintAnimationEnabled = false
+            return
+        }
+
         val (radius, stroke) = when (design) {
-            DESIGN_HYPERION_GLASS_3D -> Pair(14f * density, maxOf(1, (1.5f * density).roundToInt()))
-            DESIGN_CYBER_DECK_TACTILE -> Pair(4f * density, maxOf(1, (2.5f * density).roundToInt()))
-            DESIGN_AURORA_QUANTUM -> Pair(20f * density, maxOf(1, (2f * density).roundToInt()))
-            DESIGN_ORBITAL_SPATIAL_UI -> Pair(16f * density, maxOf(1, (2f * density).roundToInt()))
-            DESIGN_CHRONO_NEXUS_COMMANDER -> Pair(8f * density, maxOf(1, (2.5f * density).roundToInt()))
+            DESIGN_TITANIUM_CYBER_DECK -> Pair(6f * density, maxOf(1, (2f * density).roundToInt()))
+            DESIGN_HYPERION_DOCKED_CONSOLE -> Pair(14f * density, maxOf(1, (1.5f * density).roundToInt()))
+            DESIGN_VALKYRIE_TACTICAL_RIG -> Pair(8f * density, maxOf(1, (2f * density).roundToInt()))
+            DESIGN_SOLARIS_SWITCH_2_PRO -> Pair(18f * density, maxOf(1, (2f * density).roundToInt()))
+            DESIGN_AETHER_FROSTED_STUDIO -> Pair(24f * density, maxOf(1, (1.5f * density).roundToInt()))
             else -> Pair(8f * density, maxOf(1, (1.5f * density).roundToInt()))
         }
 
@@ -419,27 +438,7 @@ object StormDesignEngine {
             editText.background = null
             editText.gravity = android.view.Gravity.CENTER_VERTICAL or android.view.Gravity.START
             editText.includeFontPadding = false
-
-            var isInsideSearchContainer = false
-            var p = editText.parent
-            var d = 0
-            while (p is View && d < 4) {
-                val pv = p as View
-                val pid = runCatching {
-                    if (pv.id != View.NO_ID) pv.resources.getResourceEntryName(pv.id) else ""
-                }.getOrDefault("")
-                if (pid.contains("search_container", ignoreCase = true) ||
-                    pid.contains("search_background", ignoreCase = true)
-                ) {
-                    isInsideSearchContainer = true
-                    break
-                }
-                p = pv.parent
-                d++
-            }
-            if (isInsideSearchContainer) {
-                editText.setPadding(0, 0, 0, 0)
-            }
+            editText.setPadding(0, 0, 0, 0)
 
             val onSurfaceColor = resolveColor(context, com.google.android.material.R.attr.colorOnSurface, Color.WHITE)
             val onSurfaceVariantColor = resolveColor(context, com.google.android.material.R.attr.colorOnSurfaceVariant, 0xFF94A3B8.toInt())

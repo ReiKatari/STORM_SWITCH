@@ -27,6 +27,19 @@ class QComboBox;
 class QCheckBox;
 class QStackedWidget;
 
+enum class OverlayVisualPreset {
+    StormAuroraGlass3D = 0,
+    Switch2ProMagnetic = 1,
+    CyberpunkEdgeNeon = 2,
+    OledGhostWireframe = 3,
+    TitaniumMechaTactical = 4,
+    HyruleRelicGold = 5,
+    SanctuaryBloodRune = 6,
+    ArcadeCandyTactile3D = 7,
+    LiquidQuartzFrost = 8,
+    RetroPixelMatrix = 9,
+};
+
 class PerformanceOverlay : public QWidget {
     Q_OBJECT
 
@@ -36,6 +49,10 @@ public:
 
     void SetExpanded(bool expanded);
     bool IsExpanded() const { return m_is_expanded; }
+
+    void SetVisualPreset(OverlayVisualPreset preset);
+    OverlayVisualPreset GetVisualPreset() const { return m_visual_preset; }
+    void ApplyVisualPreset();
 
     void OnSaveSlot(int slot);
     void OnLoadSlot(int slot);
@@ -64,6 +81,16 @@ private slots:
     void OnHdr10Toggled(bool checked);
     void OnToggleGpuAccuracy();
     void OnAutoHealGraphicsArtifacts();
+    void OnQuickRewind();
+    void OnQuickFastForward();
+    void OnQuickFrameStep();
+    void OnQuickSaveAction();
+    void OnQuickLoadAction();
+    void OnQuickAiTranslate();
+    void OnQuickShaderFix();
+    void OnQuickTurbo();
+    void OnQuickPauseCooling();
+    void OnStyleComboChanged(int index);
 
 private:
     void SetupUI();
@@ -81,6 +108,20 @@ private:
     void RefreshCfwInfo();
 
     MainWindow* m_mainWindow = nullptr;
+    OverlayVisualPreset m_visual_preset = OverlayVisualPreset::StormAuroraGlass3D;
+
+    // Quick actions panel in Tesla OSD
+    QWidget* m_quick_actions_panel = nullptr;
+    QPushButton* m_btn_rewind = nullptr;
+    QPushButton* m_btn_fast_forward = nullptr;
+    QPushButton* m_btn_frame_step = nullptr;
+    QPushButton* m_btn_quick_save = nullptr;
+    QPushButton* m_btn_quick_load = nullptr;
+    QPushButton* m_btn_ai_translate = nullptr;
+    QPushButton* m_btn_shader_fix = nullptr;
+    QPushButton* m_btn_turbo = nullptr;
+    QPushButton* m_btn_pause_cooling = nullptr;
+    QComboBox* m_style_combo = nullptr;
     bool m_is_expanded = false;
 
     // Layout components

@@ -1,0 +1,36 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- AETHER FROSTED STUDIO ICON -->
+    <path
+        android:pathData="M12,2 C6.48,2 2,6.48 2,12 C2,17.52 6.48,22 12,22 C17.52,22 22,17.52 22,12 C22,6.48 17.52,2 12,2 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="2"
+                android:startY="2"
+                android:endX="22"
+                android:endY="22"
+                android:type="linear">
+                <item android:color="#2DD4BF" android:offset="0.0" />
+                <item android:color="#14B8A6" android:offset="0.4" />
+                <item android:color="#6366F1" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Frosted Fluid Wave Curves -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.5"
+        android:pathData="M5,15 C8,10 16,14 19,9" />
+    <path
+        android:strokeColor="#A5F3FC"
+        android:strokeWidth="1.2"
+        android:pathData="M4,11 C7,7 17,11 20,6" />
+    <!-- Center Crystal Diamond -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M12,7 L15,12 L12,17 L9,12 Z" />
+</vector>

@@ -28,6 +28,7 @@
 #include <QString>
 
 #include "common/common_types.h"
+#include "storm_switch/common/storm_design_engine.h"
 #include "common/fs/fs.h"
 #include "common/fs/path_util.h"
 #include "common/logging.h"
@@ -267,13 +268,7 @@ public:
             }
         }
 
-        while (version_num.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
-            version_num.remove(0, 1);
-        }
-        version_num = version_num.trimmed();
-        if (version_num.isEmpty() || version_num == QStringLiteral("0")) {
-            version_num = QStringLiteral("1.0.0");
-        }
+        version_num = StormFormat::CleanVersion(version_num);
 
         u64 internal_ver = 0;
         static const QRegularExpression fn_pair_sub_regex{QStringLiteral(R"(\(([0-9]+\.[0-9]+(?:\.[0-9]+)*)\s*-\s*([0-9]+))")};
@@ -295,7 +290,7 @@ public:
         if (am.hasMatch() && am.hasCaptured(1)) {
             addon_summary = am.captured(1).toUpper();
         } else if (addon_count > 0) {
-            addon_summary = QStringLiteral("+%1 DLC").arg(addon_count);
+            addon_summary = StormFormat::FormatAddons(addon_count);
         }
 
         setData(version_num, VersionRole);
@@ -425,7 +420,7 @@ public:
             const std::array<QString, 4> row_data{{
                 QString::fromStdString(filename),
                 data(FileTypeRole).toString(),
-                QString::fromStdString(fmt::format("{:#016x}", data(ProgramIdRole).toULongLong())),
+                StormFormat::FormatTitleId(data(ProgramIdRole).toULongLong()),
                 display_title,
             }};
 
@@ -487,9 +482,9 @@ private:
             play_time > 0 ? QString::fromStdString(PlayTime::PlayTimeManager::GetReadablePlayTime(play_time))
                           : QObject::tr("Не запускалась");
 
-        const QString addons_info = addon_count > 0 ? QStringLiteral("%1").arg(addon_count) : QObject::tr("Нет");
-        const QString formatted_title_id = QString::fromStdString(fmt::format("{:016X}", program_id));
-        const QString formatted_size = size_bytes > 0 ? QtCommon::ReadableByteSize(size_bytes) : QStringLiteral("-");
+        const QString addons_info = StormFormat::FormatAddons(addon_count);
+        const QString formatted_title_id = StormFormat::FormatTitleId(program_id);
+        const QString formatted_size = size_bytes > 0 ? StormFormat::ReadableByteSize(size_bytes) : QStringLiteral("-");
 
         QString icon_base64;
         if (!m_image.isNull()) {
@@ -606,7 +601,7 @@ public:
     void setData(const QVariant& value, int role) override {
         if (role == SizeRole) {
             qulonglong size_bytes = value.toULongLong();
-            GameListItem::setData(QtCommon::ReadableByteSize(size_bytes), Qt::DisplayRole);
+            GameListItem::setData(StormFormat::ReadableByteSize(size_bytes), Qt::DisplayRole);
             GameListItem::setData(value, SizeRole);
         } else {
             GameListItem::setData(value, role);

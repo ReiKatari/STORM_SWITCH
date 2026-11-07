@@ -89,7 +89,7 @@ ConfigurePerGameCheats::ConfigurePerGameCheats(Core::System& system_, u64 title_
     toolbar_layout->setSpacing(6);
 
     search_field = new QLineEdit(this);
-    search_field->setPlaceholderText(tr("🔍 Поиск по названию чита..."));
+    search_field->setPlaceholderText(tr("Поиск по названию чита..."));
     search_field->setClearButtonEnabled(true);
     toolbar_layout->addWidget(search_field, 1);
 

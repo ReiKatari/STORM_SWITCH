@@ -164,7 +164,7 @@ void AmiiboBrowserDialog::SetupUi() {
     filter_layout->setSpacing(8);
 
     m_search_edit = new QLineEdit(this);
-    m_search_edit->setPlaceholderText(tr("🔍 Поиск по имени фигурки или игровой серии (напр. Zelda, Mario, Samus)..."));
+    m_search_edit->setPlaceholderText(tr("Поиск по имени фигурки или игровой серии (напр. Zelda, Mario, Samus)..."));
     m_search_edit->setClearButtonEnabled(true);
     connect(m_search_edit, &QLineEdit::textChanged, this, &AmiiboBrowserDialog::OnSearchFilterChanged);
     filter_layout->addWidget(m_search_edit, 3);

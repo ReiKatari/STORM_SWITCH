@@ -1,4 +1,9 @@
 #include "storm_switch/common/storm_design_engine.h"
+#include "storm_switch/common/storm_vector_icons.h"
+#include <QToolBar>
+#include <QComboBox>
+#include <QVBoxLayout>
+#include <QGridLayout>
 #include <filesystem>
 #include <system_error>
 #include <QFutureWatcher>
@@ -3126,6 +3131,8 @@ void MainWindow::InitializeWidgets() {
 
     game_list_placeholder->setVisible(false);
 
+    SetupStormDesignLayouts();
+
 
 
     loading_screen = new LoadingScreen(ui->centralwidget);
@@ -4639,6 +4646,8 @@ void MainWindow::InitializeWidgets() {
                 m_current_addons_game_name = QFileInfo(path).completeBaseName();
 
                 UpdateAddonsStatusButton(m_current_addons_title_id, m_current_addons_game_name);
+                UpdateDossierPanel(tid, path);
+                UpdateHeroBlock(tid, path);
 
             }
 
@@ -10547,6 +10556,8 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
 
         game_list_placeholder->hide();
 
+        HideStormDesignWidgets();
+
         render_window->show();
 
         render_window->setFocus();
@@ -10924,6 +10935,8 @@ void MainWindow::OnEmulationStopped() {
         game_list->show();
 
     }
+
+    UpdateStormDesignLayout();
 
     game_list->SetFilterFocus();
 
@@ -13339,6 +13352,8 @@ void MainWindow::ToggleWindowMode() {
             render_window->setFocus();
 
             game_list->hide();
+
+            HideStormDesignWidgets();
 
         }
 
@@ -20727,9 +20742,10 @@ void MainWindow::UpdateWindowTitle(std::string_view filename, std::string_view d
 
                                    std::string_view internal_version, std::string_view gpu_vendor) {
 
-    const QString build_ver = QString::fromUtf8(Common::g_build_version).isEmpty()
+    const QString raw_bver = QString::fromUtf8(Common::g_build_version).isEmpty()
                                   ? QStringLiteral("16.3.1")
                                   : QString::fromUtf8(Common::g_build_version);
+    const QString build_ver = StormFormat::CleanVersion(raw_bver);
     const QString strict_idle_title = QStringLiteral("STORM SWITCH %1").arg(build_ver);
 
     const bool no_game = filename.empty() ||
@@ -20758,7 +20774,7 @@ void MainWindow::UpdateWindowTitle(std::string_view filename, std::string_view d
 
         const auto run_title = [filename, display_version, internal_version, upper_gpu]() {
 
-            std::string disp_ver = std::string{display_version};
+            std::string disp_ver = StormFormat::CleanVersion(QString::fromUtf8(display_version.data(), static_cast<int>(display_version.size()))).toStdString();
 
             if (disp_ver.empty()) {
 
@@ -20774,8 +20790,9 @@ void MainWindow::UpdateWindowTitle(std::string_view filename, std::string_view d
 
             }
 
+            const std::string clean_bld = StormFormat::CleanVersion(QString::fromUtf8(Common::g_build_version)).toStdString();
             return fmt::format("STORM SWITCH {} | {} | {} | {} | {}",
-                               Common::g_build_version,
+                               clean_bld,
 
                                filename,
 
@@ -21070,11 +21087,15 @@ void MainWindow::UpdateStatusBar() {
 
         const double gen_fps = base_fps * mult;
 
-        fpsText = QStringLiteral("🎮 %1 FPS [LSFG %2X -> %3 FPS]").arg(std::round(base_fps), 0, 'f', 0).arg(mult).arg(std::round(gen_fps), 0, 'f', 0);
+        const QString b_fps = StormFormat::FloatNumber(base_fps, 1);
+
+        const QString g_fps = StormFormat::FloatNumber(gen_fps, 1);
+
+        fpsText = QStringLiteral("%1 FPS [LSFG %2× -> %3 FPS]").arg(b_fps).arg(mult).arg(g_fps);
 
     } else {
 
-        fpsText = QStringLiteral("🎮 %1 FPS").arg(std::round(display_fps), 0, 'f', 0);
+        fpsText = QStringLiteral("%1 FPS").arg(StormFormat::FloatNumber(display_fps, 1));
 
     }
 
@@ -21103,21 +21124,21 @@ void MainWindow::UpdateStatusBar() {
 
                              : 0.0;
 
-    const QString ms_str = QString::number(ft_ms, 'f', 2);
+    const QString ms_str = StormFormat::FloatNumber(ft_ms, 2);
 
     emu_frametime_label->setText(StormLang(
 
-        QStringLiteral("⏱️ %1 мс").arg(ms_str),
+        QStringLiteral("%1 мс").arg(ms_str),
 
-        QStringLiteral("⏱️ %1 ms").arg(ms_str),
+        QStringLiteral("%1 ms").arg(ms_str),
 
-        QStringLiteral("⏱️ %1 ms").arg(ms_str),
+        QStringLiteral("%1 ms").arg(ms_str),
 
-        QStringLiteral("⏱️ %1 ms").arg(ms_str),
+        QStringLiteral("%1 ms").arg(ms_str),
 
-        QStringLiteral("⏱️ %1 毫秒").arg(ms_str),
+        QStringLiteral("%1 毫秒").arg(ms_str),
 
-        QStringLiteral("⏱️ %1 ms").arg(ms_str)
+        QStringLiteral("%1 ms").arg(ms_str)
 
     ));
 
@@ -22427,33 +22448,34 @@ void MainWindow::UpdateResScaleText() {
 
     QString val_text = QStringLiteral("1X");
 
+    const bool is_ru = StormFormat::IsRussian();
     switch (Settings::values.resolution_setup.GetValue()) {
 
-    case Settings::ResolutionSetup::Res1_4X: val_text = is_docked ? QStringLiteral("0.25X (270p)") : QStringLiteral("0.25X (180p)"); break;
+    case Settings::ResolutionSetup::Res1_4X: val_text = is_docked ? (is_ru ? QStringLiteral("0,25× (270p)") : QStringLiteral("0.25X (270p)")) : (is_ru ? QStringLiteral("0,25× (180p)") : QStringLiteral("0.25X (180p)")); break;
 
-    case Settings::ResolutionSetup::Res1_2X: val_text = is_docked ? QStringLiteral("0.5X (540p)") : QStringLiteral("0.5X (360p)"); break;
+    case Settings::ResolutionSetup::Res1_2X: val_text = is_docked ? (is_ru ? QStringLiteral("0,5× (540p)") : QStringLiteral("0.5X (540p)")) : (is_ru ? QStringLiteral("0,5× (360p)") : QStringLiteral("0.5X (360p)")); break;
 
-    case Settings::ResolutionSetup::Res3_4X: val_text = is_docked ? QStringLiteral("0.75X (810p)") : QStringLiteral("0.75X (540p)"); break;
+    case Settings::ResolutionSetup::Res3_4X: val_text = is_docked ? (is_ru ? QStringLiteral("0,75× (810p)") : QStringLiteral("0.75X (810p)")) : (is_ru ? QStringLiteral("0,75× (540p)") : QStringLiteral("0.75X (540p)")); break;
 
-    case Settings::ResolutionSetup::Res1X: val_text = is_docked ? QStringLiteral("1X (1080p)") : QStringLiteral("1X (720p)"); break;
+    case Settings::ResolutionSetup::Res1X: val_text = is_docked ? (is_ru ? QStringLiteral("1,0× (1080p)") : QStringLiteral("1X (1080p)")) : (is_ru ? QStringLiteral("1,0× (720p)") : QStringLiteral("1X (720p)")); break;
 
-    case Settings::ResolutionSetup::Res5_4X: val_text = is_docked ? QStringLiteral("1.25X (1350p)") : QStringLiteral("1.25X (900p)"); break;
+    case Settings::ResolutionSetup::Res5_4X: val_text = is_docked ? (is_ru ? QStringLiteral("1,25× (1350p)") : QStringLiteral("1.25X (1350p)")) : (is_ru ? QStringLiteral("1,25× (900p)") : QStringLiteral("1.25X (900p)")); break;
 
-    case Settings::ResolutionSetup::Res3_2X: val_text = is_docked ? QStringLiteral("1.5X (1620p)") : QStringLiteral("1.5X (1080p)"); break;
+    case Settings::ResolutionSetup::Res3_2X: val_text = is_docked ? (is_ru ? QStringLiteral("1,5× (1620p)") : QStringLiteral("1.5X (1620p)")) : (is_ru ? QStringLiteral("1,5× (1080p)") : QStringLiteral("1.5X (1080p)")); break;
 
-    case Settings::ResolutionSetup::Res2X: val_text = is_docked ? QStringLiteral("2X (4K)") : QStringLiteral("2X (2K)"); break;
+    case Settings::ResolutionSetup::Res2X: val_text = is_docked ? (is_ru ? QStringLiteral("2,0× (4K)") : QStringLiteral("2X (4K)")) : (is_ru ? QStringLiteral("2,0× (2K)") : QStringLiteral("2X (2K)")); break;
 
-    case Settings::ResolutionSetup::Res3X: val_text = is_docked ? QStringLiteral("3X (6K)") : QStringLiteral("3X (4K)"); break;
+    case Settings::ResolutionSetup::Res3X: val_text = is_docked ? (is_ru ? QStringLiteral("3,0× (6K)") : QStringLiteral("3X (6K)")) : (is_ru ? QStringLiteral("3,0× (4K)") : QStringLiteral("3X (4K)")); break;
 
-    case Settings::ResolutionSetup::Res4X: val_text = is_docked ? QStringLiteral("4X (8K)") : QStringLiteral("4X (2880p)"); break;
+    case Settings::ResolutionSetup::Res4X: val_text = is_docked ? (is_ru ? QStringLiteral("4,0× (8K)") : QStringLiteral("4X (8K)")) : (is_ru ? QStringLiteral("4,0× (2880p)") : QStringLiteral("4X (2880p)")); break;
 
-    case Settings::ResolutionSetup::Res5X: val_text = is_docked ? QStringLiteral("5X (5400p)") : QStringLiteral("5X (3600p)"); break;
+    case Settings::ResolutionSetup::Res5X: val_text = is_docked ? (is_ru ? QStringLiteral("5,0× (5400p)") : QStringLiteral("5X (5400p)")) : (is_ru ? QStringLiteral("5,0× (3600p)") : QStringLiteral("5X (3600p)")); break;
 
-    case Settings::ResolutionSetup::Res6X: val_text = is_docked ? QStringLiteral("6X (6480p)") : QStringLiteral("6X (4320p)"); break;
+    case Settings::ResolutionSetup::Res6X: val_text = is_docked ? (is_ru ? QStringLiteral("6,0× (6480p)") : QStringLiteral("6X (6480p)")) : (is_ru ? QStringLiteral("6,0× (4320p)") : QStringLiteral("6X (4320p)")); break;
 
-    case Settings::ResolutionSetup::Res7X: val_text = is_docked ? QStringLiteral("7X (7560p)") : QStringLiteral("7X (5040p)"); break;
+    case Settings::ResolutionSetup::Res7X: val_text = is_docked ? (is_ru ? QStringLiteral("7,0× (7560p)") : QStringLiteral("7X (7560p)")) : (is_ru ? QStringLiteral("7,0× (5040p)") : QStringLiteral("7X (5040p)")); break;
 
-    case Settings::ResolutionSetup::Res8X: val_text = is_docked ? QStringLiteral("8X (8640p)") : QStringLiteral("8X (5760p)"); break;
+    case Settings::ResolutionSetup::Res8X: val_text = is_docked ? (is_ru ? QStringLiteral("8,0× (8640p)") : QStringLiteral("8X (8640p)")) : (is_ru ? QStringLiteral("8,0× (5760p)") : QStringLiteral("8X (5760p)")); break;
 
     default: break;
 
@@ -25646,7 +25668,7 @@ void MainWindow::InitializeSystemTray() {
 
 
 
-    const QString build_ver = QString::fromStdString(std::string{Common::g_build_version});
+    const QString build_ver = StormFormat::CleanVersion(QString::fromStdString(std::string{Common::g_build_version}));
 
     m_tray_icon = new QSystemTrayIcon(windowIcon(), this);
 
@@ -29068,6 +29090,12 @@ void MainWindow::UpdateUITheme() {
             "}"
         ).arg(theme_bg, theme_fg, accent_color, hover_bg));
     }
+
+    UpdateStormDesignLayout();
+    if (m_toolbar_design_label) {
+        m_toolbar_design_label->setText(StormDesign::GetDesignSelectorLabel());
+        m_toolbar_design_label->setToolTip(StormDesign::GetLocalizedDesignTooltip());
+    }
 }
 
 
@@ -30592,3 +30620,514 @@ void VolumeButton::ResetMultiplier() {
 #include "video_core/vulkan_common/vma.h"
 
 #endif
+
+
+// ============================================================================
+// STORM DESIGN ENGINE: 5 DYNAMIC LAYOUT ARCHITECTURES & DOSSIER PANEL
+// ============================================================================
+
+void MainWindow::SetupStormDesignLayouts() {
+    const auto pal = StormTheme::GetThemePalette();
+    const QString acc = pal.accent.isEmpty() ? QStringLiteral("#8B5CF6") : pal.accent;
+
+    // 1. Setup Toolbar
+    main_toolbar = new QToolBar(this);
+    main_toolbar->setObjectName(QStringLiteral("StormMainToolbar"));
+    main_toolbar->setMovable(false);
+    main_toolbar->setFloatable(false);
+    main_toolbar->setIconSize(QSize(20, 20));
+    addToolBar(Qt::TopToolBarArea, main_toolbar);
+
+    // Design layout switcher on toolbar
+    auto* layout_icon_lbl = new QLabel(main_toolbar);
+    layout_icon_lbl->setPixmap(StormVectorIcon::LayoutSwitcher(acc).pixmap(18, 18));
+    layout_icon_lbl->setContentsMargins(6, 0, 4, 0);
+    main_toolbar->addWidget(layout_icon_lbl);
+
+    m_toolbar_design_label = new QLabel(StormDesign::GetDesignSelectorLabel(), main_toolbar);
+    m_toolbar_design_label->setStyleSheet(QStringLiteral("font-weight: 600; color: #E2E8F0; margin-right: 6px;"));
+    main_toolbar->addWidget(m_toolbar_design_label);
+
+    m_toolbar_design_combobox = new QComboBox(main_toolbar);
+    m_toolbar_design_combobox->setObjectName(QStringLiteral("ToolbarDesignComboBox"));
+    m_toolbar_design_combobox->setMinimumWidth(185);
+    for (const auto& [id, _] : StormDesign::kDesigns) {
+        m_toolbar_design_combobox->addItem(StormDesign::GetLocalizedDesignName(id), QString::fromUtf8(id));
+    }
+    const QString cur_design_id = QString::fromStdString(StormDesign::GetActiveDesignId());
+    int cur_idx = m_toolbar_design_combobox->findData(cur_design_id);
+    m_toolbar_design_combobox->setCurrentIndex(cur_idx >= 0 ? cur_idx : 0);
+    connect(m_toolbar_design_combobox, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &MainWindow::OnToolbarDesignChanged);
+    main_toolbar->addWidget(m_toolbar_design_combobox);
+
+    main_toolbar->addSeparator();
+
+    // Toolbar View Switcher (Grid/Tree)
+    auto* act_view = main_toolbar->addAction(StormVectorIcon::GridView(acc), tr("Вид списка"), this, [this] {
+        if (game_list) game_list->OnToggleViewMode();
+    });
+    act_view->setToolTip(tr("Переключить режим отображения (Сетка / Список / Карусель)"));
+
+    // Toolbar Refresh
+    auto* act_refresh = main_toolbar->addAction(StormVectorIcon::Search(acc), tr("Обновить список"), this, &MainWindow::OnGameListRefresh);
+    act_refresh->setToolTip(tr("Обновить список игр и директории"));
+
+    // Toolbar Settings
+    auto* act_settings = main_toolbar->addAction(StormVectorIcon::Settings(acc), tr("Настройки"), this, &MainWindow::OnConfigure);
+    act_settings->setToolTip(tr("Открыть параметры STORM SWITCH"));
+
+    // Spacer
+    auto* spacer = new QWidget(main_toolbar);
+    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    main_toolbar->addWidget(spacer);
+
+    // Build badge on toolbar
+    const QString build_ver = StormFormat::CleanVersion(QString::fromUtf8(Common::g_build_version));
+    auto* badge_lbl = new QLabel(QStringLiteral("STORM SWITCH %1").arg(build_ver.isEmpty() ? QStringLiteral("20.0.0") : build_ver), main_toolbar);
+    badge_lbl->setStyleSheet(QStringLiteral("font-weight: 700; color: #94A3B8; font-size: 8pt; margin-right: 12px;"));
+    main_toolbar->addWidget(badge_lbl);
+
+    // 2. Central Layout Organization
+    // Reparent game_list and placeholder into m_center_container
+    ui->horizontalLayout->removeWidget(game_list);
+    ui->horizontalLayout->removeWidget(game_list_placeholder);
+
+    m_center_container = new QWidget(ui->centralwidget);
+    m_center_vbox = new QVBoxLayout(m_center_container);
+    m_center_vbox->setContentsMargins(0, 0, 0, 0);
+    m_center_vbox->setSpacing(6);
+
+    // Telemetry bar
+    m_telemetry_bar = new QWidget(m_center_container);
+    m_telemetry_bar->setObjectName(QStringLiteral("StormTelemetryBar"));
+    m_telemetry_bar->setFixedHeight(34);
+    auto* telem_layout = new QHBoxLayout(m_telemetry_bar);
+    telem_layout->setContentsMargins(12, 0, 12, 0);
+    telem_layout->setSpacing(16);
+
+    m_telemetry_vulkan_label = new QLabel(QStringLiteral("VULKAN 1.3 ACTIVE"), m_telemetry_bar);
+    m_telemetry_vulkan_label->setStyleSheet(QStringLiteral("font-weight: 700; color: #38BDF8; font-size: 8.5pt;"));
+    telem_layout->addWidget(m_telemetry_vulkan_label);
+
+    m_telemetry_fps_label = new QLabel(StormFormat::IsRussian() ? QStringLiteral("ЦЕЛЬ: 60,0 FPS (16,67 мс)") : QStringLiteral("TARGET: 60.0 FPS (16.67 ms)"), m_telemetry_bar);
+    m_telemetry_fps_label->setStyleSheet(QStringLiteral("font-weight: 700; color: #10B981; font-size: 8.5pt;"));
+    telem_layout->addWidget(m_telemetry_fps_label);
+
+    m_telemetry_status_label = new QLabel(StormFormat::IsRussian() ? QStringLiteral("СИСТЕМА: ГОТОВА К ЗАПУСКУ") : QStringLiteral("SYSTEM: READY"), m_telemetry_bar);
+    m_telemetry_status_label->setStyleSheet(QStringLiteral("font-weight: 600; color: #94A3B8; font-size: 8.5pt;"));
+    telem_layout->addWidget(m_telemetry_status_label);
+
+    auto* telem_spacer = new QWidget(m_telemetry_bar);
+    telem_spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    telem_layout->addWidget(telem_spacer);
+
+    m_center_vbox->addWidget(m_telemetry_bar);
+
+    // Hero Block
+    m_hero_block = new QWidget(m_center_container);
+    m_hero_block->setObjectName(QStringLiteral("StormHeroBlock"));
+    m_hero_block->setFixedHeight(140);
+    auto* hero_layout = new QHBoxLayout(m_hero_block);
+    hero_layout->setContentsMargins(12, 8, 12, 8);
+    hero_layout->setSpacing(14);
+
+    m_hero_cover = new QLabel(m_hero_block);
+    m_hero_cover->setFixedSize(120, 120);
+    m_hero_cover->setScaledContents(true);
+    m_hero_cover->setStyleSheet(QStringLiteral("border-radius: 10px; background-color: rgba(255,255,255,0.05);"));
+    hero_layout->addWidget(m_hero_cover);
+
+    auto* hero_info_layout = new QVBoxLayout();
+    hero_info_layout->setContentsMargins(0, 4, 0, 4);
+    hero_info_layout->setSpacing(6);
+
+    m_hero_title = new QLabel(StormFormat::IsRussian() ? QStringLiteral("Выберите игру из списка") : QStringLiteral("Select a game from list"), m_hero_block);
+    m_hero_title->setStyleSheet(QStringLiteral("font-size: 13pt; font-weight: 800; color: #F8FAFC;"));
+    hero_info_layout->addWidget(m_hero_title);
+
+    m_hero_subtitle = new QLabel(QStringLiteral("0000000000000000  |  1.0.0  |  1G"), m_hero_block);
+    m_hero_subtitle->setStyleSheet(QStringLiteral("font-size: 8.5pt; color: #94A3B8; font-family: 'Consolas', 'Segoe UI';"));
+    hero_info_layout->addWidget(m_hero_subtitle);
+
+    hero_info_layout->addStretch();
+    hero_layout->addLayout(hero_info_layout, 1);
+
+    auto* hero_btns_layout = new QVBoxLayout();
+    hero_btns_layout->setContentsMargins(0, 4, 0, 4);
+    hero_btns_layout->setSpacing(8);
+
+    m_hero_btn_play = new QPushButton(StormVectorIcon::Play(QStringLiteral("#FFFFFF")), StormFormat::IsRussian() ? QStringLiteral("ИГРАТЬ") : QStringLiteral("PLAY"), m_hero_block);
+    m_hero_btn_play->setFixedHeight(42);
+    m_hero_btn_play->setMinimumWidth(140);
+    m_hero_btn_play->setStyleSheet(QStringLiteral(
+        "QPushButton { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #10B981, stop:1 #059669); color: #FFFFFF; font-weight: 800; font-size: 10pt; border-radius: 8px; border: none; padding: 0 16px; }"
+        "QPushButton:hover { background: #10B981; }"
+        "QPushButton:disabled { background: #334155; color: #64748B; }"
+    ));
+    m_hero_btn_play->setEnabled(false);
+    connect(m_hero_btn_play, &QPushButton::clicked, this, [this] {
+        if (!m_selected_game_path.isEmpty()) BootGameFromList(m_selected_game_path, StartGameType::Normal);
+    });
+    hero_btns_layout->addWidget(m_hero_btn_play);
+
+    m_hero_btn_settings = new QPushButton(StormVectorIcon::Settings(acc), StormFormat::IsRussian() ? QStringLiteral("Настройки") : QStringLiteral("Settings"), m_hero_block);
+    m_hero_btn_settings->setFixedHeight(32);
+    m_hero_btn_settings->setMinimumWidth(140);
+    m_hero_btn_settings->setEnabled(false);
+    connect(m_hero_btn_settings, &QPushButton::clicked, this, [this] {
+        if (m_selected_program_id != 0) OpenPerGameConfiguration(m_selected_program_id, m_selected_game_path.toStdString());
+    });
+    hero_btns_layout->addWidget(m_hero_btn_settings);
+
+    hero_layout->addLayout(hero_btns_layout);
+    m_center_vbox->addWidget(m_hero_block);
+
+    // Add game_list and placeholder
+    m_center_vbox->addWidget(game_list, 1);
+    m_center_vbox->addWidget(game_list_placeholder, 1);
+
+    // Switch 2 Pro Console Bottom Bar
+    m_console_bottom_bar = new QWidget(m_center_container);
+    m_console_bottom_bar->setObjectName(QStringLiteral("StormConsoleBottomBar"));
+    m_console_bottom_bar->setFixedHeight(42);
+    auto* cbar_layout = new QHBoxLayout(m_console_bottom_bar);
+    cbar_layout->setContentsMargins(16, 0, 16, 0);
+    cbar_layout->setSpacing(20);
+
+    auto* lbl_l = new QLabel(QStringLiteral("[L] Фильтр"), m_console_bottom_bar);
+    lbl_l->setStyleSheet(QStringLiteral("color: #94A3B8; font-weight: 700; font-size: 8.5pt;"));
+    cbar_layout->addWidget(lbl_l);
+
+    cbar_layout->addStretch();
+
+    auto* btn_a = new QPushButton(QStringLiteral("(A) Играть"), m_console_bottom_bar);
+    btn_a->setStyleSheet(QStringLiteral("border: none; background: transparent; color: #10B981; font-weight: 800; font-size: 9pt;"));
+    connect(btn_a, &QPushButton::clicked, this, [this] {
+        if (!m_selected_game_path.isEmpty()) BootGameFromList(m_selected_game_path, StartGameType::Normal);
+    });
+    cbar_layout->addWidget(btn_a);
+
+    auto* btn_y = new QPushButton(QStringLiteral("(Y) Свойства"), m_console_bottom_bar);
+    btn_y->setStyleSheet(QStringLiteral("border: none; background: transparent; color: #38BDF8; font-weight: 700; font-size: 9pt;"));
+    connect(btn_y, &QPushButton::clicked, this, [this] {
+        if (m_selected_program_id != 0) OpenPerGameConfiguration(m_selected_program_id, m_selected_game_path.toStdString());
+    });
+    cbar_layout->addWidget(btn_y);
+
+    auto* btn_x = new QPushButton(QStringLiteral("(X) Читы и моды"), m_console_bottom_bar);
+    btn_x->setStyleSheet(QStringLiteral("border: none; background: transparent; color: #F59E0B; font-weight: 700; font-size: 9pt;"));
+    connect(btn_x, &QPushButton::clicked, this, &MainWindow::OnCheatsDialog);
+    cbar_layout->addWidget(btn_x);
+
+    auto* btn_plus = new QPushButton(QStringLiteral("(+) Настройки"), m_console_bottom_bar);
+    btn_plus->setStyleSheet(QStringLiteral("border: none; background: transparent; color: #A855F7; font-weight: 700; font-size: 9pt;"));
+    connect(btn_plus, &QPushButton::clicked, this, &MainWindow::OnConfigure);
+    cbar_layout->addWidget(btn_plus);
+
+    cbar_layout->addStretch();
+
+    auto* lbl_r = new QLabel(QStringLiteral("[R] Поиск"), m_console_bottom_bar);
+    lbl_r->setStyleSheet(QStringLiteral("color: #94A3B8; font-weight: 700; font-size: 8.5pt;"));
+    cbar_layout->addWidget(lbl_r);
+
+    m_center_vbox->addWidget(m_console_bottom_bar);
+
+    ui->horizontalLayout->addWidget(m_center_container, 1);
+
+    // 3. Right Dossier Panel (370 px)
+    m_dossier_panel = new QWidget(ui->centralwidget);
+    m_dossier_panel->setObjectName(QStringLiteral("StormDossierPanel"));
+    m_dossier_panel->setFixedWidth(370);
+    auto* dos_layout = new QVBoxLayout(m_dossier_panel);
+    dos_layout->setContentsMargins(14, 12, 14, 12);
+    dos_layout->setSpacing(10);
+
+    m_dossier_header = new QLabel(StormFormat::IsRussian() ? QStringLiteral("ДОСЬЕ ИГРЫ") : QStringLiteral("GAME DOSSIER"), m_dossier_panel);
+    m_dossier_header->setStyleSheet(QStringLiteral("font-weight: 800; font-size: 9pt; color: %1; letter-spacing: 1px;").arg(acc));
+    dos_layout->addWidget(m_dossier_header);
+
+    m_dossier_cover = new QLabel(m_dossier_panel);
+    m_dossier_cover->setFixedHeight(180);
+    m_dossier_cover->setScaledContents(true);
+    m_dossier_cover->setAlignment(Qt::AlignCenter);
+    m_dossier_cover->setStyleSheet(QStringLiteral("border-radius: 12px; background-color: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);"));
+    dos_layout->addWidget(m_dossier_cover);
+
+    m_dossier_title = new QLabel(StormFormat::IsRussian() ? QStringLiteral("Выберите игру из списка") : QStringLiteral("Select a game from list"), m_dossier_panel);
+    m_dossier_title->setWordWrap(true);
+    m_dossier_title->setStyleSheet(QStringLiteral("font-size: 11pt; font-weight: 800; color: #F8FAFC; margin-top: 4px;"));
+    dos_layout->addWidget(m_dossier_title);
+
+    // Details form
+    auto* form_widget = new QWidget(m_dossier_panel);
+    auto* form_layout = new QGridLayout(form_widget);
+    form_layout->setContentsMargins(0, 0, 0, 0);
+    form_layout->setHorizontalSpacing(8);
+    form_layout->setVerticalSpacing(6);
+
+    auto add_row = [&](int r, const QString& label_text, QLabel*& val_label, const QString& default_val) {
+        auto* l = new QLabel(label_text, form_widget);
+        l->setStyleSheet(QStringLiteral("color: #94A3B8; font-size: 8.5pt; font-weight: 600;"));
+        val_label = new QLabel(default_val, form_widget);
+        val_label->setStyleSheet(QStringLiteral("color: #E2E8F0; font-size: 8.5pt; font-weight: 700;"));
+        val_label->setTextInteractionFlags(Qt::TextSelectableByMouse);
+        form_layout->addWidget(l, r, 0);
+        form_layout->addWidget(val_label, r, 1);
+    };
+
+    add_row(0, QStringLiteral("Title ID:"), m_dossier_tid, QStringLiteral("0000000000000000"));
+    m_dossier_tid->setStyleSheet(QStringLiteral("color: #38BDF8; font-size: 8.5pt; font-family: 'Consolas', monospace; font-weight: 700;"));
+
+    add_row(1, StormFormat::IsRussian() ? QStringLiteral("Версия:") : QStringLiteral("Version:"), m_dossier_version, QStringLiteral("1.0.0"));
+    add_row(2, StormFormat::IsRussian() ? QStringLiteral("Дополнения:") : QStringLiteral("Add-ons:"), m_dossier_addons, StormFormat::FormatAddons(0));
+    add_row(3, StormFormat::IsRussian() ? QStringLiteral("Размер:") : QStringLiteral("Size:"), m_dossier_size, QStringLiteral("0 МБ"));
+    add_row(4, StormFormat::IsRussian() ? QStringLiteral("Структура:") : QStringLiteral("Structure:"), m_dossier_structure, QStringLiteral("1G"));
+
+    dos_layout->addWidget(form_widget);
+    dos_layout->addStretch();
+
+    // 4 Action Buttons
+    m_dossier_btn_play = new QPushButton(StormVectorIcon::Play(QStringLiteral("#FFFFFF")), StormFormat::IsRussian() ? QStringLiteral("  Играть") : QStringLiteral("  Play"), m_dossier_panel);
+    m_dossier_btn_play->setFixedHeight(38);
+    m_dossier_btn_play->setStyleSheet(QStringLiteral(
+        "QPushButton { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #10B981, stop:1 #059669); color: #FFFFFF; font-weight: 800; font-size: 9.5pt; border-radius: 8px; border: none; }"
+        "QPushButton:hover { background: #10B981; }"
+        "QPushButton:disabled { background: #334155; color: #64748B; }"
+    ));
+    m_dossier_btn_play->setEnabled(false);
+    connect(m_dossier_btn_play, &QPushButton::clicked, this, [this] {
+        if (!m_selected_game_path.isEmpty()) BootGameFromList(m_selected_game_path, StartGameType::Normal);
+    });
+    dos_layout->addWidget(m_dossier_btn_play);
+
+    m_dossier_btn_settings = new QPushButton(StormVectorIcon::Settings(acc), StormFormat::IsRussian() ? QStringLiteral("  Настройки игры") : QStringLiteral("  Game Settings"), m_dossier_panel);
+    m_dossier_btn_settings->setFixedHeight(34);
+    m_dossier_btn_settings->setEnabled(false);
+    connect(m_dossier_btn_settings, &QPushButton::clicked, this, [this] {
+        if (m_selected_program_id != 0) OpenPerGameConfiguration(m_selected_program_id, m_selected_game_path.toStdString());
+    });
+    dos_layout->addWidget(m_dossier_btn_settings);
+
+    m_dossier_btn_cheats = new QPushButton(StormVectorIcon::Cheats(acc), StormFormat::IsRussian() ? QStringLiteral("  Читы и моды") : QStringLiteral("  Cheats & Mods"), m_dossier_panel);
+    m_dossier_btn_cheats->setFixedHeight(34);
+    m_dossier_btn_cheats->setEnabled(false);
+    connect(m_dossier_btn_cheats, &QPushButton::clicked, this, &MainWindow::OnCheatsDialog);
+    dos_layout->addWidget(m_dossier_btn_cheats);
+
+    m_dossier_btn_save = new QPushButton(StormVectorIcon::SaveFolder(acc), StormFormat::IsRussian() ? QStringLiteral("  Папка сохранений") : QStringLiteral("  Save Folder"), m_dossier_panel);
+    m_dossier_btn_save->setFixedHeight(34);
+    m_dossier_btn_save->setEnabled(false);
+    connect(m_dossier_btn_save, &QPushButton::clicked, this, [this] {
+        if (m_selected_program_id != 0) OnGameListOpenFolder(m_selected_program_id, GameListOpenTarget::SaveData, m_selected_game_path.toStdString());
+    });
+    dos_layout->addWidget(m_dossier_btn_save);
+
+    ui->horizontalLayout->addWidget(m_dossier_panel, 0);
+
+    UpdateStormDesignLayout();
+}
+
+void MainWindow::OnToolbarDesignChanged(int index) {
+    if (!m_toolbar_design_combobox || index < 0 || index >= m_toolbar_design_combobox->count()) {
+        return;
+    }
+    const auto design_id = m_toolbar_design_combobox->itemData(index).toString().toStdString();
+    if (design_id != UISettings::values.ui_design.GetValue()) {
+        UISettings::values.ui_design = design_id;
+        UpdateStormDesignLayout();
+        UpdateUITheme();
+    }
+}
+
+void MainWindow::HideStormDesignWidgets() {
+    if (m_telemetry_bar) m_telemetry_bar->hide();
+    if (m_hero_block) m_hero_block->hide();
+    if (m_dossier_panel) m_dossier_panel->hide();
+    if (m_console_bottom_bar) m_console_bottom_bar->hide();
+    if (m_center_container) m_center_container->hide();
+}
+
+void MainWindow::UpdateStormDesignLayout() {
+    if (m_toolbar_design_combobox) {
+        const QSignalBlocker blocker(m_toolbar_design_combobox);
+        const QString cur_id = QString::fromStdString(StormDesign::GetActiveDesignId());
+        int idx = m_toolbar_design_combobox->findData(cur_id);
+        if (idx >= 0 && m_toolbar_design_combobox->currentIndex() != idx) {
+            m_toolbar_design_combobox->setCurrentIndex(idx);
+        }
+    }
+
+    if (emulation_running) {
+        HideStormDesignWidgets();
+        return;
+    }
+
+    if (m_center_container) m_center_container->show();
+
+    const auto preset = StormDesign::GetActivePreset();
+    switch (preset) {
+    case StormDesign::Preset::TitaniumCyberDeck:
+        if (m_telemetry_bar) m_telemetry_bar->show();
+        if (m_dossier_panel) m_dossier_panel->show();
+        if (m_hero_block) m_hero_block->hide();
+        if (m_console_bottom_bar) m_console_bottom_bar->hide();
+        break;
+    case StormDesign::Preset::HyperionDockedConsole:
+        if (m_hero_block) m_hero_block->show();
+        if (m_telemetry_bar) m_telemetry_bar->hide();
+        if (m_dossier_panel) m_dossier_panel->hide();
+        if (m_console_bottom_bar) m_console_bottom_bar->hide();
+        break;
+    case StormDesign::Preset::ValkyrieTacticalRig:
+        if (m_telemetry_bar) m_telemetry_bar->show();
+        if (m_hero_block) m_hero_block->hide();
+        if (m_dossier_panel) m_dossier_panel->hide();
+        if (m_console_bottom_bar) m_console_bottom_bar->hide();
+        break;
+    case StormDesign::Preset::SolarisSwitch2Pro:
+        if (m_hero_block) m_hero_block->show();
+        if (m_console_bottom_bar) m_console_bottom_bar->show();
+        if (m_telemetry_bar) m_telemetry_bar->hide();
+        if (m_dossier_panel) m_dossier_panel->hide();
+        break;
+    case StormDesign::Preset::AetherFrostedStudio:
+        if (m_dossier_panel) m_dossier_panel->show();
+        if (m_telemetry_bar) m_telemetry_bar->hide();
+        if (m_hero_block) m_hero_block->hide();
+        if (m_console_bottom_bar) m_console_bottom_bar->hide();
+        break;
+    default:
+        break;
+    }
+}
+
+void MainWindow::UpdateDossierPanel(u64 program_id, const QString& game_path) {
+    if (!m_dossier_panel) return;
+    m_selected_program_id = program_id;
+    m_selected_game_path = game_path;
+
+    QString title;
+    QString version = QStringLiteral("1.0.0");
+    u64 size_bytes = 0;
+    int addon_count = 0;
+    QPixmap cover_pixmap;
+
+    if (game_list && game_list->GetModel() && program_id != 0) {
+        std::function<bool(QStandardItem*)> findGame = [&](QStandardItem* item) -> bool {
+            if (!item) return false;
+            const auto tid_val = item->data(GameListItemPath::ProgramIdRole);
+            if (tid_val.isValid() && tid_val.toULongLong() == program_id) {
+                title = item->data(GameListItemPath::TitleRole).toString().trimmed();
+                version = item->data(GameListItemPath::VersionRole).toString();
+                size_bytes = item->data(GameListItemPath::FileSizeBytesRole).toULongLong();
+                addon_count = item->data(GameListItemPath::AddonCountRole).toInt();
+                cover_pixmap = item->data(GameListItemPath::ScaledPixmapRole).value<QPixmap>();
+                return true;
+            }
+            for (int r = 0; r < item->rowCount(); ++r) {
+                if (findGame(item->child(r, 0))) return true;
+            }
+            return false;
+        };
+        findGame(game_list->GetModel()->invisibleRootItem());
+    }
+
+    if (title.isEmpty()) {
+        title = QFileInfo(game_path).completeBaseName();
+    }
+    if (title.isEmpty()) {
+        title = StormFormat::IsRussian() ? QStringLiteral("Выберите игру") : QStringLiteral("Select a game");
+    }
+
+    const QString clean_ver = StormFormat::CleanVersion(version);
+    const QString tid_str = StormFormat::FormatTitleId(program_id);
+    const QString addons_str = StormFormat::FormatAddons(addon_count);
+    const QString size_str = StormFormat::ReadableByteSize(size_bytes);
+
+    QString struct_str = QStringLiteral("1G");
+    if (!clean_ver.isEmpty() && clean_ver != QStringLiteral("1.0.0")) struct_str += QStringLiteral("+1U");
+    if (addon_count > 0) struct_str += QStringLiteral("+%1D").arg(addon_count);
+
+    if (m_dossier_title) m_dossier_title->setText(title);
+    if (m_dossier_tid) m_dossier_tid->setText(tid_str);
+    if (m_dossier_version) m_dossier_version->setText(clean_ver);
+    if (m_dossier_addons) m_dossier_addons->setText(addons_str);
+    if (m_dossier_size) m_dossier_size->setText(size_str);
+    if (m_dossier_structure) m_dossier_structure->setText(struct_str);
+
+    if (m_dossier_cover) {
+        if (!cover_pixmap.isNull()) {
+            m_dossier_cover->setPixmap(cover_pixmap.scaled(340, 180, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        } else {
+            m_dossier_cover->clear();
+        }
+    }
+
+    const bool has_game = (program_id != 0 && !game_path.isEmpty());
+    if (m_dossier_btn_play) m_dossier_btn_play->setEnabled(has_game);
+    if (m_dossier_btn_settings) m_dossier_btn_settings->setEnabled(has_game);
+    if (m_dossier_btn_cheats) m_dossier_btn_cheats->setEnabled(has_game);
+    if (m_dossier_btn_save) m_dossier_btn_save->setEnabled(has_game);
+}
+
+void MainWindow::UpdateHeroBlock(u64 program_id, const QString& game_path) {
+    if (!m_hero_block) return;
+
+    QString title;
+    QString version = QStringLiteral("1.0.0");
+    u64 size_bytes = 0;
+    int addon_count = 0;
+    QPixmap cover_pixmap;
+
+    if (game_list && game_list->GetModel() && program_id != 0) {
+        std::function<bool(QStandardItem*)> findGame = [&](QStandardItem* item) -> bool {
+            if (!item) return false;
+            const auto tid_val = item->data(GameListItemPath::ProgramIdRole);
+            if (tid_val.isValid() && tid_val.toULongLong() == program_id) {
+                title = item->data(GameListItemPath::TitleRole).toString().trimmed();
+                version = item->data(GameListItemPath::VersionRole).toString();
+                size_bytes = item->data(GameListItemPath::FileSizeBytesRole).toULongLong();
+                addon_count = item->data(GameListItemPath::AddonCountRole).toInt();
+                cover_pixmap = item->data(GameListItemPath::ScaledPixmapRole).value<QPixmap>();
+                return true;
+            }
+            for (int r = 0; r < item->rowCount(); ++r) {
+                if (findGame(item->child(r, 0))) return true;
+            }
+            return false;
+        };
+        findGame(game_list->GetModel()->invisibleRootItem());
+    }
+
+    if (title.isEmpty()) {
+        title = QFileInfo(game_path).completeBaseName();
+    }
+    if (title.isEmpty()) {
+        title = StormFormat::IsRussian() ? QStringLiteral("Выберите игру из списка") : QStringLiteral("Select a game from list");
+    }
+
+    const QString clean_ver = StormFormat::CleanVersion(version);
+    const QString tid_str = StormFormat::FormatTitleId(program_id);
+    const QString addons_str = StormFormat::FormatAddons(addon_count);
+    const QString size_str = StormFormat::ReadableByteSize(size_bytes);
+
+    QString struct_str = QStringLiteral("1G");
+    if (!clean_ver.isEmpty() && clean_ver != QStringLiteral("1.0.0")) struct_str += QStringLiteral("+1U");
+    if (addon_count > 0) struct_str += QStringLiteral("+%1D").arg(addon_count);
+
+    if (m_hero_title) m_hero_title->setText(title);
+    if (m_hero_subtitle) m_hero_subtitle->setText(QStringLiteral("%1  |  %2  |  %3  |  %4  |  %5").arg(tid_str, clean_ver, addons_str, struct_str, size_str));
+
+    if (m_hero_cover) {
+        if (!cover_pixmap.isNull()) {
+            m_hero_cover->setPixmap(cover_pixmap.scaled(120, 120, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        } else {
+            m_hero_cover->clear();
+        }
+    }
+
+    const bool has_game = (program_id != 0 && !game_path.isEmpty());
+    if (m_hero_btn_play) m_hero_btn_play->setEnabled(has_game);
+    if (m_hero_btn_settings) m_hero_btn_settings->setEnabled(has_game);
+}

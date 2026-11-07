@@ -176,7 +176,7 @@ void LogViewerDialog::SetupUI() {
     filter_bar->addSpacing(14);
 
     search_edit = new QLineEdit(this);
-    search_edit->setPlaceholderText(tr("🔍 Поиск по тексту журнала..."));
+    search_edit->setPlaceholderText(tr("Поиск по тексту журнала..."));
     search_edit->setClearButtonEnabled(true);
     filter_bar->addWidget(search_edit, 1);
 

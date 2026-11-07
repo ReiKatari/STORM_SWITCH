@@ -165,7 +165,7 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
     controls_layout->setSpacing(6);
 
     search_input = new QLineEdit(this);
-    search_input->setPlaceholderText(tr("🔍 Поиск модов на GameBanana..."));
+    search_input->setPlaceholderText(tr("Поиск модов на GameBanana..."));
     search_input->setClearButtonEnabled(true);
     controls_layout->addWidget(search_input, 1);
 
@@ -361,7 +361,7 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
     installed_top_bar->addWidget(installed_status_label, 1);
 
     auto* inst_search = new QLineEdit(this);
-    inst_search->setPlaceholderText(tr("🔍 Фильтр установленных модов..."));
+    inst_search->setPlaceholderText(tr("Фильтр установленных модов..."));
     inst_search->setClearButtonEnabled(true);
     inst_search->setMinimumWidth(200);
     connect(inst_search, &QLineEdit::textChanged, this, [this](const QString& q) {

@@ -1,0 +1,48 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- SWITCH 2 PRO CONTROLLER 3D SKIN ICON -->
+    <path
+        android:pathData="M7,6 L17,6 C19.2,6 21,7.8 21.5,10 L22.8,17 C23.2,18.8 21.8,20.5 20,20.5 C19.1,20.5 18.2,20 17.7,19.2 L15.5,15.5 L8.5,15.5 L6.3,19.2 C5.8,20 4.9,20.5 4,20.5 C2.2,20.5 0.8,18.8 1.2,17 L2.5,10 C3,7.8 4.8,6 7,6 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="1"
+                android:startY="6"
+                android:endX="23"
+                android:endY="21"
+                android:type="linear">
+                <item android:color="#00E5FF" android:offset="0.0" />
+                <item android:color="#3B82F6" android:offset="0.5" />
+                <item android:color="#8B5CF6" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Left Stick & D-Pad -->
+    <path
+        android:fillColor="#111827"
+        android:pathData="M6,9.5 A2,2 0 1,1 6,13.5 A2,2 0 1,1 6,9.5 Z" />
+    <path
+        android:fillColor="#00E5FF"
+        android:pathData="M6,10.5 A1,1 0 1,1 6,12.5 A1,1 0 1,1 6,10.5 Z" />
+    <!-- ABXY Diamond -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M17,9 A0.8,0.8 0 1,1 17,10.6 A0.8,0.8 0 1,1 17,9 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M18.5,10.5 A0.8,0.8 0 1,1 18.5,12.1 A0.8,0.8 0 1,1 18.5,10.5 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M17,12 A0.8,0.8 0 1,1 17,13.6 A0.8,0.8 0 1,1 17,12 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M15.5,10.5 A0.8,0.8 0 1,1 15.5,12.1 A0.8,0.8 0 1,1 15.5,10.5 Z" />
+    <!-- Center Gyro Ring -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.0"
+        android:pathData="M12,9 A1.8,1.8 0 1,1 12,12.6 A1.8,1.8 0 1,1 12,9 Z" />
+</vector>

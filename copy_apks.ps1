@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
 $baseDir = Split-Path -Parent $PSScriptRoot
-$version = '17.1.0'
+$version = '20.0.0'
 if (Test-Path "$PSScriptRoot\GIT-RELEASE") {
     $v = (Get-Content "$PSScriptRoot\GIT-RELEASE" -Raw).Trim()
     if ($v) { $version = $v }
@@ -66,8 +66,8 @@ function Sign-ApkWithRotation([string]$apkPath) {
             if ($badging -match "versionCode='(\d+)'") {
                 $vc = [int64]$matches[1]
                 Write-Host "Verified $(Split-Path $apkPath -Leaf) versionCode=$vc"
-                if ($vc -lt 34188413) {
-                    throw "FATAL UPGRADE GUARD: versionCode ($vc) is not strictly greater than or equal to 34188413! In-place upgrade would fail with INSTALL_FAILED_VERSION_DOWNGRADE."
+                if ($vc -le 34290090) {
+                    throw "FATAL UPGRADE GUARD: versionCode ($vc) is not strictly greater than 34290090! In-place upgrade would fail with INSTALL_FAILED_VERSION_DOWNGRADE."
                 }
             }
         }

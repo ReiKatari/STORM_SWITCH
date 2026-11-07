@@ -1651,7 +1651,7 @@ void StormGamesWorldDialog::SetupUI() {
     top_bar->setSpacing(10);
 
     search_edit = new QLineEdit(this);
-    search_edit->setPlaceholderText(tr("🔍 Поиск доступных игр по названию или Title ID..."));
+    search_edit->setPlaceholderText(tr("Поиск доступных игр по названию или Title ID..."));
     search_edit->setClearButtonEnabled(true);
     top_bar->addWidget(search_edit, 1);
 

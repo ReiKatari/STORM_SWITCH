@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_skin_item"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="8dp"
+    android:layout_marginVertical="4dp"
+    app:cardCornerRadius="14dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="1.5dp"
+    app:strokeColor="?attr/colorOutline"
+    app:cardBackgroundColor="?attr/colorSurfaceVariant"
+    android:clickable="true"
+    android:focusable="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="12dp">
+
+        <View
+            android:id="@+id/view_skin_color_dot"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginEnd="12dp"
+            android:background="@drawable/ic_storm_ui_gamepad_skin" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/text_skin_title"
+                style="@style/TextAppearance.Material3.TitleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:textColor="?attr/colorOnSurface" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/text_skin_subtitle"
+                style="@style/TextAppearance.Material3.BodySmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/image_selected_check"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:src="@drawable/ic_check"
+            app:tint="?attr/colorPrimary"
+            android:visibility="gone"
+            android:contentDescription="@string/selected" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

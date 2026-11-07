@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="ui_style_applied_toast">Вид интерфейса «%1$s» активирован</string>
+    <string name="ui_view_menu_styles_header">ВИД ИНТЕРФЕЙСА</string>
+    <string name="ui_view_menu_layout_header">КОМПОНОВКА</string>
+    <string name="telemetry_games_count">%1$d ИГР</string>
+    <string name="telemetry_ram_status">ОЗУ: %1$s</string>
+    <string name="telemetry_fps_target">ЦЕЛЬ 60 FPS</string>
+    <string name="hero_quick_play">ПРОДОЛЖИТЬ</string>
+    <string name="tactical_rig_status">СИСТЕМА ГОТОВА</string>
+    <string name="controller_skins_header">Скины контроллера Switch 2 Pro</string>
+    <string name="controller_skin_style">Скин контроллера</string>
+    <string name="controller_skin_style_desc">20 коллекционных игровых стилей с 3D-репликой Switch 2 Pro Controller</string>
+    <string name="controller_auto_game_skin">Автоподбор стиля под игру</string>
+    <string name="controller_auto_game_skin_desc">Автоматически переключать скин контроллера на тему запущенной игры</string>
+    <string name="controller_view_front">Вид спереди</string>
+    <string name="controller_view_rear">Вид сзади (GL/GR)</string>
+    <string name="controller_gyro_active">6-осевой гироскоп активен</string>
+    <string name="controller_applied_toast">Стиль контроллера «%1$s» применён</string>
+    <string name="controller_skin_dialog_title">Скины Switch 2 Pro</string>
+    <string name="controller_flip_view">Повернуть (Вид сзади GL/GR)</string>
+    <string name="controller_skin_0" translatable="false">Carbon Stealth</string>
+    <string name="controller_skin_1" translatable="false">STORM Aurora</string>
+    <string name="controller_skin_2" translatable="false">Zelda Royal Zonai</string>
+    <string name="controller_skin_3" translatable="false">Super Mario Bros. Wonder</string>
+    <string name="controller_skin_4" translatable="false">Sonic</string>
+    <string name="controller_skin_5" translatable="false">Diablo II: Resurrected</string>
+    <string name="controller_skin_6" translatable="false">Assassin\'s Creed</string>
+    <string name="controller_skin_7" translatable="false">Donkey Kong Bananza</string>
+    <string name="controller_skin_8" translatable="false">Metroid Dread</string>
+    <string name="controller_skin_9" translatable="false">Castlevania</string>
+    <string name="controller_skin_10" translatable="false">Xenoblade</string>
+    <string name="controller_skin_11" translatable="false">Smash Bros</string>
+    <string name="controller_skin_12" translatable="false">Splatoon 3</string>
+    <string name="controller_skin_13" translatable="false">Monster Hunter</string>
+    <string name="controller_skin_14" translatable="false">Pokémon</string>
+    <string name="controller_skin_15" translatable="false">Hollow Knight: Silksong</string>
+    <string name="controller_skin_16" translatable="false">Persona 5 Royal</string>
+    <string name="controller_skin_17" translatable="false">DOOM</string>
+    <string name="controller_skin_18" translatable="false">Animal Crossing</string>
+    <string name="controller_skin_19" translatable="false">Retro SNES</string>
+    <string name="controller_skin_sub_0">Графитовый матовый карбон с циановым кантом</string>
+    <string name="controller_skin_sub_1">Космический градиент северного сияния Aurora</string>
+    <string name="controller_skin_sub_2">Античный изумруд с золотыми глифами Дзонау</string>
+    <string name="controller_skin_sub_3">Чудо-цветочный королевский пурпур и алый Марио</string>
+    <string name="controller_skin_sub_4">Сверхзвуковой кобальтовый синий с золотом колец</string>
+    <string name="controller_skin_sub_5">Адское адское пламя, угли и обсидиановая броня</string>
+    <string name="controller_skin_sub_6">Алебастр Анимуса с алым знаком братства</string>
+    <string name="controller_skin_sub_7">Банановый золотой янтарь и махагони гориллы</string>
+    <string name="controller_skin_sub_8">Белая броня Чозо, алый Дред и бирюзовый визор</string>
+    <string name="controller_skin_sub_9">Готическая полночь с вампирским кармином</string>
+    <string name="controller_skin_sub_10">Божественный киноварный Монадо с эфирным ядром</string>
+    <string name="controller_skin_sub_11">Турнирный огненный силуэт и эмблема Smash</string>
+    <string name="controller_skin_sub_12">Неоновый хаос желтого и ультрафиолетовых чернил</string>
+    <string name="controller_skin_sub_13">Алая чешуя Раталоса и охотничья бронза</string>
+    <string name="controller_skin_sub_14">Двухцветный покебол: чемпионский алый и белый</string>
+    <string name="controller_skin_sub_15">Шёлковая игла Хорнет и серебряные нити</string>
+    <string name="controller_skin_sub_16">Черно-алый комиксный нуар Призрачных Похитителей</string>
+    <string name="controller_skin_sub_17">Броня Палача Претор и плазма Горнила</string>
+    <string name="controller_skin_sub_18">Пастельная островная мята Нука и крем-песок</string>
+    <string name="controller_skin_sub_19">Классический 16-битный серый и 4 цвета Super Famicom</string>
+    <string name="selected">Выбрано</string>
+</resources>

@@ -52,11 +52,12 @@ class FloatingTranslateButtonView @JvmOverloads constructor(
         strokeWidth = 2.0f
     }
 
-    private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.WHITE
-        textAlign = Paint.Align.CENTER
-        isFakeBoldText = true
+    private val iconStrokePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE
+        strokeCap = Paint.Cap.ROUND
+        strokeJoin = Paint.Join.ROUND
     }
+    private val iconRectF = android.graphics.RectF()
 
     private val longPressRunnable = Runnable {
         vibrate()
@@ -100,13 +101,32 @@ class FloatingTranslateButtonView @JvmOverloads constructor(
         borderPaint.strokeWidth = 1.8f
         canvas.drawCircle(cx, cy, radius * 0.92f, borderPaint)
 
-        // 4. Globe Icon with slight 3D shadow
-        textPaint.textSize = radius * 0.90f
-        textPaint.color = Color.argb(120, 0, 0, 0)
-        canvas.drawText("🌐", cx + 1.5f, cy + (textPaint.textSize * 0.34f) + 1.5f, textPaint)
+        // 4. Pure Vector Globe & Translation Icon (Single Icon Mandate: 0% Emojis)
+        val iconR = radius * 0.50f
+        val strokeW = (radius * 0.075f).coerceAtLeast(1.8f)
 
-        textPaint.color = Color.WHITE
-        canvas.drawText("🌐", cx, cy + (textPaint.textSize * 0.34f), textPaint)
+        // Subtle 3D drop shadow
+        iconStrokePaint.strokeWidth = strokeW
+        iconStrokePaint.color = Color.argb(110, 0, 0, 0)
+        canvas.drawCircle(cx + 1.2f, cy + 1.2f, iconR, iconStrokePaint)
+        canvas.drawLine(cx - iconR + 1.2f, cy + 1.2f, cx + iconR + 1.2f, cy + 1.2f, iconStrokePaint)
+        canvas.drawLine(cx + 1.2f, cy - iconR + 1.2f, cx + 1.2f, cy + iconR + 1.2f, iconStrokePaint)
+        iconRectF.set(cx - iconR * 0.52f + 1.2f, cy - iconR + 1.2f, cx + iconR * 0.52f + 1.2f, cy + iconR + 1.2f)
+        canvas.drawOval(iconRectF, iconStrokePaint)
+
+        // Crisp Vector Foreground
+        iconStrokePaint.color = Color.WHITE
+        canvas.drawCircle(cx, cy, iconR, iconStrokePaint)
+        canvas.drawLine(cx - iconR, cy, cx + iconR, cy, iconStrokePaint)
+        canvas.drawLine(cx, cy - iconR, cx, cy + iconR, iconStrokePaint)
+        iconRectF.set(cx - iconR * 0.52f, cy - iconR, cx + iconR * 0.52f, cy + iconR)
+        canvas.drawOval(iconRectF, iconStrokePaint)
+
+        // Upper and lower latitude parallels
+        val latY = iconR * 0.50f
+        val latW = iconR * 0.866f
+        canvas.drawLine(cx - latW, cy - latY, cx + latW, cy - latY, iconStrokePaint)
+        canvas.drawLine(cx - latW, cy + latY, cx + latW, cy + latY, iconStrokePaint)
     }
 
     override fun onAttachedToWindow() {

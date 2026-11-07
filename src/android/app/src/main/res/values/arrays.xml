@@ -640,11 +640,11 @@
     </integer-array>
 
     <string-array name="uiDesignStyleNames">
+        <item>@string/ui_design_style_titanium</item>
         <item>@string/ui_design_style_hyperion</item>
-        <item>@string/ui_design_style_cyberdeck</item>
-        <item>@string/ui_design_style_aurora</item>
-        <item>@string/ui_design_style_orbital</item>
-        <item>@string/ui_design_style_chrono</item>
+        <item>@string/ui_design_style_valkyrie</item>
+        <item>@string/ui_design_style_solaris</item>
+        <item>@string/ui_design_style_aether</item>
     </string-array>
     <integer-array name="uiDesignStyleValues">
         <item>0</item>
@@ -652,6 +652,51 @@
         <item>2</item>
         <item>3</item>
         <item>4</item>
+    </integer-array>
+
+    <string-array name="controllerSkinStyleNames">
+        <item>@string/controller_skin_0</item>
+        <item>@string/controller_skin_1</item>
+        <item>@string/controller_skin_2</item>
+        <item>@string/controller_skin_3</item>
+        <item>@string/controller_skin_4</item>
+        <item>@string/controller_skin_5</item>
+        <item>@string/controller_skin_6</item>
+        <item>@string/controller_skin_7</item>
+        <item>@string/controller_skin_8</item>
+        <item>@string/controller_skin_9</item>
+        <item>@string/controller_skin_10</item>
+        <item>@string/controller_skin_11</item>
+        <item>@string/controller_skin_12</item>
+        <item>@string/controller_skin_13</item>
+        <item>@string/controller_skin_14</item>
+        <item>@string/controller_skin_15</item>
+        <item>@string/controller_skin_16</item>
+        <item>@string/controller_skin_17</item>
+        <item>@string/controller_skin_18</item>
+        <item>@string/controller_skin_19</item>
+    </string-array>
+    <integer-array name="controllerSkinStyleValues">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+        <item>11</item>
+        <item>12</item>
+        <item>13</item>
+        <item>14</item>
+        <item>15</item>
+        <item>16</item>
+        <item>17</item>
+        <item>18</item>
+        <item>19</item>
     </integer-array>
 
 
