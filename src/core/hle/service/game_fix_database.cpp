@@ -5147,6 +5147,25 @@ static const std::vector<GameFixProfile> s_profiles = {
         }
     },
     {
+        0x01FF434243555253ULL,
+        "Castlevania: Belmont's Curse",
+        "• Зависание и чёрный экран при запуске на Adreno 6xx / Snapdragon 870\n• Сбои декодирования вступительных видеороликов NVDEC\n• Сбои кастомных ASTC текстур",
+        "• Black screen / boot hang on Adreno 6xx / Snapdragon 870\n• NVDEC boot video playback glitches\n• Custom ASTC texture decoding issues",
+        "",
+        "",
+        {
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\use_asynchronous_shaders", "false"},
+            {"Renderer\\use_reactive_flushing", "true"},
+            {"Renderer\\nvdec_emulation", "2"},
+            {"Cpu\\cpu_accuracy", "0"},
+            {"Renderer\\early_release_fences", "false"},
+            {"Renderer\\use_fast_gpu_time", "false"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\barrier_feedback_loops", "true"}
+        }
+    },
+    {
         0x0100FA501AF90000ULL,
         "Castlevania - Dominus Collection",
         "• Рассинхронизация двухэкранного вывода NDS при асинхронном выводе кадров\n• Ошибки позиционирования сенсорного экрана\n• Размытие шрифтов при сжатии ASTC",
@@ -6910,6 +6929,12 @@ const GameFixProfile* GameFixDatabase::GetProfileByTitleOrPath(u64 title_id, con
         }
 
         // Custom keyword matching
+        if (game_lower.find("belmont") != std::string::npos &&
+            (lower.find("belmont") != std::string::npos || lower.find("curse") != std::string::npos ||
+             lower.find("01ff434243555253") != std::string::npos ||
+             (lower.find("castlevania") != std::string::npos && (lower.find("belmont") != std::string::npos || lower.find("curse") != std::string::npos)))) {
+            return GetProfile(profile.title_id);
+        }
         if (game_lower.find("ys vs") != std::string::npos && (lower.find("ys vs") != std::string::npos || lower.find("alternative saga") != std::string::npos || lower.find("sora no kiseki") != std::string::npos)) {
             return GetProfile(profile.title_id);
         }

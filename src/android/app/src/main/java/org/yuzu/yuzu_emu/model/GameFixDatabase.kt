@@ -1052,13 +1052,17 @@ GameFixProfile(
  GameFixProfile(
             0x01FF434243555253L, // Castlevania: Belmont's Curse (Deterministic Homebrew ID)
             "Castlevania: Belmont's Curse",
-            "• Зависание при запуске на стандартных драйверах Vulkan < 1.3 (Adreno 6xx/Snapdragon 870)\n• Сбои декодирования кастомных ASTC текстур",
-            "• Boot hang on stock Vulkan < 1.3 drivers (Adreno 6xx/Snapdragon 870)\n• Custom ASTC texture decoding issues",
-            "✓ Рекомендуется драйвер Turnip (Vulkan 1.3+)\n✓ Точность ГПУ: Высокая (High)\n✓ Асинхронные шейдеры: Отключено\n✓ Быстрое время ГПУ: Отключено",
-            "✓ Turnip Driver Recommended (Vulkan 1.3+)\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Disabled\n✓ Fast GPU Time: Disabled",
+            "• Зависание и чёрный экран при запуске на Adreno 6xx / Snapdragon 870\n• Сбои декодирования вступительных видеороликов NVDEC\n• Сбои кастомных ASTC текстур",
+            "• Black screen / boot hang on Adreno 6xx / Snapdragon 870\n• NVDEC boot video playback glitches\n• Custom ASTC texture decoding issues",
+            "✓ Рекомендуется драйвер Turnip (Vulkan 1.3+)\n✓ Точность ГПУ: Высокая (High)\n✓ Асинхронные шейдеры: Отключено\n✓ Реактивная очистка: Включено\n✓ NVDEC: Эмуляция ЦП (CPU)\n✓ Раннее освобождение заборов: Отключено",
+            "✓ Turnip Driver Recommended (Vulkan 1.3+)\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Disabled\n✓ Reactive Flushing: Enabled\n✓ NVDEC: CPU Emulation\n✓ Early Release Fences: Disabled",
             mapOf(
-                "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\use_asynchronous_shaders" to "false",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\nvdec_emulation" to "2",
+                "Cpu\\cpu_accuracy" to "0",
+                "Renderer\\early_release_fences" to "false",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\barrier_feedback_loops" to "true"
@@ -6971,6 +6975,13 @@ GameFixProfile(
         // 100% Robust fallback: match by game title keywords & path
         val cleanTitle = (game.title ?: "").lowercase(java.util.Locale.ROOT)
         val cleanPath = (game.path ?: "").lowercase(java.util.Locale.ROOT)
+        if ((cleanTitle.contains("castlevania") && (cleanTitle.contains("belmont") || cleanTitle.contains("curse"))) ||
+            (cleanPath.contains("castlevania") && (cleanPath.contains("belmont") || cleanPath.contains("curse"))) ||
+            cleanTitle.contains("belmont's curse") || cleanPath.contains("belmont")
+        ) {
+            val p = profiles.firstOrNull { it.titleId == 0x01FF434243555253L }
+            if (p != null) return p
+        }
         return profiles.firstOrNull { profile ->
             val nameLower = profile.gameName.lowercase(java.util.Locale.ROOT)
             val keywords = when {

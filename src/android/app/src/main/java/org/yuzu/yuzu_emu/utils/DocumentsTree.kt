@@ -13,66 +13,104 @@ class DocumentsTree {
     private var root: DocumentsNode? = null
 
     fun setRoot(rootUri: Uri?) {
-        root = null
-        root = DocumentsNode()
-        root!!.uri = rootUri
-        root!!.isDirectory = true
+        val newRoot = DocumentsNode()
+        newRoot.uri = rootUri
+        newRoot.isDirectory = true
+        root = newRoot
     }
 
-    fun openContentUri(filepath: String, openMode: String?): Int {
-        val node = resolvePath(filepath) ?: return -1
-        return FileUtil.openContentUri(node.uri.toString(), openMode)
-    }
-
-    fun getFileSize(filepath: String): Long {
-        val node = resolvePath(filepath)
-        return if (node == null || node.isDirectory) {
-            0
-        } else {
-            FileUtil.getFileSize(node.uri.toString())
+    fun openContentUri(filepath: String?, openMode: String?): Int {
+        if (filepath.isNullOrEmpty() || filepath.startsWith("content://")) return -1
+        try {
+            val node = resolvePath(filepath) ?: return -1
+            val uriStr = node.uri?.toString() ?: return -1
+            return FileUtil.openContentUri(uriStr, openMode)
+        } catch (_: Throwable) {
+            return -1
         }
     }
 
-    fun exists(filepath: String): Boolean {
-        return resolvePath(filepath) != null
-    }
-
-    fun isDirectory(filepath: String): Boolean {
-        val node = resolvePath(filepath)
-        return node != null && node.isDirectory
-    }
-
-    fun getParentDirectory(filepath: String): String {
-        val node = resolvePath(filepath)!!
-        val parentNode = node.parent
-        if (parentNode != null && parentNode.isDirectory) {
-            return parentNode.uri!!.toString()
+    fun getFileSize(filepath: String?): Long {
+        if (filepath.isNullOrEmpty() || filepath.startsWith("content://")) return 0L
+        try {
+            val node = resolvePath(filepath)
+            return if (node == null || node.isDirectory) {
+                0L
+            } else {
+                val uriStr = node.uri?.toString() ?: return 0L
+                FileUtil.getFileSize(uriStr)
+            }
+        } catch (_: Throwable) {
+            return 0L
         }
-        return node.uri!!.toString()
     }
 
-    fun getFilename(filepath: String): String {
-        val node = resolvePath(filepath)
-        if (node != null) {
-            return node.name!!
+    fun exists(filepath: String?): Boolean {
+        if (filepath.isNullOrEmpty() || filepath.startsWith("content://")) return false
+        try {
+            return resolvePath(filepath) != null
+        } catch (_: Throwable) {
+            return false
         }
+    }
+
+    fun isDirectory(filepath: String?): Boolean {
+        if (filepath.isNullOrEmpty() || filepath.startsWith("content://")) return false
+        try {
+            val node = resolvePath(filepath)
+            return node != null && node.isDirectory
+        } catch (_: Throwable) {
+            return false
+        }
+    }
+
+    fun getParentDirectory(filepath: String?): String {
+        if (filepath.isNullOrEmpty()) return ""
+        if (filepath.startsWith("content://")) return ""
+        try {
+            val node = resolvePath(filepath) ?: return filepath
+            val parentNode = node.parent
+            if (parentNode != null && parentNode.isDirectory) {
+                return parentNode.uri?.toString() ?: filepath
+            }
+            return node.uri?.toString() ?: filepath
+        } catch (_: Throwable) {
+            return filepath
+        }
+    }
+
+    fun getFilename(filepath: String?): String {
+        if (filepath.isNullOrEmpty()) return ""
+        if (filepath.startsWith("content://")) return ""
+        try {
+            val node = resolvePath(filepath)
+            if (node != null && !node.name.isNullOrEmpty()) {
+                return node.name ?: filepath
+            }
+        } catch (_: Throwable) {}
         return filepath
     }
 
-    private fun resolvePath(filepath: String): DocumentsNode? {
-        val tokens = StringTokenizer(filepath, File.separator, false)
-        var iterator = root
-        while (tokens.hasMoreTokens()) {
-            val token = tokens.nextToken()
-            if (token.isEmpty()) continue
-            iterator = find(iterator, token)
-            if (iterator == null) return null
+    private fun resolvePath(filepath: String?): DocumentsNode? {
+        if (filepath.isNullOrEmpty() || filepath.startsWith("content://")) return null
+        val currentRoot = root ?: return null
+        try {
+            val tokens = StringTokenizer(filepath, File.separator, false)
+            var iterator: DocumentsNode? = currentRoot
+            while (tokens.hasMoreTokens()) {
+                val token = tokens.nextToken()
+                if (token.isEmpty()) continue
+                iterator = find(iterator, token) ?: return null
+            }
+            return iterator
+        } catch (_: Throwable) {
+            return null
         }
-        return iterator
     }
 
-    private fun find(parent: DocumentsNode?, filename: String): DocumentsNode? {
-        if (parent!!.isDirectory && !parent.loaded) {
+    private fun find(parent: DocumentsNode?, filename: String?): DocumentsNode? {
+        if (parent == null || filename.isNullOrEmpty()) return null
+        if (parent.isDirectory && !parent.loaded) {
             structTree(parent)
         }
         return parent.children[filename]
@@ -83,13 +121,21 @@ class DocumentsTree {
      * @param parent parent node of this level
      */
     private fun structTree(parent: DocumentsNode) {
-        val documents = FileUtil.listFiles(parent.uri!!)
-        for (document in documents) {
-            val node = DocumentsNode(document)
-            node.parent = parent
-            parent.children[node.name] = node
+        try {
+            val parentUri = parent.uri ?: return
+            val documents = FileUtil.listFiles(parentUri)
+            for (document in documents) {
+                val node = DocumentsNode(document)
+                node.parent = parent
+                val name = node.name
+                if (!name.isNullOrEmpty()) {
+                    parent.children[name] = node
+                }
+            }
+            parent.loaded = true
+        } catch (_: Throwable) {
+            parent.loaded = true
         }
-        parent.loaded = true
     }
 
     private class DocumentsNode {
@@ -116,18 +162,19 @@ class DocumentsTree {
         }
 
         private fun rename(name: String) {
-            if (parent == null) {
-                return
+            val p = parent ?: return
+            val oldName = this.name
+            if (oldName != null) {
+                p.children.remove(oldName)
             }
-            parent!!.children.remove(this.name)
             this.name = name
-            parent!!.children[name] = this
+            p.children[name] = this
         }
     }
 
     companion object {
-        fun isNativePath(path: String): Boolean {
-            return if (path.isNotEmpty()) {
+        fun isNativePath(path: String?): Boolean {
+            return if (!path.isNullOrEmpty()) {
                 path[0] == '/'
             } else {
                 false

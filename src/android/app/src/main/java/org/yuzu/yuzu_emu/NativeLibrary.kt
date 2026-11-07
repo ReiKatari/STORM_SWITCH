@@ -8,6 +8,7 @@ package org.yuzu.yuzu_emu
 
 import android.content.DialogInterface
 import android.net.Uri
+import android.provider.DocumentsContract
 import android.text.Html
 import android.text.method.LinkMovementMethod
 import android.view.Surface
@@ -65,121 +66,198 @@ object NativeLibrary {
     @Keep
     @JvmStatic
     fun openContentUri(path: String?, openmode: String?): Int {
-        if (path.isNullOrEmpty()) return -1
-        if (path.startsWith("/") || path.startsWith("file://")) {
-            val clean = if (path.startsWith("file://")) path.substring(7) else path
-            val f = java.io.File(clean)
-            if (f.exists()) {
-                val mode = when (openmode) {
-                    "rw", "rwa", "wa" -> android.os.ParcelFileDescriptor.MODE_READ_WRITE
-                    else -> android.os.ParcelFileDescriptor.MODE_READ_ONLY
+        try {
+            if (path.isNullOrEmpty()) return -1
+            if (path.startsWith("/") || path.startsWith("file://")) {
+                val clean = if (path.startsWith("file://")) path.substring(7) else path
+                val f = java.io.File(clean)
+                if (f.exists()) {
+                    val mode = when (openmode) {
+                        "rw", "rwa", "wa" -> android.os.ParcelFileDescriptor.MODE_READ_WRITE
+                        else -> android.os.ParcelFileDescriptor.MODE_READ_ONLY
+                    }
+                    return runCatching { android.os.ParcelFileDescriptor.open(f, mode).detachFd() }.getOrDefault(-1)
                 }
-                return runCatching { android.os.ParcelFileDescriptor.open(f, mode).detachFd() }.getOrDefault(-1)
             }
-        }
-        return if (DocumentsTree.isNativePath(path)) {
-            val res = YuzuApplication.documentsTree?.openContentUri(path, openmode) ?: -1
-            if (res != -1) res else FileUtil.openContentUri(path, openmode)
-        } else {
-            FileUtil.openContentUri(path, openmode)
+            return if (DocumentsTree.isNativePath(path)) {
+                val res = runCatching { YuzuApplication.documentsTree?.openContentUri(path, openmode) ?: -1 }.getOrDefault(-1)
+                if (res != -1) res else FileUtil.openContentUri(path, openmode)
+            } else {
+                FileUtil.openContentUri(path, openmode)
+            }
+        } catch (_: Throwable) {
+            return -1
         }
     }
 
     @Keep
     @JvmStatic
     fun getSize(path: String?): Long {
-        if (path.isNullOrEmpty()) return 0L
-        if (path.startsWith("/") || path.startsWith("file://")) {
-            val clean = if (path.startsWith("file://")) path.substring(7) else path
-            val f = java.io.File(clean)
-            if (f.exists()) return f.length()
-        }
-        return if (DocumentsTree.isNativePath(path)) {
-            val size = YuzuApplication.documentsTree?.getFileSize(path) ?: 0L
-            if (size > 0L) size else FileUtil.getFileSize(path)
-        } else {
-            FileUtil.getFileSize(path)
+        try {
+            if (path.isNullOrEmpty()) return 0L
+            if (path.startsWith("/") || path.startsWith("file://")) {
+                val clean = if (path.startsWith("file://")) path.substring(7) else path
+                val f = java.io.File(clean)
+                if (f.exists()) return f.length()
+            }
+            return if (DocumentsTree.isNativePath(path)) {
+                val size = runCatching { YuzuApplication.documentsTree?.getFileSize(path) ?: 0L }.getOrDefault(0L)
+                if (size > 0L) size else FileUtil.getFileSize(path)
+            } else {
+                FileUtil.getFileSize(path)
+            }
+        } catch (_: Throwable) {
+            return 0L
         }
     }
 
     @Keep
     @JvmStatic
     fun exists(path: String?): Boolean {
-        if (path.isNullOrEmpty()) return false
-        if (path.startsWith("/") || path.startsWith("file://")) {
-            val clean = if (path.startsWith("file://")) path.substring(7) else path
-            if (java.io.File(clean).exists()) return true
-        }
-        return if (DocumentsTree.isNativePath(path)) {
-            if (YuzuApplication.documentsTree?.exists(path) == true) true else FileUtil.exists(path, suppressLog = true)
-        } else {
-            FileUtil.exists(path, suppressLog = true)
+        try {
+            if (path.isNullOrEmpty()) return false
+            if (path.startsWith("/") || path.startsWith("file://")) {
+                val clean = if (path.startsWith("file://")) path.substring(7) else path
+                if (java.io.File(clean).exists()) return true
+            }
+            return if (DocumentsTree.isNativePath(path)) {
+                val treeExists = runCatching { YuzuApplication.documentsTree?.exists(path) == true }.getOrDefault(false)
+                if (treeExists) true else FileUtil.exists(path, suppressLog = true)
+            } else {
+                FileUtil.exists(path, suppressLog = true)
+            }
+        } catch (_: Throwable) {
+            return false
         }
     }
 
     @Keep
     @JvmStatic
     fun isDirectory(path: String?): Boolean {
-        if (path.isNullOrEmpty()) return false
-        if (path.startsWith("/") || path.startsWith("file://")) {
-            val clean = if (path.startsWith("file://")) path.substring(7) else path
-            val f = java.io.File(clean)
-            if (f.exists()) return f.isDirectory
-        }
-        return if (DocumentsTree.isNativePath(path)) {
-            if (YuzuApplication.documentsTree?.isDirectory(path) == true) true else FileUtil.isDirectory(path)
-        } else {
-            FileUtil.isDirectory(path)
+        try {
+            if (path.isNullOrEmpty()) return false
+            if (path.startsWith("/") || path.startsWith("file://")) {
+                val clean = if (path.startsWith("file://")) path.substring(7) else path
+                val f = java.io.File(clean)
+                if (f.exists()) return f.isDirectory
+            }
+            return if (DocumentsTree.isNativePath(path)) {
+                val treeIsDir = runCatching { YuzuApplication.documentsTree?.isDirectory(path) == true }.getOrDefault(false)
+                if (treeIsDir) true else FileUtil.isDirectory(path)
+            } else {
+                FileUtil.isDirectory(path)
+            }
+        } catch (_: Throwable) {
+            return false
         }
     }
 
     @Keep
     @JvmStatic
-    fun getParentDirectory(path: String): String {
-        if (path.startsWith("/") || path.startsWith("file://")) {
-            val clean = if (path.startsWith("file://")) path.substring(7) else path
-            val p = java.io.File(clean).parent
-            if (p != null) return p
-        }
-        if (path.startsWith("content://")) {
-            val treeParent = YuzuApplication.documentsTree?.getParentDirectory(path)
-            if (!treeParent.isNullOrEmpty() && treeParent != path) {
-                return treeParent
+    fun getParentDirectory(path: String?): String {
+        if (path.isNullOrEmpty()) return ""
+        try {
+            if (path.startsWith("/") || path.startsWith("file://")) {
+                val clean = if (path.startsWith("file://")) path.substring(7) else path
+                val p = java.io.File(clean).parent
+                if (p != null) return p
             }
-            val docMarker = "/document/"
-            val docIdx = path.indexOf(docMarker)
-            if (docIdx > 0) {
-                val prefix = path.substring(0, docIdx + docMarker.length)
-                val docId = path.substring(docIdx + docMarker.length)
-                val lastEncSlash = docId.lastIndexOf("%2F", ignoreCase = true)
-                if (lastEncSlash > 0) {
-                    return prefix + docId.substring(0, lastEncSlash)
+            if (path.startsWith("content://")) {
+                val uri = runCatching { Uri.parse(path) }.getOrNull()
+                if (uri != null) {
+                    try {
+                        val ctx = YuzuApplication.appContext
+                        if (DocumentsContract.isTreeUri(uri) && DocumentsContract.isDocumentUri(ctx, uri)) {
+                            val docId = DocumentsContract.getDocumentId(uri)
+                            val treeDocId = DocumentsContract.getTreeDocumentId(uri)
+                            if (docId == treeDocId) {
+                                return ""
+                            }
+                            val slashIdx = docId.lastIndexOf('/')
+                            if (slashIdx > 0) {
+                                val parentDocId = docId.substring(0, slashIdx)
+                                return DocumentsContract.buildDocumentUriUsingTree(uri, parentDocId).toString()
+                            } else {
+                                return DocumentsContract.buildDocumentUriUsingTree(uri, treeDocId).toString()
+                            }
+                        }
+                    } catch (_: Throwable) {}
                 }
-                val lastSlash = docId.lastIndexOf('/')
-                if (lastSlash > 0) {
-                    return prefix + docId.substring(0, lastSlash)
+
+                val docMarker = "/document/"
+                val docIdx = path.indexOf(docMarker)
+                if (docIdx > 0) {
+                    val prefix = path.substring(0, docIdx + docMarker.length)
+                    val docId = path.substring(docIdx + docMarker.length)
+                    val lastEncSlash = docId.lastIndexOf("%2F", ignoreCase = true)
+                    if (lastEncSlash > 0) {
+                        return prefix + docId.substring(0, lastEncSlash)
+                    }
+                    val lastSlash = docId.lastIndexOf('/')
+                    if (lastSlash > 0) {
+                        return prefix + docId.substring(0, lastSlash)
+                    }
+                    val treeMarker = "/tree/"
+                    val treeIdx = path.indexOf(treeMarker)
+                    if (treeIdx > 0 && treeIdx < docIdx) {
+                        val treeSegment = path.substring(treeIdx + treeMarker.length, docIdx)
+                        return prefix + treeSegment
+                    }
+                    return ""
                 }
+
+                val treeMarker = "/tree/"
+                val treeIdx = path.indexOf(treeMarker)
+                if (treeIdx > 0) {
+                    val prefix = path.substring(0, treeIdx + treeMarker.length)
+                    val treeId = path.substring(treeIdx + treeMarker.length)
+                    val lastEncSlash = treeId.lastIndexOf("%2F", ignoreCase = true)
+                    if (lastEncSlash > 0) {
+                        return prefix + treeId.substring(0, lastEncSlash)
+                    }
+                    val lastSlash = treeId.lastIndexOf('/')
+                    if (lastSlash > 0) {
+                        return prefix + treeId.substring(0, lastSlash)
+                    }
+                }
+
+                val lastSlash = path.lastIndexOf('/')
+                if (lastSlash > "content://".length) {
+                    return path.substring(0, lastSlash)
+                }
+                return ""
             }
+            return if (DocumentsTree.isNativePath(path)) {
+                try {
+                    YuzuApplication.documentsTree?.getParentDirectory(path) ?: path
+                } catch (_: Throwable) {
+                    path
+                }
+            } else {
+                path
+            }
+        } catch (_: Throwable) {
             return ""
         }
-        return if (DocumentsTree.isNativePath(path)) {
-            YuzuApplication.documentsTree?.getParentDirectory(path) ?: path
-        } else {
-            path
-        }
     }
 
     @Keep
     @JvmStatic
-    fun getFilename(path: String): String {
-        if (path.startsWith("/") || path.startsWith("file://")) {
-            val clean = if (path.startsWith("file://")) path.substring(7) else path
-            return java.io.File(clean).name
-        }
-        return if (DocumentsTree.isNativePath(path)) {
-            YuzuApplication.documentsTree?.getFilename(path) ?: FileUtil.getFilename(Uri.parse(path))
-        } else {
-            FileUtil.getFilename(Uri.parse(path))
+    fun getFilename(path: String?): String {
+        if (path.isNullOrEmpty()) return ""
+        try {
+            if (path.startsWith("/") || path.startsWith("file://")) {
+                val clean = if (path.startsWith("file://")) path.substring(7) else path
+                return java.io.File(clean).name
+            }
+            return if (DocumentsTree.isNativePath(path)) {
+                val name = runCatching { YuzuApplication.documentsTree?.getFilename(path) }.getOrNull()
+                if (!name.isNullOrEmpty()) name else FileUtil.getFilename(Uri.parse(path))
+            } else {
+                FileUtil.getFilename(Uri.parse(path))
+            }
+        } catch (_: Throwable) {
+            return ""
         }
     }
 

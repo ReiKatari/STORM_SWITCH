@@ -208,6 +208,11 @@ void EmulationSession::InitializeGpuDriver(const std::string& hook_lib_dir,
     const char* file_redirect_dir_{};
     int featureFlags{};
 
+    std::string clean_driver_dir = custom_driver_dir;
+    while (!clean_driver_dir.empty() && (clean_driver_dir.back() == '/' || clean_driver_dir.back() == '\\')) {
+        clean_driver_dir.pop_back();
+    }
+
     // Only attempt adrenotools custom/hooked driver loading on Adreno hardware where KGSL is available
     if (SupportsCustomDriver()) {
         // Enable driver file redirection whenever file_redirect_dir is provided
@@ -220,7 +225,7 @@ void EmulationSession::InitializeGpuDriver(const std::string& hook_lib_dir,
         if (custom_driver_name.size()) {
             handle = adrenotools_open_libvulkan(
                 RTLD_NOW, featureFlags | ADRENOTOOLS_DRIVER_CUSTOM, nullptr, hook_lib_dir.c_str(),
-                custom_driver_dir.c_str(), custom_driver_name.c_str(), file_redirect_dir_, nullptr);
+                clean_driver_dir.c_str(), custom_driver_name.c_str(), file_redirect_dir_, nullptr);
         }
 
         // Try to load the system driver via adrenotools.
@@ -231,7 +236,7 @@ void EmulationSession::InitializeGpuDriver(const std::string& hook_lib_dir,
     }
 
     const std::string lower_custom_name = Common::ToLower(custom_driver_name);
-    const std::string lower_custom_dir = Common::ToLower(custom_driver_dir);
+    const std::string lower_custom_dir = Common::ToLower(clean_driver_dir);
     const bool is_panvk_driver = lower_custom_name.find("panvk") != std::string::npos ||
                                  lower_custom_name.find("panfrost") != std::string::npos ||
                                  lower_custom_dir.find("panvk") != std::string::npos ||
@@ -243,8 +248,8 @@ void EmulationSession::InitializeGpuDriver(const std::string& hook_lib_dir,
     }
 
     // Try to load a custom driver directly if adrenotools failed or on non-KGSL hardware (e.g. Mali PanVK)
-    if (!handle && custom_driver_name.size() && custom_driver_dir.size()) {
-        std::string full_custom_driver_path = custom_driver_dir + "/" + custom_driver_name;
+    if (!handle && custom_driver_name.size() && clean_driver_dir.size()) {
+        std::string full_custom_driver_path = clean_driver_dir + "/" + custom_driver_name;
         handle = dlopen(full_custom_driver_path.c_str(), RTLD_NOW | RTLD_LOCAL);
         if (handle) {
             LOG_INFO(Frontend, "Loaded custom Vulkan driver directly via dlopen: {}", full_custom_driver_path);
@@ -1155,13 +1160,18 @@ void JNICALL Java_org_yuzu_yuzu_1emu_NativeLibrary_initializeGpuDriver(JNIEnv* e
     const auto custom_driver_name_str = Common::Android::GetJString(env, custom_driver_name);
     const auto custom_driver_dir_str = Common::Android::GetJString(env, custom_driver_dir);
 
+    std::string clean_driver_dir = custom_driver_dir_str;
+    while (!clean_driver_dir.empty() && (clean_driver_dir.back() == '/' || clean_driver_dir.back() == '\\')) {
+        clean_driver_dir.pop_back();
+    }
+
     std::string full_custom_driver_path;
-    if (!custom_driver_dir_str.empty() && !custom_driver_name_str.empty()) {
-        full_custom_driver_path = custom_driver_dir_str + "/" + custom_driver_name_str;
+    if (!clean_driver_dir.empty() && !custom_driver_name_str.empty()) {
+        full_custom_driver_path = clean_driver_dir + "/" + custom_driver_name_str;
     }
 
     const std::string lower_driver_name = Common::ToLower(custom_driver_name_str);
-    const std::string lower_driver_dir = Common::ToLower(custom_driver_dir_str);
+    const std::string lower_driver_dir = Common::ToLower(clean_driver_dir);
     const bool is_panvk = lower_driver_name.find("panvk") != std::string::npos ||
                           lower_driver_name.find("panfrost") != std::string::npos ||
                           lower_driver_dir.find("panvk") != std::string::npos ||
@@ -1183,7 +1193,7 @@ void JNICALL Java_org_yuzu_yuzu_1emu_NativeLibrary_initializeGpuDriver(JNIEnv* e
 
     EmulationSession::GetInstance().InitializeGpuDriver(
         Common::Android::GetJString(env, hook_lib_dir),
-        custom_driver_dir_str,
+        clean_driver_dir,
         custom_driver_name_str,
         Common::Android::GetJString(env, file_redirect_dir));
 }

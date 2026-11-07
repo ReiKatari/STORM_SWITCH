@@ -91,8 +91,9 @@ object FileUtil {
      * @return file descriptor
      */
     @JvmStatic
-    fun openContentUri(path: String, openMode: String?): Int {
+    fun openContentUri(path: String?, openMode: String?): Int {
         try {
+            if (path.isNullOrEmpty()) return -1
             if (path.startsWith("/") || path.startsWith("file://")) {
                 val cleanPath = if (path.startsWith("file://")) path.substring(7) else path
                 val f = File(cleanPath)
@@ -105,7 +106,8 @@ object FileUtil {
                 }
             }
             val uri = Uri.parse(path)
-            val parcelFileDescriptor = context.contentResolver.openFileDescriptor(uri, openMode!!)
+            val mode = openMode ?: "r"
+            val parcelFileDescriptor = context.contentResolver.openFileDescriptor(uri, mode)
             if (parcelFileDescriptor == null) {
                 Log.error("[FileUtil]: Cannot get the file descriptor from uri: $path")
                 return -1
@@ -113,10 +115,10 @@ object FileUtil {
             val fileDescriptor = parcelFileDescriptor.detachFd()
             parcelFileDescriptor.close()
             return fileDescriptor
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             Log.error("[FileUtil]: Cannot open content uri, error: " + e.message)
+            return -1
         }
-        return -1
     }
 
     /**
