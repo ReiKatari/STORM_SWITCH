@@ -1273,17 +1273,17 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x010015100B514000ULL,
         "Super Mario Bros. Wonder",
-        "• Вылет при переходе уровней и активации Чудо-цветка\n• Микрофризы при компиляции анимаций персонажей",
-        "• Crash on stage transitions and Wonder Flower effects\n• Shader compilation stutter on character animations",
-        "✓ Конфигурация памяти: 4 ГБ DRAM\n✓ Точность ГПУ: Обычная (Normal 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Сжатие ASTC: Отключено\n✓ Реактивная очистка: Отключено\n✓ Барьеры обратной связи: Включено (устранение графических глитчей)\n✓ Ранний сброс заборов: Отключено\n✓ Пропуск кадров: Отключено\n✓ Контроль бюджета VRAM: Отключено\n✓ Игнорирование сбоев памяти: Включено",
-        "✓ Memory Layout: 4GB DRAM\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Enabled (Eliminates graphical glitches)\n✓ Early Release Fences: Disabled\n✓ Frame Skipping: Disabled\n✓ VRAM Budget Governor: Disabled\n✓ Ignore Memory Aborts: Enabled",
+        "• Вылет при переходе уровней и активации Чудо-цветка\n• Микрофризы при компиляции анимаций персонажей Lunchpack",
+        "• Crash on stage transitions and Wonder Flower effects\n• Shader compilation stutter on Lunchpack character animations",
+        "✓ Конфигурация памяти: 4 ГБ DRAM (стабильный запуск Lunchpack)\n✓ Точность ГПУ: Обычная (Normal 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Быстрая память: Включено\n✓ Синхронные шейдеры: Включено (защита от выпадения agl-отрисовок)\n✓ Сжатие ASTC: Отключено\n✓ Реактивная очистка: Отключено\n✓ Барьеры обратной связи: Включено (стабильные переходы уровней)\n✓ Ранний сброс заборов: Отключено\n✓ Пропуск кадров: Отключено\n✓ Режим полета: Включено\n✓ Контроль бюджета VRAM: Отключено\n✓ Игнорирование сбоев памяти: Включено",
+        "✓ Memory Layout: 4GB DRAM (Stable Lunchpack boot)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Fastmem: Enabled\n✓ Synchronous Shaders: Enabled (Prevents dropped agl draws)\n✓ ASTC Recompression: Uncompressed\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Enabled (Smooth stage transitions)\n✓ Early Release Fences: Disabled\n✓ Frame Skipping: Disabled\n✓ Airplane Mode: Enabled\n✓ VRAM Budget Governor: Disabled\n✓ Ignore Memory Aborts: Enabled",
         {
             {"Core\\memory_layout_mode", "0"},
             {"System\\memory_layout_mode", "0"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\use_reactive_flushing", "false"},
             {"Renderer\\use_fast_gpu_time", "true"},
-            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\use_asynchronous_shaders", "false"},
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\barrier_feedback_loops", "true"},
             {"Renderer\\early_release_fences", "false"},
@@ -1295,9 +1295,11 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\smart_shader_throttle", "false"},
             {"Renderer\\use_video_framerate", "false"},
             {"Renderer\\enable_gpu_buffer_readback", "false"},
+            {"System\\airplane_mode", "true"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"}
-        }
+        },
+        {0x010015100B514800ULL}
     },
 
     {
@@ -6224,7 +6226,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"}
         },
-        {0x010015100B514000ULL}
+        {0x040015100B5B4000ULL}
     },
     {
         0x04004D300C5AE000ULL,
@@ -6244,7 +6246,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"}
         },
-        {0x01004D300C5AE000ULL}
+        {0x04004D300C5AF000ULL}
     },
     {
         0x04006000040C2000ULL,
@@ -6264,7 +6266,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"}
         },
-        {0x01006000040C2000ULL}
+        {0x040089000C1B0000ULL}
     },
     {
         0x0400A3A01EE4C000ULL,
@@ -6787,28 +6789,26 @@ static std::mutex s_profile_mutex;
 static std::unordered_map<u64, std::unique_ptr<GameFixProfile>> s_enriched_cache;
 static std::unordered_map<std::string, const GameFixProfile*> s_path_lookup_cache;
 static std::unordered_map<u64, std::vector<const GameFixProfile*>> s_id_to_profiles_index;
-static bool s_index_built = false;
+static std::once_flag s_index_once_flag;
 
 static void EnsureProfileIndexBuilt() {
-    if (s_index_built) {
-        return;
-    }
-    s_id_to_profiles_index.reserve(s_profiles.size() * 2);
-    for (const auto& profile : s_profiles) {
-        s_id_to_profiles_index[profile.title_id].push_back(&profile);
-        const u64 base_id = profile.title_id & ~0x1FFFULL;
-        if (base_id != profile.title_id) {
-            s_id_to_profiles_index[base_id].push_back(&profile);
-        }
-        for (u64 alt : profile.alt_title_ids) {
-            s_id_to_profiles_index[alt].push_back(&profile);
-            const u64 alt_base = alt & ~0x1FFFULL;
-            if (alt_base != alt) {
-                s_id_to_profiles_index[alt_base].push_back(&profile);
+    std::call_once(s_index_once_flag, [] {
+        s_id_to_profiles_index.reserve(s_profiles.size() * 2);
+        for (const auto& profile : s_profiles) {
+            s_id_to_profiles_index[profile.title_id].push_back(&profile);
+            const u64 base_id = profile.title_id & ~0x1FFFULL;
+            if (base_id != profile.title_id) {
+                s_id_to_profiles_index[base_id].push_back(&profile);
+            }
+            for (u64 alt : profile.alt_title_ids) {
+                s_id_to_profiles_index[alt].push_back(&profile);
+                const u64 alt_base = alt & ~0x1FFFULL;
+                if (alt_base != alt) {
+                    s_id_to_profiles_index[alt_base].push_back(&profile);
+                }
             }
         }
-    }
-    s_index_built = true;
+    });
 }
 
 const GameFixProfile* GameFixDatabase::GetProfile(u64 title_id) {

@@ -161,12 +161,12 @@ class GameAdapter(private val activity: AppCompatActivity) :
         }
 
         private fun formatVersion(model: Game): String {
-            var v = org.yuzu.yuzu_emu.utils.StormFormatHelper.formatVersion(model.version)
+            var v = model.version.trim().removePrefix("v").removePrefix("V")
             if (v.isEmpty() || v == "1.0.0") {
                 try {
                     val catGame = org.yuzu.yuzu_emu.fragments.StormGamesWorldDialogFragment.getCachedCatalogItem(binding.root.context, model.programIdHex)
                     if (catGame != null && catGame.version.isNotEmpty() && catGame.version != "1.0.0") {
-                        v = org.yuzu.yuzu_emu.utils.StormFormatHelper.formatVersion(catGame.version)
+                        v = catGame.version.trim().removePrefix("v").removePrefix("V")
                     }
                 } catch (_: Exception) {}
             }
@@ -234,7 +234,7 @@ class GameAdapter(private val activity: AppCompatActivity) :
             }
             if (count > 0) {
                 badge.visibility = android.view.View.VISIBLE
-                badge.text = org.yuzu.yuzu_emu.utils.StormFormatHelper.formatAddons(count, badge.context)
+                badge.text = badge.context.getString(R.string.game_badge_dlc_count_fmt, count)
             } else {
                 badge.visibility = android.view.View.GONE
             }
@@ -249,7 +249,7 @@ class GameAdapter(private val activity: AppCompatActivity) :
             listBinding.badgeGameExtension.text = model.extension
             listBinding.textGameTitle.text = model.title.replace("[\\t\\n\\r]+".toRegex(), " ")
             val devText = if (model.developer.isNotEmpty()) {
-                "${model.developer} • ${org.yuzu.yuzu_emu.utils.StormFormatHelper.formatTitleId(model.programIdHex)}"
+                "${model.developer} • ${model.programIdHex}"
             } else {
                 model.programIdHex
             }

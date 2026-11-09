@@ -58,12 +58,12 @@ static DescriptorBankInfo MakeBankInfo(std::span<const Shader::Info> infos) {
     return bank;
 }
 
-static void AllocatePool(const Device& device, DescriptorBank& bank) {
+static void AllocatePool(const Device& device, DescriptorBank& bank, u32 extra_sets_needed = 0) {
     std::array<VkDescriptorPoolSize, 6> pool_sizes;
     size_t pool_cursor{};
     const u32 base_sets = std::max(device.GetSetsPerPool(), 256U);
-    const u32 scale = 1u << std::min<size_t>(bank.pools.size(), 3);
-    const u32 sets_per_pool = base_sets * scale;
+    const u32 scale = 1u << std::min<size_t>(bank.pools.size(), 4);
+    const u32 sets_per_pool = std::max(base_sets * scale, extra_sets_needed * 2U);
     const auto add = [&](VkDescriptorType type, u32 count) {
         if (count > 0) {
             pool_sizes[pool_cursor++] = {
@@ -116,14 +116,18 @@ vk::DescriptorSets DescriptorAllocator::AllocateDescriptors(size_t count) {
     if (!new_sets.IsOutOfPoolMemory()) {
         return new_sets;
     }
-    // Our current pool is out of memory. Allocate a new one and retry
-    AllocatePool(*device, *bank);
-    allocate_info.descriptorPool = *bank->pools.back();
-    new_sets = bank->pools.back().Allocate(allocate_info);
-    if (!new_sets.IsOutOfPoolMemory()) {
-        return new_sets;
+
+    // Current pool is out of memory or fragmented. Allocate a new pool bank with expanded size and retry.
+    for (size_t retry = 0; retry < 5; ++retry) {
+        AllocatePool(*device, *bank, static_cast<u32>(count));
+        allocate_info.descriptorPool = *bank->pools.back();
+        new_sets = bank->pools.back().Allocate(allocate_info);
+        if (!new_sets.IsOutOfPoolMemory()) {
+            return new_sets;
+        }
     }
-    // After allocating a new pool, we are out of memory again. We can't handle this from here.
+
+    // Exhausted retries after expanding pool banks
     throw vk::Exception(VK_ERROR_OUT_OF_POOL_MEMORY);
 }
 

@@ -10,6 +10,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.content.res.Configuration
+import android.view.Gravity
+import android.view.KeyEvent
 import android.widget.EditText
 import android.widget.Toast
 import androidx.core.widget.doOnTextChanged
@@ -187,12 +190,52 @@ class CheatsDialogFragment : DialogFragment() {
 
     override fun onStart() {
         super.onStart()
-        dialog?.window?.apply {
-            setLayout(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )
-            setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
+        dialog?.let { org.yuzu.yuzu_emu.utils.StormDesignEngine.applyToDialog(it, requireContext()) }
+        dialog?.setOnKeyListener { _, keyCode, event ->
+            if (keyCode == KeyEvent.KEYCODE_ESCAPE && event.action == KeyEvent.ACTION_UP) {
+                dismissAllowingStateLoss()
+                true
+            } else {
+                false
+            }
+        }
+        applyWindowDimensions()
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        applyWindowDimensions()
+    }
+
+    private fun applyWindowDimensions() {
+        dialog?.window?.let { window ->
+            val dm = resources.displayMetrics
+            val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+            val width = if (isLandscape) (dm.widthPixels * 0.94).toInt() else (dm.widthPixels * 0.95).toInt()
+            val height = if (isLandscape) (dm.heightPixels * 0.90).toInt() else (dm.heightPixels * 0.86).toInt()
+            window.setLayout(width, height)
+            window.setGravity(Gravity.CENTER)
+            window.setBackgroundDrawableResource(android.R.color.transparent)
+            ThemeHelper.applySystemBarsTheme(window, requireContext())
+        }
+
+        if (_binding != null) {
+            val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+            val density = resources.displayMetrics.density
+            binding.layoutHeader.setPadding(0, 0, 0, if (isLandscape) (2 * density).toInt() else (4 * density).toInt())
+            (binding.cardSearch.layoutParams as? ViewGroup.MarginLayoutParams)?.let { lp ->
+                lp.height = if (isLandscape) (32 * density).toInt() else (36 * density).toInt()
+                lp.bottomMargin = if (isLandscape) (2 * density).toInt() else (6 * density).toInt()
+                binding.cardSearch.layoutParams = lp
+            }
+            (binding.layoutActionButtons.layoutParams as? ViewGroup.MarginLayoutParams)?.let { lp ->
+                lp.bottomMargin = if (isLandscape) (2 * density).toInt() else (6 * density).toInt()
+                binding.layoutActionButtons.layoutParams = lp
+            }
+            val btnHeight = if (isLandscape) (32 * density).toInt() else (36 * density).toInt()
+            binding.btnDownloadOnline.layoutParams.height = btnHeight
+            binding.btnAddCustomCheat.layoutParams.height = btnHeight
+            binding.btnToggleAll.layoutParams.height = btnHeight
         }
     }
 
@@ -830,7 +873,12 @@ private fun showAddCustomCheatDialog() {
     }
 
     private fun showCheatActionMenu(item: CheatModel) {
-        val options = arrayOf(getString(R.string.cheat_menu_edit_val), getString(R.string.cheat_menu_copy_code), getString(R.string.cheat_menu_delete))
+        val isRu = requireContext().resources.configuration.locales[0]?.language == "ru"
+        val options = if (isRu) {
+            arrayOf("Изменить значение", "Копировать код", "Удалить чит")
+        } else {
+            arrayOf("Edit value", "Copy code", "Delete cheat")
+        }
         MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
             .setTitle(item.name)
             .setItems(options) { _, which ->
@@ -915,16 +963,26 @@ private fun showAddCustomCheatDialog() {
             }
             b.textBuildIdBadge.visibility = View.VISIBLE
 
-            if (isRunning && item.isEnabled) {
-                b.textCheatStatus.text = b.root.context.getString(R.string.cheat_status_active)
-                b.textCheatStatus.setTextColor(primaryColor)
-            } else if (item.isEnabled) {
-                b.textCheatStatus.text = b.root.context.getString(R.string.cheat_status_enabled)
-                b.textCheatStatus.setTextColor(primaryColor)
-            } else {
-                b.textCheatStatus.text = b.root.context.getString(R.string.cheat_status_disabled)
-                b.textCheatStatus.setTextColor(secondaryTextColor)
+            val isRu = b.root.context.resources.configuration.locales[0]?.language == "ru"
+            b.btnEditValue.text = if (isRu) "Значение" else "Value"
+
+            fun updateStatusBadge(enabled: Boolean) {
+                if (isRunning && enabled) {
+                    b.textCheatStatus.text = if (isRu) "АКТИВЕН В ИГРЕ" else "ACTIVE IN GAME"
+                    b.textCheatStatus.setBackgroundResource(R.drawable.badge_pill_emerald)
+                    b.textCheatStatus.setTextColor(0xFF10B981.toInt())
+                } else if (enabled) {
+                    b.textCheatStatus.text = if (isRu) "ВКЛЮЧЁН" else "ENABLED"
+                    b.textCheatStatus.setBackgroundResource(R.drawable.badge_pill_blue)
+                    b.textCheatStatus.setTextColor(0xFF38BDF8.toInt())
+                } else {
+                    b.textCheatStatus.text = if (isRu) "ВЫКЛЮЧЕН" else "DISABLED"
+                    b.textCheatStatus.background = null
+                    b.textCheatStatus.setTextColor(secondaryTextColor)
+                }
             }
+
+            updateStatusBadge(item.isEnabled)
 
             val localizedDesc = getLocalizedCheatDescription(b.root.context, item.name, item.code)
             b.textCheatDescription.text = localizedDesc
@@ -943,16 +1001,7 @@ private fun showAddCustomCheatDialog() {
 
             b.checkboxCheat.setOnCheckedChangeListener { _, isChecked ->
                 onCheckChanged(item, isChecked)
-                if (isRunning && isChecked) {
-                    b.textCheatStatus.text = b.root.context.getString(R.string.cheat_status_active)
-                    b.textCheatStatus.setTextColor(primaryColor)
-                } else if (isChecked) {
-                    b.textCheatStatus.text = b.root.context.getString(R.string.cheat_status_enabled)
-                    b.textCheatStatus.setTextColor(primaryColor)
-                } else {
-                    b.textCheatStatus.text = b.root.context.getString(R.string.cheat_status_disabled)
-                    b.textCheatStatus.setTextColor(secondaryTextColor)
-                }
+                updateStatusBadge(isChecked)
             }
 
             b.root.setOnClickListener {

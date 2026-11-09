@@ -86,7 +86,7 @@
 
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-            app:boxBackgroundMode="none" app:boxStrokeWidth="0dp" app:boxStrokeWidthFocused="0dp"
+            app:boxBackgroundMode="outline"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:boxBackgroundColor="@android:color/transparent"
@@ -115,14 +115,15 @@
         </com.google.android.material.textfield.TextInputLayout>
     </LinearLayout>
 
-    <!-- Language Filter Chips Bar -->
+    <!-- Unified Filter Chips Strip (Ultra-compact Single Row) -->
     <HorizontalScrollView
         android:id="@+id/scroll_language_filters"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:clipToPadding="false"
         android:paddingHorizontal="12dp"
-        android:paddingBottom="6dp"
+        android:paddingTop="2dp"
+        android:paddingBottom="4dp"
         android:scrollbars="none">
 
         <LinearLayout
@@ -132,11 +133,15 @@
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
-            <com.google.android.material.button.MaterialButton
+<com.google.android.material.button.MaterialButton
                 android:id="@+id/chip_lang_all"
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
                 android:layout_height="34dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minHeight="34dp"
+                android:minWidth="0dp"
                 android:layout_marginEnd="6dp"
                 android:paddingHorizontal="12dp"
                 android:paddingVertical="0dp"
@@ -158,6 +163,10 @@
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
                 android:layout_height="34dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minHeight="34dp"
+                android:minWidth="0dp"
                 android:layout_marginEnd="6dp"
                 android:paddingHorizontal="12dp"
                 android:paddingVertical="0dp"
@@ -179,10 +188,14 @@
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
                 android:layout_height="34dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minHeight="34dp"
+                android:minWidth="0dp"
                 android:layout_marginEnd="6dp"
                 android:paddingHorizontal="12dp"
                 android:paddingVertical="0dp"
-                android:text="🇬🇧 English"
+                android:text="English"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="11sp"
                 android:textStyle="bold"
@@ -200,10 +213,14 @@
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
                 android:layout_height="34dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minHeight="34dp"
+                android:minWidth="0dp"
                 android:layout_marginEnd="6dp"
                 android:paddingHorizontal="12dp"
                 android:paddingVertical="0dp"
-                android:text="🌍 Multi"
+                android:text="Multi"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="11sp"
                 android:textStyle="bold"
@@ -222,6 +239,10 @@
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
                 android:layout_height="34dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minHeight="34dp"
+                android:minWidth="0dp"
                 android:paddingHorizontal="12dp"
                 android:paddingVertical="0dp"
                 android:text="@string/storm_world_filter_dlc_mods"
@@ -237,31 +258,22 @@
     android:maxLines="1"
     android:ellipsize="none"/>
 
-                    </LinearLayout>
-    </HorizontalScrollView>
+            <!-- Filter Categories Divider -->
+            <View
+                android:layout_width="1dp"
+                android:layout_height="20dp"
+                android:layout_marginHorizontal="8dp"
+                android:background="?attr/colorOutline" />
 
-    <!-- Format Filter Chips Bar -->
-    <HorizontalScrollView
-        android:id="@+id/scroll_format_filters"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:clipToPadding="false"
-        android:paddingHorizontal="12dp"
-        android:paddingBottom="6dp"
-        android:scrollbars="none">
-
-        <LinearLayout
-            android:id="@+id/layout_format_chips"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <com.google.android.material.button.MaterialButton
+<com.google.android.material.button.MaterialButton
                 android:id="@+id/chip_ext_all"
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
                 android:layout_height="34dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minHeight="34dp"
+                android:minWidth="0dp"
                 android:layout_marginEnd="6dp"
                 android:paddingHorizontal="12dp"
                 android:paddingVertical="0dp"
@@ -283,6 +295,10 @@
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
                 android:layout_height="34dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minHeight="34dp"
+                android:minWidth="0dp"
                 android:layout_marginEnd="6dp"
                 android:paddingHorizontal="12dp"
                 android:paddingVertical="0dp"
@@ -304,6 +320,10 @@
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
                 android:layout_height="34dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minHeight="34dp"
+                android:minWidth="0dp"
                 android:layout_marginEnd="6dp"
                 android:paddingHorizontal="12dp"
                 android:paddingVertical="0dp"
@@ -325,6 +345,10 @@
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
                 android:layout_height="34dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minHeight="34dp"
+                android:minWidth="0dp"
                 android:layout_marginEnd="6dp"
                 android:paddingHorizontal="12dp"
                 android:paddingVertical="0dp"
@@ -346,6 +370,10 @@
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
                 android:layout_height="34dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minHeight="34dp"
+                android:minWidth="0dp"
                 android:paddingHorizontal="12dp"
                 android:paddingVertical="0dp"
                 android:text="XCZ"
@@ -616,7 +644,7 @@
                 android:textColor="?attr/colorPrimary"
                 android:textSize="11sp"
                 android:textStyle="bold"
-                tools:text="📁 Каталог: /storage/emulated/0/Switch"
+                tools:text="Каталог: /storage/emulated/0/Switch"
     android:breakStrategy="simple"
     android:hyphenationFrequency="none"/>
 
@@ -632,6 +660,9 @@
                     android:id="@+id/btn_start_download"
                     android:layout_width="0dp"
                     android:layout_height="42dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:minHeight="42dp"
                     android:layout_weight="1"
                     android:text="@string/storm_world_btn_download_game"
                     android:textColor="?attr/colorOnPrimary"
@@ -691,6 +722,9 @@
                         style="@style/Widget.Material3.Button.OutlinedButton"
                         android:layout_width="wrap_content"
                         android:layout_height="32dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:minHeight="32dp"
                         android:layout_marginEnd="6dp"
                         android:paddingHorizontal="10dp"
                         android:paddingVertical="0dp"
@@ -710,6 +744,9 @@
                         style="@style/Widget.Material3.Button.OutlinedButton"
                         android:layout_width="wrap_content"
                         android:layout_height="32dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:minHeight="32dp"
                         android:paddingHorizontal="10dp"
                         android:paddingVertical="0dp"
                         android:text="@android:string/cancel"
@@ -793,6 +830,9 @@
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minHeight="36dp"
                 android:paddingHorizontal="10dp"
                 android:paddingVertical="0dp"
                 android:text="@string/storm_world_sort_az_short"

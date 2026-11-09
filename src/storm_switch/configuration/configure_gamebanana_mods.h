@@ -14,6 +14,7 @@
 #include <QPushButton>
 #include <QSplitter>
 #include <QStackedWidget>
+#include <QStringList>
 #include <QTextBrowser>
 #include <QTreeWidget>
 #include <QWidget>
@@ -71,6 +72,9 @@ private slots:
     void RefreshInstalledMods();
     void OnInstalledItemChanged(QTreeWidgetItem* item, int column);
     void OnDeleteSelectedInstalledMod();
+    void OnCategoryPillClicked(const QString& category);
+    void OnPrevScreenshot();
+    void OnNextScreenshot();
 
 private:
     void SearchMods(const QString& query = {}, int page = 1);
@@ -78,6 +82,7 @@ private:
     void DownloadAndInstallMod(const GameBananaFile& file_info, const QString& mod_name);
     void PopulateModTree();
     void ApplySorting();
+    void UpdateScreenshotDisplay();
 
     u64 title_id{0};
     QString game_name;
@@ -89,6 +94,7 @@ private:
     QNetworkAccessManager* network_manager{nullptr};
     QNetworkReply* current_reply{nullptr};
     QNetworkReply* download_reply{nullptr};
+    QNetworkReply* screenshot_reply{nullptr};
 
     // UI
     QStackedWidget* view_stack{nullptr};
@@ -114,6 +120,26 @@ private:
     QProgressBar* progress_bar{nullptr};
     QLabel* status_label{nullptr};
     QLabel* game_header_label{nullptr};
+
+    // Category pills
+    QString active_category_filter;
+    std::vector<QPushButton*> category_pill_buttons;
+
+    // Rich Inspector elements
+    QLabel* inspector_title_label{nullptr};
+    QLabel* mod_author_pill{nullptr};
+    QLabel* mod_size_pill{nullptr};
+    QLabel* mod_downloads_pill{nullptr};
+    QLabel* mod_likes_pill{nullptr};
+    QLabel* mod_category_pill{nullptr};
+
+    // Screenshot viewer
+    QLabel* screenshot_label{nullptr};
+    QPushButton* prev_screenshot_btn{nullptr};
+    QPushButton* next_screenshot_btn{nullptr};
+    QLabel* screenshot_counter_label{nullptr};
+    QStringList current_screenshot_urls;
+    int current_screenshot_index{0};
 
     // Installed Page
     QWidget* installed_page{nullptr};

@@ -417,6 +417,14 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
         InputHandler.updateControllerData()
         notifyPhysicalControllerState()
 
+        val targetRefreshRate = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            display?.refreshRate?.coerceIn(60f, 120f) ?: 60f
+        } else {
+            @Suppress("DEPRECATION")
+            windowManager.defaultDisplay?.refreshRate?.coerceIn(60f, 120f) ?: 60f
+        }
+        org.yuzu.yuzu_emu.utils.AdpfManager.initSession(this, targetRefreshRate)
+
         buildPictureInPictureParams()
     }
 

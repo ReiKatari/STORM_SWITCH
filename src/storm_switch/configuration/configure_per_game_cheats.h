@@ -33,6 +33,11 @@ public:
     void ApplyConfiguration();
     void LoadCheats();
 
+    QString GetBuildId() const { return build_id_str; }
+    int GetTotalCheatsCount() const { return cheat_items.size(); }
+    int GetActiveCheatsCount() const;
+    QString GetGameTitle() const;
+
 signals:
     void CheatsChanged();
 
@@ -75,9 +80,11 @@ private:
     QLineEdit* search_field{nullptr};
     QLabel* info_label{nullptr};
     QLabel* status_label{nullptr};
+    QLabel* empty_overlay_label{nullptr};
     QPushButton* download_button{nullptr};
     QPushButton* add_button{nullptr};
     QPushButton* open_folder_button{nullptr};
     QPushButton* select_all_button{nullptr};
     QPushButton* deselect_all_button{nullptr};
+    QPushButton* filter_enabled_btn{nullptr};
 };

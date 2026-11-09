@@ -53,16 +53,18 @@ std::unique_ptr<FileSys::NACP> BuildNacp(const NupContainer::PackageInfo& base,
     auto nacp = std::make_unique<FileSys::NACP>();
     nacp->raw.supported_languages = static_cast<FileSys::SupportedLanguage>(0x3FFFF);
 
+    const std::size_t raw_capacity = std::size(nacp->raw.language_entries.language_entries);
     for (const auto& [lang, name] : base.localized_titles) {
         for (const auto& slot : LanguageSlots) {
             // The uncompressed RawNACP only stores 16 entries; Polish/Thai exist
             // only in the compressed format, so they fall back to the default.
-            if (slot.index < 16 && slot.tag == lang) {
+            // Safely guard extended Switch 2 NACP LanguageSlots (>= 16 entries) against out-of-bounds indexing.
+            if (slot.index < raw_capacity && slot.index < 16 && slot.tag == lang) {
                 CopyNameToEntry(nacp->raw.language_entries.language_entries[slot.index], name);
             }
         }
     }
-    if (!base.title_name.empty()) {
+    if (!base.title_name.empty() && raw_capacity > 0) {
         CopyNameToEntry(nacp->raw.language_entries.language_entries[0], base.title_name);
     }
     if (!version.empty()) {
@@ -72,9 +74,9 @@ std::unique_ptr<FileSys::NACP> BuildNacp(const NupContainer::PackageInfo& base,
     }
     nacp->raw.save_data_owner_id = base.title_id;
 
-    nacp->language_entries.resize(16);
+    nacp->language_entries.resize(std::min<std::size_t>(16, raw_capacity));
     std::memcpy(nacp->language_entries.data(), nacp->raw.language_entries.language_entries.data(),
-                sizeof(nacp->raw.language_entries.language_entries));
+                nacp->language_entries.size() * sizeof(FileSys::LanguageEntry));
     return nacp;
 }
 
@@ -209,10 +211,27 @@ ResultStatus AppLoader_NUP::VerifyIntegrity(
 
 ResultStatus AppLoader_NUP::ReadRomFS(FileSys::VirtualFile& out_file) {
     const auto base_index = nup->FindBasePackage();
-    const auto base_romfs = base_index ? nup->GetRomFSDir(*base_index) : FileSys::VirtualDir{};
+    auto base_romfs = base_index ? nup->GetRomFSDir(*base_index) : FileSys::VirtualDir{};
     const auto update_index = nup->FindBestUpdatePackage();
     const auto update_romfs =
         update_index ? nup->GetRomFSDir(*update_index) : FileSys::VirtualDir{};
+
+    // Fall back gracefully if base_romfs is null when a .nup carries standalone RomFS content
+    if (base_romfs == nullptr) {
+        if (update_romfs != nullptr) {
+            base_romfs = update_romfs;
+        } else {
+            const auto& packages = nup->GetPackages();
+            for (std::size_t i = 0; i < packages.size(); ++i) {
+                auto candidate = nup->GetRomFSDir(i);
+                if (candidate != nullptr) {
+                    base_romfs = std::move(candidate);
+                    break;
+                }
+            }
+        }
+    }
+
     // A standalone update carries the complete merged tree; a base+update pair
     // overlays the update onto the base (SPEC §4.1.4).
     const auto merged = FileSys::NupContainer::MergeShadowDirs(base_romfs, update_romfs);

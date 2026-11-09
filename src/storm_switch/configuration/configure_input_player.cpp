@@ -16,9 +16,6 @@
 #include <QMouseEvent>
 #include <QTimer>
 #include "common/assert.h"
-#include "core/core.h"
-#include "qt_common/qt_common.h"
-#include "core/loader/loader.h"
 #include "common/param_package.h"
 #include "hid_core/frontend/emulated_controller.h"
 #include "hid_core/hid_core.h"
@@ -439,57 +436,43 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
         skin_label->setStyleSheet(QStringLiteral("background: transparent; font-weight: bold; font-size: 11px;"));
 
         auto* const combo_skin = new QComboBox(this);
-        combo_skin->setMinimumWidth(160);
+        combo_skin->setMinimumWidth(140);
         combo_skin->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
-        combo_skin->setMinimumContentsLength(16);
-
-        // Item 0: Auto detection by game program ID / title
+        combo_skin->setMinimumContentsLength(14);
         combo_skin->addItem(ctrl_lang(
-                                QStringLiteral("Автоподбор под игру"),
-                                QStringLiteral("Auto Detect by Game"),
-                                QStringLiteral("自动适配游戏外观"),
-                                QStringLiteral("ゲーム別自動設定"),
-                                QStringLiteral("게임별 자동 스킨"),
-                                QStringLiteral("Automatisch nach Spiel"),
-                                QStringLiteral("Détection auto selon le jeu"),
-                                QStringLiteral("Detección automática por juego"),
-                                QStringLiteral("تحديد تلقائي حسب اللعبة")),
-                            static_cast<int>(PlayerControlPreview::ControllerSkin::AutoByGame));
+                                QStringLiteral("Классический полупрозрачный"),
+                                QStringLiteral("Classic Translucent Black"),
+                                QStringLiteral("经典半透明黑"),
+                                QStringLiteral("クラシック半透明ブラック"),
+                                QStringLiteral("클래식 반투명 블랙"),
+                                QStringLiteral("Klassisch Transparent-Schwarz"),
+                                QStringLiteral("Noir translucide classique"),
+                                QStringLiteral("Negro translúcido clásico"),
+                                QStringLiteral("أسود شفاف كلاسيكي")),
+                            static_cast<int>(PlayerControlPreview::ControllerSkin::ClassicBlack));
+        combo_skin->addItem(QStringLiteral("Xenoblade Chronicles 2 (Pyra/Aegis)"),
+                            static_cast<int>(PlayerControlPreview::ControllerSkin::Xenoblade2));
+        combo_skin->addItem(QStringLiteral("Super Smash Bros. Ultimate"),
+                            static_cast<int>(PlayerControlPreview::ControllerSkin::SmashBrosUltimate));
+        combo_skin->addItem(QStringLiteral("The Legend of Zelda: Tears of the Kingdom"),
+                            static_cast<int>(PlayerControlPreview::ControllerSkin::ZeldaTotk));
+        combo_skin->addItem(QStringLiteral("Splatoon 3 Neon"),
+                            static_cast<int>(PlayerControlPreview::ControllerSkin::Splatoon3));
+        combo_skin->addItem(QStringLiteral("Monster Hunter Rise"),
+                            static_cast<int>(PlayerControlPreview::ControllerSkin::MonsterHunterRise));
+        combo_skin->addItem(QStringLiteral("Pokémon Scarlet and Violet"),
+                            static_cast<int>(PlayerControlPreview::ControllerSkin::PokemonScarletViolet));
+        combo_skin->addItem(QStringLiteral("STORM Cyberpunk OLED"),
+                            static_cast<int>(PlayerControlPreview::ControllerSkin::CyberStorm));
 
-        // Items 1..20: All 20 collectible franchise 3D controller styles
-        for (u32 s = 0; s < static_cast<u32>(PlayerControlPreview::ControllerSkin::Count); ++s) {
-            const auto skin_val = static_cast<PlayerControlPreview::ControllerSkin>(s);
-            combo_skin->addItem(PlayerControlPreview::GetSkinName(skin_val, true), static_cast<int>(s));
-        }
+        const u32 cur_skin_idx = std::min(UISettings::values.controller_skin.GetValue(),
+                                          static_cast<u32>(PlayerControlPreview::ControllerSkin::Count) - 1);
+        combo_skin->setCurrentIndex(static_cast<int>(cur_skin_idx));
+        ui->controllerFrame->SetSkin(static_cast<PlayerControlPreview::ControllerSkin>(cur_skin_idx));
 
-        u64 running_program_id = 0;
-        QString running_title;
-        if (is_powered_on && QtCommon::system && QtCommon::system->IsPoweredOn()) {
-            running_program_id = QtCommon::system->GetApplicationProcessProgramID();
-            std::string title_str;
-            if (QtCommon::system->GetAppLoader().ReadTitle(title_str) == Loader::ResultStatus::Success) {
-                running_title = QString::fromStdString(title_str);
-            }
-        }
-
-        const u32 cur_skin_cfg = UISettings::values.controller_skin.GetValue();
-        int select_combo_idx = 0; // Default to Auto
-        for (int i = 0; i < combo_skin->count(); ++i) {
-            if (static_cast<u32>(combo_skin->itemData(i).toInt()) == cur_skin_cfg) {
-                select_combo_idx = i;
-                break;
-            }
-        }
-        combo_skin->setCurrentIndex(select_combo_idx);
-
-        const auto initial_skin = static_cast<PlayerControlPreview::ControllerSkin>(
-            combo_skin->itemData(select_combo_idx).toInt());
-        ui->controllerFrame->SetSkin(initial_skin, running_program_id, running_title);
-
-        connect(combo_skin, QOverload<int>::of(&QComboBox::currentIndexChanged),
-                [this, combo_skin, running_program_id, running_title](int idx) {
+        connect(combo_skin, QOverload<int>::of(&QComboBox::currentIndexChanged), [this, combo_skin](int idx) {
             const auto skin = static_cast<PlayerControlPreview::ControllerSkin>(combo_skin->itemData(idx).toInt());
-            ui->controllerFrame->SetSkin(skin, running_program_id, running_title);
+            ui->controllerFrame->SetSkin(skin);
             UISettings::values.controller_skin = static_cast<u32>(skin);
         });
 
@@ -548,27 +531,18 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
             ui->controllerFrame->SetRotation(-62.0f, 0.0f);
         });
 
-        auto* const btn_flip_view = new QPushButton(ctrl_lang(
-            QStringLiteral("Вид: Спереди / GL-GR"),
-            QStringLiteral("View: Front / GL-GR"),
-            QStringLiteral("视角: 正面 / GL-GR"),
-            QStringLiteral("視点: 前面 / GL-GR"),
-            QStringLiteral("뷰: 전면 / GL-GR"),
-            QStringLiteral("Ansicht: Vorne / GL-GR"),
-            QStringLiteral("Vue : Avant / GL-GR"),
-            QStringLiteral("Vista: Frontal / GL-GR"),
-            QStringLiteral("العرض: أمامي / GL-GR")), this);
+        auto* const btn_flip_view = new QPushButton(QStringLiteral("180°"), this);
         btn_flip_view->setStyleSheet(compact_btn_style);
         btn_flip_view->setToolTip(ctrl_lang(
-            QStringLiteral("Перевернуть геймпад на 180°: вид спереди или сзади с осмотром задних лепестков GL и GR"),
-            QStringLiteral("Flip controller 180°: toggle front and rear view with GL and GR paddles"),
-            QStringLiteral("180° 翻转手柄：切换正面与带 GL/GR 背键的背面检视"),
-            QStringLiteral("コントローラーを180°反転：前面・背面（GL/GRパドル）表示"),
-            QStringLiteral("컨트롤러 180° 반전: 전면 및 GL/GR 후면 패들 뷰 전환"),
-            QStringLiteral("Controller um 180° drehen: Vorder- und Rückansicht mit GL/GR-Paddles"),
-            QStringLiteral("Retourner la manette à 180° : vue avant ou arrière avec palettes GL/GR"),
-            QStringLiteral("Voltear mando 180°: alternar vista frontal y trasera con palancas GL/GR"),
-            QStringLiteral("قلب يد التحكم 180 درجة: التبديل بين الأمام والخلف مع فحص أزرار GL و GR")));
+            QStringLiteral("Перевернуть геймпад на 180°: вид спереди или сзади"),
+            QStringLiteral("Flip controller 180°: toggle front and rear view"),
+            QStringLiteral("180° 翻转手柄：切换正面与背面视图"),
+            QStringLiteral("コントローラーを180°反転：前面・背面を切り替え"),
+            QStringLiteral("컨트롤러 180° 반전: 전면 및 후면 뷰 전환"),
+            QStringLiteral("Controller um 180° drehen: Vorder- und Rückansicht"),
+            QStringLiteral("Retourner la manette à 180° : vue avant ou arrière"),
+            QStringLiteral("Voltear mando 180°: alternar vista frontal y trasera"),
+            QStringLiteral("قلب يد التحكم 180 درجة: التبديل بين الأمام والخلف")));
         connect(btn_flip_view, &QPushButton::clicked, [this] {
             ui->controllerFrame->ToggleRearView();
         });

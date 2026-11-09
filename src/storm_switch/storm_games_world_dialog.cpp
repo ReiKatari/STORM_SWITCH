@@ -14,6 +14,7 @@
 #include "common/scm_rev.h"
 #include "storm_switch/common/storm_lang.h"
 #include "storm_switch/common/storm_theme.h"
+#include "storm_switch/common/storm_design_engine.h"
 
 #include <QDesktopServices>
 #include <QDir>
@@ -47,6 +48,7 @@
 #include <QUrl>
 #include <QVBoxLayout>
 #include <QComboBox>
+#include <QGridLayout>
 
 #include "common/fs/fs.h"
 #include "common/fs/path_util.h"
@@ -55,6 +57,195 @@
 #include "qt_common/config/uisettings.h"
 #include "qt_common/qt_common.h"
 #include "storm_switch/configuration/storm_ui_structure_helper.h"
+
+
+enum class DialogIcon {
+    Refresh,
+    Search,
+    Folder,
+    FolderOpen,
+    Download,
+    Upload,
+    Pause,
+    Play,
+    Cancel,
+    Check,
+    Copy,
+    Network,
+    Link,
+    Cloud,
+    TimeMachine,
+    Plus,
+    Restore,
+    Sync,
+    Warning,
+    Package,
+};
+
+static QIcon MakeDialogVectorIcon(DialogIcon kind, const QColor& color, int size = 16) {
+    const int px_size = size * 2;
+    QPixmap pix(px_size, px_size);
+    pix.fill(Qt::transparent);
+
+    QPainter p(&pix);
+    p.setRenderHint(QPainter::Antialiasing, true);
+    p.setRenderHint(QPainter::SmoothPixmapTransform, true);
+
+    QPen pen(color);
+    pen.setWidthF(qMax(1.6, 1.8 * (px_size / 16.0)));
+    pen.setCapStyle(Qt::RoundCap);
+    pen.setJoinStyle(Qt::RoundJoin);
+    p.setPen(pen);
+    p.setBrush(Qt::NoBrush);
+
+    const qreal s = px_size;
+
+    switch (kind) {
+    case DialogIcon::Refresh:
+    case DialogIcon::Sync: {
+        QRectF arc_rect(s * 0.16, s * 0.16, s * 0.68, s * 0.68);
+        p.drawArc(arc_rect, 40 * 16, 270 * 16);
+        QPointF head_pt(s * 0.76, s * 0.32);
+        p.drawLine(head_pt, QPointF(s * 0.88, s * 0.18));
+        p.drawLine(head_pt, QPointF(s * 0.62, s * 0.18));
+        break;
+    }
+    case DialogIcon::Search: {
+        p.drawEllipse(QRectF(s * 0.16, s * 0.16, s * 0.44, s * 0.44));
+        p.drawLine(QPointF(s * 0.50, s * 0.50), QPointF(s * 0.84, s * 0.84));
+        break;
+    }
+    case DialogIcon::Folder:
+    case DialogIcon::FolderOpen: {
+        QPainterPath path;
+        path.moveTo(s * 0.14, s * 0.28);
+        path.lineTo(s * 0.40, s * 0.28);
+        path.lineTo(s * 0.48, s * 0.38);
+        path.lineTo(s * 0.86, s * 0.38);
+        path.lineTo(s * 0.86, s * 0.76);
+        path.lineTo(s * 0.14, s * 0.76);
+        path.closeSubpath();
+        p.drawPath(path);
+        break;
+    }
+    case DialogIcon::Download: {
+        p.drawLine(QPointF(s * 0.50, s * 0.16), QPointF(s * 0.50, s * 0.62));
+        p.drawLine(QPointF(s * 0.30, s * 0.44), QPointF(s * 0.50, s * 0.62));
+        p.drawLine(QPointF(s * 0.70, s * 0.44), QPointF(s * 0.50, s * 0.62));
+        p.drawLine(QPointF(s * 0.20, s * 0.68), QPointF(s * 0.20, s * 0.82));
+        p.drawLine(QPointF(s * 0.20, s * 0.82), QPointF(s * 0.80, s * 0.82));
+        p.drawLine(QPointF(s * 0.80, s * 0.82), QPointF(s * 0.80, s * 0.68));
+        break;
+    }
+    case DialogIcon::Upload: {
+        p.drawLine(QPointF(s * 0.50, s * 0.62), QPointF(s * 0.50, s * 0.18));
+        p.drawLine(QPointF(s * 0.30, s * 0.36), QPointF(s * 0.50, s * 0.18));
+        p.drawLine(QPointF(s * 0.70, s * 0.36), QPointF(s * 0.50, s * 0.18));
+        p.drawLine(QPointF(s * 0.20, s * 0.68), QPointF(s * 0.20, s * 0.82));
+        p.drawLine(QPointF(s * 0.20, s * 0.82), QPointF(s * 0.80, s * 0.82));
+        p.drawLine(QPointF(s * 0.80, s * 0.82), QPointF(s * 0.80, s * 0.68));
+        break;
+    }
+    case DialogIcon::Pause: {
+        p.drawLine(QPointF(s * 0.34, s * 0.20), QPointF(s * 0.34, s * 0.80));
+        p.drawLine(QPointF(s * 0.66, s * 0.20), QPointF(s * 0.66, s * 0.80));
+        break;
+    }
+    case DialogIcon::Play: {
+        QPainterPath path;
+        path.moveTo(s * 0.28, s * 0.20);
+        path.lineTo(s * 0.80, s * 0.50);
+        path.lineTo(s * 0.28, s * 0.80);
+        path.closeSubpath();
+        p.fillPath(path, color);
+        break;
+    }
+    case DialogIcon::Cancel: {
+        p.drawLine(QPointF(s * 0.24, s * 0.24), QPointF(s * 0.76, s * 0.76));
+        p.drawLine(QPointF(s * 0.76, s * 0.24), QPointF(s * 0.24, s * 0.76));
+        break;
+    }
+    case DialogIcon::Check: {
+        p.drawLine(QPointF(s * 0.18, s * 0.50), QPointF(s * 0.40, s * 0.76));
+        p.drawLine(QPointF(s * 0.40, s * 0.76), QPointF(s * 0.82, s * 0.24));
+        break;
+    }
+    case DialogIcon::Copy: {
+        p.drawRoundedRect(QRectF(s * 0.32, s * 0.16, s * 0.52, s * 0.52), s * 0.08, s * 0.08);
+        p.drawRoundedRect(QRectF(s * 0.16, s * 0.32, s * 0.52, s * 0.52), s * 0.08, s * 0.08);
+        break;
+    }
+    case DialogIcon::Network: {
+        p.drawEllipse(QRectF(s * 0.16, s * 0.16, s * 0.68, s * 0.68));
+        p.drawLine(QPointF(s * 0.16, s * 0.50), QPointF(s * 0.84, s * 0.50));
+        p.drawEllipse(QRectF(s * 0.32, s * 0.16, s * 0.36, s * 0.68));
+        break;
+    }
+    case DialogIcon::Link: {
+        p.drawRoundedRect(QRectF(s * 0.16, s * 0.30, s * 0.38, s * 0.40), s * 0.14, s * 0.14);
+        p.drawRoundedRect(QRectF(s * 0.46, s * 0.30, s * 0.38, s * 0.40), s * 0.14, s * 0.14);
+        break;
+    }
+    case DialogIcon::Cloud: {
+        QPainterPath path;
+        path.moveTo(s * 0.24, s * 0.68);
+        path.lineTo(s * 0.76, s * 0.68);
+        path.arcTo(QRectF(s * 0.62, s * 0.42, s * 0.26, s * 0.26), -90, 180);
+        path.arcTo(QRectF(s * 0.36, s * 0.24, s * 0.36, s * 0.36), 0, 180);
+        path.arcTo(QRectF(s * 0.14, s * 0.44, s * 0.24, s * 0.24), 90, 180);
+        path.closeSubpath();
+        p.drawPath(path);
+        break;
+    }
+    case DialogIcon::TimeMachine: {
+        p.drawEllipse(QRectF(s * 0.16, s * 0.16, s * 0.68, s * 0.68));
+        p.drawLine(QPointF(s * 0.50, s * 0.30), QPointF(s * 0.50, s * 0.50));
+        p.drawLine(QPointF(s * 0.50, s * 0.50), QPointF(s * 0.68, s * 0.50));
+        break;
+    }
+    case DialogIcon::Plus: {
+        p.drawLine(QPointF(s * 0.20, s * 0.50), QPointF(s * 0.80, s * 0.50));
+        p.drawLine(QPointF(s * 0.50, s * 0.20), QPointF(s * 0.50, s * 0.80));
+        break;
+    }
+    case DialogIcon::Restore: {
+        p.drawLine(QPointF(s * 0.50, s * 0.24), QPointF(s * 0.24, s * 0.50));
+        p.drawLine(QPointF(s * 0.24, s * 0.50), QPointF(s * 0.50, s * 0.76));
+        p.drawLine(QPointF(s * 0.76, s * 0.24), QPointF(s * 0.50, s * 0.50));
+        p.drawLine(QPointF(s * 0.50, s * 0.50), QPointF(s * 0.76, s * 0.76));
+        break;
+    }
+    case DialogIcon::Warning: {
+        QPainterPath path;
+        path.moveTo(s * 0.50, s * 0.16);
+        path.lineTo(s * 0.86, s * 0.80);
+        path.lineTo(s * 0.14, s * 0.80);
+        path.closeSubpath();
+        p.drawPath(path);
+        p.drawLine(QPointF(s * 0.50, s * 0.38), QPointF(s * 0.50, s * 0.58));
+        p.drawPoint(QPointF(s * 0.50, s * 0.70));
+        break;
+    }
+    case DialogIcon::Package: {
+        QPainterPath path;
+        path.moveTo(s * 0.50, s * 0.16);
+        path.lineTo(s * 0.84, s * 0.34);
+        path.lineTo(s * 0.84, s * 0.68);
+        path.lineTo(s * 0.50, s * 0.86);
+        path.lineTo(s * 0.16, s * 0.68);
+        path.lineTo(s * 0.16, s * 0.34);
+        path.closeSubpath();
+        p.drawPath(path);
+        p.drawLine(QPointF(s * 0.50, s * 0.86), QPointF(s * 0.50, s * 0.50));
+        p.drawLine(QPointF(s * 0.16, s * 0.34), QPointF(s * 0.50, s * 0.50));
+        p.drawLine(QPointF(s * 0.84, s * 0.34), QPointF(s * 0.50, s * 0.50));
+        break;
+    }
+    }
+
+    p.end();
+    return QIcon(pix);
+}
 
 static QString SanitizeFileName(QString name) {
     static const QString forbidden = QStringLiteral("<>:\"/\\|?*");
@@ -428,7 +619,8 @@ public:
         header_layout->setContentsMargins(14, 10, 14, 10);
         header_layout->setSpacing(14);
 
-        auto* icon_label = new QLabel(QStringLiteral("📦"), header_box);
+        auto* icon_label = new QLabel(header_box);
+        icon_label->setPixmap(MakeDialogVectorIcon(DialogIcon::Package, QColor(pal.accent), 24).pixmap(24, 24));
         icon_label->setStyleSheet(QStringLiteral("font-size: 28px; background: transparent;"));
         header_layout->addWidget(icon_label);
 
@@ -1628,7 +1820,9 @@ bool StormGamesWorldDialog::IsGameDownloaded(const StormWorldGame bitand game, c
 }
 
 void StormGamesWorldDialog::SetupUI() {
-    setWindowTitle(tr("🌐 STORM SWITCH — Каталог и менеджер игр STORM GAMES WORLD"));
+    setWindowTitle(tr("STORM SWITCH — Каталог и менеджер игр STORM GAMES WORLD"));
+
+    const auto pal = StormTheme::GetThemePalette();
 
     QSettings settings;
     const QByteArray saved_geo = settings.value(QStringLiteral("StormGamesWorld/geometry")).toByteArray();
@@ -1638,17 +1832,17 @@ void StormGamesWorldDialog::SetupUI() {
         const QRect parent_geom = parentWidget()->geometry();
         setGeometry(parent_geom);
     } else {
-        resize(1180, 720);
+        resize(1200, 740);
     }
-    setMinimumSize(680, 460);
+    setMinimumSize(960, 620);
 
     auto* root_layout = new QVBoxLayout(this);
-    root_layout->setContentsMargins(12, 12, 12, 12);
+    root_layout->setContentsMargins(14, 14, 14, 14);
     root_layout->setSpacing(10);
 
-    // --- Top Bar: Search and Refresh ---
+    // --- Top Bar: Search, Pills and Refresh ---
     auto* top_bar = new QHBoxLayout();
-    top_bar->setSpacing(10);
+    top_bar->setSpacing(8);
 
     search_edit = new QLineEdit(this);
     search_edit->setPlaceholderText(tr("Поиск доступных игр по названию или Title ID..."));
@@ -1657,10 +1851,9 @@ void StormGamesWorldDialog::SetupUI() {
 
     auto make_pill = [this](const QString& label, const QString& filter_token) {
         auto* btn = new QPushButton(label, this);
+        btn->setObjectName(QStringLiteral("FilterPill"));
         btn->setCursor(Qt::PointingHandCursor);
-        btn->setStyleSheet(QStringLiteral(
-            "QPushButton { background-color: #131c2e; color: #FFFFFF; border: 1px solid #1e293b; border-radius: 6px; padding: 5px 10px; font-size: 11px; font-weight: bold; }"
-            "QPushButton:hover { border-color: #00d2ff; color: #ffffff; background-color: #1a263d; }"));
+        btn->setMinimumHeight(28);
         connect(btn, &QPushButton::clicked, this, [this, filter_token]() {
             if (!search_edit) return;
             if (search_edit->text() == filter_token) {
@@ -1672,13 +1865,16 @@ void StormGamesWorldDialog::SetupUI() {
         return btn;
     };
     top_bar->addWidget(make_pill(tr("Все"), QString()));
-    top_bar->addWidget(make_pill(tr("✅ Имеющиеся"), QStringLiteral("installed")));
-    top_bar->addWidget(make_pill(tr("🇷🇺 RUS"), QStringLiteral("ru")));
-    top_bar->addWidget(make_pill(tr("📦 DLC"), QStringLiteral("dlc")));
-    top_bar->addWidget(make_pill(tr("⚡ MOD"), QStringLiteral("mod")));
+    top_bar->addWidget(make_pill(tr("Имеющиеся"), QStringLiteral("installed")));
+    top_bar->addWidget(make_pill(tr("RUS"), QStringLiteral("ru")));
+    top_bar->addWidget(make_pill(tr("DLC"), QStringLiteral("dlc")));
+    top_bar->addWidget(make_pill(tr("MOD"), QStringLiteral("mod")));
 
-    refresh_btn = new QPushButton(tr("🔄 Обновить каталог"), this);
+    refresh_btn = new QPushButton(tr("Обновить каталог"), this);
+    refresh_btn->setIcon(MakeDialogVectorIcon(DialogIcon::Refresh, QColor(pal.accent), 16));
     refresh_btn->setCursor(Qt::PointingHandCursor);
+    refresh_btn->setMinimumWidth(150);
+    refresh_btn->setMinimumHeight(30);
     top_bar->addWidget(refresh_btn);
 
     root_layout->addLayout(top_bar);
@@ -1687,8 +1883,8 @@ void StormGamesWorldDialog::SetupUI() {
     auto* dir_bar = new QHBoxLayout();
     dir_bar->setSpacing(8);
 
-    auto* dir_label = new QLabel(tr("📁 Папка для сохранения:"), this);
-    dir_label->setStyleSheet(QStringLiteral("font-weight: bold; color: %1;").arg(StormTheme::GetThemePalette().accent));
+    auto* dir_label = new QLabel(tr("Папка для сохранения:"), this);
+    dir_label->setStyleSheet(QStringLiteral("font-weight: bold; color: %1; font-size: 12px;").arg(pal.accent));
     dir_bar->addWidget(dir_label);
 
     download_dir_edit = new QLineEdit(GetDefaultDownloadDir(), this);
@@ -1696,11 +1892,15 @@ void StormGamesWorldDialog::SetupUI() {
     dir_bar->addWidget(download_dir_edit, 1);
 
     browse_dir_btn = new QPushButton(tr("Обзор..."), this);
+    browse_dir_btn->setIcon(MakeDialogVectorIcon(DialogIcon::FolderOpen, QColor(pal.textPrimary), 16));
     browse_dir_btn->setCursor(Qt::PointingHandCursor);
+    browse_dir_btn->setMinimumHeight(28);
     dir_bar->addWidget(browse_dir_btn);
 
     open_folder_btn = new QPushButton(tr("Открыть папку"), this);
+    open_folder_btn->setIcon(MakeDialogVectorIcon(DialogIcon::Folder, QColor(pal.textPrimary), 16));
     open_folder_btn->setCursor(Qt::PointingHandCursor);
+    open_folder_btn->setMinimumHeight(28);
     dir_bar->addWidget(open_folder_btn);
 
     root_layout->addLayout(dir_bar);
@@ -1731,12 +1931,19 @@ void StormGamesWorldDialog::SetupUI() {
     games_tree->header()->setDefaultAlignment(Qt::AlignCenter);
 
     games_tree->header()->setSectionResizeMode(0, QHeaderView::Stretch);
-    games_tree->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-    games_tree->header()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
-    games_tree->header()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
-    games_tree->header()->setSectionResizeMode(4, QHeaderView::ResizeToContents);
-    games_tree->header()->setSectionResizeMode(5, QHeaderView::ResizeToContents);
-    games_tree->header()->setSectionResizeMode(6, QHeaderView::ResizeToContents);
+    games_tree->header()->setSectionResizeMode(1, QHeaderView::Interactive);
+    games_tree->header()->setSectionResizeMode(2, QHeaderView::Interactive);
+    games_tree->header()->setSectionResizeMode(3, QHeaderView::Interactive);
+    games_tree->header()->setSectionResizeMode(4, QHeaderView::Interactive);
+    games_tree->header()->setSectionResizeMode(5, QHeaderView::Interactive);
+    games_tree->header()->setSectionResizeMode(6, QHeaderView::Interactive);
+
+    games_tree->setColumnWidth(1, 110);
+    games_tree->setColumnWidth(2, 95);
+    games_tree->setColumnWidth(3, 140);
+    games_tree->setColumnWidth(4, 90);
+    games_tree->setColumnWidth(5, 145);
+    games_tree->setColumnWidth(6, 110);
 
     connect(games_tree, &QTreeWidget::itemClicked, this, [this](QTreeWidgetItem* item, int column) {
         if (column == 3) {
@@ -1757,60 +1964,56 @@ void StormGamesWorldDialog::SetupUI() {
     card_header->setSpacing(14);
 
     cover_label = new QLabel(details_panel);
-    cover_label->setFixedSize(160, 160);
+    cover_label->setFixedSize(148, 148);
     cover_label->setAlignment(Qt::AlignCenter);
     cover_label->setStyleSheet(QStringLiteral(
         "background: transparent;"
         "border: none;"
-        "color: #7090B0;"
+        "color: %1;"
         "font-size: 11px;"
-    ));
-    card_header->addWidget(cover_label);
+    ).arg(pal.textSecondary));
+    card_header->addWidget(cover_label, 0, Qt::AlignTop);
 
     auto* meta_layout = new QVBoxLayout();
     meta_layout->setSpacing(6);
 
     title_label = new QLabel(tr("Выберите игру из списка"), details_panel);
     title_label->setWordWrap(true);
-    title_label->setStyleSheet(QStringLiteral("font-size: 16px; font-weight: bold; color: #FFFFFF;"));
+    title_label->setStyleSheet(QStringLiteral("font-size: 15px; font-weight: bold; color: %1;").arg(pal.textPrimary));
     meta_layout->addWidget(title_label);
 
     tid_label = new QLabel(tr("Title ID: —"), details_panel);
-    tid_label->setStyleSheet(QStringLiteral("font-family: monospace; color: %1; font-size: 12px;").arg(StormTheme::GetThemePalette().accent));
+    tid_label->setStyleSheet(QStringLiteral("font-family: monospace; color: %1; font-size: 12px; font-weight: bold;").arg(pal.accent));
     meta_layout->addWidget(tid_label);
 
-    auto* badges_layout = new QHBoxLayout();
-    badges_layout->setSpacing(6);
+    // Multi-row grid layout for metadata badges that NEVER clip
+    auto* badges_grid = new QGridLayout();
+    badges_grid->setHorizontalSpacing(6);
+    badges_grid->setVerticalSpacing(6);
 
     version_badge = new QLabel(tr("Версия: —"), details_panel);
-    version_badge->setStyleSheet(QStringLiteral("background: rgba(0, 210, 255, 0.15); border: 1px solid #00D2FF; border-radius: 4px; padding: 2px 8px; color: #00F0FF; font-size: 11px; font-weight: bold;"));
-    badges_layout->addWidget(version_badge);
-
     internal_version_badge = new QLabel(tr("Сборка: —"), details_panel);
-    internal_version_badge->setStyleSheet(QStringLiteral("background: rgba(168, 85, 247, 0.15); border: 1px solid #A855F7; border-radius: 4px; padding: 2px 8px; color: #C084FC; font-size: 11px; font-weight: bold; font-family: monospace;"));
-    badges_layout->addWidget(internal_version_badge);
-
+    format_badge = new QLabel(tr("Формат: NSP"), details_panel);
     size_badge = new QLabel(tr("Размер: —"), details_panel);
-    size_badge->setStyleSheet(QStringLiteral("background: rgba(0, 255, 102, 0.15); border: 1px solid #00FF66; border-radius: 4px; padding: 2px 8px; color: #00FF66; font-size: 11px; font-weight: bold;"));
-    badges_layout->addWidget(size_badge);
 
-    dlc_badge = new QLabel(tr("Дополнения: —"), details_panel);
+    dlc_badge = new QLabel(tr("Дополнений: —"), details_panel);
     dlc_badge->setCursor(Qt::PointingHandCursor);
-    dlc_badge->setStyleSheet(QStringLiteral("background: rgba(0, 240, 255, 0.15); border: 1px solid #00F0FF; border-radius: 4px; padding: 2px 8px; color: #00F0FF; font-size: 11px; font-weight: bold;"));
     dlc_badge->installEventFilter(this);
-    badges_layout->addWidget(dlc_badge);
 
     mod_badge = new QLabel(tr("Модификации: —"), details_panel);
-    mod_badge->setStyleSheet(QStringLiteral("background: rgba(168, 85, 247, 0.18); border: 1px solid #A855F7; border-radius: 4px; padding: 2px 8px; color: #C084FC; font-size: 11px; font-weight: bold;"));
     mod_badge->setVisible(false);
-    badges_layout->addWidget(mod_badge);
 
     lang_badge = new QLabel(tr("Язык: —"), details_panel);
-    lang_badge->setStyleSheet(QStringLiteral("background: rgba(245, 158, 11, 0.15); border: 1px solid #F59E0B; border-radius: 4px; padding: 2px 8px; color: #F59E0B; font-size: 11px; font-weight: bold;"));
-    badges_layout->addWidget(lang_badge);
 
-    badges_layout->addStretch(1);
-    meta_layout->addLayout(badges_layout);
+    badges_grid->addWidget(version_badge, 0, 0);
+    badges_grid->addWidget(internal_version_badge, 0, 1);
+    badges_grid->addWidget(format_badge, 0, 2);
+    badges_grid->addWidget(size_badge, 0, 3);
+    badges_grid->addWidget(dlc_badge, 1, 0);
+    badges_grid->addWidget(mod_badge, 1, 1);
+    badges_grid->addWidget(lang_badge, 1, 2, 1, 2);
+
+    meta_layout->addLayout(badges_grid);
 
     // Version selector dropdown
     auto* ver_select_layout = new QHBoxLayout();
@@ -1862,44 +2065,37 @@ void StormGamesWorldDialog::SetupUI() {
     auto* dl_buttons = new QHBoxLayout();
     dl_buttons->setSpacing(10);
 
-    download_btn = new QPushButton(tr("⬇️ Скачать игру"), download_box);
+    download_btn = new QPushButton(tr("Скачать игру"), download_box);
     download_btn->setCursor(Qt::PointingHandCursor);
     download_btn->setEnabled(false);
-    download_btn->setStyleSheet(QStringLiteral(
-        "QPushButton { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00D2FF, stop:1 #0072FF); color: #000000; font-weight: bold; padding: 8px 22px; border: 1px solid #0099FF; border-radius: 6px; font-size: 13px; }"
-        "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #33E0FF, stop:1 #338BFF); border: 1px solid #00D2FF; }"
-        "QPushButton:pressed { background: #0056b3; color: #FFFFFF; border: 1px solid #003d80; }"
-        "QPushButton:disabled { background: #2A3040; color: #FFFFFF; border: 1px solid #3A4454; }"
-    ));
+    download_btn->setMinimumWidth(130);
+    download_btn->setMinimumHeight(32);
+    download_btn->setIcon(MakeDialogVectorIcon(DialogIcon::Download, Qt::white, 16));
     dl_buttons->addWidget(download_btn, 1);
 
-    pause_btn = new QPushButton(tr("⏸️ Пауза"), download_box);
+    pause_btn = new QPushButton(tr("Пауза"), download_box);
     pause_btn->setCursor(Qt::PointingHandCursor);
     pause_btn->setEnabled(false);
-    pause_btn->setStyleSheet(QStringLiteral(
-        "QPushButton { background: rgba(245, 158, 11, 0.22); color: #FCD34D; border: 1px solid #F59E0B; padding: 8px 16px; border-radius: 6px; font-weight: bold; }"
-        "QPushButton:hover { background: rgba(245, 158, 11, 0.40); color: #FFFFFF; }"
-        "QPushButton:disabled { background: transparent; color: #FFFFFF; border: 1px solid #303030; }"
-    ));
+    pause_btn->setMinimumWidth(124);
+    pause_btn->setMinimumHeight(30);
+    pause_btn->setIcon(MakeDialogVectorIcon(DialogIcon::Pause, QColor(245, 158, 11), 16));
     dl_buttons->addWidget(pause_btn);
 
     cancel_btn = new QPushButton(tr("Отмена"), download_box);
     cancel_btn->setCursor(Qt::PointingHandCursor);
     cancel_btn->setEnabled(false);
-    cancel_btn->setStyleSheet(QStringLiteral(
-        "QPushButton { background: rgba(255, 50, 50, 0.2); color: #FF6666; border: 1px solid #FF4444; padding: 8px 18px; border-radius: 6px; font-weight: bold; }"
-        "QPushButton:hover { background: rgba(255, 50, 50, 0.4); }"
-        "QPushButton:disabled { background: transparent; color: #FFFFFF; border: 1px solid #303030; }"
-    ));
+    cancel_btn->setMinimumWidth(124);
+    cancel_btn->setMinimumHeight(30);
+    cancel_btn->setIcon(MakeDialogVectorIcon(DialogIcon::Cancel, QColor(239, 68, 68), 16));
     dl_buttons->addWidget(cancel_btn);
 
     dl_box_layout->addLayout(dl_buttons);
     details_layout->addWidget(download_box);
 
     splitter->addWidget(details_panel);
-    splitter->setStretchFactor(0, 5);
-    splitter->setStretchFactor(1, 4);
-    splitter->setSizes({740, 640});
+    splitter->setStretchFactor(0, 62);
+    splitter->setStretchFactor(1, 38);
+    splitter->setSizes({620, 380});
 
     root_layout->addWidget(splitter, 1);
 
@@ -1928,28 +2124,184 @@ void StormGamesWorldDialog::SetupUI() {
 }
 
 void StormGamesWorldDialog::ApplyStormStyles() {
-    setStyleSheet(QStringLiteral(
-        "QDialog { background-color: #0A0E17; color: #FFFFFF; font-family: 'Segoe UI', sans-serif; }"
-        "QLineEdit { background: rgba(255, 255, 255, 0.05); border: 1px solid #20354E; border-radius: 6px; padding: 7px 12px; color: #FFFFFF; font-size: 12px; }"
-        "QLineEdit:focus { border: 1px solid #00D2FF; background: rgba(0, 210, 255, 0.08); }"
-        "QTreeWidget { background-color: #070A10; border: 1px solid #1E2838; border-radius: 8px; color: #FFFFFF; alternate-background-color: #0F1420; selection-background-color: rgba(0, 210, 255, 0.25); selection-color: #FFFFFF; }"
-        "QTreeWidget::item { height: 32px; padding: 4px; border-right: 1px solid rgba(0, 210, 255, 0.15); }"
-        "QTreeWidget::item:hover { background-color: rgba(0, 210, 255, 0.12); }"
-        "QTreeWidget::item:selected { background-color: rgba(0, 210, 255, 0.3); }"
-        "QHeaderView::section { background-color: #121824; color: #00F0FF; font-weight: bold; border: none; border-right: 1px solid #20354E; border-bottom: 1px solid #20354E; padding: 7px 8px; }"
-        "QTextBrowser { background-color: #070A10; border: 1px solid #1E2838; border-radius: 8px; color: #C8D8E8; font-size: 12px; padding: 8px; }"
-        "QComboBox { background: rgba(255, 255, 255, 0.05); border: 1px solid #20354E; border-radius: 6px; color: #FFFFFF; padding: 5px 10px; font-weight: bold; }"
-        "QComboBox QAbstractItemView { background-color: #141B26; color: #FFFFFF; selection-background-color: #00D2FF; selection-color: #000000; border: 1px solid #20354E; }"
-        "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1A2434, stop:1 #131A26); border: 1px solid #2A3B52; color: #FFFFFF; padding: 6px 16px; border-radius: 7px; font-weight: 600; font-size: 12px; min-height: 22px; }"
-        "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #25344C, stop:1 #1A2638); border: 1px solid #00D2FF; color: #00D2FF; }"
-        "QPushButton:pressed { background: #0D1522; color: #FFFFFF; border: 1px solid #00A6CC; padding: 6px 16px; }"
-        "QScrollBar:vertical { background: #0A0E17; width: 12px; margin: 0; }"
-        "QScrollBar::handle:vertical { background: #1E2D42; min-height: 24px; border-radius: 6px; }"
-        "QScrollBar::handle:vertical:hover { background: #00D2FF; }"
+    const auto pal = StormTheme::GetThemePalette();
+    const QString base_style = StormDesign::BuildDialogStylesheet(pal);
+
+    const QColor acc(pal.accent);
+    const QString acc_15 = QStringLiteral("rgba(%1, %2, %3, 0.15)").arg(acc.red()).arg(acc.green()).arg(acc.blue());
+    const QString acc_25 = QStringLiteral("rgba(%1, %2, %3, 0.25)").arg(acc.red()).arg(acc.green()).arg(acc.blue());
+    const QString acc_35 = QStringLiteral("rgba(%1, %2, %3, 0.35)").arg(acc.red()).arg(acc.green()).arg(acc.blue());
+
+    const QString custom_style = QStringLiteral(
+        "QDialog {"
+        "    background-color: %1;"
+        "    color: %2;"
+        "    font-family: 'Segoe UI', sans-serif;"
+        "}"
+        "QFrame#details_panel {"
+        "    background: %3;"
+        "    border: 1px solid %4;"
+        "    border-radius: 10px;"
+        "}"
+        "QFrame#HeaderCard, QFrame#DownloadBox {"
+        "    background: %5;"
+        "    border: 1px solid %4;"
+        "    border-radius: 8px;"
+        "}"
+        "QLineEdit {"
+        "    background: %6;"
+        "    border: 1px solid %4;"
+        "    border-radius: 6px;"
+        "    padding: 6px 12px;"
+        "    color: %2;"
+        "    font-size: 12px;"
+        "}"
+        "QLineEdit:focus {"
+        "    border: 1px solid %7;"
+        "    background: %8;"
+        "}"
+        "QTreeWidget {"
+        "    background-color: %6;"
+        "    border: 1px solid %4;"
+        "    border-radius: 8px;"
+        "    color: %2;"
+        "    alternate-background-color: %5;"
+        "    selection-background-color: %9;"
+        "    selection-color: #FFFFFF;"
+        "}"
+        "QTreeWidget::item {"
+        "    height: 34px;"
+        "    min-height: 34px;"
+        "    padding: 2px 4px;"
+        "    border-right: 1px solid %10;"
+        "}"
+        "QTreeWidget::item:hover {"
+        "    background-color: %8;"
+        "}"
+        "QTreeWidget::item:selected {"
+        "    background-color: %9;"
+        "}"
+        "QHeaderView::section {"
+        "    background-color: %11;"
+        "    color: %7;"
+        "    font-weight: bold;"
+        "    border: none;"
+        "    border-right: 1px solid %4;"
+        "    border-bottom: 1px solid %4;"
+        "    padding: 7px 8px;"
+        "}"
+        "QTextBrowser {"
+        "    background-color: %6;"
+        "    border: 1px solid %4;"
+        "    border-radius: 8px;"
+        "    color: %12;"
+        "    font-size: 12px;"
+        "    padding: 8px;"
+        "}"
+        "QComboBox {"
+        "    background: %6;"
+        "    border: 1px solid %4;"
+        "    border-radius: 6px;"
+        "    color: %2;"
+        "    padding: 5px 10px;"
+        "    font-weight: bold;"
+        "}"
+        "QComboBox QAbstractItemView {"
+        "    background-color: %11;"
+        "    color: %2;"
+        "    selection-background-color: %7;"
+        "    selection-color: %13;"
+        "    border: 1px solid %4;"
+        "}"
+        "QPushButton {"
+        "    background: %14;"
+        "    border: 1px solid %15;"
+        "    color: %2;"
+        "    padding: 6px 14px;"
+        "    border-radius: 6px;"
+        "    font-weight: 600;"
+        "    font-size: 12px;"
+        "    min-height: 24px;"
+        "}"
+        "QPushButton:hover {"
+        "    background: %16;"
+        "    border: 1px solid %7;"
+        "    color: %7;"
+        "}"
+        "QPushButton:pressed {"
+        "    background: %6;"
+        "    color: %2;"
+        "    border: 1px solid %7;"
+        "}"
+        "QPushButton:disabled {"
+        "    background: transparent;"
+        "    color: %17;"
+        "    border: 1px solid %4;"
+        "}"
+        "QPushButton#FilterPill {"
+        "    background: %5;"
+        "    color: %2;"
+        "    border: 1px solid %4;"
+        "    border-radius: 6px;"
+        "    padding: 4px 14px;"
+        "    font-size: 11px;"
+        "    font-weight: bold;"
+        "    min-height: 28px;"
+        "}"
+        "QPushButton#FilterPill:hover, QPushButton#FilterPill:checked {"
+        "    background: %8;"
+        "    border: 1px solid %7;"
+        "    color: %7;"
+        "}"
+        "QProgressBar {"
+        "    border: 1px solid %4;"
+        "    border-radius: 5px;"
+        "    text-align: center;"
+        "    background: %6;"
+        "    color: #FFFFFF;"
+        "    font-weight: bold;"
+        "    font-size: 11px;"
+        "}"
+        "QProgressBar::chunk {"
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 %7, stop:1 %18);"
+        "    border-radius: 4px;"
+        "}"
+        "QScrollBar:vertical {"
+        "    background: %1;"
+        "    width: 12px;"
+        "    margin: 0;"
+        "}"
+        "QScrollBar::handle:vertical {"
+        "    background: %4;"
+        "    min-height: 24px;"
+        "    border-radius: 6px;"
+        "}"
+        "QScrollBar::handle:vertical:hover {"
+        "    background: %7;"
+        "}"
         "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }"
-    ));
+    ).arg(
+        pal.bg,
+        pal.textPrimary,
+        pal.card,
+        pal.border,
+        pal.cardAlt,
+        pal.inputBg,
+        pal.accent,
+        acc_15,
+        acc_35,
+        acc_15,
+        pal.surface,
+        pal.textSecondary,
+        pal.is_light ? QStringLiteral("#FFFFFF") : QStringLiteral("#000000"),
+        pal.buttonBg,
+        pal.buttonBorder,
+        pal.itemHover,
+        pal.textSecondary,
+        pal.accentHover
+    );
 
-
+    setStyleSheet(base_style + QStringLiteral("\n") + custom_style);
 }
 
 void StormGamesWorldDialog::OnFetchCatalog() {
@@ -2320,6 +2672,7 @@ void StormGamesWorldDialog::ParseCatalogArray(const QJsonArray bitand arr) {
 }
 
 void StormGamesWorldDialog::PopulateGameList(const QString bitand filter) {
+    const auto& pal = StormTheme::GetThemePalette();
     int prev_selected_game_id = -1;
     if (selected_game_index >= 0 && selected_game_index < static_cast<int>(filtered_games.size())) {
         prev_selected_game_id = filtered_games[selected_game_index].id;
@@ -2403,42 +2756,45 @@ void StormGamesWorldDialog::PopulateGameList(const QString bitand filter) {
         QString ext_tag = g.real_extension.isEmpty() ? QStringLiteral("NSP") : g.real_extension;
         ext_tag.remove(QLatin1Char('.'));
         ext_tag = ext_tag.toUpper();
-        const QString clean_ver = g.version.isEmpty() ? QStringLiteral("1.0.0") : g.version;
+        const QString clean_ver = StormFormat::CleanVersion(g.version);
 
         if (g.is_recommended) {
-            item->setText(1, QStringLiteral("⭐ %1 [%2]").arg(clean_ver).arg(ext_tag));
-            item->setForeground(1, QBrush(QColor(QStringLiteral("#00FF66"))));
+            item->setText(1, QStringLiteral("%1 [%2]").arg(clean_ver, ext_tag));
+            item->setForeground(1, QBrush(QColor(QStringLiteral("#10B981"))));
             item->setToolTip(1, tr("Рекомендуемая новейшая версия игры (%1)").arg(ext_tag));
         } else {
-            item->setText(1, QStringLiteral("%1 [%2]").arg(clean_ver).arg(ext_tag));
-            item->setForeground(1, QBrush(QColor(QStringLiteral("#FFFFFF"))));
+            item->setText(1, QStringLiteral("%1 [%2]").arg(clean_ver, ext_tag));
+            item->setForeground(1, QBrush(QColor(pal.textPrimary)));
         }
 
-        item->setText(2, g.size.isEmpty() ? tr("—") : LocalizeSizeString(g.size));
-        item->setForeground(2, QBrush(QColor(QStringLiteral("#FFFFFF"))));
+        const QString sz_str = (g.file_size_bytes > 0)
+            ? StormFormat::ReadableByteSize(static_cast<qulonglong>(g.file_size_bytes))
+            : (g.size.isEmpty() ? tr("—") : LocalizeSizeString(g.size));
+        item->setText(2, sz_str);
+        item->setForeground(2, QBrush(QColor(pal.textPrimary)));
 
-        if (g.dlc_count > 0 and g.mod_count > 0) {
-            item->setText(3, tr("📦 %1 DLC  •  ⚡ +%2 MOD").arg(g.dlc_count).arg(g.mod_count));
-            item->setForeground(3, QBrush(QColor(StormTheme::GetThemePalette().accent)));
+        if (g.dlc_count > 0 && g.mod_count > 0) {
+            item->setText(3, tr("%1 DLC  •  +%2 MOD").arg(g.dlc_count).arg(g.mod_count));
+            item->setForeground(3, QBrush(QColor(pal.accent)));
             item->setToolTip(3, tr("Дополнений: %1, Модификаций: %2 (нажмите для списка дополнений)").arg(g.dlc_count).arg(g.mod_count));
         } else if (g.dlc_count > 0) {
-            item->setText(3, tr("📦 %1 DLC").arg(g.dlc_count));
-            item->setForeground(3, QBrush(QColor(StormTheme::GetThemePalette().accent)));
+            item->setText(3, tr("%1 DLC").arg(g.dlc_count));
+            item->setForeground(3, QBrush(QColor(pal.accent)));
             item->setToolTip(3, tr("Нажмите для просмотра списка дополнений"));
         } else if (g.mod_count > 0) {
-            item->setText(3, tr("⚡ +%1 MOD").arg(g.mod_count));
+            item->setText(3, tr("+%1 MOD").arg(g.mod_count));
             item->setForeground(3, QBrush(QColor(QStringLiteral("#C084FC"))));
             item->setToolTip(3, tr("Вшита модификация / русификатор (%1 MOD)").arg(g.mod_count));
         } else {
             item->setText(3, QStringLiteral("—"));
-            item->setForeground(3, QBrush(QColor(QStringLiteral("#FFFFFF"))));
+            item->setForeground(3, QBrush(QColor(pal.textSecondary)));
         }
 
         item->setText(4, langs);
-        item->setForeground(4, QBrush(QColor(QStringLiteral("#FFFFFF"))));
+        item->setForeground(4, QBrush(QColor(pal.textPrimary)));
 
         item->setText(5, g.serial_id.isEmpty() ? tr("—") : g.serial_id);
-        item->setForeground(5, QBrush(QColor(StormTheme::GetThemePalette().accent)));
+        item->setForeground(5, QBrush(QColor(pal.accent)));
 
         // Center align columns 1 to 6
         item->setTextAlignment(1, Qt::AlignCenter);
@@ -2450,14 +2806,14 @@ void StormGamesWorldDialog::PopulateGameList(const QString bitand filter) {
 
         // Check download status fast
         if (IsGameDownloaded(g, current_dir, group_counts)) {
-            item->setText(6, tr("✅ Скачано"));
-            item->setForeground(6, QBrush(QColor(QStringLiteral("#00FF66"))));
-        } else if (is_downloading and current_download_game_id == g.id) {
-            item->setText(6, tr("⏳ Загрузка"));
-            item->setForeground(6, QBrush(QColor(QStringLiteral("#FFA500"))));
+            item->setText(6, tr("Скачано"));
+            item->setForeground(6, QBrush(QColor(QStringLiteral("#10B981"))));
+        } else if (is_downloading && current_download_game_id == g.id) {
+            item->setText(6, tr("Загрузка"));
+            item->setForeground(6, QBrush(QColor(QStringLiteral("#F59E0B"))));
         } else {
-            item->setText(6, tr("⚪ Доступно"));
-            item->setForeground(6, QBrush(QColor(QStringLiteral("#FFFFFF"))));
+            item->setText(6, tr("Доступно"));
+            item->setForeground(6, QBrush(QColor(pal.textSecondary)));
         }
 
         item->setData(0, Qt::UserRole, static_cast<int>(filtered_games.size() - 1));
@@ -2513,7 +2869,8 @@ void StormGamesWorldDialog::OnGameSelectionChanged() {
         if (game.id < 0) {
             LoadCover(game);
             download_btn->setEnabled(false);
-            download_btn->setText(tr("✅ Уже скачано"));
+            download_btn->setText(tr("Уже скачано"));
+            download_btn->setIcon(MakeDialogVectorIcon(DialogIcon::Check, QColor(QStringLiteral("#10B981")), 16));
             if (!is_downloading) {
                 download_status_label->setText(tr("Локальная игра (уже сохранена в папке)"));
             }
@@ -2525,7 +2882,8 @@ void StormGamesWorldDialog::OnGameSelectionChanged() {
             }
             if (is_downloading && game.id == current_download_game_id) {
                 download_btn->setEnabled(false);
-                download_btn->setText(tr("⏳ Идет скачивание..."));
+                download_btn->setText(tr("Идет скачивание..."));
+                download_btn->setIcon(MakeDialogVectorIcon(DialogIcon::Download, Qt::white, 16));
             } else {
                 const QString dir_path = download_dir_edit ? download_dir_edit->text().trimmed() : QString();
                 QString base_fn = SanitizeFileName(game.final_title.isEmpty() ? game.title : game.final_title);
@@ -2539,16 +2897,17 @@ void StormGamesWorldDialog::OnGameSelectionChanged() {
                 const QString part_p = QDir(dir_path).filePath(base_fn + QStringLiteral(".part"));
                 const QFileInfo part_fi(part_p);
                 if (part_fi.exists() && part_fi.size() > 0) {
-                    const double part_mb = static_cast<double>(part_fi.size()) / (1024.0 * 1024.0);
-                    download_btn->setText(tr("⏯️ Докачать игру (%1 МБ)").arg(QString::number(part_mb, 'f', 1)));
+                    download_btn->setText(tr("Докачать игру (%1)").arg(StormFormat::ReadableByteSize(part_fi.size())));
+                    download_btn->setIcon(MakeDialogVectorIcon(DialogIcon::Play, Qt::white, 16));
                     if (!is_downloading) {
-                        download_status_label->setText(tr("⏸️ Найден незавершенный файл (%1 МБ) — доступна докачка").arg(QString::number(part_mb, 'f', 1)));
+                        download_status_label->setText(tr("Найден незавершенный файл (%1) — доступна докачка").arg(StormFormat::ReadableByteSize(part_fi.size())));
                         if (game.file_size_bytes > 0) {
                             progress_bar->setValue(static_cast<int>(std::min<qint64>(99, (part_fi.size() * 100) / game.file_size_bytes)));
                         }
                     }
                 } else {
-                    download_btn->setText(tr("⬇️ Скачать игру"));
+                    download_btn->setText(tr("Скачать игру"));
+                    download_btn->setIcon(MakeDialogVectorIcon(DialogIcon::Download, Qt::white, 16));
                     if (!is_downloading) {
                         progress_bar->setValue(0);
                         download_status_label->setText(tr("Готов к скачиванию"));
@@ -2605,42 +2964,56 @@ static QString ExtractInternalVersion(const QString& title, const QString& versi
 }
 
 void StormGamesWorldDialog::DisplayGameDetails(const StormWorldGame& game) {
+    const auto pal = StormTheme::GetThemePalette();
     title_label->setText(game.final_title.isEmpty() ? game.title : game.final_title);
     tid_label->setText(tr("Title ID: %1").arg(game.serial_id.isEmpty() ? tr("Не указан") : game.serial_id));
-    QString clean_gv = game.version.trimmed();
-    while (clean_gv.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
-        clean_gv.remove(0, 1);
-    }
-    clean_gv = clean_gv.trimmed();
-    if (clean_gv.isEmpty()) clean_gv = QStringLiteral("1.0.0");
+
+    const QString clean_gv = StormFormat::CleanVersion(game.version);
+    const QColor acc_col(pal.accent);
+    const QString acc_15 = QStringLiteral("rgba(%1, %2, %3, 0.15)").arg(acc_col.red()).arg(acc_col.green()).arg(acc_col.blue());
 
     if (game.is_recommended) {
-        version_badge->setText(tr("Версия: %1 ★ Рекомендуемая").arg(clean_gv));
-        version_badge->setStyleSheet(QStringLiteral("background: rgba(0, 255, 102, 0.18); border: 1px solid #00FF66; border-radius: 4px; padding: 2px 8px; color: #00FF66; font-size: 11px; font-weight: bold;"));
+        version_badge->setText(tr("Версия: %1 (Рекомендуемая)").arg(clean_gv));
+        version_badge->setStyleSheet(QStringLiteral("background: rgba(16, 185, 129, 0.18); border: 1px solid #10B981; border-radius: 4px; padding: 2px 8px; color: #10B981; font-size: 11px; font-weight: bold;"));
     } else {
         version_badge->setText(tr("Версия: %1").arg(clean_gv));
-        version_badge->setStyleSheet(QStringLiteral("background: rgba(0, 210, 255, 0.15); border: 1px solid #00D2FF; border-radius: 4px; padding: 2px 8px; color: #00F0FF; font-size: 11px; font-weight: bold;"));
+        version_badge->setStyleSheet(QStringLiteral("background: %1; border: 1px solid %2; border-radius: 4px; padding: 2px 8px; color: %2; font-size: 11px; font-weight: bold;").arg(acc_15, pal.accent));
     }
     const QString int_ver = ExtractInternalVersion(game.title, game.version);
     internal_version_badge->setText(tr("Сборка: %1").arg(int_ver));
-    size_badge->setText(tr("Размер: %1").arg(game.size.isEmpty() ? tr("Неизвестно") : LocalizeSizeString(game.size)));
+    internal_version_badge->setStyleSheet(QStringLiteral("background: rgba(168, 85, 247, 0.15); border: 1px solid #A855F7; border-radius: 4px; padding: 2px 8px; color: #C084FC; font-size: 11px; font-weight: bold; font-family: monospace;"));
+
+    QString ext_tag = game.real_extension.isEmpty() ? QStringLiteral("NSP") : game.real_extension;
+    ext_tag.remove(QLatin1Char('.'));
+    ext_tag = ext_tag.toUpper();
+    if (format_badge) {
+        format_badge->setText(tr("Формат: %1").arg(ext_tag));
+        format_badge->setStyleSheet(QStringLiteral("background: rgba(59, 130, 246, 0.15); border: 1px solid #3B82F6; border-radius: 4px; padding: 2px 8px; color: #60A5FA; font-size: 11px; font-weight: bold;"));
+    }
+
+    const QString disp_size = (game.file_size_bytes > 0)
+        ? StormFormat::ReadableByteSize(static_cast<qulonglong>(game.file_size_bytes))
+        : (game.size.isEmpty() ? tr("Неизвестно") : LocalizeSizeString(game.size));
+    size_badge->setText(tr("Размер: %1").arg(disp_size));
+    size_badge->setStyleSheet(QStringLiteral("background: rgba(16, 185, 129, 0.15); border: 1px solid #10B981; border-radius: 4px; padding: 2px 8px; color: #10B981; font-size: 11px; font-weight: bold;"));
 
     if (game.dlc_count > 0) {
-        dlc_badge->setText(tr("📦 Дополнений: %1").arg(game.dlc_count));
+        dlc_badge->setText(tr("Дополнений: %1").arg(game.dlc_count));
         dlc_badge->setStyleSheet(QStringLiteral(
-            "background: rgba(0, 240, 255, 0.15); border: 1px solid #00F0FF; "
-            "border-radius: 4px; padding: 2px 8px; color: #00F0FF; font-size: 11px; font-weight: bold;"));
+            "background: %1; border: 1px solid %2; "
+            "border-radius: 4px; padding: 2px 8px; color: %2; font-size: 11px; font-weight: bold;").arg(acc_15, pal.accent));
         dlc_badge->setToolTip(tr("Нажмите для просмотра списка дополнений"));
     } else {
         dlc_badge->setText(tr("Дополнений: 0"));
         dlc_badge->setStyleSheet(QStringLiteral(
-            "background: rgba(255, 255, 255, 0.08); border: 1px solid #475569; "
-            "border-radius: 4px; padding: 2px 8px; color: #FFFFFF; font-size: 11px; font-weight: bold;"));
+            "background: %1; border: 1px solid %2; "
+            "border-radius: 4px; padding: 2px 8px; color: %3; font-size: 11px; font-weight: bold;").arg(pal.surface, pal.border, pal.textSecondary));
         dlc_badge->setToolTip(QString());
     }
 
     if (game.mod_count > 0) {
-        mod_badge->setText(tr("⚡ +%1 MOD").arg(game.mod_count));
+        mod_badge->setText(tr("+%1 MOD").arg(game.mod_count));
+        mod_badge->setStyleSheet(QStringLiteral("background: rgba(168, 85, 247, 0.18); border: 1px solid #A855F7; border-radius: 4px; padding: 2px 8px; color: #C084FC; font-size: 11px; font-weight: bold;"));
         mod_badge->setToolTip(tr("В сборку вшиты модификации / русификатор (%1 MOD)").arg(game.mod_count));
         mod_badge->setVisible(true);
     } else {
@@ -2650,7 +3023,6 @@ void StormGamesWorldDialog::DisplayGameDetails(const StormWorldGame& game) {
     lang_badge->setText(tr("Язык: %1").arg(game.text_langs.isEmpty() ? tr("Multi") : game.text_langs.join(QStringLiteral(", "))));
 
     version_combo->clear();
-    const QString ext_tag = game.real_extension.isEmpty() ? QStringLiteral("NSP") : game.real_extension.mid(1).toUpper();
     const QString ver_item_text = game.is_recommended
         ? tr("Основная версия (%1) [%2] — Рекомендуемая").arg(game.version.isEmpty() ? QStringLiteral("1.0.0") : game.version).arg(ext_tag)
         : tr("Основная версия (%1) [%2]").arg(game.version.isEmpty() ? QStringLiteral("1.0.0") : game.version).arg(ext_tag);
@@ -2746,14 +3118,14 @@ void StormGamesWorldDialog::OnGameDetailsReplyFinished() {
                 }
                 if (!filtered_games[selected_game_index].dlcs.isEmpty()) {
                     filtered_games[selected_game_index].dlc_count = filtered_games[selected_game_index].dlcs.size();
-                    dlc_badge->setText(tr("📦 Дополнений: %1").arg(filtered_games[selected_game_index].dlc_count));
+                    dlc_badge->setText(tr("Дополнений: %1").arg(filtered_games[selected_game_index].dlc_count));
                 }
             }
 
             const QJsonArray mods_arr = obj[QStringLiteral("mods")].toArray();
             if (!mods_arr.isEmpty() && selected_game_index >= 0 && selected_game_index < static_cast<int>(filtered_games.size())) {
                 filtered_games[selected_game_index].mod_count = std::max(filtered_games[selected_game_index].mod_count, static_cast<int>(mods_arr.size()));
-                mod_badge->setText(tr("⚡ +%1 MOD").arg(filtered_games[selected_game_index].mod_count));
+                mod_badge->setText(tr("+%1 MOD").arg(filtered_games[selected_game_index].mod_count));
                 mod_badge->setToolTip(tr("В сборку вшиты модификации / русификатор (%1 MOD)").arg(filtered_games[selected_game_index].mod_count));
                 mod_badge->setVisible(true);
             }
@@ -2833,22 +3205,23 @@ void StormGamesWorldDialog::LoadCover(const StormWorldGame bitand game) {
     }
 
     // Default stylized icon placeholder
-    QPixmap placeholder(160, 160);
-    placeholder.fill(QColor(14, 20, 32));
+    const auto pal = StormTheme::GetThemePalette();
+    QPixmap placeholder(148, 148);
+    placeholder.fill(QColor(pal.surface));
     QPainter p(bitand placeholder);
     p.setRenderHint(QPainter::Antialiasing);
-    p.setPen(QColor(0, 210, 255, 180));
-    p.drawRoundedRect(1, 1, 158, 158, 8, 8);
-    p.setPen(QColor(255, 255, 255, 220));
+    p.setPen(QColor(pal.accent));
+    p.drawRoundedRect(1, 1, 146, 146, 8, 8);
+    p.setPen(QColor(pal.textPrimary));
     QFont f = p.font();
     f.setBold(true);
-    f.setPointSize(10);
+    f.setPointSize(9);
     p.setFont(f);
-    p.drawText(QRect(6, 35, 148, 80), Qt::AlignCenter | Qt::TextWordWrap, game.final_title.isEmpty() ? game.title : game.final_title);
-    p.setPen(QColor(0, 240, 255, 160));
+    p.drawText(QRect(6, 25, 136, 75), Qt::AlignCenter | Qt::TextWordWrap, game.final_title.isEmpty() ? game.title : game.final_title);
+    p.setPen(QColor(pal.accent));
     f.setPointSize(8);
     p.setFont(f);
-    p.drawText(QRect(6, 125, 148, 25), Qt::AlignCenter, game.serial_id);
+    p.drawText(QRect(6, 115, 136, 25), Qt::AlignCenter, game.serial_id);
     p.end();
 
     cover_label->setPixmap(placeholder);
@@ -2883,7 +3256,7 @@ void StormGamesWorldDialog::LoadCover(const StormWorldGame bitand game) {
                 if (fi.size() > 100) {
                     QPixmap local_pix;
                     if (local_pix.load(path)) {
-                        cover_label->setPixmap(local_pix.scaled(160, 160, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
+                        cover_label->setPixmap(local_pix.scaled(148, 148, Qt::KeepAspectRatio, Qt::SmoothTransformation));
                         return;
                     }
                 }
@@ -2904,7 +3277,7 @@ void StormGamesWorldDialog::LoadCover(const StormWorldGame bitand game) {
         if (fi.size() > 500) {
             QPixmap cached_pix;
             if (cached_pix.load(current_cover_cache_file)) {
-                cover_label->setPixmap(cached_pix.scaled(160, 160, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
+                cover_label->setPixmap(cached_pix.scaled(148, 148, Qt::KeepAspectRatio, Qt::SmoothTransformation));
                 return;
             }
         }
@@ -3000,7 +3373,7 @@ void StormGamesWorldDialog::TryNextCoverCandidate() {
                     }
 
                     if (!is_closing && cover_label) {
-                        cover_label->setPixmap(pix.scaled(160, 160, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
+                        cover_label->setPixmap(pix.scaled(148, 148, Qt::KeepAspectRatio, Qt::SmoothTransformation));
                     }
                     cover_reply->deleteLater();
                     cover_reply = nullptr;
@@ -3124,13 +3497,13 @@ void StormGamesWorldDialog::OnStartDownload() {
     download_write_buffer.clear();
     download_btn->setEnabled(false);
     pause_btn->setEnabled(true);
-    pause_btn->setText(tr("⏸️ Пауза"));
+    pause_btn->setText(tr("Пауза"));
+    pause_btn->setIcon(MakeDialogVectorIcon(DialogIcon::Pause, QColor(245, 158, 11), 16));
     cancel_btn->setEnabled(true);
     refresh_btn->setEnabled(false);
     if (resume_offset_bytes > 0 && expected_total_bytes > 0) {
         progress_bar->setValue(static_cast<int>(std::min<qint64>(99, (resume_offset_bytes * 100) / expected_total_bytes)));
-        download_status_label->setText(tr("⏯️ Возобновление загрузки с %1 МБ...")
-            .arg(QString::number(static_cast<double>(resume_offset_bytes) / (1024.0 * 1024.0), 'f', 1)));
+        download_status_label->setText(tr("Возобновление загрузки с %1...").arg(StormFormat::ReadableByteSize(resume_offset_bytes)));
     } else {
         progress_bar->setValue(0);
         download_status_label->setText(tr("Подключение к серверу загрузки..."));
@@ -3172,7 +3545,7 @@ void StormGamesWorldDialog::OnDownloadDataReady() {
         if (http_code == 200 && resume_offset_bytes > 0) {
             resume_offset_bytes = 0;
             output_file->close();
-            output_file->open(QIODevice::WriteOnly | QIODevice::Truncate);
+            std::ignore = output_file->open(QIODevice::WriteOnly | QIODevice::Truncate);
         }
         const QString disp = QString::fromUtf8(download_reply->rawHeader("Content-Disposition")).toLower();
         QString real_ext;
@@ -3271,7 +3644,8 @@ void StormGamesWorldDialog::OnCancelDownload() {
             QFile::remove(current_part_path);
         }
         pause_btn->setEnabled(false);
-        pause_btn->setText(tr("⏸️ Пауза"));
+        pause_btn->setText(tr("Пауза"));
+    pause_btn->setIcon(MakeDialogVectorIcon(DialogIcon::Pause, QColor(245, 158, 11), 16));
         cancel_btn->setEnabled(false);
         progress_bar->setValue(0);
         download_status_label->setText(tr("Загрузка отменена и временный файл удален"));
@@ -3314,21 +3688,23 @@ void StormGamesWorldDialog::OnDownloadReplyFinished() {
 
     if (is_paused) {
         pause_btn->setEnabled(true);
-        pause_btn->setText(tr("▶️ Продолжить"));
+        pause_btn->setText(tr("Продолжить"));
+        pause_btn->setIcon(MakeDialogVectorIcon(DialogIcon::Play, QColor(16, 185, 129), 16));
         download_btn->setEnabled(true);
-        download_btn->setText(tr("⏯️ Докачать игру"));
+        download_btn->setText(tr("Докачать игру"));
+        download_btn->setIcon(MakeDialogVectorIcon(DialogIcon::Play, Qt::white, 16));
         cancel_btn->setEnabled(true);
         refresh_btn->setEnabled(true);
         const double part_mb = static_cast<double>(part_size) / (1024.0 * 1024.0);
-        download_status_label->setText(tr("⏸️ Загрузка на паузе (сохранено %1 МБ). Нажмите «Продолжить» для докачки.")
-            .arg(FormatRussianNumber(part_mb, 1)));
+        download_status_label->setText(tr("Загрузка на паузе (сохранено %1). Нажмите «Продолжить» для докачки.").arg(StormFormat::ReadableByteSize(part_size)));
         PopulateGameList(search_edit->text());
         return;
     }
 
     current_download_game_id = -1;
     pause_btn->setEnabled(false);
-    pause_btn->setText(tr("⏸️ Пауза"));
+    pause_btn->setText(tr("Пауза"));
+    pause_btn->setIcon(MakeDialogVectorIcon(DialogIcon::Pause, QColor(245, 158, 11), 16));
     cancel_btn->setEnabled(false);
     download_btn->setEnabled(true);
     refresh_btn->setEnabled(true);
@@ -3348,7 +3724,7 @@ void StormGamesWorldDialog::OnDownloadReplyFinished() {
             ++download_retry_count;
             const int delay_sec = std::min(10, download_retry_count * 2);
             download_status_label->setText(
-                tr("⚠️ Сбой соединения (%1). Авто-докачка (попытка %2/5) через %3 сек...")
+                tr("Сбой соединения (%1). Авто-докачка (попытка %2/5) через %3 сек...")
                     .arg(err_str).arg(download_retry_count).arg(delay_sec));
             QTimer::singleShot(delay_sec * 1000, this, [this]() {
                 if (!is_closing && !is_downloading && !is_paused) {
@@ -3369,7 +3745,7 @@ void StormGamesWorldDialog::OnDownloadReplyFinished() {
         QFile::rename(current_part_path, current_download_path);
         cached_dir_scan_time = 0;
         progress_bar->setValue(100);
-        download_status_label->setText(tr("✅ Загрузка успешно завершена! Файл сохранен в: %1").arg(current_download_path));
+        download_status_label->setText(tr("Загрузка успешно завершена! Файл сохранен в: %1").arg(current_download_path));
 
         emit GameDownloaded(current_download_path);
 

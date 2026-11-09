@@ -4,6 +4,7 @@
 package org.yuzu.yuzu_emu.utils
 
 import android.app.Activity
+import android.app.Dialog
 import android.app.Application
 import android.content.Context
 import android.content.res.ColorStateList
@@ -148,6 +149,101 @@ object StormDesignEngine {
     }
 
     /**
+     * Applies the active design system to the given Dialog or DialogFragment.
+     * Styles the independent window decorView / root card with active volumetric dark surface,
+     * crisp 1dp subtle border, unclipped MaterialButton insets, and tactile spring feedback.
+     */
+    @JvmStatic
+    fun applyToDialog(dialog: Dialog, context: Context = dialog.context) {
+        runCatching {
+            val window = dialog.window ?: return
+            val design = getDesignStyle()
+            val density = context.resources.displayMetrics.density
+
+            val surfaceColor = resolveColor(context, com.google.android.material.R.attr.colorSurface, 0xFF121826.toInt())
+            val primaryColor = resolveColor(context, com.google.android.material.R.attr.colorPrimary, 0xFF8B5CF6.toInt())
+            val outlineColor = resolveColor(context, com.google.android.material.R.attr.colorOutline, 0xFF334155.toInt())
+
+            val strokeColor = when (design) {
+                DESIGN_HYPERION_GLASS_3D -> setAlpha(Color.WHITE, 0x44)
+                DESIGN_CYBER_DECK_TACTILE -> setAlpha(primaryColor, 0x88)
+                DESIGN_AURORA_QUANTUM -> setAlpha(primaryColor, 0x66)
+                DESIGN_ORBITAL_SPATIAL_UI -> setAlpha(blend(primaryColor, Color.WHITE, 0.35f), 0x55)
+                DESIGN_CHRONO_NEXUS_COMMANDER -> setAlpha(outlineColor, 0x99)
+                else -> setAlpha(outlineColor, 0x66)
+            }
+
+            val cornerRadius = when (design) {
+                DESIGN_HYPERION_GLASS_3D -> 16f * density
+                DESIGN_CYBER_DECK_TACTILE -> 6f * density
+                DESIGN_AURORA_QUANTUM -> 24f * density
+                DESIGN_ORBITAL_SPATIAL_UI -> 20f * density
+                DESIGN_CHRONO_NEXUS_COMMANDER -> 10f * density
+                else -> 16f * density
+            }
+
+            val dialogBg = GradientDrawable(
+                GradientDrawable.Orientation.TOP_BOTTOM,
+                intArrayOf(
+                    blend(surfaceColor, Color.WHITE, 0.04f),
+                    surfaceColor,
+                    blend(surfaceColor, Color.BLACK, 0.15f)
+                )
+            ).apply {
+                shape = GradientDrawable.RECTANGLE
+                this.cornerRadius = cornerRadius
+                setStroke(maxOf(1, (1f * density).roundToInt()), strokeColor)
+            }
+
+            window.setBackgroundDrawable(dialogBg)
+
+            val decor = window.decorView
+            applyToViewTree(decor, context)
+        }
+    }
+
+    /**
+     * Applies active design system volumetric styling and tactile feedback
+     * to an arbitrary view hierarchy (such as a DialogFragment root or item card).
+     */
+    @JvmStatic
+    fun applyToViewTree(root: View, context: Context = root.context) {
+        runCatching {
+            val design = getDesignStyle()
+            val themeIndex = runCatching { IntSetting.THEME_MODE.getInt() }.getOrDefault(3)
+            val density = context.resources.displayMetrics.density
+
+            // Style root if it is a card
+            if (root is MaterialCardView) {
+                styleCardView(root, design)
+            }
+
+            // Recursively style hierarchy
+            styleViewHierarchy(root, design, themeIndex)
+
+            // Ensure unclipped MaterialButtons in view tree
+            unclipButtonsInHierarchy(root, density)
+        }
+    }
+
+    private fun unclipButtonsInHierarchy(view: View, density: Float) {
+        if (view is MaterialButton && view !is MaterialSwitch && view !is Switch) {
+            view.insetTop = 0
+            view.insetBottom = 0
+            if (view.minHeight < (34f * density).roundToInt() && view.minHeight > 0) {
+                view.minHeight = (34f * density).roundToInt()
+            }
+        }
+        if (view is ViewGroup) {
+            for (i in 0 until view.childCount) {
+                val child = view.getChildAt(i) ?: continue
+                unclipButtonsInHierarchy(child, density)
+            }
+        }
+    }
+
+
+    /**
      * Gets the currently active UI Design Style (0..4).
      */
     fun getDesignStyle(): Int = runCatching {
@@ -286,6 +382,9 @@ object StormDesignEngine {
         val density = context.resources.displayMetrics.density
         val primaryColor = resolveColor(context, com.google.android.material.R.attr.colorPrimary, 0xFF8B5CF6.toInt())
         val outlineColor = resolveColor(context, com.google.android.material.R.attr.colorOutline, 0xFF334155.toInt())
+
+        button.insetTop = 0
+        button.insetBottom = 0
 
         when (design) {
             DESIGN_HYPERION_GLASS_3D -> {

@@ -1,8 +1,7 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources xmlns:ns0="http://schemas.android.com/tools" ns0:ignore="MissingTranslation">
-    <string name="app_disclaimer">Это программное обеспечение предназначено для запуска игр для игровой консоли Nintendo Switch. Игры и ключи в комплект не входят.<br />
-        <br />Прежде чем начать, пожалуйста, найдите файл &lt;b&gt;prod.keys&lt;/b&gt; на вашем устройстве.<br />
-        <br /> &lt;a href=\"https://yuzu-mirror.github.io/help/quickstart\"&gt;Узнать больше&lt;/a&gt;</string>
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+
+    <string name="app_disclaimer">Это программное обеспечение предназначено для запуска игр для игровой консоли Nintendo Switch. Игры и ключи в комплект не входят.<br /><br />Прежде чем начать, пожалуйста, найдите файл <![CDATA[<b>prod.keys</b>]]> на вашем устройстве.<br /><br /> <![CDATA[<a href=\"https://yuzu-mirror.github.io/help/quickstart\">Узнать больше</a>]]></string>
     <string name="notice_notification_channel_name">Уведомления и ошибки</string>
     <string name="notice_notification_channel_description">Показывает уведомления, когда что-то пошло не так</string>
     <string name="notification_permission_not_granted">Вы не предоставили разрешение на уведомления!</string>
@@ -11,12 +10,17 @@
     <string name="seconds">Секунды</string>
     <string name="copy_to_clipboard">Скопировать</string>
     <string name="view_logs">Журнал работы (Логи)</string>
+
+    <!-- Spinbox strings -->
     <string name="increment">Прирост</string>
     <string name="decrement">Уменьшение</string>
     <string name="value_too_low">Величина должна быть не менее %1$d</string>
     <string name="value_too_high">Величина должна быть не более %1$d</string>
     <string name="invalid_value">Неверная величина</string>
+
     <string name="using_per_game_config">Настройки для каждой игры</string>
+
+    <!-- Input Overlay -->
     <string name="show_input_overlay">Показать оверлей ввода</string>
     <string name="show_input_overlay_description">Отображать сенсорный оверлей во время эмуляции</string>
     <string name="overlay_snap_to_grid">Привязка к сетке</string>
@@ -31,14 +35,19 @@
     <string name="hide_overlay_on_controller_input_description">Автоматически убирает оверлей контроллера когда используется физический котроллер. Оверлей появляется когда контроллер отсоединен.</string>
     <string name="invert_confirm_back_controller_buttons">Инвертировать кнопки контроллера Подтвердить/Обратно</string>
     <string name="invert_confirm_back_controller_buttons_description">Измените кнопки управления подтверждения и возврата Android, чтобы они соответствовали Switch и Xbox при использовании пользовательского интерфейса приложения</string>
+
     <string name="input_overlay_options">Оверлей ввода</string>
     <string name="input_overlay_options_description">Настройка экранного управления</string>
     <string name="edit_overlay_layout">Редактировать макет оверлея</string>
     <string name="edit_overlay_layout_description">Настроить положение и размер элементов управления на экране</string>
+
+
+    <!-- Stats Overlay settings -->
     <string name="process_ram">ОЗУ процесса: %1$d МБ</string>
     <string name="shaders_prefix">Компиляция</string>
     <string name="shaders_suffix">Шейдер(ов)</string>
     <string name="charging">(Заряжается)</string>
+
     <string name="system_info_label">Система:</string>
     <string name="show_stats_overlay">Показать оверлей статистики</string>
     <string name="stats_overlay_customization">Настройки</string>
@@ -71,18 +80,24 @@
     <string name="overlay_position_center_bottom">По центру снизу</string>
     <string name="perf_overlay_background">Фон оверлея</string>
     <string name="perf_overlay_background_description">Фон для улучшения читаемости</string>
+
+    <!-- Device Overlay settings -->
     <string name="show_soc_overlay">Показать оверлей информации об устройстве</string>
     <string name="enable_soc_overlay">Включить оверлей устройства</string>
     <string name="soc_overlay_options">Оверлей устройства</string>
     <string name="soc_overlay_options_description">Настроить, какая информация отображается в оверлее устройства</string>
+
     <string name="show_build_id">Показать ID сборки</string>
     <string name="show_driver_version">Показать версию драйвера</string>
     <string name="show_device_model">Показать модель устройства</string>
     <string name="show_gpu_model">Показать модель ГПУ</string>
     <string name="show_soc_model">Показать модель SoC</string>
     <string name="show_fw_version">Показать версию прошивки</string>
+
+    <!-- Eden\'s Veil -->
     <string name="buffer_reorder_disable">Отключить переупорядочивание буфера</string>
     <string name="buffer_reorder_disable_description">При включении отключает переупорядочивание загрузки отображенной памяти, позволяя связывать загрузки с конкретными отрисовками. В некоторых случаях может снизить производительность.</string>
+
     <string name="use_sync_core">Синхронизация скорости ядра</string>
     <string name="use_sync_core_description">Синхронизирует скорость ядра с максимальным процентом скорости для улучшения производительности без изменения фактической скорости игры.</string>
     <string name="cpuopt_unsafe_host_mmu">Включить эмуляцию MMU хоста</string>
@@ -90,12 +105,16 @@
     <string name="debug_knobs">Настройки отладки</string>
     <string name="debug_knobs_description">Только для разработчиков</string>
     <string name="debug_knobs_hint">От 0 до 65535</string>
+
+    <!-- NVDEC Emulation -->
     <string name="nvdec_emulation">Эмуляция NVDEC</string>
     <string name="nvdec_emulation_description">Обработка видео (ролики, интро)</string>
     <string name="nvdec_emulation_none">Отключено</string>
     <string name="nvdec_emulation_cpu">ЦП</string>
     <string name="nvdec_emulation_gpu">ГПУ</string>
     <string name="nvdec_emulation_hybrid">Гибридный</string>
+
+    <!-- Auto-Correction and Thermal Cooling -->
     <string name="auto_correction_title">Авто-коррекция</string>
     <string name="auto_correction_description">Динамическая термо-коррекция и прирост FPS при перегреве и просадках</string>
     <string name="auto_correction_dialog_title">Термо-коррекция и разгон FPS</string>
@@ -111,9 +130,13 @@
     <string name="auto_correction_no_profile">Активен универсальный высокопроизводительный профиль</string>
     <string name="auto_correction_issues_content">• Высокая нагрузка на GPU: рендеринг в повышенном разрешении вызывает нагрев кристалла выше 40°C\n• Троттлинг видеоядра: при температуре выше 40°C частоты GPU сбрасываются, вызывая падение FPS ниже 30\n• Пропускная способность памяти: интенсивная распаковка текстур ASTC перегружает шину DRAM и повышает тепловыделение\n• Избыточные циклы синхронизации: реактивная очистка и строгий контроль конвейера тормозят поток рендеринга</string>
     <string name="auto_correction_recommendations_content">✓ Разрешение рендеринга: 0.75X (540p / 810p) (снижает температуру SoC на 4–6°C и повышает FPS)\n✓ Пересжатие текстур ASTC: Без сжатия (максимальное качество текстур и отсутствие артефактов)\n✓ Тайминги ГПУ: Ускоренный (устраняет задержки команд видеоядра)\n✓ Реактивный сброс памяти: Отключено (разгружает ГПУ и устраняет микрофризы)\n✓ Эмуляция Host MMU (fastmem): Включено (максимальная производительность процессора при минимальном тепловыделении)\n✓ Эко-режим и охлаждение: Включено (защита от теплового троттлинга)\n✓ Анизотропная фильтрация: По умолчанию (устраняет лишние выборки текстур)</string>
+
+    <!-- Optimize SPIRV output -->
     <string name="never">Никогда</string>
     <string name="on_load">При загрузке</string>
     <string name="always">Всегда</string>
+
+    <!-- Multiplayer -->
     <string name="multiplayer">Мультиплеер</string>
     <string name="multiplayer_description">Создайте свою игровую комнату или присоединитесь к существующей</string>
     <string name="multiplayer_create_room">Создать</string>
@@ -185,10 +208,10 @@
     <string name="multiplayer_lobby_type">Тип лобби</string>
     <string name="multiplayer_room_name_error">3-20 символов</string>
     <string name="multiplayer_required">Обязательно</string>
-    <string name="multiplayer_token_required">Требуется веб-токен, перейдите в Дополнительные настройки -&gt; Система -&gt; Сеть</string>
+    <string name="multiplayer_token_required">Требуется веб-токен, перейдите в Дополнительные настройки -> Система -> Сеть</string>
     <string name="multiplayer_ip_error">Неверный IP</string>
     <string name="multiplayer_username_error">Должно быть от 4 до 20 символов и содержать только буквы, цифры, точки, дефисы, подчёркивания и пробелы</string>
-    <string name="multiplayer_nickname_invalid">Неверное имя пользователя. Убедитесь, что оно правильно указано в Система -&gt; Сеть</string>
+    <string name="multiplayer_nickname_invalid">Неверное имя пользователя. Убедитесь, что оно правильно указано в Система -> Сеть</string>
     <string name="multiplayer_token_error">Должно быть 48 символов и содержать только строчные буквы a-z</string>
     <string name="multiplayer_port_error">1-65535</string>
     <string name="cancel">Отмена</string>
@@ -197,21 +220,26 @@
     <string name="room_list">Список комнат</string>
     <string name="multiplayer_public_visibility">Публичное</string>
     <string name="multiplayer_unlisted_visibility">Непубличное</string>
+
+    <!-- Setup strings -->
     <string name="welcome">Добро пожаловать!</string>
-    <string name="welcome_description">Узнайте, как настроить &lt;b&gt;Eden&lt;/b&gt; и перейти прямиком к эмуляции.</string>
+    <string name="welcome_description">Узнайте, как настроить &lt;b>Eden&lt;/b> и перейти прямиком к эмуляции.</string>
     <string name="get_started">Начать</string>
     <string name="keys">Ключи</string>
-    <string name="keys_description">Выберите ваш файл &lt;b&gt;prod.keys&lt;/b&gt; с помощью кнопки ниже.</string>
+    <string name="keys_description">Выберите ваш файл &lt;b>prod.keys&lt;/b> с помощью кнопки ниже.</string>
     <string name="firmware">Прошивка</string>
     <string name="firmware_description">Выберите файл <b>firmware.zip</b> с помощью кнопки ниже.</string>
     <string name="games">Игры</string>
-    <string name="games_description">Выберите вашу папку с &lt;b&gt;играми&lt;/b&gt; с помощью кнопки ниже.</string>
+    <string name="games_description">Выберите вашу папку с &lt;b>играми&lt;/b> с помощью кнопки ниже.</string>
     <string name="done">Готово</string>
     <string name="done_description">Всё готово.\nПриятной игры!</string>
     <string name="next">Далее</string>
     <string name="back">Назад</string>
     <string name="add_games">Добавить игры</string>
     <string name="step_complete">Выполнено!</string>
+
+    <!-- Home strings -->
+
     <string name="alphabetical">По алфавиту</string>
     <string name="view_list">Список</string>
     <string name="view_grid">Сетка</string>
@@ -278,6 +306,7 @@
     <string name="memory_info">Информация о памяти</string>
     <string name="total_memory">Общий объем памяти</string>
     <string name="soc">SOC:</string>
+
     <string name="warning_help">Помощь</string>
     <string name="warning">Предупреждение</string>
     <string name="warning_skip">Пропустить</string>
@@ -357,25 +386,31 @@
     <string name="no_save_data_found">Файлы сохранений не найдены</string>
     <string name="verify_installed_content">Подтвердить установленный контент</string>
     <string name="verify_installed_content_description">Проверяет весь установленный контент на наличие повреждений</string>
+
     <string name="keys_missing">Отсутствуют ключи шифрования</string>
     <string name="keys_missing_description">Прошивка и розничные игры не могут быть расшифрованы</string>
     <string name="keys_missing_help">https://yuzu-mirror.github.io/help/quickstart/#dumping-decryption-keys</string>
+
     <string name="uninstall_firmware">Удалить прошивку</string>
     <string name="uninstall_firmware_description">Удаление прошивки сотрёт её с устройства и может повлиять на совместимость игр.</string>
     <string name="firmware_uninstalling">Удаление прошивки...</string>
     <string name="firmware_uninstalled_success">Прошивка успешно удалена</string>
+
+
     <string name="keys_failed">Ошибка установки ключей</string>
     <string name="keys_install_success">Ключи успешно установлены</string>
     <string name="error_keys_copy_failed">Не удалось скопировать один или несколько ключей.</string>
     <string name="error_keys_invalid_filename">Убедитесь, что файл ключей имеет расширение .keys, и попробуйте снова.</string>
     <string name="error_keys_failed_init">Не удалось инициализировать ключи. Проверьте, актуальны ли ваши инструменты для дампа, и пересохраните ключи.</string>
+
+    <!-- Applet launcher strings -->
     <string name="qlaunch_applet">Qlaunch</string>
     <string name="qlaunch_description">Запуск приложений с домашнего экрана системы</string>
     <string name="applets">Запуск апплета</string>
     <string name="applets_description">Запуск системных апплетов на установленной прошивке</string>
     <string name="applets_error_firmware">Прошивка не установлена</string>
     <string name="applets_error_applet">Апплет недоступен</string>
-    <string name="applets_error_description">Убедитесь, что файлы &lt;a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-prodkeys-and-titlekeys\"&gt;prod.keys&lt;/a&gt; и &lt;a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-system-firmware\"&gt;прошивка&lt;/a&gt; установлены, и попробуйте снова.</string>
+    <string name="applets_error_description"><![CDATA[Убедитесь, что файлы <a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-prodkeys-and-titlekeys\">prod.keys</a> и <a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-system-firmware\">прошивка</a> установлены, и попробуйте снова.]]></string>
     <string name="album_applet">Альбом</string>
     <string name="album_applet_description">Просмотрите изображения, сохраненные в папке скриншотов пользователя, с помощью системного просмотрщика фотографий.</string>
     <string name="mii_edit_applet">Mii редактор</string>
@@ -388,6 +423,8 @@
     <string name="cabinet_restorer">Восстановитель</string>
     <string name="cabinet_formatter">Форматтер</string>
     <string name="resolution_change_warning">Смена разрешения во время игры может вызывать графические артефакты. Рекомендуется перезапустить игру.</string>
+
+    <!-- About screen strings -->
     <string name="gaia_is_not_real">Gaia не существует</string>
     <string name="copied_to_clipboard">Скопировано в буфер обмена</string>
     <string name="about_app_description">STORM SWITCH — передовой высокопроизводительный форк эмулятора Eden (Nintendo Switch)</string>
@@ -413,6 +450,7 @@
     <string name="x_link" translatable="false">https://nitter.poast.org/edenemuofficial</string>
     <string name="website_link" translatable="false">https://eden-emulator.github.io/</string>
     <string name="github_link" translatable="false">https://github.com/ReiKatari/STORM_EDEN</string>
+    <!-- General settings strings -->
     <string name="frame_limit_enable">Ограничить скорость</string>
     <string name="frame_limit_enable_description">Ограничивает скорость эмуляции указанным процентом от нормальной скорости.</string>
     <string name="frame_limit_slider">Ограничение процента cкорости</string>
@@ -426,8 +464,11 @@
     <string name="cpu_backend_dynarmic">Dynarmic (JIT-трансляция)</string>
     <string name="cpu_accuracy">Точность ЦП</string>
     <string name="value_with_units">%1$s%2$s</string>
+
     <string name="program_args">Аргументы Homebrew</string>
     <string name="program_args_description">Аргументы командной строки, переданные Homebrew при запуске (например, -noglsl)</string>
+
+    <!-- System settings strings -->
     <string name="device_name">Название устройства</string>
     <string name="use_docked_mode">Режим док-станции</string>
     <string name="use_docked_mode_description">Увеличивает разрешение, снижая производительность. Портативный режим используется при отключении, снижая разрешение и повышая производительность.</string>
@@ -438,6 +479,8 @@
     <string name="use_custom_rtc">Пользовательские RTC</string>
     <string name="use_custom_rtc_description">Позволяет установить пользовательские часы реального времени отдельно от текущего системного времени.</string>
     <string name="set_custom_rtc">Установить пользовательский RTC</string>
+
+    <!-- CPU -->
     <string name="clocks">Тактовые частоты</string>
     <string name="fast_cpu_time">Тайминги ЦП</string>
     <string name="fast_cpu_time_description">Принудительно повышает тактовую частоту эмулируемого ЦП, снижая влияние некоторых ограничителей FPS. Используйте Разгон (1 700 МГц) для работы на максимальной штатной частоте Switch или Быстрая (2 000 МГц) для удвоенной частоты.</string>
@@ -446,7 +489,10 @@
     <string name="cpu_ticks">Такты</string>
     <string name="memory_layout">Объём DRAM (Разметка памяти консоли)</string>
     <string name="memory_layout_description">(ЭКСПЕРИМЕНТАЛЬНО) Объём DRAM оперативной памяти консоли: 4 / 6 / 8 / 12 ГБ. Увеличение DRAM помогает в требовательных играх, при использовании модов и текстурных пакетов высокого разрешения. Работает на бэкенде Dynarmic (JIT) и требует достаточного объёма физической памяти смартфона.</string>
+
     <string name="generate">Создать</string>
+
+    <!-- Network settings strings -->
     <string name="web_token">Веб-токен</string>
     <string name="web_token_description">Веб-токен, используемый для создания публичных комнат. Это строка из 48 символов, содержащая только строчные буквы a-z.</string>
     <string name="web_username">Веб-имя пользователя</string>
@@ -456,13 +502,18 @@
     <string name="nx2_online_server_description">IP-адрес локального или LAN сервера (например, 127.0.0.1) для Switch 2 NPLN и сетевых тестов (playDB-CNT).</string>
     <string name="nx2_online_hosts">Маски хостов Switch 2 Online</string>
     <string name="nx2_online_hosts_description">Разделенные запятыми маски доменов, перенаправляемых на сервер-заглушку (*.fromsoftware-game.net,*.srv.nintendo.net,*.npln.srv.nintendo.net).</string>
+
+    <!-- Graphics settings strings -->
     <string name="renderer_resolution">Разрешение (портативное/в док-станции)</string>
     <string name="renderer_vsync">Режим вертикальной синхронизации</string>
     <string name="renderer_scaling_filter">Фильтр адаптации окна</string>
     <string name="fsr_sharpness">Резкость FSR/SGSR</string>
     <string name="fsr_sharpness_description">Определяет, насколько чётким будет изображение при использовании динамического контраста FSR или SGSR фильтров</string>
     <string name="renderer_anti_aliasing">Метод сглаживания</string>
+
+
     <string name="advanced">Расширенные настройки</string>
+
     <string name="renderer_accuracy">Режим ГПУ</string>
     <string name="renderer_accuracy_description">Управляет режимом эмуляции ГПУ. Большинство игр нормально отображаются в режиме Быстрый, но для некоторых требуется режим Точный. Частицы обычно корректно отображаются только в режиме Точный.</string>
     <string name="dma_accuracy">Точность DMA</string>
@@ -481,6 +532,7 @@
     <string name="astc_recompression_bc1">BC1 (Низкое качество / Максимальная экономия ОЗУ)</string>
     <string name="astc_recompression_bc3" formatted="false">BC3 (Среднее качество / Экономия 50% ОЗУ)</string>
     <string name="astc_recompression_bc5">BC5 (Высокое качество карт нормалей)</string>
+
     <string name="sync_memory_operations">Синхронизация операций памяти</string>
     <string name="sync_memory_operations_description">Обеспечивает согласованность данных между вычислительными операциями и операциями с памятью. Эта опция должна исправлять проблемы в некоторых играх, но может снижать производительность в некоторых случаях. Наиболее сильно это затрагивает игры на Unreal Engine 4.</string>
     <string name="use_disk_shader_cache">Дисковый кэш шейдеров</string>
@@ -499,7 +551,9 @@
     <string name="enable_gpu_buffer_readback_description">Сохраняет измененные ГПУ данные буфера путем чтения их обратно перед выгрузками. Некоторые игры требуют этого, чтобы рендерить определенные эффекты правильно. Может вызывать проблемы если оборудование не может обработать дополнительную рабочую нагрузку.</string>
     <string name="use_optimized_vertex_buffers">Оптимизированные вершинные буферы</string>
     <string name="use_optimized_vertex_buffers_description">Включает оптимизированную привязку вершинного буфера для повышения производительности. Требует Mesa Turnip 26.0+ / QCOM. Приводит к вылету на старых версиях драйверов Turnip (25.3 и ниже).</string>
+
     <string name="hacks">Хаки</string>
+
     <string name="fast_gpu_time">Тайминги ГПУ</string>
     <string name="fast_gpu_time_description">Принудительно запускает большинство игр в их максимальном нативном разрешении. Используйте значение 256 для максимальной производительности и 512 для максимального качества графики.</string>
     <string name="skip_cpu_inner_invalidation">Пропуск внутренней инвалидации ЦП</string>
@@ -523,7 +577,10 @@
     <string name="gpu_unswizzle_chunk_size">Размер блока Unswizzle</string>
     <string name="gpu_unswizzle_chunk_size_description">Задает количество слоёв глубины, обрабатываемых за одну пачку для 3D-текстур. Увеличение этого значения улучшает пропускную способность на мощных ГПУ, но может вызывать подтормаживания или таймауты драйвера на слабом железе.</string>
     <string name="gpu_unswizzle_default_button">По умолчанию</string>
+
+
     <string name="extensions">Расширения</string>
+
     <string name="dyna_state">Расширенное динамическое состояние</string>
     <string name="dyna_state_description">Управляет количеством функций, доступных для использования в расширенном динамическом состояние. Более высокое значение позволит сократить количество компиляций конвейеров за счёт поддержки динамического состояния драйвером.</string>
     <string name="disabled">Отключено</string>
@@ -531,16 +588,23 @@
     <string name="vertex_input_dynamic_state_description">Включение этой функции обеспечивает более гибкую обработку входных данных вершин, что потенциально сокращает время компиляции конвейера на этапе работы с вершинами и буферами.</string>
     <string name="sample_shading_fraction">Сэмпловое затенение</string>
     <string name="sample_shading_fraction_description">Позволяет шейдеру фрагментов выполняться для каждого сэмпла в многосэмпловом фрагменте, а не один раз на фрагмент. Улучшает качество графики ценой некоторого падения производительности.</string>
+
+
     <string name="display">Дисплей</string>
+
     <string name="renderer_screen_layout">Ориентация</string>
     <string name="renderer_aspect_ratio">Соотношение сторон</string>
     <string name="vertical_alignment">Вертикальное выравнивание</string>
     <string name="picture_in_picture">Картинка в картинке</string>
     <string name="picture_in_picture_description">Свернуть окно при размещении в фоновом режиме</string>
+
     <string name="warning_resolution">Масштабирование разрешения до 2x или выше может вызвать проблемы и привести к значительному замедлению работы устройства.</string>
+
+    <!-- Debug settings strings -->
     <string name="cpu">ЦП</string>
     <string name="use_auto_stub">Использовать Auto Stub</string>
     <string name="use_auto_stub_description">Автоматически заглушает отсутствующие сервисы и функции. Может улучшить совместимость, но вызывать сбои и проблемы стабильности.</string>
+
     <string name="gpu">ГПУ</string>
     <string name="renderer_api">API</string>
     <string name="renderer_debug">Отладка графики</string>
@@ -548,9 +612,12 @@
     <string name="patch_old_qcom_drivers">Исправление текстур BCn</string>
     <string name="patch_old_qcom_drivers_description">Переопределить автоматическое определение формата BCn-текстур на ГПУ Adreno. Обычно определяется автоматически на основе версии Android (включено начиная с API 28+).</string>
     <string name="fastmem">Быстрая память (Fastmem)</string>
+
     <string name="log">Логирование</string>
     <string name="flush_by_line">Сброс логов по строкам</string>
     <string name="flush_by_line_description">Сбрасывает логи отладки после каждой написанной строки, упрощая отладку в случае сбоев или зависаний.</string>
+
+    <!-- GPU Logging strings -->
     <string name="gpu_logging_header">Ведение журнала ГПУ</string>
     <string name="gpu_log_level">Уровень логирования ГПУ</string>
     <string name="gpu_log_level_description">Уровень детализации логов ГПУ (больше значение = больше деталей, выше нагрузка)</string>
@@ -574,10 +641,15 @@
     <string name="gpu_log_ring_buffer_size">Размер кольцевого буфера</string>
     <string name="gpu_log_ring_buffer_size_description">Количество последних вызовов Vulkan для отслеживания (по умолчанию: 512)</string>
     <string name="gpu_log_ring_buffer_size_hint">От 64 до 4096 записей</string>
+
     <string name="general">Общие</string>
+
+    <!-- Audio settings strings -->
     <string name="audio_output_engine">Движок вывода</string>
     <string name="audio_volume">Громкость</string>
     <string name="audio_volume_description">Задает громкость аудиовыхода.</string>
+
+    <!-- Input strings -->
     <string name="buttons">Кнопки</string>
     <string name="button_plus">Плюс</string>
     <string name="button_minus">Минус</string>
@@ -651,6 +723,8 @@
     <string name="failed_to_save_profile">Не удалось сохранить профиль</string>
     <string name="reset_mapping">Сбросить маппинги</string>
     <string name="reset_mapping_description">Вы уверены, что хотите сбросить все маппинги для этого контроллера на значения по умолчанию? Это действие нельзя отменить.</string>
+
+    <!-- Miscellaneous -->
     <string name="slider_default">По умолчанию</string>
     <string name="default_string">По умолчанию</string>
     <string name="loading">Загрузка...</string>
@@ -686,6 +760,8 @@
     <string name="confirm">Подтвердить</string>
     <string name="load">Загрузить</string>
     <string name="save">Сохранить</string>
+
+    <!-- GPU driver installation -->
     <string name="select_gpu_driver_default">По умолчанию</string>
     <string name="select_gpu_driver_error">Выбран неподходящий драйвер</string>
     <string name="driver_already_installed">Драйвер уже установлен</string>
@@ -697,6 +773,8 @@
     <string name="system_gpu_driver">Системный драйвер ГПУ</string>
     <string name="menu_driver_use_global">Использовать глобальный драйвер</string>
     <string name="installing_driver">Установка драйвера...</string>
+
+    <!-- GPU driver fetcher -->
     <string name="show_releases">Показать релизы</string>
     <string name="failed_to_fetch">Не удалось получить</string>
     <string name="error_during_fetch">Ошибка при получении</string>
@@ -715,6 +793,8 @@
     <string name="gpu_model">Модель ГПУ</string>
     <string name="unsupported_gpu">ГПУ не поддерживается</string>
     <string name="unsupported_gpu_warning">Ваш ГПУ не поддерживает замену драйверов. Установка сторонних драйверов не рекомендуется.</string>
+
+    <!-- Preferences Screen -->
     <string name="preferences_settings">Настройки</string>
     <string name="preferences_system">Система</string>
     <string name="preferences_system_description">Режим дока, регион, язык</string>
@@ -723,7 +803,7 @@
     <string name="quick_settings">Быстрые настройки</string>
     <string name="enable_quick_settings">Быстрые настройки</string>
     <string name="enable_quick_settings_description">Быстрый вызов панели настроек во время игры свайпом тремя пальцами вверх по экрану или через меню</string>
-    <string name="quick_settings_gesture_hint">💡 Быстрые настройки: свайп 3 пальцами вверх</string>
+    <string name="quick_settings_gesture_hint">Быстрые настройки: свайп 3 пальцами вверх</string>
     <string name="preferences_audio">Аудио</string>
     <string name="preferences_audio_description">Движок вывода, громкость</string>
     <string name="preferences_controls">Управление</string>
@@ -733,6 +813,8 @@
     <string name="preferences_debug_description">Отладка ЦП/ГПУ, графический API, быстрая память (Fastmem)</string>
     <string name="preferences_custom_paths">Пользовательские пути</string>
     <string name="preferences_custom_paths_description">Папка сохранений</string>
+
+    <!-- Custom Paths settings -->
     <string name="custom_save_directory">Папка сохранений</string>
     <string name="custom_save_directory_description">Указать папку для сохранений</string>
     <string name="reset_to_nand">Восстановить по умолчанию</string>
@@ -750,6 +832,8 @@
     <string name="custom_sdmc_directory_description">Задать свой путь для хранения виртуальной SD-карты</string>
     <string name="path_set">Путь успешно задан</string>
     <string name="skip_migration">Пропустить</string>
+
+    <!-- Game properties -->
     <string name="info">Информация</string>
     <string name="info_description">ID программы, для разработчиков, версия</string>
     <string name="per_game_settings">Настройки для каждой игры</string>
@@ -794,8 +878,10 @@
     <string name="updates_and_dlc">Обновления и DLC</string>
     <string name="mods_and_cheats">Моды и читы</string>
     <string name="addon_notice">Важное уведомление о дополнении</string>
+    <!-- \"cheats/" "romfs/" and \"exefs/ should not be translated -->
     <string name="addon_notice_description">Для установки модов и читов необходимо выбрать папку, содержащую каталог cheats/, romfs/ или exefs/. Мы не можем гарантировать их совместимость с вашей игрой, поэтому будьте осторожны!</string>
     <string name="invalid_directory">Неверный каталог</string>
+    <!-- \"cheats/" "romfs/" and \"exefs/ should not be translated -->
     <string name="invalid_directory_description">Пожалуйста, убедитесь, что выбранная вами директория содержит папку cheats/, romfs/ или exefs/ и попробуйте снова.</string>
     <string name="addon_installed_successfully">Аддон успешно установлен</string>
     <string name="verifying_content">Проверка содержимого...</string>
@@ -815,14 +901,19 @@
     <string name="import_config">Импортировать конфиг</string>
     <string name="export_config">Экспортировать конфиг</string>
     <string name="share_config_failed">Не удалось Поделиться конфигом</string>
+
+    <!-- ROM loading errors -->
     <string name="loader_error_encrypted">Ваш ROM зашифрованный</string>
-    <string name="loader_error_encrypted_roms_description">Пожалуйста, следуйте инструкциям по пересохранению &lt;a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-physical-titles-game-cards\"&gt;игровых картриджей&lt;/a&gt; или &lt;a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-digital-titles-eshop\"&gt;установленных игр&lt;/a&gt;.</string>
-    <string name="loader_error_encrypted_keys_description">Пожалуйста, убедитесь, что ваш файл &lt;a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-prodkeys-and-titlekeys\"&gt;prod.keys&lt;/a&gt; установлен, чтобы игры можно было расшифровать.</string>
+    <string name="loader_error_encrypted_roms_description"><![CDATA[Пожалуйста, следуйте инструкциям по пересохранению <a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-physical-titles-game-cards\">игровых картриджей</a> или <a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-digital-titles-eshop\">установленных игр</a>.]]></string>
+    <string name="loader_error_encrypted_keys_description"><![CDATA[Пожалуйста, убедитесь, что ваш файл <a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-prodkeys-and-titlekeys\">prod.keys</a> установлен, чтобы игры можно было расшифровать.]]></string>
     <string name="loader_error_video_core">Произошла ошибка при инициализации видеоядра.</string>
     <string name="loader_error_video_core_description">Обычно это вызвано несовместимым драйвером ГПУ. Установка пользовательского драйвера ГПУ может решить эту проблему.</string>
     <string name="loader_error_file_not_found">Файл ROM не существует</string>
+
     <string name="loader_requires_firmware">Игре требуется прошивка</string>
-    <string name="loader_requires_firmware_description">Для запуска этой игры или прохождения начального меню требуется прошивка. Пожалуйста, &lt;a href=\"https://yuzu-mirror.github.io/help/quickstart\"&gt;сохраните и установите прошивку&lt;/a&gt; или нажмите \"OK\" для запуска в любом случае.</string>
+    <string name="loader_requires_firmware_description"><![CDATA[Для запуска этой игры или прохождения начального меню требуется прошивка. Пожалуйста, <a href=\"https://yuzu-mirror.github.io/help/quickstart\">сохраните и установите прошивку</a> или нажмите \"OK\" для запуска в любом случае.]]></string>
+
+    <!-- Intent Launch strings -->
     <string name="searching_for_game">Поиск игры...</string>
     <string name="game_not_found_for_title_id">Игра не найдена для ID заголовка: %1$s</string>
     <string name="custom_settings_failed_title">Пользовательские настройки не применены</string>
@@ -837,6 +928,8 @@
     <string name="custom_intent_launch_message">Хотите запустить %1$s?</string>
     <string name="custom_intent_launch_title">Запуск игры</string>
     <string name="launch">Запустить</string>
+
+    <!-- Custom Config strings -->
     <string name="config_write_failed">Не удалось записать файл конфигурации</string>
     <string name="config_apply_failed">Не удалось применить конфигурацию</string>
     <string name="config_already_exists_title">Конфигурация уже существует</string>
@@ -844,6 +937,8 @@
     <string name="config_exists_prompt">Проверка существующей конфигурации...</string>
     <string name="overwrite_cancelled">Перезапись отменена</string>
     <string name="overwrite">Перезаписать</string>
+
+    <!-- Driver strings -->
     <string name="driver_not_found">Необходимый драйвер не установлен: %s</string>
     <string name="invalid_driver_file">Неверный файл драйвера: %s</string>
     <string name="network_unavailable">Сетевое соединение недоступно. Проверьте подключение к интернету и попробуйте снова.</string>
@@ -851,6 +946,8 @@
     <string name="driver_missing_message">Эта конфигурация игры требует драйвер ГПУ \"%s\" который не установлен на вашем устройстве. \n\nХотите скачать и установить его сейчас\?</string>
     <string name="driver_download_cancelled">Загрузка драйвера отменена. Игра не может быть запущена без необходимого драйвера.</string>
     <string name="download">Скачать</string>
+
+    <!-- Emulation Menu -->
     <string name="emulation_exit">Выход из эмуляции</string>
     <string name="emulation_done">Готово</string>
     <string name="emulation_toggle_controls">Переключение управления</string>
@@ -874,6 +971,8 @@
     <string name="lock_drawer">Заморозить док</string>
     <string name="unlock_drawer">Разморозить док</string>
     <string name="reset">Сброс</string>
+
+    <!-- Amiibo -->
     <string name="amiibo_title">Браузер Amiibo</string>
     <string name="amiibo_removed_message">Текущий amiibo был убран</string>
     <string name="amiibo_wrong_state">Текущая игра не ищет amiibo</string>
@@ -881,7 +980,12 @@
     <string name="amiibo_in_use">Выбранный файл уже используется</string>
     <string name="amiibo_unknown_error">Произошла неизвестная ошибка</string>
     <string name="amiibo_load_success">Amiibo загружен</string>
+
+
+    <!-- Software keyboard -->
     <string name="software_keyboard">Виртуальная клавиатура</string>
+
+    <!-- Errors and warnings -->
     <string name="abort_button">Прервать</string>
     <string name="continue_button">Продолжить</string>
     <string name="system_archive_not_found">Системный архив не найден</string>
@@ -893,6 +997,8 @@
     <string name="device_memory_inadequate">Оперативной памяти на устройстве: %1$s\nРекоминдовано: %2$s</string>
     <string name="memory_formatted">%1$s%2$s</string>
     <string name="no_game_present">Загрузочной игры нету!</string>
+
+    <!-- Region Names -->
     <string name="region_japan">Япония</string>
     <string name="region_usa">США</string>
     <string name="region_europe">Европа</string>
@@ -900,34 +1006,50 @@
     <string name="region_china">Китай</string>
     <string name="region_korea">Корея</string>
     <string name="region_taiwan">Тайвань</string>
+
+    <!-- Memory Layouts -->
     <string name="memory_4gb">4 ГБ (Рекомендуется)</string>
     <string name="memory_6gb">6 ГБ (Небезопасно)</string>
     <string name="memory_8gb">8 ГБ (Небезопасно)</string>
     <string name="memory_12gb">12 ГБ (Экстремально)</string>
     <string name="memory_12gb_not_enough_ram">Для режима 12 ГБ DRAM требуется устройство минимум с 12 ГБ физической оперативной памяти.</string>
+
+    <!--CPU clock speeds-->
     <string name="clock_normal">Штатная</string>
     <string name="clock_boost">Разгон (1 700 МГц)</string>
     <string name="clock_fast">Быстрая (2 000 МГц)</string>
+
+    <!-- GPU overclock factors -->
     <string name="fast_gpu_normal">Штатная</string>
     <string name="fast_gpu_medium">Среднее (256)</string>
     <string name="fast_gpu_high">Высокое (512)</string>
+
+    <!-- GPU swizzle texture size -->
     <string name="gpu_texturesizeswizzle_verysmall">Очень малый (16 МБ)</string>
     <string name="gpu_texturesizeswizzle_small">Малый (32 МБ)</string>
     <string name="gpu_texturesizeswizzle_normal">Обычный (128 МБ)</string>
     <string name="gpu_texturesizeswizzle_large">Большой (256 МБ)</string>
     <string name="gpu_texturesizeswizzle_verylarge">Очень большой (512 МБ)</string>
+
+    <!-- GPU swizzle streams -->
     <string name="gpu_swizzle_verylow">Очень низкий (4 МБ)</string>
     <string name="gpu_swizzle_low">Низкий (8 МБ)</string>
     <string name="gpu_swizzle_normal">Обычный (16 МБ)</string>
     <string name="gpu_swizzle_medium">Средний (32 МБ)</string>
     <string name="gpu_swizzle_high">Высокий (64 МБ)</string>
+
+    <!-- GPU swizzle chunks -->
     <string name="gpu_swizzlechunk_verylow">Очень малый (32)</string>
     <string name="gpu_swizzlechunk_low">Малый (64)</string>
     <string name="gpu_swizzlechunk_normal">Обычный (128)</string>
     <string name="gpu_swizzlechunk_medium">Средний (256)</string>
     <string name="gpu_swizzlechunk_high">Большой (512)</string>
+
+    <!-- Temperature Units -->
     <string name="temperature_celsius">Цельсий</string>
     <string name="temperature_fahrenheit">Фаренгейт</string>
+
+    <!-- Memory Sizes -->
     <string name="memory_byte_shorthand">B</string>
     <string name="memory_kilobyte">КБ</string>
     <string name="memory_megabyte">МБ</string>
@@ -935,34 +1057,47 @@
     <string name="memory_terabyte">ТБ</string>
     <string name="memory_petabyte">ПБ</string>
     <string name="memory_exabyte">ЕВ</string>
+
     <string name="renderer_none">Никакой</string>
+
+    <!-- Renderer Accuracy -->
     <string name="renderer_accuracy_low">Низкий</string>
     <string name="renderer_accuracy_normal">Нормальный</string>
     <string name="renderer_accuracy_high">Высокий</string>
     <string name="renderer_accuracy_extreme">Экстремальный</string>
     <string name="enable_fast_gpu_time">Быстрое время ГПУ</string>
     <string name="enable_fast_gpu_time_description">Ускоряет запросы таймера ГПУ для повышения производительности в играх с интенсивной синхронизацией ЦПУ-ГПУ, но может вызывать артефакты в некоторых проектах.</string>
+
+    <!-- DMA Accuracy -->
     <string name="dma_accuracy_default">По умолчанию</string>
     <string name="dma_accuracy_normal">Нормально</string>
     <string name="dma_accuracy_high">Высокая</string>
     <string name="dma_accuracy_unsafe">Небезопасно</string>
     <string name="dma_accuracy_safe">Безопасный</string>
+
+    <!-- GPU Fence Behavior -->
     <string name="gpu_fence_behavior_default">По умолчанию</string>
     <string name="gpu_fence_behavior_immediate">Мгновенный</string>
     <string name="gpu_fence_behavior_balanced">Сбалансированный</string>
     <string name="gpu_fence_behavior_accurate">Точный</string>
     <string name="gpu_fence_behavior_strict">Строгий</string>
+
     <string name="vram_usage_conservative">Экономный</string>
     <string name="vram_usage_normal">Нормальный</string>
     <string name="vram_usage_aggressive">Агрессивный</string>
     <string name="vram_usage_mode_conservative">Экономный</string>
     <string name="vram_usage_mode_normal">Нормальный</string>
     <string name="vram_usage_mode_aggressive">Агрессивный</string>
+
+    <!-- Renderer VSync -->
     <string name="renderer_vsync_immediate">Моментальная (выключена) </string>
     <string name="renderer_vsync_mailbox">Mailbox</string>
     <string name="renderer_vsync_fifo">FIFO (Включена)</string>
     <string name="renderer_vsync_fifo_relaxed">FIFO Relaxed</string>
+
+    <!-- Anti-Aliasing -->
     <string name="anti_aliasing_none">Выключено</string>
+    <!-- Screen Layouts -->
     <string name="screen_layout_auto">Авто</string>
     <string name="screen_layout_sensor_landscape">Альбомная (сенсор)</string>
     <string name="screen_layout_landscape">Альбомная</string>
@@ -970,11 +1105,16 @@
     <string name="screen_layout_sensor_portrait">Портретная (сенсор)</string>
     <string name="screen_layout_portrait">Портрет</string>
     <string name="screen_layout_reverse_portrait">Обратная портретная</string>
+
     <string name="ratio_stretch">Растянуть до окна</string>
+
+    <!-- CPU Accuracy -->
     <string name="cpu_accuracy_accurate">Точно</string>
     <string name="cpu_accuracy_unsafe">Небезопасно</string>
     <string name="cpu_accuracy_paranoid">Параноик</string>
     <string name="cpu_accuracy_debugging">Отладка</string>
+
+    <!-- Freedreno Settings -->
     <string name="freedreno_settings_title">Настройки Freedreno</string>
     <string name="gpu_driver_settings">Настройки графического драйвера</string>
     <string name="freedreno_presets">Готовые профили</string>
@@ -995,12 +1135,18 @@
     <string name="freedreno_per_game_title">Настройки Freedreno</string>
     <string name="freedreno_per_game_description">Настройте параметры драйвера для этой игры</string>
     <string name="freedreno_per_game_saved">Настройки Freedreno сохранены</string>
+
+    <!-- Gamepad Buttons -->
     <string name="gamepad_d_pad">Крестовина</string>
     <string name="gamepad_left_stick">Левый стик</string>
     <string name="gamepad_right_stick">Правый стик</string>
     <string name="gamepad_home">Home</string>
     <string name="gamepad_screenshot">Скриншот</string>
+
+    <!-- Disk shader cache -->
     <string name="building_shaders">Постройка шейдеров</string>
+
+    <!-- App options -->
     <string name="change_app_theme">Сменить тему</string>
     <string name="theme_default">По умолчанию</string>
     <string name="theme_material_you">Material You</string>
@@ -1008,20 +1154,30 @@
     <string name="theme_and_color">Тема и цвет</string>
     <string name="fullscreen_mode">Полноэкранный режим</string>
     <string name="fullscreen_mode_description">Скрывать системные панели Android на всех экранах приложения. Проведите от края экрана, чтобы временно отобразить их</string>
+
+    <!-- Theme Modes -->
     <string name="change_theme_mode">Тема оформления</string>
     <string name="theme_mode_follow_system">Системная</string>
     <string name="theme_mode_light">Светлая</string>
     <string name="theme_mode_dark">Темная</string>
+
     <string name="multiplier_none">Отключено</string>
+
+    <!-- Black backgrounds theme -->
     <string name="use_black_backgrounds">Чёрный фон</string>
     <string name="use_black_backgrounds_description">При использовании темной темы применяйте черный фон.</string>
+
+    <!-- Buttons -->
     <string name="enable_folder_button">Папка</string>
     <string name="enable_folder_button_description">Показать кнопку для добавления папок с играми</string>
     <string name="enable_qlaunch_button">QLaunch</string>
     <string name="enable_qlaunch_button_description">Показать кнопку для запуска QLaunch</string>
+
+    <!-- App Language -->
     <string name="app_language">Язык приложения</string>
     <string name="app_language_description">Поменять язык интерфейса приложения</string>
     <string name="app_language_system">Следовать системе</string>
+    <!-- Static Themes -->
     <string name="static_theme_color">Тема оформления STORM SWITCH</string>
     <string name="theme_storm_dark">STORM DARK (Тёмный кибер)</string>
     <string name="theme_storm_night">STORM NIGHT (Чёрный OLED)</string>
@@ -1031,6 +1187,8 @@
     <string name="theme_storm_cyberpunk">STORM CYBERPUNK (Неон Найт-Сити)</string>
     <string name="theme_storm_fantasy">STORM FANTASY (Королевское золото)</string>
     <string name="theme_storm_warhammer_40k">STORM WARHAMMER 40K (Имперская готика)</string>
+
+    <!-- Legacy alias for theme list -->
     <string name="eden_theme">STORM NIGHT (По умолчанию)</string>
     <string name="violet">STORM DAY (Светлая)</string>
     <string name="blue">STORM MIDNIGHT (Полночь)</string>
@@ -1041,6 +1199,8 @@
     <string name="orange">STORM EMERALD (Изумруд)</string>
     <string name="pink">STORM GLACIER (Ледник)</string>
     <string name="gray">STORM AMETHYST (Аметист)</string>
+
+    <!-- GameBanana &amp; Add-ons -->
     <string name="search">Поиск</string>
     <string name="gamebanana_mods">Моды GameBanana</string>
     <string name="gamebanana_mods_description">Поиск, просмотр и загрузка модов с GameBanana</string>
@@ -1052,7 +1212,7 @@
     <string name="gamebanana_author">Автор: %1$s</string>
     <string name="gamebanana_downloads">%1$d скачиваний</string>
     <string name="gamebanana_download_button">Скачать и установить</string>
-    <string name="install_mod_title">Установка мода или читов</string>
+        <string name="install_mod_title">Установка мода или читов</string>
     <string name="install_mod_from_archive">Установить из архива (.zip / .7z / .rar)</string>
     <string name="install_mod_from_folder">Установить из папки</string>
     <string name="gamebanana_install_manual">Установить мод вручную</string>
@@ -1065,22 +1225,34 @@
     <string name="addons_overview">Дополнения и моды</string>
     <string name="addons_overview_description">Управление обновлениями, DLC и пользовательскими модами</string>
     <string name="game_version_label">Версия %1$s</string>
+
+    <!-- Picture-In-Picture -->
     <string name="pause">Пауза</string>
     <string name="play">Играть</string>
     <string name="mute">Выключить звук</string>
     <string name="unmute">Включить звук</string>
+
+    <!-- Emulation vertical alignment -->
     <string name="top">Верх</string>
     <string name="center">Центр</string>
     <string name="bottom">Низ</string>
+
+    <!-- Applet Modes -->
     <string name="applets_menu">Апплеты</string>
     <string name="applets_menu_description">Изменение интерфейсов и настроек апплета</string>
+
     <string name="applet_hle">Пользовательский интерфейс</string>
     <string name="applet_lle">Настоящий апплет</string>
+
     <string name="swkbd_applet">Программная клавиатура</string>
+
     <string name="airplane_mode">Режим полёта</string>
     <string name="airplane_mode_description">Передаёт режим полёта в ОС Switch</string>
+
     <string name="enable_overlay">Включить апплет-оверлей</string>
     <string name="enable_overlay_description">Активирует встроенный в Horizon оверлейный апплет. Для его отображения нажмите и удерживайте кнопку «HOME» в течение одной секунды.</string>
+
+    <!-- Profile Management -->
     <string name="profile_manager">Менеджер профилей</string>
     <string name="profile_manager_description">Управление пользовательскими профилями</string>
     <string name="profile_add_user">Добавить пользователя</string>
@@ -1108,11 +1280,15 @@
     <string name="profile_image_load_error">Не удалось загрузить изображение: %1$s</string>
     <string name="profile_image_save_error">Не удалось сохранить изображение: %1$s</string>
     <string name="error">Ошибка</string>
+
+    <!-- Licenses screen strings -->
     <string name="licenses">Лицензии</string>
     <string name="license_fidelityfx_fsr_description">Высококачественное масштабирование от AMD</string>
     <string name="external_content">Дополнительный контент</string>
     <string name="add_folders">Добавить папку</string>
     <string name="percent">%1$d %%</string>
+
+    <!-- Amiibo Manager -->
     <string name="amiibo_database_title">Онлайн-база Amiibo</string>
     <string name="amiibo_tab_catalog">Онлайн-база</string>
     <string name="amiibo_tab_installed">Установленные</string>
@@ -1128,6 +1304,8 @@
     <string name="amiibo_injected_success">%1$s успешно отправлен в игру!</string>
     <string name="amiibo_injected_fail">Не удалось применить Amiibo. Убедитесь, что игра ожидает прикосновения Amiibo.</string>
     <string name="amiibo_pick_file">Выбрать свой .bin файл...</string>
+
+    <!-- GameBanana Mods -->
     <string name="sort_by">Сортировка:</string>
     <string name="sort_downloads">По скачиваниям</string>
     <string name="sort_likes">По лайкам</string>
@@ -1141,8 +1319,12 @@
     <string name="gamebanana_no_files">Для данного мода нет доступных файлов.</string>
     <string name="gamebanana_installed_success">Мод %1$s успешно установлен!</string>
     <string name="gamebanana_likes">%1$d лайков</string>
+
+    <!-- Title display -->
     <string name="show_filename_as_title">Название из имени файла</string>
     <string name="show_filename_as_title_description">Отображать понятное название игры из файла вместо внутреннего ROM-заголовка</string>
+
+    <!-- Auto-Translator (OCR + TTS) -->
     <string name="translator_title">STORM TRANSLATOR</string>
     <string name="translator_translate_screen">Перевести экран (OCR + Озвучка)</string>
     <string name="translator_enable_floating_button">Включить кнопку перевода</string>
@@ -1151,6 +1333,8 @@
     <string name="translator_source_lang">Исходный язык</string>
     <string name="translator_target_lang">Язык перевода</string>
     <string name="translator_auto_tts">Авто-озвучка голосом</string>
+
+    <!-- Overlay Skin Themes -->
     <string name="overlay_skin_theme">Стиль сенсорного управления</string>
     <string name="overlay_skin_theme_description">Выбор цветовой темы и анимаций виртуальных кнопок и джойстиков</string>
     <string name="skin_cyberpunk_neon">Eden Cyberpunk Neon (Циан / Неон-розовый)</string>
@@ -1168,14 +1352,17 @@
     <string name="skin_golden_zelda">Золотая Zelda Трифорс (Золото / Оранж)</string>
     <string name="skin_gameboy_color_purple">GameBoy Color Atomic Purple (Фиолет / Маджента)</string>
     <string name="skin_gameboy_dmg_retro">Ретро GameBoy DMG 1989 (Олива / Бордо)</string>
+
     <string name="amiibo_disconnect_button">Отключить текущий Amiibo</string>
     <string name="amiibo_currently_attached">Активный Amiibo: %1$s</string>
     <string name="amiibo_no_attached">Сейчас Amiibo не подключен к контроллеру</string>
     <string name="amiibo_removed_toast">Amiibo отключен и убран с контроллера</string>
+
     <string name="translator_floating_btn_title">Плавающая кнопка перевода</string>
     <string name="translator_floating_btn_description">Отображать плавающую кнопку перевода экрана во время игры</string>
     <string name="hotkey_quick_actions">Горячие клавиши и действия</string>
     <string name="hotkey_quick_actions_desc">Настройка экранных кнопок быстрых действий и оверлеев</string>
+
     <string name="cheats">Чит-коды</string>
     <string name="cheats_description">Управление чит-кодами Atmosphere, включение/отключение читов, скачивание онлайн-базы</string>
     <string name="cheats_manager_title">Менеджер чит-кодов</string>
@@ -1192,6 +1379,8 @@
     <string name="select_all">Включить все</string>
     <string name="deselect_all">Отключить все</string>
     <string name="cheats_count_summary">Всего читов: %1$d | Включено: %2$d</string>
+
+    <!-- Оптимизация, нагрев и плавность -->
     <string name="optimization_features">Оптимизация и охлаждение</string>
     <string name="eco_thermal_mode">Эко-режим и охлаждение</string>
     <string name="eco_thermal_mode_description">Контроль пиковых частот, адаптивное управление ресурсами и предотвращение перегрева и термального троттлинга устройства.</string>
@@ -1205,6 +1394,8 @@
     <string name="vulkan_pipeline_cache_description">Предкомпиляция и сохранение бинарного кэша конвейеров Vulkan на накопителе для полного устранения внутриигровых статтеров.</string>
     <string name="vram_garbage_collection">Очистка виртуальной памяти</string>
     <string name="vram_garbage_collection_description">Периодическая фоновая очистка неиспользуемых текстурных буферов для предотвращения микрофризов и вылетов от системного LMK Android.</string>
+
+    <!-- Авто-настройка устройства -->
     <string name="auto_optimization_wizard_title">Авто-настройка</string>
     <string name="auto_optimization_wizard_description">Анализ ЦП, ГПУ и ОЗУ с автоматической настройкой всех разделов под ваше устройство</string>
     <string name="auto_optimization_device_info">Характеристики устройства</string>
@@ -1228,6 +1419,8 @@
     <string name="game_fix_dont_ask_again">Больше не спрашивать для этой игры</string>
     <string name="game_fix_apply_and_launch">Применить исправления и запустить</string>
     <string name="game_fix_skip_and_launch">Запустить без изменений</string>
+
+    <!-- Методы запуска и глобальные настройки -->
     <string name="launch_method_title">Метод запуска</string>
     <string name="launch_mode_auto_fix">Применить авто-исправление и запустить</string>
     <string name="launch_mode_auto_fix_description">Чистый эталонный профиль STORM SOFT для максимальной стабильности</string>
@@ -1243,6 +1436,8 @@
     <string name="apply_global_to_all_games_confirm_message">Вы действительно хотите сбросить индивидуальные профили всех игр? Текущие глобальные настройки будут мгновенно применены ко всей вашей библиотеке.</string>
     <string name="apply_global_to_all_games_positive">Применить ко всем</string>
     <string name="apply_global_to_all_games_success">⚡ Глобальные настройки успешно применены ко всем играм (сброшено профилей: %d)</string>
+
+    <!-- Генерация кадров -->
     <string name="lossless_scaling">Генерация кадров</string>
     <string name="lossless_scaling_description">Установка библиотеки Lossless.dll для аппаратной генерации промежуточных кадров</string>
     <string name="lossless_scaling_setup_description">Необязательно. Установите вашу копию Lossless.dll для включения генерации кадров</string>
@@ -1270,6 +1465,7 @@
     <string name="error_lossless_missing_shaders">В этой версии Lossless.dll отсутствуют необходимые шейдеры генерации кадров.</string>
     <string name="error_lossless_translation_failed">Не удалось транслировать шейдеры генерации кадров. Эта версия Lossless Scaling пока не поддерживается.</string>
     <string name="error_lossless_cache_failed">Не удалось записать скомпилированные шейдеры в хранилище. Проверьте свободное место.</string>
+
     <string name="frame_gen">Генерация кадров</string>
     <string name="frame_gen_per_game_description">Настройка генерации промежуточных кадров для этой игры</string>
     <string name="frame_gen_description">Вставка интерполированных кадров между отрисованными с помощью Lossless Scaling. При включении автоматически активирует режим FIFO для идеальной синхронизации.</string>
@@ -1304,6 +1500,8 @@
     <string name="frame_generation_support">Генерация кадров</string>
     <string name="frame_generation_supported">Поддерживается</string>
     <string name="frame_generation_unsupported">Не поддерживается (требуется Vulkan Memory Model)</string>
+
+    <!-- Профили настроек -->
     <string name="settings_profiles_title">Профили настроек</string>
     <string name="settings_profiles_description">Создание, сохранение, быстрая загрузка, переименование и экспорт профилей настроек</string>
     <string name="profile_preset_fast_title">⚡ Быстрый (Максимум FPS и низкий нагрев)</string>
@@ -1332,6 +1530,7 @@
     <string name="profile_share_title">Поделиться профилем настроек</string>
     <string name="profile_import_success">Профиль «%1$s» успешно импортирован!</string>
     <string name="profile_import_failed">Ошибка импорта профиля. Неверный формат файла.</string>
+    <!-- 100% Full Localization -->
     <string name="language_japanese">Японский</string>
     <string name="language_english">Английский</string>
     <string name="language_french">Французский</string>
@@ -1444,6 +1643,8 @@
     <string name="gamebanana_no_installed_mods">Для этой игры нет установленных модов</string>
     <string name="gamebanana_installed_stats">Всего: %1$d | Включено: %2$d | Отключено: %3$d</string>
     <string name="gamebanana_mod_deleted">Мод «%1$s» удален</string>
+
+    <!-- Overlay Toggle Controls -->
     <string name="overlay_ctrl_button_a">Кнопка A</string>
     <string name="overlay_ctrl_button_a_desc">Основное действие и подтверждение</string>
     <string name="overlay_ctrl_button_b">Кнопка B</string>
@@ -1478,6 +1679,7 @@
     <string name="overlay_ctrl_button_home_desc">Возврат в систему</string>
     <string name="overlay_ctrl_button_capture">Снимок экрана</string>
     <string name="overlay_ctrl_button_capture_desc">Захват скриншота</string>
+
     <string name="gamebanana_delete_mod_confirm">Вы уверены, что хотите удалить мод «%1$s»?</string>
     <string name="anisotropic_filtering_2x">2x</string>
     <string name="anisotropic_filtering_4x">4x</string>
@@ -1536,6 +1738,7 @@
     <string name="ratio_32_10">32:10 (Двойной 16:10)</string>
     <string name="ratio_48_9">48:9 (Три монитора 16:9)</string>
     <string name="ratio_auto_window">Авто по пропорциям экрана (3D без растяжения)</string>
+
     <string name="amiibo">Amiibo</string>
     <string name="amiibo_for_game_title">Amiibo: %1$s</string>
     <string name="storm_notif_channel_name">Загрузки STORM GAMES WORLD</string>
@@ -1676,6 +1879,7 @@
     <string name="storm_dl_subtext_speed_eta_fmt">%1$s МБ/с • Осталось: %2$d мин</string>
     <string name="storm_dl_progress_pct_fmt">Загрузка: %1$d%%</string>
     <string name="storm_dl_game_fallback">Игра</string>
+
     <string name="auto_opt_detected_hw">🔍 Обнаруженное оборудование</string>
     <string name="auto_opt_form_tablet">Планшет</string>
     <string name="auto_opt_form_phone">Смартфон</string>
@@ -1810,6 +2014,7 @@
     <string name="online_tools_err_install_fmt">Ошибка установки: %1$s</string>
     <string name="online_tools_toast_err_fmt">Сбой онлайн-установки: %1$s</string>
     <string name="online_tools_item_subtitle_fmt">Файл: %1$s • Размер: %2$s</string>
+
     <string name="translator_quick_subtitle">Быстрое меню управления переводом</string>
     <string name="translator_quick_now_title">Перевести экран сейчас</string>
     <string name="translator_quick_now_desc">Мгновенный снимок и наложение текста</string>
@@ -1880,7 +2085,7 @@
     <string name="translator_overlay_region_fmt">Область %1$d</string>
     <string name="translator_overlay_btn_add">+ Добавить область</string>
     <string name="translator_overlay_btn_clear">🧹 Очистить</string>
-    <string name="translator_overlay_btn_save">💾 Сохранить</string>
+    <string name="translator_overlay_btn_save">Сохранить</string>
     <string name="translator_overlay_btn_close">✕ Закрыть</string>
     <string name="translator_snack_auto_on">⚡ Авто-перевод активирован</string>
     <string name="translator_snack_auto_off">⚡ Авто-перевод отключен</string>
@@ -2071,6 +2276,8 @@
     <string name="post_shader_72">Sepia Vintage (Тёплая старинная фотография — Сепия)</string>
     <string name="post_shader_73">Night Vision Goggles (Прибор ночного видения ПНВ с зелёным люминофором)</string>
     <string name="post_shader_74">Halation &amp; Dual-Kawase Glow (Неоновое атмосферное свечение ярких объектов)</string>
+
+    <!-- Save State System (SESS v2) -->
     <string name="menu_quick_save">Быстрое сохранение (Слот 1)</string>
     <string name="menu_quick_load">Быстрая загрузка (Слот 1)</string>
     <string name="menu_save_state_manager">Менеджер быстрых сохранений (Слоты 1–5)</string>
@@ -2079,14 +2286,14 @@
     <string name="save_state_slot_fmt">Слот %1$d</string>
     <string name="save_state_empty">[Слот пуст]</string>
     <string name="save_state_no_preview">Нет превью</string>
-    <string name="save_state_save">💾 Сохранить</string>
-    <string name="save_state_load">📂 Загрузить</string>
+    <string name="save_state_save">Сохранить</string>
+    <string name="save_state_load">Загрузить</string>
     <string name="save_state_delete">Удалить</string>
-    <string name="save_state_saved_toast">💾 Быстрое сохранение (Слот %1$d) успешно создано!</string>
-    <string name="save_state_loaded_toast">📂 Быстрое сохранение (Слот %1$d) успешно загружено!</string>
+    <string name="save_state_saved_toast">Быстрое сохранение (Слот %1$d) успешно создано!</string>
+    <string name="save_state_loaded_toast">Быстрое сохранение (Слот %1$d) успешно загружено!</string>
     <string name="save_state_deleted_toast">🗑️ Быстрое сохранение для Слота %1$d удалено</string>
-    <string name="save_state_save_failed">❌ Не удалось сохранить состояние в Слот %1$d</string>
-    <string name="save_state_load_failed">⚠️ В Слоте %1$d сохранение отсутствует или повреждено</string>
+    <string name="save_state_save_failed">Не удалось сохранить состояние в Слот %1$d</string>
+    <string name="save_state_load_failed">В Слоте %1$d сохранение отсутствует или повреждено</string>
     <string name="save_state_confirm_delete">Вы уверены, что хотите удалить быстрое сохранение для Слота %1$d?</string>
     <string name="update">Обновить</string>
     <string name="fsr2_quality_mode">Режим качества FSR 2.0</string>
@@ -2115,6 +2322,7 @@
     <string name="resolution_two_handheld">2.0X (1440p / 2K) (Медленно)</string>
     <string name="resolution_three_handheld">3.0X (2160p / 4K) (Медленно)</string>
     <string name="resolution_four_handheld">4.0X (2880p) (Медленно)</string>
+
     <string name="theme_storm_elemental">STORM ELEMENTAL (Стихийный огонь)</string>
     <string name="theme_storm_flagship">STORM (Флагманский)</string>
     <string name="auto_opt_dialog_title">Авто-настройка</string>
@@ -2142,6 +2350,7 @@
     <string name="storm_check_updates_now_desc">Проверить наличие новой версии на GitHub и STORM GAMES WORLD и установить поверх текущей</string>
     <string name="storm_checking_updates">Проверка наличия обновлений…</string>
     <string name="storm_up_to_date_fmt">У вас установлена актуальная версия (%1$s)</string>
+
     <string name="profile_btn_save_current">Сохранить текущий профиль</string>
     <string name="profile_active_badge">АКТИВЕН</string>
     <string name="profile_total_count">Всего профилей: %1$d</string>
@@ -2151,14 +2360,16 @@
     <string name="auto_opt_hw_gpu_label">Графический чип (GPU)</string>
     <string name="auto_opt_hw_ram_label">Оперативная память (RAM)</string>
     <string name="auto_opt_hw_tier_label">Класс устройства</string>
+
     <string name="home_cat_quick_setup">Быстрая настройка и профили</string>
     <string name="home_cat_performance_graphics">Производительность, графика и драйверы</string>
     <string name="home_cat_system_input">Система, управление и звук</string>
     <string name="home_cat_catalog_storage">Каталог, папки и хранилище</string>
     <string name="home_cat_diagnostics_about">Данные, диагностика и информация</string>
     <string name="per_game_custom_badge">СВОЯ</string>
-    <string name="vulkan_legacy_driver_warning">Обнаружен системный драйвер Vulkan %1$s на %2$s. Многим играм Nintendo Switch требуются функции Vulkan 1.3. Рекомендуется установить драйвер Mesa Turnip в Параметры -&gt; Менеджер драйверов GPU.</string>
+    <string name="vulkan_legacy_driver_warning">Обнаружен системный драйвер Vulkan %1$s на %2$s. Многим играм Nintendo Switch требуются функции Vulkan 1.3. Рекомендуется установить драйвер Mesa Turnip в Параметры -> Менеджер драйверов GPU.</string>
     <string name="profile_empty_state">Нет сохранённых профилей настроек\nНажмите «Сохранить профиль», чтобы создать новый</string>
+
     <string name="button_a">A</string>
     <string name="button_b">B</string>
     <string name="button_l">L</string>
@@ -2168,6 +2379,7 @@
     <string name="button_z">Z</string>
     <string name="button_zl">ZL</string>
     <string name="button_zr">ZR</string>
+
     <string name="save_states_mode">Режим быстрых сохранений</string>
     <string name="save_states_mode_description">Поведение быстрых сохранений и загрузок. Снимки памяти могут приводить к зависаниям в непроверенных играх.</string>
     <string name="save_states_mode_off">Выключено</string>
@@ -2200,6 +2412,7 @@
     <string name="freedreno_reset_recommended">Сбросить к рекомендуемым</string>
     <string name="freedreno_reset_recommended_desc">Сбросить все отладочные переменные Freedreno к настройкам максимальной производительности</string>
     <string name="freedreno_reset_done_toast">Настройки Freedreno сброшены к рекомендуемым</string>
+    <!-- PanVK & STORM DRIVER 10.0.0 additions -->
     <string name="tab_driver_all">Все драйверы</string>
     <string name="tab_driver_storm">STORM DRIVER</string>
     <string name="tab_driver_turnip">Turnip (Adreno)</string>
@@ -2208,11 +2421,13 @@
     <string name="install_storm_driver_10">⚡ Скачать STORM DRIVER 10.0.0</string>
     <string name="storm_driver_10_recommendation">ГПУ: %1$s • Рекомендуется: %2$s</string>
     <string name="storm_driver_downloading">Загрузка STORM DRIVER 10.0.0…</string>
-    <string name="ui_design_style">Вид интерфейса</string>
-    <string name="ui_design_style_description">5 динамических стилей оформления и компоновки библиотеки игр</string>
-    <string name="ui_design_style_hyperion" translatable="false">HYPERION DOCKED CONSOLE</string>
-    <string name="ui_design_style_titanium" translatable="false">TITANIUM CYBER DECK</string>
-    <string name="ui_design_style_valkyrie" translatable="false">VALKYRIE TACTICAL RIG</string>
-    <string name="ui_design_style_solaris" translatable="false">SOLARIS SWITCH 2 PRO</string>
-    <string name="ui_design_style_aether" translatable="false">AETHER FROSTED STUDIO</string>
+
+    <!-- UI Design Styles -->
+    <string name="ui_design_style">Дизайн интерфейса</string>
+    <string name="ui_design_style_description">Объёмный 3D-стиль оформления и тактильные анимации интерфейса</string>
+    <string name="ui_design_style_hyperion">STORM HYPERION GLASS 3D</string>
+    <string name="ui_design_style_cyberdeck">STORM CYBER-DECK TACTILE</string>
+    <string name="ui_design_style_aurora">STORM AURORA QUANTUM</string>
+    <string name="ui_design_style_orbital">STORM ORBITAL SPATIAL UI</string>
+    <string name="ui_design_style_chrono">STORM CHRONO-NEXUS COMMANDER</string>
 </resources>

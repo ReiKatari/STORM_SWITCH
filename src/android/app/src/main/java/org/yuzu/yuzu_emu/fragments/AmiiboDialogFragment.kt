@@ -4,6 +4,7 @@
 package org.yuzu.yuzu_emu.fragments
 
 import android.view.KeyEvent
+import android.content.res.Configuration
 
 import android.app.Dialog
 import android.graphics.BitmapFactory
@@ -122,6 +123,7 @@ class AmiiboDialogFragment : DialogFragment() {
 
     override fun onStart() {
         super.onStart()
+        dialog?.let { org.yuzu.yuzu_emu.utils.StormDesignEngine.applyToDialog(it, requireContext()) }
         dialog?.setOnKeyListener { _, keyCode, event ->
             if (keyCode == KeyEvent.KEYCODE_ESCAPE && event.action == KeyEvent.ACTION_UP) {
                 dismissAllowingStateLoss()
@@ -130,12 +132,38 @@ class AmiiboDialogFragment : DialogFragment() {
                 false
             }
         }
+        applyWindowDimensions()
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        applyWindowDimensions()
+    }
+
+    private fun applyWindowDimensions() {
         dialog?.window?.let { window ->
-            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-            androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
+            val dm = resources.displayMetrics
+            val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+            val width = if (isLandscape) (dm.widthPixels * 0.94).toInt() else (dm.widthPixels * 0.95).toInt()
+            val height = if (isLandscape) (dm.heightPixels * 0.90).toInt() else (dm.heightPixels * 0.86).toInt()
+            window.setLayout(width, height)
             window.setBackgroundDrawableResource(android.R.color.transparent)
             window.setGravity(android.view.Gravity.CENTER)
             ThemeHelper.applySystemBarsTheme(window, requireContext())
+        }
+
+        if (_binding != null) {
+            val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+            val spanCount = if (isLandscape) 2 else 1
+            (binding.listAmiibo.layoutManager as? androidx.recyclerview.widget.GridLayoutManager)?.spanCount = spanCount
+            (binding.listInstalledAmiibo.layoutManager as? androidx.recyclerview.widget.GridLayoutManager)?.spanCount = spanCount
+
+            val density = resources.displayMetrics.density
+            binding.layoutHeader.setPadding(0, 0, 0, if (isLandscape) (2 * density).toInt() else (4 * density).toInt())
+            (binding.cardTabSwitcher.layoutParams as? ViewGroup.MarginLayoutParams)?.let { lp ->
+                lp.bottomMargin = if (isLandscape) (2 * density).toInt() else (6 * density).toInt()
+                binding.cardTabSwitcher.layoutParams = lp
+            }
         }
     }
 
@@ -240,7 +268,9 @@ class AmiiboDialogFragment : DialogFragment() {
         if (hasActiveAmiibo) {
             binding.cardActiveAmiibo.isVisible = true
             val name = AmiiboHelper.activeAmiiboName ?: "NFC Tag"
-            binding.textActiveAmiiboStatus.text = getString(R.string.amiibo_currently_attached, name)
+            val cleanName = name.replace(Regex("[\\uD83C-\\uDBFF\\uDC00-\\uDFFF]+|[\\u2600-\\u27BF]|[\\u2300-\\u23FF]|[\\u2B50]|[\\u2705]|[\\u2702]|[\\u26A1]|[\\uFE0F]"), "").trim()
+            val isRu = resources.configuration.locales[0]?.language == "ru"
+            binding.textActiveAmiiboStatus.text = if (isRu) "Активен: $cleanName" else "Active: $cleanName"
         } else {
             binding.cardActiveAmiibo.isVisible = false
         }
@@ -367,7 +397,10 @@ class AmiiboDialogFragment : DialogFragment() {
             b.textAmiiboId.text = "ID: ${entry.fullId}"
 
             val rewardInfo = AmiiboHelper.getRewardForGame(entry, gameTitle)
-            b.textAmiiboReward.text = rewardInfo.fullFormatted
+            val emojiRegex = Regex("[\\uD83C-\\uDBFF\\uDC00-\\uDFFF]+|[\\u2600-\\u27BF]|[\\u2300-\\u23FF]|[\\u2B50]|[\\u2705]|[\\u2702]|[\\u26A1]|[\\uFE0F]")
+            val cleanCategory = rewardInfo.category.replace(emojiRegex, "").trim()
+            val cleanTitle = rewardInfo.title.replace(emojiRegex, "").trim()
+            b.textAmiiboReward.text = if (cleanCategory.isNotEmpty()) "[$cleanCategory] $cleanTitle" else cleanTitle
             b.textAmiiboReward.isVisible = true
 
             b.imageAmiibo.setImageResource(R.drawable.ic_amiibo)
@@ -508,8 +541,10 @@ class AmiiboDialogFragment : DialogFragment() {
 
             binding.listInstalledAmiibo.adapter?.notifyDataSetChanged()
             binding.textEmptyInstalled.isVisible = installedAmiiboList.isEmpty()
-            val countText = if (installedAmiiboList.size == 1) "1 Amiibo" else "${installedAmiiboList.size} Amiibo"
-            binding.textInstalledStatus.text = getString(R.string.amiibo_installed_total_fmt, countText)
+            val count = installedAmiiboList.size
+            val isRu = resources.configuration.locales[0]?.language == "ru"
+            val countText = if (isRu) "Всего: $count Amiibo" else "Total: $count Amiibo"
+            binding.textInstalledStatus.text = countText
         }
     }
 

@@ -51,10 +51,8 @@ private:
 
     QHBoxLayout* layout_filter = nullptr;
     QTreeView* tree_view = nullptr;
-    QWidget* search_capsule = nullptr;
-    QLabel* icon_search = nullptr;
+    QLabel* label_filter = nullptr;
     QLineEdit* edit_filter = nullptr;
-    QToolButton* button_clear_text = nullptr;
     QLabel* label_filter_result = nullptr;
     QComboBox* sort_combobox = nullptr;
     QToolButton* view_mode_toggle = nullptr;

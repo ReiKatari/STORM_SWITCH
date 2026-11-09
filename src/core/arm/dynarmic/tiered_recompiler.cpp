@@ -70,16 +70,21 @@ void* TieredRecompiler::ReportExecution(u64 guest_vaddr, size_t code_size, void*
             if (count >= TIER2_RECOMPILATION_THRESHOLD) {
                 u32 expected_tier = 1;
                 if (entry.tier.compare_exchange_strong(expected_tier, 2, std::memory_order_acq_rel)) {
-                    // Lock only when promoting block to higher tier
-                    std::unique_lock lock(mutex);
-                    auto& profile = block_map[guest_vaddr];
-                    profile.guest_vaddr = guest_vaddr;
-                    profile.code_size = code_size;
-                    profile.execution_count = count;
-                    profile.tier_level = 2;
-                    profile.compiled_func_ptr = current_ptr;
-                    pending_recompile_queue.push_back(guest_vaddr);
-                    cv.notify_one();
+                    // Try-lock when promoting block to higher tier to never stall the guest thread
+                    std::unique_lock lock(mutex, std::try_to_lock);
+                    if (lock.owns_lock()) {
+                        auto& profile = block_map[guest_vaddr];
+                        profile.guest_vaddr = guest_vaddr;
+                        profile.code_size = code_size;
+                        profile.execution_count = count;
+                        profile.tier_level = 2;
+                        profile.compiled_func_ptr = current_ptr;
+                        pending_recompile_queue.push_back(guest_vaddr);
+                        cv.notify_one();
+                    } else {
+                        // Revert tier so subsequent execution can retry promotion without dropping
+                        entry.tier.store(1, std::memory_order_release);
+                    }
                 }
             }
             return current_ptr;
@@ -102,8 +107,11 @@ void* TieredRecompiler::ReportExecution(u64 guest_vaddr, size_t code_size, void*
         }
     }
 
-    // Fallback on 4-way collision: mutex-protected block_map
-    std::unique_lock lock(mutex);
+    // Fallback on 4-way collision: try-lock block_map so guest threads never block
+    std::unique_lock lock(mutex, std::try_to_lock);
+    if (!lock.owns_lock()) {
+        return current_ptr;
+    }
     auto& profile = block_map[guest_vaddr];
     if (profile.guest_vaddr == 0) {
         profile.guest_vaddr = guest_vaddr;

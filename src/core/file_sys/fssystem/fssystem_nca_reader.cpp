@@ -167,74 +167,76 @@ Result NcaReader::Initialize(VirtualFile base_storage, const NcaCryptoConfigurat
 }
 
 VirtualFile NcaReader::GetSharedBodyStorage() {
-    ASSERT(m_body_storage != nullptr);
+    if (m_body_storage == nullptr) {
+        LOG_WARNING(Service_FS, "NcaReader::GetSharedBodyStorage called on null storage");
+        return nullptr;
+    }
     return m_body_storage;
 }
 
 u32 NcaReader::GetMagic() const {
-    ASSERT(m_body_storage != nullptr);
     return m_header.magic;
 }
 
 NcaHeader::DistributionType NcaReader::GetDistributionType() const {
-    ASSERT(m_body_storage != nullptr);
     return m_header.distribution_type;
 }
 
 NcaHeader::ContentType NcaReader::GetContentType() const {
-    ASSERT(m_body_storage != nullptr);
     return m_header.content_type;
 }
 
 u8 NcaReader::GetHeaderSign1KeyGeneration() const {
-    ASSERT(m_body_storage != nullptr);
     return m_header.header1_signature_key_generation;
 }
 
 u8 NcaReader::GetKeyGeneration() const {
-    ASSERT(m_body_storage != nullptr);
     return m_header.GetProperKeyGeneration();
 }
 
 u8 NcaReader::GetKeyIndex() const {
-    ASSERT(m_body_storage != nullptr);
     return m_header.key_index;
 }
 
 u64 NcaReader::GetContentSize() const {
-    ASSERT(m_body_storage != nullptr);
     return m_header.content_size;
 }
 
 u64 NcaReader::GetProgramId() const {
-    ASSERT(m_body_storage != nullptr);
+    if (m_body_storage == nullptr) {
+        LOG_WARNING(Service_FS, "NcaReader::GetProgramId called on null storage");
+        return m_header.program_id;
+    }
     return m_header.program_id;
 }
 
 u32 NcaReader::GetContentIndex() const {
-    ASSERT(m_body_storage != nullptr);
     return m_header.content_index;
 }
 
 u32 NcaReader::GetSdkAddonVersion() const {
-    ASSERT(m_body_storage != nullptr);
     return m_header.sdk_addon_version;
 }
 
 void NcaReader::GetRightsId(u8* dst, size_t dst_size) const {
-    ASSERT(dst != nullptr);
-    ASSERT(dst_size >= NcaHeader::RightsIdSize);
+    if (dst == nullptr || dst_size < NcaHeader::RightsIdSize) {
+        return;
+    }
 
     std::memcpy(dst, m_header.rights_id.data(), NcaHeader::RightsIdSize);
 }
 
 bool NcaReader::HasFsInfo(s32 index) const {
-    ASSERT(0 <= index && index < NcaHeader::FsCountMax);
+    if (index < 0 || index >= NcaHeader::FsCountMax) {
+        return false;
+    }
     return m_header.fs_info[index].start_sector != 0 || m_header.fs_info[index].end_sector != 0;
 }
 
 s32 NcaReader::GetFsCount() const {
-    ASSERT(m_body_storage != nullptr);
+    if (m_body_storage == nullptr) {
+        return 0;
+    }
     for (s32 i = 0; i < NcaHeader::FsCountMax; i++) {
         if (!this->HasFsInfo(i)) {
             return i;
@@ -291,8 +293,10 @@ void NcaReader::GetEncryptedKey(void* dst, size_t size) const {
 }
 
 const void* NcaReader::GetDecryptionKey(s32 index) const {
-    ASSERT(m_body_storage != nullptr);
-    ASSERT(0 <= index && index < NcaHeader::DecryptionKey_Count);
+    if (m_body_storage == nullptr || index < 0 || index >= NcaHeader::DecryptionKey_Count) {
+        LOG_WARNING(Service_FS, "NcaReader::GetDecryptionKey called with invalid state or index {}", index);
+        return ZeroKey.data();
+    }
     return m_decryption_keys[index].data();
 }
 
@@ -356,8 +360,9 @@ NcaHeader::EncryptionType NcaReader::GetEncryptionType() const {
 }
 
 Result NcaReader::ReadHeader(NcaFsHeader* dst, s32 index) const {
-    ASSERT(dst != nullptr);
-    ASSERT(0 <= index && index < NcaHeader::FsCountMax);
+    if (dst == nullptr || index < 0 || index >= NcaHeader::FsCountMax || m_header_storage == nullptr) {
+        return ResultInvalidNcaHeader;
+    }
 
     const s64 offset = sizeof(NcaHeader) + sizeof(NcaFsHeader) * index;
     m_header_storage->ReadObject(dst, offset);

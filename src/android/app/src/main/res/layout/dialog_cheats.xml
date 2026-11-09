@@ -4,17 +4,20 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface"
+    android:background="@android:color/transparent"
     android:clipToPadding="false">
 
     <LinearLayout
+        android:id="@+id/card_root_dialog"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@drawable/storm_dialog_card_bg"
         android:orientation="vertical"
-        android:padding="8dp">
+        android:padding="12dp">
 
         <!-- Header -->
         <LinearLayout
+            android:id="@+id/layout_header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -41,10 +44,10 @@
                     android:layout_height="wrap_content"
                     android:text="@string/cheats_manager_title"
                     android:textColor="?attr/colorPrimary"
-                    android:textSize="13sp"
+                    android:textSize="13.5sp"
                     android:textStyle="bold"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none" />
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/text_game_info"
@@ -54,8 +57,8 @@
                     android:text="Title ID: 0000000000000000"
                     android:textSize="10sp"
                     android:textColor="?attr/colorOnSurfaceVariant"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none" />
 
             </LinearLayout>
 
@@ -70,15 +73,15 @@
 
         </LinearLayout>
 
-        <!-- Search Bar & Actions in a single/compact row -->
         <!-- Search Card -->
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_search"
             style="@style/EdenCard"
             android:layout_width="match_parent"
             android:layout_height="36dp"
             android:layout_marginBottom="6dp"
             app:cardCornerRadius="10dp"
-            app:cardBackgroundColor="@android:color/transparent"
+            app:cardBackgroundColor="?attr/colorSurfaceVariant"
             app:strokeColor="?attr/colorOutline"
             app:strokeWidth="1dp">
 
@@ -127,6 +130,7 @@
 
         <!-- Action Buttons Row -->
         <LinearLayout
+            android:id="@+id/layout_action_buttons"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -140,7 +144,7 @@
                 android:layout_height="36dp"
                 android:layout_weight="1"
                 android:layout_marginEnd="4dp"
-                android:minHeight="0dp"
+                android:minHeight="36dp"
                 android:text="@string/download_cheats"
                 android:maxLines="1"
                 android:ellipsize="none"
@@ -155,7 +159,9 @@
                 app:strokeColor="?attr/colorPrimary"
                 app:strokeWidth="1dp"
                 app:cornerRadius="8dp"
-                android:paddingHorizontal="6dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingHorizontal="12dp"
                 android:paddingVertical="0dp"
                 app:icon="@drawable/ic_import"
                 app:iconTint="?attr/colorPrimary"
@@ -168,7 +174,7 @@
                 android:layout_height="36dp"
                 android:layout_weight="1"
                 android:layout_marginEnd="4dp"
-                android:minHeight="0dp"
+                android:minHeight="36dp"
                 android:text="@string/add_cheat"
                 android:maxLines="1"
                 android:ellipsize="none"
@@ -183,7 +189,9 @@
                 app:strokeColor="?attr/colorPrimary"
                 app:strokeWidth="1dp"
                 app:cornerRadius="8dp"
-                android:paddingHorizontal="6dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingHorizontal="12dp"
                 android:paddingVertical="0dp"
                 app:icon="@drawable/ic_add"
                 app:iconTint="?attr/colorPrimary"
@@ -195,7 +203,7 @@
                 android:layout_width="0dp"
                 android:layout_height="36dp"
                 android:layout_weight="1"
-                android:minHeight="0dp"
+                android:minHeight="36dp"
                 android:text="@string/select_all"
                 android:maxLines="1"
                 android:ellipsize="none"
@@ -210,7 +218,9 @@
                 app:strokeColor="?attr/colorPrimary"
                 app:strokeWidth="1dp"
                 app:cornerRadius="8dp"
-                android:paddingHorizontal="6dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingHorizontal="12dp"
                 android:paddingVertical="0dp" />
 
         </LinearLayout>
@@ -222,7 +232,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:padding="4dp"
+            android:padding="6dp"
             android:visibility="gone"
             android:layout_marginBottom="4dp"
             android:background="?attr/colorSurfaceVariant">
@@ -240,8 +250,8 @@
                 android:text="@string/downloading_cheats"
                 android:textSize="11sp"
                 android:textColor="?attr/colorPrimary"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                android:breakStrategy="simple"
+                android:hyphenationFrequency="none" />
 
         </LinearLayout>
 
@@ -282,8 +292,8 @@
                     android:textSize="12sp"
                     android:gravity="center"
                     android:textColor="?attr/colorOnSurfaceVariant"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none" />
 
             </LinearLayout>
 
@@ -291,6 +301,7 @@
 
         <!-- Bottom Footer -->
         <LinearLayout
+            android:id="@+id/layout_footer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -303,27 +314,29 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/cheats_summary_zero"
-                android:textSize="10sp"
+                android:textSize="10.5sp"
                 android:textColor="?attr/colorOnSurfaceVariant"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                android:breakStrategy="simple"
+                android:hyphenationFrequency="none" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_save_cheats"
                 style="@style/EdenButton.Primary"
                 android:layout_width="wrap_content"
-                android:layout_height="30dp"
-                android:minHeight="0dp"
+                android:layout_height="36dp"
+                android:minHeight="36dp"
                 android:text="@string/ok"
                 android:textSize="11sp"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="0dp"
-        app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorPrimary"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"
-    android:maxLines="1"
-    android:ellipsize="none"/>
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorPrimary"
+                android:breakStrategy="simple"
+                android:hyphenationFrequency="none"
+                android:maxLines="1"
+                android:ellipsize="none" />
 
         </LinearLayout>
 

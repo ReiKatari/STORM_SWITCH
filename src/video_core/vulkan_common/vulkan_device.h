@@ -1113,7 +1113,31 @@ FN_MAX_LIMIT_LIST
     [[nodiscard]] bool IsMali() const noexcept {
         return properties.driver.driverID == VK_DRIVER_ID_ARM_PROPRIETARY ||
                properties.driver.driverID == VK_DRIVER_ID_MESA_PANVK ||
-               properties.properties.vendorID == 0x13B5;
+               properties.properties.vendorID == 0x13B5 ||
+               std::string_view(properties.properties.deviceName).find("Mali") != std::string_view::npos ||
+               std::string_view(properties.properties.deviceName).find("Immortalis") != std::string_view::npos;
+    }
+
+    [[nodiscard]] bool IsQualcomm() const noexcept {
+        return properties.driver.driverID == VK_DRIVER_ID_QUALCOMM_PROPRIETARY ||
+               properties.properties.vendorID == 0x5143;
+    }
+
+    [[nodiscard]] bool IsTurnip() const noexcept {
+        return properties.driver.driverID == VK_DRIVER_ID_MESA_TURNIP;
+    }
+
+    [[nodiscard]] bool IsXclipse() const noexcept {
+        return properties.driver.driverID == VK_DRIVER_ID_SAMSUNG_PROPRIETARY ||
+               properties.properties.vendorID == 0x144D ||
+               std::string_view(properties.properties.deviceName).find("Xclipse") != std::string_view::npos;
+    }
+
+    [[nodiscard]] bool IsPowerVR() const noexcept {
+        return properties.driver.driverID == VK_DRIVER_ID_IMAGINATION_PROPRIETARY ||
+               properties.properties.vendorID == 0x1010 ||
+               std::string_view(properties.properties.deviceName).find("PowerVR") != std::string_view::npos ||
+               std::string_view(properties.properties.deviceName).find("IMG ") != std::string_view::npos;
     }
 
     bool UseGeometryShaders() const noexcept {

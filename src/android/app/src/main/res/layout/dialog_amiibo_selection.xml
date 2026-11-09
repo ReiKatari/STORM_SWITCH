@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:cardBackgroundColor="?attr/colorSurface"
-    app:cardCornerRadius="22dp"
+    app:cardCornerRadius="20dp"
     app:cardElevation="0dp"
-    app:strokeColor="?attr/colorPrimary"
-    app:strokeWidth="1.5dp">
+    app:strokeColor="?attr/colorOutline"
+    app:strokeWidth="1dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -29,7 +28,8 @@
                 android:layout_height="32dp"
                 android:src="@drawable/ic_amiibo"
                 app:tint="?attr/colorPrimary"
-                android:layout_marginEnd="12dp" />
+                android:layout_marginEnd="12dp"
+                android:contentDescription="@string/amiibo" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -44,8 +44,8 @@
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none" />
 
                 <com.google.android.material.textview.MaterialTextView
                     android:layout_width="wrap_content"
@@ -54,8 +54,8 @@
                     android:textSize="12.5sp"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginTop="2dp"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none" />
 
             </LinearLayout>
 
@@ -71,7 +71,7 @@
             app:cardCornerRadius="14dp"
             app:cardElevation="0dp"
             app:cardBackgroundColor="?attr/colorSurfaceVariant"
-            app:strokeColor="?attr/colorPrimary"
+            app:strokeColor="?attr/colorOutline"
             app:strokeWidth="1dp"
             android:layout_marginBottom="12dp">
 
@@ -87,7 +87,8 @@
                     android:layout_height="28dp"
                     android:src="@drawable/ic_search"
                     app:tint="?attr/colorPrimary"
-                    android:layout_marginEnd="14dp" />
+                    android:layout_marginEnd="14dp"
+                    android:contentDescription="@string/search" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -102,8 +103,8 @@
                         android:textSize="15sp"
                         android:textStyle="bold"
                         android:textColor="?attr/colorOnSurface"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                        android:breakStrategy="simple"
+                        android:hyphenationFrequency="none" />
 
                     <com.google.android.material.textview.MaterialTextView
                         android:layout_width="wrap_content"
@@ -112,8 +113,8 @@
                         android:textSize="12sp"
                         android:textColor="?attr/colorOnSurfaceVariant"
                         android:layout_marginTop="2dp"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                        android:breakStrategy="simple"
+                        android:hyphenationFrequency="none" />
 
                 </LinearLayout>
 
@@ -131,7 +132,7 @@
             app:cardCornerRadius="14dp"
             app:cardElevation="0dp"
             app:cardBackgroundColor="?attr/colorSurfaceVariant"
-            app:strokeColor="?attr/colorPrimary"
+            app:strokeColor="?attr/colorOutline"
             app:strokeWidth="1dp"
             android:layout_marginBottom="16dp">
 
@@ -147,7 +148,8 @@
                     android:layout_height="28dp"
                     android:src="@drawable/ic_folder_open"
                     app:tint="?attr/colorPrimary"
-                    android:layout_marginEnd="14dp" />
+                    android:layout_marginEnd="14dp"
+                    android:contentDescription="@string/load_amiibo" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -162,8 +164,8 @@
                         android:textSize="15sp"
                         android:textStyle="bold"
                         android:textColor="?attr/colorOnSurface"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                        android:breakStrategy="simple"
+                        android:hyphenationFrequency="none" />
 
                     <com.google.android.material.textview.MaterialTextView
                         android:layout_width="wrap_content"
@@ -172,8 +174,8 @@
                         android:textSize="12sp"
                         android:textColor="?attr/colorOnSurfaceVariant"
                         android:layout_marginTop="2dp"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                        android:breakStrategy="simple"
+                        android:hyphenationFrequency="none" />
 
                 </LinearLayout>
 
@@ -186,17 +188,23 @@
             android:id="@+id/btn_cancel_amiibo"
             style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="match_parent"
-            android:layout_height="46dp"
+            android:layout_height="wrap_content"
+            android:minHeight="40dp"
             android:text="@string/close"
             android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="13sp"
+            android:textStyle="bold"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="0dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
             app:cornerRadius="12dp"
-        app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"
-    android:maxLines="1"
-    android:ellipsize="none"/>
+            app:strokeWidth="1dp"
+            app:strokeColor="?attr/colorOutline"
+            android:breakStrategy="simple"
+            android:hyphenationFrequency="none"
+            android:maxLines="1"
+            android:ellipsize="none" />
 
     </LinearLayout>
 

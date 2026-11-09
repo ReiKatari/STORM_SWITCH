@@ -18,6 +18,8 @@
 #include "core/hle/service/nvdrv/core/nvmap.h"
 #include "core/hle/service/nvdrv/devices/ioctl_serialization.h"
 #include "core/hle/service/nvdrv/devices/nvmap.h"
+#include "common/settings.h"
+#include "core/hle/service/nvdrv/devices/nx2_stub_device.h"
 #include "core/memory.h"
 
 using Core::Memory::YUZU_PAGESIZE;
@@ -54,19 +56,29 @@ NvResult nvmap::Ioctl1(DeviceFD fd, Ioctl command, std::span<const u8> input,
         break;
     }
 
-    UNIMPLEMENTED_MSG("Unimplemented ioctl={:08X}", command.raw);
+    if (g_nx2_driver || Settings::IsCurrentProgramSwitch2()) {
+        return Nx2UnknownIoctl("nvmap", command, input, output);
+    }
+    LOG_WARNING(Service_NVDRV, "Unimplemented nvmap ioctl={:08X}", command.raw);
     return NvResult::NotImplemented;
 }
 
 NvResult nvmap::Ioctl2(DeviceFD fd, Ioctl command, std::span<const u8> input,
                        std::span<const u8> inline_input, std::span<u8> output) {
-    UNIMPLEMENTED_MSG("Unimplemented ioctl={:08X}", command.raw);
+    if (g_nx2_driver || Settings::IsCurrentProgramSwitch2()) {
+        return Nx2UnknownIoctl("nvmap", command, input, output);
+    }
+    LOG_WARNING(Service_NVDRV, "Unimplemented nvmap ioctl2={:08X}", command.raw);
     return NvResult::NotImplemented;
 }
 
 NvResult nvmap::Ioctl3(DeviceFD fd, Ioctl command, std::span<const u8> input, std::span<u8> output,
                        std::span<u8> inline_output) {
-    UNIMPLEMENTED_MSG("Unimplemented ioctl={:08X}", command.raw);
+    if (g_nx2_driver || Settings::IsCurrentProgramSwitch2()) {
+        std::fill(inline_output.begin(), inline_output.end(), u8{0});
+        return Nx2UnknownIoctl("nvmap", command, input, output);
+    }
+    LOG_WARNING(Service_NVDRV, "Unimplemented nvmap ioctl3={:08X}", command.raw);
     return NvResult::NotImplemented;
 }
 
@@ -134,11 +146,14 @@ NvResult nvmap::IocAlloc(IocAllocParams& params, DeviceFD fd) {
     }
     bool is_out_io{};
     auto process = container.GetSession(sessions[fd])->process;
-    ASSERT(process->GetPageTable()
-               .LockForMapDeviceAddressSpace(&is_out_io, handle_description->address,
-                                             handle_description->size,
-                                             Kernel::KMemoryPermission::None, true, false)
-               .IsSuccess());
+    const auto lock_res = process->GetPageTable().LockForMapDeviceAddressSpace(
+        &is_out_io, handle_description->address, handle_description->size,
+        Kernel::KMemoryPermission::None, true, false);
+    if (lock_res.IsError()) {
+        LOG_ERROR(Service_NVDRV, "LockForMapDeviceAddressSpace failed with result={:08X} (SMMU exhaustion or invalid space)",
+                  lock_res.GetInnerValue());
+        return NvResult::InsufficientMemory;
+    }
     return result;
 }
 
@@ -245,9 +260,12 @@ NvResult nvmap::IocFree(IocFreeParams& params, DeviceFD fd) {
     if (auto freeInfo{file.FreeHandle(params.handle, false)}) {
         auto process = container.GetSession(sessions[fd])->process;
         if (freeInfo->can_unlock) {
-            ASSERT(process->GetPageTable()
-                       .UnlockForDeviceAddressSpace(freeInfo->address, freeInfo->size)
-                       .IsSuccess());
+            const auto unlock_res = process->GetPageTable().UnlockForDeviceAddressSpace(
+                freeInfo->address, freeInfo->size);
+            if (unlock_res.IsError()) {
+                LOG_WARNING(Service_NVDRV, "UnlockForDeviceAddressSpace failed with result={:08X}",
+                            unlock_res.GetInnerValue());
+            }
         }
         params.address = freeInfo->address;
         params.size = static_cast<u32>(freeInfo->size);

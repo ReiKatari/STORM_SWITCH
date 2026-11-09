@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <QApplication>
+#include <QTimer>
 #include "startup_checks.h"
 
 #if YUZU_ROOM
@@ -383,6 +384,15 @@ int main(int argc, char* argv[]) {
     MainWindow main_window{has_broken_vulkan};
     // After settings have been loaded by GMainWindow, apply the filter
     main_window.show();
+
+    for (int i = 1; i < argc; ++i) {
+        if (std::strcmp(argv[i], "--configure") == 0) {
+            QTimer::singleShot(500, [&main_window]() {
+                QMetaObject::invokeMethod(&main_window, "OnConfigure", Qt::QueuedConnection);
+            });
+            break;
+        }
+    }
 
 #ifdef _WIN32
     // Law 22: UIPI bypass for Drag-and-Drop window message filter

@@ -64,8 +64,8 @@
                 android:maxLines="2"
                 android:ellipsize="end"
                 tools:text="Link - Rider"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                android:breakStrategy="simple"
+                android:hyphenationFrequency="none" />
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/text_amiibo_series"
@@ -78,8 +78,8 @@
                 android:maxLines="2"
                 android:ellipsize="end"
                 tools:text="Zelda • Figure"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                android:breakStrategy="simple"
+                android:hyphenationFrequency="none" />
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/text_amiibo_id"
@@ -91,8 +91,8 @@
                 android:maxLines="2"
                 android:ellipsize="end"
                 tools:text="01010000002F0002"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                android:breakStrategy="simple"
+                android:hyphenationFrequency="none" />
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/text_amiibo_reward"
@@ -105,10 +105,10 @@
                 android:maxLines="2"
                 android:ellipsize="end"
                 android:visibility="gone"
-                tools:text="[🗡️ Оружие] Меч мудреца + Ткань ностальгии"
+                tools:text="[Оружие] Меч мудреца + Ткань ностальгии"
                 tools:visibility="visible"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                android:breakStrategy="simple"
+                android:hyphenationFrequency="none" />
 
         </LinearLayout>
 
@@ -126,36 +126,46 @@
                 android:id="@+id/button_inject_amiibo"
                 style="@style/EdenButton.Primary"
                 android:layout_width="wrap_content"
-                android:layout_height="32dp"
+                android:layout_height="wrap_content"
+                android:minWidth="76dp"
+                android:minHeight="36dp"
                 android:text="@string/inject_amiibo"
-                android:textSize="10sp"
-                android:paddingHorizontal="8dp"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="0dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-        app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorPrimary"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"
-    android:maxLines="1"
-    android:ellipsize="none"/>
+                app:cornerRadius="6dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorPrimary"
+                android:breakStrategy="simple"
+                android:hyphenationFrequency="none"
+                android:maxLines="1"
+                android:ellipsize="none" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_save_bin"
                 style="@style/EdenButton.Outlined"
                 android:layout_width="wrap_content"
-                android:layout_height="28dp"
+                android:layout_height="wrap_content"
+                android:minWidth="76dp"
+                android:minHeight="36dp"
                 android:layout_marginTop="4dp"
                 android:text="@string/save_bin"
-                android:textSize="10sp"
-                android:paddingHorizontal="6dp"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="0dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-        app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"
-    android:maxLines="1"
-    android:ellipsize="none"/>
+                app:cornerRadius="6dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutline"
+                android:breakStrategy="simple"
+                android:hyphenationFrequency="none"
+                android:maxLines="1"
+                android:ellipsize="none" />
 
         </LinearLayout>
 

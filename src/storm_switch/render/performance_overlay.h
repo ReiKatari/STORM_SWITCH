@@ -7,6 +7,7 @@
 #include <deque>
 #include <memory>
 #include <vector>
+#include <QKeyEvent>
 #include <QPoint>
 #include <QWidget>
 
@@ -26,19 +27,7 @@ class QListWidget;
 class QComboBox;
 class QCheckBox;
 class QStackedWidget;
-
-enum class OverlayVisualPreset {
-    StormAuroraGlass3D = 0,
-    Switch2ProMagnetic = 1,
-    CyberpunkEdgeNeon = 2,
-    OledGhostWireframe = 3,
-    TitaniumMechaTactical = 4,
-    HyruleRelicGold = 5,
-    SanctuaryBloodRune = 6,
-    ArcadeCandyTactile3D = 7,
-    LiquidQuartzFrost = 8,
-    RetroPixelMatrix = 9,
-};
+class QSlider;
 
 class PerformanceOverlay : public QWidget {
     Q_OBJECT
@@ -47,12 +36,18 @@ public:
     explicit PerformanceOverlay(MainWindow* parent = nullptr);
     ~PerformanceOverlay() override;
 
-    void SetExpanded(bool expanded);
-    bool IsExpanded() const { return m_is_expanded; }
+    enum class OverlayMode {
+        Compact = 0,
+        Sidebar = 1,
+        Expanded = 2,
+    };
 
-    void SetVisualPreset(OverlayVisualPreset preset);
-    OverlayVisualPreset GetVisualPreset() const { return m_visual_preset; }
-    void ApplyVisualPreset();
+    void SetMode(OverlayMode mode);
+    OverlayMode GetMode() const { return m_mode; }
+    void ToggleSidebar();
+
+    void SetExpanded(bool expanded);
+    bool IsExpanded() const { return m_mode != OverlayMode::Compact; }
 
     void OnSaveSlot(int slot);
     void OnLoadSlot(int slot);
@@ -62,6 +57,7 @@ protected:
     void paintEvent(QPaintEvent* event) override;
     void mousePressEvent(QMouseEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event) override;
+    void keyPressEvent(QKeyEvent* event) override;
     void closeEvent(QCloseEvent* event) override;
 
 private slots:
@@ -81,19 +77,31 @@ private slots:
     void OnHdr10Toggled(bool checked);
     void OnToggleGpuAccuracy();
     void OnAutoHealGraphicsArtifacts();
-    void OnQuickRewind();
-    void OnQuickFastForward();
-    void OnQuickFrameStep();
-    void OnQuickSaveAction();
-    void OnQuickLoadAction();
-    void OnQuickAiTranslate();
-    void OnQuickShaderFix();
-    void OnQuickTurbo();
-    void OnQuickPauseCooling();
-    void OnStyleComboChanged(int index);
+
+    // Sidebar drawer slots
+    void OnSidebarSaveClicked();
+    void OnSidebarLoadClicked();
+    void OnSidebarSaveManagerClicked();
+    void OnSidebarResolutionChanged(int idx);
+    void OnSidebarScalingChanged(int idx);
+    void OnSidebarSpeedLimitToggled();
+    void OnSidebarVsyncToggled();
+    void OnSidebarDockedToggled();
+    void OnSidebarVolumeChanged(int val);
+    void OnSidebarHudToggled();
+    void OnSidebarCheatsClicked();
+    void OnSidebarAmiiboBrowseClicked();
+    void OnSidebarAmiiboEjectClicked();
+    void OnSidebarPauseClicked();
+    void OnSidebarRestartClicked();
+    void OnSidebarConfigureClicked();
+    void OnSidebarStopClicked();
 
 private:
     void SetupUI();
+    void SetupSidebarUI();
+    void RefreshSidebarState();
+
     void SetupMonitoringTab(QWidget* tab);
     void SetupCheatsTab(QWidget* tab);
     void SetupSaveStatesTab(QWidget* tab);
@@ -108,20 +116,7 @@ private:
     void RefreshCfwInfo();
 
     MainWindow* m_mainWindow = nullptr;
-    OverlayVisualPreset m_visual_preset = OverlayVisualPreset::StormAuroraGlass3D;
-
-    // Quick actions panel in Tesla OSD
-    QWidget* m_quick_actions_panel = nullptr;
-    QPushButton* m_btn_rewind = nullptr;
-    QPushButton* m_btn_fast_forward = nullptr;
-    QPushButton* m_btn_frame_step = nullptr;
-    QPushButton* m_btn_quick_save = nullptr;
-    QPushButton* m_btn_quick_load = nullptr;
-    QPushButton* m_btn_ai_translate = nullptr;
-    QPushButton* m_btn_shader_fix = nullptr;
-    QPushButton* m_btn_turbo = nullptr;
-    QPushButton* m_btn_pause_cooling = nullptr;
-    QComboBox* m_style_combo = nullptr;
+    OverlayMode m_mode = OverlayMode::Compact;
     bool m_is_expanded = false;
 
     // Layout components
@@ -193,6 +188,31 @@ private:
     QCheckBox* m_chk_hdr10 = nullptr;
     QPushButton* m_btn_gpu_acc = nullptr;
     QPushButton* m_btn_heal_gpu = nullptr;
+
+    // Sidebar Drawer Mode UI (Console-Grade Bento Drawer)
+    QWidget* m_sidebar_widget = nullptr;
+    QLabel* m_sidebar_game_title = nullptr;
+    QComboBox* m_sidebar_slot_combo = nullptr;
+    QPushButton* m_btn_sidebar_save = nullptr;
+    QPushButton* m_btn_sidebar_load = nullptr;
+    QPushButton* m_btn_sidebar_manager = nullptr;
+    QLabel* m_sidebar_save_status = nullptr;
+
+    QComboBox* m_sidebar_resolution_combo = nullptr;
+    QComboBox* m_sidebar_scaling_combo = nullptr;
+    QPushButton* m_btn_sidebar_speed_limit = nullptr;
+    QPushButton* m_btn_sidebar_vsync = nullptr;
+    QPushButton* m_btn_sidebar_docked = nullptr;
+    QLabel* m_sidebar_volume_label = nullptr;
+
+    QPushButton* m_btn_sidebar_cheats = nullptr;
+    QPushButton* m_btn_sidebar_amiibo_browse = nullptr;
+    QPushButton* m_btn_sidebar_amiibo_eject = nullptr;
+
+    QPushButton* m_btn_sidebar_pause = nullptr;
+    QPushButton* m_btn_sidebar_restart = nullptr;
+    QPushButton* m_btn_sidebar_configure = nullptr;
+    QPushButton* m_btn_sidebar_stop = nullptr;
 
     // Dragging
     QPoint m_offset{25, 75};

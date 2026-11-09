@@ -424,7 +424,7 @@ std::size_t NCZVirtualFile::Read(u8* data, std::size_t length, std::size_t offse
     while (remaining > 0) {
         if (current_offset < 0x4000) {
             std::unique_lock<std::mutex> hlock(header_mutex);
-            if (!decrypted_header.empty()) {
+            if (!decrypted_header.empty() && current_offset < decrypted_header.size()) {
                 std::size_t to_read = std::min<std::size_t>(remaining, 0x4000 - current_offset);
                 std::size_t copy_len = std::min<std::size_t>(to_read, decrypted_header.size() - current_offset);
                 std::memcpy(data + bytes_read, decrypted_header.data() + current_offset, copy_len);
@@ -626,6 +626,10 @@ std::size_t NCZVirtualFile::Read(u8* data, std::size_t length, std::size_t offse
         std::size_t block_offset = 0;
         
         if (!is_solid_stream) {
+            if (block_size == 0) {
+                LOG_ERROR(Service_FS, "NCZ: block_size is zero in file {}!", GetName());
+                break;
+            }
             block_index = mapped_offset / block_size;
             block_offset = mapped_offset % block_size;
             if (block_index >= blocks.size()) {

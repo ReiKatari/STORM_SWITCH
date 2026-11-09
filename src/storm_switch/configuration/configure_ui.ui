@@ -166,7 +166,7 @@
               <item>
                <widget class="QLabel" name="design_label">
                 <property name="text">
-                 <string>UI Layout View:</string>
+                 <string>UI Design:</string>
                 </property>
                </widget>
               </item>

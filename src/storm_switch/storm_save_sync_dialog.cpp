@@ -7,6 +7,7 @@
 #include <fstream>
 #include <QApplication>
 #include <QClipboard>
+#include <QCheckBox>
 #include <QComboBox>
 #include <QDesktopServices>
 #include <QDir>
@@ -28,10 +29,13 @@
 #include <QNetworkInterface>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QPainter>
+#include <QPainterPath>
 #include <QProgressBar>
 #include <QPushButton>
 #include <QRegularExpression>
 #include <QTableWidget>
+#include <QSettings>
 #include <QTableWidgetItem>
 #include <QTimer>
 #include <QUrlQuery>
@@ -47,6 +51,184 @@
 #include <QMenu>
 #include "storm_switch/configuration/storm_ui_structure_helper.h"
 #include "storm_switch/common/storm_theme.h"
+#include "storm_switch/common/storm_design_engine.h"
+
+
+namespace {
+
+enum class DialogIcon {
+    Refresh,
+    Search,
+    Folder,
+    FolderOpen,
+    Download,
+    Upload,
+    Pause,
+    Play,
+    Cancel,
+    Check,
+    Copy,
+    Network,
+    Link,
+    Cloud,
+    TimeMachine,
+    Plus,
+    Restore,
+    Sync,
+    Warning,
+};
+
+static QIcon MakeDialogVectorIcon(DialogIcon kind, const QColor& color, int size = 16) {
+    const int px_size = size * 2;
+    QPixmap pix(px_size, px_size);
+    pix.fill(Qt::transparent);
+
+    QPainter p(&pix);
+    p.setRenderHint(QPainter::Antialiasing, true);
+    p.setRenderHint(QPainter::SmoothPixmapTransform, true);
+
+    QPen pen(color);
+    pen.setWidthF(qMax(1.6, 1.8 * (px_size / 16.0)));
+    pen.setCapStyle(Qt::RoundCap);
+    pen.setJoinStyle(Qt::RoundJoin);
+    p.setPen(pen);
+    p.setBrush(Qt::NoBrush);
+
+    const qreal s = px_size;
+
+    switch (kind) {
+    case DialogIcon::Refresh:
+    case DialogIcon::Sync: {
+        QRectF arc_rect(s * 0.16, s * 0.16, s * 0.68, s * 0.68);
+        p.drawArc(arc_rect, 40 * 16, 270 * 16);
+        QPointF head_pt(s * 0.76, s * 0.32);
+        p.drawLine(head_pt, QPointF(s * 0.88, s * 0.18));
+        p.drawLine(head_pt, QPointF(s * 0.62, s * 0.18));
+        break;
+    }
+    case DialogIcon::Search: {
+        p.drawEllipse(QRectF(s * 0.16, s * 0.16, s * 0.44, s * 0.44));
+        p.drawLine(QPointF(s * 0.50, s * 0.50), QPointF(s * 0.84, s * 0.84));
+        break;
+    }
+    case DialogIcon::Folder:
+    case DialogIcon::FolderOpen: {
+        QPainterPath path;
+        path.moveTo(s * 0.14, s * 0.28);
+        path.lineTo(s * 0.40, s * 0.28);
+        path.lineTo(s * 0.48, s * 0.38);
+        path.lineTo(s * 0.86, s * 0.38);
+        path.lineTo(s * 0.86, s * 0.76);
+        path.lineTo(s * 0.14, s * 0.76);
+        path.closeSubpath();
+        p.drawPath(path);
+        break;
+    }
+    case DialogIcon::Download: {
+        p.drawLine(QPointF(s * 0.50, s * 0.16), QPointF(s * 0.50, s * 0.62));
+        p.drawLine(QPointF(s * 0.30, s * 0.44), QPointF(s * 0.50, s * 0.62));
+        p.drawLine(QPointF(s * 0.70, s * 0.44), QPointF(s * 0.50, s * 0.62));
+        p.drawLine(QPointF(s * 0.20, s * 0.68), QPointF(s * 0.20, s * 0.82));
+        p.drawLine(QPointF(s * 0.20, s * 0.82), QPointF(s * 0.80, s * 0.82));
+        p.drawLine(QPointF(s * 0.80, s * 0.82), QPointF(s * 0.80, s * 0.68));
+        break;
+    }
+    case DialogIcon::Upload: {
+        p.drawLine(QPointF(s * 0.50, s * 0.62), QPointF(s * 0.50, s * 0.18));
+        p.drawLine(QPointF(s * 0.30, s * 0.36), QPointF(s * 0.50, s * 0.18));
+        p.drawLine(QPointF(s * 0.70, s * 0.36), QPointF(s * 0.50, s * 0.18));
+        p.drawLine(QPointF(s * 0.20, s * 0.68), QPointF(s * 0.20, s * 0.82));
+        p.drawLine(QPointF(s * 0.20, s * 0.82), QPointF(s * 0.80, s * 0.82));
+        p.drawLine(QPointF(s * 0.80, s * 0.82), QPointF(s * 0.80, s * 0.68));
+        break;
+    }
+    case DialogIcon::Pause: {
+        p.drawLine(QPointF(s * 0.34, s * 0.20), QPointF(s * 0.34, s * 0.80));
+        p.drawLine(QPointF(s * 0.66, s * 0.20), QPointF(s * 0.66, s * 0.80));
+        break;
+    }
+    case DialogIcon::Play: {
+        QPainterPath path;
+        path.moveTo(s * 0.28, s * 0.20);
+        path.lineTo(s * 0.80, s * 0.50);
+        path.lineTo(s * 0.28, s * 0.80);
+        path.closeSubpath();
+        p.fillPath(path, color);
+        break;
+    }
+    case DialogIcon::Cancel: {
+        p.drawLine(QPointF(s * 0.24, s * 0.24), QPointF(s * 0.76, s * 0.76));
+        p.drawLine(QPointF(s * 0.76, s * 0.24), QPointF(s * 0.24, s * 0.76));
+        break;
+    }
+    case DialogIcon::Check: {
+        p.drawLine(QPointF(s * 0.18, s * 0.50), QPointF(s * 0.40, s * 0.76));
+        p.drawLine(QPointF(s * 0.40, s * 0.76), QPointF(s * 0.82, s * 0.24));
+        break;
+    }
+    case DialogIcon::Copy: {
+        p.drawRoundedRect(QRectF(s * 0.32, s * 0.16, s * 0.52, s * 0.52), s * 0.08, s * 0.08);
+        p.drawRoundedRect(QRectF(s * 0.16, s * 0.32, s * 0.52, s * 0.52), s * 0.08, s * 0.08);
+        break;
+    }
+    case DialogIcon::Network: {
+        p.drawEllipse(QRectF(s * 0.16, s * 0.16, s * 0.68, s * 0.68));
+        p.drawLine(QPointF(s * 0.16, s * 0.50), QPointF(s * 0.84, s * 0.50));
+        p.drawEllipse(QRectF(s * 0.32, s * 0.16, s * 0.36, s * 0.68));
+        break;
+    }
+    case DialogIcon::Link: {
+        p.drawRoundedRect(QRectF(s * 0.16, s * 0.30, s * 0.38, s * 0.40), s * 0.14, s * 0.14);
+        p.drawRoundedRect(QRectF(s * 0.46, s * 0.30, s * 0.38, s * 0.40), s * 0.14, s * 0.14);
+        break;
+    }
+    case DialogIcon::Cloud: {
+        QPainterPath path;
+        path.moveTo(s * 0.24, s * 0.68);
+        path.lineTo(s * 0.76, s * 0.68);
+        path.arcTo(QRectF(s * 0.62, s * 0.42, s * 0.26, s * 0.26), -90, 180);
+        path.arcTo(QRectF(s * 0.36, s * 0.24, s * 0.36, s * 0.36), 0, 180);
+        path.arcTo(QRectF(s * 0.14, s * 0.44, s * 0.24, s * 0.24), 90, 180);
+        path.closeSubpath();
+        p.drawPath(path);
+        break;
+    }
+    case DialogIcon::TimeMachine: {
+        p.drawEllipse(QRectF(s * 0.16, s * 0.16, s * 0.68, s * 0.68));
+        p.drawLine(QPointF(s * 0.50, s * 0.30), QPointF(s * 0.50, s * 0.50));
+        p.drawLine(QPointF(s * 0.50, s * 0.50), QPointF(s * 0.68, s * 0.50));
+        break;
+    }
+    case DialogIcon::Plus: {
+        p.drawLine(QPointF(s * 0.20, s * 0.50), QPointF(s * 0.80, s * 0.50));
+        p.drawLine(QPointF(s * 0.50, s * 0.20), QPointF(s * 0.50, s * 0.80));
+        break;
+    }
+    case DialogIcon::Restore: {
+        p.drawLine(QPointF(s * 0.50, s * 0.24), QPointF(s * 0.24, s * 0.50));
+        p.drawLine(QPointF(s * 0.24, s * 0.50), QPointF(s * 0.50, s * 0.76));
+        p.drawLine(QPointF(s * 0.76, s * 0.24), QPointF(s * 0.50, s * 0.50));
+        p.drawLine(QPointF(s * 0.50, s * 0.50), QPointF(s * 0.76, s * 0.76));
+        break;
+    }
+    case DialogIcon::Warning: {
+        QPainterPath path;
+        path.moveTo(s * 0.50, s * 0.16);
+        path.lineTo(s * 0.86, s * 0.80);
+        path.lineTo(s * 0.14, s * 0.80);
+        path.closeSubpath();
+        p.drawPath(path);
+        p.drawLine(QPointF(s * 0.50, s * 0.38), QPointF(s * 0.50, s * 0.58));
+        p.drawPoint(QPointF(s * 0.50, s * 0.70));
+        break;
+    }
+    }
+
+    p.end();
+    return QIcon(pix);
+}
+
+} // namespace
 
 // ---------------------------------------------------------------------------
 // StormSaveConflictDialog implementation
@@ -54,11 +236,13 @@
 
 StormSaveConflictDialog::StormSaveConflictDialog(QWidget* parent, const StormSaveItem& item,
                                                  const QString& local_device_name,
-                                                 const QString& remote_device_name)
+                                                 const QString& remote_device_name,
+                                                 const QString& local_path,
+                                                 const QString& remote_path)
     : QDialog(parent) {
     setWindowTitle(tr("STORM SAVE SYNC — Разрешение конфликта сохранений"));
-    resize(720, 420);
-    setMinimumSize(640, 360);
+    resize(840, 500);
+    setMinimumSize(780, 440);
 
     const StormTheme::Palette pal = StormTheme::GetThemePalette();
     setStyleSheet(QStringLiteral(
@@ -138,7 +322,7 @@ StormSaveConflictDialog::StormSaveConflictDialog(QWidget* parent, const StormSav
     main_layout->setSpacing(14);
     main_layout->setContentsMargins(18, 18, 18, 18);
 
-    auto* header_lbl = new QLabel(tr("⚡ Обнаружен конфликт версий сохранения"), this);
+    auto* header_lbl = new QLabel(tr("Обнаружен конфликт версий сохранения"), this);
     header_lbl->setStyleSheet(QStringLiteral("font-size: 16px; font-weight: bold; color: %1;").arg(pal.accent));
     main_layout->addWidget(header_lbl);
 
@@ -167,22 +351,30 @@ StormSaveConflictDialog::StormSaveConflictDialog(QWidget* parent, const StormSav
     local_layout->addWidget(local_title);
 
     auto* local_date = new QLabel(
-        tr("📅 Дата и время: %1").arg(item.local_date_str.isEmpty() ? tr("Нет данных") : item.local_date_str),
+        tr("Дата и время: %1").arg(item.local_date_str.isEmpty() ? tr("Нет данных") : item.local_date_str),
         local_card);
     local_date->setObjectName(QStringLiteral("CardDetail"));
     local_layout->addWidget(local_date);
 
     auto* local_size = new QLabel(
-        tr("📦 Размер данных: %1").arg(StormSaveSyncDialog::FormatSize(item.local_size_bytes)),
+        tr("Размер данных: %1").arg(StormSaveSyncDialog::FormatSize(item.local_size_bytes)),
         local_card);
     local_size->setObjectName(QStringLiteral("CardDetail"));
     local_layout->addWidget(local_size);
 
     auto* local_files = new QLabel(
-        tr("📄 Файлов: %1").arg(item.local_file_count),
+        tr("Файлов: %1").arg(item.local_file_count),
         local_card);
     local_files->setObjectName(QStringLiteral("CardDetail"));
     local_layout->addWidget(local_files);
+
+    if (!local_path.isEmpty()) {
+        auto* local_path_lbl = new QLabel(local_card);
+        local_path_lbl->setObjectName(QStringLiteral("CardDetail"));
+        local_path_lbl->setText(tr("Путь: %1").arg(fontMetrics().elidedText(local_path, Qt::ElideMiddle, 360)));
+        local_path_lbl->setToolTip(local_path);
+        local_layout->addWidget(local_path_lbl);
+    }
     local_layout->addStretch();
     cards_layout->addWidget(local_card);
 
@@ -199,22 +391,30 @@ StormSaveConflictDialog::StormSaveConflictDialog(QWidget* parent, const StormSav
     remote_layout->addWidget(remote_title);
 
     auto* remote_date = new QLabel(
-        tr("📅 Дата и время: %1").arg(item.remote_date_str.isEmpty() ? tr("Нет данных") : item.remote_date_str),
+        tr("Дата и время: %1").arg(item.remote_date_str.isEmpty() ? tr("Нет данных") : item.remote_date_str),
         remote_card);
     remote_date->setObjectName(QStringLiteral("CardDetail"));
     remote_layout->addWidget(remote_date);
 
     auto* remote_size = new QLabel(
-        tr("📦 Размер данных: %1").arg(StormSaveSyncDialog::FormatSize(item.remote_size_bytes)),
+        tr("Размер данных: %1").arg(StormSaveSyncDialog::FormatSize(item.remote_size_bytes)),
         remote_card);
     remote_size->setObjectName(QStringLiteral("CardDetail"));
     remote_layout->addWidget(remote_size);
 
     auto* remote_files = new QLabel(
-        tr("📄 Файлов: %1").arg(item.remote_file_count),
+        tr("Файлов: %1").arg(item.remote_file_count),
         remote_card);
     remote_files->setObjectName(QStringLiteral("CardDetail"));
     remote_layout->addWidget(remote_files);
+
+    if (!remote_path.isEmpty()) {
+        auto* remote_path_lbl = new QLabel(remote_card);
+        remote_path_lbl->setObjectName(QStringLiteral("CardDetail"));
+        remote_path_lbl->setText(tr("Путь: %1").arg(fontMetrics().elidedText(remote_path, Qt::ElideMiddle, 360)));
+        remote_path_lbl->setToolTip(remote_path);
+        remote_layout->addWidget(remote_path_lbl);
+    }
     remote_layout->addStretch();
     cards_layout->addWidget(remote_card);
 
@@ -224,7 +424,10 @@ StormSaveConflictDialog::StormSaveConflictDialog(QWidget* parent, const StormSav
     auto* btn_layout = new QHBoxLayout();
     btn_layout->setSpacing(10);
 
-    auto* btn_replace_local = new QPushButton(tr("Заменить текущее"), this);
+    auto* btn_replace_local = new QPushButton(tr("Заменить локальное"), this);
+    btn_replace_local->setIcon(MakeDialogVectorIcon(DialogIcon::Download, QColor(pal.accent), 16));
+    btn_replace_local->setMinimumWidth(150);
+    btn_replace_local->setMinimumHeight(32);
     btn_replace_local->setToolTip(tr("Скачать сохранение с удалённого устройства и перезаписать локальное"));
     connect(btn_replace_local, &QPushButton::clicked, this, [this]() {
         m_action = StormConflictAction::ReplaceCurrent;
@@ -232,6 +435,9 @@ StormSaveConflictDialog::StormSaveConflictDialog(QWidget* parent, const StormSav
     });
 
     auto* btn_replace_remote = new QPushButton(tr("Заменить на удалённом"), this);
+    btn_replace_remote->setIcon(MakeDialogVectorIcon(DialogIcon::Upload, QColor(pal.accent), 16));
+    btn_replace_remote->setMinimumWidth(160);
+    btn_replace_remote->setMinimumHeight(32);
     btn_replace_remote->setToolTip(tr("Отправить локальное сохранение на удалённое устройство"));
     connect(btn_replace_remote, &QPushButton::clicked, this, [this]() {
         m_action = StormConflictAction::ReplaceRemote;
@@ -240,6 +446,9 @@ StormSaveConflictDialog::StormSaveConflictDialog(QWidget* parent, const StormSav
 
     auto* btn_keep_both = new QPushButton(tr("Сохранить оба варианта"), this);
     btn_keep_both->setObjectName(QStringLiteral("HeroBtn"));
+    btn_keep_both->setIcon(MakeDialogVectorIcon(DialogIcon::Check, Qt::white, 16));
+    btn_keep_both->setMinimumWidth(170);
+    btn_keep_both->setMinimumHeight(32);
     btn_keep_both->setToolTip(tr("Создать резервную копию со штампом даты и времени на обоих устройствах"));
     connect(btn_keep_both, &QPushButton::clicked, this, [this]() {
         m_action = StormConflictAction::KeepBoth;
@@ -247,6 +456,8 @@ StormSaveConflictDialog::StormSaveConflictDialog(QWidget* parent, const StormSav
     });
 
     auto* btn_cancel = new QPushButton(tr("Отмена"), this);
+    btn_cancel->setMinimumWidth(110);
+    btn_cancel->setMinimumHeight(32);
     connect(btn_cancel, &QPushButton::clicked, this, [this]() {
         m_action = StormConflictAction::Cancel;
         reject();
@@ -299,10 +510,8 @@ QString StormSaveSyncDialog::FormatDateTime(const QDateTime& dt) {
 }
 
 QString StormSaveSyncDialog::FormatSize(qint64 bytes) {
-    if (bytes <= 0) return tr("0 Б");
-    if (bytes < 1024) return tr("%1 Б").arg(bytes);
-    if (bytes < 1024 * 1024) return tr("%1 КБ").arg(QString::number(bytes / 1024.0, 'f', 1));
-    return tr("%1 МБ").arg(QString::number(bytes / (1024.0 * 1024.0), 'f', 2));
+    if (bytes <= 0) return StormFormat::ReadableByteSize(0);
+    return StormFormat::ReadableByteSize(static_cast<qulonglong>(bytes));
 }
 
 QString StormSaveSyncDialog::GenerateConnectionKey(const QHostAddress& ip, quint16 port) {
@@ -577,7 +786,7 @@ void StormSaveSyncDialog::OnSwitchIpClicked() {
 
     for (const auto& info : m_available_ips) {
         const QString text = (info.ip == m_local_ip)
-            ? tr("✓ %1 [Активен]").arg(info.name)
+            ? tr("%1 [Активен]").arg(info.name)
             : info.name;
         auto* action = menu.addAction(text);
         const QString chosen_ip = info.ip;
@@ -631,15 +840,17 @@ std::filesystem::path StormSaveSyncDialog::GetLocalSaveDirForTitle(const QString
 }
 
 void StormSaveSyncDialog::SetupUI() {
+    const auto pal = StormTheme::GetThemePalette();
+
     auto* main_layout = new QVBoxLayout(this);
     main_layout->setSpacing(12);
     main_layout->setContentsMargins(16, 16, 16, 16);
 
-    // Header Card
+    // Header Card (Host Card)
     auto* header_card = new QFrame(this);
     header_card->setObjectName(QStringLiteral("HeaderCard"));
     auto* header_layout = new QHBoxLayout(header_card);
-    header_layout->setContentsMargins(14, 12, 14, 12);
+    header_layout->setContentsMargins(16, 12, 16, 12);
 
     auto* title_box = new QVBoxLayout();
     title_box->setSpacing(4);
@@ -647,8 +858,9 @@ void StormSaveSyncDialog::SetupUI() {
     title_lbl->setObjectName(QStringLiteral("AppTitle"));
     title_box->addWidget(title_lbl);
 
+    const QString dev_name = QHostInfo::localHostName();
     auto* sub_lbl = new QLabel(
-        tr("Кроссплатформенная синхронизация сохранений Switch между ПК и Android по защищённому ключу"),
+        tr("Кроссплатформенная синхронизация сохранений Switch • Устройство: %1").arg(dev_name.isEmpty() ? tr("ПК") : dev_name),
         header_card);
     sub_lbl->setObjectName(QStringLiteral("AppSubtitle"));
     title_box->addWidget(sub_lbl);
@@ -658,54 +870,64 @@ void StormSaveSyncDialog::SetupUI() {
     // Local Key & Host Status box
     auto* key_box = new QVBoxLayout();
     key_box->setAlignment(Qt::AlignRight);
-    key_box->setSpacing(4);
+    key_box->setSpacing(5);
 
     auto* key_row = new QHBoxLayout();
     key_row->setSpacing(8);
     m_local_key_label = new QLabel(tr("Ключ: инициализация..."), header_card);
-    m_local_key_label->setStyleSheet(QStringLiteral("font-family: monospace; font-size: 13px; font-weight: bold; color: %1;"));
+    m_local_key_label->setStyleSheet(QStringLiteral("font-family: monospace; font-size: 13px; font-weight: bold; color: %1; background: %2; border: 1px solid %3; border-radius: 6px; padding: 4px 10px;").arg(pal.accent, pal.inputBg, pal.border));
     key_row->addWidget(m_local_key_label);
 
-    auto* copy_key_btn = new QPushButton(tr("📋 Скопировать"), header_card);
+    auto* copy_key_btn = new QPushButton(tr("Скопировать"), header_card);
+    copy_key_btn->setIcon(MakeDialogVectorIcon(DialogIcon::Copy, QColor(pal.accent), 16));
+    copy_key_btn->setMinimumWidth(128);
+    copy_key_btn->setMinimumHeight(28);
     copy_key_btn->setToolTip(tr("Скопировать ключ этого устройства в буфер обмена"));
     connect(copy_key_btn, &QPushButton::clicked, this, &StormSaveSyncDialog::OnCopyKeyClicked);
     key_row->addWidget(copy_key_btn);
 
-    m_switch_ip_btn = new QPushButton(tr("🌐 Сменить IP"), header_card);
+    m_switch_ip_btn = new QPushButton(tr("Сменить IP"), header_card);
+    m_switch_ip_btn->setIcon(MakeDialogVectorIcon(DialogIcon::Network, QColor(pal.textPrimary), 16));
+    m_switch_ip_btn->setMinimumHeight(28);
     m_switch_ip_btn->setToolTip(tr("Выбрать сетевой интерфейс и IP-адрес для подключения"));
     connect(m_switch_ip_btn, &QPushButton::clicked, this, &StormSaveSyncDialog::OnSwitchIpClicked);
     key_row->addWidget(m_switch_ip_btn);
 
     key_box->addLayout(key_row);
 
-    m_host_status_label = new QLabel(tr("🟢 Сервер синхронизации активен"), header_card);
-    m_host_status_label->setStyleSheet(QStringLiteral("font-size: 11px; color: #10B981;"));
+    m_host_status_label = new QLabel(tr("Сервер синхронизации активен"), header_card);
+    m_host_status_label->setStyleSheet(QStringLiteral("font-size: 11px; color: #10B981; font-weight: bold;"));
     key_box->addWidget(m_host_status_label);
 
     header_layout->addLayout(key_box);
     main_layout->addWidget(header_card);
 
-    // Connection Bar
+    // Peer Connection Card
     auto* conn_frame = new QFrame(this);
     conn_frame->setObjectName(QStringLiteral("ConnFrame"));
     auto* conn_layout = new QHBoxLayout(conn_frame);
-    conn_layout->setContentsMargins(12, 8, 12, 8);
+    conn_layout->setContentsMargins(14, 10, 14, 10);
     conn_layout->setSpacing(10);
 
     auto* enter_lbl = new QLabel(tr("Подключение к удалённому устройству:"), conn_frame);
-    enter_lbl->setStyleSheet(QStringLiteral("font-weight: bold; color: #FFFFFF;"));
+    enter_lbl->setStyleSheet(QStringLiteral("font-weight: bold; color: %1;").arg(pal.textPrimary));
     conn_layout->addWidget(enter_lbl);
 
     m_remote_key_edit = new QLineEdit(conn_frame);
     m_remote_key_edit->setPlaceholderText(tr("Введите ключ (STORM-XXXXXXXX-YYYY) или IP:порт..."));
     m_remote_key_edit->setMinimumWidth(260);
+    m_remote_key_edit->setClearButtonEnabled(true);
     conn_layout->addWidget(m_remote_key_edit);
 
-    m_connect_btn = new QPushButton(tr("🔗 Подключиться"), conn_frame);
+    m_connect_btn = new QPushButton(tr("Подключить"), conn_frame);
+    m_connect_btn->setIcon(MakeDialogVectorIcon(DialogIcon::Link, QColor(pal.accent), 16));
+    m_connect_btn->setMinimumHeight(28);
     connect(m_connect_btn, &QPushButton::clicked, this, &StormSaveSyncDialog::OnConnectClicked);
     conn_layout->addWidget(m_connect_btn);
 
-    m_search_btn = new QPushButton(tr("🔍 Поиск устройств"), conn_frame);
+    m_search_btn = new QPushButton(tr("Поиск в сети"), conn_frame);
+    m_search_btn->setIcon(MakeDialogVectorIcon(DialogIcon::Search, QColor(pal.textPrimary), 16));
+    m_search_btn->setMinimumHeight(28);
     m_search_btn->setToolTip(tr("Поиск устройств STORM SWITCH в локальной сети Wi-Fi"));
     connect(m_search_btn, &QPushButton::clicked, this, &StormSaveSyncDialog::OnSearchDevicesClicked);
     conn_layout->addWidget(m_search_btn);
@@ -713,9 +935,21 @@ void StormSaveSyncDialog::SetupUI() {
     m_discovered_combo = new QComboBox(conn_frame);
     m_discovered_combo->addItem(tr("Обнаруженные устройства в сети (0)"));
     m_discovered_combo->setMinimumWidth(220);
+    m_discovered_combo->setMinimumHeight(28);
     connect(m_discovered_combo, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, &StormSaveSyncDialog::OnDiscoveredDeviceSelected);
     conn_layout->addWidget(m_discovered_combo);
+
+    QSettings settings;
+    const bool saved_auto_sync = settings.value(QStringLiteral("StormSaveSync/auto_sync"), false).toBool();
+    m_auto_sync_check = new QCheckBox(tr("Авто-синхронизация"), conn_frame);
+    m_auto_sync_check->setChecked(saved_auto_sync);
+    m_auto_sync_check->setToolTip(tr("Автоматически синхронизировать неконфликтующие сохранения при подключении"));
+    connect(m_auto_sync_check, &QCheckBox::toggled, this, [](bool checked) {
+        QSettings s;
+        s.setValue(QStringLiteral("StormSaveSync/auto_sync"), checked);
+    });
+    conn_layout->addWidget(m_auto_sync_check);
 
     main_layout->addWidget(conn_frame);
 
@@ -723,14 +957,14 @@ void StormSaveSyncDialog::SetupUI() {
     m_connection_status_label = new QLabel(
         tr("Статус: не подключено к удалённому устройству. Введите ключ или выберите устройство из списка."),
         this);
-    m_connection_status_label->setStyleSheet(QStringLiteral("font-size: 11px; color: #FFFFFF; padding-left: 4px;"));
+    m_connection_status_label->setStyleSheet(QStringLiteral("font-size: 11px; color: %1; padding-left: 4px;").arg(pal.textSecondary));
     main_layout->addWidget(m_connection_status_label);
 
     // Search Bar
     auto* search_layout = new QHBoxLayout();
     search_layout->setSpacing(8);
-    auto* search_icon_lbl = new QLabel(tr("🔍 Поиск:"), this);
-    search_icon_lbl->setStyleSheet(QStringLiteral("font-weight: bold; color: %1; font-size: 12px;"));
+    auto* search_icon_lbl = new QLabel(tr("Поиск:"), this);
+    search_icon_lbl->setStyleSheet(QStringLiteral("font-weight: bold; color: %1; font-size: 12px;").arg(pal.accent));
     search_layout->addWidget(search_icon_lbl);
 
     m_search_edit = new QLineEdit(this);
@@ -739,12 +973,10 @@ void StormSaveSyncDialog::SetupUI() {
     connect(m_search_edit, &QLineEdit::textChanged, this, &StormSaveSyncDialog::OnSearchFilterChanged);
     search_layout->addWidget(m_search_edit, 1);
 
-    auto* portal_cloud_btn = new QPushButton(tr("☁️ Облачный слот портала"), this);
+    auto* portal_cloud_btn = new QPushButton(tr("Облачный слот портала"), this);
     portal_cloud_btn->setToolTip(tr("Двусторонняя синхронизация в 1 клик с облачным слотом портала STORM GAMES WORLD (/api/emulator/save-sync)"));
-    portal_cloud_btn->setStyleSheet(QStringLiteral(
-        "QPushButton { background-color: #0284C7; color: #FFFFFF; border: 1px solid #38BDF8; border-radius: 6px; padding: 6px 12px; font-weight: bold; }"
-        "QPushButton:hover { background-color: #0369A1; }"
-    ));
+    portal_cloud_btn->setIcon(MakeDialogVectorIcon(DialogIcon::Cloud, Qt::white, 16));
+    portal_cloud_btn->setMinimumHeight(28);
     connect(portal_cloud_btn, &QPushButton::clicked, this, [this]() {
         QString tid = m_target_program_id != 0 ? QStringLiteral("%1").arg(m_target_program_id, 16, 16, QLatin1Char('0')).toUpper() : QString{};
         if (m_saves_table && m_saves_table->currentRow() >= 0) {
@@ -791,9 +1023,9 @@ void StormSaveSyncDialog::SetupUI() {
                         if (reply->error() == QNetworkReply::NoError) {
                             const auto doc = QJsonDocument::fromJson(reply->readAll());
                             const QString token = doc.object().value(QStringLiteral("syncToken")).toString();
-                            m_status_label->setText(tr("☁️ Облачный слот портала синхронизирован! Код: %1").arg(token));
+                            m_status_label->setText(tr("Облачный слот портала синхронизирован! Код: %1").arg(token));
                         } else {
-                            m_status_label->setText(tr("⚠️ Ошибка связи со шлюзом /api/emulator/save-sync"));
+                            m_status_label->setText(tr("Ошибка связи со шлюзом /api/emulator/save-sync"));
                         }
                     });
                     return;
@@ -807,7 +1039,7 @@ void StormSaveSyncDialog::SetupUI() {
         connect(pull_reply, &QNetworkReply::finished, this, [this, pull_reply]() {
             pull_reply->deleteLater();
             if (pull_reply->error() == QNetworkReply::NoError) {
-                m_status_label->setText(tr("📥 Сохранение получено из Облачного слота портала!"));
+                m_status_label->setText(tr("Сохранение получено из Облачного слота портала!"));
                 ScanLocalSaves();
                 PopulateTable();
             }
@@ -815,7 +1047,9 @@ void StormSaveSyncDialog::SetupUI() {
     });
     search_layout->addWidget(portal_cloud_btn);
 
-    auto* open_saves_btn = new QPushButton(tr("📂 Папка сохранений"), this);
+    auto* open_saves_btn = new QPushButton(tr("Папка сохранений"), this);
+    open_saves_btn->setIcon(MakeDialogVectorIcon(DialogIcon::Folder, QColor(pal.textPrimary), 16));
+    open_saves_btn->setMinimumHeight(28);
     open_saves_btn->setToolTip(tr("Открыть локальную папку сохранений NAND в Проводнике"));
     connect(open_saves_btn, &QPushButton::clicked, this, [this]() {
         const auto save_dir = GetActiveUserSaveDir();
@@ -848,7 +1082,7 @@ void StormSaveSyncDialog::SetupUI() {
     m_saves_table->setColumnWidth(4, 180);
     m_saves_table->horizontalHeader()->setSectionResizeMode(5, QHeaderView::Fixed);
     m_saves_table->setColumnWidth(5, 190);
-    m_saves_table->verticalHeader()->setDefaultSectionSize(42);
+    m_saves_table->verticalHeader()->setDefaultSectionSize(38);
     m_saves_table->verticalHeader()->setVisible(false);
     m_saves_table->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_saves_table->setAlternatingRowColors(true);
@@ -872,18 +1106,24 @@ void StormSaveSyncDialog::SetupUI() {
     bottom_layout->addWidget(m_status_label);
     bottom_layout->addStretch();
 
-    m_refresh_btn = new QPushButton(tr("🔄 Обновить"), this);
+    m_refresh_btn = new QPushButton(tr("Обновить"), this);
+    m_refresh_btn->setIcon(MakeDialogVectorIcon(DialogIcon::Refresh, QColor(pal.textPrimary), 16));
+    m_refresh_btn->setMinimumHeight(28);
     connect(m_refresh_btn, &QPushButton::clicked, this, &StormSaveSyncDialog::OnRefreshClicked);
     bottom_layout->addWidget(m_refresh_btn);
 
-    auto* time_machine_btn = new QPushButton(tr("🕰️ Тайм-машина (Бэкапы)"), this);
+    auto* time_machine_btn = new QPushButton(tr("Тайм-машина (Бэкапы)"), this);
+    time_machine_btn->setIcon(MakeDialogVectorIcon(DialogIcon::TimeMachine, QColor(168, 85, 247), 16));
+    time_machine_btn->setMinimumHeight(28);
     time_machine_btn->setStyleSheet(QStringLiteral("border: 1px solid #A855F7; color: #E9D5FF; font-weight: bold;"));
     time_machine_btn->setToolTip(tr("Просмотр и восстановление автоматических и ручных резервных копий сохранений"));
     connect(time_machine_btn, &QPushButton::clicked, this, &StormSaveSyncDialog::OnTimeMachineClicked);
     bottom_layout->addWidget(time_machine_btn);
 
-    m_sync_all_btn = new QPushButton(tr("⚡ Синхронизировать всё"), this);
-    m_sync_all_btn->setStyleSheet(QStringLiteral("background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #0099CC, stop:1 #006699); border: 1px solid #00D2FF; color: #FFFFFF; font-weight: bold;"));
+    m_sync_all_btn = new QPushButton(tr("Синхронизировать всё"), this);
+    m_sync_all_btn->setIcon(MakeDialogVectorIcon(DialogIcon::Sync, Qt::white, 16));
+    m_sync_all_btn->setMinimumHeight(28);
+    m_sync_all_btn->setStyleSheet(QStringLiteral("background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 %1, stop:1 %2); border: 1px solid %1; color: #FFFFFF; font-weight: bold;").arg(pal.accent, pal.accentHover));
     connect(m_sync_all_btn, &QPushButton::clicked, this, &StormSaveSyncDialog::OnSyncAllClicked);
     bottom_layout->addWidget(m_sync_all_btn);
 
@@ -895,122 +1135,158 @@ void StormSaveSyncDialog::SetupUI() {
 }
 
 void StormSaveSyncDialog::ApplyStormStyles() {
-    setStyleSheet(QStringLiteral(
+    const auto pal = StormTheme::GetThemePalette();
+    const QString base_style = StormDesign::BuildDialogStylesheet(pal);
+
+    const QColor acc(pal.accent);
+    const QString acc_15 = QStringLiteral("rgba(%1, %2, %3, 0.15)").arg(acc.red()).arg(acc.green()).arg(acc.blue());
+    const QString acc_25 = QStringLiteral("rgba(%1, %2, %3, 0.25)").arg(acc.red()).arg(acc.green()).arg(acc.blue());
+
+    const QString custom_style = QStringLiteral(
         "QDialog {"
-        "    background-color: #0A0E17;"
-        "    color: #FFFFFF;"
+        "    background-color: %1;"
+        "    color: %2;"
         "    font-family: 'Segoe UI', sans-serif;"
         "}"
-        "QFrame#HeaderCard {"
-        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #141C2B, stop:1 #0D131F);"
-        "    border: 1px solid #1F2D42;"
+        "QFrame#HeaderCard, QFrame#ConnFrame {"
+        "    background: %3;"
+        "    border: 1px solid %4;"
         "    border-radius: 8px;"
         "}"
         "QLabel#AppTitle {"
-        "    color: %1;"
+        "    color: %5;"
         "    font-size: 18px;"
         "    font-weight: bold;"
         "    letter-spacing: 1px;"
         "}"
         "QLabel#AppSubtitle {"
-        "    color: #FFFFFF;"
+        "    color: %6;"
         "    font-size: 12px;"
         "}"
-        "QFrame#ConnFrame {"
-        "    background-color: #0F1624;"
-        "    border: 1px solid #1E293B;"
-        "    border-radius: 8px;"
-        "}"
         "QLineEdit {"
-        "    background: rgba(255, 255, 255, 0.05);"
-        "    border: 1px solid #20354E;"
+        "    background: %7;"
+        "    border: 1px solid %4;"
         "    border-radius: 6px;"
         "    padding: 6px 10px;"
-        "    color: #FFFFFF;"
+        "    color: %2;"
         "    font-size: 12px;"
         "}"
         "QLineEdit:focus {"
-        "    border: 1px solid %1;"
-        "    background: rgba(0, 210, 255, 0.08);"
+        "    border: 1px solid %5;"
+        "    background: %8;"
         "}"
         "QComboBox {"
-        "    background: rgba(255, 255, 255, 0.05);"
-        "    border: 1px solid #20354E;"
+        "    background: %7;"
+        "    border: 1px solid %4;"
         "    border-radius: 6px;"
-        "    color: #FFFFFF;"
+        "    color: %2;"
         "    padding: 5px 10px;"
         "    font-weight: bold;"
         "}"
         "QComboBox QAbstractItemView {"
-        "    background-color: #141B26;"
-        "    color: #FFFFFF;"
-        "    selection-background-color: %1;"
-        "    selection-color: #000000;"
-        "    border: 1px solid #20354E;"
-        "}"
-        "QPushButton, QDialogButtonBox QPushButton, QToolButton {\n"
-        "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #25354e, stop:0.48 #1e293b, stop:0.52 #182232, stop:1 #0f172a);\n"
-        "    border-top: 1px solid rgba(255, 255, 255, 0.34);\n"
-        "    border-left: 1px solid rgba(255, 255, 255, 0.16);\n"
-        "    border-right: 1px solid rgba(255, 255, 255, 0.16);\n"
-        "    border-bottom: 3px solid rgba(0, 0, 0, 0.58);\n"
-        "    border-radius: 8px;\n"
-        "    color: #FFFFFF;\n"
-        "    padding: 6px 16px;\n"
-        "    font-weight: 600;\n"
-        "    font-size: 12px;\n"
-        "    min-height: 22px;\n"
-        "}\n"
-        "QPushButton:hover, QDialogButtonBox QPushButton:hover, QToolButton:hover {\n"
-        "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #334664, stop:0.48 #26364d, stop:0.52 #1e2b3e, stop:1 #131c2c);\n"
-        "    border-top: 1px solid rgba(255, 255, 255, 0.55);\n"
-        "    border-left: 1px solid rgba(0, 210, 255, 0.45);\n"
-        "    border-right: 1px solid rgba(0, 210, 255, 0.45);\n"
-        "    border-bottom: 3px solid rgba(0, 0, 0, 0.70);\n"
-        "    color: %1;\n"
-        "}\n"
-        "QPushButton:pressed, QDialogButtonBox QPushButton:pressed, QToolButton:pressed {\n"
-        "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #0d1522, stop:0.5 #131d2e, stop:1 #1a283e);\n"
-        "    border-top: 2px solid rgba(0, 0, 0, 0.55);\n"
-        "    border-bottom: 1px solid rgba(255, 255, 255, 0.14);\n"
-        "    padding-top: 8px;\n"
-        "    padding-bottom: 4px;\n"
-        "    color: #FFFFFF;\n"
+        "    background-color: %9;"
+        "    color: %2;"
+        "    selection-background-color: %5;"
+        "    selection-color: %10;"
+        "    border: 1px solid %4;"
         "}"
         "QTableWidget {"
-        "    background-color: #070A10;"
-        "    border: 1px solid #1E2838;"
+        "    background-color: %7;"
+        "    border: 1px solid %4;"
         "    border-radius: 8px;"
-        "    color: #FFFFFF;"
-        "    alternate-background-color: #0E131E;"
-        "    selection-background-color: rgba(0, 210, 255, 0.25);"
+        "    color: %2;"
+        "    alternate-background-color: %11;"
+        "    selection-background-color: %12;"
         "    selection-color: #FFFFFF;"
-        "    gridline-color: #16202F;"
         "}"
         "QTableWidget::item {"
-        "    padding: 6px 8px;"
+        "    padding: 4px;"
+        "    border-right: 1px solid %8;"
         "}"
         "QHeaderView::section {"
-        "    background-color: #121824;"
-        "    color: %1;"
+        "    background-color: %9;"
+        "    color: %5;"
         "    font-weight: bold;"
         "    border: none;"
-        "    border-right: 1px solid #20354E;"
-        "    border-bottom: 1px solid #20354E;"
+        "    border-right: 1px solid %4;"
+        "    border-bottom: 1px solid %4;"
         "    padding: 7px 8px;"
         "}"
-        "QProgressBar {"
-        "    background-color: #121824;"
-        "    border: 1px solid #20354E;"
+        "QPushButton {"
+        "    background: %13;"
+        "    border: 1px solid %14;"
+        "    color: %2;"
+        "    padding: 6px 16px;"
         "    border-radius: 6px;"
+        "    font-weight: 600;"
+        "    font-size: 12px;"
+        "    min-height: 24px;"
+        "}"
+        "QPushButton:hover {"
+        "    background: %15;"
+        "    border: 1px solid %5;"
+        "    color: %5;"
+        "}"
+        "QPushButton:pressed {"
+        "    background: %7;"
+        "    border: 1px solid %5;"
+        "    color: %2;"
+        "}"
+        "QPushButton:disabled {"
+        "    background: transparent;"
+        "    color: %6;"
+        "    border: 1px solid %4;"
+        "}"
+        "QCheckBox {"
+        "    color: %2;"
+        "    font-size: 12px;"
+        "    font-weight: 600;"
+        "    spacing: 6px;"
+        "}"
+        "QCheckBox::indicator {"
+        "    width: 16px;"
+        "    height: 16px;"
+        "    border: 1px solid %4;"
+        "    border-radius: 4px;"
+        "    background: %7;"
+        "}"
+        "QCheckBox::indicator:checked {"
+        "    background: %5;"
+        "    border-color: %5;"
+        "}"
+        "QProgressBar {"
+        "    border: 1px solid %4;"
+        "    border-radius: 4px;"
         "    text-align: center;"
+        "    background: %7;"
         "    color: #FFFFFF;"
+        "    font-weight: bold;"
         "    font-size: 11px;"
         "}"
         "QProgressBar::chunk {"
-        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 %1, stop:1 %2);"
-        "    border-radius: 5px;"
-        "}").arg(StormTheme::GetThemePalette().accent, QColor(StormTheme::GetThemePalette().accent).lighter(120).name()));
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 %5, stop:1 %16);"
+        "    border-radius: 3px;"
+        "}"
+    ).arg(
+        pal.bg,
+        pal.textPrimary,
+        pal.card,
+        pal.border,
+        pal.accent,
+        pal.textSecondary,
+        pal.inputBg,
+        acc_15,
+        pal.surface,
+        pal.is_light ? QStringLiteral("#FFFFFF") : QStringLiteral("#000000"),
+        pal.cardAlt,
+        acc_25,
+        pal.buttonBg,
+        pal.buttonBorder,
+        pal.itemHover,
+        pal.accentHover
+    );
+
+    setStyleSheet(base_style + QStringLiteral("\n") + custom_style);
 }
 
 void StormSaveSyncDialog::StartHostServer() {
@@ -1189,12 +1465,17 @@ void StormSaveSyncDialog::OnTcpSocketReadyRead() {
             m_remote_device_name = c_name;
             m_is_connected = true;
             m_connection_status_label->setText(
-                tr("🟢 Подключено: %1 [%2:%3]").arg(m_remote_device_name, m_connected_remote_ip).arg(m_connected_remote_port));
+                tr("Подключено: %1 [%2:%3]").arg(m_remote_device_name, m_connected_remote_ip).arg(m_connected_remote_port));
             m_connection_status_label->setStyleSheet(QStringLiteral("font-size: 11px; color: #10B981; padding-left: 4px; font-weight: bold;"));
             m_connect_btn->setText(tr("Отключить"));
             QTimer::singleShot(150, this, [this]() {
                 ScanLocalSaves();
                 FetchRemoteSaves();
+                if (m_auto_sync_check && m_auto_sync_check->isChecked()) {
+                    QTimer::singleShot(500, this, [this]() {
+                        OnSyncAllClicked();
+                    });
+                }
             });
         }
 
@@ -1376,7 +1657,21 @@ void StormSaveSyncDialog::BroadcastDiscovery() {
 }
 
 void StormSaveSyncDialog::OnSearchDevicesClicked() {
+    m_search_btn->setEnabled(false);
+    m_search_btn->setText(tr("Поиск в сети..."));
+    m_status_label->setText(tr("Поиск устройств STORM SWITCH в локальной сети..."));
     BroadcastDiscovery();
+
+    QTimer::singleShot(3000, this, [this]() {
+        if (!m_search_btn) return;
+        m_search_btn->setEnabled(true);
+        m_search_btn->setText(tr("Поиск в сети"));
+        if (m_discovered_devices.isEmpty()) {
+            m_status_label->setText(tr("Устройства не найдены. Убедитесь, что оба устройства находятся в одной сети Wi-Fi."));
+        } else {
+            m_status_label->setText(tr("Поиск завершён. Найдено устройств: %1").arg(m_discovered_devices.size()));
+        }
+    });
 }
 
 void StormSaveSyncDialog::OnDiscoveredDeviceSelected(int index) {
@@ -1474,7 +1769,7 @@ void StormSaveSyncDialog::OnConnectClicked() {
                 const QString platform = obj[QStringLiteral("platform")].toString();
                 m_is_connected = true;
                 m_connection_status_label->setText(
-                    tr("🟢 Подключено: %1 (%2) [%3:%4]")
+                    tr("Подключено: %1 (%2) [%3:%4]")
                         .arg(m_remote_device_name, platform, m_connected_remote_ip)
                         .arg(m_connected_remote_port));
                 m_connection_status_label->setStyleSheet(QStringLiteral("font-size: 11px; color: #10B981; padding-left: 4px; font-weight: bold;"));
@@ -1488,7 +1783,7 @@ void StormSaveSyncDialog::OnConnectClicked() {
         m_connect_btn->setText(tr("Подключить"));
         m_connection_status_label->setStyleSheet(QStringLiteral("font-size: 11px; color: #EF4444; padding-left: 4px; font-weight: bold;"));
         m_connection_status_label->setText(
-            tr("❌ Ошибка подключения к %1:%2").arg(m_connected_remote_ip).arg(m_connected_remote_port));
+            tr("Ошибка подключения к %1:%2").arg(m_connected_remote_ip).arg(m_connected_remote_port));
         QMessageBox::critical(this, tr("Ошибка подключения"),
                               tr("Не удалось соединиться с удалённым устройством (%1:%2).\n\n"
                                  "Рекомендации по устранению:\n"
@@ -1676,19 +1971,19 @@ void StormSaveSyncDialog::PopulateTable() {
         QColor status_color;
         switch (item.status) {
         case StormSaveSyncStatus::Synchronized:
-            status_text = tr("🟢 Синхронизировано");
+            status_text = tr("Синхронизировано");
             status_color = QColor(16, 185, 129);
             break;
         case StormSaveSyncStatus::Conflict:
-            status_text = tr("⚠️ Конфликт сохранений");
+            status_text = tr("Конфликт сохранений");
             status_color = QColor(245, 158, 11);
             break;
         case StormSaveSyncStatus::LocalOnly:
-            status_text = tr("📤 Только локально");
+            status_text = tr("Только локально");
             status_color = QColor(59, 130, 246);
             break;
         case StormSaveSyncStatus::RemoteOnly:
-            status_text = tr("📥 Только на удалённом");
+            status_text = tr("Только на удалённом");
             status_color = QColor(139, 92, 246);
             break;
         default:
@@ -1708,7 +2003,9 @@ void StormSaveSyncDialog::PopulateTable() {
         c_layout->setSpacing(0);
 
         auto* action_btn = new QPushButton(container);
-        action_btn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        action_btn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        action_btn->setMinimumHeight(26);
+        action_btn->setMaximumHeight(26);
         action_btn->setCursor(Qt::PointingHandCursor);
 
         QString btn_text;
@@ -1717,43 +2014,46 @@ void StormSaveSyncDialog::PopulateTable() {
 
         switch (item.status) {
         case StormSaveSyncStatus::Synchronized:
-            btn_text = tr("✓ Синхронизировано");
+            btn_text = tr("Синхронизировано");
+            action_btn->setIcon(MakeDialogVectorIcon(DialogIcon::Check, QColor(16, 185, 129), 14));
             btn_style = QStringLiteral(
-                "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #112620, stop:1 #0C1A16); "
-                "border: 1px solid #10B981; color: #10B981; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 4px 8px; }"
-                "QPushButton:disabled { background: #0E1A16; border: 1px solid #1B4D3E; color: #34D399; opacity: 0.8; }");
+                "QPushButton { background: rgba(16, 185, 129, 0.12); "
+                "border: 1px solid #10B981; color: #10B981; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 2px 8px; }"
+                "QPushButton:disabled { background: rgba(16, 185, 129, 0.08); border: 1px solid #059669; color: #34D399; }");
             btn_enabled = false;
             break;
         case StormSaveSyncStatus::Conflict:
-            btn_text = tr("⚠️ Разрешить конфликт");
+            btn_text = tr("Разрешить конфликт");
+            action_btn->setIcon(MakeDialogVectorIcon(DialogIcon::Warning, Qt::white, 14));
             btn_style = QStringLiteral(
                 "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #B45309, stop:1 #78350F); "
-                "border: 1px solid #F59E0B; color: #FFFFFF; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 4px 8px; }"
+                "border: 1px solid #F59E0B; color: #FFFFFF; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 2px 8px; }"
                 "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #D97706, stop:1 #92400E); border-color: #FBBF24; }"
                 "QPushButton:pressed { background: #F59E0B; color: #000000; }");
             break;
         case StormSaveSyncStatus::LocalOnly:
-            btn_text = tr("📤 Отправить");
+            btn_text = tr("Отправить");
+            action_btn->setIcon(MakeDialogVectorIcon(DialogIcon::Upload, Qt::white, 14));
             btn_style = QStringLiteral(
                 "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1D4ED8, stop:1 #1E3A8A); "
-                "border: 1px solid #3B82F6; color: #FFFFFF; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 4px 8px; }"
+                "border: 1px solid #3B82F6; color: #FFFFFF; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 2px 8px; }"
                 "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #2563EB, stop:1 #1D4ED8); border-color: #60A5FA; }"
                 "QPushButton:pressed { background: #3B82F6; color: #FFFFFF; }");
             break;
         case StormSaveSyncStatus::RemoteOnly:
-            btn_text = tr("📥 Скачать");
+            btn_text = tr("Скачать");
+            action_btn->setIcon(MakeDialogVectorIcon(DialogIcon::Download, Qt::white, 14));
             btn_style = QStringLiteral(
                 "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #0099CC, stop:1 #006699); "
-                "border: 1px solid #00D2FF; color: #FFFFFF; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 4px 8px; }"
+                "border: 1px solid #00D2FF; color: #FFFFFF; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 2px 8px; }"
                 "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #00BFFF, stop:1 #0088CC); border-color: #38BDF8; }"
                 "QPushButton:pressed { background: #00D2FF; color: #000000; }");
             break;
         default:
             btn_text = tr("Синхронизировать");
             btn_style = QStringLiteral(
-                "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1A2434, stop:1 #131A26); "
-                "border: 1px solid #2A3B52; color: #FFFFFF; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 4px 8px; }"
-                "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #25344C, stop:1 #1A2638); border-color: #00D2FF; color: #FFFFFF; }");
+                "QPushButton { background: #1A2434; border: 1px solid #2A3B52; color: #FFFFFF; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 2px 8px; }"
+                "QPushButton:hover { border-color: #00D2FF; }");
             break;
         }
 
@@ -1815,7 +2115,9 @@ void StormSaveSyncDialog::SyncItem(StormSaveItem& item) {
     }
 
     if (item.status == StormSaveSyncStatus::Conflict) {
-        StormSaveConflictDialog dialog(this, item, QHostInfo::localHostName(), m_remote_device_name);
+        const QString loc_p = QString::fromStdString(Common::FS::PathToUTF8String(GetLocalSaveDirForTitle(item.title_id)));
+        const QString rem_p = QStringLiteral("nand/user/save/.../%1").arg(item.title_id);
+        StormSaveConflictDialog dialog(this, item, QHostInfo::localHostName(), m_remote_device_name, loc_p, rem_p);
         if (dialog.exec() == QDialog::Accepted) {
             SyncItemWithAction(item, dialog.GetAction());
         }
@@ -2170,9 +2472,11 @@ void StormSaveSyncDialog::OnTimeMachineClicked() {
         selected_tid = QStringLiteral("%1").arg(m_target_program_id, 16, 16, QLatin1Char('0')).toUpper();
     }
 
+    const auto pal = StormTheme::GetThemePalette();
     QDialog dlg(this);
-    dlg.setWindowTitle(tr("🕰️ Тайм-машина сохранений (Локальные снимки и бэкапы)"));
-    dlg.resize(780, 460);
+    dlg.setWindowTitle(tr("Тайм-машина сохранений — Локальные снимки и бэкапы"));
+    dlg.resize(760, 480);
+    dlg.setMinimumSize(720, 420);
     dlg.setStyleSheet(styleSheet());
 
     auto* vbox = new QVBoxLayout(&dlg);
@@ -2225,7 +2529,9 @@ void StormSaveSyncDialog::OnTimeMachineClicked() {
     populate_backups();
 
     auto* btn_row = new QHBoxLayout();
-    auto* btn_create_now = new QPushButton(tr("➕ Создать снимок выбранной игры"), &dlg);
+    auto* btn_create_now = new QPushButton(tr("Создать снимок выбранной игры"), &dlg);
+    btn_create_now->setIcon(MakeDialogVectorIcon(DialogIcon::Plus, QColor(pal.accent), 16));
+    btn_create_now->setMinimumHeight(30);
     connect(btn_create_now, &QPushButton::clicked, &dlg, [&]() {
         if (selected_tid.isEmpty() && !m_items.isEmpty()) {
             selected_tid = m_items.firstKey();
@@ -2243,7 +2549,9 @@ void StormSaveSyncDialog::OnTimeMachineClicked() {
     });
     btn_row->addWidget(btn_create_now);
 
-    auto* btn_restore = new QPushButton(tr("⏪ Восстановить выбранный снимок"), &dlg);
+    auto* btn_restore = new QPushButton(tr("Восстановить выбранный снимок"), &dlg);
+    btn_restore->setIcon(MakeDialogVectorIcon(DialogIcon::Restore, Qt::white, 16));
+    btn_restore->setMinimumHeight(30);
     btn_restore->setStyleSheet(QStringLiteral("background: #0284C7; color: #FFFFFF; font-weight: bold;"));
     connect(btn_restore, &QPushButton::clicked, &dlg, [&]() {
         const int r = table->currentRow();
@@ -2266,7 +2574,7 @@ void StormSaveSyncDialog::OnTimeMachineClicked() {
                               ec);
         ScanLocalSaves();
         PopulateTable();
-        QMessageBox::information(&dlg, tr("Тайм-машина"), tr("✅ Сохранение успешно восстановлено из снимка!"));
+        QMessageBox::information(&dlg, tr("Тайм-машина"), tr("Сохранение успешно восстановлено из снимка."));
     });
     btn_row->addWidget(btn_restore);
 

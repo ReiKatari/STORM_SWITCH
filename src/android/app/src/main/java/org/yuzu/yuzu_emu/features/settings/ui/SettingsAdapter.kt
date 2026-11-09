@@ -169,12 +169,6 @@ class SettingsAdapter(
             }.show(fragment.childFragmentManager, org.yuzu.yuzu_emu.fragments.TouchOverlayStyleDialogFragment.TAG)
             return
         }
-        if (item.setting == org.yuzu.yuzu_emu.features.settings.model.IntSetting.CONTROLLER_SKIN_STYLE) {
-            org.yuzu.yuzu_emu.fragments.GamepadSkinDialogFragment.newInstance {
-                notifyItemChanged(position)
-            }.show(fragment.childFragmentManager, org.yuzu.yuzu_emu.fragments.GamepadSkinDialogFragment.TAG)
-            return
-        }
         SettingsDialogFragment.newInstance(
             settingsViewModel,
             item,

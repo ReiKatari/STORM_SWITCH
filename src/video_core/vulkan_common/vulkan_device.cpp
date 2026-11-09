@@ -527,13 +527,47 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
     const bool is_qualcomm = driver_id == VK_DRIVER_ID_QUALCOMM_PROPRIETARY;
     const bool is_turnip = driver_id == VK_DRIVER_ID_MESA_TURNIP;
     const std::string_view device_name_sv{properties.properties.deviceName};
+    const bool is_adreno = is_turnip || is_qualcomm ||
+                           properties.properties.vendorID == 0x5143 ||
+                           device_name_sv.find("Adreno") != std::string_view::npos;
+    const bool is_adreno_5xx = is_adreno &&
+        (device_name_sv.find("Adreno (TM) 5") != std::string_view::npos ||
+         device_name_sv.find("Adreno 5") != std::string_view::npos ||
+         device_name_sv.find("FD5") != std::string_view::npos ||
+         device_name_sv.find("adreno 5") != std::string_view::npos);
+    const bool is_adreno_6xx = is_adreno &&
+        (device_name_sv.find("Adreno (TM) 6") != std::string_view::npos ||
+         device_name_sv.find("Adreno 6") != std::string_view::npos ||
+         device_name_sv.find("FD6") != std::string_view::npos ||
+         device_name_sv.find("adreno 6") != std::string_view::npos);
+    const bool is_adreno_7xx = is_adreno &&
+        (device_name_sv.find("Adreno (TM) 7") != std::string_view::npos ||
+         device_name_sv.find("Adreno 7") != std::string_view::npos ||
+         device_name_sv.find("FD7") != std::string_view::npos ||
+         device_name_sv.find("adreno 7") != std::string_view::npos);
+    const bool is_adreno_8xx = is_adreno &&
+        (device_name_sv.find("Adreno (TM) 8") != std::string_view::npos ||
+         device_name_sv.find("Adreno 8") != std::string_view::npos ||
+         device_name_sv.find("FD8") != std::string_view::npos ||
+         device_name_sv.find("adreno 8") != std::string_view::npos ||
+         device_name_sv.find("SM8750") != std::string_view::npos ||
+         device_name_sv.find("SM-S938") != std::string_view::npos);
+    const bool is_adreno_x1 = is_adreno &&
+        (device_name_sv.find("Adreno (TM) X1") != std::string_view::npos ||
+         device_name_sv.find("Adreno X1") != std::string_view::npos ||
+         device_name_sv.find("Snapdragon X") != std::string_view::npos);
     const bool is_mali = driver_id == VK_DRIVER_ID_ARM_PROPRIETARY ||
+                         driver_id == VK_DRIVER_ID_MESA_PANVK ||
                          properties.properties.vendorID == 0x13B5 ||
                          device_name_sv.find("Mali") != std::string_view::npos ||
                          device_name_sv.find("Immortalis") != std::string_view::npos;
     const bool is_xclipse = driver_id == VK_DRIVER_ID_SAMSUNG_PROPRIETARY ||
                             properties.properties.vendorID == 0x144D ||
                             device_name_sv.find("Xclipse") != std::string_view::npos;
+    const bool is_powervr = driver_id == VK_DRIVER_ID_IMAGINATION_PROPRIETARY ||
+                            properties.properties.vendorID == 0x1010 ||
+                            device_name_sv.find("PowerVR") != std::string_view::npos ||
+                            device_name_sv.find("IMG ") != std::string_view::npos;
 
     if (!is_suitable)
         LOG_WARNING(Render_Vulkan, "Unsuitable driver - continuing anyways");
@@ -614,9 +648,9 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
         const auto patch_status = adrenotools_get_bcn_type(major, minor, vendor);
         const int api_level = android_get_device_api_level();
 
-        // Never binary-patch Adreno 8xx (Gen 8 / SM8850 / Android 15-16+) drivers in memory
-        bool should_patch_bcn = (api_level >= 28) && (major < 800);
-        if (Settings::values.patch_old_qcom_drivers.GetValue() && major < 800) {
+        // Never binary-patch Adreno 8xx (Gen 8 / SM8750 / SM8850 / Android 15-16+) drivers in memory
+        bool should_patch_bcn = (api_level >= 28) && (major < 800) && !is_adreno_8xx;
+        if (Settings::values.patch_old_qcom_drivers.GetValue() && major < 800 && !is_adreno_8xx) {
             should_patch_bcn = true;
         }
 
@@ -643,6 +677,33 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
             LOG_INFO(Render_Vulkan,
                 "Adreno driver does not support BCn texture patching (Android API {}, Driver {}.{})",
                 api_level, major, minor);
+        }
+
+        // On Adreno 8xx or driver major >= 800 where patching is skipped, verify native BCn format support
+        if (is_adreno_8xx || major >= 800) {
+            bool bcn_sampling_supported = true;
+            static constexpr std::array bcn_check_formats{
+                VK_FORMAT_BC1_RGBA_UNORM_BLOCK,
+                VK_FORMAT_BC1_RGBA_SRGB_BLOCK,
+                VK_FORMAT_BC2_UNORM_BLOCK,
+                VK_FORMAT_BC3_UNORM_BLOCK,
+                VK_FORMAT_BC7_UNORM_BLOCK,
+            };
+            for (const auto format : bcn_check_formats) {
+                const auto it = format_properties.find(format);
+                if (it == format_properties.end() ||
+                    (it->second.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) == 0) {
+                    bcn_sampling_supported = false;
+                    break;
+                }
+            }
+            if (bcn_sampling_supported) {
+                LOG_INFO(Render_Vulkan, "Adreno 8xx: Native BCn texture sampling verified via format properties");
+                features.features.textureCompressionBC = true;
+            } else {
+                LOG_INFO(Render_Vulkan, "Adreno 8xx: Native BCn sampling not supported; falling back to compute BCn decode");
+                features.features.textureCompressionBC = false;
+            }
         }
 #endif
     }
@@ -715,7 +776,7 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
     }
 
     if (features.shader_float16_int8.shaderFloat16 &&
-        (is_qualcomm || is_mali || is_xclipse)) {
+        (is_qualcomm || is_adreno_5xx || is_adreno_8xx || is_adreno_x1 || is_mali || is_xclipse || is_powervr)) {
         // Mobile GPU FP16 rounding/denormals cause UE4 lighting & post-processing artifacts when fix_bloom_effects is requested
         LOG_WARNING(Render_Vulkan, "Mobile GPU auto-optimization: Disabling shaderFloat16 to prevent UE4 lighting and post-process artifacts");
         features.shader_float16_int8.shaderFloat16 = false;
@@ -746,25 +807,32 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
         properties.properties.limits.maxVertexInputBindings = 32;
     }
 
-    // Detect Adreno 6xx and Adreno 8xx GPUs (Snapdragon 8 Elite / SM8750 Adreno 830, etc.)
-    const std::string_view dev_name{properties.properties.deviceName};
-    const bool is_adreno_6xx = (is_turnip || is_qualcomm) &&
-        (dev_name.find("Adreno (TM) 6") != std::string_view::npos ||
-         dev_name.find("Adreno 6") != std::string_view::npos ||
-         dev_name.find("FD6") != std::string_view::npos ||
-         dev_name.find("adreno 6") != std::string_view::npos);
-    const bool is_adreno_8xx = (is_turnip || is_qualcomm) &&
-        (dev_name.find("Adreno (TM) 8") != std::string_view::npos ||
-         dev_name.find("Adreno 8") != std::string_view::npos ||
-         dev_name.find("FD8") != std::string_view::npos ||
-         dev_name.find("adreno 8") != std::string_view::npos);
+    // Adreno 6xx/7xx/8xx detection already performed above
+
+    // Enforce 64-byte UBO/SSBO alignment floor for Adreno 8xx, Adreno X1, and ARM Mali
+    if (is_adreno_8xx || is_adreno_x1 || is_mali) {
+        properties.properties.limits.minUniformBufferOffsetAlignment =
+            (std::max)(properties.properties.limits.minUniformBufferOffsetAlignment, VkDeviceSize{64});
+        properties.properties.limits.minStorageBufferOffsetAlignment =
+            (std::max)(properties.properties.limits.minStorageBufferOffsetAlignment, VkDeviceSize{64});
+    }
+
+    // ARM Mali compute shared memory clamp to prevent vkCreateComputePipelines crash on 32KB hardware limits
+    if (is_mali) {
+        properties.properties.limits.maxComputeSharedMemorySize =
+            (std::min)(properties.properties.limits.maxComputeSharedMemorySize, 32768U);
+        features.features.textureCompressionBC = false;
+    }
+
+    // Adreno 5xx / PowerVR BCn safety
+    if (is_adreno_5xx || is_powervr) {
+        features.features.textureCompressionBC = false;
+    }
 
     const auto dyna_state = Settings::values.dyna_state.GetValue();
     auto effective_dyna_state = dyna_state;
 
-    if (is_adreno_6xx || is_adreno_8xx || is_qualcomm || is_mali || is_xclipse) {
-        // Adreno 6xx/8xx, stock Qualcomm proprietary drivers, ARM Mali/Immortalis, and Samsung Xclipse
-        // crash or corrupt pipelines on ExtendedDynamicState.
+    if (is_adreno_5xx || is_adreno_6xx || is_adreno_8xx || is_adreno_x1 || is_qualcomm || is_mali || is_xclipse || is_powervr) {
         LOG_INFO(Render_Vulkan, "Mobile GPU / driver auto-optimization: ExtendedDynamicState disabled for hardware pipeline stability");
         effective_dyna_state = Settings::ExtendedDynamicState::Disabled;
     } else if ((is_turnip || (is_intel_windows && is_integrated)) &&
@@ -807,10 +875,23 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
         break;
     }
 
-    // VK_EXT_vertex_input_dynamic_state — broken on Adreno 6xx/8xx, stock Qualcomm proprietary drivers, Mali, and Xclipse
-    if (!Settings::values.vertex_input_dynamic_state.GetValue() || is_adreno_6xx || is_adreno_8xx || is_qualcomm || is_mali || is_xclipse) {
+    // VK_EXT_vertex_input_dynamic_state — broken on Adreno 5xx/6xx/8xx/X1, Qualcomm proprietary, Mali, Xclipse, PowerVR
+    if (!Settings::values.vertex_input_dynamic_state.GetValue() || is_adreno_5xx || is_adreno_6xx || is_adreno_8xx || is_adreno_x1 || is_qualcomm || is_mali || is_xclipse || is_powervr) {
         RemoveExtensionFeature(extensions.vertex_input_dynamic_state, features.vertex_input_dynamic_state, VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME);
     }
+
+    LOG_INFO(Render_Vulkan,
+             "STORM GPU Matrix Profile: vendor={:#06x} ({}) device='{}' driverID={} driverVer={:#x} "
+             "[EDS={}, VIDS={}, XFB={}, BCn={}, ASTC={}, FP16={}]",
+             properties.properties.vendorID, GetDriverName(),
+             properties.properties.deviceName, static_cast<u32>(properties.driver.driverID),
+             properties.properties.driverVersion,
+             effective_dyna_state > Settings::ExtendedDynamicState::Disabled,
+             extensions.vertex_input_dynamic_state,
+             extensions.transform_feedback,
+             IsOptimalBcnSupported(),
+             is_optimal_astc_supported,
+             features.shader_float16_int8.shaderFloat16);
 
     // Descriptors feature list
     {
@@ -1376,34 +1457,70 @@ bool Device::GetSuitability(bool requires_swapchain) {
 
     // Driver detection variables for workarounds in GetSuitability
     const VkDriverId driver_id = properties.driver.driverID;
+    const bool is_qualcomm_suit = driver_id == VK_DRIVER_ID_QUALCOMM_PROPRIETARY;
+    const bool is_turnip_suit = driver_id == VK_DRIVER_ID_MESA_TURNIP;
+    const std::string_view dev_name_suit{properties.properties.deviceName};
+    const bool is_adreno_suit = is_turnip_suit || is_qualcomm_suit ||
+                                properties.properties.vendorID == 0x5143 ||
+                                dev_name_suit.find("Adreno") != std::string_view::npos;
+    const bool is_adreno_5xx_suit = is_adreno_suit &&
+        (dev_name_suit.find("Adreno (TM) 5") != std::string_view::npos ||
+         dev_name_suit.find("Adreno 5") != std::string_view::npos ||
+         dev_name_suit.find("FD5") != std::string_view::npos ||
+         dev_name_suit.find("adreno 5") != std::string_view::npos);
+    const bool is_adreno_7xx_suit = is_adreno_suit &&
+        (dev_name_suit.find("Adreno (TM) 7") != std::string_view::npos ||
+         dev_name_suit.find("Adreno 7") != std::string_view::npos ||
+         dev_name_suit.find("FD7") != std::string_view::npos ||
+         dev_name_suit.find("adreno 7") != std::string_view::npos);
+    const bool is_adreno_8xx_suit = is_adreno_suit &&
+        (dev_name_suit.find("Adreno (TM) 8") != std::string_view::npos ||
+         dev_name_suit.find("Adreno 8") != std::string_view::npos ||
+         dev_name_suit.find("FD8") != std::string_view::npos ||
+         dev_name_suit.find("adreno 8") != std::string_view::npos ||
+         dev_name_suit.find("SM8750") != std::string_view::npos ||
+         dev_name_suit.find("SM-S938") != std::string_view::npos);
+    const bool is_adreno_x1_suit = is_adreno_suit &&
+        (dev_name_suit.find("Adreno (TM) X1") != std::string_view::npos ||
+         dev_name_suit.find("Adreno X1") != std::string_view::npos ||
+         dev_name_suit.find("Snapdragon X") != std::string_view::npos);
     const bool is_mali_suitability = driver_id == VK_DRIVER_ID_ARM_PROPRIETARY ||
+                                    driver_id == VK_DRIVER_ID_MESA_PANVK ||
                                     properties.properties.vendorID == 0x13B5 ||
-                                    std::string_view(properties.properties.deviceName).find("Mali") != std::string_view::npos;
+                                    dev_name_suit.find("Mali") != std::string_view::npos ||
+                                    dev_name_suit.find("Immortalis") != std::string_view::npos;
+    const bool is_xclipse_suit = driver_id == VK_DRIVER_ID_SAMSUNG_PROPRIETARY ||
+                                properties.properties.vendorID == 0x144D ||
+                                dev_name_suit.find("Xclipse") != std::string_view::npos;
+    const bool is_powervr_suit = driver_id == VK_DRIVER_ID_IMAGINATION_PROPRIETARY ||
+                                properties.properties.vendorID == 0x1010 ||
+                                dev_name_suit.find("PowerVR") != std::string_view::npos ||
+                                dev_name_suit.find("IMG ") != std::string_view::npos;
 
     // VK_EXT_extended_dynamic_state2 below this will appear drivers that need workarounds.
 
     // VK_EXT_extended_dynamic_state3 below this will appear drivers that need workarounds.
 
-    // Samsung, Qualcomm, & Mali: Broken extendedDynamicState3ColorBlendEquation / ColorBlendEnable
+    // Samsung, Qualcomm, Adreno 5xx/8xx/X1 (Turnip & proprietary), Mali, and PowerVR: Broken extendedDynamicState3ColorBlendEquation / ColorBlendEnable
     // Disable blend equation dynamic state, force static pipeline state
     if (extensions.extended_dynamic_state3 &&
-        (driver_id == VK_DRIVER_ID_SAMSUNG_PROPRIETARY ||
-         driver_id == VK_DRIVER_ID_QUALCOMM_PROPRIETARY || is_mali_suitability)) {
+        (is_xclipse_suit || is_qualcomm_suit || is_adreno_5xx_suit ||
+         is_adreno_8xx_suit || is_adreno_x1_suit || is_mali_suitability || is_powervr_suit)) {
         LOG_WARNING(Render_Vulkan,
-                    "Samsung/Qualcomm/Mali: Disabling broken extendedDynamicState3ColorBlendEquation and ColorBlendEnable");
+                    "Mobile GPU Matrix: Disabling broken extendedDynamicState3ColorBlendEquation and ColorBlendEnable");
         features.extended_dynamic_state3.extendedDynamicState3ColorBlendEnable = false;
         features.extended_dynamic_state3.extendedDynamicState3ColorBlendEquation = false;
     }
 
-    // Disable VertexInputDynamicState on Intel (< 27.20.100.0), all NVIDIA Windows drivers, and Mali
+    // Disable VertexInputDynamicState on Intel (< 27.20.100.0), all NVIDIA Windows drivers, Qualcomm, Adreno 5xx/8xx/X1, Mali, Xclipse, PowerVR
     if (extensions.vertex_input_dynamic_state) {
         bool is_broken = false;
         if (driver_id == VK_DRIVER_ID_INTEL_PROPRIETARY_WINDOWS) {
             const u32 version = (properties.properties.driverVersion << 3) >> 3;
             is_broken = version < VK_MAKE_API_VERSION(0, 27, 20, 100);
         } else if (driver_id == VK_DRIVER_ID_NVIDIA_PROPRIETARY ||
-                   driver_id == VK_DRIVER_ID_QUALCOMM_PROPRIETARY ||
-                   driver_id == VK_DRIVER_ID_SAMSUNG_PROPRIETARY || is_mali_suitability) {
+                   is_qualcomm_suit || is_adreno_5xx_suit || is_adreno_8xx_suit || is_adreno_x1_suit ||
+                   is_xclipse_suit || is_mali_suitability || is_powervr_suit) {
             is_broken = true;
         }
         if (is_broken) {
@@ -1631,9 +1748,43 @@ void Device::RemoveUnsuitableExtensions() {
                                        VK_EXT_SUBGROUP_SIZE_CONTROL_EXTENSION_NAME);
 
     // VK_EXT_transform_feedback
+    const VkDriverId driver_id = properties.driver.driverID;
+    const bool is_qualcomm = driver_id == VK_DRIVER_ID_QUALCOMM_PROPRIETARY;
+    const bool is_turnip = driver_id == VK_DRIVER_ID_MESA_TURNIP;
+    const std::string_view dev_name{properties.properties.deviceName};
+    const bool is_adreno_5xx = (is_turnip || is_qualcomm || properties.properties.vendorID == 0x5143) &&
+        (dev_name.find("Adreno (TM) 5") != std::string_view::npos ||
+         dev_name.find("Adreno 5") != std::string_view::npos ||
+         dev_name.find("FD5") != std::string_view::npos);
+    const bool is_adreno_8xx = (is_turnip || is_qualcomm || properties.properties.vendorID == 0x5143) &&
+        (dev_name.find("Adreno (TM) 8") != std::string_view::npos ||
+         dev_name.find("Adreno 8") != std::string_view::npos ||
+         dev_name.find("FD8") != std::string_view::npos ||
+         dev_name.find("adreno 8") != std::string_view::npos ||
+         dev_name.find("SM8750") != std::string_view::npos ||
+         dev_name.find("SM-S938") != std::string_view::npos);
+    const bool is_adreno_x1 = (is_turnip || is_qualcomm || properties.properties.vendorID == 0x5143) &&
+        (dev_name.find("Adreno (TM) X1") != std::string_view::npos ||
+         dev_name.find("Adreno X1") != std::string_view::npos ||
+         dev_name.find("Snapdragon X") != std::string_view::npos);
+    const bool is_mali = driver_id == VK_DRIVER_ID_ARM_PROPRIETARY ||
+                         driver_id == VK_DRIVER_ID_MESA_PANVK ||
+                         properties.properties.vendorID == 0x13B5 ||
+                         dev_name.find("Mali") != std::string_view::npos ||
+                         dev_name.find("Immortalis") != std::string_view::npos;
+    const bool is_powervr = driver_id == VK_DRIVER_ID_IMAGINATION_PROPRIETARY ||
+                            properties.properties.vendorID == 0x1010 ||
+                            dev_name.find("PowerVR") != std::string_view::npos ||
+                            dev_name.find("IMG ") != std::string_view::npos;
+
     extensions.transform_feedback =
         features.transform_feedback.transformFeedback &&
         properties.transform_feedback.maxTransformFeedbackBuffers > 0;
+    if (is_qualcomm || is_adreno_5xx || is_adreno_8xx || is_adreno_x1 || is_mali || is_powervr) {
+        LOG_INFO(Render_Vulkan, "Mobile GPU Matrix: Disabling transform feedback to prevent multi-stream XFB driver crashes");
+        extensions.transform_feedback = false;
+        features.transform_feedback.transformFeedback = false;
+    }
     RemoveExtensionFeatureIfUnsuitable(extensions.transform_feedback, features.transform_feedback,
                                        VK_EXT_TRANSFORM_FEEDBACK_EXTENSION_NAME);
 

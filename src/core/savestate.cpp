@@ -39,6 +39,10 @@ constexpr std::array<u8, ChunkSize> ZeroChunk{};
 } // namespace
 
 bool Capture(Core::System& system, const std::string& path) {
+    if (!system.IsPoweredOn()) {
+        LOG_ERROR(Core, "SaveState::Capture: system is not powered on or kernel not ready");
+        return false;
+    }
     auto* process = system.ApplicationProcess();
     if (process == nullptr) {
         LOG_ERROR(Core, "SaveState::Capture: no application process");
@@ -158,6 +162,10 @@ bool Capture(Core::System& system, const std::string& path) {
 }
 
 bool Restore(Core::System& system, const std::string& path) {
+    if (!system.IsPoweredOn()) {
+        LOG_ERROR(Core, "SaveState::Restore: system is not powered on or kernel not ready");
+        return false;
+    }
     auto* process = system.ApplicationProcess();
     if (process == nullptr) {
         LOG_ERROR(Core, "SaveState::Restore: no application process");

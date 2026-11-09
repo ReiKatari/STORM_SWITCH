@@ -4,14 +4,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface"
+    android:background="@android:color/transparent"
     android:clipToPadding="false">
 
     <LinearLayout
+        android:id="@+id/card_root_dialog"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@drawable/storm_dialog_card_bg"
         android:orientation="vertical"
-        android:padding="8dp">
+        android:padding="12dp">
 
         <!-- Top Header Bar -->
         <LinearLayout
@@ -46,8 +48,8 @@
                     android:textSize="15sp"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none" />
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/text_game_title"
@@ -59,8 +61,8 @@
                     android:maxLines="3"
                     android:ellipsize="end"
                     tools:text="The Legend of Zelda: Tears of the Kingdom"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none" />
 
             </LinearLayout>
 
@@ -101,16 +103,20 @@
                     android:layout_height="36dp"
                     android:layout_weight="1"
                     android:layout_marginEnd="3dp"
+                    android:minHeight="36dp"
                     android:text="@string/gamebanana_tab_online"
-                    android:textSize="11sp"
+                    android:textSize="11.5sp"
+                    android:textStyle="bold"
                     app:cornerRadius="8dp"
                     app:strokeWidth="0dp"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="0dp"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"
-    android:maxLines="1"
-    android:ellipsize="none"/>
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none"
+                    android:maxLines="1"
+                    android:ellipsize="none" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_tab_installed"
@@ -119,23 +125,27 @@
                     android:layout_height="36dp"
                     android:layout_weight="1"
                     android:layout_marginStart="3dp"
+                    android:minHeight="36dp"
                     android:text="@string/gamebanana_tab_installed"
-                    android:textSize="11sp"
+                    android:textSize="11.5sp"
+                    android:textStyle="bold"
                     app:cornerRadius="8dp"
                     app:strokeWidth="1dp"
                     app:strokeColor="?attr/colorOutline"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="0dp"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"
-    android:maxLines="1"
-    android:ellipsize="none"/>
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none"
+                    android:maxLines="1"
+                    android:ellipsize="none" />
 
             </LinearLayout>
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- 1. Online GameBanana Catalog Container -->
+        <!-- 1. Online Container -->
         <LinearLayout
             android:id="@+id/layout_online_container"
             android:layout_width="match_parent"
@@ -165,8 +175,8 @@
                     app:boxCornerRadiusTopEnd="8dp"
                     app:boxCornerRadiusTopStart="8dp"
                     app:boxStrokeColor="?attr/colorPrimary"
-                    app:boxStrokeWidth="0dp"
-                    app:boxStrokeWidthFocused="0dp"
+                    app:boxStrokeWidth="1.5dp"
+                    app:boxStrokeWidthFocused="2dp"
                     app:hintTextColor="?attr/colorPrimary">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -189,16 +199,21 @@
                     style="@style/EdenButton.Primary"
                     android:layout_width="wrap_content"
                     android:layout_height="38dp"
+                    android:minHeight="36dp"
                     android:text="@string/search"
                     android:textSize="11sp"
+                    android:textStyle="bold"
                     app:cornerRadius="8dp"
-                    android:paddingHorizontal="12dp"
-        app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorPrimary"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"
-    android:maxLines="1"
-    android:ellipsize="none"/>
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="0dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="?attr/colorPrimary"
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none"
+                    android:maxLines="1"
+                    android:ellipsize="none" />
 
             </LinearLayout>
 
@@ -219,8 +234,8 @@
                     android:textColor="?attr/colorPrimary"
                     android:textStyle="bold"
                     android:layout_marginEnd="6dp"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none" />
 
                 <Spinner
                     android:id="@+id/spinner_sort"
@@ -233,21 +248,26 @@
                     android:id="@+id/button_manual_install"
                     style="@style/EdenButton.Outlined"
                     android:layout_width="wrap_content"
-                    android:layout_height="32dp"
+                    android:layout_height="36dp"
+                    android:minHeight="36dp"
                     android:layout_marginStart="6dp"
                     android:text="@string/gamebanana_install_manual"
-                    android:textSize="10sp"
-                    android:paddingHorizontal="8dp"
+                    android:textSize="10.5sp"
+                    android:textStyle="bold"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="0dp"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     app:icon="@drawable/ic_install"
                     app:iconSize="14dp"
-        app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"
-    android:maxLines="1"
-    android:ellipsize="none"/>
+                    app:iconTint="?attr/colorPrimary"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="?attr/colorOutline"
+                    app:cornerRadius="6dp"
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none"
+                    android:maxLines="1"
+                    android:ellipsize="none" />
 
             </LinearLayout>
 
@@ -281,8 +301,8 @@
                     android:text="@string/gamebanana_no_mods"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:visibility="gone"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none" />
 
             </FrameLayout>
 
@@ -309,8 +329,8 @@
                     android:ellipsize="end"
                     android:textColor="?attr/colorOnSurface"
                     tools:text="Страница 1"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -321,43 +341,47 @@
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/button_first_page"
                         style="@style/EdenButton.Outlined"
-                        android:layout_width="32dp"
-                        android:layout_height="28dp"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:minWidth="36dp"
+                        android:minHeight="36dp"
                         android:padding="0dp"
                         android:text="&lt;&lt;"
-                        android:textSize="10sp"
+                        android:textSize="10.5sp"
+                        android:textStyle="bold"
                         android:enabled="false"
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
-        app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"
-    android:maxLines="1"
-    android:ellipsize="none"/>
+                        app:cornerRadius="6dp"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="?attr/colorOutline"
+                        android:breakStrategy="simple"
+                        android:hyphenationFrequency="none"
+                        android:maxLines="1"
+                        android:ellipsize="none" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/button_prev_page"
                         style="@style/EdenButton.Outlined"
-                        android:layout_width="32dp"
-                        android:layout_height="28dp"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:minWidth="36dp"
+                        android:minHeight="36dp"
                         android:layout_marginStart="4dp"
                         android:padding="0dp"
                         android:text="&lt;"
-                        android:textSize="10sp"
+                        android:textSize="10.5sp"
+                        android:textStyle="bold"
                         android:enabled="false"
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
-        app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"
-    android:maxLines="1"
-    android:ellipsize="none"/>
+                        app:cornerRadius="6dp"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="?attr/colorOutline"
+                        android:breakStrategy="simple"
+                        android:hyphenationFrequency="none"
+                        android:maxLines="1"
+                        android:ellipsize="none" />
 
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/text_page_indicator"
@@ -369,27 +393,29 @@
                         android:textColor="?attr/colorPrimary"
                         android:textStyle="bold"
                         android:textSize="11sp"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                        android:breakStrategy="simple"
+                        android:hyphenationFrequency="none" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/button_next_page"
                         style="@style/EdenButton.Outlined"
-                        android:layout_width="32dp"
-                        android:layout_height="28dp"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:minWidth="36dp"
+                        android:minHeight="36dp"
                         android:padding="0dp"
                         android:text="&gt;"
-                        android:textSize="10sp"
+                        android:textSize="10.5sp"
+                        android:textStyle="bold"
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
-        app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"
-    android:maxLines="1"
-    android:ellipsize="none"/>
+                        app:cornerRadius="6dp"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="?attr/colorOutline"
+                        android:breakStrategy="simple"
+                        android:hyphenationFrequency="none"
+                        android:maxLines="1"
+                        android:ellipsize="none" />
 
                 </LinearLayout>
 
@@ -404,21 +430,23 @@
                         android:id="@+id/button_close"
                         style="@style/EdenButton.Outlined"
                         android:layout_width="wrap_content"
-                        android:layout_height="28dp"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
-                        android:paddingHorizontal="10dp"
+                        android:layout_height="wrap_content"
+                        android:minHeight="36dp"
+                        android:paddingHorizontal="14dp"
                         android:paddingVertical="0dp"
                         android:text="@string/close"
-                        android:textSize="10sp"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginStart="8dp"
+                        app:cornerRadius="6dp"
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
-        app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"
-    android:maxLines="1"
-    android:ellipsize="none"/>
+                        app:strokeWidth="1dp"
+                        app:strokeColor="?attr/colorOutline"
+                        android:breakStrategy="simple"
+                        android:hyphenationFrequency="none"
+                        android:maxLines="1"
+                        android:ellipsize="none" />
 
                 </LinearLayout>
 
@@ -426,14 +454,15 @@
 
         </LinearLayout>
 
-        <!-- 2. Installed Mods Container -->
+        <!-- 2. Installed Container -->
         <LinearLayout
             android:id="@+id/layout_installed_container"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:visibility="gone">
+            android:visibility="gone"
+            tools:visibility="visible">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -455,46 +484,59 @@
                     android:textStyle="bold"
                     android:maxLines="2"
                     android:ellipsize="end"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_refresh_installed"
                     style="@style/EdenButton.Outlined"
-                    android:layout_width="wrap_content"
-                    android:layout_height="32dp"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:minWidth="36dp"
+                    android:minHeight="36dp"
                     android:layout_marginStart="4dp"
-                    android:text="🔄"
-                    android:textSize="11sp"
-                    android:paddingHorizontal="8dp"
+                    android:text=""
+                    android:padding="0dp"
+                    android:contentDescription="@string/refresh"
+                    app:icon="@drawable/ic_refresh"
+                    app:iconSize="18dp"
+                    app:iconGravity="textStart"
+                    app:iconPadding="0dp"
+                    app:iconTint="?attr/colorPrimary"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
-        app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"
-    android:maxLines="1"
-    android:ellipsize="none"/>
+                    app:cornerRadius="6dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="?attr/colorOutline"
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none"
+                    android:maxLines="1"
+                    android:ellipsize="none" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_manual_install_installed"
                     style="@style/EdenButton.Outlined"
                     android:layout_width="wrap_content"
-                    android:layout_height="32dp"
-                    android:layout_marginStart="4dp"
+                    android:layout_height="36dp"
+                    android:minHeight="36dp"
+                    android:layout_marginStart="6dp"
                     android:text="@string/gamebanana_install_manual"
-                    android:textSize="10sp"
-                    android:paddingHorizontal="8dp"
+                    android:textSize="10.5sp"
+                    android:textStyle="bold"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="0dp"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     app:icon="@drawable/ic_install"
                     app:iconSize="14dp"
-        app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"
-    android:maxLines="1"
-    android:ellipsize="none"/>
+                    app:iconTint="?attr/colorPrimary"
+                    app:cornerRadius="6dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="?attr/colorOutline"
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none"
+                    android:maxLines="1"
+                    android:ellipsize="none" />
 
             </LinearLayout>
 
@@ -519,8 +561,8 @@
                     android:text="@string/gamebanana_no_installed_mods"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:visibility="gone"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none" />
 
             </FrameLayout>
 
@@ -538,21 +580,22 @@
                     android:id="@+id/button_close_installed"
                     style="@style/EdenButton.Outlined"
                     android:layout_width="wrap_content"
-                    android:layout_height="28dp"
-                    android:minWidth="0dp"
-                    android:minHeight="0dp"
-                    android:paddingHorizontal="10dp"
+                    android:layout_height="wrap_content"
+                    android:minHeight="36dp"
+                    android:paddingHorizontal="14dp"
                     android:paddingVertical="0dp"
                     android:text="@string/close"
-                    android:textSize="10sp"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="6dp"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
-        app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"
-    android:maxLines="1"
-    android:ellipsize="none"/>
+                    app:strokeWidth="1dp"
+                    app:strokeColor="?attr/colorOutline"
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none"
+                    android:maxLines="1"
+                    android:ellipsize="none" />
 
             </LinearLayout>
 

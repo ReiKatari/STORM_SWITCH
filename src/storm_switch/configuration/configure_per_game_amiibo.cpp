@@ -1,3 +1,5 @@
+#include "storm_switch/common/storm_design_engine.h"
+#include "storm_switch/common/storm_lang.h"
 #include "storm_switch/common/storm_theme.h"
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
@@ -41,6 +43,191 @@
 #include "common/logging.h"
 #include "core/core.h"
 
+
+#include <QPainter>
+#include <QPainterPath>
+#include <cmath>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+namespace {
+
+enum class AmiiboIconType {
+    Search,
+    Star,
+    Clock,
+    Refresh,
+    Controller,
+    Disconnect,
+    Download,
+    Folder,
+    Check,
+    Cross,
+};
+
+QIcon MakeAmiiboIcon(AmiiboIconType type, const QColor& color, int size = 16) {
+    QPixmap pix(size, size);
+    pix.fill(Qt::transparent);
+    QPainter p(&pix);
+    p.setRenderHint(QPainter::Antialiasing, true);
+    QPen pen(color, 1.8, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+    p.setPen(pen);
+    p.setBrush(Qt::NoBrush);
+
+    switch (type) {
+    case AmiiboIconType::Search:
+        p.drawEllipse(QPointF(6.5, 6.5), 4.0, 4.0);
+        p.drawLine(QPointF(9.5, 9.5), QPointF(13.5, 13.5));
+        break;
+    case AmiiboIconType::Star: {
+        QPainterPath star;
+        const qreal scx = 8.0, scy = 8.0, r_out = 6.2, r_in = 2.8;
+        for (int i = 0; i < 5; ++i) {
+            qreal a_out = -M_PI_2 + i * 2.0 * M_PI / 5.0;
+            qreal a_in = a_out + M_PI / 5.0;
+            if (i == 0) star.moveTo(scx + r_out * std::cos(a_out), scy + r_out * std::sin(a_out));
+            else star.lineTo(scx + r_out * std::cos(a_out), scy + r_out * std::sin(a_out));
+            star.lineTo(scx + r_in * std::cos(a_in), scy + r_in * std::sin(a_in));
+        }
+        star.closeSubpath();
+        p.setBrush(color);
+        p.drawPath(star);
+        break;
+    }
+    case AmiiboIconType::Clock:
+        p.drawEllipse(QPointF(8.0, 8.0), 5.5, 5.5);
+        p.drawLine(QPointF(8.0, 4.5), QPointF(8.0, 8.0));
+        p.drawLine(QPointF(8.0, 8.0), QPointF(11.0, 8.0));
+        break;
+    case AmiiboIconType::Refresh: {
+        p.drawArc(QRectF(3.0, 3.0, 10.0, 10.0), 30 * 16, 270 * 16);
+        p.drawLine(QPointF(11.0, 4.5), QPointF(13.0, 6.5));
+        p.drawLine(QPointF(13.0, 6.5), QPointF(10.5, 9.0));
+        break;
+    }
+    case AmiiboIconType::Controller:
+        p.drawRoundedRect(QRectF(2.5, 4.5, 11.0, 7.0), 2.5, 2.5);
+        p.drawPoint(QPointF(5.5, 8.0));
+        p.drawPoint(QPointF(10.5, 7.0));
+        p.drawPoint(QPointF(10.5, 9.0));
+        break;
+    case AmiiboIconType::Disconnect:
+        p.drawLine(QPointF(4.0, 4.0), QPointF(12.0, 12.0));
+        p.drawLine(QPointF(12.0, 4.0), QPointF(4.0, 12.0));
+        break;
+    case AmiiboIconType::Download:
+        p.drawLine(QPointF(8.0, 2.5), QPointF(8.0, 10.5));
+        p.drawLine(QPointF(4.5, 7.5), QPointF(8.0, 10.5));
+        p.drawLine(QPointF(11.5, 7.5), QPointF(8.0, 10.5));
+        p.drawLine(QPointF(3.0, 13.5), QPointF(13.0, 13.5));
+        break;
+    case AmiiboIconType::Folder: {
+        QPainterPath path;
+        path.moveTo(2.5, 5.0);
+        path.lineTo(6.0, 5.0);
+        path.lineTo(7.5, 6.5);
+        path.lineTo(13.5, 6.5);
+        path.lineTo(13.5, 12.5);
+        path.lineTo(2.5, 12.5);
+        path.closeSubpath();
+        p.drawPath(path);
+        break;
+    }
+    case AmiiboIconType::Check:
+        p.drawLine(QPointF(3.0, 8.0), QPointF(6.5, 11.5));
+        p.drawLine(QPointF(6.5, 11.5), QPointF(13.0, 4.5));
+        break;
+    case AmiiboIconType::Cross:
+        p.drawLine(QPointF(4.0, 4.0), QPointF(12.0, 12.0));
+        p.drawLine(QPointF(12.0, 4.0), QPointF(4.0, 12.0));
+        break;
+    }
+    return QIcon(pix);
+}
+
+QPixmap MakeAmiiboPedestalPlaceholder(int w, int h, const StormTheme::Palette& pal) {
+    QPixmap pix(w, h);
+    pix.fill(Qt::transparent);
+    QPainter p(&pix);
+    p.setRenderHint(QPainter::Antialiasing, true);
+
+    const QColor accent(pal.accent);
+    const QColor muted(pal.textSecondary);
+
+    p.setPen(QPen(QColor(pal.border), 1.0));
+    p.setBrush(QColor(pal.surface));
+    p.drawRoundedRect(QRectF(2, 2, w - 4, h - 4), 8.0, 8.0);
+
+    const qreal base_cx = w / 2.0;
+    const qreal base_y = h - 28.0;
+
+    // Shadow
+    p.setPen(Qt::NoPen);
+    p.setBrush(QColor(0, 0, 0, 70));
+    p.drawEllipse(QPointF(base_cx, base_y + 10.0), 38.0, 9.0);
+
+    // Pedestal base
+    QLinearGradient gradBase(0, base_y - 4, 0, base_y + 8);
+    gradBase.setColorAt(0.0, accent.darker(150));
+    gradBase.setColorAt(0.5, accent);
+    gradBase.setColorAt(1.0, accent.darker(180));
+    p.setPen(QPen(accent.lighter(130), 1.2));
+    p.setBrush(gradBase);
+    p.drawRoundedRect(QRectF(base_cx - 36, base_y - 2, 72, 10), 4, 4);
+
+    p.setPen(QPen(accent.lighter(160), 1.5));
+    p.setBrush(QColor(pal.cardAlt));
+    p.drawEllipse(QPointF(base_cx, base_y - 4), 32.0, 8.0);
+
+    // NFC concentric wave rings
+    p.setPen(QPen(accent, 1.0, Qt::DashLine));
+    p.setBrush(Qt::NoBrush);
+    p.drawEllipse(QPointF(base_cx, base_y - 4), 22.0, 5.5);
+    p.drawEllipse(QPointF(base_cx, base_y - 4), 12.0, 3.0);
+
+    // Figurite silhouette
+    QPainterPath fig;
+    fig.addEllipse(QPointF(base_cx, 38.0), 12.0, 12.0);
+    fig.moveTo(base_cx - 16.0, 54.0);
+    fig.cubicTo(base_cx - 20.0, 72.0, base_cx - 14.0, 92.0, base_cx - 8.0, base_y - 5.0);
+    fig.lineTo(base_cx + 8.0, base_y - 5.0);
+    fig.cubicTo(base_cx + 14.0, 92.0, base_cx + 20.0, 72.0, base_cx + 16.0, 54.0);
+    fig.closeSubpath();
+
+    QLinearGradient figGrad(0, 26, 0, base_y - 5);
+    figGrad.setColorAt(0.0, QColor(accent.red(), accent.green(), accent.blue(), 180));
+    figGrad.setColorAt(0.7, QColor(muted.red(), muted.green(), muted.blue(), 120));
+    figGrad.setColorAt(1.0, QColor(accent.red(), accent.green(), accent.blue(), 40));
+
+    p.setPen(QPen(accent, 1.2));
+    p.setBrush(figGrad);
+    p.drawPath(fig);
+
+    // Center star crest
+    p.setPen(QPen(QColor(QStringLiteral("#FFFFFF")), 1.0));
+    p.setBrush(QColor(QStringLiteral("#FFFFFF")));
+    QPainterPath star;
+    const qreal scx = base_cx;
+    const qreal scy = 64.0;
+    const qreal r_out = 6.0;
+    const qreal r_in = 2.8;
+    for (int i = 0; i < 5; ++i) {
+        qreal a_out = -M_PI_2 + i * 2.0 * M_PI / 5.0;
+        qreal a_in = a_out + M_PI / 5.0;
+        if (i == 0) star.moveTo(scx + r_out * std::cos(a_out), scy + r_out * std::sin(a_out));
+        else star.lineTo(scx + r_out * std::cos(a_out), scy + r_out * std::sin(a_out));
+        star.lineTo(scx + r_in * std::cos(a_in), scy + r_in * std::sin(a_in));
+    }
+    star.closeSubpath();
+    p.drawPath(star);
+
+    return pix;
+}
+
+} // namespace
+
 ConfigurePerGameAmiibo::ConfigurePerGameAmiibo(Core::System& system, u64 title_id,
                                                const QString& file_name, QWidget* parent)
     : QWidget(parent), m_system(system), m_title_id(title_id), m_file_name(file_name),
@@ -63,13 +250,13 @@ void ConfigurePerGameAmiibo::SetupUi() {
     filter_layout->setSpacing(8);
 
     m_search_edit = new QLineEdit(this);
-    m_search_edit->setPlaceholderText(tr("Поиск Amiibo для этой игры..."));
+    m_search_edit->setPlaceholderText(StormLang(QStringLiteral("Поиск Amiibo для этой игры..."), QStringLiteral("Search Amiibo for this game...")));
     m_search_edit->setClearButtonEnabled(true);
     connect(m_search_edit, &QLineEdit::textChanged, this, &ConfigurePerGameAmiibo::OnSearchFilterChanged);
     filter_layout->addWidget(m_search_edit, 3);
 
     m_filter_scope_combo = new QComboBox(this);
-    m_filter_scope_combo->addItems({tr("⭐ Рекомендуемые для игры"), tr("🌐 Все доступные Amiibo")});
+    m_filter_scope_combo->addItems({StormLang(QStringLiteral("Рекомендуемые для игры"), QStringLiteral("Recommended for game")), StormLang(QStringLiteral("Все доступные Amiibo"), QStringLiteral("All available Amiibo"))});
     connect(m_filter_scope_combo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ConfigurePerGameAmiibo::OnSearchFilterChanged);
     filter_layout->addWidget(m_filter_scope_combo, 2);
 
@@ -78,13 +265,17 @@ void ConfigurePerGameAmiibo::SetupUi() {
     connect(m_series_combo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ConfigurePerGameAmiibo::OnSearchFilterChanged);
     filter_layout->addWidget(m_series_combo, 2);
 
-    m_refresh_btn = new QPushButton(tr("🔄 Обновить"), this);
+    const auto pal = StormTheme::GetThemePalette();
+    m_refresh_btn = new QPushButton(StormLang(QStringLiteral("Обновить"), QStringLiteral("Refresh")), this);
+    m_refresh_btn->setIcon(MakeAmiiboIcon(AmiiboIconType::Refresh, QColor(pal.textSecondary)));
     connect(m_refresh_btn, &QPushButton::clicked, this, &ConfigurePerGameAmiibo::OnRefreshClicked);
     filter_layout->addWidget(m_refresh_btn, 0);
 
     main_layout->addWidget(top_filter_box);
 
     m_progress_bar = new QProgressBar(this);
+    m_progress_bar->setFixedHeight(8);
+    m_progress_bar->setTextVisible(false);
     m_progress_bar->setRange(0, 0);
     m_progress_bar->setTextVisible(false);
     m_progress_bar->setFixedHeight(4);
@@ -106,6 +297,7 @@ void ConfigurePerGameAmiibo::SetupUi() {
     left_layout->addWidget(list_hint);
 
     m_amiibo_list = new QListWidget(this);
+    m_amiibo_list->setStyleSheet(QStringLiteral("QListWidget::item { height: 34px; padding: 4px 8px; border-radius: 4px; }"));
     connect(m_amiibo_list, &QListWidget::currentItemChanged, this, &ConfigurePerGameAmiibo::OnItemSelected);
     connect(m_amiibo_list, &QListWidget::itemChanged, this, &ConfigurePerGameAmiibo::OnItemCheckChanged);
     left_layout->addWidget(m_amiibo_list);
@@ -124,6 +316,8 @@ void ConfigurePerGameAmiibo::SetupUi() {
     details_layout->setSpacing(6);
 
     m_image_label = new QLabel(this);
+    m_image_label->setFixedSize(140, 140);
+    m_image_label->setPixmap(MakeAmiiboPedestalPlaceholder(140, 140, pal));
     m_image_label->setMinimumSize(160, 160);
     m_image_label->setMaximumHeight(200);
     m_image_label->setAlignment(Qt::AlignCenter);
@@ -161,7 +355,7 @@ void ConfigurePerGameAmiibo::SetupUi() {
     card_layout->setSpacing(4);
 
     auto* card_header = new QHBoxLayout();
-    auto* card_title = new QLabel(tr("🎁 Награда в этой игре:"), m_reward_card);
+    auto* card_title = new QLabel(StormLang(QStringLiteral("Награда в этой игре:"), QStringLiteral("Reward in this game:")), m_reward_card);
     card_title->setStyleSheet(QStringLiteral("font-weight: bold; color: #ffca28; font-size: 9.5pt;"));
     card_header->addWidget(card_title);
 
@@ -184,7 +378,7 @@ void ConfigurePerGameAmiibo::SetupUi() {
 
     details_layout->addWidget(m_reward_card);
 
-    auto* games_label = new QLabel(tr("🎮 Эффект и совместимость в этой игре:"), this);
+    auto* games_label = new QLabel(StormLang(QStringLiteral("Эффект и совместимость в этой игре:"), QStringLiteral("Effect and compatibility in this game:")), this);
     games_label->setStyleSheet(QStringLiteral("font-weight: bold; color: #ffca28; margin-top: 4px;"));
     details_layout->addWidget(games_label);
 
@@ -194,7 +388,8 @@ void ConfigurePerGameAmiibo::SetupUi() {
     details_layout->addWidget(m_games_text, 1);
 
     auto* btn_layout = new QHBoxLayout();
-    m_install_btn = new QPushButton(tr("⚡ Включить / Установить"), this);
+    m_install_btn = new QPushButton(StormLang(QStringLiteral("Включить / Установить"), QStringLiteral("Enable / Install")), this);
+    m_install_btn->setIcon(MakeAmiiboIcon(AmiiboIconType::Controller, QColor(QStringLiteral("#FFFFFF"))));
     m_install_btn->setStyleSheet(QStringLiteral("background-color: #004d40; border-color: #00e676; color: #ffffff; padding: 6px 12px; font-weight: bold;"));
     m_install_btn->setEnabled(false);
     connect(m_install_btn, &QPushButton::clicked, this, [this]() {
@@ -206,7 +401,8 @@ void ConfigurePerGameAmiibo::SetupUi() {
     });
     btn_layout->addWidget(m_install_btn);
 
-    m_open_folder_btn = new QPushButton(tr("📁 Папка Amiibo игры"), this);
+    m_open_folder_btn = new QPushButton(StormLang(QStringLiteral("Папка Amiibo игры"), QStringLiteral("Game Amiibo Folder")), this);
+    m_open_folder_btn->setIcon(MakeAmiiboIcon(AmiiboIconType::Folder, QColor(pal.textSecondary)));
     connect(m_open_folder_btn, &QPushButton::clicked, this, &ConfigurePerGameAmiibo::OnOpenAmiiboFolderClicked);
     btn_layout->addWidget(m_open_folder_btn);
 
@@ -581,7 +777,7 @@ void ConfigurePerGameAmiibo::ApplyFilters() {
 
         bool installed = IsAmiiboInstalled(a);
         auto* item = new QListWidgetItem(QStringLiteral("%1 [%2] %3")
-                                             .arg(a.name, a.amiibo_series, installed ? QStringLiteral("✅") : QString()));
+                                             .arg(a.name, a.amiibo_series, installed ? StormLang(QStringLiteral(" [Установлен]"), QStringLiteral(" [Installed]")) : QString()));
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
         item->setCheckState(installed ? Qt::Checked : Qt::Unchecked);
         item->setData(Qt::UserRole, static_cast<int>(i));
@@ -623,7 +819,7 @@ void ConfigurePerGameAmiibo::OnItemCheckChanged(QListWidgetItem* item) {
     const auto& entry = m_all_amiibos[idx];
     if (item->checkState() == Qt::Checked) {
         QString saved = GenerateAndSaveAmiiboBin(entry);
-        item->setText(QStringLiteral("%1 [%2] ✅").arg(entry.name, entry.amiibo_series));
+        item->setText(QStringLiteral("%1 [%2] [Установлен]").arg(entry.name, entry.amiibo_series));
         DisplayAmiiboDetails(entry);
     } else {
         QString folder = GetGameAmiiboFolder();
@@ -643,20 +839,22 @@ void ConfigurePerGameAmiibo::DisplayAmiiboDetails(const AmiiboEntry& entry) {
 
     bool installed = IsAmiiboInstalled(entry);
     if (installed) {
-        m_status_badge->setText(tr("Статус: ✅ Включено и установлено для этой игры"));
+        m_status_badge->setText(StormLang(QStringLiteral("Статус: Включено и установлено для этой игры"), QStringLiteral("Status: Enabled and installed for this game")));
         m_status_badge->setStyleSheet(QStringLiteral("color: #00e676; font-weight: bold; padding: 3px 8px; background-color: #004d40; border-radius: 4px;"));
-        m_install_btn->setText(tr("❌ Отключить для игры"));
+        m_install_btn->setText(StormLang(QStringLiteral("Отключить для игры"), QStringLiteral("Disable for game")));
+        m_install_btn->setIcon(MakeAmiiboIcon(AmiiboIconType::Disconnect, QColor(StormTheme::GetThemePalette().textSecondary)));
     } else {
-        m_status_badge->setText(tr("Статус: 🌐 Нажмите галочку для скачивания и включения"));
+        m_status_badge->setText(StormLang(QStringLiteral("Статус: Нажмите галочку для скачивания и включения"), QStringLiteral("Status: Check box to download and enable")));
         const auto amiibo_pal2 = StormTheme::GetThemePalette();
         m_status_badge->setStyleSheet(QStringLiteral("color: %1; font-weight: bold; padding: 3px 8px; background-color: %2; border-radius: 4px;").arg(amiibo_pal2.accent, amiibo_pal2.surface));
-        m_install_btn->setText(tr("⚡ Скачать и включить"));
+        m_install_btn->setText(StormLang(QStringLiteral("Скачать и включить"), QStringLiteral("Download and enable")));
+        m_install_btn->setIcon(MakeAmiiboIcon(AmiiboIconType::Download, QColor(QStringLiteral("#FFFFFF"))));
     }
 
     const QString game = m_game_name.isEmpty() ? m_file_name : m_game_name;
     const auto reward = AmiiboBrowserDialog::GetRewardForGame(entry, game);
     if (m_reward_card && m_reward_category_badge && m_reward_name_label && m_reward_desc_label) {
-        m_reward_category_badge->setText(QStringLiteral("%1 %2").arg(reward.icon_emoji, reward.category.toUpper()));
+        m_reward_category_badge->setText(reward.category.toUpper());
         m_reward_name_label->setText(reward.item_name);
         m_reward_desc_label->setText(reward.description);
         m_reward_card->setVisible(true);

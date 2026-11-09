@@ -75,7 +75,8 @@ object GameFixDatabase {
     fun getDetectedGpuVendor(): String = detectedGpuVendor
 
     fun getAppliedOverrides(titleId: Long): List<AppliedProfileOverride> {
-        val fix = profiles.firstOrNull { it.titleId == titleId || it.altTitleIds.contains(titleId) } ?: return emptyList()
+        val baseId = titleId and 0x1FFFL.inv()
+        val fix = profileByIdMap[titleId] ?: profileByIdMap[baseId] ?: return emptyList()
         val result = mutableMapOf<String, AppliedProfileOverride>()
         for ((k, v) in fix.settingsMap) {
             result[k] = AppliedProfileOverride(k, v, "base")
@@ -1657,24 +1658,27 @@ GameFixProfile(
         GameFixProfile(
             0x010015100B514000L,
             "Super Mario Bros. Wonder",
-            "• Вылет при переходе уровней и активации Чудо-цветка\n• Микрофризы при компиляции анимаций персонажей",
-            "• Crash on stage transitions and Wonder Flower effects\n• Shader compilation stutter on character animations",
-            "✓ Конфигурация памяти: 4 ГБ DRAM (стабильный запуск без сбоев памяти)\n✓ Точность ГПУ: Обычная (Normal 60 FPS)\n✓ Тайминги ГПУ: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Сжатие ASTC: Отключено\n✓ Реактивная очистка: Отключено\n✓ Барьеры обратной связи: Включено (стабильные переходы уровней)\n✓ Игнорирование сбоев памяти: Включено",
-            "✓ Memory Layout: 4GB DRAM (Stable launch without memory faults)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Enabled (Smooth stage transitions)\n✓ Ignore Memory Aborts: Enabled",
+            "• Вылет при переходе уровней и активации Чудо-цветка\n• Микрофризы при компиляции анимаций персонажей Lunchpack",
+            "• Crash on stage transitions and Wonder Flower effects\n• Shader compilation stutter on Lunchpack character animations",
+            "✓ Конфигурация памяти: 4 ГБ DRAM (стабильный запуск Lunchpack)\n✓ Точность ГПУ: Обычная (Normal 60 FPS)\n✓ Тайминги ГПУ: Включено\n✓ Быстрая память: Включено\n✓ Синхронные шейдеры: Включено (защита от выпадения agl-отрисовок)\n✓ Сжатие ASTC: Отключено\n✓ Реактивная очистка: Отключено\n✓ Барьеры обратной связи: Включено (стабильные переходы уровней)\n✓ Ранний сброс заборов: Отключено\n✓ Режим полета: Включено\n✓ Игнорирование сбоев памяти: Включено",
+            "✓ Memory Layout: 4GB DRAM (Stable Lunchpack boot)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Fastmem: Enabled\n✓ Synchronous Shaders: Enabled (Prevents dropped agl draws)\n✓ ASTC Recompression: Uncompressed\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Enabled (Smooth stage transitions)\n✓ Early Release Fences: Disabled\n✓ Airplane Mode: Enabled\n✓ Ignore Memory Aborts: Enabled",
             mapOf(
                 "Core\\memory_layout_mode" to "0",
                 "System\\memory_layout_mode" to "0",
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
-                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_asynchronous_shaders" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\early_release_fences" to "false",
                 "Renderer\\enable_frame_skipping" to "false",
+                "Renderer\\drs_resolution_lock" to "false",
+                "System\\airplane_mode" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true"
-            )
+            ),
+            listOf(0x010015100B514800L)
         ),
  GameFixProfile(
             0x01008C300F7F0000L,
@@ -6979,7 +6983,7 @@ GameFixProfile(
             (cleanPath.contains("castlevania") && (cleanPath.contains("belmont") || cleanPath.contains("curse"))) ||
             cleanTitle.contains("belmont's curse") || cleanPath.contains("belmont")
         ) {
-            val p = profiles.firstOrNull { it.titleId == 0x01FF434243555253L }
+            val p = profileByIdMap[0x01FF434243555253L]
             if (p != null) return p
         }
         return profiles.firstOrNull { profile ->

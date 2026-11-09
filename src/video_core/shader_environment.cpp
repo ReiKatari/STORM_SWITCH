@@ -395,6 +395,8 @@ void GenericEnvironment::InitializeNativeCode(u32 source_header_size) {
         }
     }
     if (!lowered) {
+        LOG_WARNING(Shader, "Native shader lowering failed at {:#x}, instruction {:#x}: {}",
+                    program_base, lowered.error_offset, lowered.error);
         throw Shader::RuntimeError("Native shader at {:#x}, instruction {:#x}: {}",
                                    program_base, lowered.error_offset, lowered.error);
     }

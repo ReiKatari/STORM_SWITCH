@@ -1,52 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item
-        android:id="@+id/menu_group_ui_styles"
-        android:title="@string/ui_view_menu_styles_header">
-        <menu>
-            <group android:id="@+id/group_ui_styles" android:checkableBehavior="single">
-                <item
-                    android:id="@+id/style_titanium"
-                    android:icon="@drawable/ic_storm_ui_cyberdeck"
-                    android:title="@string/ui_design_style_titanium" />
-                <item
-                    android:id="@+id/style_hyperion"
-                    android:icon="@drawable/ic_storm_ui_hyperion"
-                    android:title="@string/ui_design_style_hyperion" />
-                <item
-                    android:id="@+id/style_valkyrie"
-                    android:icon="@drawable/ic_storm_ui_valkyrie"
-                    android:title="@string/ui_design_style_valkyrie" />
-                <item
-                    android:id="@+id/style_solaris"
-                    android:icon="@drawable/ic_storm_ui_solaris"
-                    android:title="@string/ui_design_style_solaris" />
-                <item
-                    android:id="@+id/style_aether"
-                    android:icon="@drawable/ic_storm_ui_aether"
-                    android:title="@string/ui_design_style_aether" />
-            </group>
-        </menu>
-    </item>
-
-    <item
-        android:id="@+id/menu_group_layout_density"
-        android:title="@string/ui_view_menu_layout_header">
-        <menu>
-            <group android:id="@+id/group_layout_density" android:checkableBehavior="single">
-                <item
-                    android:id="@+id/view_grid"
-                    android:title="@string/view_grid"/>
-                <item
-                    android:id="@+id/view_grid_compact"
-                    android:title="@string/view_grid_compact"/>
-                <item
-                    android:id="@+id/view_list"
-                    android:title="@string/view_list"/>
-                <item
-                    android:id="@+id/view_carousel"
-                    android:title="@string/view_carousel" />
-            </group>
-        </menu>
-    </item>
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/view_grid"
+            android:title="@string/view_grid"/>
+        <item
+            android:id="@+id/view_grid_compact"
+            android:title="@string/view_grid_compact"/>
+        <item
+            android:id="@+id/view_list"
+            android:title="@string/view_list"
+            android:checked="true"/>
+        <item
+            android:id="@+id/view_carousel"
+            android:title="@string/view_carousel" />
+    </group>
 </menu>

@@ -329,7 +329,8 @@ size_t GetTotalPipelineWorkers(const Device& device) {
     if (user_threads > 0) {
         num_workers = std::clamp<size_t>(user_threads, 1ULL, std::max<size_t>(1ULL, hardware_threads));
     } else {
-        const size_t auto_threads = std::max<size_t>(1ULL, std::min<size_t>(4ULL, hardware_threads / 4ULL));
+        // Boost Desktop (NVIDIA/AMD/Intel) and Qualcomm Adreno / Turnip / Xclipse to hardware_threads / 2 (clamp 2..8)
+        const size_t auto_threads = std::clamp<size_t>(hardware_threads / 2ULL, 2ULL, 8ULL);
         if (Settings::values.storm_lowend_turbo.GetValue()) {
             num_workers = 1ULL;
         } else if (Settings::values.eco_thermal_mode.GetValue()) {
@@ -597,6 +598,8 @@ PipelineCache::PipelineCache(Tegra::MaxwellDeviceMemoryManager& device_memory_,
 }
 
 PipelineCache::~PipelineCache() {
+    workers.WaitForRequests();
+    serialization_thread.WaitForRequests();
     if (use_vulkan_pipeline_cache && !vulkan_pipeline_cache_filename.empty()) {
         SerializeVulkanPipelineCache(vulkan_pipeline_cache_filename, vulkan_pipeline_cache,
                                      CACHE_VERSION);
@@ -701,9 +704,11 @@ void PipelineCache::LoadDiskResources(u64 title_id, std::stop_token stop_loading
 
     struct LoadingState {
         std::mutex mutex;
+        std::condition_variable cv;
         size_t total{};
         size_t built{};
         std::atomic_bool has_loaded{false};
+        std::atomic_bool is_background{false};
         std::unique_ptr<PipelineStatistics> statistics;
     };
     auto state = std::make_shared<LoadingState>();
@@ -717,10 +722,9 @@ void PipelineCache::LoadDiskResources(u64 title_id, std::stop_token stop_loading
         ComputePipelineCacheKey key;
         file.read(reinterpret_cast<char*>(&key), sizeof(key));
 
-        workers.QueueWork([this, key, env_ = std::move(env), state_weak = std::weak_ptr<LoadingState>(state), callback]() mutable {
+        workers.QueueWork([this, key, env_ = std::move(env), state, callback]() mutable {
             ShaderPools pools;
-            auto auto_state = state_weak.lock();
-            PipelineStatistics* stats = auto_state ? auto_state->statistics.get() : nullptr;
+            PipelineStatistics* stats = state ? state->statistics.get() : nullptr;
             auto pipeline{CreateComputePipeline(pools, key, env_, stats, false)};
             {
                 std::scoped_lock lock{cache_mutex};
@@ -728,12 +732,14 @@ void PipelineCache::LoadDiskResources(u64 title_id, std::stop_token stop_loading
                     compute_cache.emplace(key, std::move(pipeline));
                 }
             }
-            if (auto_state) {
-                std::scoped_lock lock{auto_state->mutex};
-                ++auto_state->built;
-                if (auto_state->has_loaded.load(std::memory_order_acquire)) {
-                    callback(VideoCore::LoadCallbackStage::Build, auto_state->built, auto_state->total);
+            if (state) {
+                std::unique_lock lock{state->mutex};
+                ++state->built;
+                if (state->has_loaded.load(std::memory_order_acquire) &&
+                    !state->is_background.load(std::memory_order_acquire)) {
+                    callback(VideoCore::LoadCallbackStage::Build, state->built, state->total);
                 }
+                state->cv.notify_one();
             }
         });
         ++state->total;
@@ -770,14 +776,13 @@ void PipelineCache::LoadDiskResources(u64 title_id, std::stop_token stop_loading
             return;
         }
 
-        workers.QueueWork([this, key, envs_ = std::move(envs), state_weak = std::weak_ptr<LoadingState>(state), callback]() mutable {
+        workers.QueueWork([this, key, envs_ = std::move(envs), state, callback]() mutable {
             ShaderPools pools;
             boost::container::static_vector<Shader::Environment*, 5> env_ptrs;
             for (auto& env : envs_) {
                 env_ptrs.push_back(&env);
             }
-            auto auto_state = state_weak.lock();
-            PipelineStatistics* stats = auto_state ? auto_state->statistics.get() : nullptr;
+            PipelineStatistics* stats = state ? state->statistics.get() : nullptr;
             auto pipeline{CreateGraphicsPipeline(pools, key, MakeSpan(env_ptrs), stats, false)};
 
             {
@@ -786,12 +791,14 @@ void PipelineCache::LoadDiskResources(u64 title_id, std::stop_token stop_loading
                     graphics_cache.emplace(key, std::move(pipeline));
                 }
             }
-            if (auto_state) {
-                std::scoped_lock lock{auto_state->mutex};
-                ++auto_state->built;
-                if (auto_state->has_loaded.load(std::memory_order_acquire)) {
-                    callback(VideoCore::LoadCallbackStage::Build, auto_state->built, auto_state->total);
+            if (state) {
+                std::unique_lock lock{state->mutex};
+                ++state->built;
+                if (state->has_loaded.load(std::memory_order_acquire) &&
+                    !state->is_background.load(std::memory_order_acquire)) {
+                    callback(VideoCore::LoadCallbackStage::Build, state->built, state->total);
                 }
+                state->cv.notify_one();
             }
         });
         ++state->total;
@@ -807,8 +814,25 @@ void PipelineCache::LoadDiskResources(u64 title_id, std::stop_token stop_loading
         state->has_loaded.store(true, std::memory_order_release);
     }
 
-    workers.WaitForRequests(stop_loading);
-    callback(VideoCore::LoadCallbackStage::Build, state->total, state->total);
+    const bool async_shaders = Settings::values.use_asynchronous_shaders.GetValue();
+    if (async_shaders && state->total > 512) {
+        // Compile the first critical batch synchronously (<= 512 pipelines) for instant game boot,
+        // allowing remaining pipelines to finish progressively in background workers.
+        constexpr size_t CRITICAL_BATCH_SIZE = 512;
+        std::unique_lock lock{state->mutex};
+        state->cv.wait(lock, [&] {
+            return stop_loading.stop_requested() || state->built >= CRITICAL_BATCH_SIZE || state->built >= state->total;
+        });
+        state->is_background.store(true, std::memory_order_release);
+        callback(VideoCore::LoadCallbackStage::Build, state->built, state->total);
+    } else {
+        // Synchronous pipeline compilation (e.g. Super Mario Bros. Wonder):
+        // Compile 100% of cached graphics & compute pipelines using multi-threaded workers before returning.
+        workers.WaitForRequests(stop_loading);
+        std::unique_lock lock{state->mutex};
+        state->is_background.store(false, std::memory_order_release);
+        callback(VideoCore::LoadCallbackStage::Build, state->total, state->total);
+    }
 
     if (use_vulkan_pipeline_cache) {
         serialization_thread.QueueWork([this]() {

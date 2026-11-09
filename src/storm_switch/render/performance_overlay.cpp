@@ -22,7 +22,13 @@
 #include <QScrollArea>
 #include <QStackedWidget>
 #include <QTabWidget>
+#include <QGroupBox>
+#include <QKeyEvent>
+#include <QSlider>
 #include <QTextStream>
+#include "storm_switch/common/storm_lang.h"
+#include "storm_switch/common/storm_theme.h"
+#include "storm_switch/common/storm_design_engine.h"
 #include <QVBoxLayout>
 
 #include "common/fs/fs.h"
@@ -39,8 +45,6 @@
 #include "qt_common/abstract/frontend.h"
 #include "storm_switch/main_window.h"
 #include "storm_switch/render/performance_overlay.h"
-#include "storm_switch/common/storm_design_engine.h"
-#include "storm_switch/common/storm_vector_icons.h"
 #include "video_core/gpu.h"
 #include "video_core/shader_notify.h"
 
@@ -106,32 +110,21 @@ protected:
             fillPath.closeSubpath();
 
             QLinearGradient fillGrad(0, 0, 0, h);
-            fillGrad.setColorAt(0.0, m_fill_top);
-            fillGrad.setColorAt(1.0, m_fill_bot);
+            fillGrad.setColorAt(0.0, QColor(0, 210, 255, 90));
+            fillGrad.setColorAt(1.0, QColor(0, 210, 255, 5));
             painter.fillPath(fillPath, fillGrad);
         }
 
-        // Draw stylized graph line
-        QPen linePen(m_line_color, 2);
+        // Draw neon Cyan line
+        QPen linePen(QColor(0, 210, 255), 2);
         painter.setPen(linePen);
         painter.drawPolyline(points.data(), points.size());
-    }
-
-public:
-    void SetColors(const QColor& line, const QColor& fill_top, const QColor& fill_bot) {
-        m_line_color = line;
-        m_fill_top = fill_top;
-        m_fill_bot = fill_bot;
-        update();
     }
 
 private:
     static constexpr size_t NUM_FPS_SAMPLES_GRAPH = 120;
     std::deque<double> m_samples;
     double m_max_fps = 60.0;
-    QColor m_line_color{0, 210, 255};
-    QColor m_fill_top{0, 210, 255, 90};
-    QColor m_fill_bot{0, 210, 255, 5};
 };
 
 PerformanceOverlay::PerformanceOverlay(MainWindow* parent)
@@ -140,9 +133,7 @@ PerformanceOverlay::PerformanceOverlay(MainWindow* parent)
     setWindowFlags(Qt::FramelessWindowHint | Qt::Tool);
     raise();
 
-    m_visual_preset = static_cast<OverlayVisualPreset>(std::clamp(UISettings::values.perf_overlay_style.GetValue(), 0, 9));
     SetupUI();
-    ApplyVisualPreset();
 
     resetPosition(m_mainWindow->pos());
     connect(parent, &MainWindow::positionChanged, this, &PerformanceOverlay::resetPosition);
@@ -184,18 +175,28 @@ void PerformanceOverlay::SetupUI() {
     // 1. Compact Mode Widget (Mini HUD)
     // ==========================================
     m_compact_widget = new QWidget(this);
-    m_compact_widget->setFixedSize(260, 185);
+    m_compact_widget->setFixedSize(280, 185);
     auto* compact_layout = new QVBoxLayout(m_compact_widget);
     compact_layout->setContentsMargins(10, 8, 10, 8);
     compact_layout->setSpacing(6);
 
     auto* compact_header = new QHBoxLayout();
-    auto* compact_title = new QLabel(tr("STORM OSD"), m_compact_widget);
+    auto* compact_title = new QLabel(QStringLiteral("STORM OSD"), m_compact_widget);
     compact_title->setStyleSheet(QStringLiteral("color: #00D2FF; font-weight: bold; font-size: 11px;"));
     compact_header->addWidget(compact_title);
     compact_header->addStretch(1);
 
-    auto* btn_to_expanded = new QPushButton(tr("⚡ Меню (F6)"), m_compact_widget);
+    auto* btn_storm_sidebar = new QPushButton(StormLang(QStringLiteral("F10"), QStringLiteral("F10")), m_compact_widget);
+    btn_storm_sidebar->setCursor(Qt::PointingHandCursor);
+    btn_storm_sidebar->setToolTip(StormLang(QStringLiteral("Быстрые настройки (F10)"), QStringLiteral("Quick Settings (F10)")));
+    btn_storm_sidebar->setStyleSheet(QStringLiteral(
+        "QPushButton { background: rgba(0, 210, 255, 0.2); border: 1px solid #00D2FF; border-radius: 4px; "
+        "color: #FFFFFF; font-weight: bold; font-size: 10px; padding: 2px 6px; min-height: 18px; }"
+        "QPushButton:hover { background: #00D2FF; color: #000000; }"));
+    compact_header->addWidget(btn_storm_sidebar);
+    connect(btn_storm_sidebar, &QPushButton::clicked, this, &PerformanceOverlay::ToggleSidebar);
+
+    auto* btn_to_expanded = new QPushButton(StormLang(QStringLiteral("Меню (F6)"), QStringLiteral("Menu (F6)")), m_compact_widget);
     btn_to_expanded->setStyleSheet(QStringLiteral("padding: 2px 8px; font-size: 10px; font-weight: bold; border-color: #00D2FF; color: #00D2FF;"));
     compact_header->addWidget(btn_to_expanded);
 
@@ -247,7 +248,7 @@ void PerformanceOverlay::SetupUI() {
     exp_header->addWidget(m_game_title_lbl);
     exp_header->addStretch(1);
 
-    auto* btn_to_compact = new QPushButton(tr("🗕 Свернуть в HUD"), m_expanded_widget);
+    auto* btn_to_compact = new QPushButton(tr("Свернуть в HUD"), m_expanded_widget);
     btn_to_compact->setStyleSheet(QStringLiteral("padding: 3px 10px; font-size: 11px;"));
     exp_header->addWidget(btn_to_compact);
 
@@ -258,59 +259,7 @@ void PerformanceOverlay::SetupUI() {
     exp_layout->addLayout(exp_header);
 
     connect(btn_to_compact, &QPushButton::clicked, this, &PerformanceOverlay::OnToggleExpand);
-    btn_to_compact->setText(tr("Свернуть в HUD"));
-    btn_exp_close->setText(QString{});
-    btn_exp_close->setIcon(StormVectorIcons::CreateClearCrossIcon(14, 14));
     connect(btn_exp_close, &QPushButton::clicked, this, &QWidget::close);
-
-    // Tesla OSD Quick Action Buttons Bar
-    m_quick_actions_panel = new QWidget(m_expanded_widget);
-    m_quick_actions_panel->setObjectName(QStringLiteral("OsdQuickActionsPanel"));
-    auto* qa_layout = new QHBoxLayout(m_quick_actions_panel);
-    qa_layout->setContentsMargins(0, 2, 0, 4);
-    qa_layout->setSpacing(4);
-
-    auto make_quick_btn = [this, qa_layout](const QIcon& icon, const QString& tip, auto slot_fn) -> QPushButton* {
-        auto* btn = new QPushButton(m_quick_actions_panel);
-        btn->setIcon(icon);
-        btn->setToolTip(tip);
-        btn->setCursor(Qt::PointingHandCursor);
-        btn->setFixedSize(28, 26);
-        connect(btn, &QPushButton::clicked, this, slot_fn);
-        qa_layout->addWidget(btn);
-        return btn;
-    };
-
-    m_btn_rewind = make_quick_btn(StormVectorIcons::CreateRewindIcon(), tr("Перемотка"), &PerformanceOverlay::OnQuickRewind);
-    m_btn_fast_forward = make_quick_btn(StormVectorIcons::CreateFastForwardIcon(), tr("Ускорение"), &PerformanceOverlay::OnQuickFastForward);
-    m_btn_frame_step = make_quick_btn(StormVectorIcons::CreateFrameStepIcon(), tr("Покадровый шаг"), &PerformanceOverlay::OnQuickFrameStep);
-    m_btn_quick_save = make_quick_btn(StormVectorIcons::CreateQuickSaveIcon(), tr("Быстрое сохранение"), &PerformanceOverlay::OnQuickSaveAction);
-    m_btn_quick_load = make_quick_btn(StormVectorIcons::CreateQuickLoadIcon(), tr("Быстрая загрузка"), &PerformanceOverlay::OnQuickLoadAction);
-    m_btn_ai_translate = make_quick_btn(StormVectorIcons::CreateAiTranslateIcon(), tr("ИИ-Переводчик"), &PerformanceOverlay::OnQuickAiTranslate);
-    m_btn_shader_fix = make_quick_btn(StormVectorIcons::CreateShaderFixIcon(), tr("Автофикс шейдеров"), &PerformanceOverlay::OnQuickShaderFix);
-    m_btn_turbo = make_quick_btn(StormVectorIcons::CreateTurboIcon(), tr("Турбо"), &PerformanceOverlay::OnQuickTurbo);
-    m_btn_pause_cooling = make_quick_btn(StormVectorIcons::CreatePauseCoolingIcon(), tr("Охлаждение/Пауза"), &PerformanceOverlay::OnQuickPauseCooling);
-
-    // Visual Style Selector ComboBox
-    m_style_combo = new QComboBox(m_quick_actions_panel);
-    m_style_combo->setObjectName(QStringLiteral("OsdStyleCombo"));
-    m_style_combo->setCursor(Qt::PointingHandCursor);
-    m_style_combo->setToolTip(tr("Стиль OSD HUD"));
-    m_style_combo->addItem(QStringLiteral("Aurora Glass 3D"), 0);
-    m_style_combo->addItem(QStringLiteral("Switch 2 Pro Magnetic"), 1);
-    m_style_combo->addItem(QStringLiteral("Cyberpunk Edge Neon"), 2);
-    m_style_combo->addItem(QStringLiteral("OLED Ghost Wireframe"), 3);
-    m_style_combo->addItem(QStringLiteral("Titanium Mecha Tactical"), 4);
-    m_style_combo->addItem(QStringLiteral("Hyrule Relic Gold"), 5);
-    m_style_combo->addItem(QStringLiteral("Sanctuary Blood Rune"), 6);
-    m_style_combo->addItem(QStringLiteral("Arcade Candy 3D"), 7);
-    m_style_combo->addItem(QStringLiteral("Liquid Quartz Frost"), 8);
-    m_style_combo->addItem(QStringLiteral("Retro Pixel Matrix"), 9);
-    m_style_combo->setCurrentIndex(static_cast<int>(m_visual_preset));
-    connect(m_style_combo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &PerformanceOverlay::OnStyleComboChanged);
-    qa_layout->addWidget(m_style_combo, 1);
-
-    exp_layout->addWidget(m_quick_actions_panel);
 
     // Tab widget
     m_tabs = new QTabWidget(m_expanded_widget);
@@ -321,7 +270,7 @@ void PerformanceOverlay::SetupUI() {
 
     auto* tab_cheats = new QWidget();
     SetupCheatsTab(tab_cheats);
-    m_tabs->addTab(tab_cheats, tr("Читы"));
+    m_tabs->addTab(tab_cheats, tr("🎮 Читы"));
 
     auto* tab_saves = new QWidget();
     SetupSaveStatesTab(tab_saves);
@@ -340,6 +289,9 @@ void PerformanceOverlay::SetupUI() {
     // Add to stack
     m_stack->addWidget(m_compact_widget);
     m_stack->addWidget(m_expanded_widget);
+
+    SetupSidebarUI();
+
     m_stack->setCurrentWidget(m_compact_widget);
 
     root_layout->addWidget(m_stack);
@@ -458,7 +410,7 @@ void PerformanceOverlay::SetupSaveStatesTab(QWidget* tab) {
     layout->setContentsMargins(12, 12, 12, 12);
     layout->setSpacing(8);
 
-    auto* info_lbl = new QLabel(tr("💡 Быстрые сохранения работают мгновенно без выхода из игры (F5 - сохранить, F7 - загрузить):"), tab);
+    auto* info_lbl = new QLabel(tr("Быстрые сохранения работают мгновенно без выхода из игры (F5 - сохранить, F7 - загрузить):"), tab);
     info_lbl->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 11px;"));
     layout->addWidget(info_lbl);
 
@@ -470,12 +422,12 @@ void PerformanceOverlay::SetupSaveStatesTab(QWidget* tab) {
         m_slots[i].label->setStyleSheet(QStringLiteral("font-weight: 500; min-width: 280px;"));
         row->addWidget(m_slots[i].label, 1);
 
-        m_slots[i].btn_save = new QPushButton(tr("💾 Сохранить"), tab);
+        m_slots[i].btn_save = new QPushButton(tr("Сохранить"), tab);
         m_slots[i].btn_save->setStyleSheet(QStringLiteral("padding: 4px 12px; font-weight: bold;"));
         connect(m_slots[i].btn_save, &QPushButton::clicked, this, [this, i]() { OnSaveSlot(i + 1); });
         row->addWidget(m_slots[i].btn_save);
 
-        m_slots[i].btn_load = new QPushButton(tr("📂 Загрузить"), tab);
+        m_slots[i].btn_load = new QPushButton(tr("Загрузить"), tab);
         m_slots[i].btn_load->setStyleSheet(QStringLiteral("padding: 4px 12px; font-weight: bold; color: #38BDF8;"));
         connect(m_slots[i].btn_load, &QPushButton::clicked, this, [this, i]() { OnLoadSlot(i + 1); });
         row->addWidget(m_slots[i].btn_load);
@@ -645,10 +597,22 @@ void PerformanceOverlay::SetupCfwTab(QWidget* tab) {
     layout->addStretch(1);
 }
 
-void PerformanceOverlay::SetExpanded(bool expanded) {
-    if (m_is_expanded == expanded) return;
-    m_is_expanded = expanded;
-    if (m_is_expanded) {
+void PerformanceOverlay::SetMode(OverlayMode mode) {
+    m_mode = mode;
+    m_is_expanded = (m_mode != OverlayMode::Compact);
+
+    if (m_mode == OverlayMode::Sidebar) {
+        if (m_sidebar_widget) {
+            m_stack->setCurrentWidget(m_sidebar_widget);
+        }
+        const int h = std::clamp(m_mainWindow ? m_mainWindow->height() - 40 : 640, 520, 920);
+        setFixedSize(350, h);
+        if (m_mainWindow) {
+            const auto m_pos = m_mainWindow->pos();
+            move(m_pos.x() + m_mainWindow->width() - 365, m_pos.y() + 30);
+        }
+        RefreshSidebarState();
+    } else if (m_mode == OverlayMode::Expanded) {
         m_stack->setCurrentWidget(m_expanded_widget);
         setFixedSize(670, 500);
         RefreshCheats();
@@ -657,9 +621,35 @@ void PerformanceOverlay::SetExpanded(bool expanded) {
         RefreshCfwInfo();
     } else {
         m_stack->setCurrentWidget(m_compact_widget);
-        setFixedSize(260, 185);
+        setFixedSize(280, 185);
     }
     update();
+}
+
+void PerformanceOverlay::ToggleSidebar() {
+    if (isVisible() && m_mode == OverlayMode::Sidebar) {
+        SetMode(OverlayMode::Compact);
+    } else {
+        SetMode(OverlayMode::Sidebar);
+        show();
+        raise();
+        activateWindow();
+    }
+}
+
+void PerformanceOverlay::SetExpanded(bool expanded) {
+    SetMode(expanded ? OverlayMode::Expanded : OverlayMode::Compact);
+}
+
+void PerformanceOverlay::keyPressEvent(QKeyEvent* event) {
+    if (event->key() == Qt::Key_Escape || event->key() == Qt::Key_F10 || event->key() == Qt::Key_F9) {
+        if (m_mode == OverlayMode::Sidebar) {
+            SetMode(OverlayMode::Compact);
+            event->accept();
+            return;
+        }
+    }
+    QWidget::keyPressEvent(event);
 }
 
 void PerformanceOverlay::OnToggleExpand() {
@@ -679,7 +669,7 @@ void PerformanceOverlay::updateStats(const Core::PerfStatsResults& results,
     if (!std::isnan(fps)) {
         static constexpr double FPS_SAMPLE_THRESHOLD = 3.0;
 
-        QString fpsText = StormFormat::Fps(fps);
+        QString fpsText = tr("%1 fps").arg(std::round(fps), 0, 'f', 0);
         m_compact_fps->setText(fpsText);
         if (m_lbl_fps) m_lbl_fps->setText(fpsText);
 
@@ -696,7 +686,7 @@ void PerformanceOverlay::updateStats(const Core::PerfStatsResults& results,
             double sum = std::accumulate(m_fpsSamples.end() - back_search, m_fpsSamples.end(), 0.0);
             double avg = sum / back_search;
 
-            if (m_lbl_fps_avg) m_lbl_fps_avg->setText(tr("Avg: %1").arg(StormFormat::FloatNumber(avg, 0)));
+            if (m_lbl_fps_avg) m_lbl_fps_avg->setText(tr("Avg: %1").arg(avg, 0, 'f', 0));
         }
 
         if (!m_fpsSamples.empty()) {
@@ -704,8 +694,8 @@ void PerformanceOverlay::updateStats(const Core::PerfStatsResults& results,
             double min_fps = *min_it;
             double max_fps = *max_it;
 
-            if (m_lbl_fps_min) m_lbl_fps_min->setText(tr("Min: %1").arg(StormFormat::FloatNumber(min_fps, 0)));
-            if (m_lbl_fps_max) m_lbl_fps_max->setText(tr("Max: %1").arg(StormFormat::FloatNumber(max_fps, 0)));
+            if (m_lbl_fps_min) m_lbl_fps_min->setText(tr("Min: %1").arg(min_fps, 0, 'f', 0));
+            if (m_lbl_fps_max) m_lbl_fps_max->setText(tr("Max: %1").arg(max_fps, 0, 'f', 0));
 
             if (m_lbl_fps_1low) {
                 std::vector<double> sorted_fps(m_fpsSamples.begin(), m_fpsSamples.end());
@@ -715,7 +705,7 @@ void PerformanceOverlay::updateStats(const Core::PerfStatsResults& results,
                 for (size_t i = 0; i < low_count; ++i) {
                     low_sum += sorted_fps[i];
                 }
-                m_lbl_fps_1low->setText(tr("1% Low: %1").arg(StormFormat::FloatNumber(low_sum / static_cast<double>(low_count), 0)));
+                m_lbl_fps_1low->setText(tr("1% Low: %1").arg(low_sum / static_cast<double>(low_count), 0, 'f', 0));
             }
 
             m_compact_fpsGraph->setSamples(m_fpsSamples, max_fps);
@@ -728,7 +718,7 @@ void PerformanceOverlay::updateStats(const Core::PerfStatsResults& results,
         static constexpr double FT_SAMPLE_THRESHOLD = 500.0;
 
         double ft_ms = results.frametime * 1000.0;
-        QString ftText = StormFormat::Frametime(ft_ms);
+        QString ftText = tr("%1 ms").arg(ft_ms, 0, 'f', 2);
         m_compact_ft->setText(ftText);
         if (m_lbl_ft) m_lbl_ft->setText(ftText);
 
@@ -741,8 +731,8 @@ void PerformanceOverlay::updateStats(const Core::PerfStatsResults& results,
         if (!m_frametimeSamples.empty()) {
             auto [min_it, max_it] =
                 std::minmax_element(m_frametimeSamples.begin(), m_frametimeSamples.end());
-            if (m_lbl_ft_min) m_lbl_ft_min->setText(tr("Min: %1").arg(StormFormat::FloatNumber(*min_it, 1)));
-            if (m_lbl_ft_max) m_lbl_ft_max->setText(tr("Max: %1").arg(StormFormat::FloatNumber(*max_it, 1)));
+            if (m_lbl_ft_min) m_lbl_ft_min->setText(tr("Min: %1").arg(*min_it, 0, 'f', 1));
+            if (m_lbl_ft_max) m_lbl_ft_max->setText(tr("Max: %1").arg(*max_it, 0, 'f', 1));
         }
 
         if (m_frametimeSamples.size() >= 2) {
@@ -751,14 +741,14 @@ void PerformanceOverlay::updateStats(const Core::PerfStatsResults& results,
                                          m_frametimeSamples.end(), 0.0);
             double avg = sum / back_search;
 
-            if (m_lbl_ft_avg) m_lbl_ft_avg->setText(tr("Avg: %1").arg(StormFormat::FloatNumber(avg, 1)));
+            if (m_lbl_ft_avg) m_lbl_ft_avg->setText(tr("Avg: %1").arg(avg, 0, 'f', 1));
         }
     }
 
     // Dynamic Performance Scaler status (live adaptive scale factor)
     if (Settings::values.dynamic_performance_scaler.GetValue()) {
         const float scale = Core::DynamicPerformanceScaler::GetEffectiveScaleFactor();
-        QString dpsText = tr("DPS: %1").arg(StormFormat::Multiplier(scale));
+        QString dpsText = tr("DPS: %1x").arg(scale, 0, 'f', 2);
         m_compact_dps->setText(dpsText);
         m_compact_dps->setVisible(true);
         if (m_lbl_dps) m_lbl_dps->setText(dpsText);
@@ -971,11 +961,11 @@ void PerformanceOverlay::OnSaveSlot(int slot) {
     auto res = Core::CreateSaveState(*QtCommon::system, path);
 
     if (res == Core::SaveStateResult::Success) {
-        m_save_status->setText(tr("✅ Состояние игры успешно сохранено в Слот %1!").arg(slot));
+        m_save_status->setText(tr("Состояние игры успешно сохранено в Слот %1!").arg(slot));
         m_save_status->setStyleSheet(QStringLiteral("font-weight: bold; color: #34D399;"));
         RefreshSaveSlots();
     } else {
-        m_save_status->setText(tr("❌ Ошибка при сохранении в Слот %1.").arg(slot));
+        m_save_status->setText(tr("Ошибка при сохранении в Слот %1.").arg(slot));
         m_save_status->setStyleSheet(QStringLiteral("font-weight: bold; color: #EF4444;"));
     }
 }
@@ -993,7 +983,7 @@ void PerformanceOverlay::OnLoadSlot(int slot) {
     auto res = Core::LoadSaveState(*QtCommon::system, path);
 
     if (res == Core::SaveStateResult::Success) {
-        m_save_status->setText(tr("✅ Состояние игры успешно загружено из Слота %1!").arg(slot));
+        m_save_status->setText(tr("Состояние игры успешно загружено из Слота %1!").arg(slot));
         m_save_status->setStyleSheet(QStringLiteral("font-weight: bold; color: #34D399;"));
     } else {
         m_save_status->setText(tr("❌ Ошибка при загрузке Слота %1.").arg(slot));
@@ -1182,261 +1172,14 @@ void PerformanceOverlay::OnAutoHealGraphicsArtifacts() {
     }
 }
 
-void PerformanceOverlay::SetVisualPreset(OverlayVisualPreset preset) {
-    m_visual_preset = preset;
-    UISettings::values.perf_overlay_style = static_cast<int>(preset);
-    if (m_style_combo && m_style_combo->currentIndex() != static_cast<int>(preset)) {
-        const QSignalBlocker b(m_style_combo);
-        m_style_combo->setCurrentIndex(static_cast<int>(preset));
-    }
-    ApplyVisualPreset();
-}
-
-void PerformanceOverlay::ApplyVisualPreset() {
-    QColor line_col(0, 210, 255);
-    QColor fill_top(0, 210, 255, 90);
-    QColor fill_bot(0, 210, 255, 5);
-    QString border_color = QStringLiteral("#00D2FF");
-    QString bg_color = QStringLiteral("rgba(11, 15, 25, 245)");
-    QString tab_sel_color = QStringLiteral("#00D2FF");
-
-    switch (m_visual_preset) {
-    case OverlayVisualPreset::StormAuroraGlass3D:
-        line_col = QColor(0, 210, 255);
-        fill_top = QColor(168, 85, 247, 100);
-        fill_bot = QColor(0, 210, 255, 10);
-        border_color = QStringLiteral("#00D2FF");
-        bg_color = QStringLiteral("rgba(11, 15, 25, 240)");
-        tab_sel_color = QStringLiteral("#00D2FF");
-        break;
-    case OverlayVisualPreset::Switch2ProMagnetic:
-        line_col = QColor(255, 59, 48);
-        fill_top = QColor(255, 59, 48, 90);
-        fill_bot = QColor(0, 229, 255, 20);
-        border_color = QStringLiteral("#FF3B30");
-        bg_color = QStringLiteral("rgba(18, 22, 32, 245)");
-        tab_sel_color = QStringLiteral("#00E5FF");
-        break;
-    case OverlayVisualPreset::CyberpunkEdgeNeon:
-        line_col = QColor(255, 230, 0);
-        fill_top = QColor(255, 230, 0, 95);
-        fill_bot = QColor(255, 0, 85, 25);
-        border_color = QStringLiteral("#FFE600");
-        bg_color = QStringLiteral("rgba(10, 10, 14, 250)");
-        tab_sel_color = QStringLiteral("#FFE600");
-        break;
-    case OverlayVisualPreset::OledGhostWireframe:
-        line_col = QColor(226, 232, 240);
-        fill_top = QColor(255, 255, 255, 50);
-        fill_bot = QColor(255, 255, 255, 5);
-        border_color = QStringLiteral("rgba(255, 255, 255, 0.45)");
-        bg_color = QStringLiteral("rgba(0, 0, 0, 252)");
-        tab_sel_color = QStringLiteral("#FFFFFF");
-        break;
-    case OverlayVisualPreset::TitaniumMechaTactical:
-        line_col = QColor(245, 158, 11);
-        fill_top = QColor(245, 158, 11, 90);
-        fill_bot = QColor(217, 119, 6, 15);
-        border_color = QStringLiteral("#F59E0B");
-        bg_color = QStringLiteral("rgba(21, 24, 30, 245)");
-        tab_sel_color = QStringLiteral("#F59E0B");
-        break;
-    case OverlayVisualPreset::HyruleRelicGold:
-        line_col = QColor(251, 191, 36);
-        fill_top = QColor(251, 191, 36, 95);
-        fill_bot = QColor(16, 185, 129, 20);
-        border_color = QStringLiteral("#FBBF24");
-        bg_color = QStringLiteral("rgba(15, 21, 18, 245)");
-        tab_sel_color = QStringLiteral("#10B981");
-        break;
-    case OverlayVisualPreset::SanctuaryBloodRune:
-        line_col = QColor(239, 68, 68);
-        fill_top = QColor(239, 68, 68, 100);
-        fill_bot = QColor(153, 27, 27, 25);
-        border_color = QStringLiteral("#DC2626");
-        bg_color = QStringLiteral("rgba(17, 9, 12, 245)");
-        tab_sel_color = QStringLiteral("#EF4444");
-        break;
-    case OverlayVisualPreset::ArcadeCandyTactile3D:
-        line_col = QColor(236, 72, 153);
-        fill_top = QColor(139, 92, 246, 100);
-        fill_bot = QColor(6, 182, 212, 20);
-        border_color = QStringLiteral("#EC4899");
-        bg_color = QStringLiteral("rgba(30, 16, 42, 245)");
-        tab_sel_color = QStringLiteral("#06B6D4");
-        break;
-    case OverlayVisualPreset::LiquidQuartzFrost:
-        line_col = QColor(56, 189, 248);
-        fill_top = QColor(56, 189, 248, 80);
-        fill_bot = QColor(2, 132, 199, 15);
-        border_color = QStringLiteral("#38BDF8");
-        bg_color = QStringLiteral("rgba(15, 28, 48, 230)");
-        tab_sel_color = QStringLiteral("#38BDF8");
-        break;
-    case OverlayVisualPreset::RetroPixelMatrix:
-        line_col = QColor(34, 197, 94);
-        fill_top = QColor(34, 197, 94, 90);
-        fill_bot = QColor(21, 128, 61, 15);
-        border_color = QStringLiteral("#22C55E");
-        bg_color = QStringLiteral("rgba(5, 16, 8, 250)");
-        tab_sel_color = QStringLiteral("#22C55E");
-        break;
-    }
-
-    if (m_compact_fpsGraph) {
-        m_compact_fpsGraph->SetColors(line_col, fill_top, fill_bot);
-    }
-    if (m_fpsGraph) {
-        m_fpsGraph->SetColors(line_col, fill_top, fill_bot);
-    }
-
-    setStyleSheet(QStringLiteral(
-        "QWidget { color: #FFFFFF; font-family: 'Segoe UI', sans-serif; font-size: 12px; }"
-        "QTabWidget::pane { border: 1.5px solid %1; background: %2; border-radius: 8px; }"
-        "QTabBar::tab { background: rgba(15, 23, 42, 0.85); color: #FFFFFF; padding: 6px 12px; border: 1px solid rgba(255, 255, 255, 0.15); "
-        "border-top-left-radius: 6px; border-top-right-radius: 6px; margin-right: 2px; font-weight: bold; }"
-        "QTabBar::tab:selected { background: rgba(30, 41, 59, 0.95); color: %3; border-bottom: 2.5px solid %3; }"
-        "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(30, 41, 59, 0.9), stop:1 rgba(15, 23, 42, 0.9)); "
-        "border: 1px solid rgba(255, 255, 255, 0.20); border-radius: 6px; color: #FFFFFF; padding: 5px 10px; font-weight: 600; }"
-        "QPushButton:hover { border: 1.5px solid %1; color: %3; background: rgba(30, 41, 59, 1.0); }"
-        "QPushButton:pressed { background: %1; color: #FFFFFF; }"
-        "QPushButton:disabled { background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(255, 255, 255, 0.10); color: #64748B; }"
-        "QComboBox { background: rgba(15, 23, 42, 0.9); border: 1px solid %1; border-radius: 6px; padding: 4px 8px; color: #FFFFFF; }"
-        "QComboBox::drop-down { border: none; width: 18px; }"
-        "QCheckBox { spacing: 6px; }"
-        "QCheckBox::indicator { width: 15px; height: 15px; border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 3px; background: rgba(15, 23, 42, 0.9); }"
-        "QCheckBox::indicator:checked { background: %1; border: 1px solid %1; }"
-    ).arg(border_color, bg_color, tab_sel_color));
-
-    update();
-}
-
 void PerformanceOverlay::paintEvent(QPaintEvent* event) {
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
 
-    QColor bg_col(11, 15, 25, 240);
-    QColor border_col(0, 210, 255, 140);
-    qreal r = 10.0;
-
-    switch (m_visual_preset) {
-    case OverlayVisualPreset::StormAuroraGlass3D:
-        bg_col = QColor(11, 15, 25, 240);
-        border_col = QColor(0, 210, 255, 180);
-        r = 12.0;
-        break;
-    case OverlayVisualPreset::Switch2ProMagnetic:
-        bg_col = QColor(18, 22, 32, 245);
-        border_col = QColor(255, 59, 48, 200);
-        r = 14.0;
-        break;
-    case OverlayVisualPreset::CyberpunkEdgeNeon:
-        bg_col = QColor(10, 10, 14, 250);
-        border_col = QColor(255, 230, 0, 220);
-        r = 4.0;
-        break;
-    case OverlayVisualPreset::OledGhostWireframe:
-        bg_col = QColor(0, 0, 0, 252);
-        border_col = QColor(255, 255, 255, 120);
-        r = 6.0;
-        break;
-    case OverlayVisualPreset::TitaniumMechaTactical:
-        bg_col = QColor(21, 24, 30, 245);
-        border_col = QColor(245, 158, 11, 200);
-        r = 5.0;
-        break;
-    case OverlayVisualPreset::HyruleRelicGold:
-        bg_col = QColor(15, 21, 18, 245);
-        border_col = QColor(251, 191, 36, 210);
-        r = 8.0;
-        break;
-    case OverlayVisualPreset::SanctuaryBloodRune:
-        bg_col = QColor(17, 9, 12, 245);
-        border_col = QColor(220, 38, 38, 210);
-        r = 6.0;
-        break;
-    case OverlayVisualPreset::ArcadeCandyTactile3D:
-        bg_col = QColor(30, 16, 42, 245);
-        border_col = QColor(236, 72, 153, 210);
-        r = 16.0;
-        break;
-    case OverlayVisualPreset::LiquidQuartzFrost:
-        bg_col = QColor(15, 28, 48, 230);
-        border_col = QColor(56, 189, 248, 190);
-        r = 10.0;
-        break;
-    case OverlayVisualPreset::RetroPixelMatrix:
-        bg_col = QColor(5, 16, 8, 250);
-        border_col = QColor(34, 197, 94, 220);
-        r = 2.0;
-        break;
-    }
-
-    painter.setBrush(bg_col);
-    painter.setPen(QPen(border_col, 1.5));
-    painter.drawRoundedRect(rect().adjusted(1, 1, -1, -1), r, r);
-
-    // Scanlines texture for RetroPixelMatrix
-    if (m_visual_preset == OverlayVisualPreset::RetroPixelMatrix) {
-        painter.setPen(QPen(QColor(34, 197, 94, 15), 1));
-        for (int y = 2; y < height() - 2; y += 3) {
-            painter.drawLine(2, y, width() - 2, y);
-        }
-    }
-}
-
-void PerformanceOverlay::OnQuickRewind() {
-    const bool cur = Settings::values.use_speed_limit.GetValue();
-    Settings::values.use_speed_limit.SetValue(!cur);
-}
-
-void PerformanceOverlay::OnQuickFastForward() {
-    if (Settings::values.speed_limit.GetValue() < 200) {
-        Settings::values.speed_limit.SetValue(200);
-    } else {
-        Settings::values.speed_limit.SetValue(100);
-    }
-}
-
-void PerformanceOverlay::OnQuickFrameStep() {
-    if (m_mainWindow) {
-        m_mainWindow->OnPauseGame();
-    }
-}
-
-void PerformanceOverlay::OnQuickSaveAction() {
-    OnSaveSlot(0);
-}
-
-void PerformanceOverlay::OnQuickLoadAction() {
-    OnLoadSlot(0);
-}
-
-void PerformanceOverlay::OnQuickAiTranslate() {
-    if (m_mainWindow) {
-        m_mainWindow->OnTranslateScreen();
-    }
-}
-
-void PerformanceOverlay::OnQuickShaderFix() {
-    OnAutoHealGraphicsArtifacts();
-}
-
-void PerformanceOverlay::OnQuickTurbo() {
-    const auto cur = Settings::values.speed_limit.GetValue();
-    Settings::values.speed_limit.SetValue(cur >= 200 ? 100 : 300);
-}
-
-void PerformanceOverlay::OnQuickPauseCooling() {
-    if (m_mainWindow) {
-        m_mainWindow->OnPauseContinueGame();
-    }
-}
-
-void PerformanceOverlay::OnStyleComboChanged(int index) {
-    if (index >= 0 && index < 10) {
-        SetVisualPreset(static_cast<OverlayVisualPreset>(index));
-    }
+    // Cyber translucent background with neon cyan border
+    painter.setBrush(QColor(11, 15, 25, 240));
+    painter.setPen(QPen(QColor(0, 210, 255, 120), 1.5));
+    painter.drawRoundedRect(rect().adjusted(1, 1, -1, -1), 10.0, 10.0);
 }
 
 void PerformanceOverlay::mousePressEvent(QMouseEvent* event) {
@@ -1455,4 +1198,480 @@ void PerformanceOverlay::mouseMoveEvent(QMouseEvent* event) {
 
 void PerformanceOverlay::closeEvent(QCloseEvent* event) {
     emit closed();
+}
+
+
+// =========================================================================
+// In-Game Quick Settings Sidebar (F10)
+// =========================================================================
+
+void PerformanceOverlay::SetupSidebarUI() {
+    m_sidebar_widget = new QWidget(this);
+    m_sidebar_widget->setFixedWidth(350);
+    auto* layout = new QVBoxLayout(m_sidebar_widget);
+    layout->setContentsMargins(12, 10, 12, 10);
+    layout->setSpacing(6);
+
+    const auto pal = StormTheme::GetThemePalette();
+    const QString accent = pal.accent.isEmpty() ? QStringLiteral("#00D2FF") : pal.accent;
+
+    // Header bar
+    auto* header = new QHBoxLayout();
+    header->setSpacing(8);
+
+    auto* title_lbl = new QLabel(StormLang(QStringLiteral("БЫСТРЫЕ НАСТРОЙКИ"), QStringLiteral("QUICK SETTINGS")), m_sidebar_widget);
+    title_lbl->setStyleSheet(QStringLiteral("font-weight: 800; font-size: 13px; color: %1; letter-spacing: 0.5px;").arg(accent));
+    header->addWidget(title_lbl);
+
+    header->addStretch(1);
+
+    auto* btn_to_hud = new QPushButton(StormLang(QStringLiteral("В HUD"), QStringLiteral("To HUD")), m_sidebar_widget);
+    btn_to_hud->setCursor(Qt::PointingHandCursor);
+    btn_to_hud->setStyleSheet(QStringLiteral("padding: 3px 8px; font-size: 10.5px; font-weight: bold; border-radius: 5px;"));
+    connect(btn_to_hud, &QPushButton::clicked, this, [this]() {
+        SetMode(OverlayMode::Compact);
+    });
+    header->addWidget(btn_to_hud);
+
+    auto* btn_close = new QPushButton(QStringLiteral("✕"), m_sidebar_widget);
+    btn_close->setFixedSize(22, 22);
+    btn_close->setCursor(Qt::PointingHandCursor);
+    btn_close->setStyleSheet(QStringLiteral("padding: 0; font-size: 11px; font-weight: bold; border-radius: 4px;"));
+    connect(btn_close, &QPushButton::clicked, this, [this]() {
+        SetMode(OverlayMode::Compact);
+    });
+    header->addWidget(btn_close);
+
+    layout->addLayout(header);
+
+    m_sidebar_game_title = new QLabel(StormLang(QStringLiteral("Сессия эмулятора"), QStringLiteral("Emulation Session")), m_sidebar_widget);
+    m_sidebar_game_title->setStyleSheet(QStringLiteral("font-size: 11px; color: %1; font-weight: 600; padding-bottom: 2px;").arg(pal.textSecondary.isEmpty() ? QStringLiteral("#94A3B8") : pal.textSecondary));
+    layout->addWidget(m_sidebar_game_title);
+
+    // Scroll Area for the Bento Blocks
+    auto* scroll = new QScrollArea(m_sidebar_widget);
+    scroll->setWidgetResizable(true);
+    scroll->setFrameShape(QFrame::NoFrame);
+    scroll->setStyleSheet(QStringLiteral("QScrollArea { background: transparent; border: none; } QWidget#SidebarScrollContents { background: transparent; }"));
+
+    auto* scroll_contents = new QWidget(scroll);
+    scroll_contents->setObjectName(QStringLiteral("SidebarScrollContents"));
+    auto* blocks_layout = new QVBoxLayout(scroll_contents);
+    blocks_layout->setContentsMargins(0, 4, 4, 4);
+    blocks_layout->setSpacing(10);
+
+    const QString bento_style = QStringLiteral(
+        "QGroupBox {"
+        "  background: rgba(15, 23, 42, 0.72);"
+        "  border: 1px solid rgba(255, 255, 255, 0.10);"
+        "  border-radius: 8px;"
+        "  margin-top: 14px;"
+        "  padding: 18px 10px 10px 10px;"
+        "  font-weight: bold;"
+        "  color: %1;"
+        "}"
+        "QGroupBox::title {"
+        "  subcontrol-origin: margin;"
+        "  subcontrol-position: top left;"
+        "  left: 10px;"
+        "  padding: 2px 8px;"
+        "  color: %1;"
+        "  font-size: 11px;"
+        "  font-weight: bold;"
+        "  background: #0F172A;"
+        "  border: 1px solid rgba(255, 255, 255, 0.12);"
+        "  border-radius: 4px;"
+        "}"
+    ).arg(accent);
+
+    // -------------------------------------------------------------
+    // Bento Block 1: Сохранения (SESS)
+    // -------------------------------------------------------------
+    auto* group_sess = new QGroupBox(StormLang(QStringLiteral("Быстрые сохранения (SESS)"), QStringLiteral("Quick Saves (SESS)")), scroll_contents);
+    group_sess->setStyleSheet(bento_style);
+    auto* sess_layout = new QVBoxLayout(group_sess);
+    sess_layout->setSpacing(6);
+    sess_layout->setContentsMargins(6, 8, 6, 6);
+
+    auto* slot_row = new QHBoxLayout();
+    auto* slot_lbl = new QLabel(StormLang(QStringLiteral("Слот:"), QStringLiteral("Slot:")), group_sess);
+    slot_lbl->setStyleSheet(QStringLiteral("font-weight: 600; font-size: 11px;"));
+    slot_row->addWidget(slot_lbl);
+
+    m_sidebar_slot_combo = new QComboBox(group_sess);
+    m_sidebar_slot_combo->setCursor(Qt::PointingHandCursor);
+    for (int i = 1; i <= 10; ++i) {
+        m_sidebar_slot_combo->addItem(StormLang(QStringLiteral("Слот %1").arg(i), QStringLiteral("Slot %1").arg(i)), i);
+    }
+    slot_row->addWidget(m_sidebar_slot_combo, 1);
+    sess_layout->addLayout(slot_row);
+
+    auto* sess_btns_row = new QHBoxLayout();
+    sess_btns_row->setSpacing(6);
+    m_btn_sidebar_save = new QPushButton(StormLang(QStringLiteral("Сохранить (F5)"), QStringLiteral("Quick Save (F5)")), group_sess);
+    m_btn_sidebar_save->setCursor(Qt::PointingHandCursor);
+    connect(m_btn_sidebar_save, &QPushButton::clicked, this, &PerformanceOverlay::OnSidebarSaveClicked);
+    sess_btns_row->addWidget(m_btn_sidebar_save);
+
+    m_btn_sidebar_load = new QPushButton(StormLang(QStringLiteral("Загрузить (F7)"), QStringLiteral("Quick Load (F7)")), group_sess);
+    m_btn_sidebar_load->setCursor(Qt::PointingHandCursor);
+    connect(m_btn_sidebar_load, &QPushButton::clicked, this, &PerformanceOverlay::OnSidebarLoadClicked);
+    sess_btns_row->addWidget(m_btn_sidebar_load);
+    sess_layout->addLayout(sess_btns_row);
+
+    m_btn_sidebar_manager = new QPushButton(StormLang(QStringLiteral("Менеджер сохранений..."), QStringLiteral("Save State Manager...")), group_sess);
+    m_btn_sidebar_manager->setCursor(Qt::PointingHandCursor);
+    connect(m_btn_sidebar_manager, &QPushButton::clicked, this, &PerformanceOverlay::OnSidebarSaveManagerClicked);
+    sess_layout->addWidget(m_btn_sidebar_manager);
+
+    m_sidebar_save_status = new QLabel(StormLang(QStringLiteral("Слоты 1..10 готовы"), QStringLiteral("Slots 1..10 ready")), group_sess);
+    m_sidebar_save_status->setStyleSheet(QStringLiteral("font-size: 10px; color: %1;").arg(pal.textSecondary.isEmpty() ? QStringLiteral("#94A3B8") : pal.textSecondary));
+    sess_layout->addWidget(m_sidebar_save_status);
+
+    blocks_layout->addWidget(group_sess);
+
+    // -------------------------------------------------------------
+    // Bento Block 2: Быстрые настройки (Графика и Производительность)
+    // -------------------------------------------------------------
+    auto* group_settings = new QGroupBox(StormLang(QStringLiteral("Быстрые настройки"), QStringLiteral("Quick Settings")), scroll_contents);
+    group_settings->setStyleSheet(bento_style);
+    auto* set_layout = new QVBoxLayout(group_settings);
+    set_layout->setSpacing(6);
+    set_layout->setContentsMargins(6, 8, 6, 6);
+
+    // Resolution Scale
+    auto* res_row = new QHBoxLayout();
+    auto* res_lbl = new QLabel(StormLang(QStringLiteral("Разрешение:"), QStringLiteral("Resolution:")), group_settings);
+    res_lbl->setStyleSheet(QStringLiteral("font-size: 11px; font-weight: 600;"));
+    res_row->addWidget(res_lbl);
+
+    m_sidebar_resolution_combo = new QComboBox(group_settings);
+    m_sidebar_resolution_combo->setCursor(Qt::PointingHandCursor);
+    m_sidebar_resolution_combo->addItem(QStringLiteral("0.5x (360p/540p)"), static_cast<int>(Settings::ResolutionSetup::Res1_2X));
+    m_sidebar_resolution_combo->addItem(QStringLiteral("0.75x (540p/810p)"), static_cast<int>(Settings::ResolutionSetup::Res3_4X));
+    m_sidebar_resolution_combo->addItem(QStringLiteral("1x (720p/1080p)"), static_cast<int>(Settings::ResolutionSetup::Res1X));
+    m_sidebar_resolution_combo->addItem(QStringLiteral("1.5x (1080p/1620p)"), static_cast<int>(Settings::ResolutionSetup::Res3_2X));
+    m_sidebar_resolution_combo->addItem(QStringLiteral("2x (1440p/2160p)"), static_cast<int>(Settings::ResolutionSetup::Res2X));
+    const auto cur_res = Settings::values.resolution_setup.GetValue();
+    const int cur_res_idx = m_sidebar_resolution_combo->findData(static_cast<int>(cur_res));
+    if (cur_res_idx >= 0) {
+        m_sidebar_resolution_combo->setCurrentIndex(cur_res_idx);
+    }
+    connect(m_sidebar_resolution_combo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &PerformanceOverlay::OnSidebarResolutionChanged);
+    res_row->addWidget(m_sidebar_resolution_combo, 1);
+    set_layout->addLayout(res_row);
+
+    // Scaling Filter
+    auto* scale_row = new QHBoxLayout();
+    auto* scale_lbl = new QLabel(StormLang(QStringLiteral("Фильтр:"), QStringLiteral("Filter:")), group_settings);
+    scale_lbl->setStyleSheet(QStringLiteral("font-size: 11px; font-weight: 600;"));
+    scale_row->addWidget(scale_lbl);
+
+    m_sidebar_scaling_combo = new QComboBox(group_settings);
+    m_sidebar_scaling_combo->setCursor(Qt::PointingHandCursor);
+    m_sidebar_scaling_combo->addItem(QStringLiteral("Nearest (Ближайший)"), static_cast<int>(Settings::ScalingFilter::NearestNeighbor));
+    m_sidebar_scaling_combo->addItem(QStringLiteral("Bilinear (Билинейный)"), static_cast<int>(Settings::ScalingFilter::Bilinear));
+    m_sidebar_scaling_combo->addItem(QStringLiteral("Bicubic (Бикубический)"), static_cast<int>(Settings::ScalingFilter::Bicubic));
+    m_sidebar_scaling_combo->addItem(QStringLiteral("Gaussian (Гауссов)"), static_cast<int>(Settings::ScalingFilter::Gaussian));
+    m_sidebar_scaling_combo->addItem(QStringLiteral("ScaleForce"), static_cast<int>(Settings::ScalingFilter::ScaleForce));
+    m_sidebar_scaling_combo->addItem(QStringLiteral("AMD FSR"), static_cast<int>(Settings::ScalingFilter::Fsr));
+    const auto cur_filter = Settings::values.scaling_filter.GetValue();
+    const int cur_filter_idx = m_sidebar_scaling_combo->findData(static_cast<int>(cur_filter));
+    if (cur_filter_idx >= 0) {
+        m_sidebar_scaling_combo->setCurrentIndex(cur_filter_idx);
+    }
+    connect(m_sidebar_scaling_combo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &PerformanceOverlay::OnSidebarScalingChanged);
+    scale_row->addWidget(m_sidebar_scaling_combo, 1);
+    set_layout->addLayout(scale_row);
+
+    // Speed Limit & VSync row
+    auto* perf_btns_row = new QHBoxLayout();
+    perf_btns_row->setSpacing(6);
+
+    m_btn_sidebar_speed_limit = new QPushButton(StormLang(QStringLiteral("Лимит: 100%"), QStringLiteral("Limit: 100%")), group_settings);
+    m_btn_sidebar_speed_limit->setCursor(Qt::PointingHandCursor);
+    connect(m_btn_sidebar_speed_limit, &QPushButton::clicked, this, &PerformanceOverlay::OnSidebarSpeedLimitToggled);
+    perf_btns_row->addWidget(m_btn_sidebar_speed_limit);
+
+    m_btn_sidebar_vsync = new QPushButton(StormLang(QStringLiteral("VSync: Вкл"), QStringLiteral("VSync: On")), group_settings);
+    m_btn_sidebar_vsync->setCursor(Qt::PointingHandCursor);
+    connect(m_btn_sidebar_vsync, &QPushButton::clicked, this, &PerformanceOverlay::OnSidebarVsyncToggled);
+    perf_btns_row->addWidget(m_btn_sidebar_vsync);
+    set_layout->addLayout(perf_btns_row);
+
+    // Docked mode
+    m_btn_sidebar_docked = new QPushButton(StormLang(QStringLiteral("Режим: В доке"), QStringLiteral("Mode: Docked")), group_settings);
+    m_btn_sidebar_docked->setCursor(Qt::PointingHandCursor);
+    connect(m_btn_sidebar_docked, &QPushButton::clicked, this, &PerformanceOverlay::OnSidebarDockedToggled);
+    set_layout->addWidget(m_btn_sidebar_docked);
+
+    // Volume
+    m_sidebar_volume_label = new QLabel(StormLang(QStringLiteral("Громкость: 100%"), QStringLiteral("Volume: 100%")), group_settings);
+    m_sidebar_volume_label->setStyleSheet(QStringLiteral("font-size: 11px; font-weight: 600;"));
+    set_layout->addWidget(m_sidebar_volume_label);
+
+    auto* vol_slider = new QSlider(Qt::Horizontal, group_settings);
+    vol_slider->setRange(0, 100);
+    vol_slider->setValue(static_cast<int>(Settings::values.volume.GetValue()));
+    vol_slider->setCursor(Qt::PointingHandCursor);
+    connect(vol_slider, &QSlider::valueChanged, this, &PerformanceOverlay::OnSidebarVolumeChanged);
+    set_layout->addWidget(vol_slider);
+
+    blocks_layout->addWidget(group_settings);
+
+    // -------------------------------------------------------------
+    // Bento Block 3: Читы и Amiibo
+    // -------------------------------------------------------------
+    auto* group_tools = new QGroupBox(StormLang(QStringLiteral("Читы и Amiibo"), QStringLiteral("Cheats & Amiibo")), scroll_contents);
+    group_tools->setStyleSheet(bento_style);
+    auto* tools_layout = new QVBoxLayout(group_tools);
+    tools_layout->setSpacing(6);
+    tools_layout->setContentsMargins(6, 8, 6, 6);
+
+    m_btn_sidebar_cheats = new QPushButton(StormLang(QStringLiteral("Управление читами..."), QStringLiteral("Cheats Manager...")), group_tools);
+    m_btn_sidebar_cheats->setCursor(Qt::PointingHandCursor);
+    connect(m_btn_sidebar_cheats, &QPushButton::clicked, this, &PerformanceOverlay::OnSidebarCheatsClicked);
+    tools_layout->addWidget(m_btn_sidebar_cheats);
+
+    auto* amiibo_row = new QHBoxLayout();
+    amiibo_row->setSpacing(6);
+    m_btn_sidebar_amiibo_browse = new QPushButton(StormLang(QStringLiteral("Amiibo база..."), QStringLiteral("Browse Amiibo...")), group_tools);
+    m_btn_sidebar_amiibo_browse->setCursor(Qt::PointingHandCursor);
+    connect(m_btn_sidebar_amiibo_browse, &QPushButton::clicked, this, &PerformanceOverlay::OnSidebarAmiiboBrowseClicked);
+    amiibo_row->addWidget(m_btn_sidebar_amiibo_browse, 1);
+
+    m_btn_sidebar_amiibo_eject = new QPushButton(StormLang(QStringLiteral("Извлечь"), QStringLiteral("Eject")), group_tools);
+    m_btn_sidebar_amiibo_eject->setCursor(Qt::PointingHandCursor);
+    connect(m_btn_sidebar_amiibo_eject, &QPushButton::clicked, this, &PerformanceOverlay::OnSidebarAmiiboEjectClicked);
+    amiibo_row->addWidget(m_btn_sidebar_amiibo_eject);
+    tools_layout->addLayout(amiibo_row);
+
+    blocks_layout->addWidget(group_tools);
+
+    // -------------------------------------------------------------
+    // Bento Block 4: Сессия
+    // -------------------------------------------------------------
+    auto* group_session = new QGroupBox(StormLang(QStringLiteral("Управление сессией"), QStringLiteral("Session Controls")), scroll_contents);
+    group_session->setStyleSheet(bento_style);
+    auto* sess_ctrl_layout = new QVBoxLayout(group_session);
+    sess_ctrl_layout->setSpacing(6);
+    sess_ctrl_layout->setContentsMargins(6, 8, 6, 6);
+
+    auto* row_ctrl1 = new QHBoxLayout();
+    row_ctrl1->setSpacing(6);
+    m_btn_sidebar_pause = new QPushButton(StormLang(QStringLiteral("Пауза / Пуск"), QStringLiteral("Pause / Resume")), group_session);
+    m_btn_sidebar_pause->setCursor(Qt::PointingHandCursor);
+    connect(m_btn_sidebar_pause, &QPushButton::clicked, this, &PerformanceOverlay::OnSidebarPauseClicked);
+    row_ctrl1->addWidget(m_btn_sidebar_pause);
+
+    m_btn_sidebar_restart = new QPushButton(StormLang(QStringLiteral("Перезапуск"), QStringLiteral("Restart")), group_session);
+    m_btn_sidebar_restart->setCursor(Qt::PointingHandCursor);
+    connect(m_btn_sidebar_restart, &QPushButton::clicked, this, &PerformanceOverlay::OnSidebarRestartClicked);
+    row_ctrl1->addWidget(m_btn_sidebar_restart);
+    sess_ctrl_layout->addLayout(row_ctrl1);
+
+    auto* row_ctrl2 = new QHBoxLayout();
+    row_ctrl2->setSpacing(6);
+    m_btn_sidebar_configure = new QPushButton(StormLang(QStringLiteral("Все настройки..."), QStringLiteral("All Settings...")), group_session);
+    m_btn_sidebar_configure->setCursor(Qt::PointingHandCursor);
+    connect(m_btn_sidebar_configure, &QPushButton::clicked, this, &PerformanceOverlay::OnSidebarConfigureClicked);
+    row_ctrl2->addWidget(m_btn_sidebar_configure);
+
+    m_btn_sidebar_stop = new QPushButton(StormLang(QStringLiteral("Стоп"), QStringLiteral("Stop")), group_session);
+    m_btn_sidebar_stop->setCursor(Qt::PointingHandCursor);
+    m_btn_sidebar_stop->setStyleSheet(QStringLiteral("color: #EF4444; border-color: rgba(239, 68, 68, 0.4);"));
+    connect(m_btn_sidebar_stop, &QPushButton::clicked, this, &PerformanceOverlay::OnSidebarStopClicked);
+    row_ctrl2->addWidget(m_btn_sidebar_stop);
+    sess_ctrl_layout->addLayout(row_ctrl2);
+
+    blocks_layout->addWidget(group_session);
+
+    blocks_layout->addStretch(1);
+    scroll->setWidget(scroll_contents);
+    layout->addWidget(scroll, 1);
+
+    m_stack->addWidget(m_sidebar_widget);
+}
+
+void PerformanceOverlay::RefreshSidebarState() {
+    if (m_btn_sidebar_docked) {
+        const bool docked = (Settings::values.use_docked_mode.GetValue() == Settings::ConsoleMode::Docked);
+        m_btn_sidebar_docked->setText(docked
+            ? StormLang(QStringLiteral("Режим: В доке"), QStringLiteral("Mode: Docked"))
+            : StormLang(QStringLiteral("Режим: Портативный"), QStringLiteral("Mode: Handheld")));
+    }
+    if (m_sidebar_resolution_combo) {
+        const auto cur_res = Settings::values.resolution_setup.GetValue();
+        const int idx = m_sidebar_resolution_combo->findData(static_cast<int>(cur_res));
+        if (idx >= 0 && m_sidebar_resolution_combo->currentIndex() != idx) {
+            const QSignalBlocker blocker(m_sidebar_resolution_combo);
+            m_sidebar_resolution_combo->setCurrentIndex(idx);
+        }
+    }
+    if (m_sidebar_scaling_combo) {
+        const auto sf = Settings::values.scaling_filter.GetValue();
+        const int idx = m_sidebar_scaling_combo->findData(static_cast<int>(sf));
+        if (idx >= 0 && m_sidebar_scaling_combo->currentIndex() != idx) {
+            const QSignalBlocker blocker(m_sidebar_scaling_combo);
+            m_sidebar_scaling_combo->setCurrentIndex(idx);
+        }
+    }
+    if (m_btn_sidebar_speed_limit) {
+        const bool limit = Settings::values.use_speed_limit.GetValue();
+        m_btn_sidebar_speed_limit->setText(limit
+            ? StormLang(QStringLiteral("Лимит: 100%"), QStringLiteral("Limit: 100%"))
+            : StormLang(QStringLiteral("Лимит: Выкл"), QStringLiteral("Limit: Off")));
+    }
+    if (m_btn_sidebar_vsync) {
+        const auto vsync = Settings::values.vsync_mode.GetValue();
+        const bool on = (vsync == Settings::VSyncMode::Fifo || vsync == Settings::VSyncMode::FifoRelaxed);
+        m_btn_sidebar_vsync->setText(on
+            ? StormLang(QStringLiteral("VSync: Вкл"), QStringLiteral("VSync: On"))
+            : StormLang(QStringLiteral("VSync: Выкл"), QStringLiteral("VSync: Off")));
+    }
+    if (m_sidebar_volume_label) {
+        const int vol = static_cast<int>(Settings::values.volume.GetValue());
+        m_sidebar_volume_label->setText(StormLang(
+            QStringLiteral("Громкость: %1%").arg(vol),
+            QStringLiteral("Volume: %1%").arg(vol)));
+    }
+    if (m_sidebar_game_title && QtCommon::system && QtCommon::system->IsPoweredOn()) {
+        const u64 tid = QtCommon::system->GetApplicationProcessProgramID();
+        if (tid != 0) {
+            m_sidebar_game_title->setText(QStringLiteral("ID: %1").arg(StormFormat::FormatTitleId(tid)));
+        } else {
+            m_sidebar_game_title->setText(StormLang(QStringLiteral("Сессия эмулятора"), QStringLiteral("Emulation Session")));
+        }
+    }
+}
+
+void PerformanceOverlay::OnSidebarSaveClicked() {
+    if (!m_mainWindow) return;
+    const int slot = m_sidebar_slot_combo ? (m_sidebar_slot_combo->currentIndex() + 1) : 1;
+    m_mainWindow->OnSaveStateSlot(slot);
+    if (m_sidebar_save_status) {
+        m_sidebar_save_status->setText(StormLang(
+            QStringLiteral("Слот %1 сохранен").arg(slot),
+            QStringLiteral("Slot %1 saved").arg(slot)));
+    }
+}
+
+void PerformanceOverlay::OnSidebarLoadClicked() {
+    if (!m_mainWindow) return;
+    const int slot = m_sidebar_slot_combo ? (m_sidebar_slot_combo->currentIndex() + 1) : 1;
+    m_mainWindow->OnLoadStateSlot(slot);
+    if (m_sidebar_save_status) {
+        m_sidebar_save_status->setText(StormLang(
+            QStringLiteral("Слот %1 загружен").arg(slot),
+            QStringLiteral("Slot %1 loaded").arg(slot)));
+    }
+}
+
+void PerformanceOverlay::OnSidebarSaveManagerClicked() {
+    if (!m_mainWindow) return;
+    m_mainWindow->OnSaveStateManager();
+}
+
+void PerformanceOverlay::OnSidebarResolutionChanged(int idx) {
+    if (idx < 0 || !m_sidebar_resolution_combo) return;
+    const auto res = static_cast<Settings::ResolutionSetup>(m_sidebar_resolution_combo->itemData(idx).toInt());
+    Settings::values.resolution_setup.SetValue(res);
+    if (m_mainWindow) {
+        m_mainWindow->OnDynamicSettingChangedFromUI();
+    }
+}
+
+void PerformanceOverlay::OnSidebarScalingChanged(int idx) {
+    if (idx < 0 || !m_sidebar_scaling_combo) return;
+    const auto filter = static_cast<Settings::ScalingFilter>(m_sidebar_scaling_combo->itemData(idx).toInt());
+    Settings::values.scaling_filter.SetValue(filter);
+    if (m_mainWindow) {
+        m_mainWindow->OnDynamicSettingChangedFromUI();
+    }
+}
+
+void PerformanceOverlay::OnSidebarSpeedLimitToggled() {
+    const bool current = Settings::values.use_speed_limit.GetValue();
+    Settings::values.use_speed_limit.SetValue(!current);
+    if (m_mainWindow) {
+        m_mainWindow->OnDynamicSettingChangedFromUI();
+    }
+    RefreshSidebarState();
+}
+
+void PerformanceOverlay::OnSidebarVsyncToggled() {
+    const auto current = Settings::values.vsync_mode.GetValue();
+    const auto next_mode = (current == Settings::VSyncMode::Fifo || current == Settings::VSyncMode::FifoRelaxed)
+                               ? Settings::VSyncMode::Mailbox
+                               : Settings::VSyncMode::Fifo;
+    Settings::values.vsync_mode.SetValue(next_mode);
+    if (m_mainWindow) {
+        m_mainWindow->OnDynamicSettingChangedFromUI();
+    }
+    RefreshSidebarState();
+}
+
+void PerformanceOverlay::OnSidebarDockedToggled() {
+    if (!m_mainWindow) return;
+    m_mainWindow->OnToggleDockedMode();
+    RefreshSidebarState();
+}
+
+void PerformanceOverlay::OnSidebarVolumeChanged(int val) {
+    Settings::values.volume.SetValue(static_cast<u8>(val));
+    if (m_sidebar_volume_label) {
+        m_sidebar_volume_label->setText(StormLang(
+            QStringLiteral("Громкость: %1%").arg(val),
+            QStringLiteral("Volume: %1%").arg(val)));
+    }
+    if (m_mainWindow) {
+        m_mainWindow->OnDynamicSettingChangedFromUI();
+    }
+}
+
+void PerformanceOverlay::OnSidebarHudToggled() {
+    SetMode(OverlayMode::Compact);
+}
+
+void PerformanceOverlay::OnSidebarCheatsClicked() {
+    if (!m_mainWindow) return;
+    m_mainWindow->OnCheatsDialog();
+    if (QtCommon::system && QtCommon::system->IsPoweredOn()) {
+        RefreshCheats();
+    }
+}
+
+void PerformanceOverlay::OnSidebarAmiiboBrowseClicked() {
+    if (!m_mainWindow) return;
+    m_mainWindow->OnAmiiboOnlineDatabase();
+}
+
+void PerformanceOverlay::OnSidebarAmiiboEjectClicked() {
+    if (!m_mainWindow) return;
+    m_mainWindow->EjectAmiibo();
+}
+
+void PerformanceOverlay::OnSidebarPauseClicked() {
+    if (!m_mainWindow) return;
+    m_mainWindow->OnPauseContinueGame();
+    RefreshSidebarState();
+}
+
+void PerformanceOverlay::OnSidebarRestartClicked() {
+    if (!m_mainWindow) return;
+    m_mainWindow->OnRestartGame();
+}
+
+void PerformanceOverlay::OnSidebarConfigureClicked() {
+    if (!m_mainWindow) return;
+    m_mainWindow->OnConfigure();
+}
+
+void PerformanceOverlay::OnSidebarStopClicked() {
+    if (!m_mainWindow) return;
+    m_mainWindow->OnStopGame();
+    SetMode(OverlayMode::Compact);
+    hide();
 }

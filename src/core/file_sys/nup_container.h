@@ -37,7 +37,11 @@ struct NupDecompressCache {
         return &it->second->second;
     }
 
-    void Insert(std::size_t file_index, std::vector<u8>& data) {
+    void Insert(std::size_t file_index, std::vector<u8> data) {
+        if (const auto it = index.find(file_index); it != index.end()) {
+            lru.splice(lru.begin(), lru, it->second);
+            return;
+        }
         while (bytes + data.size() > DecompressCacheCap && !lru.empty()) {
             bytes -= lru.back().second.size();
             index.erase(lru.back().first);
@@ -46,9 +50,10 @@ struct NupDecompressCache {
         if (bytes + data.size() > DecompressCacheCap) {
             return;
         }
-        lru.emplace_front(file_index, data);
+        const std::size_t size = data.size();
+        lru.emplace_front(file_index, std::move(data));
         index.emplace(file_index, lru.begin());
-        bytes += data.size();
+        bytes += size;
     }
 
     static constexpr std::size_t DecompressCacheCap = 512 * 1024 * 1024;

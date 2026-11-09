@@ -129,7 +129,7 @@ enum class OverlayControl(
         1.0f
     ),
     COMBINED_DPAD(
-        "combined_dpad",
+        "dpad",
         true,
         Pair(R.integer.COMBINED_DPAD_X, R.integer.COMBINED_DPAD_Y),
         Pair(R.integer.COMBINED_DPAD_X_PORTRAIT, R.integer.COMBINED_DPAD_Y_PORTRAIT),
@@ -137,7 +137,7 @@ enum class OverlayControl(
         1.0f
     ),
 
-    // 16 Hidden By Default Service & Extra Controls
+    // Hidden By Default Service & Extra Controls
     BUTTON_HOME(
         "button_home",
         false,

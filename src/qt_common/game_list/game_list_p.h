@@ -325,7 +325,12 @@ public:
         setData(has_custom_config, HasCustomConfigRole);
 
         // Check platform (Switch 1 vs Switch 2)
-        const bool is_switch2 = (program_id & 0x000F000000000000ULL) != 0 ||
+        const bool is_switch2 = ((program_id >> 48) == 0x0400ULL) ||
+                                ((program_id >> 40) == 0x040000ULL) ||
+                                ((program_id & 0x000F000000000000ULL) != 0ULL) ||
+                                game_type.compare(QStringLiteral("NUP"), Qt::CaseInsensitive) == 0 ||
+                                game_path.endsWith(QStringLiteral(".nup"), Qt::CaseInsensitive) ||
+                                game_name.contains(QStringLiteral("Switch 2"), Qt::CaseInsensitive) ||
                                 game_path.contains(QStringLiteral("switch2"), Qt::CaseInsensitive) ||
                                 game_path.contains(QStringLiteral("nx2"), Qt::CaseInsensitive);
         setData(is_switch2 ? 1 : 0, PlatformRole);

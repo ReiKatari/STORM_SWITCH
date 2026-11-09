@@ -114,12 +114,11 @@ enum class BooleanSetting(override val key: String) : AbstractBooleanSetting {
     RENDERER_EARLY_RELEASE_FENCES("early_release_fences"),
     ENABLE_FAST_GPU_TIME("use_fast_gpu_time"),
     ENABLE_FRAME_SKIPPING("enable_frame_skipping"),
-    CONTROLLER_AUTO_GAME_SKIN("controller_auto_game_skin"),
     USE_DEVICE_SENSORS("use_device_sensors");
 
     override fun getBoolean(needsGlobal: Boolean): Boolean {
-        if (this == SHOW_QUICK_SAVE_LOAD_OVERLAY || this == CONTROLLER_AUTO_GAME_SKIN || this == USE_DEVICE_SENSORS) {
-            val defVal = (this == CONTROLLER_AUTO_GAME_SKIN || this == USE_DEVICE_SENSORS)
+        if (this == SHOW_QUICK_SAVE_LOAD_OVERLAY || this == USE_DEVICE_SENSORS) {
+            val defVal = (this == USE_DEVICE_SENSORS)
             return try {
                 androidx.preference.PreferenceManager.getDefaultSharedPreferences(org.yuzu.yuzu_emu.YuzuApplication.appContext)
                     .getBoolean(key, defVal)
@@ -131,8 +130,7 @@ enum class BooleanSetting(override val key: String) : AbstractBooleanSetting {
     }
 
     override fun setBoolean(value: Boolean) {
-        if (this == SHOW_QUICK_SAVE_LOAD_OVERLAY || this == CONTROLLER_AUTO_GAME_SKIN || this == USE_DEVICE_SENSORS) {
-            val defVal = (this == CONTROLLER_AUTO_GAME_SKIN || this == USE_DEVICE_SENSORS)
+        if (this == SHOW_QUICK_SAVE_LOAD_OVERLAY || this == USE_DEVICE_SENSORS) {
             try {
                 androidx.preference.PreferenceManager.getDefaultSharedPreferences(org.yuzu.yuzu_emu.YuzuApplication.appContext)
                     .edit().putBoolean(key, value).apply()
@@ -148,9 +146,8 @@ enum class BooleanSetting(override val key: String) : AbstractBooleanSetting {
     }
 
     override val defaultValue: Boolean by lazy {
-        if (this == SHOW_QUICK_SAVE_LOAD_OVERLAY || this == CONTROLLER_AUTO_GAME_SKIN || this == USE_DEVICE_SENSORS) {
-            val defVal = (this == CONTROLLER_AUTO_GAME_SKIN || this == USE_DEVICE_SENSORS)
-            false
+        if (this == SHOW_QUICK_SAVE_LOAD_OVERLAY || this == USE_DEVICE_SENSORS) {
+            this == USE_DEVICE_SENSORS
         } else {
             NativeConfig.getDefaultToString(key).toBoolean()
         }

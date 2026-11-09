@@ -790,7 +790,7 @@ SaveStateResult CreateSaveState(System& system, const std::filesystem::path& pat
     }
 
     auto* process = system.ApplicationProcess();
-    if (!process) {
+    if (!process || !process->IsInitialized()) {
         return SaveStateResult::ErrorSystemNotRunning;
     }
 
@@ -1017,7 +1017,7 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
 
     auto& kernel = system.Kernel();
     auto* process = kernel.ApplicationProcess();
-    if (!process) {
+    if (!process || !process->IsInitialized()) {
         return SaveStateResult::ErrorSystemNotRunning;
     }
 
@@ -1028,10 +1028,12 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
     auto stall_lock = system.StallApplication();
 
     // Ensure GPU has finished any in-flight rendering/command buffers before memory changes
-    system.GPU().WaitIdleForLoadState();
+    if (system.IsPoweredOn()) {
+        system.GPU().WaitIdleForLoadState();
+    }
 
     process = kernel.ApplicationProcess();
-    if (!process) {
+    if (!process || !process->IsInitialized()) {
         system.UnstallApplication();
         return SaveStateResult::ErrorSystemNotRunning;
     }
@@ -1456,8 +1458,14 @@ SaveStateResult LoadSaveState(System& system, const std::filesystem::path& path)
 }
 
 std::filesystem::path GetSaveStatePath(u64 title_id, u32 slot) {
+    // Robustly support slots 0..10
+    slot = std::min<u32>(slot, 10U);
     auto save_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::SaveDir) / "savestates";
-    std::filesystem::create_directories(save_dir);
+    std::error_code ec;
+    std::filesystem::create_directories(save_dir, ec);
+    if (ec) {
+        LOG_WARNING(Core, "SaveState: Failed to create directory '{}': {}", save_dir.string(), ec.message());
+    }
     return save_dir / fmt::format("{:016X}_slot{}.ses", title_id, slot);
 }
 

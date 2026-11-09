@@ -102,8 +102,7 @@ NvResult nvhost_as_gpu::Ioctl1(DeviceFD fd, Ioctl command, std::span<const u8> i
         return Nx2UnknownIoctl("nvhost-as-gpu", command, input, output);
     }
     LOG_WARNING(Service_NVDRV, "Unimplemented nvhost-as-gpu ioctl={:08X}", command.raw);
-    UNIMPLEMENTED_MSG("Unimplemented ioctl={:08X}", command.raw);
-    return NvResult::NotImplemented;
+    return NvResult::NotSupported;
 }
 
 NvResult nvhost_as_gpu::Ioctl2(DeviceFD fd, Ioctl command, std::span<const u8> input,
@@ -112,8 +111,7 @@ NvResult nvhost_as_gpu::Ioctl2(DeviceFD fd, Ioctl command, std::span<const u8> i
         return Nx2UnknownIoctl("nvhost-as-gpu", command, input, output);
     }
     LOG_WARNING(Service_NVDRV, "Unimplemented nvhost-as-gpu ioctl={:08X}", command.raw);
-    UNIMPLEMENTED_MSG("Unimplemented ioctl={:08X}", command.raw);
-    return NvResult::NotImplemented;
+    return NvResult::NotSupported;
 }
 
 NvResult nvhost_as_gpu::Ioctl3(DeviceFD fd, Ioctl command, std::span<const u8> input,
@@ -136,8 +134,7 @@ NvResult nvhost_as_gpu::Ioctl3(DeviceFD fd, Ioctl command, std::span<const u8> i
         return Nx2UnknownIoctl("nvhost-as-gpu", command, input, output);
     }
     LOG_WARNING(Service_NVDRV, "Unimplemented nvhost-as-gpu ioctl3={:08X}", command.raw);
-    UNIMPLEMENTED_MSG("Unimplemented ioctl={:08X}", command.raw);
-    return NvResult::NotImplemented;
+    return NvResult::NotSupported;
 }
 
 void nvhost_as_gpu::OnOpen(NvCore::SessionId session_id, DeviceFD fd) {
@@ -450,7 +447,7 @@ NvResult nvhost_as_gpu::AllocAsEx(IoctlAllocAsEx& params) {
     std::scoped_lock lock(mutex);
 
     if (vm.initialised) {
-        ASSERT_MSG(false, "Cannot initialise an address space twice!");
+        LOG_WARNING(Service_NVDRV, "Cannot initialise an address space twice!");
         return NvResult::InvalidState;
     }
 
@@ -578,7 +575,7 @@ NvResult nvhost_as_gpu::AllocateSpace(IoctlAllocSpace& params) {
     } else {
         params.offset = static_cast<u64>(allocator.Allocate(params.pages)) << page_size_bits;
         if (!params.offset) {
-            ASSERT_MSG(false, "Failed to allocate free space in the GPU AS!");
+            LOG_ERROR(Service_NVDRV, "Failed to allocate free space in the GPU AS (pages={})!", params.pages);
             return NvResult::InsufficientMemory;
         }
     }
@@ -754,7 +751,8 @@ NvResult nvhost_as_gpu::MapBufferEx(IoctlMapBufferEx& params) {
 
         if (alloc-- == allocation_map.begin() ||
             (params.offset - alloc->first) + size > alloc->second.size) {
-            ASSERT_MSG(false, "Cannot perform a fixed mapping into an unallocated region!");
+            LOG_ERROR(Service_NVDRV, "Cannot perform a fixed mapping into an unallocated region (offset={:#x}, size={:#x})!",
+                      params.offset, size);
             return NvResult::BadValue;
         }
 
@@ -770,7 +768,7 @@ NvResult nvhost_as_gpu::MapBufferEx(IoctlMapBufferEx& params) {
 
         params.offset = u64(allocator.Allocate(u32(Common::AlignUp(size, page_size) >> page_size_bits))) << page_size_bits;
         if (!params.offset) {
-            ASSERT_MSG(false, "Failed to allocate free space in the GPU AS!");
+            LOG_ERROR(Service_NVDRV, "Failed to allocate free space in the GPU AS (size={:#x})!", size);
             return NvResult::InsufficientMemory;
         }
         gmmu->Map(params.offset, device_address, Common::AlignUp(size, page_size), Tegra::PTEKind(params.kind), big_page);

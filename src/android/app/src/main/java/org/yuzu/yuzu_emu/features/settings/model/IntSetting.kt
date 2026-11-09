@@ -163,31 +163,7 @@ enum class IntSetting(override val key: String) : AbstractIntSetting {
     GPU_LOG_RING_BUFFER_SIZE("gpu_log_ring_buffer_size"),
     ANDROID_PIPELINE_WORKERS("pipeline_worker_threads"),
     THERMAL_EMERGENCY_LIMIT("thermal_emergency_limit"),
-    SAVE_STATES_MODE("save_states_mode"),
-    CONTROLLER_SKIN_STYLE("controller_skin_style") {
-        override fun getInt(needsGlobal: Boolean): Int {
-            return try {
-                val pref = androidx.preference.PreferenceManager.getDefaultSharedPreferences(org.yuzu.yuzu_emu.YuzuApplication.appContext)
-                pref.getInt(key, 0).coerceIn(0, 19)
-            } catch (_: Throwable) {
-                0
-            }
-        }
-
-        override fun setInt(value: Int) {
-            val clamped = value.coerceIn(0, 19)
-            try {
-                val pref = androidx.preference.PreferenceManager.getDefaultSharedPreferences(org.yuzu.yuzu_emu.YuzuApplication.appContext)
-                pref.edit().putInt(key, clamped).apply()
-            } catch (_: Throwable) {}
-        }
-
-        override val defaultValue: Int = 0
-
-        override fun reset() {
-            setInt(defaultValue)
-        }
-    }
+    SAVE_STATES_MODE("save_states_mode")
     ;
 
     val int: Int

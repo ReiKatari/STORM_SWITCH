@@ -171,10 +171,15 @@ class TouchOverlayStyleDialogFragment : DialogFragment() {
         }
 
         private fun getStyleDescription(theme: OverlayTheme): String {
-            return try {
-                context.getString(theme.descResId)
-            } catch (_: Exception) {
-                ""
+            return when (theme.renderStyle) {
+                OverlayRenderStyle.NEON_GLOW -> context.getString(R.string.overlay_style_neon_glow)
+                OverlayRenderStyle.SWITCH_JOYCON -> context.getString(R.string.overlay_style_switch_joycon)
+                OverlayRenderStyle.FROST_GLASS_3D -> context.getString(R.string.overlay_style_frost_glass)
+                OverlayRenderStyle.TITANIUM_MECHA -> context.getString(R.string.overlay_style_titanium_mecha)
+                OverlayRenderStyle.ARCADE_CANDY_3D -> context.getString(R.string.overlay_style_arcade_candy)
+                OverlayRenderStyle.FLAT_MINIMAL -> context.getString(R.string.overlay_style_flat_minimal)
+                OverlayRenderStyle.RETRO_CLASSIC -> context.getString(R.string.overlay_style_retro_classic)
+                OverlayRenderStyle.GOLDEN_ORNATE -> context.getString(R.string.overlay_style_golden_ornate)
             }
         }
     }

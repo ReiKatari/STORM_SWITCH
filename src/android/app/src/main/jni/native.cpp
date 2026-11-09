@@ -386,33 +386,39 @@ static void ApplyGameSpecificSafetyOverrides(u64 title_id, u64 host_ram_bytes,
     std::string lower_hint{hint_text};
     std::transform(lower_hint.begin(), lower_hint.end(), lower_hint.begin(),
                    [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-    const bool is_wonder_hint =
-        (title_id == 0) &&
-        (lower_hint.find("wonder") != std::string::npos &&
-         lower_hint.find("mario") != std::string::npos &&
-         lower_hint.find("0400") == std::string::npos &&
-         lower_hint.find("ns2") == std::string::npos);
+    const bool is_wonder_match =
+        (title_id == 0x010015100B514000ULL || title_id == 0x010015100B514800ULL ||
+         base_tid == 0x010015100B514000ULL ||
+         lower_hint.find("010015100b514") != std::string::npos ||
+         (lower_hint.find("wonder") != std::string::npos &&
+          lower_hint.find("mario") != std::string::npos &&
+          lower_hint.find("0400") == std::string::npos &&
+          lower_hint.find("ns2") == std::string::npos));
 
-    if (title_id == 0 && !is_wonder_hint) return;
+    if (title_id == 0 && !is_wonder_match) return;
 
-    // 1) Super Mario Bros. Wonder (010015100B514000)
-    if (title_id == 0x010015100B514000ULL || base_tid == 0x010015100B514000ULL || is_wonder_hint) {
+    // 1) Super Mario Bros. Wonder (010015100B514000, Update 010015100B514800) Golden 60 FPS Lunchpack Matrix
+    if (is_wonder_match) {
         Settings::values.memory_layout_mode.SetGlobal(false);
         Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_4Gb);
         Settings::values.gpu_accuracy.SetGlobal(false);
         Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::Normal);
-        Settings::values.use_reactive_flushing.SetGlobal(false);
-        Settings::values.use_reactive_flushing.SetValue(false);
-        Settings::values.use_fast_gpu_time.SetGlobal(false);
-        Settings::values.use_fast_gpu_time.SetValue(true);
+        Settings::values.use_asynchronous_shaders.SetGlobal(false);
+        Settings::values.use_asynchronous_shaders.SetValue(false);
         Settings::values.barrier_feedback_loops.SetGlobal(false);
         Settings::values.barrier_feedback_loops.SetValue(true);
         Settings::values.early_release_fences.SetGlobal(false);
         Settings::values.early_release_fences.SetValue(false);
-        Settings::values.enable_frame_skipping.SetGlobal(false);
-        Settings::values.enable_frame_skipping.SetValue(false);
+        Settings::values.use_reactive_flushing.SetGlobal(false);
+        Settings::values.use_reactive_flushing.SetValue(false);
+        Settings::values.use_fast_gpu_time.SetGlobal(false);
+        Settings::values.use_fast_gpu_time.SetValue(true);
+        Settings::values.astc_recompression.SetGlobal(false);
+        Settings::values.astc_recompression.SetValue(Settings::AstcRecompression::Uncompressed);
         Settings::values.drs_resolution_lock.SetGlobal(false);
         Settings::values.drs_resolution_lock.SetValue(false);
+        Settings::values.enable_frame_skipping.SetGlobal(false);
+        Settings::values.enable_frame_skipping.SetValue(false);
         Settings::values.sync_memory_operations.SetGlobal(false);
         Settings::values.sync_memory_operations.SetValue(false);
         Settings::values.vram_budget_governor.SetGlobal(false);
@@ -427,7 +433,7 @@ static void ApplyGameSpecificSafetyOverrides(u64 title_id, u64 host_ram_bytes,
         Settings::values.enable_gpu_buffer_readback.SetValue(false);
         Settings::values.cpuopt_ignore_memory_aborts.SetGlobal(false);
         Settings::values.cpuopt_ignore_memory_aborts.SetValue(true);
-        LOG_INFO(Frontend, "Guaranteed Super Mario Bros. Wonder full safety overrides (4GB, Normal GPU, drs_lock OFF, sync_mem OFF, early_fences OFF, frame_skip OFF)");
+        LOG_INFO(Frontend, "Guaranteed Super Mario Bros. Wonder Golden Matrix (4GB, Normal GPU, Async Shaders OFF, Barrier Feedback ON, Early Fences OFF, Fast GPU Time ON)");
     }
 
     // 2) Diablo II: Resurrected

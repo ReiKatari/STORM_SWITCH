@@ -57,6 +57,7 @@ import org.yuzu.yuzu_emu.model.GamesViewModel
 import org.yuzu.yuzu_emu.utils.FileUtil
 import org.yuzu.yuzu_emu.utils.Log
 import org.yuzu.yuzu_emu.utils.NativeConfig
+import org.yuzu.yuzu_emu.utils.StormDesignEngine
 import org.yuzu.yuzu_emu.utils.ThemeHelper
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
@@ -178,7 +179,7 @@ data class StormWorldGameItem(
             }
             val rawTitle = sanitizeEncoding(obj.optString("title"))
             val finalTitle = sanitizeEncoding(obj.optString("finalTitle"))
-            var version = obj.optString("version")
+            var version = obj.optString("version").trim().removePrefix("v").removePrefix("V").removePrefix("v.").removePrefix("V.").trim()
             var internalVersion = obj.optString("internalVersion")
             var serialId = obj.optString("serialId")
             var dlcCount = obj.optInt("dlcCount")
@@ -430,10 +431,13 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
     override fun onStart() {
         super.onStart()
-        dialog?.window?.let { window ->
-            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-            window.setBackgroundDrawableResource(android.R.color.transparent)
-            ThemeHelper.applySystemBarsTheme(window, requireContext())
+        dialog?.let { dlg ->
+            dlg.window?.let { window ->
+                window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+                window.setBackgroundDrawableResource(android.R.color.transparent)
+                ThemeHelper.applySystemBarsTheme(window, requireContext())
+            }
+            StormDesignEngine.applyToDialog(dlg, requireContext())
         }
         dialog?.setOnKeyListener { _, keyCode, event ->
             if (keyCode == android.view.KeyEvent.KEYCODE_ESCAPE && event.action == android.view.KeyEvent.ACTION_UP) {
@@ -447,11 +451,15 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
     override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
         super.onConfigurationChanged(newConfig)
-        dialog?.window?.let { window ->
-            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-            window.setBackgroundDrawableResource(android.R.color.transparent)
-            ThemeHelper.applySystemBarsTheme(window, requireContext())
+        dialog?.let { dlg ->
+            dlg.window?.let { window ->
+                window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+                window.setBackgroundDrawableResource(android.R.color.transparent)
+                ThemeHelper.applySystemBarsTheme(window, requireContext())
+            }
+            StormDesignEngine.applyToDialog(dlg, requireContext())
         }
+        updateLandscapeLayout(newConfig.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE)
     }
 
     override fun onDismiss(dialog: DialogInterface) {
@@ -470,6 +478,8 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        StormDesignEngine.applyToViewTree(view, requireContext())
+        updateLandscapeLayout(resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE)
 
         androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
             val systemBars = insets.getInsets(
@@ -875,16 +885,6 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         applySortAndPagination(resetPage = true)
     }
 
-    private fun parseSizeToBytes(sizeStr: String): Long {
-        val trimmed = sizeStr.trim().uppercase(Locale.ROOT)
-        val num = trimmed.replace(",", ".").replace(Regex("[^0-9.]"), "").toDoubleOrNull() ?: 0.0
-        return when {
-            trimmed.endsWith("ГБ") || trimmed.endsWith("GB") -> (num * 1024.0 * 1024.0 * 1024.0).toLong()
-            trimmed.endsWith("МБ") || trimmed.endsWith("MB") -> (num * 1024.0 * 1024.0).toLong()
-            trimmed.endsWith("КБ") || trimmed.endsWith("KB") -> (num * 1024.0).toLong()
-            else -> num.toLong()
-        }
-    }
 
     private fun applySortAndPagination(resetPage: Boolean = false) {
         when (currentSortMode) {
@@ -1329,6 +1329,47 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         }
     }
 
+
+    private fun updateLandscapeLayout(isLandscape: Boolean) {
+        val b = _binding ?: return
+        val density = resources.displayMetrics.density
+        b.textCatalogStatus.isVisible = !isLandscape
+
+        val topPadding = if (isLandscape) (2 * density).toInt() else (12 * density).toInt()
+        val bottomPadding = if (isLandscape) (2 * density).toInt() else (12 * density).toInt()
+        b.topBar.setPadding(
+            b.topBar.paddingLeft,
+            topPadding,
+            b.topBar.paddingRight,
+            bottomPadding
+        )
+
+        val searchContainer = b.editSearch.parent?.parent as? ViewGroup
+        searchContainer?.setPadding(
+            searchContainer.paddingLeft,
+            if (isLandscape) (2 * density).toInt() else (8 * density).toInt(),
+            searchContainer.paddingRight,
+            if (isLandscape) (2 * density).toInt() else (8 * density).toInt()
+        )
+
+        b.scrollLanguageFilters.setPadding(
+            b.scrollLanguageFilters.paddingLeft,
+            if (isLandscape) 0 else (2 * density).toInt(),
+            b.scrollLanguageFilters.paddingRight,
+            if (isLandscape) 0 else (4 * density).toInt()
+        )
+
+        b.layoutPaginationBar.setPadding(
+            b.layoutPaginationBar.paddingLeft,
+            if (isLandscape) (2 * density).toInt() else (8 * density).toInt(),
+            b.layoutPaginationBar.paddingRight,
+            if (isLandscape) (2 * density).toInt() else (10 * density).toInt()
+        )
+        ((b.btnPagePrev.parent as? ViewGroup)?.layoutParams as? ViewGroup.MarginLayoutParams)?.let { lp ->
+            lp.topMargin = if (isLandscape) (2 * density).toInt() else (8 * density).toInt()
+        }
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
@@ -1340,6 +1381,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             val b = ListItemStormWorldGameBinding.inflate(layoutInflater, parent, false)
+            StormDesignEngine.applyToViewTree(b.root, parent.context)
             return ViewHolder(b)
         }
 
@@ -1433,6 +1475,8 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
+        StormDesignEngine.applyToDialog(dialog, requireContext())
+        StormDesignEngine.applyToViewTree(dialogBinding.root, requireContext())
 
         val dispTitle = if (game.title.isNotBlank()) game.title else game.finalTitle
         dialogBinding.textDlcDialogGameTitle.text = dispTitle
@@ -2104,19 +2148,83 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
         val dynamicCoverCache = java.util.concurrent.ConcurrentHashMap<String, String>()
 
+        val EMOJI_CLEAN_REGEX = Regex("""[\uD83C-\uDBFF\uDC00-\uDFFF\u2600-\u27BF\u2300-\u23FF\u2B50-\u2B55\u203C-\u2049\u25AA-\u25FE\uFE00-\uFE0F]""")
+
+        @JvmStatic
+        fun cleanEmoji(text: String): String = text.replace(EMOJI_CLEAN_REGEX, "").trim()
+
+        @JvmStatic
+        fun formatSizeBytes(bytes: Long, context: Context? = null): String {
+            val ctx = context ?: try { org.yuzu.yuzu_emu.YuzuApplication.appContext } catch (_: Exception) { null }
+            val isRu = try {
+                val loc = ctx?.resources?.configuration?.locales?.get(0) ?: Locale.getDefault()
+                loc.language.equals("ru", ignoreCase = true)
+            } catch (_: Exception) {
+                Locale.getDefault().language.equals("ru", ignoreCase = true)
+            }
+
+            val uB = if (isRu) "Б" else "B"
+            val uKb = if (isRu) "КБ" else "KB"
+            val uMb = if (isRu) "МБ" else "MB"
+            val uGb = if (isRu) "ГБ" else "GB"
+
+            val locale = if (isRu) Locale("ru", "RU") else Locale.US
+
+            return when {
+                bytes <= 0L -> "0 $uB"
+                bytes < 1024L -> "$bytes $uB"
+                bytes < 1024L * 1024L -> {
+                    val kb = bytes / 1024.0
+                    String.format(locale, "%.1f %s", kb, uKb)
+                }
+                bytes < 1024L * 1024L * 1024L -> {
+                    val mb = bytes / (1024.0 * 1024.0)
+                    String.format(locale, "%.2f %s", mb, uMb)
+                }
+                else -> {
+                    val gb = bytes / (1024.0 * 1024.0 * 1024.0)
+                    String.format(locale, "%.2f %s", gb, uGb)
+                }
+            }
+        }
+
+        @JvmStatic
+        fun parseSizeToBytes(sizeStr: String): Long {
+            val trimmed = sizeStr.trim().uppercase(Locale.ROOT)
+            val num = trimmed.replace(",", ".").replace(Regex("[^0-9.]"), "").toDoubleOrNull() ?: 0.0
+            return when {
+                trimmed.endsWith("ГБ") || trimmed.endsWith("GB") -> (num * 1024.0 * 1024.0 * 1024.0).toLong()
+                trimmed.endsWith("МБ") || trimmed.endsWith("MB") -> (num * 1024.0 * 1024.0).toLong()
+                trimmed.endsWith("КБ") || trimmed.endsWith("KB") -> (num * 1024.0).toLong()
+                else -> num.toLong()
+            }
+        }
+
         @JvmStatic
         fun localizeSizeString(sizeStr: String): String {
-            if (sizeStr.isEmpty()) return sizeStr
-            val ctx = try { org.yuzu.yuzu_emu.YuzuApplication.appContext } catch (_: Exception) { null }
-            val gb = ctx?.getString(R.string.storm_world_unit_gb) ?: "GB"
-            val mb = ctx?.getString(R.string.storm_world_unit_mb) ?: "MB"
-            val kb = ctx?.getString(R.string.storm_world_unit_kb) ?: "KB"
-            val b = ctx?.getString(R.string.storm_world_unit_b) ?: "B"
-            return sizeStr
-                .replace(Regex("(?i)\\b(?:GB|ГБ)\\b"), gb)
-                .replace(Regex("(?i)\\b(?:MB|МБ)\\b"), mb)
-                .replace(Regex("(?i)\\b(?:KB|КБ)\\b"), kb)
-                .replace(Regex("(?i)\\b(?:B|Б)\\b"), b)
+            if (sizeStr.isBlank() || sizeStr == "—" || sizeStr == "-") return sizeStr
+            val bytes = parseSizeToBytes(sizeStr)
+            return if (bytes > 0L) {
+                formatSizeBytes(bytes)
+            } else {
+                val ctx = try { org.yuzu.yuzu_emu.YuzuApplication.appContext } catch (_: Exception) { null }
+                val isRu = try {
+                    val loc = ctx?.resources?.configuration?.locales?.get(0) ?: Locale.getDefault()
+                    loc.language.equals("ru", ignoreCase = true)
+                } catch (_: Exception) {
+                    Locale.getDefault().language.equals("ru", ignoreCase = true)
+                }
+                val gb = if (isRu) "ГБ" else "GB"
+                val mb = if (isRu) "МБ" else "MB"
+                val kb = if (isRu) "КБ" else "KB"
+                val b = if (isRu) "Б" else "B"
+                val s = sizeStr
+                    .replace(Regex("(?i)\\b(?:GB|ГБ)\\b"), gb)
+                    .replace(Regex("(?i)\\b(?:MB|МБ)\\b"), mb)
+                    .replace(Regex("(?i)\\b(?:KB|КБ)\\b"), kb)
+                    .replace(Regex("(?i)\\b(?:B|Б)\\b"), b)
+                if (isRu) s.replace(".", ",") else s.replace(",", ".")
+            }
         }
 
         data class CloudFormatVariant(

@@ -7,7 +7,6 @@
 #include <QFontMetrics>
 
 #include "game_card.h"
-#include "storm_switch/common/storm_design_engine.h"
 #include "qt_common/config/uisettings.h"
 #include "qt_common/game_list/game_list_p.h"
 #include "storm_switch/common/storm_theme.h"
@@ -141,7 +140,14 @@ void GameCard::paint(QPainter* painter, const QStyleOptionViewItem& option,
 
     // 3. BADGES
     // Version badge (bottom-left): e.g. "1.0.0 · 131072" or "1.0.0"
-    QString ver_badge = StormFormat::CleanVersion(index.data(GameListItemPath::VersionRole).toString());
+    QString ver_badge = index.data(GameListItemPath::VersionRole).toString().trimmed();
+    while (ver_badge.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
+        ver_badge.remove(0, 1);
+    }
+    ver_badge = ver_badge.trimmed();
+    if (ver_badge.isEmpty() || ver_badge == QStringLiteral("0")) {
+        ver_badge = QStringLiteral("1.0.0");
+    }
     const u64 int_ver = index.data(GameListItemPath::InternalVersionRole).toULongLong();
     if (int_ver > 0) {
         ver_badge.append(QStringLiteral(" · %1").arg(int_ver));
@@ -163,13 +169,13 @@ void GameCard::paint(QPainter* painter, const QStyleOptionViewItem& option,
         DrawUpdateBadge(painter, iconRect);
     }
 
-    // Addon Summary Badge (bottom-right): e.g. "Дополнений: 3" / "Add-ons: 3"
-    const int addon_count = index.data(GameListItemPath::AddonCountRole).toInt();
-    QString addon_text;
-    if (addon_count > 0) {
-        addon_text = StormFormat::FormatAddons(addon_count);
-    } else {
-        addon_text = index.data(GameListItemPath::AddonSummaryRole).toString().trimmed();
+    // Addon Summary Badge (bottom-right): e.g. "1G+1U", "+1 UPD", "+2 DLC"
+    QString addon_text = index.data(GameListItemPath::AddonSummaryRole).toString().trimmed();
+    if (addon_text.isEmpty()) {
+        const int addon_count = index.data(GameListItemPath::AddonCountRole).toInt();
+        if (addon_count > 0) {
+            addon_text = QStringLiteral("+%1 DLC").arg(addon_count);
+        }
     }
     if (!addon_text.isEmpty()) {
         DrawDlcBadge(painter, iconRect, addon_text);
@@ -245,7 +251,11 @@ void GameCard::DrawVersionBadge(QPainter* painter, const QRect& iconRect, const 
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing, true);
 
-    QString text = StormFormat::CleanVersion(version);
+    QString text = version.trimmed();
+    while (text.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
+        text.remove(0, 1);
+    }
+    text = text.trimmed();
     QFont badge_font = painter->font();
     badge_font.setBold(true);
     badge_font.setPixelSize(9);
@@ -273,7 +283,7 @@ void GameCard::DrawGearBadge(QPainter* painter, const QRect& iconRect) const {
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing, true);
 
-    const QString text = tr("АВТОПРОФИЛЬ");
+    const QString text = tr("ПРОФИЛЬ");
     QFont badge_font = painter->font();
     badge_font.setBold(true);
     badge_font.setPixelSize(8);
@@ -334,7 +344,7 @@ void GameCard::DrawUpdateBadge(QPainter* painter, const QRect& iconRect) const {
 }
 
 void GameCard::DrawDlcBadge(QPainter* painter, const QRect& iconRect, int dlc_count) const {
-    DrawDlcBadge(painter, iconRect, StormFormat::FormatAddons(dlc_count));
+    DrawDlcBadge(painter, iconRect, QStringLiteral("+%1 DLC").arg(dlc_count));
 }
 
 void GameCard::DrawDlcBadge(QPainter* painter, const QRect& iconRect, const QString& text) const {

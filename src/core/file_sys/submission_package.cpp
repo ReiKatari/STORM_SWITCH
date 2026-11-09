@@ -463,22 +463,25 @@ void NSP::ReadNCAs(const std::vector<VirtualFile>& files) {
                     std::shared_ptr<NCA> matched_cand_nca = nullptr;
                     std::string matched_cand_name;
                     const bool is_base_program_record =
-                        (rec.type == ContentRecordType::Program && (cnmt.GetTitleID() & 0x800) == 0);
+                        (rec.type == ContentRecordType::Program && (cnmt.GetTitleID() & 0x800) == 0 && cnmt.GetType() != TitleType::Update);
 
                     const CandidateNca* best_cand = nullptr;
                     auto IsBetterProgramCandidate = [&](const CandidateNca& cand) -> bool {
                         if (best_cand == nullptr) {
                             return true;
                         }
-                        const bool cur_is_update = best_cand->summary.is_update || ((best_cand->summary.title_id & 0xFFF) == 0x800);
-                        const bool new_is_update = cand.summary.is_update || ((cand.summary.title_id & 0xFFF) == 0x800);
+                        const bool cur_has_update_id = (best_cand->summary.title_id != 0 && (best_cand->summary.title_id & 0xFFF) == 0x800);
+                        const bool new_has_update_id = (cand.summary.title_id != 0 && (cand.summary.title_id & 0xFFF) == 0x800);
+                        const bool cur_is_update = best_cand->summary.is_update || cur_has_update_id;
+                        const bool new_is_update = cand.summary.is_update || new_has_update_id;
+
                         if (is_base_program_record) {
-                            const bool cur_is_base = !cur_is_update;
-                            const bool new_is_base = !new_is_update;
-                            if (new_is_base != cur_is_base) {
-                                return new_is_base;
+                            const bool cur_is_true_base = (!cur_is_update) && ((best_cand->summary.title_id == 0) || ((best_cand->summary.title_id & 0xFFF) == 0));
+                            const bool new_is_true_base = (!new_is_update) && ((cand.summary.title_id == 0) || ((cand.summary.title_id & 0xFFF) == 0));
+                            if (new_is_true_base != cur_is_true_base) {
+                                return new_is_true_base;
                             }
-                        } else if (rec.type == ContentRecordType::Program && cnmt.GetType() == TitleType::Update) {
+                        } else if (rec.type == ContentRecordType::Program && (cnmt.GetType() == TitleType::Update || (cnmt.GetTitleID() & 0x800) != 0)) {
                             if (new_is_update != cur_is_update) {
                                 return new_is_update;
                             }

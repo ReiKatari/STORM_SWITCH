@@ -1,3 +1,8 @@
+#include "storm_switch/common/storm_design_engine.h"
+#include "storm_switch/common/storm_lang.h"
+#include "storm_switch/common/storm_theme.h"
+#include <QPainter>
+#include <QPainterPath>
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -107,6 +112,127 @@ static int ResolveGameBananaGameId(u64 title_id, const QString& game_name) {
     return 0;
 }
 
+
+namespace {
+
+enum class GbIconType {
+    Search,
+    Refresh,
+    Download,
+    Folder,
+    Check,
+    Cross,
+    Trash,
+    ChevronLeft,
+    ChevronRight,
+    FirstPage,
+};
+
+QIcon MakeGbIcon(GbIconType type, const QColor& color, int size = 16) {
+    QPixmap pix(size, size);
+    pix.fill(Qt::transparent);
+    QPainter p(&pix);
+    p.setRenderHint(QPainter::Antialiasing, true);
+    QPen pen(color, 1.8, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+    p.setPen(pen);
+    p.setBrush(Qt::NoBrush);
+
+    switch (type) {
+    case GbIconType::Search:
+        p.drawEllipse(QPointF(6.5, 6.5), 4.0, 4.0);
+        p.drawLine(QPointF(9.5, 9.5), QPointF(13.5, 13.5));
+        break;
+    case GbIconType::Refresh: {
+        p.drawArc(QRectF(3.0, 3.0, 10.0, 10.0), 30 * 16, 270 * 16);
+        p.drawLine(QPointF(11.0, 4.5), QPointF(13.0, 6.5));
+        p.drawLine(QPointF(13.0, 6.5), QPointF(10.5, 9.0));
+        break;
+    }
+    case GbIconType::Download:
+        p.drawLine(QPointF(8.0, 2.5), QPointF(8.0, 10.5));
+        p.drawLine(QPointF(4.5, 7.5), QPointF(8.0, 10.5));
+        p.drawLine(QPointF(11.5, 7.5), QPointF(8.0, 10.5));
+        p.drawLine(QPointF(3.0, 13.5), QPointF(13.0, 13.5));
+        break;
+    case GbIconType::Folder: {
+        QPainterPath path;
+        path.moveTo(2.5, 5.0);
+        path.lineTo(6.0, 5.0);
+        path.lineTo(7.5, 6.5);
+        path.lineTo(13.5, 6.5);
+        path.lineTo(13.5, 12.5);
+        path.lineTo(2.5, 12.5);
+        path.closeSubpath();
+        p.drawPath(path);
+        break;
+    }
+    case GbIconType::Check:
+        p.drawLine(QPointF(3.0, 8.0), QPointF(6.5, 11.5));
+        p.drawLine(QPointF(6.5, 11.5), QPointF(13.0, 4.5));
+        break;
+    case GbIconType::Cross:
+        p.drawLine(QPointF(4.0, 4.0), QPointF(12.0, 12.0));
+        p.drawLine(QPointF(12.0, 4.0), QPointF(4.0, 12.0));
+        break;
+    case GbIconType::Trash: {
+        p.drawLine(QPointF(3.5, 4.5), QPointF(12.5, 4.5));
+        p.drawLine(QPointF(6.0, 2.5), QPointF(10.0, 2.5));
+        QPainterPath body;
+        body.moveTo(4.5, 4.5);
+        body.lineTo(5.5, 13.5);
+        body.lineTo(10.5, 13.5);
+        body.lineTo(11.5, 4.5);
+        p.drawPath(body);
+        p.drawLine(QPointF(7.0, 6.5), QPointF(7.0, 11.5));
+        p.drawLine(QPointF(9.0, 6.5), QPointF(9.0, 11.5));
+        break;
+    }
+    case GbIconType::ChevronLeft:
+        p.drawLine(QPointF(10.0, 4.0), QPointF(6.0, 8.0));
+        p.drawLine(QPointF(6.0, 8.0), QPointF(10.0, 12.0));
+        break;
+    case GbIconType::ChevronRight:
+        p.drawLine(QPointF(6.0, 4.0), QPointF(10.0, 8.0));
+        p.drawLine(QPointF(10.0, 8.0), QPointF(6.0, 12.0));
+        break;
+    case GbIconType::FirstPage:
+        p.drawLine(QPointF(4.5, 4.0), QPointF(4.5, 12.0));
+        p.drawLine(QPointF(11.5, 4.0), QPointF(7.5, 8.0));
+        p.drawLine(QPointF(7.5, 8.0), QPointF(11.5, 12.0));
+        break;
+    }
+    return QIcon(pix);
+}
+
+QPixmap MakeScreenshotPlaceholder(int w, int h, const StormTheme::Palette& pal) {
+    QPixmap pix(w, h);
+    pix.fill(Qt::transparent);
+    QPainter p(&pix);
+    p.setRenderHint(QPainter::Antialiasing, true);
+
+    const QColor accent(pal.accent);
+    const QColor border(pal.border);
+
+    p.setPen(QPen(border, 1.0));
+    p.setBrush(QColor(pal.surface));
+    p.drawRoundedRect(QRectF(2, 2, w - 4, h - 4), 8.0, 8.0);
+
+    p.setPen(QPen(accent, 1.5));
+    p.setBrush(QColor(pal.cardAlt));
+    const qreal cx = w / 2.0;
+    const qreal cy = h / 2.0;
+    p.drawRoundedRect(QRectF(cx - 32, cy - 20, 64, 40), 8.0, 8.0);
+
+    p.drawLine(QPointF(cx - 18, cy - 6), QPointF(cx - 18, cy + 6));
+    p.drawLine(QPointF(cx - 24, cy), QPointF(cx - 12, cy));
+    p.drawEllipse(QPointF(cx + 18, cy - 4), 3.0, 3.0);
+    p.drawEllipse(QPointF(cx + 18, cy + 4), 3.0, 3.0);
+
+    return pix;
+}
+
+} // namespace
+
 ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 title_id_,
                                                  const QString& game_name_,
                                                  ConfigurePerGameAddons* addons_tab_,
@@ -129,7 +255,7 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
     auto* switcher_layout = new QHBoxLayout;
     switcher_layout->setSpacing(8);
 
-    tab_online_btn = new QPushButton(tr("🌐 Каталог GameBanana"), this);
+    tab_online_btn = new QPushButton(StormLang(QStringLiteral("Онлайн-каталог"), QStringLiteral("Online Catalog")), this);
     tab_online_btn->setCheckable(true);
     tab_online_btn->setChecked(true);
     tab_online_btn->setStyleSheet(QStringLiteral(
@@ -137,7 +263,7 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
         "QPushButton:hover { background-color: #38bdf8; }"
     ));
 
-    tab_installed_btn = new QPushButton(tr("💾 Установленные моды"), this);
+    tab_installed_btn = new QPushButton(StormLang(QStringLiteral("Установленные"), QStringLiteral("Installed")), this);
     tab_installed_btn->setCheckable(true);
     tab_installed_btn->setChecked(false);
     tab_installed_btn->setStyleSheet(QStringLiteral(
@@ -160,16 +286,19 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
     online_layout->setContentsMargins(0, 0, 0, 0);
     online_layout->setSpacing(6);
 
+    const auto pal = StormTheme::GetThemePalette();
+
     // Search & Controls Bar
     auto* controls_layout = new QHBoxLayout;
     controls_layout->setSpacing(6);
 
     search_input = new QLineEdit(this);
-    search_input->setPlaceholderText(tr("Поиск модов на GameBanana..."));
+    search_input->setPlaceholderText(StormLang(QStringLiteral("Поиск модов на GameBanana..."), QStringLiteral("Search GameBanana mods...")));
     search_input->setClearButtonEnabled(true);
     controls_layout->addWidget(search_input, 1);
 
-    search_btn = new QPushButton(tr("Найти"), this);
+    search_btn = new QPushButton(StormLang(QStringLiteral("Найти"), QStringLiteral("Search")), this);
+    search_btn->setIcon(MakeGbIcon(GbIconType::Search, QColor(pal.textPrimary)));
     search_btn->setStyleSheet(QStringLiteral("font-weight: bold; padding: 4px 12px;"));
     controls_layout->addWidget(search_btn);
 
@@ -181,10 +310,58 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
     sort_combo->addItem(tr("По алфавиту (А-Я)"), QStringLiteral("Generic_Alphabetical"));
     controls_layout->addWidget(sort_combo);
 
-    refresh_btn = new QPushButton(tr("🔄 Обновить"), this);
+    refresh_btn = new QPushButton(StormLang(QStringLiteral("Обновить"), QStringLiteral("Refresh")), this);
+    refresh_btn->setIcon(MakeGbIcon(GbIconType::Refresh, QColor(pal.textSecondary)));
     controls_layout->addWidget(refresh_btn);
 
     online_layout->addLayout(controls_layout);
+
+    // Category filter pills
+    auto* pills_layout = new QHBoxLayout();
+    pills_layout->setSpacing(6);
+    pills_layout->setContentsMargins(0, 2, 0, 4);
+
+    const QStringList cat_names = {
+        StormLang(QStringLiteral("Все"), QStringLiteral("All")),
+        StormLang(QStringLiteral("Скины"), QStringLiteral("Skins")),
+        StormLang(QStringLiteral("Текстуры"), QStringLiteral("Textures")),
+        StormLang(QStringLiteral("Интерфейс"), QStringLiteral("UI")),
+        StormLang(QStringLiteral("Звук"), QStringLiteral("Audio")),
+        StormLang(QStringLiteral("60 FPS / Твики"), QStringLiteral("60 FPS / Tweaks")),
+    };
+
+    for (const auto& cname : cat_names) {
+        auto* pbtn = new QPushButton(cname, online_page);
+        pbtn->setCheckable(true);
+        pbtn->setChecked(cname == cat_names[0]);
+        pbtn->setStyleSheet(QStringLiteral(
+            "QPushButton {"
+            "  background: %1;"
+            "  color: %2;"
+            "  border: 1px solid %3;"
+            "  border-radius: 12px;"
+            "  padding: 4px 12px;"
+            "  font-size: 8.5pt;"
+            "  font-weight: 600;"
+            "  min-height: 20px;"
+            "}"
+            "QPushButton:checked {"
+            "  background: %4;"
+            "  color: #FFFFFF;"
+            "  border-color: %4;"
+            "}"
+            "QPushButton:hover {"
+            "  border-color: %4;"
+            "}"
+        ).arg(pal.surface, pal.textSecondary, pal.border, pal.accent));
+        category_pill_buttons.push_back(pbtn);
+        connect(pbtn, &QPushButton::clicked, this, [this, cname]() {
+            OnCategoryPillClicked(cname);
+        });
+        pills_layout->addWidget(pbtn);
+    }
+    pills_layout->addStretch(1);
+    online_layout->addLayout(pills_layout);
 
     // Main Splitter (Left: Mod List, Right: Mod Details & Install)
     auto* splitter = new QSplitter(Qt::Horizontal, this);
@@ -196,6 +373,7 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
     left_layout->setSpacing(4);
 
     mod_tree = new QTreeWidget(this);
+    mod_tree->setStyleSheet(QStringLiteral("QTreeWidget::item { height: 34px; padding: 2px 6px; }"));
     mod_tree->setHeaderLabels({tr("НАЗВАНИЕ МОДА"), tr("АВТОР"), tr("ПРОСМОТРОВ"), tr("ЛАЙКОВ"), tr("КАТЕГОРИЯ")});
     mod_tree->setAlternatingRowColors(true);
     mod_tree->setRootIsDecorated(false);
@@ -224,10 +402,11 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
     details_layout->setSpacing(6);
 
     auto* details_top_bar = new QHBoxLayout;
-    auto* details_header_label = new QLabel(tr("📄 Описание и установка мода"), this);
-    details_header_label->setStyleSheet(QStringLiteral("font-weight: bold; font-size: 10pt; color: #38bdf8;"));
-    auto* close_details_btn = new QPushButton(tr("✖ Скрыть описание"), this);
-    close_details_btn->setStyleSheet(QStringLiteral("padding: 4px 12px; font-weight: bold; background-color: #334155; color: #FFFFFF; border-radius: 4px;"));
+    auto* details_header_label = new QLabel(StormLang(QStringLiteral("Инспектор и установка мода"), QStringLiteral("Mod Inspector & Installation")), this);
+    details_header_label->setStyleSheet(QStringLiteral("font-weight: bold; font-size: 10pt; color: %1;").arg(pal.accent));
+    auto* close_details_btn = new QPushButton(StormLang(QStringLiteral("Скрыть"), QStringLiteral("Hide")), this);
+    close_details_btn->setIcon(MakeGbIcon(GbIconType::Cross, QColor(pal.textSecondary)));
+    close_details_btn->setStyleSheet(QStringLiteral("padding: 4px 12px; font-weight: bold; background-color: %1; color: %2; border-radius: 4px;").arg(pal.buttonBg, pal.textPrimary));
     connect(close_details_btn, &QPushButton::clicked, [this]() {
         if (details_widget) {
             details_widget->setVisible(false);
@@ -239,6 +418,67 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
     details_top_bar->addWidget(details_header_label, 1);
     details_top_bar->addWidget(close_details_btn);
     details_layout->addLayout(details_top_bar);
+
+    inspector_title_label = new QLabel(details_widget);
+    inspector_title_label->setStyleSheet(QStringLiteral("font-size: 11pt; font-weight: 700; color: %1;").arg(pal.textPrimary));
+    inspector_title_label->setWordWrap(true);
+    details_layout->addWidget(inspector_title_label);
+
+    // Metadata pills row
+    auto* meta_row = new QHBoxLayout();
+    meta_row->setSpacing(6);
+    auto make_pill = [&](QLabel*& lbl) {
+        lbl = new QLabel(details_widget);
+        lbl->setStyleSheet(QStringLiteral(
+            "background-color: %1; color: %2; border: 1px solid %3; border-radius: 4px; padding: 2px 8px; font-size: 8.5pt; font-weight: 600;"
+        ).arg(pal.cardAlt, pal.textSecondary, pal.border));
+        meta_row->addWidget(lbl);
+    };
+    make_pill(mod_author_pill);
+    make_pill(mod_size_pill);
+    make_pill(mod_downloads_pill);
+    make_pill(mod_likes_pill);
+    make_pill(mod_category_pill);
+    meta_row->addStretch(1);
+    details_layout->addLayout(meta_row);
+
+    // Screenshot viewer
+    auto* ss_container = new QWidget(details_widget);
+    auto* ss_layout = new QVBoxLayout(ss_container);
+    ss_layout->setContentsMargins(0, 4, 0, 4);
+    ss_layout->setSpacing(4);
+
+    screenshot_label = new QLabel(ss_container);
+    screenshot_label->setFixedSize(280, 160);
+    screenshot_label->setAlignment(Qt::AlignCenter);
+    screenshot_label->setPixmap(MakeScreenshotPlaceholder(280, 160, pal));
+    ss_layout->addWidget(screenshot_label, 0, Qt::AlignCenter);
+
+    auto* ss_nav = new QHBoxLayout();
+    ss_nav->setSpacing(8);
+    prev_screenshot_btn = new QPushButton(ss_container);
+    prev_screenshot_btn->setIcon(MakeGbIcon(GbIconType::ChevronLeft, QColor(pal.textSecondary)));
+    prev_screenshot_btn->setFixedSize(28, 24);
+
+    screenshot_counter_label = new QLabel(ss_container);
+    screenshot_counter_label->setStyleSheet(QStringLiteral("font-size: 8.5pt; color: %1;").arg(pal.textSecondary));
+    screenshot_counter_label->setAlignment(Qt::AlignCenter);
+
+    next_screenshot_btn = new QPushButton(ss_container);
+    next_screenshot_btn->setIcon(MakeGbIcon(GbIconType::ChevronRight, QColor(pal.textSecondary)));
+    next_screenshot_btn->setFixedSize(28, 24);
+
+    connect(prev_screenshot_btn, &QPushButton::clicked, this, &ConfigureGameBananaMods::OnPrevScreenshot);
+    connect(next_screenshot_btn, &QPushButton::clicked, this, &ConfigureGameBananaMods::OnNextScreenshot);
+
+    ss_nav->addStretch(1);
+    ss_nav->addWidget(prev_screenshot_btn);
+    ss_nav->addWidget(screenshot_counter_label);
+    ss_nav->addWidget(next_screenshot_btn);
+    ss_nav->addStretch(1);
+    ss_layout->addLayout(ss_nav);
+
+    details_layout->addWidget(ss_container);
 
     detail_browser = new QTextBrowser(this);
     detail_browser->setOpenLinks(false);
@@ -285,7 +525,7 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
     });
     details_layout->addWidget(detail_browser, 1);
 
-    auto* files_label = new QLabel(tr("📦 Доступные файлы мода:"), this);
+    auto* files_label = new QLabel(StormLang(QStringLiteral("Доступные файлы мода:"), QStringLiteral("Available Mod Files:")), this);
     files_label->setStyleSheet(QStringLiteral("font-weight: bold;"));
     details_layout->addWidget(files_label);
 
@@ -305,12 +545,15 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
     details_layout->addWidget(status_label);
 
     auto* btn_layout = new QHBoxLayout;
-    install_btn = new QPushButton(tr("📥 Скачать и установить мод"), this);
+    install_btn = new QPushButton(StormLang(QStringLiteral("Установить мод"), QStringLiteral("Install Mod")), this);
+    install_btn->setIcon(MakeGbIcon(GbIconType::Download, QColor(QStringLiteral("#FFFFFF"))));
+    install_btn->setStyleSheet(QStringLiteral("QPushButton { background-color: %1; color: #FFFFFF; font-weight: bold; padding: 6px 18px; border-radius: 6px; min-height: 32px; font-size: 9.5pt; } QPushButton:hover { background-color: %2; }").arg(pal.accent, pal.accentHover));
     install_btn->setStyleSheet(QStringLiteral("background-color: #2563eb; color: white; font-weight: bold; padding: 6px 16px; border-radius: 4px;"));
     install_btn->setEnabled(false);
     btn_layout->addWidget(install_btn, 1);
 
-    open_folder_btn = new QPushButton(tr("📁 Папка модов игры"), this);
+    open_folder_btn = new QPushButton(StormLang(QStringLiteral("Папка модов игры"), QStringLiteral("Game Mods Folder")), this);
+    open_folder_btn->setIcon(MakeGbIcon(GbIconType::Folder, QColor(pal.textSecondary)));
     btn_layout->addWidget(open_folder_btn);
 
     details_layout->addLayout(btn_layout);
@@ -328,9 +571,12 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
     bottom_bar->addWidget(page_label);
     bottom_bar->addStretch(1);
 
-    first_page_btn = new QPushButton(tr("⏮️ Первая"), this);
-    prev_page_btn = new QPushButton(tr("◀ Назад"), this);
-    next_page_btn = new QPushButton(tr("Вперед ▶"), this);
+    first_page_btn = new QPushButton(StormLang(QStringLiteral("Первая"), QStringLiteral("First")), this);
+    first_page_btn->setIcon(MakeGbIcon(GbIconType::FirstPage, QColor(pal.textSecondary)));
+    prev_page_btn = new QPushButton(StormLang(QStringLiteral("Назад"), QStringLiteral("Back")), this);
+    prev_page_btn->setIcon(MakeGbIcon(GbIconType::ChevronLeft, QColor(pal.textSecondary)));
+    next_page_btn = new QPushButton(StormLang(QStringLiteral("Вперед"), QStringLiteral("Next")), this);
+    next_page_btn->setIcon(MakeGbIcon(GbIconType::ChevronRight, QColor(pal.textSecondary)));
 
     first_page_btn->setStyleSheet(QStringLiteral("padding: 3px 10px; font-weight: bold;"));
     prev_page_btn->setStyleSheet(QStringLiteral("padding: 3px 10px; font-weight: bold;"));
@@ -361,7 +607,7 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
     installed_top_bar->addWidget(installed_status_label, 1);
 
     auto* inst_search = new QLineEdit(this);
-    inst_search->setPlaceholderText(tr("Фильтр установленных модов..."));
+    inst_search->setPlaceholderText(StormLang(QStringLiteral("Фильтр установленных модов..."), QStringLiteral("Filter installed mods...")));
     inst_search->setClearButtonEnabled(true);
     inst_search->setMinimumWidth(200);
     connect(inst_search, &QLineEdit::textChanged, this, [this](const QString& q) {
@@ -378,7 +624,8 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
     });
     installed_top_bar->addWidget(inst_search);
 
-    auto* enable_all_mods_btn = new QPushButton(tr("✅ Включить все"), this);
+    auto* enable_all_mods_btn = new QPushButton(StormLang(QStringLiteral("Включить все"), QStringLiteral("Enable All")), this);
+    enable_all_mods_btn->setIcon(MakeGbIcon(GbIconType::Check, QColor(pal.accent)));
     connect(enable_all_mods_btn, &QPushButton::clicked, this, [this]() {
         if (!installed_tree) return;
         for (int i = 0; i < installed_tree->topLevelItemCount(); ++i) {
@@ -389,7 +636,8 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
     });
     installed_top_bar->addWidget(enable_all_mods_btn);
 
-    auto* disable_all_mods_btn = new QPushButton(tr("⚪ Выключить все"), this);
+    auto* disable_all_mods_btn = new QPushButton(StormLang(QStringLiteral("Выключить все"), QStringLiteral("Disable All")), this);
+    disable_all_mods_btn->setIcon(MakeGbIcon(GbIconType::Cross, QColor(pal.textSecondary)));
     connect(disable_all_mods_btn, &QPushButton::clicked, this, [this]() {
         if (!installed_tree) return;
         for (int i = 0; i < installed_tree->topLevelItemCount(); ++i) {
@@ -400,21 +648,25 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
     });
     installed_top_bar->addWidget(disable_all_mods_btn);
 
-    refresh_installed_btn = new QPushButton(tr("🔄 Обновить"), this);
+    refresh_installed_btn = new QPushButton(StormLang(QStringLiteral("Обновить"), QStringLiteral("Refresh")), this);
+    refresh_installed_btn->setIcon(MakeGbIcon(GbIconType::Refresh, QColor(pal.textSecondary)));
     refresh_installed_btn->setStyleSheet(QStringLiteral("font-weight: bold; padding: 5px 12px;"));
     installed_top_bar->addWidget(refresh_installed_btn);
 
-    open_installed_folder_btn = new QPushButton(tr("📁 Папка модов"), this);
+    open_installed_folder_btn = new QPushButton(StormLang(QStringLiteral("Папка модов"), QStringLiteral("Mods Folder")), this);
+    open_installed_folder_btn->setIcon(MakeGbIcon(GbIconType::Folder, QColor(pal.textSecondary)));
     open_installed_folder_btn->setStyleSheet(QStringLiteral("padding: 5px 12px;"));
     installed_top_bar->addWidget(open_installed_folder_btn);
 
-    delete_mod_btn = new QPushButton(tr("🗑️ Удалить выбранный"), this);
+    delete_mod_btn = new QPushButton(StormLang(QStringLiteral("Удалить выбранный"), QStringLiteral("Delete Selected")), this);
+    delete_mod_btn->setIcon(MakeGbIcon(GbIconType::Trash, QColor(QStringLiteral("#EF4444"))));
     delete_mod_btn->setStyleSheet(QStringLiteral("background-color: #dc2626; color: white; font-weight: bold; padding: 5px 14px; border-radius: 4px;"));
     installed_top_bar->addWidget(delete_mod_btn);
 
     installed_layout->addLayout(installed_top_bar);
 
     installed_tree = new QTreeWidget(this);
+    installed_tree->setStyleSheet(QStringLiteral("QTreeWidget::item { height: 34px; padding: 2px 6px; }"));
     installed_tree->setHeaderLabels({tr("НАЗВАНИЕ МОДА"), tr("СТАТУС"), tr("РАЗМЕР"), tr("ПУТЬ К ПАПКЕ")});
     installed_tree->setAlternatingRowColors(true);
     installed_tree->setRootIsDecorated(false);
@@ -491,7 +743,7 @@ void ConfigureGameBananaMods::SetGameInfo(u64 title_id_, const QString& game_nam
         ? QStringLiteral(" | GameBanana ID: %1").arg(FormatNumber(gamebanana_game_id))
         : QString{};
 
-    game_header_label->setText(tr("🎮 Игра: %1  |  Платформа: Nintendo Switch (1, 2)  |  Title ID: %2%3")
+    game_header_label->setText(StormLang(QStringLiteral("Игра: %1  |  Платформа: Nintendo Switch (1, 2)  |  Title ID: %2%3"), QStringLiteral("Game: %1  |  Platform: Nintendo Switch (1, 2)  |  Title ID: %2%3"))
         .arg(clean_title, QStringLiteral("%1").arg(title_id, 16, 16, QLatin1Char('0')).toUpper(), game_id_badge));
 
     SearchMods({}, 1);
@@ -557,6 +809,12 @@ void ConfigureGameBananaMods::ApplySorting() {
 void ConfigureGameBananaMods::PopulateModTree() {
     mod_tree->clear();
     for (const auto& item : current_mods) {
+        if (!active_category_filter.isEmpty()) {
+            if (!item.category.contains(active_category_filter, Qt::CaseInsensitive) &&
+                !item.name.contains(active_category_filter, Qt::CaseInsensitive)) {
+                continue;
+            }
+        }
         auto* tree_item = new QTreeWidgetItem(mod_tree);
         tree_item->setText(0, item.name);
         tree_item->setText(1, item.submitter.isEmpty() ? QStringLiteral("-") : item.submitter);
@@ -746,8 +1004,25 @@ void ConfigureGameBananaMods::LoadModDetails(int mod_id) {
         const qint64 views_count = obj.value(QStringLiteral("_nViewCount")).toVariant().toLongLong();
         const qint64 likes_count = obj.value(QStringLiteral("_nLikeCount")).toVariant().toLongLong();
 
-        QString html = tr("<h2>%1</h2><p><b>Автор:</b> %2 &nbsp;|&nbsp; <b>👁️ Просмотров:</b> %3 &nbsp;|&nbsp; <b>❤️ Лайков:</b> %4</p><p><i>%5</i></p><hr/><div>%6</div>")
-                           .arg(name, author, FormatNumber(views_count), FormatNumber(likes_count), desc, text.isEmpty() ? desc : text);
+        const auto pal = StormTheme::GetThemePalette();
+        if (inspector_title_label) {
+            inspector_title_label->setText(name);
+        }
+        if (mod_author_pill) {
+            mod_author_pill->setText(StormLang(QStringLiteral("Автор: %1"), QStringLiteral("Author: %1")).arg(author.isEmpty() ? QStringLiteral("-") : author));
+        }
+        if (mod_downloads_pill) {
+            mod_downloads_pill->setText(StormLang(QStringLiteral("Просмотров: %1"), QStringLiteral("Views: %1")).arg(FormatNumber(views_count)));
+        }
+        if (mod_likes_pill) {
+            mod_likes_pill->setText(StormLang(QStringLiteral("Лайков: %1"), QStringLiteral("Likes: %1")).arg(FormatNumber(likes_count)));
+        }
+        if (mod_category_pill) {
+            mod_category_pill->setText(obj.value(QStringLiteral("_sModelName")).toString());
+        }
+
+        QString html = QStringLiteral("<div style='color:%1; line-height:1.4;'><p><i>%2</i></p><hr style='border:1px solid %3;'/><div>%4</div></div>")
+                           .arg(pal.textPrimary, desc, pal.border, text.isEmpty() ? desc : text);
         detail_browser->setHtml(html);
 
         // Parse Files
@@ -765,12 +1040,38 @@ void ConfigureGameBananaMods::LoadModDetails(int mod_id) {
 
             const double size_mb = static_cast<double>(file_info.size) / (1024.0 * 1024.0);
             const qint64 file_dl = fobj.value(QStringLiteral("_nDownloadCount")).toVariant().toLongLong();
-            QString item_label = tr("%1 (%2 MB, 📥 %3 скачиваний)").arg(file_info.name, QString::number(size_mb, 'f', 1), FormatNumber(file_dl));
+            const QString sz_str = StormFormat::ReadableByteSize(static_cast<qulonglong>(file_info.size));
+            QString item_label = StormLang(
+                QStringLiteral("%1 (%2, скачиваний: %3)").arg(file_info.name, sz_str, FormatNumber(file_dl)),
+                QStringLiteral("%1 (%2, downloads: %3)").arg(file_info.name, sz_str, FormatNumber(file_dl))
+            );
             if (!file_info.description.isEmpty()) {
                 item_label += QStringLiteral(" — %1").arg(file_info.description);
             }
             files_combo->addItem(item_label, file_info.id);
         }
+
+        if (!current_files.empty() && mod_size_pill) {
+            mod_size_pill->setText(StormFormat::ReadableByteSize(static_cast<qulonglong>(current_files[0].size)));
+        }
+
+        // Parse screenshots from _aPreviewMedia
+        current_screenshot_urls.clear();
+        current_screenshot_index = 0;
+        if (obj.contains(QStringLiteral("_aPreviewMedia"))) {
+            const auto pmedia = obj.value(QStringLiteral("_aPreviewMedia")).toObject();
+            const auto imgs = pmedia.value(QStringLiteral("_aImages")).toArray();
+            for (const auto& ival : imgs) {
+                const auto iobj = ival.toObject();
+                QString base_url = iobj.value(QStringLiteral("_sBaseUrl")).toString();
+                QString fn = iobj.value(QStringLiteral("_sFile530")).toString();
+                if (fn.isEmpty()) fn = iobj.value(QStringLiteral("_sFile")).toString();
+                if (!base_url.isEmpty() && !fn.isEmpty()) {
+                    current_screenshot_urls.push_back(base_url + QStringLiteral("/") + fn);
+                }
+            }
+        }
+        UpdateScreenshotDisplay();
 
         install_btn->setEnabled(!current_files.empty());
     });
@@ -847,7 +1148,7 @@ void ConfigureGameBananaMods::DownloadAndInstallMod(const GameBananaFile& file_i
 
         if (extracted.isEmpty()) {
             status_label->setStyleSheet(QStringLiteral("color: #ff5252; font-weight: bold;"));
-            status_label->setText(tr("❌ Ошибка распаковки архива мода!"));
+            status_label->setText(StormLang(QStringLiteral("Ошибка распаковки архива мода!"), QStringLiteral("Error extracting mod archive!")));
             return;
         }
 
@@ -872,7 +1173,7 @@ void ConfigureGameBananaMods::DownloadAndInstallMod(const GameBananaFile& file_i
 
         if (!organized) {
             status_label->setStyleSheet(QStringLiteral("color: #ff5252; font-weight: bold;"));
-            status_label->setText(tr("❌ Не удалось структурировать файлы мода!"));
+            status_label->setText(StormLang(QStringLiteral("Не удалось структурировать файлы мода!"), QStringLiteral("Could not structure mod files!")));
             QMessageBox::warning(this, tr("Ошибка установки"),
                                  tr("Не удалось распознать структуру файлов мода «%1».").arg(clean_mod_name));
             return;
@@ -896,7 +1197,7 @@ void ConfigureGameBananaMods::DownloadAndInstallMod(const GameBananaFile& file_i
         disabled.erase(std::remove(disabled.begin(), disabled.end(), clean_mod_name.toStdString()), disabled.end());
 
         status_label->setStyleSheet(QStringLiteral("color: #00e676; font-weight: bold;"));
-        status_label->setText(tr("✅ Мод '%1' успешно установлен и активирован!").arg(clean_mod_name));
+        status_label->setText(StormLang(QStringLiteral("Мод '%1' успешно установлен и активирован!").arg(clean_mod_name), QStringLiteral("Mod '%1' installed and enabled!").arg(clean_mod_name)));
 
         RefreshInstalledMods();
 
@@ -991,10 +1292,10 @@ void ConfigureGameBananaMods::RefreshInstalledMods() {
             tree_item->setData(0, Qt::UserRole, mod_name);
 
             if (is_enabled) {
-                tree_item->setText(1, tr("✅ ВКЛЮЧЕН"));
+                tree_item->setText(1, StormLang(QStringLiteral("ВКЛЮЧЕН"), QStringLiteral("ENABLED")));
                 tree_item->setForeground(1, QColor(QStringLiteral("#00f2fe")));
             } else {
-                tree_item->setText(1, tr("⚪ ОТКЛЮЧЕН"));
+                tree_item->setText(1, StormLang(QStringLiteral("ОТКЛЮЧЕН"), QStringLiteral("DISABLED")));
                 tree_item->setForeground(1, QColor(QStringLiteral("#718096")));
             }
             tree_item->setTextAlignment(1, Qt::AlignCenter);
@@ -1031,13 +1332,13 @@ void ConfigureGameBananaMods::OnInstalledItemChanged(QTreeWidgetItem* item, int 
 
     if (is_checked) {
         std::erase(disabled_entries, mod_str);
-        item->setText(1, tr("✅ ВКЛЮЧЕН"));
+        item->setText(1, StormLang(QStringLiteral("ВКЛЮЧЕН"), QStringLiteral("ENABLED")));
         item->setForeground(1, QColor(QStringLiteral("#00f2fe")));
     } else {
         if (std::ranges::find(disabled_entries, mod_str) == disabled_entries.end()) {
             disabled_entries.push_back(mod_str);
         }
-        item->setText(1, tr("⚪ ОТКЛЮЧЕН"));
+        item->setText(1, StormLang(QStringLiteral("ОТКЛЮЧЕН"), QStringLiteral("DISABLED")));
         item->setForeground(1, QColor(QStringLiteral("#718096")));
     }
 
@@ -1085,4 +1386,61 @@ void ConfigureGameBananaMods::OnDeleteSelectedInstalledMod() {
     UISettings::values.is_game_list_reload_pending.exchange(true);
 
     QMessageBox::information(this, tr("Мод удален"), tr("Мод «%1» успешно удален.").arg(mod_name));
+}
+
+void ConfigureGameBananaMods::OnCategoryPillClicked(const QString& category) {
+    for (auto* pill : category_pill_buttons) {
+        pill->setChecked(pill->text() == category);
+    }
+    active_category_filter = (category == StormLang(QStringLiteral("Все"), QStringLiteral("All"))) ? QString{} : category;
+    PopulateModTree();
+}
+
+void ConfigureGameBananaMods::OnPrevScreenshot() {
+    if (current_screenshot_urls.empty()) return;
+    current_screenshot_index = (current_screenshot_index - 1 + current_screenshot_urls.size()) % current_screenshot_urls.size();
+    UpdateScreenshotDisplay();
+}
+
+void ConfigureGameBananaMods::OnNextScreenshot() {
+    if (current_screenshot_urls.empty()) return;
+    current_screenshot_index = (current_screenshot_index + 1) % current_screenshot_urls.size();
+    UpdateScreenshotDisplay();
+}
+
+void ConfigureGameBananaMods::UpdateScreenshotDisplay() {
+    const auto pal = StormTheme::GetThemePalette();
+    if (current_screenshot_urls.empty()) {
+        if (prev_screenshot_btn) prev_screenshot_btn->setEnabled(false);
+        if (next_screenshot_btn) next_screenshot_btn->setEnabled(false);
+        if (screenshot_counter_label) screenshot_counter_label->setText(StormLang(QStringLiteral("Нет скриншотов"), QStringLiteral("No screenshots")));
+        if (screenshot_label) screenshot_label->setPixmap(MakeScreenshotPlaceholder(280, 160, pal));
+        return;
+    }
+
+    if (prev_screenshot_btn) prev_screenshot_btn->setEnabled(current_screenshot_urls.size() > 1);
+    if (next_screenshot_btn) next_screenshot_btn->setEnabled(current_screenshot_urls.size() > 1);
+    if (screenshot_counter_label) {
+        screenshot_counter_label->setText(QStringLiteral("%1 / %2").arg(current_screenshot_index + 1).arg(current_screenshot_urls.size()));
+    }
+
+    const QString url = current_screenshot_urls[current_screenshot_index];
+    if (screenshot_reply) {
+        screenshot_reply->abort();
+        screenshot_reply = nullptr;
+    }
+
+    screenshot_reply = network_manager->get(QNetworkRequest(QUrl(url)));
+    connect(screenshot_reply, &QNetworkReply::finished, this, [this, url]() {
+        if (!screenshot_reply) return;
+        if (screenshot_reply->error() == QNetworkReply::NoError) {
+            QPixmap pix;
+            pix.loadFromData(screenshot_reply->readAll());
+            if (!pix.isNull() && screenshot_label) {
+                screenshot_label->setPixmap(pix.scaled(280, 160, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+            }
+        }
+        screenshot_reply->deleteLater();
+        screenshot_reply = nullptr;
+    });
 }

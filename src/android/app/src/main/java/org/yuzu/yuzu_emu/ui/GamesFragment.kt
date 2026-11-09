@@ -10,7 +10,6 @@ import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
@@ -37,7 +36,6 @@ import org.yuzu.yuzu_emu.YuzuApplication
 import org.yuzu.yuzu_emu.adapters.GameAdapter
 import org.yuzu.yuzu_emu.databinding.FragmentGamesBinding
 import org.yuzu.yuzu_emu.features.settings.model.BooleanSetting
-import org.yuzu.yuzu_emu.features.settings.model.IntSetting
 import org.yuzu.yuzu_emu.model.AppletInfo
 import org.yuzu.yuzu_emu.model.Game
 import org.yuzu.yuzu_emu.model.GamesViewModel
@@ -132,11 +130,6 @@ class GamesFragment : Fragment() {
 
         binding.swipeRefresh.apply {
             (binding.swipeRefresh as? SwipeRefreshLayout)?.setOnRefreshListener {
-                postDelayed({
-                    if (_binding != null) {
-                        (binding.swipeRefresh as? SwipeRefreshLayout)?.isRefreshing = false
-                    }
-                }, 5000L)
                 gamesViewModel.reloadGames(true)
             }
             (binding.swipeRefresh as? SwipeRefreshLayout)?.setProgressBackgroundColorSchemeColor(
@@ -170,8 +163,6 @@ class GamesFragment : Fragment() {
             (binding.swipeRefresh as? SwipeRefreshLayout)?.isRefreshing = false
         }
         gamesViewModel.games.collect(viewLifecycleOwner) {
-            (binding.swipeRefresh as? SwipeRefreshLayout)?.isRefreshing = false
-            updateDynamicHeader(IntSetting.UI_DESIGN_STYLE.getInt())
             if (it.isNotEmpty()) {
                 setAdapter(it)
             }
@@ -276,7 +267,6 @@ class GamesFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        checkAndApplyUiDesignStyle()
         val currentGames = gamesViewModel.games.value
         if (currentGames.isNotEmpty()) {
             setAdapter(currentGames)
@@ -359,67 +349,6 @@ class GamesFragment : Fragment() {
         navController.navigate(R.id.action_gamesFragment_to_homeSettingsFragment)
     }
 
-
-    private var lastObservedDesignStyle: Int = -1
-
-    private fun checkAndApplyUiDesignStyle() {
-        val currentStyle = try {
-            IntSetting.UI_DESIGN_STYLE.getInt(false).coerceIn(0, 4)
-        } catch (_: Throwable) {
-            0
-        }
-        if (lastObservedDesignStyle != -1 && lastObservedDesignStyle != currentStyle) {
-            applyUiDesignStyle(currentStyle)
-        }
-        lastObservedDesignStyle = currentStyle
-        updateDynamicHeader(currentStyle)
-    }
-
-    private fun applyUiDesignStyle(style: Int) {
-        val theme = try { IntSetting.THEME_MODE.getInt() } catch (_: Throwable) { 3 }
-        org.yuzu.yuzu_emu.utils.StormDesignEngine.styleViewHierarchy(binding.root, style, theme)
-        updateDynamicHeader(style)
-        (binding.gridGames as? RecyclerView)?.adapter?.notifyDataSetChanged()
-    }
-
-    private fun updateDynamicHeader(style: Int) {
-        if (_binding == null) return
-        val games = gamesViewModel.games.value
-        if (games.isEmpty()) {
-            binding.containerStyleHeader?.visibility = View.GONE
-            return
-        }
-        binding.containerStyleHeader?.visibility = View.VISIBLE
-
-        binding.cardTitaniumTelemetry?.visibility = if (style == 0) View.VISIBLE else View.GONE
-        binding.cardHyperionBanner?.visibility = if (style == 1) View.VISIBLE else View.GONE
-        binding.cardValkyrieRig?.visibility = if (style == 2) View.VISIBLE else View.GONE
-        binding.cardSolarisDock?.visibility = if (style == 3) View.VISIBLE else View.GONE
-        binding.cardAetherStudio?.visibility = if (style == 4) View.VISIBLE else View.GONE
-
-        when (style) {
-            0 -> {
-                binding.textTelemetryGames?.text = getString(R.string.telemetry_games_count, games.size)
-            }
-            1 -> {
-                val featuredGame = games.firstOrNull()
-                if (featuredGame != null) {
-                    binding.textHyperionTitle?.text = featuredGame.title
-                }
-            }
-        }
-    }
-
-    private fun onStyleSelected(style: Int, item: MenuItem) {
-        IntSetting.UI_DESIGN_STYLE.setInt(style)
-        applyUiDesignStyle(style)
-        item.isChecked = true
-        val names = resources.getStringArray(R.array.uiDesignStyleNames)
-        if (style in names.indices) {
-            Toast.makeText(requireContext(), getString(R.string.ui_style_applied_toast, names[style]), Toast.LENGTH_SHORT).show()
-        }
-    }
-
     private fun showViewMenu(anchor: View) {
         val popup = PopupMenu(requireContext(), anchor)
         popup.menuInflater.inflate(R.menu.menu_game_views, popup.menu)
@@ -428,50 +357,16 @@ class GamesFragment : Fragment() {
             popup.menu.findItem(R.id.view_carousel)?.isVisible = false
         }
 
-        // 5 Dynamic UI Design Styles state
-        val currentStyle = try {
-            IntSetting.UI_DESIGN_STYLE.getInt(false).coerceIn(0, 4)
-        } catch (_: Throwable) {
-            0
-        }
-        when (currentStyle) {
-            0 -> popup.menu.findItem(R.id.style_titanium)?.isChecked = true
-            1 -> popup.menu.findItem(R.id.style_hyperion)?.isChecked = true
-            2 -> popup.menu.findItem(R.id.style_valkyrie)?.isChecked = true
-            3 -> popup.menu.findItem(R.id.style_solaris)?.isChecked = true
-            4 -> popup.menu.findItem(R.id.style_aether)?.isChecked = true
-        }
-
         val currentViewType = getCurrentViewType()
         when (currentViewType) {
-            GameAdapter.VIEW_TYPE_LIST -> popup.menu.findItem(R.id.view_list)?.isChecked = true
-            GameAdapter.VIEW_TYPE_GRID_COMPACT -> popup.menu.findItem(R.id.view_grid_compact)?.isChecked = true
-            GameAdapter.VIEW_TYPE_GRID -> popup.menu.findItem(R.id.view_grid)?.isChecked = true
-            GameAdapter.VIEW_TYPE_CAROUSEL -> popup.menu.findItem(R.id.view_carousel)?.isChecked = true
+            GameAdapter.VIEW_TYPE_LIST -> popup.menu.findItem(R.id.view_list).isChecked = true
+            GameAdapter.VIEW_TYPE_GRID_COMPACT -> popup.menu.findItem(R.id.view_grid_compact).isChecked = true
+            GameAdapter.VIEW_TYPE_GRID -> popup.menu.findItem(R.id.view_grid).isChecked = true
+            GameAdapter.VIEW_TYPE_CAROUSEL -> popup.menu.findItem(R.id.view_carousel).isChecked = true
         }
 
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
-                R.id.style_titanium -> {
-                    onStyleSelected(0, item)
-                    true
-                }
-                R.id.style_hyperion -> {
-                    onStyleSelected(1, item)
-                    true
-                }
-                R.id.style_valkyrie -> {
-                    onStyleSelected(2, item)
-                    true
-                }
-                R.id.style_solaris -> {
-                    onStyleSelected(3, item)
-                    true
-                }
-                R.id.style_aether -> {
-                    onStyleSelected(4, item)
-                    true
-                }
                 R.id.view_grid -> {
                     if (getCurrentViewType() == GameAdapter.VIEW_TYPE_CAROUSEL) onPause()
                     setCurrentViewType(GameAdapter.VIEW_TYPE_GRID)

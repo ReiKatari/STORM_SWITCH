@@ -133,8 +133,10 @@ class GamesViewModel : ViewModel() {
     }
 
     fun reloadGames(directoriesChanged: Boolean, firstStartup: Boolean = false) {
-        // If already reloading, avoid stomping state and return safely
         if (!reloading.compareAndSet(false, true)) {
+            if (!firstStartup) {
+                _isReloading.value = true
+            }
             return
         }
         if (!firstStartup || _games.value.isEmpty()) {
@@ -143,26 +145,22 @@ class GamesViewModel : ViewModel() {
 
         viewModelScope.launch {
             try {
-                kotlinx.coroutines.withTimeoutOrNull(15000L) {
-                    withContext(Dispatchers.IO) {
-                        var waitIterations = 0
-                        while (!DirectoryInitialization.areDirectoriesReady && waitIterations < 100) {
-                            delay(50)
-                            waitIterations++
-                        }
-                        NativeLibrary.reloadKeys()
-                        getGameDirsAndExternalContent()
-                        val newGames = GameHelper.getGames()
-                        val hasExistingGames = _games.value.isNotEmpty()
-                        val changed = if (newGames.isNotEmpty() || !hasExistingGames) {
-                            setGames(newGames)
-                        } else {
-                            false
-                        }
-                        if (changed) {
-                            _shouldScrollAfterReload.value = true
-                            setShouldSwapData(true)
-                        }
+                withContext(Dispatchers.IO) {
+                    while (!DirectoryInitialization.areDirectoriesReady) {
+                        delay(50)
+                    }
+                    NativeLibrary.reloadKeys()
+                    getGameDirsAndExternalContent()
+                    val newGames = GameHelper.getGames()
+                    val hasExistingGames = _games.value.isNotEmpty()
+                    val changed = if (newGames.isNotEmpty() || !hasExistingGames) {
+                        setGames(newGames)
+                    } else {
+                        false
+                    }
+                    if (changed) {
+                        _shouldScrollAfterReload.value = true
+                        setShouldSwapData(true)
                     }
                 }
             } catch (e: Throwable) {

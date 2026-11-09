@@ -106,8 +106,6 @@ object Settings {
     const val PREF_BLACK_BACKGROUNDS = "BlackBackgrounds"
     const val PREF_STATIC_THEME_COLOR = "StaticThemeColor"
     const val PREF_UI_DESIGN_STYLE = "ui_design_style"
-    const val PREF_CONTROLLER_SKIN_STYLE = "controller_skin_style"
-    const val PREF_CONTROLLER_AUTO_GAME_SKIN = "controller_auto_game_skin"
     const val PREF_APP_FULLSCREEN = "AppFullscreen"
     const val APP_FULLSCREEN_DEFAULT = true
 

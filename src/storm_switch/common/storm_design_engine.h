@@ -19,26 +19,19 @@ struct Palette;
 namespace StormDesign {
 
 enum class Preset {
-    TitaniumCyberDeck = 0,
-    HyperionDockedConsole = 1,
-    ValkyrieTacticalRig = 2,
-    SolarisSwitch2Pro = 3,
-    AetherFrostedStudio = 4,
-
-    // Backward compatibility aliases
-    HyperionGlass = HyperionDockedConsole,
-    CyberDeck = TitaniumCyberDeck,
-    AuroraQuantum = AetherFrostedStudio,
-    OrbitalSpatial = ValkyrieTacticalRig,
-    ChronoNexus = SolarisSwitch2Pro,
+    HyperionGlass = 0,
+    CyberDeck = 1,
+    AuroraQuantum = 2,
+    OrbitalSpatial = 3,
+    ChronoNexus = 4,
 };
 
 inline constexpr std::array<std::pair<const char*, const char*>, 5> kDesigns{{
-    {"titanium_cyber_deck", "TITANIUM CYBER DECK"},
-    {"hyperion_docked_console", "HYPERION DOCKED CONSOLE"},
-    {"valkyrie_tactical_rig", "VALKYRIE TACTICAL RIG"},
-    {"solaris_switch2_pro", "SOLARIS SWITCH 2 PRO"},
-    {"aether_frosted_studio", "AETHER FROSTED STUDIO"},
+    {"hyperion_glass", "STORM HYPERION GLASS 3D"},
+    {"cyber_deck", "STORM CYBER-DECK TACTILE"},
+    {"aurora_quantum", "STORM AURORA QUANTUM"},
+    {"orbital_spatial", "STORM ORBITAL SPATIAL UI"},
+    {"chrono_nexus", "STORM CHRONO-NEXUS COMMANDER"},
 }};
 
 Preset GetActivePreset(const std::string& explicit_id = {});

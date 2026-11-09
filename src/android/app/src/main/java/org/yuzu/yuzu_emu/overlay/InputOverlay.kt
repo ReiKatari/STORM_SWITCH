@@ -616,6 +616,49 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
     }
 
     private fun addOverlayControls(layout: OverlayLayout) {
+        val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
+        if (!prefs.getBoolean("storm_overlay_shoulder_y_v20_2", false)) {
+            try {
+                val overlayControlData = NativeConfig.getOverlayControlData()
+                var modified = false
+                for (data in overlayControlData) {
+                    if (data.id == OverlayControl.BUTTON_ZL.id || data.id == OverlayControl.BUTTON_ZR.id) {
+                        if (data.landscapePosition.second < 0.14) {
+                            data.landscapePosition = Pair(data.landscapePosition.first, 0.16)
+                            modified = true
+                        }
+                        if (data.portraitPosition.second < 0.22) {
+                            data.portraitPosition = Pair(data.portraitPosition.first, 0.235)
+                            modified = true
+                        }
+                        if (data.foldablePosition.second < 0.12) {
+                            data.foldablePosition = Pair(data.foldablePosition.first, 0.14)
+                            modified = true
+                        }
+                    } else if (data.id == OverlayControl.BUTTON_L.id || data.id == OverlayControl.BUTTON_R.id) {
+                        if (data.landscapePosition.second < 0.25) {
+                            data.landscapePosition = Pair(data.landscapePosition.first, 0.28)
+                            modified = true
+                        }
+                        if (data.portraitPosition.second < 0.28) {
+                            data.portraitPosition = Pair(data.portraitPosition.first, 0.30)
+                            modified = true
+                        }
+                        if (data.foldablePosition.second < 0.18) {
+                            data.foldablePosition = Pair(data.foldablePosition.first, 0.205)
+                            modified = true
+                        }
+                    }
+                }
+                if (modified) {
+                    NativeConfig.setOverlayControlData(overlayControlData)
+                    NativeConfig.saveGlobalConfig()
+                }
+            } catch (e: Throwable) {
+                e.printStackTrace()
+            }
+            prefs.edit().putBoolean("storm_overlay_shoulder_y_v20_2", true).apply()
+        }
         val windowSize = getSafeScreenSize(context, Pair(measuredWidth, measuredHeight))
         val overlayControlData = NativeConfig.getOverlayControlData()
         for (data in overlayControlData) {
@@ -821,6 +864,51 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
                     )
                 }
 
+                OverlayControl.STICK_L.id -> {
+                    overlayJoysticks.add(
+                        initializeOverlayJoystick(
+                            context,
+                            windowSize,
+                            R.drawable.joystick_range,
+                            R.drawable.joystick,
+                            R.drawable.joystick_depressed,
+                            NativeAnalog.LStick,
+                            NativeButton.LStick,
+                            data,
+                            position
+                        )
+                    )
+                }
+
+                OverlayControl.STICK_R.id -> {
+                    overlayJoysticks.add(
+                        initializeOverlayJoystick(
+                            context,
+                            windowSize,
+                            R.drawable.joystick_range,
+                            R.drawable.joystick,
+                            R.drawable.joystick_depressed,
+                            NativeAnalog.RStick,
+                            NativeButton.RStick,
+                            data,
+                            position
+                        )
+                    )
+                }
+
+                OverlayControl.COMBINED_DPAD.id -> {
+                    overlayDpads.add(
+                        initializeOverlayDpad(
+                            context,
+                            windowSize,
+                            R.drawable.dpad_standard,
+                            R.drawable.dpad_standard_cardinal_depressed,
+                            R.drawable.dpad_standard_diagonal_depressed,
+                            position
+                        )
+                    )
+                }
+
                 OverlayControl.BUTTON_GL.id -> {
                     overlayButtons.add(
                         initializeOverlayButton(
@@ -896,8 +984,8 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
                         initializeOverlayButton(
                             context,
                             windowSize,
-                            R.drawable.facebutton_plus,
-                            R.drawable.facebutton_plus_depressed,
+                            R.drawable.ic_storm_hud_fps,
+                            R.drawable.ic_storm_hud_fps,
                             NativeButton.Plus,
                             data,
                             position
@@ -924,8 +1012,8 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
                         initializeOverlayButton(
                             context,
                             windowSize,
-                            R.drawable.facebutton_a,
-                            R.drawable.facebutton_a_depressed,
+                            R.drawable.ic_storm_hud_quicksave,
+                            R.drawable.ic_storm_hud_quicksave,
                             NativeButton.A,
                             data,
                             position
@@ -938,8 +1026,8 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
                         initializeOverlayButton(
                             context,
                             windowSize,
-                            R.drawable.facebutton_b,
-                            R.drawable.facebutton_b_depressed,
+                            R.drawable.ic_storm_hud_quickload,
+                            R.drawable.ic_storm_hud_quickload,
                             NativeButton.B,
                             data,
                             position
@@ -952,8 +1040,8 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
                         initializeOverlayButton(
                             context,
                             windowSize,
-                            R.drawable.facebutton_x,
-                            R.drawable.facebutton_x_depressed,
+                            R.drawable.ic_storm_hud_translate,
+                            R.drawable.ic_storm_hud_translate,
                             NativeButton.X,
                             data,
                             position
@@ -966,8 +1054,8 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
                         initializeOverlayButton(
                             context,
                             windowSize,
-                            R.drawable.facebutton_y,
-                            R.drawable.facebutton_y_depressed,
+                            R.drawable.ic_build,
+                            R.drawable.ic_build,
                             NativeButton.Y,
                             data,
                             position
@@ -994,9 +1082,9 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
                         initializeOverlayButton(
                             context,
                             windowSize,
-                            R.drawable.facebutton_minus,
-                            R.drawable.facebutton_minus_depressed,
-                            NativeButton.Minus,
+                            R.drawable.ic_storm_hud_temp,
+                            R.drawable.ic_storm_hud_temp,
+                            NativeButton.Capture,
                             data,
                             position
                         )
@@ -1008,9 +1096,9 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
                         initializeOverlayButton(
                             context,
                             windowSize,
-                            R.drawable.facebutton_home,
-                            R.drawable.facebutton_home_depressed,
-                            NativeButton.Home,
+                            R.drawable.ic_chat,
+                            R.drawable.ic_chat,
+                            NativeButton.Minus,
                             data,
                             position
                         )
@@ -1022,9 +1110,9 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
                         initializeOverlayButton(
                             context,
                             windowSize,
-                            R.drawable.facebutton_screenshot,
-                            R.drawable.facebutton_screenshot_depressed,
-                            NativeButton.Capture,
+                            R.drawable.ic_controller,
+                            R.drawable.ic_controller,
+                            NativeButton.Home,
                             data,
                             position
                         )
@@ -1036,9 +1124,9 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
                         initializeOverlayButton(
                             context,
                             windowSize,
-                            R.drawable.button_r3,
-                            R.drawable.button_r3_depressed,
-                            NativeButton.RStick,
+                            R.drawable.ic_options,
+                            R.drawable.ic_options,
+                            NativeButton.Capture,
                             data,
                             position
                         )
@@ -1050,9 +1138,9 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
                         initializeOverlayButton(
                             context,
                             windowSize,
-                            R.drawable.button_l3,
-                            R.drawable.button_l3_depressed,
-                            NativeButton.LStick,
+                            R.drawable.ic_code,
+                            R.drawable.ic_code,
+                            NativeButton.Minus,
                             data,
                             position
                         )
@@ -1064,55 +1152,10 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
                         initializeOverlayButton(
                             context,
                             windowSize,
-                            R.drawable.facebutton_minus,
-                            R.drawable.facebutton_minus_depressed,
-                            NativeButton.Minus,
+                            R.drawable.ic_options,
+                            R.drawable.ic_options,
+                            NativeButton.Capture,
                             data,
-                            position
-                        )
-                    )
-                }
-
-                OverlayControl.STICK_L.id -> {
-                    overlayJoysticks.add(
-                        initializeOverlayJoystick(
-                            context,
-                            windowSize,
-                            R.drawable.joystick_range,
-                            R.drawable.joystick,
-                            R.drawable.joystick_depressed,
-                            NativeAnalog.LStick,
-                            NativeButton.LStick,
-                            data,
-                            position
-                        )
-                    )
-                }
-
-                OverlayControl.STICK_R.id -> {
-                    overlayJoysticks.add(
-                        initializeOverlayJoystick(
-                            context,
-                            windowSize,
-                            R.drawable.joystick_range,
-                            R.drawable.joystick,
-                            R.drawable.joystick_depressed,
-                            NativeAnalog.RStick,
-                            NativeButton.RStick,
-                            data,
-                            position
-                        )
-                    )
-                }
-
-                OverlayControl.COMBINED_DPAD.id -> {
-                    overlayDpads.add(
-                        initializeOverlayDpad(
-                            context,
-                            windowSize,
-                            R.drawable.dpad_standard,
-                            R.drawable.dpad_standard_cardinal_depressed,
-                            R.drawable.dpad_standard_diagonal_depressed,
                             position
                         )
                     )
@@ -1774,26 +1817,9 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
                 else -> false
             }
 
-            // Initialize the InputOverlayDrawableButton using high-perf procedural vector renderer
-            val currentTheme = org.yuzu.yuzu_emu.overlay.model.OverlayTheme.fromId(IntSetting.OVERLAY_SKIN_THEME.getInt())
-            val dm = context.resources.displayMetrics
-            val minScreenDimension = min(dm.widthPixels, dm.heightPixels)
-            val btnPixelSize = (scale * minScreenDimension).toInt().coerceIn(48, 512)
-
-            val defaultStateBitmap = OverlayControlIconRenderer.createBitmapForControl(
-                overlayControlData.id,
-                btnPixelSize,
-                currentTheme,
-                isPressed = false,
-                isRightSide = isRightSide
-            )
-            val pressedStateBitmap = OverlayControlIconRenderer.createBitmapForControl(
-                overlayControlData.id,
-                btnPixelSize,
-                currentTheme,
-                isPressed = true,
-                isRightSide = isRightSide
-            )
+            // Initialize the InputOverlayDrawableButton.
+            val defaultStateBitmap = getBitmap(context, defaultResId, scale, isPressed = false, isRightSide = isRightSide)
+            val pressedStateBitmap = getBitmap(context, pressedResId, scale, isPressed = true, isRightSide = isRightSide)
             val overlayDrawable = InputOverlayDrawableButton(
                 res,
                 defaultStateBitmap,
@@ -1812,20 +1838,31 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
             val drawableY = (position.second * max.y + min.y).toInt()
             val width = overlayDrawable.width
             val height = overlayDrawable.height
+            val halfW = width / 2
+            val halfH = height / 2
+
+            val density = res.displayMetrics.density
+            val safeTopMargin = (10 * density).toInt()
+            val safeTop = min.y + halfH + safeTopMargin
+            val safeBottom = max.y - halfH
+            val clampedY = drawableY.coerceIn(safeTop, maxOf(safeTop, safeBottom))
+
+            val safeLeft = min.x + halfW
+            val safeRight = max.x - halfW
+            val clampedX = drawableX.coerceIn(safeLeft, maxOf(safeLeft, safeRight))
 
             // Now set the bounds for the InputOverlayDrawableButton.
-            // This will dictate where on the screen (and the what the size) the InputOverlayDrawableButton will be.
             overlayDrawable.setBounds(
-                drawableX - (width / 2),
-                drawableY - (height / 2),
-                drawableX + (width / 2),
-                drawableY + (height / 2)
+                clampedX - halfW,
+                clampedY - halfH,
+                clampedX + halfW,
+                clampedY + halfH
             )
 
             // Need to set the image's position
             overlayDrawable.setPosition(
-                drawableX - (width / 2),
-                drawableY - (height / 2)
+                clampedX - halfW,
+                clampedY - halfH
             )
             val baseOpacity = IntSetting.OVERLAY_OPACITY.getInt() * 255 / 100
             val indOpacity = overlayControlData.individualOpacity.coerceIn(0f, 1f)

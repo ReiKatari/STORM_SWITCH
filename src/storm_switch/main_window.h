@@ -54,9 +54,6 @@ class QPushButton;
 class QProgressDialog;
 class QSlider;
 class QHBoxLayout;
-class QToolBar;
-class QComboBox;
-class QVBoxLayout;
 class WaitTreeWidget;
 class PerformanceOverlay;
 class FloatingTranslateButton;
@@ -175,12 +172,6 @@ public:
     void UpdateStatusButtons();
     void filterBarSetChecked(bool state);
     void UpdateUITheme();
-    void SetupStormDesignLayouts();
-    void UpdateStormDesignLayout();
-    void HideStormDesignWidgets();
-    void OnToolbarDesignChanged(int index);
-    void UpdateDossierPanel(u64 program_id, const QString& game_path);
-    void UpdateHeroBlock(u64 program_id, const QString& game_path);
     explicit MainWindow(bool has_broken_vulkan);
     ~MainWindow() override;
 
@@ -476,6 +467,7 @@ public slots:
     void OnLoadStateSlot(int slot);
     void OnSaveStateManager();
     void RefreshSaveStateMenus();
+    void OnToggleInGameSidebar();
 
 private slots:
 #ifdef __unix__
@@ -583,45 +575,6 @@ private:
     PerformanceOverlay* perf_overlay = nullptr;
 
     GameListPlaceholder* game_list_placeholder = nullptr;
-
-    // Storm Design Engine dynamic widgets
-    QToolBar* main_toolbar = nullptr;
-    QComboBox* m_toolbar_design_combobox = nullptr;
-    QLabel* m_toolbar_design_label = nullptr;
-
-    QWidget* m_center_container = nullptr;
-    QVBoxLayout* m_center_vbox = nullptr;
-
-    QWidget* m_telemetry_bar = nullptr;
-    QLabel* m_telemetry_vulkan_label = nullptr;
-    QLabel* m_telemetry_fps_label = nullptr;
-    QLabel* m_telemetry_status_label = nullptr;
-
-    QWidget* m_hero_block = nullptr;
-    QLabel* m_hero_cover = nullptr;
-    QLabel* m_hero_title = nullptr;
-    QLabel* m_hero_subtitle = nullptr;
-    QPushButton* m_hero_btn_play = nullptr;
-    QPushButton* m_hero_btn_settings = nullptr;
-
-    QWidget* m_dossier_panel = nullptr;
-    QLabel* m_dossier_header = nullptr;
-    QLabel* m_dossier_cover = nullptr;
-    QLabel* m_dossier_title = nullptr;
-    QLabel* m_dossier_tid = nullptr;
-    QLabel* m_dossier_version = nullptr;
-    QLabel* m_dossier_addons = nullptr;
-    QLabel* m_dossier_size = nullptr;
-    QLabel* m_dossier_structure = nullptr;
-    QPushButton* m_dossier_btn_play = nullptr;
-    QPushButton* m_dossier_btn_settings = nullptr;
-    QPushButton* m_dossier_btn_cheats = nullptr;
-    QPushButton* m_dossier_btn_save = nullptr;
-
-    QWidget* m_console_bottom_bar = nullptr;
-
-    u64 m_selected_program_id = 0;
-    QString m_selected_game_path;
 
     std::vector<VkDeviceInfo::Record> vk_device_records;
 

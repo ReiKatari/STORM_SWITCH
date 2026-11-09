@@ -1,3 +1,5 @@
+#include "storm_switch/common/storm_design_engine.h"
+#include "storm_switch/common/storm_lang.h"
 #include "storm_switch/common/storm_theme.h"
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
@@ -6,6 +8,7 @@
 #include "storm_switch/configuration/storm_ui_structure_helper.h"
 
 #include <algorithm>
+#include <tuple>
 #include <filesystem>
 #include <random>
 #include <QBoxLayout>
@@ -38,6 +41,191 @@
 #include "common/logging.h"
 #include "core/core.h"
 
+
+#include <QPainter>
+#include <QPainterPath>
+#include <cmath>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+namespace {
+
+enum class AmiiboIconType {
+    Search,
+    Star,
+    Clock,
+    Refresh,
+    Controller,
+    Disconnect,
+    Download,
+    Folder,
+    Check,
+    Cross,
+};
+
+QIcon MakeAmiiboIcon(AmiiboIconType type, const QColor& color, int size = 16) {
+    QPixmap pix(size, size);
+    pix.fill(Qt::transparent);
+    QPainter p(&pix);
+    p.setRenderHint(QPainter::Antialiasing, true);
+    QPen pen(color, 1.8, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+    p.setPen(pen);
+    p.setBrush(Qt::NoBrush);
+
+    switch (type) {
+    case AmiiboIconType::Search:
+        p.drawEllipse(QPointF(6.5, 6.5), 4.0, 4.0);
+        p.drawLine(QPointF(9.5, 9.5), QPointF(13.5, 13.5));
+        break;
+    case AmiiboIconType::Star: {
+        QPainterPath star;
+        const qreal scx = 8.0, scy = 8.0, r_out = 6.2, r_in = 2.8;
+        for (int i = 0; i < 5; ++i) {
+            qreal a_out = -M_PI_2 + i * 2.0 * M_PI / 5.0;
+            qreal a_in = a_out + M_PI / 5.0;
+            if (i == 0) star.moveTo(scx + r_out * std::cos(a_out), scy + r_out * std::sin(a_out));
+            else star.lineTo(scx + r_out * std::cos(a_out), scy + r_out * std::sin(a_out));
+            star.lineTo(scx + r_in * std::cos(a_in), scy + r_in * std::sin(a_in));
+        }
+        star.closeSubpath();
+        p.setBrush(color);
+        p.drawPath(star);
+        break;
+    }
+    case AmiiboIconType::Clock:
+        p.drawEllipse(QPointF(8.0, 8.0), 5.5, 5.5);
+        p.drawLine(QPointF(8.0, 4.5), QPointF(8.0, 8.0));
+        p.drawLine(QPointF(8.0, 8.0), QPointF(11.0, 8.0));
+        break;
+    case AmiiboIconType::Refresh: {
+        p.drawArc(QRectF(3.0, 3.0, 10.0, 10.0), 30 * 16, 270 * 16);
+        p.drawLine(QPointF(11.0, 4.5), QPointF(13.0, 6.5));
+        p.drawLine(QPointF(13.0, 6.5), QPointF(10.5, 9.0));
+        break;
+    }
+    case AmiiboIconType::Controller:
+        p.drawRoundedRect(QRectF(2.5, 4.5, 11.0, 7.0), 2.5, 2.5);
+        p.drawPoint(QPointF(5.5, 8.0));
+        p.drawPoint(QPointF(10.5, 7.0));
+        p.drawPoint(QPointF(10.5, 9.0));
+        break;
+    case AmiiboIconType::Disconnect:
+        p.drawLine(QPointF(4.0, 4.0), QPointF(12.0, 12.0));
+        p.drawLine(QPointF(12.0, 4.0), QPointF(4.0, 12.0));
+        break;
+    case AmiiboIconType::Download:
+        p.drawLine(QPointF(8.0, 2.5), QPointF(8.0, 10.5));
+        p.drawLine(QPointF(4.5, 7.5), QPointF(8.0, 10.5));
+        p.drawLine(QPointF(11.5, 7.5), QPointF(8.0, 10.5));
+        p.drawLine(QPointF(3.0, 13.5), QPointF(13.0, 13.5));
+        break;
+    case AmiiboIconType::Folder: {
+        QPainterPath path;
+        path.moveTo(2.5, 5.0);
+        path.lineTo(6.0, 5.0);
+        path.lineTo(7.5, 6.5);
+        path.lineTo(13.5, 6.5);
+        path.lineTo(13.5, 12.5);
+        path.lineTo(2.5, 12.5);
+        path.closeSubpath();
+        p.drawPath(path);
+        break;
+    }
+    case AmiiboIconType::Check:
+        p.drawLine(QPointF(3.0, 8.0), QPointF(6.5, 11.5));
+        p.drawLine(QPointF(6.5, 11.5), QPointF(13.0, 4.5));
+        break;
+    case AmiiboIconType::Cross:
+        p.drawLine(QPointF(4.0, 4.0), QPointF(12.0, 12.0));
+        p.drawLine(QPointF(12.0, 4.0), QPointF(4.0, 12.0));
+        break;
+    }
+    return QIcon(pix);
+}
+
+[[maybe_unused]] inline QPixmap MakeAmiiboPedestalPlaceholder(int w, int h, const StormTheme::Palette& pal) {
+    QPixmap pix(w, h);
+    pix.fill(Qt::transparent);
+    QPainter p(&pix);
+    p.setRenderHint(QPainter::Antialiasing, true);
+
+    const QColor accent(pal.accent);
+    const QColor muted(pal.textSecondary);
+
+    p.setPen(QPen(QColor(pal.border), 1.0));
+    p.setBrush(QColor(pal.surface));
+    p.drawRoundedRect(QRectF(2, 2, w - 4, h - 4), 8.0, 8.0);
+
+    const qreal base_cx = w / 2.0;
+    const qreal base_y = h - 28.0;
+
+    // Shadow
+    p.setPen(Qt::NoPen);
+    p.setBrush(QColor(0, 0, 0, 70));
+    p.drawEllipse(QPointF(base_cx, base_y + 10.0), 38.0, 9.0);
+
+    // Pedestal base
+    QLinearGradient gradBase(0, base_y - 4, 0, base_y + 8);
+    gradBase.setColorAt(0.0, accent.darker(150));
+    gradBase.setColorAt(0.5, accent);
+    gradBase.setColorAt(1.0, accent.darker(180));
+    p.setPen(QPen(accent.lighter(130), 1.2));
+    p.setBrush(gradBase);
+    p.drawRoundedRect(QRectF(base_cx - 36, base_y - 2, 72, 10), 4, 4);
+
+    p.setPen(QPen(accent.lighter(160), 1.5));
+    p.setBrush(QColor(pal.cardAlt));
+    p.drawEllipse(QPointF(base_cx, base_y - 4), 32.0, 8.0);
+
+    // NFC concentric wave rings
+    p.setPen(QPen(accent, 1.0, Qt::DashLine));
+    p.setBrush(Qt::NoBrush);
+    p.drawEllipse(QPointF(base_cx, base_y - 4), 22.0, 5.5);
+    p.drawEllipse(QPointF(base_cx, base_y - 4), 12.0, 3.0);
+
+    // Figurite silhouette
+    QPainterPath fig;
+    fig.addEllipse(QPointF(base_cx, 38.0), 12.0, 12.0);
+    fig.moveTo(base_cx - 16.0, 54.0);
+    fig.cubicTo(base_cx - 20.0, 72.0, base_cx - 14.0, 92.0, base_cx - 8.0, base_y - 5.0);
+    fig.lineTo(base_cx + 8.0, base_y - 5.0);
+    fig.cubicTo(base_cx + 14.0, 92.0, base_cx + 20.0, 72.0, base_cx + 16.0, 54.0);
+    fig.closeSubpath();
+
+    QLinearGradient figGrad(0, 26, 0, base_y - 5);
+    figGrad.setColorAt(0.0, QColor(accent.red(), accent.green(), accent.blue(), 180));
+    figGrad.setColorAt(0.7, QColor(muted.red(), muted.green(), muted.blue(), 120));
+    figGrad.setColorAt(1.0, QColor(accent.red(), accent.green(), accent.blue(), 40));
+
+    p.setPen(QPen(accent, 1.2));
+    p.setBrush(figGrad);
+    p.drawPath(fig);
+
+    // Center star crest
+    p.setPen(QPen(QColor(QStringLiteral("#FFFFFF")), 1.0));
+    p.setBrush(QColor(QStringLiteral("#FFFFFF")));
+    QPainterPath star;
+    const qreal scx = base_cx;
+    const qreal scy = 64.0;
+    const qreal r_out = 6.0;
+    const qreal r_in = 2.8;
+    for (int i = 0; i < 5; ++i) {
+        qreal a_out = -M_PI_2 + i * 2.0 * M_PI / 5.0;
+        qreal a_in = a_out + M_PI / 5.0;
+        if (i == 0) star.moveTo(scx + r_out * std::cos(a_out), scy + r_out * std::sin(a_out));
+        else star.lineTo(scx + r_out * std::cos(a_out), scy + r_out * std::sin(a_out));
+        star.lineTo(scx + r_in * std::cos(a_in), scy + r_in * std::sin(a_in));
+    }
+    star.closeSubpath();
+    p.drawPath(star);
+
+    return pix;
+}
+
+} // namespace
+
 AmiiboBrowserDialog::AmiiboBrowserDialog(QWidget* parent, Core::System& system, const QString& initial_game_hint)
     : QDialog(parent), m_system(system), m_network_mgr(new QNetworkAccessManager(this)), m_initial_game_hint(initial_game_hint) {
     SetupUi();
@@ -49,8 +237,8 @@ AmiiboBrowserDialog::~AmiiboBrowserDialog() = default;
 
 void AmiiboBrowserDialog::SetupUi() {
     setWindowTitle(tr("Онлайн-база и менеджер Amiibo — STORM SWITCH"));
-    setWindowState(Qt::WindowMaximized);
-    setMinimumSize(640, 440);
+    resize(940, 620);
+    setMinimumSize(780, 520);
 
     // Apply dynamic theme styling
     const auto abd_pal = StormTheme::GetThemePalette();
@@ -184,7 +372,8 @@ void AmiiboBrowserDialog::SetupUi() {
     m_favorites = QSet<QString>(fav_list.begin(), fav_list.end());
     m_recent_ids = settings.value(QStringLiteral("recent")).toStringList();
 
-    m_fav_filter_btn = new QPushButton(tr("⭐ Избранное"), this);
+    m_fav_filter_btn = new QPushButton(tr("Избранное"), this);
+    m_fav_filter_btn->setIcon(MakeAmiiboIcon(AmiiboIconType::Star, QColor(abd_pal.accent)));
     m_fav_filter_btn->setCheckable(true);
     m_fav_filter_btn->setCursor(Qt::PointingHandCursor);
     m_fav_filter_btn->setToolTip(tr("Показать только избранные фигурки Amiibo"));
@@ -194,7 +383,8 @@ void AmiiboBrowserDialog::SetupUi() {
     });
     filter_layout->addWidget(m_fav_filter_btn, 0);
 
-    m_recent_filter_btn = new QPushButton(tr("🕒 Недавние"), this);
+    m_recent_filter_btn = new QPushButton(tr("Недавние"), this);
+    m_recent_filter_btn->setIcon(MakeAmiiboIcon(AmiiboIconType::Clock, QColor(abd_pal.textSecondary)));
     m_recent_filter_btn->setCheckable(true);
     m_recent_filter_btn->setCursor(Qt::PointingHandCursor);
     m_recent_filter_btn->setToolTip(tr("Показать недавно использованные фигурки Amiibo"));
@@ -204,7 +394,8 @@ void AmiiboBrowserDialog::SetupUi() {
     });
     filter_layout->addWidget(m_recent_filter_btn, 0);
 
-    m_refresh_btn = new QPushButton(tr("🔄 Обновить базу"), this);
+    m_refresh_btn = new QPushButton(tr("Обновить базу"), this);
+    m_refresh_btn->setIcon(MakeAmiiboIcon(AmiiboIconType::Refresh, QColor(abd_pal.textSecondary)));
     connect(m_refresh_btn, &QPushButton::clicked, this, &AmiiboBrowserDialog::OnRefreshClicked);
     filter_layout->addWidget(m_refresh_btn, 0);
 
@@ -221,6 +412,7 @@ void AmiiboBrowserDialog::SetupUi() {
     left_layout->setSpacing(4);
 
     m_amiibo_list = new QListWidget(this);
+    m_amiibo_list->setStyleSheet(QStringLiteral("QListWidget::item { height: 34px; padding: 4px 8px; border-radius: 4px; }"));
     connect(m_amiibo_list, &QListWidget::currentItemChanged, this, &AmiiboBrowserDialog::OnItemSelected);
     connect(m_amiibo_list, &QListWidget::itemDoubleClicked, this, [this](QListWidgetItem*) {
         OnLoadAmiiboClicked();
@@ -242,11 +434,11 @@ void AmiiboBrowserDialog::SetupUi() {
 
     // Image preview centered
     m_image_label = new QLabel(this);
-    m_image_label->setMinimumSize(180, 180);
+    m_image_label->setFixedSize(140, 140);
     m_image_label->setMaximumHeight(220);
     m_image_label->setAlignment(Qt::AlignCenter);
     m_image_label->setStyleSheet(QStringLiteral("background-color: #0c1018; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;"));
-    m_image_label->setText(tr("Выберите Amiibo для просмотра"));
+    m_image_label->setPixmap(MakeAmiiboPedestalPlaceholder(140, 140, StormTheme::GetThemePalette()));
     details_layout->addWidget(m_image_label);
 
     m_name_label = new QLabel(tr("Имя: —"), this);
@@ -276,7 +468,7 @@ void AmiiboBrowserDialog::SetupUi() {
     tg_layout->setContentsMargins(0, 4, 0, 4);
     tg_layout->setSpacing(6);
 
-    auto* tg_title = new QLabel(tr("🎮 Выбранная игра:"), this);
+    auto* tg_title = new QLabel(tr("Выбранная игра:"), this);
     tg_title->setStyleSheet(QStringLiteral("font-weight: bold; color: %1;").arg(abd_pal.accent));
     tg_layout->addWidget(tg_title);
 
@@ -349,7 +541,7 @@ void AmiiboBrowserDialog::SetupUi() {
     card_layout->setSpacing(4);
 
     auto* card_header = new QHBoxLayout();
-    auto* card_title = new QLabel(tr("🎁 Награда в этой игре:"), m_reward_card);
+    auto* card_title = new QLabel(tr("Награда в этой игре:"), m_reward_card);
     card_title->setStyleSheet(QStringLiteral("font-weight: bold; color: #ffca28; font-size: 9.5pt;"));
     card_header->addWidget(card_title);
 
@@ -373,7 +565,7 @@ void AmiiboBrowserDialog::SetupUi() {
     details_layout->addWidget(m_reward_card);
 
     // Games compatibility
-    auto* games_label = new QLabel(tr("🎮 Поддерживаемые игры на Nintendo Switch:"), this);
+    auto* games_label = new QLabel(tr("Поддерживаемые игры на Nintendo Switch:"), this);
     games_label->setStyleSheet(QStringLiteral("font-weight: bold; color: #ffca28; margin-top: 4px;"));
     details_layout->addWidget(games_label);
 
@@ -386,7 +578,8 @@ void AmiiboBrowserDialog::SetupUi() {
     auto* act_btn_layout = new QHBoxLayout();
     act_btn_layout->setSpacing(6);
 
-    m_toggle_fav_btn = new QPushButton(tr("⭐ В избранное"), this);
+    m_toggle_fav_btn = new QPushButton(tr("В избранное"), this);
+    m_toggle_fav_btn->setIcon(MakeAmiiboIcon(AmiiboIconType::Star, QColor(abd_pal.accent)));
     m_toggle_fav_btn->setCursor(Qt::PointingHandCursor);
     m_toggle_fav_btn->setEnabled(false);
     connect(m_toggle_fav_btn, &QPushButton::clicked, this, [this]() {
@@ -397,10 +590,10 @@ void AmiiboBrowserDialog::SetupUi() {
         const QString key = m_all_amiibos[idx].head + m_all_amiibos[idx].tail;
         if (m_favorites.contains(key)) {
             m_favorites.remove(key);
-            m_toggle_fav_btn->setText(tr("⭐ В избранное"));
+            m_toggle_fav_btn->setText(tr("В избранное"));
         } else {
             m_favorites.insert(key);
-            m_toggle_fav_btn->setText(tr("🌟 В избранном"));
+            m_toggle_fav_btn->setText(tr("В избранном"));
         }
         QSettings s(QStringLiteral("STORM_SWITCH"), QStringLiteral("AmiiboCabinet"));
         s.setValue(QStringLiteral("favorites"), QStringList(m_favorites.begin(), m_favorites.end()));
@@ -408,21 +601,24 @@ void AmiiboBrowserDialog::SetupUi() {
     });
     act_btn_layout->addWidget(m_toggle_fav_btn);
 
-    m_save_btn = new QPushButton(tr("💾 Сохранить Amiibo (.bin)"), this);
+    m_save_btn = new QPushButton(tr("Загрузить .bin"), this);
+    m_save_btn->setIcon(MakeAmiiboIcon(AmiiboIconType::Download, QColor(abd_pal.textPrimary)));
     m_save_btn->setCursor(Qt::PointingHandCursor);
     m_save_btn->setEnabled(false);
     m_save_btn->setStyleSheet(QStringLiteral("background-color: #004d40; border-color: #00e676; color: #ffffff;"));
     connect(m_save_btn, &QPushButton::clicked, this, &AmiiboBrowserDialog::OnSaveAmiiboClicked);
     act_btn_layout->addWidget(m_save_btn);
 
-    m_load_btn = new QPushButton(tr("⚡ Загрузить в игру"), this);
+    m_load_btn = new QPushButton(tr("Приложить Amiibo"), this);
+    m_load_btn->setIcon(MakeAmiiboIcon(AmiiboIconType::Controller, QColor(QStringLiteral("#FFFFFF"))));
     m_load_btn->setCursor(Qt::PointingHandCursor);
     m_load_btn->setEnabled(false);
     m_load_btn->setStyleSheet(QStringLiteral("background-color: %1; border-color: %2; color: %3;").arg(abd_pal.card, abd_pal.accent, abd_pal.textPrimary));
     connect(m_load_btn, &QPushButton::clicked, this, &AmiiboBrowserDialog::OnLoadAmiiboClicked);
     act_btn_layout->addWidget(m_load_btn);
 
-    m_disconnect_btn = new QPushButton(tr("❌ Отключить Amiibo"), this);
+    m_disconnect_btn = new QPushButton(tr("Отключить"), this);
+    m_disconnect_btn->setIcon(MakeAmiiboIcon(AmiiboIconType::Disconnect, QColor(abd_pal.textSecondary)));
     m_disconnect_btn->setCursor(Qt::PointingHandCursor);
     m_disconnect_btn->setStyleSheet(QStringLiteral("background-color: #3b1111; border-color: #ff5252; color: #ff8a80;"));
     connect(m_disconnect_btn, &QPushButton::clicked, this, &AmiiboBrowserDialog::OnDisconnectAmiiboClicked);
@@ -446,11 +642,14 @@ void AmiiboBrowserDialog::SetupUi() {
     bottom_bar->addWidget(m_status_label, 1);
 
     m_progress_bar = new QProgressBar(this);
+    m_progress_bar->setFixedHeight(8);
+    m_progress_bar->setTextVisible(false);
     m_progress_bar->setRange(0, 0); // Busy indicator initially
     m_progress_bar->setMinimumWidth(140);
     bottom_bar->addWidget(m_progress_bar);
 
-    m_open_folder_btn = new QPushButton(tr("📁 Открыть папку Amiibo"), this);
+    m_open_folder_btn = new QPushButton(tr("Открыть папку"), this);
+    m_open_folder_btn->setIcon(MakeAmiiboIcon(AmiiboIconType::Folder, QColor(abd_pal.textSecondary)));
     connect(m_open_folder_btn, &QPushButton::clicked, this, &AmiiboBrowserDialog::OnOpenAmiiboFolderClicked);
     bottom_bar->addWidget(m_open_folder_btn);
 
@@ -808,7 +1007,7 @@ void AmiiboBrowserDialog::ApplyFilters() {
         m_filtered_indices.push_back(static_cast<int>(i));
 
         const QString label = m_favorites.contains(full_id)
-            ? QStringLiteral("⭐ %1 [%2]").arg(a.name, a.amiibo_series)
+            ? QStringLiteral("%1 [%2] [Избранное]").arg(a.name, a.amiibo_series)
             : QStringLiteral("%1 [%2]").arg(a.name, a.amiibo_series);
         auto* item = new QListWidgetItem(label);
         item->setData(Qt::UserRole, static_cast<int>(i));
@@ -825,7 +1024,7 @@ void AmiiboBrowserDialog::ApplyFilters() {
         m_id_label->setText(QString());
         m_status_badge->setText(tr("Статус: Нет результатов"));
         m_games_text->clear();
-        m_image_label->setText(tr("Нет данных"));
+        m_image_label->setPixmap(MakeAmiiboPedestalPlaceholder(140, 140, StormTheme::GetThemePalette()));
         m_save_btn->setEnabled(false);
         m_load_btn->setEnabled(false);
     }
@@ -864,10 +1063,10 @@ void AmiiboBrowserDialog::DisplayAmiiboDetails(const AmiiboEntry& entry) {
     auto local_path = amiibo_dir / clean_series.toStdString() / (clean_name.toStdString() + ".bin");
 
     if (std::filesystem::exists(local_path)) {
-        m_status_badge->setText(tr("Статус: ✅ Установлено локально (%1)").arg(clean_name + QStringLiteral(".bin")));
+        m_status_badge->setText(tr("Статус: [Установлено локально (%1)]").arg(clean_name + QStringLiteral(".bin")));
         m_status_badge->setStyleSheet(QStringLiteral("color: #00e676; font-weight: bold; padding: 2px 6px; background-color: #004d40; border-radius: 3px;"));
     } else {
-        m_status_badge->setText(tr("Статус: 🌐 Доступно для загрузки"));
+        m_status_badge->setText(tr("Статус: [Доступно для загрузки]"));
         const auto abd_pal2 = StormTheme::GetThemePalette();
         m_status_badge->setStyleSheet(QStringLiteral("color: %1; font-weight: bold; padding: 2px 6px; background-color: %2; border-radius: 3px;").arg(abd_pal2.accent, abd_pal2.surface));
     }
@@ -891,8 +1090,8 @@ void AmiiboBrowserDialog::DisplayAmiiboDetails(const AmiiboEntry& entry) {
         m_toggle_fav_btn->setEnabled(true);
         const QString full_id = entry.head + entry.tail;
         m_toggle_fav_btn->setText(m_favorites.contains(full_id)
-            ? tr("🌟 В избранном")
-            : tr("⭐ В избранное"));
+            ? tr("В избранном")
+            : tr("В избранное"));
     }
 }
 
@@ -901,7 +1100,7 @@ void AmiiboBrowserDialog::UpdateRewardCard(const AmiiboEntry& entry) {
     const QString current_game = m_target_game_combo->currentText();
     const auto reward = GetRewardForGame(entry, current_game);
 
-    m_reward_category_badge->setText(QStringLiteral("%1 %2").arg(reward.icon_emoji, reward.category.toUpper()));
+    m_reward_category_badge->setText(reward.category.toUpper());
     m_reward_name_label->setText(reward.item_name);
     m_reward_desc_label->setText(reward.description);
 }
@@ -916,87 +1115,87 @@ AmiiboRewardInfo AmiiboBrowserDialog::GetRewardForGame(const AmiiboEntry& entry,
     // 1. Zelda: Tears of the Kingdom
     if (gn.contains(QStringLiteral("tears")) || gn.contains(QStringLiteral("totk"))) {
         if (n.contains(QStringLiteral("tears")) || (c.contains(QStringLiteral("link")) && n.contains(QStringLiteral("totk")))) {
-            return {QObject::tr("Ткань параплана и оружие"), QStringLiteral("🪂"),
+            return {QObject::tr("Ткань параплана и оружие"), QString{},
                     QObject::tr("Новая ткань чемпионов и Меч рыцаря"),
                     QObject::tr("Эксклюзивная ткань для параплана «Новая туника чемпионов», крепкий Меч рыцаря, целебные травы и мясо")};
         }
         if (n.contains(QStringLiteral("ocarina")) || n.contains(QStringLiteral("time"))) {
-            return {QObject::tr("Оружие, броня и ткань"), QStringLiteral("🗡️"),
+            return {QObject::tr("Оружие, броня и ткань"), QString{},
                     QObject::tr("Меч Большого Горона и Сет Времени"),
                     QObject::tr("Двуручный Меч Большого Горона, Шапка/Туника/Штаны Времени, Ткань маски Лони-Лони")};
         }
         if (n.contains(QStringLiteral("majora"))) {
-            return {QObject::tr("Оружие, броня и ткань"), QStringLiteral("🗡️"),
+            return {QObject::tr("Оружие, броня и ткань"), QString{},
                     QObject::tr("Двуручник и Сет Свирепого Божества"),
                     QObject::tr("Маска, Нагрудник и Поножи Свирепого Божества, Двуручник Свирепого Божества, Ткань маски Маджоры")};
         }
         if (n.contains(QStringLiteral("twilight")) || (c.contains(QStringLiteral("link")) && as.contains(QStringLiteral("smash")))) {
-            return {QObject::tr("Скакун, броня и ткань"), QStringLiteral("🐺"),
+            return {QObject::tr("Скакун, броня и ткань"), QString{},
                     QObject::tr("Легендарная кобыла Эпона и Сет Сумерек"),
                     QObject::tr("Призыв легендарной лошади Эпоны (максимальные характеристики), Шапка/Туника/Штаны Сумерек, Сумеречная ткань")};
         }
         if (n.contains(QStringLiteral("skyward"))) {
-            return {QObject::tr("Оружие, броня и ткань"), QStringLiteral("🗡️"),
+            return {QObject::tr("Оружие, броня и ткань"), QString{},
                     QObject::tr("Белый меч Небес и Сет Неба"),
                     QObject::tr("Белый меч Богини, Шапка/Туника/Штаны Неба, ткань Меча Небес")};
         }
         if (n.contains(QStringLiteral("awakening"))) {
-            return {QObject::tr("Броня и ткань"), QStringLiteral("🛡️"),
+            return {QObject::tr("Броня и ткань"), QString{},
                     QObject::tr("Сет Пробуждения и Ткань Яйца"),
                     QObject::tr("Мультяшная маска и туника Пробуждения, эксклюзивная ткань Яйца Ветрорыба, солдатские стрелы")};
         }
         if (n.contains(QStringLiteral("archer"))) {
-            return {QObject::tr("Оружие и ткань"), QStringLiteral("🏹"),
+            return {QObject::tr("Оружие и ткань"), QString{},
                     QObject::tr("Ткань капюшона лучника и Королевский лук"),
                     QObject::tr("Эксклюзивная ткань лучника, Королевский лук, сырая дичь и редкая рыба")};
         }
         if (n.contains(QStringLiteral("rider"))) {
-            return {QObject::tr("Ткань и снаряжение"), QStringLiteral("🪂"),
+            return {QObject::tr("Ткань и снаряжение"), QString{},
                     QObject::tr("Ткань капюшона всадника и Солдатский палаш"),
                     QObject::tr("Ткань всадника, оружие всадника, целебные грибы")};
         }
         if (c.contains(QStringLiteral("wolf link")) || n.contains(QStringLiteral("wolf"))) {
-            return {QObject::tr("Охотничьи ресурсы"), QStringLiteral("📦"),
+            return {QObject::tr("Охотничьи ресурсы"), QString{},
                     QObject::tr("Охотничий провиант Линка"),
                     QObject::tr("Огромный запас свежего мяса, птицы и дичи для кулинарии")};
         }
         if (c.contains(QStringLiteral("zelda"))) {
-            return {QObject::tr("Ткань и оружие"), QStringLiteral("🪂"),
+            return {QObject::tr("Ткань и оружие"), QString{},
                     QObject::tr("Ткань принцессы Зельды и Королевский лук"),
                     QObject::tr("Эксклюзивная ткань принцессы Зельды, древний или королевский лук, драгоценные камни и травы")};
         }
         if (c.contains(QStringLiteral("ganondorf")) || n.contains(QStringLiteral("ganon"))) {
-            return {QObject::tr("Оружие и ткань"), QStringLiteral("🗡️"),
+            return {QObject::tr("Оружие и ткань"), QString{},
                     QObject::tr("Меч и Ткань Демонического Короля"),
                     QObject::tr("Эксклюзивная ткань Демонического Короля, Меч Демонического Короля / Меч сумерек, запеченное мясо и самоцветы")};
         }
         if (c.contains(QStringLiteral("sheik"))) {
-            return {QObject::tr("Броня и ткань"), QStringLiteral("🛡️"),
+            return {QObject::tr("Броня и ткань"), QString{},
                     QObject::tr("Маска Шейха и Ткань клана Шеика"),
                     QObject::tr("Маска Шейха (бонус к скрытности), Ткань клана Шеика, ножи и щиты")};
         }
         if (c.contains(QStringLiteral("guardian"))) {
-            return {QObject::tr("Ткань и механизмы"), QStringLiteral("🪂"),
+            return {QObject::tr("Ткань и механизмы"), QString{},
                     QObject::tr("Древняя ткань Шеика и Древние стрелы"),
                     QObject::tr("Древняя ткань стража, металлические ящики, древние механизмы и древние клинки")};
         }
         if (c.contains(QStringLiteral("bokoblin"))) {
-            return {QObject::tr("Ткань и оружие"), QStringLiteral("🪂"),
+            return {QObject::tr("Ткань и оружие"), QString{},
                     QObject::tr("Ткань Бокоблина и Боко-щиты"),
                     QObject::tr("Ткань Бокоблина, шипастый боко-щит, дубина и сырое мясо")};
         }
         if (c.contains(QStringLiteral("daruk")) || c.contains(QStringLiteral("mipha")) ||
             c.contains(QStringLiteral("revali")) || c.contains(QStringLiteral("urbosa"))) {
-            return {QObject::tr("Божественный шлем и ткань"), QStringLiteral("🛡️"),
+            return {QObject::tr("Божественный шлем и ткань"), QString{},
                     QObject::tr("Шлем Божественного чудища и Ткань чемпиона"),
                     QObject::tr("Уникальный Божественный шлем со стихийной защитой и персональная ткань чемпиона")};
         }
         if (gs.contains(QStringLiteral("zelda")) || as.contains(QStringLiteral("zelda"))) {
-            return {QObject::tr("Оружие и ткань"), QStringLiteral("🗡️"),
+            return {QObject::tr("Оружие и ткань"), QString{},
                     QObject::tr("Тематическая ткань параплана и оружие"),
                     QObject::tr("Эксклюзивная ткань параплана, сундук с высокоуровневым оружием и самоцветами")};
         }
-        return {QObject::tr("Универсальные ресурсы"), QStringLiteral("📦"),
+        return {QObject::tr("Универсальные ресурсы"), QString{},
                 QObject::tr("Припасы путешественника"),
                 QObject::tr("Сундук со случайным оружием, стрелы, целебные травы, яблоки, мясо и рыба")};
     }
@@ -1004,47 +1203,47 @@ AmiiboRewardInfo AmiiboBrowserDialog::GetRewardForGame(const AmiiboEntry& entry,
     // 2. Zelda: Breath of the Wild
     if (gn.contains(QStringLiteral("breath")) || gn.contains(QStringLiteral("botw"))) {
         if (c.contains(QStringLiteral("wolf link")) || n.contains(QStringLiteral("wolf"))) {
-            return {QObject::tr("Компаньон"), QStringLiteral("🐺"),
+            return {QObject::tr("Компаньон"), QString{},
                     QObject::tr("Призыв Волка Линка (Wolf Link)"),
                     QObject::tr("Волк Линк появляется в мире и сражается на вашей стороне с 20 сердцами здоровья!")};
         }
         if (n.contains(QStringLiteral("twilight")) || (c.contains(QStringLiteral("link")) && as.contains(QStringLiteral("smash")))) {
-            return {QObject::tr("Скакун и броня"), QStringLiteral("🐺"),
+            return {QObject::tr("Скакун и броня"), QString{},
                     QObject::tr("Кобыла Эпона и Сет Сумерек"),
                     QObject::tr("Призыв легендарной лошади Эпоны с максимальными характеристиками и Набор Сумерек")};
         }
         if (n.contains(QStringLiteral("majora"))) {
-            return {QObject::tr("Оружие и броня"), QStringLiteral("🗡️"),
+            return {QObject::tr("Оружие и броня"), QString{},
                     QObject::tr("Двуручник и Сет Свирепого Божества"),
                     QObject::tr("Маска, Доспех и Поножи Свирепого Божества, Двуручник Свирепого Божества")};
         }
         if (n.contains(QStringLiteral("ocarina")) || n.contains(QStringLiteral("time"))) {
-            return {QObject::tr("Оружие и броня"), QStringLiteral("🗡️"),
+            return {QObject::tr("Оружие и броня"), QString{},
                     QObject::tr("Меч Большого Горона и Сет Времени"),
                     QObject::tr("Шапка/Туника/Штаны Времени, Меч Большого Горона")};
         }
         if (n.contains(QStringLiteral("archer"))) {
-            return {QObject::tr("Оружие"), QStringLiteral("🏹"),
+            return {QObject::tr("Оружие"), QString{},
                     QObject::tr("Лук Путешественника и особые стрелы"),
                     QObject::tr("Древние, ледяные, огненные и электрические стрелы, редкое мясо")};
         }
         if (c.contains(QStringLiteral("zelda"))) {
-            return {QObject::tr("Щит и самоцветы"), QStringLiteral("🛡️"),
+            return {QObject::tr("Щит и самоцветы"), QString{},
                     QObject::tr("Щит Бригадира и Звездный осколок"),
                     QObject::tr("Щит Бригадира, редкие рубины, сапфиры, алмазы и целебные травы")};
         }
         if (c.contains(QStringLiteral("daruk")) || c.contains(QStringLiteral("mipha")) ||
             c.contains(QStringLiteral("revali")) || c.contains(QStringLiteral("urbosa"))) {
-            return {QObject::tr("Броня"), QStringLiteral("🛡️"),
+            return {QObject::tr("Броня"), QString{},
                     QObject::tr("Шлем Божественного чудища"),
                     QObject::tr("Шлемы Ва-Рудания, Ва-Рута, Ва-Медо или Ва-Наборис со стихийной защитой")};
         }
         if (gs.contains(QStringLiteral("zelda")) || as.contains(QStringLiteral("zelda"))) {
-            return {QObject::tr("Оружие и сундук"), QStringLiteral("🗡️"),
+            return {QObject::tr("Оружие и сундук"), QString{},
                     QObject::tr("Уникальный сундук Хайрула"),
                     QObject::tr("Сундук с редким оружием, стрелами и драгоценными металлами")};
         }
-        return {QObject::tr("Ресурсы"), QStringLiteral("📦"),
+        return {QObject::tr("Ресурсы"), QString{},
                 QObject::tr("Припасы и сырье"),
                 QObject::tr("Сундук с базовым оружием, мясо, грибы, травы и овощи")};
     }
@@ -1052,46 +1251,46 @@ AmiiboRewardInfo AmiiboBrowserDialog::GetRewardForGame(const AmiiboEntry& entry,
     // 3. Super Mario Odyssey
     if (gn.contains(QStringLiteral("odyssey")) || gn.contains(QStringLiteral("mario odyssey"))) {
         if (n.contains(QStringLiteral("wedding")) && c.contains(QStringLiteral("mario"))) {
-            return {QObject::tr("Костюм и усиление"), QStringLiteral("👕"),
+            return {QObject::tr("Костюм и усиление"), QString{},
                     QObject::tr("Свадебный смокинг Марио и Неуязвимость"),
                     QObject::tr("Свадебный цилиндр и смокинг; Неуязвимость Марио ко всем видам урона на 30 секунд!")};
         }
         if (n.contains(QStringLiteral("wedding")) && c.contains(QStringLiteral("bowser"))) {
-            return {QObject::tr("Костюм и подсказки"), QStringLiteral("👕"),
+            return {QObject::tr("Костюм и подсказки"), QString{},
                     QObject::tr("Свадебный смокинг Боузера и Локатор монет"),
                     QObject::tr("Цилиндр и смокинг Боузера; Подсветка фиолетовых региональных монет на карте мира")};
         }
         if (n.contains(QStringLiteral("wedding")) && c.contains(QStringLiteral("peach"))) {
-            return {QObject::tr("Костюм и здоровье"), QStringLiteral("💖"),
+            return {QObject::tr("Костюм и здоровье"), QString{},
                     QObject::tr("Свадебное платье Пич и Сердце Жизни"),
                     QObject::tr("Свадебная фата и платье Пич; Сердце Жизни (мгновенное увеличение до 6 сердец)")};
         }
         if (c.contains(QStringLiteral("luigi"))) {
-            return {QObject::tr("Костюм"), QStringLiteral("👕"),
+            return {QObject::tr("Костюм"), QString{},
                     QObject::tr("Костюм Луиджи"),
                     QObject::tr("Зеленая кепка и синий рабочий комбинезон Луиджи")};
         }
         if (c.contains(QStringLiteral("wario"))) {
-            return {QObject::tr("Костюм"), QStringLiteral("👕"),
+            return {QObject::tr("Костюм"), QString{},
                     QObject::tr("Костюм Варио"),
                     QObject::tr("Желтая кепка и фиолетовый костюм Варио")};
         }
         if (c.contains(QStringLiteral("waluigi"))) {
-            return {QObject::tr("Костюм"), QStringLiteral("👕"),
+            return {QObject::tr("Костюм"), QString{},
                     QObject::tr("Костюм Валуиджи"),
                     QObject::tr("Фиолетовая кепка и темный костюм Валуиджи")};
         }
         if (c.contains(QStringLiteral("diddy"))) {
-            return {QObject::tr("Костюм"), QStringLiteral("👕"),
+            return {QObject::tr("Костюм"), QString{},
                     QObject::tr("Костюм Дидди Конга"),
                     QObject::tr("Красная бейсболка и желтая майка Дидди Конга")};
         }
         if (n.contains(QStringLiteral("gold")) || n.contains(QStringLiteral("silver"))) {
-            return {QObject::tr("Костюм"), QStringLiteral("✨"),
+            return {QObject::tr("Костюм"), QString{},
                     QObject::tr("Золотой / Серебряный костюм Марио"),
                     QObject::tr("Ослепительный золотой или серебряный смокинг и кепка")};
         }
-        return {QObject::tr("Подсказка Луны"), QStringLiteral("🌙"),
+        return {QObject::tr("Подсказка Луны"), QString{},
                 QObject::tr("Подсказка дядюшки Amiibo"),
                 QObject::tr("Дядюшка Amiibo отмечает точное расположение скрытой Луны энергии на карте королевства")};
     }
@@ -1099,21 +1298,21 @@ AmiiboRewardInfo AmiiboBrowserDialog::GetRewardForGame(const AmiiboEntry& entry,
     // 4. Metroid Dread
     if (gn.contains(QStringLiteral("dread")) || gn.contains(QStringLiteral("metroid"))) {
         if (n.contains(QStringLiteral("dread")) && c.contains(QStringLiteral("samus"))) {
-            return {QObject::tr("Усиление здоровья"), QStringLiteral("🚀"),
+            return {QObject::tr("Усиление здоровья"), QString{},
                     QObject::tr("+1 Контейнер Энергии (Energy Tank)"),
                     QObject::tr("Постоянное увеличение максимума энергии на +1 Tank (+100 HP); Ежедневное пополнение 200 HP")};
         }
         if (c.contains(QStringLiteral("emmi")) || c.contains(QStringLiteral("e.m.m.i."))) {
-            return {QObject::tr("Увеличение боезапаса"), QStringLiteral("🚀"),
+            return {QObject::tr("Увеличение боезапаса"), QString{},
                     QObject::tr("+10 Ракет (Missile Tank)"),
                     QObject::tr("Постоянное увеличение запаса ракет на +10 шт; Ежедневное полное пополнение ракет")};
         }
         if (c.contains(QStringLiteral("samus"))) {
-            return {QObject::tr("Пополнение ракет"), QStringLiteral("🔋"),
+            return {QObject::tr("Пополнение ракет"), QString{},
                     QObject::tr("Ежедневное пополнение ракет"),
                     QObject::tr("Мгновенное пополнение запаса ракет Самус один раз в день")};
         }
-        return {QObject::tr("Пополнение энергии"), QStringLiteral("🔋"),
+        return {QObject::tr("Пополнение энергии"), QString{},
                 QObject::tr("Ежедневное пополнение энергии"),
                 QObject::tr("Мгновенное пополнение энергетического запаса костюма один раз в день")};
     }
@@ -1121,32 +1320,32 @@ AmiiboRewardInfo AmiiboBrowserDialog::GetRewardForGame(const AmiiboEntry& entry,
     // 5. Splatoon 3 / Splatoon 2
     if (gn.contains(QStringLiteral("splatoon"))) {
         if (c.contains(QStringLiteral("inkling girl"))) {
-            return {QObject::tr("Эксклюзивный сет"), QStringLiteral("👕"),
+            return {QObject::tr("Эксклюзивный сет"), QString{},
                     QObject::tr("Школьная форма (School Uniform Set)"),
                     QObject::tr("Школьная заколка, униформа школы Инкополиса, туфли; совместные фотосессии")};
         }
         if (c.contains(QStringLiteral("inkling boy"))) {
-            return {QObject::tr("Эксклюзивный сет"), QStringLiteral("👕"),
+            return {QObject::tr("Эксклюзивный сет"), QString{},
                     QObject::tr("Самурайский сет (Samurai Gear)"),
                     QObject::tr("Шлем самурая, доспех самурая, сандалии с носками; фото на аренах")};
         }
         if (c.contains(QStringLiteral("squid"))) {
-            return {QObject::tr("Силовая броня"), QStringLiteral("🛡️"),
+            return {QObject::tr("Силовая броня"), QString{},
                     QObject::tr("Силовая броня (Power Armor Set)"),
                     QObject::tr("Силовой шлем, силовой экзоскелет, силовые ботинки")};
         }
         if (c.contains(QStringLiteral("shiver")) || c.contains(QStringLiteral("frye")) || c.contains(QStringLiteral("big man"))) {
-            return {QObject::tr("Концертный сет"), QStringLiteral("✨"),
+            return {QObject::tr("Концертный сет"), QString{},
                     QObject::tr("Сценические наряды Deep Cut"),
                     QObject::tr("Эксклюзивный дизайнерский наряд Deep Cut и сохранение комплектов снаряжения")};
         }
         if (c.contains(QStringLiteral("callie")) || c.contains(QStringLiteral("marie")) ||
             c.contains(QStringLiteral("pearl")) || c.contains(QStringLiteral("marina"))) {
-            return {QObject::tr("Концертный сет"), QStringLiteral("🎤"),
+            return {QObject::tr("Концертный сет"), QString{},
                     QObject::tr("Наряды кумиров Инкополиса"),
                     QObject::tr("Концертные наряды Squid Sisters и Off the Hook, эксклюзивные треки в лобби")};
         }
-        return {QObject::tr("Снаряжение и фото"), QStringLiteral("👕"),
+        return {QObject::tr("Снаряжение и фото"), QString{},
                 QObject::tr("Уникальная экипировка персонажа"),
                 QObject::tr("Эксклюзивный комплект снаряжения для боев за район и совместные фото в Плюхтонии")};
     }
@@ -1154,26 +1353,26 @@ AmiiboRewardInfo AmiiboBrowserDialog::GetRewardForGame(const AmiiboEntry& entry,
     // 6. Monster Hunter Rise / Sunbreak
     if (gn.contains(QStringLiteral("monster hunter"))) {
         if (c.contains(QStringLiteral("magnamalo"))) {
-            return {QObject::tr("Броня охотника"), QStringLiteral("🛡️"),
+            return {QObject::tr("Броня охотника"), QString{},
                     QObject::tr("Многослойный доспех Синистера (Hunter)"),
                     QObject::tr("Полный набор многослойного доспеха Синистера для охотника, билет в лотерею Кагари")};
         }
         if (c.contains(QStringLiteral("palamute"))) {
-            return {QObject::tr("Броня паламута"), QStringLiteral("🐺"),
+            return {QObject::tr("Броня паламута"), QString{},
                     QObject::tr("Многослойный доспех Синистера (Palamute)"),
                     QObject::tr("Зловещий многослойный доспех Синистера для верного паламута, лотерея")};
         }
         if (c.contains(QStringLiteral("palico"))) {
-            return {QObject::tr("Броня палико"), QStringLiteral("🐱"),
+            return {QObject::tr("Броня палико"), QString{},
                     QObject::tr("Многослойный доспех Синистера (Palico)"),
                     QObject::tr("Зловещий многослойный доспех Синистера для котика палико, лотерея")};
         }
         if (c.contains(QStringLiteral("malzeno"))) {
-            return {QObject::tr("Броня охотника"), QStringLiteral("🛡️"),
+            return {QObject::tr("Броня охотника"), QString{},
                     QObject::tr("Многослойный доспех Малзено (Formal Dragon)"),
                     QObject::tr("Аристократический вампирский доспех Малзено для охотника, билет лотереи")};
         }
-        return {QObject::tr("Лотерея Кагари"), QStringLiteral("🎲"),
+        return {QObject::tr("Лотерея Кагари"), QString{},
                 QObject::tr("Билет в лотерею рынка Кагари"),
                 QObject::tr("Ежедневный билет на лотерею ценных зелий, ловушек, порошков и талисманов")};
     }
@@ -1181,67 +1380,67 @@ AmiiboRewardInfo AmiiboBrowserDialog::GetRewardForGame(const AmiiboEntry& entry,
     // 7. Xenoblade Chronicles 3
     if (gn.contains(QStringLiteral("xenoblade"))) {
         if (c.contains(QStringLiteral("shulk"))) {
-            return {QObject::tr("Облик оружия"), QStringLiteral("🗡️"),
+            return {QObject::tr("Облик оружия"), QString{},
                     QObject::tr("Облик Меча Монадо (Monado Skin)"),
                     QObject::tr("Легендарный сияющий клинок Меч Монадо для бойца класса Мечник (Swordfighter)")};
         }
         if (c.contains(QStringLiteral("pyra"))) {
-            return {QObject::tr("Облик меча"), QStringLiteral("🗡️"),
+            return {QObject::tr("Облик меча"), QString{},
                     QObject::tr("Огненный клинок Пайры (Aegis Sword)"),
                     QObject::tr("Облик легендарного огненного меча Иджис для класса Мечник")};
         }
         if (c.contains(QStringLiteral("mythra"))) {
-            return {QObject::tr("Облик меча"), QStringLiteral("🗡️"),
+            return {QObject::tr("Облик меча"), QString{},
                     QObject::tr("Световой клинок Мифры (Aegis Sword)"),
                     QObject::tr("Облик легендарного светового меча Иджис для класса Мечник")};
         }
         if (c.contains(QStringLiteral("noah")) || c.contains(QStringLiteral("mio"))) {
-            return {QObject::tr("Костюмы"), QStringLiteral("👕"),
+            return {QObject::tr("Костюмы"), QString{},
                     QObject::tr("Костюмы Консулов N и M"),
                     QObject::tr("Эксклюзивные доспехи Консула N и Консула M для персонажей")};
         }
-        return {QObject::tr("Расходные ресурсы"), QStringLiteral("📦"),
+        return {QObject::tr("Расходные ресурсы"), QString{},
                 QObject::tr("Пакет припасов колонии"),
                 QObject::tr("Золото, эфирные цилиндры, материалы и коллекционные предметы Айониоса")};
     }
 
     // 8. Super Smash Bros. Ultimate
     if (gn.contains(QStringLiteral("smash"))) {
-        return {QObject::tr("Обучаемый боец FP"), QStringLiteral("🥊"),
+        return {QObject::tr("Обучаемый боец FP"), QString{},
                 QObject::tr("Боец Figure Player (1-50 ур.)"),
                 QObject::tr("Создание обучаемого ИИ-бойца: учится вашим тактикам, прокачивается до 50 уровня, экипируется Духами")};
     }
 
     // 9. Mario Kart 8 Deluxe
     if (gn.contains(QStringLiteral("mario kart"))) {
-        return {QObject::tr("Гоночный костюм"), QStringLiteral("🏎️"),
+        return {QObject::tr("Гоночный костюм"), QString{},
                 QObject::tr("Тематический костюм Mii"),
                 QObject::tr("Эксклюзивный гоночный комбинезон и шлем Mii в стиле фигурки Amiibo")};
     }
 
     // 10. Animal Crossing: New Horizons
     if (gn.contains(QStringLiteral("animal crossing"))) {
-        return {QObject::tr("Гость и плакат"), QStringLiteral("🏕️"),
+        return {QObject::tr("Гость и плакат"), QString{},
                 QObject::tr("Визит на кемпинг острова"),
                 QObject::tr("Приглашение персонажа погостить на острове в кемпинге, плакат жителя в банкомате Нука, фотостудия")};
     }
 
     // 11. Fire Emblem Engage
     if (gn.contains(QStringLiteral("fire emblem"))) {
-        return {QObject::tr("Костюмы и музыка"), QStringLiteral("🎵"),
+        return {QObject::tr("Костюмы и музыка"), QString{},
                 QObject::tr("Билеты на наряды и классические треки"),
                 QObject::tr("Билеты на наряды Эмблем в беседке Amiibo Сомниэля и музыкальные темы прошлых частей FE")};
     }
 
     // 12. Kirby and the Forgotten Land
     if (gn.contains(QStringLiteral("kirby"))) {
-        return {QObject::tr("Усиления и монеты"), QStringLiteral("⭐"),
+        return {QObject::tr("Усиления и монеты"), QString{},
                 QObject::tr("Звездные монеты и сытная еда"),
                 QObject::tr("Пачка Звездных монет и предметы временного усиления атаки и скорости бега")};
     }
 
     // Default / All games fallback
-    return {QObject::tr("Универсальный бонус"), QStringLiteral("📦"),
+    return {QObject::tr("Универсальный бонус"), QString{},
             QObject::tr("Награда путешественника"),
             QObject::tr("Сундук со случайными бонусами: монеты, редкие расходники, материалы для крафта и припасы")};
 }
@@ -1259,7 +1458,7 @@ void AmiiboBrowserDialog::FetchImage(const QString& image_url, QLabel* target_la
 
     // Check disk cache
     const auto cache_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::CacheDir) / "amiibo_images";
-    Common::FS::CreateDirs(cache_dir);
+    std::ignore = Common::FS::CreateDirs(cache_dir);
     QString filename = QUrl(image_url).fileName();
     if (filename.isEmpty()) filename = QStringLiteral("image.png");
     auto local_img_path = cache_dir / filename.toStdString();
@@ -1338,7 +1537,7 @@ QString AmiiboBrowserDialog::GenerateAndSaveAmiiboBin(const AmiiboEntry& entry) 
     clean_name.replace(QRegularExpression(QStringLiteral(R"([\\/:*?"<>|])")), QStringLiteral("_"));
 
     const auto series_folder = amiibo_dir / clean_series.toStdString();
-    Common::FS::CreateDirs(series_folder);
+    std::ignore = Common::FS::CreateDirs(series_folder);
 
     const auto bin_path = series_folder / (clean_name.toStdString() + ".bin");
 
@@ -1417,7 +1616,7 @@ QString AmiiboBrowserDialog::GenerateAndSaveAmiiboBin(const AmiiboEntry& entry) 
     // Write to disk
     Common::FS::IOFile file{bin_path, Common::FS::FileAccessMode::Write, Common::FS::FileType::BinaryFile};
     if (file.IsOpen()) {
-        file.Write(ntag);
+        std::ignore = file.Write(ntag);
         file.Close();
     }
 
@@ -1464,7 +1663,7 @@ void AmiiboBrowserDialog::OnDisconnectAmiiboClicked() {
 
 void AmiiboBrowserDialog::OnOpenAmiiboFolderClicked() {
     const auto amiibo_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::AmiiboDir);
-    Common::FS::CreateDirs(amiibo_dir);
+    std::ignore = Common::FS::CreateDirs(amiibo_dir);
     QDesktopServices::openUrl(QUrl::fromLocalFile(QString::fromStdString(amiibo_dir.string())));
 }
 

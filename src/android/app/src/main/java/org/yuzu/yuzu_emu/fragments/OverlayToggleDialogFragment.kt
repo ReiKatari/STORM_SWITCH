@@ -174,7 +174,7 @@ class OverlayToggleDialogFragment : DialogFragment() {
                 OverlayControl.BUTTON_QUICK_SAVE -> Quad(getString(R.string.storm_ov20_ctrl_quick_save), getString(R.string.storm_ov20_ctrl_quick_save_desc), null, R.drawable.ic_storm_hud_quicksave)
                 OverlayControl.BUTTON_QUICK_LOAD -> Quad(getString(R.string.storm_ov20_ctrl_quick_load), getString(R.string.storm_ov20_ctrl_quick_load_desc), null, R.drawable.ic_storm_hud_quickload)
                 OverlayControl.BUTTON_AI_TRANSLATOR -> Quad(getString(R.string.storm_ov20_ctrl_ai_translator), getString(R.string.storm_ov20_ctrl_ai_translator_desc), null, R.drawable.ic_storm_hud_translate)
-                OverlayControl.BUTTON_AUTO_FIX -> Quad(getString(R.string.storm_ov20_ctrl_auto_fix), getString(R.string.storm_ov20_ctrl_auto_fix_desc), "⚡", null)
+                OverlayControl.BUTTON_AUTO_FIX -> Quad(getString(R.string.storm_ov20_ctrl_auto_fix), getString(R.string.storm_ov20_ctrl_auto_fix_desc), "FIX", null)
                 OverlayControl.BUTTON_TURBO_HOLD -> Quad(getString(R.string.storm_ov20_ctrl_turbo_hold), getString(R.string.storm_ov20_ctrl_turbo_hold_desc), "TRB", null)
                 OverlayControl.BUTTON_PAUSE_COOLING -> Quad(getString(R.string.storm_ov20_ctrl_pause_cooling), getString(R.string.storm_ov20_ctrl_pause_cooling_desc), null, R.drawable.ic_storm_hud_temp)
                 OverlayControl.BUTTON_GAME_CHAT -> Quad(getString(R.string.storm_ov20_ctrl_game_chat), getString(R.string.storm_ov20_ctrl_game_chat_desc), "C", null)

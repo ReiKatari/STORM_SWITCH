@@ -1,3 +1,8 @@
+#include "storm_switch/common/storm_design_engine.h"
+#include "storm_switch/common/storm_lang.h"
+#include <QPainter>
+#include <QPainterPath>
+#include <thread>
 #include "storm_switch/common/storm_theme.h"
 #include "storm_switch/configuration/storm_ui_structure_helper.h"
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
@@ -60,6 +65,102 @@
 #include "storm_switch/mod_manager_dialog.h"
 #include "storm_switch/configuration/storm_ui_structure_helper.h"
 
+
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
+namespace {
+
+enum class ModIconType {
+    Up,
+    Down,
+    Folder,
+    Zip,
+    Lightning,
+    Trash,
+    Check,
+    Cross,
+};
+
+QIcon MakeModIcon(ModIconType type, const QColor& color, int size = 16) {
+    QPixmap pix(size, size);
+    pix.fill(Qt::transparent);
+    QPainter p(&pix);
+    p.setRenderHint(QPainter::Antialiasing, true);
+    QPen pen(color, 1.8, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+    p.setPen(pen);
+    p.setBrush(Qt::NoBrush);
+
+    switch (type) {
+    case ModIconType::Up:
+        p.drawLine(QPointF(8.0, 3.5), QPointF(8.0, 12.5));
+        p.drawLine(QPointF(4.5, 7.0), QPointF(8.0, 3.5));
+        p.drawLine(QPointF(11.5, 7.0), QPointF(8.0, 3.5));
+        break;
+    case ModIconType::Down:
+        p.drawLine(QPointF(8.0, 3.5), QPointF(8.0, 12.5));
+        p.drawLine(QPointF(4.5, 9.0), QPointF(8.0, 12.5));
+        p.drawLine(QPointF(11.5, 9.0), QPointF(8.0, 12.5));
+        break;
+    case ModIconType::Folder: {
+        QPainterPath path;
+        path.moveTo(2.5, 5.0);
+        path.lineTo(6.0, 5.0);
+        path.lineTo(7.5, 6.5);
+        path.lineTo(13.5, 6.5);
+        path.lineTo(13.5, 12.5);
+        path.lineTo(2.5, 12.5);
+        path.closeSubpath();
+        p.drawPath(path);
+        break;
+    }
+    case ModIconType::Zip:
+        p.drawRoundedRect(QRectF(3.0, 3.0, 10.0, 10.0), 2.0, 2.0);
+        p.drawLine(QPointF(8.0, 3.0), QPointF(8.0, 7.0));
+        p.drawLine(QPointF(7.0, 5.0), QPointF(9.0, 5.0));
+        p.drawRect(QRectF(6.5, 8.0, 3.0, 4.0));
+        break;
+    case ModIconType::Lightning: {
+        QPainterPath path;
+        path.moveTo(8.5, 2.0);
+        path.lineTo(4.5, 8.5);
+        path.lineTo(8.0, 8.5);
+        path.lineTo(7.0, 14.0);
+        path.lineTo(12.0, 7.5);
+        path.lineTo(8.5, 7.5);
+        path.closeSubpath();
+        p.setBrush(color);
+        p.drawPath(path);
+        break;
+    }
+    case ModIconType::Trash: {
+        p.drawLine(QPointF(3.5, 4.5), QPointF(12.5, 4.5));
+        p.drawLine(QPointF(6.0, 2.5), QPointF(10.0, 2.5));
+        QPainterPath body;
+        body.moveTo(4.5, 4.5);
+        body.lineTo(5.5, 13.5);
+        body.lineTo(10.5, 13.5);
+        body.lineTo(11.5, 4.5);
+        p.drawPath(body);
+        p.drawLine(QPointF(7.0, 6.5), QPointF(7.0, 11.5));
+        p.drawLine(QPointF(9.0, 6.5), QPointF(9.0, 11.5));
+        break;
+    }
+    case ModIconType::Check:
+        p.drawLine(QPointF(3.0, 8.0), QPointF(6.5, 11.5));
+        p.drawLine(QPointF(6.5, 11.5), QPointF(13.0, 4.5));
+        break;
+    case ModIconType::Cross:
+        p.drawLine(QPointF(4.0, 4.0), QPointF(12.0, 12.0));
+        p.drawLine(QPointF(12.0, 4.0), QPointF(4.0, 12.0));
+        break;
+    }
+    return QIcon(pix);
+}
+
+} // namespace
+
 ModManagerDialog::ModManagerDialog(QWidget* parent, Core::System& system_, u64 title_id_,
                                    const QString& game_path_, const QString& game_name_)
     : QDialog(parent), system{system_}, title_id{title_id_}, game_path{game_path_},
@@ -68,7 +169,8 @@ ModManagerDialog::ModManagerDialog(QWidget* parent, Core::System& system_, u64 t
         ? QStringLiteral("0x%1").arg(title_id, 16, 16, QLatin1Char('0')).toUpper()
         : game_name;
     setWindowTitle(tr("STORM SWITCH — Менеджер модов: %1").arg(display_title));
-    resize(1160, 700);
+    resize(980, 640);
+    setMinimumSize(820, 520);
     setMinimumSize(680, 460);
     setAcceptDrops(true);
 
@@ -104,17 +206,17 @@ ModManagerDialog::ModManagerDialog(QWidget* parent, Core::System& system_, u64 t
     // Tab 1: Priorities & Installed Mods
     auto* priority_tab = new QWidget(this);
     SetupPriorityTab(priority_tab);
-    tab_widget->addTab(priority_tab, tr("📁 Приоритеты и установленные моды (Drag-and-Drop)"));
+    tab_widget->addTab(priority_tab, StormLang(QStringLiteral("Установленные моды"), QStringLiteral("Installed Mods")));
 
     // Tab 2: GameBanana online mods
     gamebanana_tab = new ConfigureGameBananaMods(system, title_id, game_name, nullptr, this);
     connect(gamebanana_tab, &ConfigureGameBananaMods::ModInstalled, this, &ModManagerDialog::RefreshModsList);
-    tab_widget->addTab(gamebanana_tab, tr("🍌 Онлайн каталог GameBanana (60 FPS / Графика / Текстуры)"));
+    tab_widget->addTab(gamebanana_tab, StormLang(QStringLiteral("Каталог GameBanana"), QStringLiteral("GameBanana Catalog")));
 
     // Tab 3: CNX17 Auto-Installer & Mod Package Builder
     auto* cnx_tab = new QWidget(this);
     SetupCnxBuilderTab(cnx_tab);
-    tab_widget->addTab(cnx_tab, tr("📦 Конструктор автоустановщиков и пакетов модов (CNX)"));
+    tab_widget->addTab(cnx_tab, StormLang(QStringLiteral("Конструктор CNX"), QStringLiteral("CNX Builder")));
 
     main_layout->addWidget(tab_widget, 1);
 
@@ -122,11 +224,13 @@ ModManagerDialog::ModManagerDialog(QWidget* parent, Core::System& system_, u64 t
     auto* bottom_layout = new QHBoxLayout();
     bottom_layout->setSpacing(10);
 
-    auto* open_folder_btn = new QPushButton(tr("📁 Открыть папку модов"), this);
+    auto* open_folder_btn = new QPushButton(StormLang(QStringLiteral("Открыть папку модов"), QStringLiteral("Open Mods Folder")), this);
+    open_folder_btn->setIcon(MakeModIcon(ModIconType::Folder, QColor(pal.textSecondary)));
     connect(open_folder_btn, &QPushButton::clicked, this, &ModManagerDialog::OnOpenModFolder);
     bottom_layout->addWidget(open_folder_btn);
 
-    auto* gen_patch_btn = new QPushButton(tr("⚡ Генератор патчей 60/120 FPS и всех форматов экрана..."), this);
+    auto* gen_patch_btn = new QPushButton(StormLang(QStringLiteral("Генератор патчей 60/120 FPS и формата экрана..."), QStringLiteral("60/120 FPS & Aspect Ratio Patch Generator...")), this);
+    gen_patch_btn->setIcon(MakeModIcon(ModIconType::Lightning, QColor(pal.accent)));
     gen_patch_btn->setStyleSheet(QStringLiteral(
         "background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0F766E, stop:1 #0284C7); "
         "color: #FFFFFF; font-weight: bold; border: 1px solid #38BDF8;"));
@@ -142,7 +246,8 @@ ModManagerDialog::ModManagerDialog(QWidget* parent, Core::System& system_, u64 t
     connect(cancel_btn, &QPushButton::clicked, this, &QDialog::reject);
     bottom_layout->addWidget(cancel_btn);
 
-    auto* apply_btn = new QPushButton(tr("💾 Сохранить приоритеты и применить"), this);
+    auto* apply_btn = new QPushButton(StormLang(QStringLiteral("Сохранить приоритеты и применить"), QStringLiteral("Save & Apply Priorities")), this);
+    apply_btn->setIcon(MakeModIcon(ModIconType::Check, QColor(QStringLiteral("#FFFFFF"))));
     apply_btn->setStyleSheet(QStringLiteral("background: #0284C7; color: #FFFFFF; font-weight: bold; border-color: #00D2FF;"));
     connect(apply_btn, &QPushButton::clicked, this, &ModManagerDialog::OnApplyAndClose);
     bottom_layout->addWidget(apply_btn);
@@ -157,13 +262,14 @@ ModManagerDialog::ModManagerDialog(QWidget* parent, Core::System& system_, u64 t
 ModManagerDialog::~ModManagerDialog() = default;
 
 void ModManagerDialog::SetupPriorityTab(QWidget* tab) {
+    const auto& pal = StormTheme::GetThemePalette();
     auto* layout = new QVBoxLayout(tab);
     layout->setContentsMargins(10, 10, 10, 10);
     layout->setSpacing(8);
 
     // Help banner
     auto* banner = new QLabel(
-        tr("💡 <b>Совет:</b> Перетаскивайте папки или ZIP-архивы модов прямо в это окно для быстрой установки!<br>"
+        tr("<b>Совет:</b> Перетаскивайте папки или ZIP-архивы модов прямо в это окно для быстрой установки.<br>"
            "Используйте кнопки «▲ Выше» и «▼ Ниже» для настройки порядка загрузки LayeredFS (верхние моды перекрывают файлы нижних)."),
         tab);
     banner->setStyleSheet(QStringLiteral("background: rgba(14, 165, 233, 0.12); border: 1px solid #0284C7; border-radius: 6px; padding: 8px; color: #BAE6FD;"));
@@ -174,14 +280,17 @@ void ModManagerDialog::SetupPriorityTab(QWidget* tab) {
 
     // Table of mods
     mod_table = new QTableWidget(tab);
-    mod_table->setColumnCount(5);
+    mod_table->setColumnCount(6);
+    mod_table->verticalHeader()->setDefaultSectionSize(36);
     mod_table->setHorizontalHeaderLabels({
-        tr("Приоритет"),
-        tr("Включен"),
-        tr("Название мода"),
-        tr("Тип"),
-        tr("Конфликты файлов LayeredFS")
+        StormLang(QStringLiteral("Приоритет"), QStringLiteral("Priority")),
+        StormLang(QStringLiteral("Включен"), QStringLiteral("Enabled")),
+        StormLang(QStringLiteral("Название мода"), QStringLiteral("Mod Name")),
+        StormLang(QStringLiteral("Размер"), QStringLiteral("Size")),
+        StormLang(QStringLiteral("Тип"), QStringLiteral("Type")),
+        StormLang(QStringLiteral("Конфликты файлов LayeredFS"), QStringLiteral("LayeredFS Conflicts"))
     });
+    mod_table->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
     mod_table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     mod_table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     mod_table->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Interactive);
@@ -200,32 +309,38 @@ void ModManagerDialog::SetupPriorityTab(QWidget* tab) {
     auto* btn_layout = new QVBoxLayout();
     btn_layout->setSpacing(8);
 
-    btn_up = new QPushButton(tr("▲ Выше"), tab);
+    btn_up = new QPushButton(StormLang(QStringLiteral("Выше"), QStringLiteral("Move Up")), tab);
+    btn_up->setIcon(MakeModIcon(ModIconType::Up, QColor(pal.accent)));
     btn_up->setStyleSheet(QStringLiteral("font-weight: bold; color: #00D2FF;"));
     connect(btn_up, &QPushButton::clicked, this, &ModManagerDialog::OnMoveUp);
     btn_layout->addWidget(btn_up);
 
-    btn_down = new QPushButton(tr("▼ Ниже"), tab);
+    btn_down = new QPushButton(StormLang(QStringLiteral("Ниже"), QStringLiteral("Move Down")), tab);
+    btn_down->setIcon(MakeModIcon(ModIconType::Down, QColor(pal.accent)));
     btn_down->setStyleSheet(QStringLiteral("font-weight: bold; color: #00D2FF;"));
     connect(btn_down, &QPushButton::clicked, this, &ModManagerDialog::OnMoveDown);
     btn_layout->addWidget(btn_down);
 
     btn_layout->addSpacing(15);
 
-    auto* btn_add_folder = new QPushButton(tr("➕ Добавить папку..."), tab);
+    auto* btn_add_folder = new QPushButton(StormLang(QStringLiteral("Добавить папку..."), QStringLiteral("Add Folder...")), tab);
+    btn_add_folder->setIcon(MakeModIcon(ModIconType::Folder, QColor(pal.textPrimary)));
     connect(btn_add_folder, &QPushButton::clicked, this, &ModManagerDialog::OnAddFolder);
     btn_layout->addWidget(btn_add_folder);
 
-    auto* btn_add_zip = new QPushButton(tr("📦 Добавить ZIP..."), tab);
+    auto* btn_add_zip = new QPushButton(StormLang(QStringLiteral("Добавить ZIP..."), QStringLiteral("Add ZIP...")), tab);
+    btn_add_zip->setIcon(MakeModIcon(ModIconType::Zip, QColor(pal.textPrimary)));
     connect(btn_add_zip, &QPushButton::clicked, this, &ModManagerDialog::OnAddZip);
     btn_layout->addWidget(btn_add_zip);
 
-    auto* btn_auto_patch = new QPushButton(tr("⚡ Авто-патч 60 FPS / Экран..."), tab);
+    auto* btn_auto_patch = new QPushButton(StormLang(QStringLiteral("Авто-патч 60 FPS / Экран..."), QStringLiteral("Auto Patch 60 FPS / Aspect...")), tab);
+    btn_auto_patch->setIcon(MakeModIcon(ModIconType::Lightning, QColor(pal.accent)));
     btn_auto_patch->setStyleSheet(QStringLiteral("color: #38BDF8; font-weight: bold;"));
     connect(btn_auto_patch, &QPushButton::clicked, this, &ModManagerDialog::OnGenerateAutoPatch);
     btn_layout->addWidget(btn_auto_patch);
 
-    btn_delete = new QPushButton(tr("🗑️ Удалить мод"), tab);
+    btn_delete = new QPushButton(StormLang(QStringLiteral("Удалить мод"), QStringLiteral("Delete Mod")), tab);
+    btn_delete->setIcon(MakeModIcon(ModIconType::Trash, QColor(QStringLiteral("#EF4444"))));
     btn_delete->setStyleSheet(QStringLiteral("color: #EF4444;"));
     connect(btn_delete, &QPushButton::clicked, this, &ModManagerDialog::OnDeleteMod);
     btn_layout->addWidget(btn_delete);
@@ -241,6 +356,7 @@ void ModManagerDialog::SetupPriorityTab(QWidget* tab) {
 }
 
 void ModManagerDialog::RefreshModsList() {
+    const auto& pal = StormTheme::GetThemePalette();
     mods_list.clear();
     mod_table->blockSignals(true);
     mod_table->setRowCount(0);
@@ -295,13 +411,16 @@ void ModManagerDialog::RefreshModsList() {
                 entry.type = tr("Патч / Мод");
             }
 
-            // Gather relative files for conflict detection
+            // Gather relative files and size
+            qulonglong total_sz = 0;
             QDirIterator it(entry.path, QDir::Files, QDirIterator::Subdirectories);
             while (it.hasNext()) {
                 QString abs_file = it.next();
+                total_sz += it.fileInfo().size();
                 QString rel_file = mod_dir.relativeFilePath(abs_file);
                 entry.relative_files.push_back(rel_file.toLower().toStdString());
             }
+            entry.size_bytes = total_sz;
 
             mods_list.push_back(std::move(entry));
         }
@@ -347,22 +466,29 @@ void ModManagerDialog::RefreshModsList() {
         item_name->setFont(QFont(font().family(), font().pointSize(), QFont::DemiBold));
         mod_table->setItem(row, 2, item_name);
 
+        // Size
+        auto* item_size = new QTableWidgetItem(StormFormat::ReadableByteSize(m.size_bytes));
+        item_size->setTextAlignment(Qt::AlignCenter);
+        item_size->setFlags(item_size->flags() & ~Qt::ItemIsEditable);
+        item_size->setForeground(QColor(pal.textSecondary));
+        mod_table->setItem(row, 3, item_size);
+
         // Type
         auto* item_type = new QTableWidgetItem(m.type);
         item_type->setTextAlignment(Qt::AlignCenter);
         item_type->setFlags(item_type->flags() & ~Qt::ItemIsEditable);
-        item_type->setForeground(QColor(148, 163, 184));
-        mod_table->setItem(row, 3, item_type);
+        item_type->setForeground(QColor(pal.textSecondary));
+        mod_table->setItem(row, 4, item_type);
 
         // Conflict
         auto* item_conf = new QTableWidgetItem(m.conflict_warning);
         item_conf->setFlags(item_conf->flags() & ~Qt::ItemIsEditable);
-        if (m.conflict_warning.startsWith(QStringLiteral("⚠️"))) {
+        if (m.conflict_warning.contains(QLatin1Char(':')) || m.conflict_warning.contains(QLatin1String("Перекрывает")) || m.conflict_warning.contains(QLatin1String("Overrides"))) {
             item_conf->setForeground(QColor(245, 158, 11)); // Amber
         } else {
             item_conf->setForeground(QColor(52, 211, 153)); // Emerald
         }
-        mod_table->setItem(row, 4, item_conf);
+        mod_table->setItem(row, 5, item_conf);
     }
 
     mod_table->blockSignals(false);
@@ -371,7 +497,7 @@ void ModManagerDialog::RefreshModsList() {
 void ModManagerDialog::DetectConflicts() {
     int total_conflicts = 0;
     for (size_t i = 0; i < mods_list.size(); ++i) {
-        mods_list[i].conflict_warning = tr("✅ Нет конфликтов");
+        mods_list[i].conflict_warning = StormLang(QStringLiteral("Нет конфликтов"), QStringLiteral("No conflicts"));
         if (!mods_list[i].enabled) continue;
 
         for (size_t j = 0; j < mods_list.size(); ++j) {
@@ -382,14 +508,14 @@ void ModManagerDialog::DetectConflicts() {
                 if (std::find(mods_list[j].relative_files.begin(), mods_list[j].relative_files.end(), file_a) != mods_list[j].relative_files.end()) {
                     total_conflicts++;
                     if (i < j) {
-                        mods_list[i].conflict_warning = tr("⚠️ Перекрывает файлы в «%1» (%2)").arg(mods_list[j].name).arg(QString::fromStdString(file_a));
+                        mods_list[i].conflict_warning = StormLang(QStringLiteral("Перекрывает файлы в «%1» (%2)"), QStringLiteral(R"(Overrides files in "%1" (%2))")).arg(mods_list[j].name).arg(QString::fromStdString(file_a));
                     } else {
-                        mods_list[i].conflict_warning = tr("⚠️ Файлы перекрываются модом «%1» (низкий приоритет)").arg(mods_list[j].name);
+                        mods_list[i].conflict_warning = StormLang(QStringLiteral("Файлы перекрываются модом «%1» (низкий приоритет)"), QStringLiteral(R"(Files overridden by "%1" (lower priority))")).arg(mods_list[j].name);
                     }
                     break;
                 }
             }
-            if (mods_list[i].conflict_warning.startsWith(QStringLiteral("⚠️"))) break;
+            if (!mods_list[i].conflict_warning.startsWith(QLatin1String("Нет")) && !mods_list[i].conflict_warning.startsWith(QLatin1String("No"))) break;
         }
     }
 
@@ -430,7 +556,7 @@ void ModManagerDialog::OnItemChanged(QTableWidgetItem* item) {
             auto* conf_item = mod_table->item(static_cast<int>(i), 4);
             if (conf_item) {
                 conf_item->setText(mods_list[i].conflict_warning);
-                if (mods_list[i].conflict_warning.startsWith(QStringLiteral("⚠️"))) {
+                if (!mods_list[i].conflict_warning.startsWith(QLatin1String("Нет")) && !mods_list[i].conflict_warning.startsWith(QLatin1String("No"))) {
                     conf_item->setForeground(QColor(245, 158, 11));
                 } else {
                     conf_item->setForeground(QColor(52, 211, 153));
@@ -577,7 +703,7 @@ void ModManagerDialog::OnApplyAndClose() {
 
 void ModManagerDialog::OnGenerateAutoPatch() {
     QDialog dlg(this);
-    dlg.setWindowTitle(tr("⚡ Генератор патчей 60/120 FPS и всех форматов экрана"));
+    dlg.setWindowTitle(StormLang(QStringLiteral("Генератор патчей 60/120 FPS и формата экрана"), QStringLiteral("60/120 FPS & Aspect Ratio Patch Generator")));
     dlg.setMinimumWidth(560);
     dlg.setStyleSheet(styleSheet() + QStringLiteral(
         "QGroupBox { border: 1px solid #1E293B; border-radius: 8px; margin-top: 10px; padding-top: 12px; color: #00D2FF; font-weight: bold; }"
@@ -599,7 +725,7 @@ void ModManagerDialog::OnGenerateAutoPatch() {
     vbox->addWidget(desc);
 
     // Aspect Ratio Group (All 17 variants)
-    auto* aspect_group = new QGroupBox(tr("🖥️ Формат экрана и 3D-камера (Все доступные варианты)"), &dlg);
+    auto* aspect_group = new QGroupBox(StormLang(QStringLiteral("Формат экрана и 3D-камера"), QStringLiteral("Aspect Ratio & 3D Camera")), &dlg);
     auto* aspect_layout = new QVBoxLayout(aspect_group);
     auto* aspect_combo = new QComboBox(aspect_group);
 
@@ -646,7 +772,7 @@ void ModManagerDialog::OnGenerateAutoPatch() {
     vbox->addWidget(aspect_group);
 
     // FPS Unlock Group
-    auto* fps_group = new QGroupBox(tr("🚀 Разблокировка частоты кадров (FPS Unlock & LSFG)"), &dlg);
+    auto* fps_group = new QGroupBox(StormLang(QStringLiteral("Разблокировка частоты кадров (FPS Unlock)"), QStringLiteral("Frame Rate Unlock (FPS Unlock)")), &dlg);
     auto* fps_layout = new QVBoxLayout(fps_group);
     auto* fps_combo = new QComboBox(fps_group);
     fps_combo->addItem(tr("60 FPS — Разблокировка VSync и лимита 30 FPS"), 60);
@@ -667,7 +793,7 @@ void ModManagerDialog::OnGenerateAutoPatch() {
     connect(cancel_b, &QPushButton::clicked, &dlg, &QDialog::reject);
     btn_row->addWidget(cancel_b);
 
-    auto* create_b = new QPushButton(tr("⚡ Сгенерировать и активировать патч"), &dlg);
+    auto* create_b = new QPushButton(StormLang(QStringLiteral("Сгенерировать и активировать патч"), QStringLiteral("Generate & Apply Patch")), &dlg);
     create_b->setStyleSheet(QStringLiteral("background: #0284C7; color: #FFFFFF; font-weight: bold; border-color: #00D2FF;"));
     connect(create_b, &QPushButton::clicked, &dlg, &QDialog::accept);
     btn_row->addWidget(create_b);
@@ -835,7 +961,7 @@ void ModManagerDialog::OnGenerateAutoPatch() {
 
     QMessageBox::information(
         this,
-        tr("⚡ Авто-патч успешно создан и активирован"),
+        StormLang(QStringLiteral("Авто-патч успешно создан и активирован"), QStringLiteral("Auto-patch generated and enabled")),
         tr("Создан и включён мод <b>%1</b>!<br><br>"
            "• <b>Формат экрана:</b> %2 (коэффициент W/H: %3)<br>"
            "• <b>Найдено и пропатчено констант 3D-камеры в NSO:</b> %4 (+ активен динамический перехват в реальном времени)<br>"
@@ -850,12 +976,13 @@ void ModManagerDialog::OnGenerateAutoPatch() {
 }
 
 void ModManagerDialog::SetupCnxBuilderTab(QWidget* tab) {
+    const auto& pal = StormTheme::GetThemePalette();
     auto* root_layout = new QVBoxLayout(tab);
     root_layout->setContentsMargins(14, 14, 14, 14);
     root_layout->setSpacing(12);
 
     auto* banner = new QLabel(
-        tr("📦 <b>Конструктор автоустановщиков и пакетов модов (CNX17 Standard v2.9):</b><br>"
+        StormLang(QStringLiteral("<b>Конструктор пакетов и автоустановщиков модов (CNX):</b><br>"), QStringLiteral("<b>CNX Mod & Installer Package Builder:</b><br>")) + QStringLiteral(
            "Создавайте готовые самораспаковывающиеся пакеты модов и LayeredFS-структуры для Atmosphere / STORM SWITCH "
            "с автоматическим масштабированием иконки 256×256, манифестом перезаписи при установке и сохранением JSON-профилей."),
         tab);
@@ -879,7 +1006,8 @@ void ModManagerDialog::SetupCnxBuilderTab(QWidget* tab) {
     cnx_source_edit = new QLineEdit(form_group);
     cnx_source_edit->setPlaceholderText(tr("Выберите папку с файлами мода (romfs / exefs / cheats)..."));
     src_row->addWidget(cnx_source_edit, 1);
-    auto* btn_browse_src = new QPushButton(tr("📂 Обзор..."), form_group);
+    auto* btn_browse_src = new QPushButton(StormLang(QStringLiteral("Обзор..."), QStringLiteral("Browse...")), form_group);
+    btn_browse_src->setIcon(MakeModIcon(ModIconType::Folder, QColor(pal.textSecondary)));
     connect(btn_browse_src, &QPushButton::clicked, this, &ModManagerDialog::OnCnxBrowseSource);
     src_row->addWidget(btn_browse_src);
     form->addRow(tr("Папка исходников мода:"), src_row);
@@ -911,7 +1039,8 @@ void ModManagerDialog::SetupCnxBuilderTab(QWidget* tab) {
     cnx_icon_edit = new QLineEdit(form_group);
     cnx_icon_edit->setPlaceholderText(tr("Необязательно: PNG/JPG иконка (авто-конвертация в 256×256 JPG)"));
     icon_row->addWidget(cnx_icon_edit, 1);
-    auto* btn_browse_icon = new QPushButton(tr("🖼️ Иконка..."), form_group);
+    auto* btn_browse_icon = new QPushButton(StormLang(QStringLiteral("Иконка..."), QStringLiteral("Icon...")), form_group);
+    btn_browse_icon->setIcon(MakeModIcon(ModIconType::Folder, QColor(pal.textSecondary)));
     connect(btn_browse_icon, &QPushButton::clicked, this, &ModManagerDialog::OnCnxBrowseIcon);
     icon_row->addWidget(btn_browse_icon);
     form->addRow(tr("Обложка пакета (256×256):"), icon_row);
@@ -938,11 +1067,13 @@ void ModManagerDialog::SetupCnxBuilderTab(QWidget* tab) {
         "background: #0A0E17; border: 2px dashed #334155; border-radius: 10px; color: #FFFFFF; font-weight: bold;"));
     right_col->addWidget(cnx_icon_preview, 0, Qt::AlignHCenter);
 
-    auto* btn_save_cfg = new QPushButton(tr("💾 Сохранить профиль (.json)"), tab);
+    auto* btn_save_cfg = new QPushButton(StormLang(QStringLiteral("Сохранить профиль (.json)"), QStringLiteral("Save Profile (.json)")), tab);
+    btn_save_cfg->setIcon(MakeModIcon(ModIconType::Check, QColor(pal.textSecondary)));
     connect(btn_save_cfg, &QPushButton::clicked, this, &ModManagerDialog::OnCnxSaveConfig);
     right_col->addWidget(btn_save_cfg);
 
-    auto* btn_load_cfg = new QPushButton(tr("📂 Загрузить профиль (.json)"), tab);
+    auto* btn_load_cfg = new QPushButton(StormLang(QStringLiteral("Загрузить профиль (.json)"), QStringLiteral("Load Profile (.json)")), tab);
+    btn_load_cfg->setIcon(MakeModIcon(ModIconType::Folder, QColor(pal.textSecondary)));
     connect(btn_load_cfg, &QPushButton::clicked, this, &ModManagerDialog::OnCnxLoadConfig);
     right_col->addWidget(btn_load_cfg);
 
@@ -957,7 +1088,8 @@ void ModManagerDialog::SetupCnxBuilderTab(QWidget* tab) {
     cnx_status_lbl->setStyleSheet(QStringLiteral("color: #FFFFFF; font-weight: bold;"));
     build_row->addWidget(cnx_status_lbl, 1);
 
-    auto* btn_build = new QPushButton(tr("🚀 Собрать автоустановщик и установить мод"), tab);
+    btn_build = new QPushButton(StormLang(QStringLiteral("Собрать автоустановщик и установить мод"), QStringLiteral("Build Installer & Enable Mod")), tab);
+    btn_build->setIcon(MakeModIcon(ModIconType::Zip, QColor(QStringLiteral("#FFFFFF"))));
     btn_build->setStyleSheet(QStringLiteral(
         "QPushButton { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0284C7, stop:1 #2563EB); "
         "border: 1px solid #38BDF8; border-radius: 6px; color: #FFFFFF; font-weight: bold; padding: 9px 22px; font-size: 13px; }"
@@ -1017,7 +1149,7 @@ void ModManagerDialog::OnCnxSaveConfig() {
     std::ofstream out(path.toStdString(), std::ios::trunc);
     if (out.is_open()) {
         out << j.dump(4);
-        cnx_status_lbl->setText(tr("✅ Профиль успешно сохранён: %1").arg(QFileInfo(path).fileName()));
+        cnx_status_lbl->setText(StormLang(QStringLiteral("Профиль успешно сохранён: %1").arg(QFileInfo(path).fileName()), QStringLiteral("Profile saved: %1").arg(QFileInfo(path).fileName())));
         cnx_status_lbl->setStyleSheet(QStringLiteral("color: #34D399; font-weight: bold;"));
     }
 }
@@ -1036,7 +1168,7 @@ void ModManagerDialog::OnCnxLoadConfig() {
         if (j.contains("title_id")) cnx_tid_edit->setText(QString::fromStdString(j["title_id"].get<std::string>()));
         if (j.contains("name")) cnx_name_edit->setText(QString::fromStdString(j["name"].get<std::string>()));
         if (j.contains("author")) cnx_author_edit->setText(QString::fromStdString(j["author"].get<std::string>()));
-        if (j.contains("version")) cnx_version_edit->setText(QString::fromStdString(j["version"].get<std::string>()));
+        if (j.contains("version")) cnx_version_edit->setText(StormFormat::CleanVersion(QString::fromStdString(j["version"].get<std::string>())));
         if (j.contains("icon_path")) {
             const QString ic = QString::fromStdString(j["icon_path"].get<std::string>());
             cnx_icon_edit->setText(ic);
@@ -1049,7 +1181,7 @@ void ModManagerDialog::OnCnxLoadConfig() {
         }
         if (j.contains("overwrite")) cnx_overwrite_chk->setChecked(j["overwrite"].get<bool>());
         if (j.contains("deploy_sdmc")) cnx_deploy_sdmc_chk->setChecked(j["deploy_sdmc"].get<bool>());
-        cnx_status_lbl->setText(tr("✅ Профиль загружен: %1").arg(QFileInfo(path).fileName()));
+        cnx_status_lbl->setText(StormLang(QStringLiteral("Профиль загружен: %1").arg(QFileInfo(path).fileName()), QStringLiteral("Profile loaded: %1").arg(QFileInfo(path).fileName())));
         cnx_status_lbl->setStyleSheet(QStringLiteral("color: #38BDF8; font-weight: bold;"));
     } catch (...) {
         QMessageBox::warning(this, tr("Ошибка"), tr("Не удалось прочитать JSON-профиль."));
@@ -1059,14 +1191,16 @@ void ModManagerDialog::OnCnxLoadConfig() {
 void ModManagerDialog::OnCnxBuildInstaller() {
     const QString src_path = cnx_source_edit->text().trimmed();
     if (src_path.isEmpty() || !QDir(src_path).exists()) {
-        QMessageBox::warning(this, tr("Конструктор CNX"), tr("Укажите существующую папку с файлами мода!"));
+        QMessageBox::warning(this, StormLang(QStringLiteral("Конструктор CNX"), QStringLiteral("CNX Builder")),
+                             StormLang(QStringLiteral("Укажите существующую папку с файлами мода!"), QStringLiteral("Select an existing mod folder!")));
         return;
     }
 
     QString tid_hex = cnx_tid_edit->text().trimmed().toUpper();
     static const QRegularExpression hex16_re(QStringLiteral("^[0-9A-F]{16}$"));
     if (!hex16_re.match(tid_hex).hasMatch()) {
-        QMessageBox::warning(this, tr("Конструктор CNX"), tr("Title ID должен состоять ровно из 16 HEX-символов (например, 0100000000010000)."));
+        QMessageBox::warning(this, StormLang(QStringLiteral("Конструктор CNX"), QStringLiteral("CNX Builder")),
+                             StormLang(QStringLiteral("Title ID должен состоять ровно из 16 HEX-символов."), QStringLiteral("Title ID must be 16 HEX characters.")));
         return;
     }
 
@@ -1075,116 +1209,158 @@ void ModManagerDialog::OnCnxBuildInstaller() {
         pkg_name = QFileInfo(src_path).fileName();
     }
     QString safe_folder_name = pkg_name;
-    safe_folder_name.replace(QRegularExpression(QStringLiteral("[\\\\/:*?\"<>|]")), QStringLiteral("_"));
+    safe_folder_name.replace(QRegularExpression(QStringLiteral("[\\/:*?\"<>|]")), QStringLiteral("_"));
+
+    const QString author = cnx_author_edit->text().trimmed();
+    const QString version = StormFormat::CleanVersion(cnx_version_edit->text().trimmed());
+    cnx_version_edit->setText(version);
+    const bool allow_overwrite = cnx_overwrite_chk->isChecked();
+    const bool deploy_sdmc = cnx_deploy_sdmc_chk->isChecked();
+    const QString icon_src = cnx_icon_edit->text().trimmed();
 
     const QString load_root = QString::fromStdString(Common::FS::PathToUTF8String(
         Common::FS::GetEdenPath(Common::FS::EdenPath::LoadDir)));
     const QString target_mod_dir = QDir(QDir(load_root).filePath(tid_hex)).filePath(safe_folder_name);
+    const QString sdmc_root = QString::fromStdString(Common::FS::PathToUTF8String(
+        Common::FS::GetEdenPath(Common::FS::EdenPath::SDMCDir)));
 
-    const bool allow_overwrite = cnx_overwrite_chk->isChecked();
-    QDir().mkpath(target_mod_dir);
-
-    // Check if source already has romfs/exefs/cheats subfolders; if not, place under romfs/ or copy structure
-    QDir src_dir(src_path);
-    const bool has_layered_subdirs =
-        src_dir.exists(QStringLiteral("romfs")) ||
-        src_dir.exists(QStringLiteral("romfslite")) ||
-        src_dir.exists(QStringLiteral("exefs")) ||
-        src_dir.exists(QStringLiteral("cheats"));
-
-    int copied_files = 0;
-    QDirIterator it(src_path, QDir::Files | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
-    while (it.hasNext()) {
-        const QString file_full = it.next();
-        const QString rel = src_dir.relativeFilePath(file_full);
-        const QString dst_full = has_layered_subdirs
-            ? QDir(target_mod_dir).filePath(rel)
-            : QDir(QDir(target_mod_dir).filePath(QStringLiteral("romfs"))).filePath(rel);
-        QDir().mkpath(QFileInfo(dst_full).absolutePath());
-        if (QFile::exists(dst_full)) {
-            if (!allow_overwrite) {
-                continue;
-            }
-            QFile::remove(dst_full);
-        }
-        if (QFile::copy(file_full, dst_full)) {
-            ++copied_files;
-        }
+    if (btn_build) {
+        btn_build->setEnabled(false);
     }
+    if (cnx_progress_bar) {
+        cnx_progress_bar->setVisible(true);
+        cnx_progress_bar->setRange(0, 0);
+    }
+    cnx_status_lbl->setText(StormLang(
+        QStringLiteral("Сборка пакета CNX в фоновом режиме..."),
+        QStringLiteral("Building CNX package in background...")
+    ));
+    cnx_status_lbl->setStyleSheet(QStringLiteral("color: #38BDF8; font-weight: bold;"));
 
-    // Also deploy to sdmc/atmosphere/contents/<TitleID>/ if requested
-    if (cnx_deploy_sdmc_chk->isChecked() && has_layered_subdirs) {
-        const QString sdmc_root = QString::fromStdString(Common::FS::PathToUTF8String(
-            Common::FS::GetEdenPath(Common::FS::EdenPath::SDMCDir)));
-        const QString atmo_dir = QDir(sdmc_root).filePath(QStringLiteral("atmosphere/contents/%1").arg(tid_hex));
-        QDir().mkpath(atmo_dir);
-        QDirIterator it2(src_path, QDir::Files | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
-        while (it2.hasNext()) {
-            const QString file_full = it2.next();
+    const u64 cur_title_id = title_id;
+
+    std::thread([this, cur_title_id, src_path, tid_hex, pkg_name, safe_folder_name, author, version, allow_overwrite, deploy_sdmc, icon_src, target_mod_dir, sdmc_root]() {
+#ifdef _WIN32
+        SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_BELOW_NORMAL);
+#endif
+        QDir().mkpath(target_mod_dir);
+        QDir src_dir(src_path);
+        const bool has_layered_subdirs =
+            src_dir.exists(QStringLiteral("romfs")) ||
+            src_dir.exists(QStringLiteral("romfslite")) ||
+            src_dir.exists(QStringLiteral("exefs")) ||
+            src_dir.exists(QStringLiteral("cheats"));
+
+        int copied_files = 0;
+        QDirIterator it(src_path, QDir::Files | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+        while (it.hasNext()) {
+            const QString file_full = it.next();
             const QString rel = src_dir.relativeFilePath(file_full);
-            const QString dst_full = QDir(atmo_dir).filePath(rel);
+            const QString dst_full = has_layered_subdirs
+                ? QDir(target_mod_dir).filePath(rel)
+                : QDir(QDir(target_mod_dir).filePath(QStringLiteral("romfs"))).filePath(rel);
             QDir().mkpath(QFileInfo(dst_full).absolutePath());
-            if (QFile::exists(dst_full) && allow_overwrite) {
+            if (QFile::exists(dst_full)) {
+                if (!allow_overwrite) continue;
                 QFile::remove(dst_full);
             }
-            QFile::copy(file_full, dst_full);
-        }
-    }
-
-    // Save 256x256 icon_AmericanEnglish.dat (standard Switch NACP JPEG icon) and cnx_installer_manifest.json
-    const QString icon_src = cnx_icon_edit->text().trimmed();
-    if (!icon_src.isEmpty() && QFile::exists(icon_src)) {
-        QImage img(icon_src);
-        if (!img.isNull()) {
-            QImage scaled = img.scaled(256, 256, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
-            if (scaled.width() > 256 || scaled.height() > 256) {
-                scaled = scaled.copy((scaled.width() - 256) / 2, (scaled.height() - 256) / 2, 256, 256);
+            if (QFile::copy(file_full, dst_full)) {
+                ++copied_files;
             }
-            scaled.save(QDir(target_mod_dir).filePath(QStringLiteral("icon_256x256.jpg")), "JPG", 92);
         }
-    }
 
-    nlohmann::json manifest;
-    manifest["generator"] = "STORM SWITCH 15.1.0 CNX Auto-Installer Builder";
-    manifest["cnx_spec_version"] = "2.9";
-    manifest["title_id"] = tid_hex.toStdString();
-    manifest["name"] = pkg_name.toStdString();
-    manifest["author"] = cnx_author_edit->text().trimmed().toStdString();
-    manifest["version"] = cnx_version_edit->text().trimmed().toStdString();
-    manifest["overwrite_on_install"] = allow_overwrite;
-    manifest["files_installed"] = copied_files;
-
-    {
-        std::ofstream mf(QDir(target_mod_dir).filePath(QStringLiteral("cnx_installer_manifest.json")).toStdString(), std::ios::trunc);
-        if (mf.is_open()) {
-            mf << manifest.dump(4);
+        if (deploy_sdmc && has_layered_subdirs) {
+            const QString atmo_dir = QDir(sdmc_root).filePath(QStringLiteral("atmosphere/contents/%1").arg(tid_hex));
+            QDir().mkpath(atmo_dir);
+            QDirIterator it2(src_path, QDir::Files | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+            while (it2.hasNext()) {
+                const QString file_full = it2.next();
+                const QString rel = src_dir.relativeFilePath(file_full);
+                const QString dst_full = QDir(atmo_dir).filePath(rel);
+                QDir().mkpath(QFileInfo(dst_full).absolutePath());
+                if (QFile::exists(dst_full) && allow_overwrite) {
+                    QFile::remove(dst_full);
+                }
+                QFile::copy(file_full, dst_full);
+            }
         }
-    }
 
-    // Enable the newly built mod in Settings
-    auto& disabled = Settings::values.disabled_addons[title_id];
-    disabled.erase(std::remove(disabled.begin(), disabled.end(), safe_folder_name.toStdString()), disabled.end());
+        if (!icon_src.isEmpty() && QFile::exists(icon_src)) {
+            QImage img(icon_src);
+            if (!img.isNull()) {
+                QImage scaled = img.scaled(256, 256, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+                if (scaled.width() > 256 || scaled.height() > 256) {
+                    scaled = scaled.copy((scaled.width() - 256) / 2, (scaled.height() - 256) / 2, 256, 256);
+                }
+                scaled.save(QDir(target_mod_dir).filePath(QStringLiteral("icon_256x256.jpg")), "JPG", 92);
+            }
+        }
 
-    RefreshModsList();
-    SavePriorities();
+        nlohmann::json manifest;
+        manifest["generator"] = "STORM SWITCH 17.2.0 CNX Auto-Installer Builder";
+        manifest["cnx_spec_version"] = "3.0";
+        manifest["title_id"] = tid_hex.toStdString();
+        manifest["name"] = pkg_name.toStdString();
+        manifest["author"] = author.toStdString();
+        manifest["version"] = version.toStdString();
+        manifest["overwrite_on_install"] = allow_overwrite;
+        manifest["files_installed"] = copied_files;
 
-    cnx_status_lbl->setText(tr("✅ Пакет «%1» собран и установлен (%2 файлов)!").arg(safe_folder_name).arg(copied_files));
-    cnx_status_lbl->setStyleSheet(QStringLiteral("color: #34D399; font-weight: bold;"));
+        {
+            std::ofstream mf(QDir(target_mod_dir).filePath(QStringLiteral("cnx_installer_manifest.json")).toStdString(), std::ios::trunc);
+            if (mf.is_open()) {
+                mf << manifest.dump(4);
+            }
+        }
 
-    QMessageBox::information(
-        this,
-        tr("📦 Автоустановщик CNX успешно собран"),
-        tr("Пакет мода <b>%1</b> успешно упакован и активирован!<br><br>"
-           "• <b>Title ID:</b> <code>%2</code><br>"
-           "• <b>Автор:</b> %3 | <b>Версия:</b> %4<br>"
-           "• <b>Скопировано файлов:</b> %5 (Перезапись: %6)<br>"
-           "• <b>Путь установки:</b> <code>%7</code>")
-            .arg(safe_folder_name,
-                 tid_hex,
-                 cnx_author_edit->text().trimmed(),
-                 cnx_version_edit->text().trimmed(),
-                 QString::number(copied_files),
-                 allow_overwrite ? tr("Вкл") : tr("Выкл"),
-                 target_mod_dir));
+        QMetaObject::invokeMethod(this, [this, cur_title_id, safe_folder_name, tid_hex, copied_files, target_mod_dir, author, version, allow_overwrite]() {
+            if (btn_build) {
+                btn_build->setEnabled(true);
+            }
+            if (cnx_progress_bar) {
+                cnx_progress_bar->setVisible(false);
+            }
+            auto& disabled = Settings::values.disabled_addons[cur_title_id];
+            disabled.erase(std::remove(disabled.begin(), disabled.end(), safe_folder_name.toStdString()), disabled.end());
+
+            RefreshModsList();
+            SavePriorities();
+
+            cnx_status_lbl->setText(StormLang(
+                QStringLiteral("Пакет «%1» собран и установлен (%2 файлов)!").arg(safe_folder_name).arg(copied_files),
+                QStringLiteral("Package \"%1\" built and installed (%2 files)!").arg(safe_folder_name).arg(copied_files)
+            ));
+            cnx_status_lbl->setStyleSheet(QStringLiteral("color: #34D399; font-weight: bold;"));
+
+            QMessageBox::information(
+                this,
+                StormLang(QStringLiteral("Автоустановщик CNX успешно собран"), QStringLiteral("CNX Installer Built")),
+                StormLang(
+                    QStringLiteral("Пакет мода <b>%1</b> успешно упакован и активирован!<br><br>"
+                                   "• <b>Title ID:</b> <code>%2</code><br>"
+                                   "• <b>Автор:</b> %3 | <b>Версия:</b> %4<br>"
+                                   "• <b>Скопировано файлов:</b> %5 (Перезапись: %6)<br>"
+                                   "• <b>Путь установки:</b> <code>%7</code>")
+                        .arg(safe_folder_name,
+                             tid_hex,
+                             author,
+                             version,
+                             QString::number(copied_files),
+                             allow_overwrite ? StormLang(QStringLiteral("Вкл"), QStringLiteral("On")) : StormLang(QStringLiteral("Выкл"), QStringLiteral("Off")),
+                             target_mod_dir),
+                    QStringLiteral("Mod package <b>%1</b> packaged and enabled!<br><br>"
+                                   "• <b>Title ID:</b> <code>%2</code><br>"
+                                   "• <b>Author:</b> %3 | <b>Version:</b> %4<br>"
+                                   "• <b>Files copied:</b> %5 (Overwrite: %6)<br>"
+                                   "• <b>Install path:</b> <code>%7</code>")
+                        .arg(safe_folder_name,
+                             tid_hex,
+                             author,
+                             version,
+                             QString::number(copied_files),
+                             allow_overwrite ? StormLang(QStringLiteral("Вкл"), QStringLiteral("On")) : StormLang(QStringLiteral("Выкл"), QStringLiteral("Off")),
+                             target_mod_dir)
+                ));
+        });
+    }).detach();
 }
-

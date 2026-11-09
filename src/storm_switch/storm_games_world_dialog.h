@@ -197,6 +197,7 @@ private:
     QLabel* tid_label{nullptr};
     QLabel* version_badge{nullptr};
     QLabel* internal_version_badge{nullptr};
+    QLabel* format_badge{nullptr};
     QLabel* size_badge{nullptr};
     QLabel* dlc_badge{nullptr};
     QLabel* mod_badge{nullptr};

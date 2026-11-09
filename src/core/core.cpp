@@ -19,6 +19,7 @@
 #include "core/core.h"
 #include <cstdlib>
 #include "common/cpu_features.h"
+#include "common/memory_detect.h"
 #include "core/file_sys/submission_package.h"
 #include "core/file_sys/content_archive.h"
 #include "core/file_sys/program_metadata.h"
@@ -489,10 +490,23 @@ struct System::Impl {
         // as a per-game value, so RestoreGlobalState brings back the configured setting on exit.
         if (switch2_program &&
             Settings::values.memory_layout_mode.GetValue() != Settings::MemoryLayout::Memory_12Gb) {
-            LOG_INFO(Core, "Switch 2 program ({:016X}): activating 12 GiB memory layout & Ampere T239 profile",
-                     params.program_id);
-            Settings::values.memory_layout_mode.SetGlobal(false);
-            Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_12Gb);
+#if defined(ANDROID) || defined(__ANDROID__)
+            constexpr bool is_android = true;
+#else
+            constexpr bool is_android = false;
+#endif
+            const bool limited_ram = is_android || (Common::GetMemInfo().TotalPhysicalMemory < (14ULL * 1024ULL * 1024ULL * 1024ULL));
+            if (limited_ram) {
+                LOG_WARNING(Core, "Switch 2 program ({:016X}): host physical RAM < 14 GiB or mobile Android, falling back to 8 GiB memory layout",
+                            params.program_id);
+                Settings::values.memory_layout_mode.SetGlobal(false);
+                Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_8Gb);
+            } else {
+                LOG_INFO(Core, "Switch 2 program ({:016X}): activating 12 GiB memory layout & Ampere T239 profile",
+                         params.program_id);
+                Settings::values.memory_layout_mode.SetGlobal(false);
+                Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_12Gb);
+            }
         }
 
         // Switch 2 games use a 31.25 MHz counter clock instead of the Switch 1 19.2 MHz clock.

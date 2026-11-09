@@ -759,13 +759,12 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         Log.info("[EmulationFragment] Starting view setup for game: ${game?.title}")
 
         gpuModel = GpuDriverHelper.hookLibPath?.let { GpuDriverHelper.getGpuModel(hookLibPath = it).toString() } ?: "Unknown"
-        fwVersion = NativeLibrary.firmwareVersion().removePrefix("v").removePrefix("V")
+        fwVersion = NativeLibrary.firmwareVersion()
 
-        val buildVersion = NativeLibrary.getBuildVersion().removePrefix("v").removePrefix("V")
+        val buildVersion = NativeLibrary.getBuildVersion()
         buildId = "STORM SWITCH $buildVersion"
         val driverTitle = driverViewModel.selectedDriverTitle.value
-        driverInUse = (if (driverTitle.isNotEmpty()) driverTitle else driverViewModel.selectedDriverVersion.value)
-            .removePrefix("v").removePrefix("V")
+        driverInUse = if (driverTitle.isNotEmpty()) driverTitle else driverViewModel.selectedDriverVersion.value
 
         updateQuickOverlayMenuEntry(BooleanSetting.SHOW_INPUT_OVERLAY.getBoolean())
         onPhysicalControllerStateChanged(InputHandler.androidControllers.isNotEmpty())
@@ -998,6 +997,23 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                         AutoCorrectionDialogFragment.newInstance(currentGame)
                             .show(childFragmentManager, AutoCorrectionDialogFragment.TAG)
                     }
+                    true
+                }
+
+                R.id.menu_quick_resolution -> {
+                    binding.drawerLayout.close()
+                    showQuickResolutionDialog()
+                    true
+                }
+
+                R.id.menu_quick_scaling_filter -> {
+                    binding.drawerLayout.close()
+                    showQuickScalingFilterDialog()
+                    true
+                }
+
+                R.id.menu_quick_speed_limit -> {
+                    toggleQuickSpeedLimit()
                     true
                 }
 
@@ -2538,14 +2554,12 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                     sb.setLength(0)
 
                     if (BooleanSetting.SHOW_FPS.getBoolean(needsGlobal)) {
-                        val isRu = java.util.Locale.getDefault().language.equals("ru", ignoreCase = true)
-                        val numLoc = if (isRu) java.util.Locale("ru", "RU") else java.util.Locale.US
                         val fpsText = if (isFrameGen && systemFps > 0.0) {
                             val mult = IntSetting.RENDERER_FRAME_GEN_MULTIPLIER.getInt(needsGlobal).coerceIn(2, 4)
                             val tag = "LSFG ${mult}X"
-                            String.format(numLoc, "FPS: %.0f [%s -> %.0f]", actualFps, tag, systemFps)
+                            String.format(java.util.Locale.US, "FPS: %.0f [%s -> %.0f]", actualFps, tag, systemFps)
                         } else {
-                            String.format(numLoc, "FPS: %.0f", actualFps)
+                            String.format(java.util.Locale.US, "FPS: %.0f", actualFps)
                         }
                         sb.append(fpsText)
                     }
@@ -2583,14 +2597,11 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                         if (sb.isNotEmpty()) sb.append(" | ")
 
                         val batteryTemp = getBatteryTemperature()
-                        val isRu = java.util.Locale.getDefault().language.equals("ru", ignoreCase = true)
-                        val numLoc = if (isRu) java.util.Locale("ru", "RU") else java.util.Locale.US
                         when (IntSetting.BAT_TEMPERATURE_UNIT.getInt(needsGlobal)) {
-                            0 -> sb.append(String.format(numLoc, "%.1f °C", batteryTemp))
+                            0 -> sb.append(String.format("%.1f°C", batteryTemp))
                             1 -> sb.append(
                                 String.format(
-                                    numLoc,
-                                    "%.1f °F",
+                                    "%.1f°F",
                                     celsiusToFahrenheit(batteryTemp)
                                 )
                             )
@@ -2953,9 +2964,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                         gpuUsagePercent = -1
                     }
 
-                    // 3. RAM Usage (Localized decimal and unit)
-                    val isRu = java.util.Locale.getDefault().language.equals("ru", ignoreCase = true)
-                    val numLoc = if (isRu) java.util.Locale("ru", "RU") else java.util.Locale.US
+                    // 3. RAM Usage
                     var ramText = ""
                     context?.let { ctx ->
                         try {
@@ -2964,14 +2973,19 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                             am.getMemoryInfo(memInfo)
                             val usedGb = (memInfo.totalMem - memInfo.availMem) / (1024.0 * 1024.0 * 1024.0)
                             val totalGb = memInfo.totalMem / (1024.0 * 1024.0 * 1024.0)
-                            val unitStr = if (isRu) "ГБ" else "GB"
-                            ramText = String.format(numLoc, "%.1f / %.1f %s", usedGb, totalGb, unitStr)
+                            ramText = String.format(java.util.Locale.US, "%.1f/%.1f GB", usedGb, totalGb)
                         } catch (e: Exception) {}
                     }
 
-                    // 4. Device Temperature (Single Icon Mandate: 0% Emojis, Localized Decimal)
+                    // 4. Device Temperature & 5 Thermal States
                     val temp = getBatteryTemperature()
-                    val tempText = String.format(numLoc, "%.1f °C", temp)
+                    val tempIcon = when {
+                        temp < 35.0f -> "❄️"       // 1. Cold (< 35°C)
+                        temp < 42.0f -> "🟢"       // 2. Normal (35-41.9°C)
+                        temp < 48.0f -> "🟡"       // 3. Warm (42-47.9°C)
+                        temp < 54.0f -> "🟠"       // 4. Hot (48-53.9°C)
+                        else -> "🔥"               // 5. Critical (>= 54°C)
+                    }
 
                     // 5. Game Resolution
                     val isDocked = BooleanSetting.USE_DOCKED_MODE.getBoolean()
@@ -2992,15 +3006,15 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                     val actualW = (baseW * scale).toInt()
                     val actualH = (baseH * scale).toInt()
 
-                    // Build formatted string (Single Icon Mandate: 0% Emojis)
-                    sb.append("${actualW}x${actualH}\u00A0|\u00A0${getString(R.string.emulation_hud_cpu)}\u00A0$cpuUsagePercent%")
+                    // Build formatted string
+                    sb.append("📺\u00A0${actualW}x${actualH}\u00A0|\u00A0⚙️\u00A0${getString(R.string.emulation_hud_cpu)}\u00A0$cpuUsagePercent%")
                     if (gpuUsagePercent >= 0) {
-                        sb.append("\u00A0|\u00A0${getString(R.string.emulation_hud_gpu)}\u00A0$gpuUsagePercent%")
+                        sb.append("\u00A0|\u00A0🎮\u00A0${getString(R.string.emulation_hud_gpu)}\u00A0$gpuUsagePercent%")
                     }
                     if (ramText.isNotEmpty()) {
-                        sb.append("\u00A0|\u00A0${getString(R.string.emulation_hud_ram)}\u00A0${ramText.replace(' ', '\u00A0')}")
+                        sb.append("\u00A0|\u00A0💾\u00A0${getString(R.string.emulation_hud_ram)}\u00A0${ramText.replace(' ', '\u00A0')}")
                     }
-                    sb.append("\u00A0|\u00A0$tempText")
+                    sb.append("\u00A0|\u00A0$tempIcon\u00A0${String.format(java.util.Locale.US, "%.1f°C", temp)}")
 
                     // Position layout params: under SOC overlay if enabled, else Top-Right
                     val showSoc = BooleanSetting.SHOW_SOC_OVERLAY.getBoolean()
@@ -3764,7 +3778,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 showEdenSnackbar(getString(R.string.storm_ov20_ctrl_frame_step), true)
             }
             OverlayControl.BUTTON_AI_TRANSLATOR.id -> {
-                binding.buttonFloatingTranslate?.let { it.visibility = View.VISIBLE; it.performClick() }
+                binding.buttonFloatingTranslate.let { it.visibility = View.VISIBLE; it.performClick() }
             }
             OverlayControl.BUTTON_AUTO_FIX.id -> {
                 showEdenSnackbar(getString(R.string.storm_ov20_ctrl_auto_fix), true)
@@ -3802,6 +3816,62 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         }
     }
 
+    private fun showQuickResolutionDialog() {
+        val resChoices = if (BooleanSetting.USE_DOCKED_MODE.getBoolean()) {
+            R.array.rendererResolutionNamesDocked
+        } else {
+            R.array.rendererResolutionNamesHandheld
+        }
+        val names = resources.getStringArray(resChoices)
+        val values = resources.getIntArray(R.array.rendererResolutionValues)
+        val currentVal = IntSetting.RENDERER_RESOLUTION.getInt(needsGlobal = false)
+        val currentIndex = values.indexOf(currentVal).coerceAtLeast(0)
+
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.renderer_resolution)
+            .setSingleChoiceItems(names, currentIndex) { dialog, which ->
+                IntSetting.RENDERER_RESOLUTION.setInt(values[which])
+                NativeConfig.saveGlobalConfig()
+                try {
+                    NativeLibrary.applySettings()
+                } catch (_: Throwable) {}
+                dialog.dismiss()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun showQuickScalingFilterDialog() {
+        val names = resources.getStringArray(R.array.rendererScalingFilterNames)
+        val values = resources.getIntArray(R.array.rendererScalingFilterValues)
+        val currentVal = IntSetting.RENDERER_SCALING_FILTER.getInt(needsGlobal = false)
+        val currentIndex = values.indexOf(currentVal).coerceAtLeast(0)
+
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.renderer_scaling_filter)
+            .setSingleChoiceItems(names, currentIndex) { dialog, which ->
+                IntSetting.RENDERER_SCALING_FILTER.setInt(values[which])
+                NativeConfig.saveGlobalConfig()
+                try {
+                    NativeLibrary.applySettings()
+                } catch (_: Throwable) {}
+                dialog.dismiss()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun toggleQuickSpeedLimit() {
+        val isTurbo = NativeLibrary.isTurboMode()
+        NativeLibrary.setTurboSpeedLimit(!isTurbo)
+        val isRu = java.util.Locale.getDefault().language.equals("ru", ignoreCase = true)
+        val msg = if (!isTurbo) {
+            if (isRu) "Турбо-скорость: ВКЛ" else "Turbo Speed: ON"
+        } else {
+            if (isRu) "Скорость: 100%" else "Speed Limit: Normal (100%)"
+        }
+        showEdenSnackbar(msg, true)
+    }
 
     private fun startOverlayAutoHideTimer(seconds: Int) {
         handler.removeCallbacksAndMessages(null)

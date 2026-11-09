@@ -18,6 +18,7 @@
 #include <QTcpSocket>
 #include <QUdpSocket>
 
+class QCheckBox;
 class QComboBox;
 class QLabel;
 class QLineEdit;
@@ -66,7 +67,9 @@ class StormSaveConflictDialog : public QDialog {
 public:
     explicit StormSaveConflictDialog(QWidget* parent, const StormSaveItem& item,
                                     const QString& local_device_name,
-                                    const QString& remote_device_name);
+                                    const QString& remote_device_name,
+                                    const QString& local_path = {},
+                                    const QString& remote_path = {});
     StormConflictAction GetAction() const { return m_action; }
 
 private:
@@ -159,6 +162,7 @@ private:
     QPushButton* m_connect_btn{nullptr};
     QPushButton* m_search_btn{nullptr};
     QComboBox* m_discovered_combo{nullptr};
+    QCheckBox* m_auto_sync_check{nullptr};
     QLabel* m_connection_status_label{nullptr};
     QLineEdit* m_search_edit{nullptr};
     QTableWidget* m_saves_table{nullptr};

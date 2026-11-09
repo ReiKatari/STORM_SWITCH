@@ -20,6 +20,7 @@ class QLabel;
 class QLineEdit;
 class QPushButton;
 class QTabWidget;
+class QProgressBar;
 
 struct ModEntryInfo {
     QString name;
@@ -28,6 +29,7 @@ struct ModEntryInfo {
     QString type;
     int priority{1};
     QString conflict_warning;
+    qulonglong size_bytes{0};
     std::vector<std::string> relative_files;
 };
 
@@ -92,6 +94,8 @@ private:
     QCheckBox* cnx_overwrite_chk{nullptr};
     QCheckBox* cnx_deploy_sdmc_chk{nullptr};
     QLabel* cnx_status_lbl{nullptr};
+    QProgressBar* cnx_progress_bar{nullptr};
+    QPushButton* btn_build{nullptr};
 
     std::vector<ModEntryInfo> mods_list;
 };

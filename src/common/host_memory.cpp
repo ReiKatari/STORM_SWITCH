@@ -667,7 +667,25 @@ public:
             flags |= PROT_EXEC;
         }
 #endif
-        int ret = mprotect(virtual_base + virtual_offset, length, flags);
+        uintptr_t addr = reinterpret_cast<uintptr_t>(virtual_base + virtual_offset);
+        size_t len = length;
+        static const size_t os_page_size = []() {
+#ifdef _SC_PAGESIZE
+            const long sz = sysconf(_SC_PAGESIZE);
+            return sz > 0 ? static_cast<size_t>(sz) : 4096UL;
+#else
+            return 4096UL;
+#endif
+        }();
+        // On 16KB-page kernels (Android 15-17 / Linux), mprotect requires 16KB-aligned addresses.
+        // On 4KB kernels, keep exact 4KB behavior unchanged for precise NCE fault tracking.
+        if (os_page_size > 4096) {
+            const uintptr_t aligned_addr = addr & ~(os_page_size - 1);
+            len = (addr + len + os_page_size - 1) & ~(os_page_size - 1);
+            len -= aligned_addr;
+            addr = aligned_addr;
+        }
+        int ret = mprotect(reinterpret_cast<void*>(addr), len, flags);
         ASSERT_MSG(ret == 0, "mprotect failed: {}", strerror(errno));
     }
 

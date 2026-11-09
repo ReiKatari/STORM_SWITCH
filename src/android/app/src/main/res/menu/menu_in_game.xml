@@ -71,6 +71,21 @@
             android:title="@string/auto_correction_title" />
 
         <item
+            android:id="@+id/menu_quick_resolution"
+            android:icon="@drawable/ic_graphics"
+            android:title="@string/renderer_resolution" />
+
+        <item
+            android:id="@+id/menu_quick_scaling_filter"
+            android:icon="@drawable/ic_filter"
+            android:title="@string/renderer_scaling_filter" />
+
+        <item
+            android:id="@+id/menu_quick_speed_limit"
+            android:icon="@drawable/ic_storm_hud_fps"
+            android:title="@string/turbo_speed_limit" />
+
+        <item
             android:id="@+id/menu_toggle_quick_settings"
             android:checkable="true"
             android:icon="@drawable/ic_tune"

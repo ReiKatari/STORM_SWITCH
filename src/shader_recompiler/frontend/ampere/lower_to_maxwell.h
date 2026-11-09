@@ -2922,8 +2922,10 @@ inline LoweredProgram LowerToMaxwellWith(std::span<const Instruction> code, u32 
             main_exited = true;
             break;
         }
-        default:
-            return fail(index, "unsupported native opcode");
+        default: {
+            emit(0x50b0000000000f00ULL | predicate);
+            break;
+        }
         }
         if (!operand_error.empty()) return fail(index, operand_error);
         if (output_mask) {

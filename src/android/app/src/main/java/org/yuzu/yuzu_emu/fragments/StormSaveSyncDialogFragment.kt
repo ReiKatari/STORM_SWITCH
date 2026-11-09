@@ -49,6 +49,7 @@ import org.yuzu.yuzu_emu.model.GameFixDatabase
 import org.yuzu.yuzu_emu.model.GamesViewModel
 import org.yuzu.yuzu_emu.utils.DirectoryInitialization
 import org.yuzu.yuzu_emu.utils.Log
+import org.yuzu.yuzu_emu.utils.StormDesignEngine
 import org.yuzu.yuzu_emu.utils.ThemeHelper
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
@@ -174,11 +175,14 @@ class StormSaveSyncDialogFragment : DialogFragment() {
 
     override fun onStart() {
         super.onStart()
-        dialog?.window?.let { window ->
-            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-            window.setBackgroundDrawableResource(android.R.color.transparent)
-            androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
-            ThemeHelper.applySystemBarsTheme(window, requireContext())
+        dialog?.let { dlg ->
+            dlg.window?.let { window ->
+                window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+                window.setBackgroundDrawableResource(android.R.color.transparent)
+                androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
+                ThemeHelper.applySystemBarsTheme(window, requireContext())
+            }
+            StormDesignEngine.applyToDialog(dlg, requireContext())
         }
     }
 
@@ -199,6 +203,7 @@ class StormSaveSyncDialogFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        StormDesignEngine.applyToViewTree(view, requireContext())
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
             val systemBars = insets.getInsets(
@@ -829,7 +834,8 @@ class StormSaveSyncDialogFragment : DialogFragment() {
         val cleanTid = titleId.trim().uppercase(Locale.ROOT)
 
         // 1. Known Switch titles map (clean, verified canonical names)
-        SWITCH_KNOWN_TITLES[cleanTid]?.let { return it }
+        val known = SWITCH_KNOWN_TITLES[cleanTid]
+        if (known != null) return known
 
         // Check base title ID if DLC or update
         val baseTidLong = cleanTid.toLongOrNull(16)
@@ -838,7 +844,8 @@ class StormSaveSyncDialogFragment : DialogFragment() {
         } else null
 
         if (baseTid != null && baseTid != cleanTid) {
-            SWITCH_KNOWN_TITLES[baseTid]?.let { return it }
+            val baseKnown = SWITCH_KNOWN_TITLES[baseTid]
+            if (baseKnown != null) return baseKnown
         }
 
         // 2. GameFixDatabase profile (ignoring generic auto-generated "Игра <ID>" / "Game <ID>")
@@ -1001,12 +1008,12 @@ class StormSaveSyncDialogFragment : DialogFragment() {
 
         conflictBinding.textConflictSubtitle.text = getString(R.string.storm_sync_conflict_game_fmt, item.titleName, item.titleId)
 
-        conflictBinding.textLocalDate.text = getString(R.string.storm_sync_conflict_date_fmt, item.localDateStr)
-        conflictBinding.textLocalSize.text = getString(R.string.storm_sync_conflict_size_fmt, formatSize(item.localSizeBytes), item.localFileCount)
+        conflictBinding.textLocalDate.text = cleanEmoji(getString(R.string.storm_sync_conflict_date_fmt, item.localDateStr))
+        conflictBinding.textLocalSize.text = cleanEmoji(getString(R.string.storm_sync_conflict_size_fmt, formatSize(requireContext(), item.localSizeBytes), item.localFileCount))
 
         conflictBinding.textRemoteDeviceTitle.text = getString(R.string.storm_sync_remote_device_fmt, if (remoteDeviceName.isNotEmpty()) remoteDeviceName else getString(R.string.storm_sync_pc_short))
-        conflictBinding.textRemoteDate.text = getString(R.string.storm_sync_conflict_date_fmt, item.remoteDateStr)
-        conflictBinding.textRemoteSize.text = getString(R.string.storm_sync_conflict_size_fmt, formatSize(item.remoteSizeBytes), item.remoteFileCount)
+        conflictBinding.textRemoteDate.text = cleanEmoji(getString(R.string.storm_sync_conflict_date_fmt, item.remoteDateStr))
+        conflictBinding.textRemoteSize.text = cleanEmoji(getString(R.string.storm_sync_conflict_size_fmt, formatSize(requireContext(), item.remoteSizeBytes), item.remoteFileCount))
 
         conflictBinding.btnReplaceCurrent.setOnClickListener {
             dialog.dismiss()
@@ -1031,6 +1038,8 @@ class StormSaveSyncDialogFragment : DialogFragment() {
         }
 
         dialog.show()
+        StormDesignEngine.applyToDialog(dialog, requireContext())
+        StormDesignEngine.applyToViewTree(conflictBinding.root, requireContext())
     }
 
     private suspend fun executeDownloadSync(titleId: String): Boolean = withContext(Dispatchers.IO) {
@@ -1346,19 +1355,49 @@ class StormSaveSyncDialogFragment : DialogFragment() {
         return Pair(key, 28443)
     }
 
-    private fun formatSize(bytes: Long): String {
-        val uB = getString(R.string.unit_b)
-        val uKb = getString(R.string.unit_kb)
-        val uMb = getString(R.string.unit_mb)
-        return when {
-            bytes <= 0L -> "0 $uB"
-            bytes < 1024L -> "$bytes $uB"
-            bytes < 1024L * 1024L -> String.format(Locale.US, "%.1f %s", bytes / 1024.0, uKb)
-            else -> String.format(Locale.US, "%.2f %s", bytes / (1024.0 * 1024.0), uMb)
-        }
-    }
+    private fun formatSize(bytes: Long): String = formatSize(context, bytes)
 
     companion object {
+        val EMOJI_CLEAN_REGEX = Regex("""[\uD83C-\uDBFF\uDC00-\uDFFF\u2600-\u27BF\u2300-\u23FF\u2B50-\u2B55\u203C-\u2049\u25AA-\u25FE\uFE00-\uFE0F]""")
+
+        @JvmStatic
+        fun cleanEmoji(text: String): String = text.replace(EMOJI_CLEAN_REGEX, "").trim()
+
+        @JvmStatic
+        fun formatSize(context: Context?, bytes: Long): String {
+            val ctx = context ?: try { org.yuzu.yuzu_emu.YuzuApplication.appContext } catch (_: Exception) { null }
+            val isRu = try {
+                val loc = ctx?.resources?.configuration?.locales?.get(0) ?: Locale.getDefault()
+                loc.language.equals("ru", ignoreCase = true)
+            } catch (_: Exception) {
+                Locale.getDefault().language.equals("ru", ignoreCase = true)
+            }
+
+            val uB = if (isRu) "Б" else "B"
+            val uKb = if (isRu) "КБ" else "KB"
+            val uMb = if (isRu) "МБ" else "MB"
+            val uGb = if (isRu) "ГБ" else "GB"
+
+            val locale = if (isRu) Locale("ru", "RU") else Locale.US
+
+            return when {
+                bytes <= 0L -> "0 $uB"
+                bytes < 1024L -> "$bytes $uB"
+                bytes < 1024L * 1024L -> {
+                    val kb = bytes / 1024.0
+                    String.format(locale, "%.1f %s", kb, uKb)
+                }
+                bytes < 1024L * 1024L * 1024L -> {
+                    val mb = bytes / (1024.0 * 1024.0)
+                    String.format(locale, "%.2f %s", mb, uMb)
+                }
+                else -> {
+                    val gb = bytes / (1024.0 * 1024.0 * 1024.0)
+                    String.format(locale, "%.2f %s", gb, uGb)
+                }
+            }
+        }
+
         const val TAG = "StormSaveSyncDialogFragment"
 
         fun newInstance(): StormSaveSyncDialogFragment {
@@ -1493,6 +1532,7 @@ class StormSaveSyncDialogFragment : DialogFragment() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             val binding = ItemStormSaveSyncBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            StormDesignEngine.applyToViewTree(binding.root, parent.context)
             return ViewHolder(binding)
         }
 
@@ -1534,46 +1574,51 @@ class StormSaveSyncDialogFragment : DialogFragment() {
 
             val ctx = b.root.context
             b.textLocalSaveInfo.text = if (item.hasLocal) {
-                ctx.getString(R.string.storm_sync_item_local_info_fmt, item.localDateStr, formatSize(ctx, item.localSizeBytes), item.localFileCount)
+                cleanEmoji(ctx.getString(R.string.storm_sync_item_local_info_fmt, item.localDateStr, formatSize(ctx, item.localSizeBytes), item.localFileCount))
             } else {
-                ctx.getString(R.string.storm_sync_item_local_missing)
+                cleanEmoji(ctx.getString(R.string.storm_sync_item_local_missing))
             }
 
             b.textRemoteSaveInfo.text = if (item.hasRemote) {
-                ctx.getString(R.string.storm_sync_item_remote_info_fmt, item.remoteDateStr, formatSize(ctx, item.remoteSizeBytes), item.remoteFileCount)
+                cleanEmoji(ctx.getString(R.string.storm_sync_item_remote_info_fmt, item.remoteDateStr, formatSize(ctx, item.remoteSizeBytes), item.remoteFileCount))
             } else {
-                ctx.getString(R.string.storm_sync_item_remote_missing)
+                cleanEmoji(ctx.getString(R.string.storm_sync_item_remote_missing))
             }
 
             when (item.status) {
                 AndroidSaveSyncStatus.SYNCHRONIZED -> {
-                    b.textSyncBadge.text = ctx.getString(R.string.storm_sync_badge_synced)
+                    b.textSyncBadge.text = cleanEmoji(ctx.getString(R.string.storm_sync_badge_synced))
                     b.textSyncBadge.setTextColor(0xFF10B981.toInt())
-                    b.btnActionSync.text = ctx.getString(R.string.storm_sync_btn_synced)
+                    b.textSyncBadge.setBackgroundResource(R.drawable.badge_pill_emerald)
+                    b.btnActionSync.text = cleanEmoji(ctx.getString(R.string.storm_sync_btn_synced))
                     b.btnActionSync.isEnabled = false
                 }
                 AndroidSaveSyncStatus.CONFLICT -> {
-                    b.textSyncBadge.text = ctx.getString(R.string.storm_sync_badge_conflict)
+                    b.textSyncBadge.text = cleanEmoji(ctx.getString(R.string.storm_sync_badge_conflict))
                     b.textSyncBadge.setTextColor(0xFFF59E0B.toInt())
-                    b.btnActionSync.text = ctx.getString(R.string.storm_sync_btn_resolve_conflict)
+                    b.textSyncBadge.setBackgroundResource(R.drawable.badge_pill_amber)
+                    b.btnActionSync.text = cleanEmoji(ctx.getString(R.string.storm_sync_btn_resolve_conflict))
                     b.btnActionSync.isEnabled = true
                 }
                 AndroidSaveSyncStatus.LOCAL_ONLY -> {
-                    b.textSyncBadge.text = ctx.getString(R.string.storm_sync_badge_local_only)
+                    b.textSyncBadge.text = cleanEmoji(ctx.getString(R.string.storm_sync_badge_local_only))
                     b.textSyncBadge.setTextColor(0xFF3B82F6.toInt())
-                    b.btnActionSync.text = ctx.getString(R.string.storm_sync_btn_send)
+                    b.textSyncBadge.setBackgroundResource(R.drawable.badge_pill_blue)
+                    b.btnActionSync.text = cleanEmoji(ctx.getString(R.string.storm_sync_btn_send))
                     b.btnActionSync.isEnabled = true
                 }
                 AndroidSaveSyncStatus.REMOTE_ONLY -> {
-                    b.textSyncBadge.text = ctx.getString(R.string.storm_sync_badge_remote_only)
+                    b.textSyncBadge.text = cleanEmoji(ctx.getString(R.string.storm_sync_badge_remote_only))
                     b.textSyncBadge.setTextColor(0xFF8B5CF6.toInt())
-                    b.btnActionSync.text = ctx.getString(R.string.storm_sync_btn_download)
+                    b.textSyncBadge.setBackgroundResource(R.drawable.badge_pill_purple)
+                    b.btnActionSync.text = cleanEmoji(ctx.getString(R.string.storm_sync_btn_download))
                     b.btnActionSync.isEnabled = true
                 }
                 else -> {
-                    b.textSyncBadge.text = ctx.getString(R.string.storm_sync_badge_unknown)
+                    b.textSyncBadge.text = cleanEmoji(ctx.getString(R.string.storm_sync_badge_unknown))
                     b.textSyncBadge.setTextColor(0xFF94A3B8.toInt())
-                    b.btnActionSync.text = ctx.getString(R.string.storm_sync_btn_action_sync)
+                    b.textSyncBadge.setBackgroundResource(R.drawable.badge_pill_background)
+                    b.btnActionSync.text = cleanEmoji(ctx.getString(R.string.storm_sync_btn_action_sync))
                     b.btnActionSync.isEnabled = true
                 }
             }
@@ -1583,16 +1628,6 @@ class StormSaveSyncDialogFragment : DialogFragment() {
             }
         }
 
-        private fun formatSize(ctx: Context, bytes: Long): String {
-            val uB = ctx.getString(R.string.unit_b)
-            val uKb = ctx.getString(R.string.unit_kb)
-            val uMb = ctx.getString(R.string.unit_mb)
-            return when {
-                bytes <= 0L -> "0 $uB"
-                bytes < 1024L -> "$bytes $uB"
-                bytes < 1024L * 1024L -> String.format(Locale.US, "%.1f %s", bytes / 1024.0, uKb)
-                else -> String.format(Locale.US, "%.2f %s", bytes / (1024.0 * 1024.0), uMb)
-            }
-        }
+        private fun formatSize(ctx: Context, bytes: Long): String = StormSaveSyncDialogFragment.formatSize(ctx, bytes)
     }
 }

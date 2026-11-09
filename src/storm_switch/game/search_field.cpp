@@ -5,15 +5,11 @@
 #include "game/search_field.h"
 
 #include <QComboBox>
-#include <QHBoxLayout>
 #include <QKeyEvent>
-#include <QLabel>
-#include <QLineEdit>
 #include <QToolButton>
 
 #include "qt_common/config/uisettings.h"
 #include "storm_switch/common/storm_theme.h"
-#include "storm_switch/common/storm_vector_icons.h"
 
 GameListSearchField::KeyReleaseEater::KeyReleaseEater(GameList* gamelist_, QObject* parent)
     : QObject(parent), gamelist{gamelist_} {}
@@ -80,103 +76,40 @@ void GameListSearchField::setFocus() {
 GameListSearchField::GameListSearchField(GameList* parent) : QWidget{parent} {
     auto* const key_release_eater = new KeyReleaseEater(parent, this);
     layout_filter = new QHBoxLayout;
-    layout_filter->setContentsMargins(10, 6, 10, 6);
-    layout_filter->setSpacing(10);
+    layout_filter->setContentsMargins(8, 4, 8, 4);
+    layout_filter->setSpacing(8);
 
-    // 1. Recessed 3D Search Capsule (single outer capsule, transparent inner QLineEdit, zero double border)
-    search_capsule = new QWidget(this);
-    search_capsule->setObjectName(QStringLiteral("SearchCapsuleWidget"));
-    search_capsule->setCursor(Qt::IBeamCursor);
-
-    auto* capsule_layout = new QHBoxLayout(search_capsule);
-    capsule_layout->setContentsMargins(10, 3, 10, 3);
-    capsule_layout->setSpacing(8);
-
-    const auto pal = StormTheme::GetThemePalette();
-    const QColor accent_col(pal.accent.isEmpty() ? QStringLiteral("#8B5CF6") : pal.accent);
-
-    icon_search = new QLabel(search_capsule);
-    icon_search->setObjectName(QStringLiteral("SearchCapsuleIcon"));
-    icon_search->setPixmap(StormVectorIcons::CreateSearchIcon(16, 16, accent_col).pixmap(16, 16));
-    icon_search->setStyleSheet(QStringLiteral("border: none; background: transparent; padding: 0px;"));
-    capsule_layout->addWidget(icon_search);
-
-    edit_filter = new QLineEdit(search_capsule);
-    edit_filter->setObjectName(QStringLiteral("SearchCapsuleEdit"));
-    edit_filter->setFrame(false);
-    edit_filter->setClearButtonEnabled(false);
-    edit_filter->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
+    label_filter = new QLabel(this);
+    edit_filter = new QLineEdit(this);
+    edit_filter->clear();
     edit_filter->installEventFilter(key_release_eater);
-    edit_filter->setStyleSheet(QStringLiteral(
-        "QLineEdit#SearchCapsuleEdit {"
-        "  border: none !important;"
-        "  outline: none !important;"
-        "  background: transparent !important;"
-        "  color: %1;"
-        "  font-size: 13px;"
-        "  padding: 0px 2px;"
-        "}").arg(pal.textPrimary));
+    edit_filter->setClearButtonEnabled(true);
     connect(edit_filter, &QLineEdit::textChanged, parent, &GameList::OnTextChanged);
-    capsule_layout->addWidget(edit_filter, 1);
 
-    button_clear_text = new QToolButton(search_capsule);
-    button_clear_text->setObjectName(QStringLiteral("SearchCapsuleClear"));
-    button_clear_text->setIcon(StormVectorIcons::CreateClearCrossIcon(14, 14));
-    button_clear_text->setCursor(Qt::PointingHandCursor);
-    button_clear_text->setToolTip(tr("Очистить строку поиска"));
-    button_clear_text->setVisible(false);
-    button_clear_text->setStyleSheet(QStringLiteral(
-        "QToolButton#SearchCapsuleClear {"
-        "  border: none;"
-        "  background: transparent;"
-        "  padding: 2px;"
-        "  border-radius: 8px;"
-        "}"
-        "QToolButton#SearchCapsuleClear:hover {"
-        "  background-color: rgba(239, 68, 68, 0.25);"
-        "}"));
-    connect(button_clear_text, &QToolButton::clicked, edit_filter, &QLineEdit::clear);
-    connect(edit_filter, &QLineEdit::textChanged, this, [this](const QString& text) {
-        button_clear_text->setVisible(!text.trimmed().isEmpty());
-    });
-    capsule_layout->addWidget(button_clear_text);
-
-    // 2. Filter result badge
     label_filter_result = new QLabel(this);
-    label_filter_result->setStyleSheet(QStringLiteral("color: #94A3B8; font-size: 8.5pt; font-weight: 600; padding: 0 4px;"));
+    label_filter_result->setStyleSheet(QStringLiteral("color: #94A3B8; font-size: 8.5pt; font-weight: 500;"));
 
-    // 3. Sort selector combobox
+    // Visible sort selector
     sort_combobox = new QComboBox(this);
-    sort_combobox->setCursor(Qt::PointingHandCursor);
     connect(sort_combobox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int idx) {
         emit SortModeChanged(idx);
     });
 
-    // 4. View mode toggle (Grid / Tree)
+    // View mode toggle
     view_mode_toggle = new QToolButton(this);
     view_mode_toggle->setCursor(Qt::PointingHandCursor);
     connect(view_mode_toggle, &QToolButton::clicked, this, &GameListSearchField::ToggleViewModeRequested);
 
-    // 5. Close search bar button (Vector icon, 0 emoji)
     button_filter_close = new QToolButton(this);
     button_filter_close->setObjectName(QStringLiteral("FilterCloseButton"));
-    button_filter_close->setIcon(StormVectorIcons::CreateClearCrossIcon(14, 14));
+    button_filter_close->setText(QStringLiteral("✕"));
     button_filter_close->setCursor(Qt::PointingHandCursor);
-    button_filter_close->setToolTip(tr("Закрыть строку поиска"));
-    button_filter_close->setStyleSheet(QStringLiteral(
-        "QToolButton#FilterCloseButton {"
-        "  border: 1px solid rgba(239, 68, 68, 0.35);"
-        "  border-radius: 8px;"
-        "  padding: 4px;"
-        "  background: rgba(15, 23, 42, 0.50);"
-        "}"
-        "QToolButton#FilterCloseButton:hover {"
-        "  border: 1px solid #EF4444;"
-        "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #EF4444, stop:1 #B91C1C);"
-        "}"));
+    button_filter_close->setStyleSheet(
+        QStringLiteral("QToolButton#FilterCloseButton:hover { color: #FFFFFF; border: 1px solid #EF4444; background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #EF4444, stop:1 #B91C1C); }"));
     connect(button_filter_close, &QToolButton::clicked, parent, &GameList::OnFilterCloseClicked);
 
-    layout_filter->addWidget(search_capsule, 1);
+    layout_filter->addWidget(label_filter);
+    layout_filter->addWidget(edit_filter, 1);
     layout_filter->addWidget(label_filter_result);
     layout_filter->addWidget(sort_combobox);
     layout_filter->addWidget(view_mode_toggle);
@@ -189,11 +122,9 @@ GameListSearchField::GameListSearchField(GameList* parent) : QWidget{parent} {
 void GameListSearchField::UpdateViewMode(bool is_grid) {
     if (view_mode_toggle) {
         if (is_grid) {
-            view_mode_toggle->setIcon(StormVectorIcons::CreateTreeViewIcon(16, 16));
             view_mode_toggle->setText(tr("Дерево"));
             view_mode_toggle->setToolTip(tr("Переключить в режим дерева"));
         } else {
-            view_mode_toggle->setIcon(StormVectorIcons::CreateGridViewIcon(16, 16));
             view_mode_toggle->setText(tr("Сетка"));
             view_mode_toggle->setToolTip(tr("Переключить в режим сетки"));
         }
@@ -209,6 +140,7 @@ void GameListSearchField::changeEvent(QEvent* event) {
 }
 
 void GameListSearchField::RetranslateUI() {
+    label_filter->setText(tr("Фильтр:"));
     edit_filter->setPlaceholderText(tr("Поиск по названию или Title ID..."));
 
     if (total > 0) {

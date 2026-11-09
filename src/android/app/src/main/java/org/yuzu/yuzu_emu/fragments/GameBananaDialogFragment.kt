@@ -4,6 +4,8 @@
 package org.yuzu.yuzu_emu.fragments
 
 import android.view.KeyEvent
+import android.content.res.Configuration
+import android.view.Gravity
 
 import android.app.Dialog
 import android.os.Build
@@ -172,6 +174,7 @@ class GameBananaDialogFragment : DialogFragment() {
 
     override fun onStart() {
         super.onStart()
+        dialog?.let { org.yuzu.yuzu_emu.utils.StormDesignEngine.applyToDialog(it, requireContext()) }
         dialog?.setOnKeyListener { _, keyCode, event ->
             if (keyCode == KeyEvent.KEYCODE_ESCAPE && event.action == KeyEvent.ACTION_UP) {
                 dismissAllowingStateLoss()
@@ -180,16 +183,68 @@ class GameBananaDialogFragment : DialogFragment() {
                 false
             }
         }
+        applyWindowDimensions()
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        applyWindowDimensions()
+    }
+
+    private fun applyWindowDimensions() {
         dialog?.window?.let { window ->
             val dm = resources.displayMetrics
-            val isLandscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+            val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
             val width = if (isLandscape) (dm.widthPixels * 0.94).toInt() else (dm.widthPixels * 0.95).toInt()
-            val height = if (isLandscape) (dm.heightPixels * 0.92).toInt() else (dm.heightPixels * 0.88).toInt()
+            val height = if (isLandscape) (dm.heightPixels * 0.90).toInt() else (dm.heightPixels * 0.86).toInt()
             window.setLayout(width, height)
+            window.setGravity(Gravity.CENTER)
             window.setBackgroundDrawableResource(android.R.color.transparent)
             ThemeHelper.applySystemBarsTheme(window, requireContext())
         }
+
+        if (_binding != null) {
+            val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+            val spanCount = if (isLandscape) 2 else 1
+            (binding.listMods.layoutManager as? androidx.recyclerview.widget.GridLayoutManager)?.spanCount = spanCount
+
+            val density = resources.displayMetrics.density
+            binding.layoutHeader.setPadding(0, 0, 0, if (isLandscape) (2 * density).toInt() else (4 * density).toInt())
+            (binding.cardTabSwitcher.layoutParams as? ViewGroup.MarginLayoutParams)?.let { lp ->
+                lp.bottomMargin = if (isLandscape) (2 * density).toInt() else (6 * density).toInt()
+                binding.cardTabSwitcher.layoutParams = lp
+            }
+        }
     }
+
+    private fun formatFileSize(bytes: Long, isRu: Boolean): String {
+        if (bytes <= 0L) return ""
+        val oneKb = 1024.0
+        val oneMb = 1024.0 * 1024.0
+        val oneGb = 1024.0 * 1024.0 * 1024.0
+
+        return if (bytes < oneMb) {
+            val kb = bytes / oneKb
+            val formatted = if (kb < 10.0) {
+                String.format(java.util.Locale.US, "%.1f", kb)
+            } else {
+                String.format(java.util.Locale.US, "%.0f", kb)
+            }
+            val unit = if (isRu) "КБ" else "KB"
+            if (isRu) "${formatted.replace('.', ',')} $unit" else "$formatted $unit"
+        } else if (bytes < oneGb) {
+            val mb = bytes / oneMb
+            val formatted = String.format(java.util.Locale.US, "%.2f", mb)
+            val unit = if (isRu) "МБ" else "MB"
+            if (isRu) "${formatted.replace('.', ',')} $unit" else "$formatted $unit"
+        } else {
+            val gb = bytes / oneGb
+            val formatted = String.format(java.util.Locale.US, "%.2f", gb)
+            val unit = if (isRu) "ГБ" else "GB"
+            if (isRu) "${formatted.replace('.', ',')} $unit" else "$formatted $unit"
+        }
+    }
+
 
     override fun onDismiss(dialog: android.content.DialogInterface) {
         super.onDismiss(dialog)
@@ -197,6 +252,10 @@ class GameBananaDialogFragment : DialogFragment() {
     }
 
     private fun setupUI() {
+        val emojiRegex = Regex("[\\uD83C-\\uDBFF\\uDC00-\\uDFFF]+|[\\u2600-\\u27BF]|[\\u2300-\\u23FF]|[\\u2B50]|[\\u2705]|[\\u2702]|[\\u26A1]|[\\uFE0F]")
+        binding.buttonTabOnline.text = binding.buttonTabOnline.text.toString().replace(emojiRegex, "").trim()
+        binding.buttonTabInstalled.text = binding.buttonTabInstalled.text.toString().replace(emojiRegex, "").trim()
+
         val isLandscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
         val spanCount = if (isLandscape) 2 else 1
         binding.listMods.layoutManager = androidx.recyclerview.widget.GridLayoutManager(requireContext(), spanCount)
@@ -353,10 +412,15 @@ class GameBananaDialogFragment : DialogFragment() {
                 setPadding(48, 24, 48, 24)
             }
 
+            val isRu = resources.configuration.locales[0]?.language == "ru"
+            val statsText = if (isRu) {
+                "Скач.: ${mod.downloads} • Лайки: ${mod.likes} • Просм.: ${mod.views}"
+            } else {
+                "Downloads: ${mod.downloads} • Likes: ${mod.likes} • Views: ${mod.views}"
+            }
             // Info header
             val headerText = android.widget.TextView(context).apply {
-                text = "${mod.category} • ${getString(R.string.gamebanana_author, mod.submitter)}\n" +
-                       "📥 ${mod.downloads}  ❤️ ${mod.likes}  👁️ ${mod.views}"
+                text = "${mod.category} • ${getString(R.string.gamebanana_author, mod.submitter)}\n$statsText"
                 setTextColor(0xFF38BDF8.toInt())
                 textSize = 13f
                 setTypeface(null, android.graphics.Typeface.BOLD)
@@ -422,11 +486,13 @@ class GameBananaDialogFragment : DialogFragment() {
                 orientation = android.widget.LinearLayout.VERTICAL
             }
 
+            val isRuLang = resources.configuration.locales[0]?.language == "ru"
             files.forEachIndexed { index, file ->
-                val sizeMb = if (file.filesize > 0) " (${file.filesize / 1024 / 1024} MB)" else ""
+                val sizeFormatted = formatFileSize(file.filesize, isRuLang)
+                val sizeStr = if (sizeFormatted.isNotEmpty()) " ($sizeFormatted)" else ""
                 val rb = android.widget.RadioButton(context).apply {
                     id = index
-                    text = "${file.filename}$sizeMb\n${file.description.ifEmpty { mod.name }}"
+                    text = "${file.filename}$sizeStr\n${file.description.ifEmpty { mod.name }}"
                     setTextColor(0xFFF1F5F9.toInt())
                     textSize = 13f
                     isChecked = (index == 0)
@@ -625,8 +691,9 @@ class GameBananaDialogFragment : DialogFragment() {
         override fun onBindViewHolder(holder: InstalledModViewHolder, position: Int) {
             val patch = installedModsList[position]
             holder.itemBinding.title.text = patch.name
-            val hasVer = patch.version.isNotEmpty() && patch.version != "0"
-            holder.itemBinding.version.text = if (hasVer) "v${patch.version}" else ""
+            val cleanVer = patch.version.trimStart('v', 'V', ' ').trim()
+            val hasVer = cleanVer.isNotEmpty() && cleanVer != "0"
+            holder.itemBinding.version.text = if (hasVer) cleanVer else ""
             holder.itemBinding.version.isVisible = hasVer
 
             holder.itemBinding.addonSwitch.setOnCheckedChangeListener(null)

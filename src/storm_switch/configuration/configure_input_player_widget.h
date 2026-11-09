@@ -10,7 +10,6 @@
 #include <QFrame>
 #include <QPointer>
 
-#include "common/common_types.h"
 #include "common/input.h"
 #include "common/settings_input.h"
 #include "common/vector_math.h"
@@ -52,48 +51,20 @@ public:
     void UpdateInput();
 
     enum class ControllerSkin : u32 {
-        Switch2CarbonStealth = 0,
-        StormAuroraCyberOled = 1,
-        ZeldaRoyalZonai = 2,
-        MarioWonderKingdom = 3,
-        SonicSupersonicRing = 4,
-        DiabloHellfireSoulstone = 5,
-        AssassinsCreedAnimus = 6,
-        DonkeyKongBananzaGold = 7,
-        MetroidDreadChozo = 8,
-        CastlevaniaCrimsonNocturne = 9,
-        XenobladeAegisCore = 10,
-        SmashBrosChampionship = 11,
-        Splatoon3TriStringer = 12,
-        MonsterHunterMagnamalo = 13,
-        PokemonMiraidonKoraidon = 14,
-        HollowKnightSilksong = 15,
-        Persona5PhantomThieves = 16,
-        DoomPraetorSlayer = 17,
-        AnimalCrossingPastel = 18,
-        RetroSnes35th = 19,
-        Count = 20,
-        AutoByGame = 100,
-
-        // Legacy compatibility aliases
-        ClassicBlack = Switch2CarbonStealth,
-        CyberStorm = StormAuroraCyberOled,
-        ZeldaTotk = ZeldaRoyalZonai,
-        Xenoblade2 = XenobladeAegisCore,
-        SmashBrosUltimate = SmashBrosChampionship,
-        Splatoon3 = Splatoon3TriStringer,
-        MonsterHunterRise = MonsterHunterMagnamalo,
-        PokemonScarletViolet = PokemonMiraidonKoraidon,
+        ClassicBlack = 0,
+        Xenoblade2,
+        SmashBrosUltimate,
+        ZeldaTotk,
+        Splatoon3,
+        MonsterHunterRise,
+        PokemonScarletViolet,
+        CyberStorm,
+        Count
     };
 
     // Sets controller appearance skin edition
-    void SetSkin(ControllerSkin skin, u64 program_id = 0, const QString& title = QString{});
+    void SetSkin(ControllerSkin skin);
     ControllerSkin GetSkin() const { return current_skin; }
-    ControllerSkin GetConfiguredSkin() const { return configured_skin; }
-
-    static ControllerSkin ResolveSkinForProgramId(u64 program_id, const QString& title = QString{});
-    static QString GetSkinName(ControllerSkin skin, bool localized = true);
-    static QString FormatLocaleNumber(double val, int decimals = 1);
 
     // Resets 3D perspective orientation and zoom
     void ResetView();
@@ -301,10 +272,7 @@ private:
     Core::HID::BatteryValues battery_values{};
     Core::HID::MotionState motion_values{};
 
-    ControllerSkin current_skin{ControllerSkin::Switch2CarbonStealth};
-    ControllerSkin configured_skin{ControllerSkin::Switch2CarbonStealth};
-    u64 active_program_id{0};
-    QString active_title{};
+    ControllerSkin current_skin{ControllerSkin::ClassicBlack};
     float rot_x{0.0f};
     float rot_y{0.0f};
     float zoom{1.0f};

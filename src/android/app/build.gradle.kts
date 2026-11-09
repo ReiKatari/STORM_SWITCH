@@ -149,9 +149,9 @@ android {
 
         targetSdk = 36
 
-        versionName = "20.0.0"
+        versionName = "17.2.0"
 
-        versionCode = 34300000
+        versionCode = 34300172
 
 
 
@@ -176,6 +176,8 @@ android {
                         "-DENABLE_WEB_SERVICE=1", // Enable web service
 
                         "-DANDROID_ARM_NEON=true", // cryptopp requires Neon to work
+
+                        "-DCMAKE_SHARED_LINKER_FLAGS=-Wl,-z,max-page-size=16384",
 
                         "-DYUZU_USE_CPM=ON",
 
@@ -933,7 +935,7 @@ fun getGitVersion(): String {
 
     }
 
-    return "17.1.0"
+    return "17.2.0"
 
 }
 

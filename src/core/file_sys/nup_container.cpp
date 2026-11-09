@@ -197,17 +197,11 @@ public:
         if (scratch.empty()) {
             return 0;
         }
-        {
-            std::scoped_lock lock{cache->mutex};
-            if (cache_enabled) {
-                cache->Insert(cache_index, scratch);
-            }
-            if (const auto* cached = cache->Find(cache_index)) {
-                std::memcpy(data, cached->data() + offset, length);
-                return length;
-            }
-        }
         std::memcpy(data, scratch.data() + offset, length);
+        if (cache_enabled) {
+            std::scoped_lock lock{cache->mutex};
+            cache->Insert(cache_index, std::move(scratch));
+        }
         return length;
     }
 
@@ -221,6 +215,25 @@ public:
     }
 
 private:
+    struct ThreadLocalZstdDCtx {
+        ZSTD_DCtx* ctx{nullptr};
+        ThreadLocalZstdDCtx() {
+            ctx = ZSTD_createDCtx();
+        }
+        ~ThreadLocalZstdDCtx() {
+            if (ctx) {
+                ZSTD_freeDCtx(ctx);
+                ctx = nullptr;
+            }
+        }
+        ZSTD_DCtx* Get() {
+            if (!ctx) {
+                ctx = ZSTD_createDCtx();
+            }
+            return ctx;
+        }
+    };
+
     std::vector<u8> Decompress() const {
         if (extent_size > backing->GetSize() || extent_offset > backing->GetSize() - extent_size) {
             return {};
@@ -231,8 +244,11 @@ private:
             return {};
         }
         std::vector<u8> out(static_cast<std::size_t>(uncompressed_size));
-        const std::size_t result =
-            ZSTD_decompress(out.data(), out.size(), compressed.data(), compressed.size());
+        static thread_local ThreadLocalZstdDCtx tl_dctx;
+        ZSTD_DCtx* const dctx = tl_dctx.Get();
+        const std::size_t result = dctx
+            ? ZSTD_decompressDCtx(dctx, out.data(), out.size(), compressed.data(), compressed.size())
+            : ZSTD_decompress(out.data(), out.size(), compressed.data(), compressed.size());
         if (ZSTD_isError(result) || result != out.size()) {
             LOG_ERROR(Loader, "NUP zstd decompression failed for {}", name);
             return {};

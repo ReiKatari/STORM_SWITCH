@@ -1,7 +1,9 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources xmlns:ns0="http://schemas.android.com/tools" ns0:ignore="MissingTranslation">
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+
+    <!-- General application strings -->
     <string name="app_name" translatable="false">STORM SWITCH</string>
-    <string name="app_disclaimer">This software will run games for the Nintendo Switch game console. No game titles or keys are included.&lt;br /&gt;&lt;br /&gt;Before you begin, please locate your &lt;b&gt; prod.keys &lt;/b&gt; file on your device storage.&lt;br /&gt;&lt;br /&gt;&lt;a href=\"https://yuzu-mirror.github.io/help/quickstart\"&gt;Learn more&lt;/a&gt;</string>
+    <string name="app_disclaimer">This software will run games for the Nintendo Switch game console. No game titles or keys are included.&lt;br /&gt;&lt;br /&gt;Before you begin, please locate your <![CDATA[<b> prod.keys </b>]]> file on your device storage.&lt;br /&gt;&lt;br /&gt;<![CDATA[<a href=\"https://yuzu-mirror.github.io/help/quickstart\">Learn more</a>]]></string>
     <string name="notice_notification_channel_name">Notices and errors</string>
     <string name="notice_notification_channel_id" translatable="false">noticesAndErrors</string>
     <string name="notice_notification_channel_description">Shows notifications when something goes wrong.</string>
@@ -13,12 +15,17 @@
     <string name="seconds">Seconds</string>
     <string name="copy_to_clipboard">Copy Info</string>
     <string name="view_logs">View logs</string>
+
+    <!-- Spinbox strings -->
     <string name="increment">Increment</string>
     <string name="decrement">Decrement</string>
     <string name="value_too_low">Value must be at least %1$d</string>
     <string name="value_too_high">Value must be at most %1$d</string>
     <string name="invalid_value">Invalid value</string>
+
     <string name="using_per_game_config">Using Per-Game Config</string>
+
+    <!-- Input Overlay -->
     <string name="show_input_overlay">Show Input Overlay</string>
     <string name="show_input_overlay_description">Display touch controls overlay during emulation</string>
     <string name="overlay_snap_to_grid">Snap to Grid</string>
@@ -33,14 +40,19 @@
     <string name="hide_overlay_on_controller_input_description">Automatically hide the touch controls overlay when a physical controller is used. Overlay reappears when controller is disconnected.</string>
     <string name="invert_confirm_back_controller_buttons">Invert Confirm/Back Controller Buttons</string>
     <string name="invert_confirm_back_controller_buttons_description">Swap Android Confirm and Back button handling to match both Switch and Xbox styles while using the app UI.</string>
+
     <string name="input_overlay_options">Input Overlay</string>
     <string name="input_overlay_options_description">Configure on-screen controls</string>
     <string name="edit_overlay_layout">Edit Overlay Layout</string>
     <string name="edit_overlay_layout_description">Adjust the position and scale of on-screen controls</string>
+
+
+    <!-- Stats Overlay settings -->
     <string name="process_ram">Process RAM: %1$d MB</string>
     <string name="shaders_prefix">Building</string>
     <string name="shaders_suffix">Shader(s)</string>
     <string name="charging">(Charging)</string>
+
     <string name="system_info_label">System:</string>
     <string name="show_stats_overlay">Show Performance Stats Overlay</string>
     <string name="stats_overlay_customization">Customization</string>
@@ -73,18 +85,24 @@
     <string name="overlay_position_center_bottom">Center Bottom</string>
     <string name="perf_overlay_background">Overlay Background</string>
     <string name="perf_overlay_background_description">Adds a background behind the overlay for easier reading</string>
+
+    <!-- Device Overlay settings -->
     <string name="show_soc_overlay">Show Device Info Overlay</string>
     <string name="enable_soc_overlay">Enable Device Overlay</string>
     <string name="soc_overlay_options">Device Overlay</string>
     <string name="soc_overlay_options_description">Configure what information is shown in the device overlay</string>
+
     <string name="show_build_id">Show Build ID</string>
     <string name="show_driver_version">Show Driver Version</string>
     <string name="show_device_model">Show Device Model</string>
     <string name="show_gpu_model">Show GPU Model</string>
     <string name="show_soc_model">Show SoC Model</string>
     <string name="show_fw_version">Show Firmware Version</string>
+
+    <!-- Eden\'s Veil -->
     <string name="buffer_reorder_disable">Disable Buffer Reorder</string>
     <string name="buffer_reorder_disable_description">When checked, disables reordering of mapped memory uploads which allows to associate uploads with specific draws. May reduce performance in some cases.</string>
+
     <string name="use_sync_core">Synchronize Core Speed</string>
     <string name="use_sync_core_description">Synchronize the core tick speed to the maximum speed percentage to improve performance without altering the game\'s actual speed.</string>
     <string name="cpuopt_unsafe_host_mmu">Enable Host MMU Emulation</string>
@@ -92,12 +110,16 @@
     <string name="debug_knobs">Debug knobs</string>
     <string name="debug_knobs_description">For development use only.</string>
     <string name="debug_knobs_hint">0 to 65535</string>
+
+    <!-- NVDEC Emulation -->
     <string name="nvdec_emulation">NVDEC Emulation</string>
     <string name="nvdec_emulation_description">Select how video decoding (NVDEC) is handled during cutscenes and intros.</string>
     <string name="nvdec_emulation_cpu" translatable="false">CPU</string>
     <string name="nvdec_emulation_gpu" translatable="false">GPU</string>
     <string name="nvdec_emulation_none">None</string>
     <string name="nvdec_emulation_hybrid">Hybrid</string>
+
+    <!-- Auto-Correction and Thermal Cooling -->
     <string name="auto_correction_title">Auto-correction</string>
     <string name="auto_correction_description">Dynamic thermal cooling and FPS boost for overheating and frame drops</string>
     <string name="auto_correction_dialog_title">Thermal cooling and FPS boost</string>
@@ -113,9 +135,13 @@
     <string name="auto_correction_no_profile">Universal high performance profile is active</string>
     <string name="auto_correction_issues_content">• High GPU thermal load: high resolution rendering heats SoC above 40°C\n• Thermal throttling: SoC clock scaling triggers when device temperature exceeds 40°C, dropping FPS below 30\n• Memory bus saturation: uncompressed ASTC textures increase DRAM bandwidth and heat dissipation\n• Pipeline stalls: reactive flushing and strict synchronization stall render threads</string>
     <string name="auto_correction_recommendations_content">✓ Resolution: 0.75X (540p / 810p) (reduces SoC temperature by 4–6°C and boosts FPS)\n✓ ASTC Recompression: Uncompressed (maximum texture quality with zero missing textures)\n✓ GPU Timings: Boost (eliminates GPU command latency and keeps stable 30+ FPS)\n✓ Reactive Flushing: Disabled (reduces GPU load and micro-stutter)\n✓ Host MMU Emulation (Fastmem): Enabled (maximum CPU performance with reduced heat)\n✓ Eco Thermal Mode and Pacing: Enabled (prevents SoC thermal throttling spikes)\n✓ Anisotropic Filtering: Default (eliminates redundant texture sampling overhead)</string>
+
+    <!-- Optimize SPIRV output -->
     <string name="never">Never</string>
     <string name="on_load">On Load</string>
     <string name="always">Always</string>
+
+    <!-- Multiplayer -->
     <string name="multiplayer">Multiplayer</string>
     <string name="multiplayer_description">Host your own game room or join an existing one to play with people</string>
     <string name="multiplayer_create_room">Create</string>
@@ -187,10 +213,10 @@
     <string name="multiplayer_lobby_type">Lobby Type</string>
     <string name="multiplayer_room_name_error">Must be between 3 and 20 characters</string>
     <string name="multiplayer_required">Required</string>
-    <string name="multiplayer_token_required">Web Token required, go to Advanced Settings -&gt; System -&gt; Network</string>
+    <string name="multiplayer_token_required">Web Token required, go to Advanced Settings -> System -> Network</string>
     <string name="multiplayer_ip_error">Invalid IP format</string>
     <string name="multiplayer_username_error">Must be between 4–20 characters, and contain alphanumeric characters, periods, dashes, underscores, and spaces only</string>
-    <string name="multiplayer_nickname_invalid">Username invalid, ensure it is set properly in System -&gt; Network</string>
+    <string name="multiplayer_nickname_invalid">Username invalid, ensure it is set properly in System -> Network</string>
     <string name="multiplayer_token_error">Must be 48 characters, and lowercase a-z only</string>
     <string name="multiplayer_port_error">Must be between 1 and 65535</string>
     <string name="cancel">Cancel</string>
@@ -199,21 +225,26 @@
     <string name="room_list">Room List</string>
     <string name="multiplayer_public_visibility">Public</string>
     <string name="multiplayer_unlisted_visibility">Unlisted</string>
+
+    <!-- Setup strings -->
     <string name="welcome">Welcome!</string>
-    <string name="welcome_description">Learn how to setup &lt;b&gt;Eden&lt;/b&gt; and jump into emulation.</string>
+    <string name="welcome_description">Learn how to setup &lt;b>Eden&lt;/b> and jump into emulation.</string>
     <string name="get_started">Get started</string>
     <string name="keys">Keys</string>
-    <string name="keys_description">Select your &lt;b&gt;prod.keys&lt;/b&gt; file with the button below.</string>
+    <string name="keys_description">Select your &lt;b>prod.keys&lt;/b> file with the button below.</string>
     <string name="firmware">Firmware</string>
-    <string name="firmware_description">Select your &lt;b&gt;firmware.zip&lt;/b&gt; file with the button below.</string>
+    <string name="firmware_description">Select your &lt;b>firmware.zip&lt;/b> file with the button below.</string>
     <string name="games">Games</string>
-    <string name="games_description">Select your &lt;b&gt;Games&lt;/b&gt; folder with the button below.</string>
+    <string name="games_description">Select your &lt;b>Games&lt;/b> folder with the button below.</string>
     <string name="done">Done</string>
     <string name="done_description">You\'re all set.\nEnjoy your games!</string>
     <string name="next">Next</string>
     <string name="back">Back</string>
     <string name="add_games">Add Games</string>
     <string name="step_complete">Complete!</string>
+
+    <!-- Home strings -->
+
     <string name="alphabetical">Alphabetical</string>
     <string name="view_list">List</string>
     <string name="view_grid">Grid</string>
@@ -280,6 +311,7 @@
     <string name="memory_info">Memory Information</string>
     <string name="total_memory">Total Memory</string>
     <string name="soc">SOC:</string>
+
     <string name="warning_help">Help</string>
     <string name="warning">Warning</string>
     <string name="warning_skip">Skip</string>
@@ -417,25 +449,31 @@
     <string name="no_save_data_found">No save data found</string>
     <string name="verify_installed_content">Verify installed content</string>
     <string name="verify_installed_content_description">Checks all installed content for corruption</string>
+
     <string name="keys_missing">Encryption keys are missing</string>
     <string name="keys_missing_description">Firmware and retail games cannot be decrypted</string>
     <string name="keys_missing_help">https://yuzu-mirror.github.io/help/quickstart/#dumping-decryption-keys</string>
+
     <string name="uninstall_firmware">Uninstall firmware</string>
     <string name="uninstall_firmware_description">Uninstalling the firmware will remove it from the device and may affect game compatibility.</string>
     <string name="firmware_uninstalling">Uninstalling firmware</string>
     <string name="firmware_uninstalled_success">Firmware uninstalled successfully</string>
+
+
     <string name="keys_failed">Failed to Install Keys</string>
     <string name="keys_install_success">Keys successfully installed</string>
     <string name="error_keys_copy_failed">One or more keys failed to copy.</string>
     <string name="error_keys_invalid_filename">Verify your keys file has a .keys extension and try again.</string>
     <string name="error_keys_failed_init">Keys failed to initialize. Check that your dumping tools are up to date and re-dump keys.</string>
+
+    <!-- Applet launcher strings -->
     <string name="qlaunch_applet">Qlaunch</string>
     <string name="qlaunch_description">Launch applications from the system home screen</string>
     <string name="applets">Applet launcher</string>
     <string name="applets_description">Launch system applets using installed firmware</string>
     <string name="applets_error_firmware">Firmware not installed</string>
     <string name="applets_error_applet">Applet not available</string>
-    <string name="applets_error_description">Please ensure your &lt;a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-prodkeys-and-titlekeys\"&gt;prod.keys&lt;/a&gt; file and &lt;a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-system-firmware\"&gt;firmware&lt;/a&gt; are installed and try again.</string>
+    <string name="applets_error_description"><![CDATA[Please ensure your <a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-prodkeys-and-titlekeys\">prod.keys</a> file and <a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-system-firmware\">firmware</a> are installed and try again.]]></string>
     <string name="album_applet">Album</string>
     <string name="album_applet_description">See images stored in the user screenshots folder with the system photo viewer</string>
     <string name="mii_edit_applet">Mii edit</string>
@@ -447,6 +485,8 @@
     <string name="cabinet_game_data_eraser">Game data eraser</string>
     <string name="cabinet_restorer">Restorer</string>
     <string name="cabinet_formatter">Formatter</string>
+
+    <!-- About screen strings -->
     <string name="gaia_is_not_real">Gaia isn\'t real</string>
     <string name="copied_to_clipboard">Copied to clipboard</string>
     <string name="about_app_description">STORM SWITCH — Advanced High-Performance Fork of the Eden Nintendo Switch Emulator</string>
@@ -473,6 +513,8 @@
     <string name="x_link" translatable="false">https://nitter.poast.org/edenemuofficial</string>
     <string name="website_link" translatable="false">https://eden-emulator.github.io/</string>
     <string name="github_link" translatable="false">https://github.com/ReiKatari/STORM_EDEN</string>
+
+    <!-- General settings strings -->
     <string name="frame_limit_enable">Limit speed</string>
     <string name="frame_limit_enable_description">Limits emulation speed to a specified percentage of normal speed.</string>
     <string name="frame_limit_slider">Limit speed percent</string>
@@ -484,8 +526,11 @@
     <string name="cpu_backend">CPU backend</string>
     <string name="cpu_accuracy">CPU accuracy</string>
     <string name="value_with_units">%1$s%2$s</string>
+
     <string name="program_args">Homebrew Args</string>
     <string name="program_args_description">Command-line arguments passed to homebrew at launch (e.g. -noglsl).</string>
+
+    <!-- System settings strings -->
     <string name="device_name">Device name</string>
     <string name="use_docked_mode">Docked Mode</string>
     <string name="use_docked_mode_description">Increases resolution, decreasing performance. Handheld Mode is used when disabled, lowering resolution and increasing performance.</string>
@@ -496,6 +541,8 @@
     <string name="use_custom_rtc">Custom RTC</string>
     <string name="use_custom_rtc_description">Allows you to set a custom real-time clock separate from your current system time.</string>
     <string name="set_custom_rtc">Set custom RTC</string>
+
+    <!-- CPU -->
     <string name="fast_cpu_time">CPU Clocks</string>
     <string name="fast_cpu_time_description">Raises the clock the emulated CPU reports, which removes some FPS limiters. Weaker CPUs may see reduced performance, and certain games may behave improperly.</string>
     <string name="custom_cpu_ticks">Custom CPU Ticks</string>
@@ -503,7 +550,10 @@
     <string name="cpu_ticks">Ticks</string>
     <string name="memory_layout">DRAM Size (Console Memory Layout)</string>
     <string name="memory_layout_description">(EXPERIMENTAL) Emulated Switch DRAM memory size: 4 / 6 / 8 / 12 GB. Increasing DRAM helps with demanding games, high-resolution texture packs, and mods. Only works on Dynarmic (JIT) and requires sufficient device RAM.</string>
+
     <string name="generate">Generate</string>
+
+    <!-- Network settings strings -->
     <string name="web_token">Web Token</string>
     <string name="web_token_description">Web token used for creating public lobbies. It is a 48-character string containing only lowercase a-z.</string>
     <string name="web_username">Web Username</string>
@@ -513,13 +563,18 @@
     <string name="nx2_online_server_description">Stand-in loopback or LAN server IP address (e.g. 127.0.0.1) for Switch 2 NPLN and Network Tests (playDB-CNT).</string>
     <string name="nx2_online_hosts">Switch 2 Online Host Masks</string>
     <string name="nx2_online_hosts_description">Comma-separated domain patterns redirected to the stand-in server (e.g. *.fromsoftware-game.net,*.srv.nintendo.net,*.npln.srv.nintendo.net).</string>
+
+    <!-- Graphics settings strings -->
     <string name="renderer_resolution">Resolution (Handheld/Docked)</string>
     <string name="renderer_vsync">VSync mode</string>
     <string name="renderer_scaling_filter">Window adapting filter</string>
     <string name="fsr_sharpness">FSR/SGSR sharpness</string>
     <string name="fsr_sharpness_description">Determines how sharpened the image will look while using FSR or SGSR filters</string>
     <string name="renderer_anti_aliasing">Anti-aliasing method</string>
+
+
     <string name="advanced">Advanced</string>
+
     <string name="renderer_accuracy">GPU Mode</string>
     <string name="renderer_accuracy_description">Controls the GPU emulation mode. Most games render fine with Fast, but Accurate is still required for some. Particles tend to only render correctly with Accurate mode.</string>
     <string name="dma_accuracy">DMA Accuracy</string>
@@ -538,6 +593,7 @@
     <string name="astc_recompression_bc1">BC1 (Low Quality / Max RAM Savings)</string>
     <string name="astc_recompression_bc3" formatted="false">BC3 (Medium Quality / 50% RAM Savings)</string>
     <string name="astc_recompression_bc5">BC5 (High Quality for Normals)</string>
+
     <string name="sync_memory_operations">Sync Memory Operations</string>
     <string name="sync_memory_operations_description">Ensures data consistency between compute and memory operations. This option should fix issues in some games, but may also reduce performance in some cases. Unreal Engine 4 games often see the most significant changes thereof.</string>
     <string name="use_disk_shader_cache">Disk shader cache</string>
@@ -556,6 +612,7 @@
     <string name="enable_gpu_buffer_readback_description">Preserves GPU-modified buffer data by reading it back before uploads. Some games require this to render certain effects properly. May cause issues if the hardware cannot handle the additional workload.</string>
     <string name="use_optimized_vertex_buffers">Optimized Vertex Buffers</string>
     <string name="use_optimized_vertex_buffers_description">Enables optimized vertex buffer binding for improved performance. Requires Mesa 26.0+ Turnip drivers/ QCOM drivers. Will crash on older Turnip drivers (25.3 and below).</string>
+
     <string name="renderer_early_release_fences">Release Fences Early</string>
     <string name="renderer_early_release_fences_description">Prevents 0 FPS deadlocks in games like Ori 2, DKCR:HD, Subnautica Below Zero by minimizing frame wait latency.</string>
     <string name="renderer_optimize_spirv_output">Optimize SPIR-V Output</string>
@@ -564,7 +621,9 @@
     <string name="enable_frame_skipping_description">Skips intermediate non-critical frames during rendering dips, maintaining smooth gameplay speed and lower temperatures.</string>
     <string name="enable_frame_interpolation">Enable Frame Interpolation</string>
     <string name="enable_frame_interpolation_description">Smooths out frame transitions by interpolating consecutive frames.</string>
+
     <string name="hacks">Hacks</string>
+
     <string name="fast_gpu_time">GPU Clocks</string>
     <string name="fast_gpu_time_description">Makes the game believe GPU work finishes faster than it does, so it stops lowering resolution and render distance to fit the Switch\'s clocks.</string>
     <string name="skip_cpu_inner_invalidation">Skip CPU Inner Invalidation</string>
@@ -588,7 +647,10 @@
     <string name="gpu_unswizzle_chunk_size">GPU Unswizzle Chunk Size</string>
     <string name="gpu_unswizzle_chunk_size_description">Defines the number of depth slices processed per batch for 3D textures. Increasing this improves throughput efficiency on powerful GPUs but may cause stuttering or driver timeouts on weaker hardware.</string>
     <string name="gpu_unswizzle_default_button">Default</string>
+
+
     <string name="extensions">Extensions</string>
+
     <string name="dyna_state">Extended Dynamic State</string>
     <string name="dyna_state_description">Controls the number of features that can be used in ExtendedDynamicState (EDS). The higher value will allow to reduce the amount of pipeline compilations based on the dynamic state supported by driver.</string>
     <string name="disabled">Disabled</string>
@@ -596,17 +658,24 @@
     <string name="vertex_input_dynamic_state_description">Enabling this feature allows for more flexible vertex input handling, potentially reducing pipeline compilation time in vertex/buffer.</string>
     <string name="sample_shading_fraction">Sample Shading</string>
     <string name="sample_shading_fraction_description">Allows the fragment shader to execute per sample in a multi-sampled fragment instead once per fragment. Improves graphics quality at the cost of some performance.</string>
+
+
     <string name="display">Display</string>
+
     <string name="renderer_screen_layout">Orientation</string>
     <string name="renderer_aspect_ratio">Aspect ratio</string>
     <string name="vertical_alignment">Vertical alignment</string>
     <string name="picture_in_picture">Picture in Picture</string>
     <string name="picture_in_picture_description">Minimize window when placed in the background</string>
+
     <string name="warning_resolution">Resolution scaling to 2x or higher is known to cause issues, and may result in significant slowdowns of your device.</string>
+
+    <!-- Debug settings strings -->
     <string name="cpu">CPU</string>
     <string name="clocks">Clocks</string>
     <string name="use_auto_stub">Use Auto Stub</string>
     <string name="use_auto_stub_description">Automatically stub missing services and functions. This may improve compatibility but can cause crashes and stability issues.</string>
+
     <string name="gpu">GPU</string>
     <string name="renderer_api">API</string>
     <string name="renderer_debug">Graphics debugging</string>
@@ -614,9 +683,12 @@
     <string name="patch_old_qcom_drivers">BCn Texture Patching</string>
     <string name="patch_old_qcom_drivers_description">Override automatic BCn texture format detection on Adreno GPUs. Normally auto-detected based on Android version (enabled on API 28+).</string>
     <string name="fastmem">Fastmem</string>
+
     <string name="log">Logging</string>
     <string name="flush_by_line">Flush debug logs by line</string>
     <string name="flush_by_line_description">Flushes debugging logs on each line written, making debugging easier in cases of crashing or freezing.</string>
+
+    <!-- GPU Logging strings -->
     <string name="gpu_logging_header">GPU Logging</string>
     <string name="gpu_log_level">Log Level</string>
     <string name="gpu_log_level_description">Detail level for GPU logs (higher = more detail, more overhead)</string>
@@ -640,10 +712,15 @@
     <string name="gpu_log_ring_buffer_size">Ring Buffer Size</string>
     <string name="gpu_log_ring_buffer_size_description">Number of recent Vulkan calls to track (default: 512)</string>
     <string name="gpu_log_ring_buffer_size_hint">64 to 4096 entries</string>
+
     <string name="general">General</string>
+
+    <!-- Audio settings strings -->
     <string name="audio_output_engine">Output engine</string>
     <string name="audio_volume">Volume</string>
     <string name="audio_volume_description">Specifies the volume of audio output.</string>
+
+    <!-- Input strings -->
     <string name="buttons">Buttons</string>
     <string name="button_a" translatable="false">A</string>
     <string name="button_b" translatable="false">B</string>
@@ -726,6 +803,8 @@
     <string name="failed_to_save_profile">Failed to save profile</string>
     <string name="reset_mapping">Reset mappings</string>
     <string name="reset_mapping_description">Are you sure that you want to reset all mappings for this controller to default? This cannot be undone.</string>
+
+    <!-- Miscellaneous -->
     <string name="slider_default">Default</string>
     <string name="default_string">Default</string>
     <string name="loading">Loading…</string>
@@ -761,6 +840,8 @@
     <string name="confirm">Confirm</string>
     <string name="load">Load</string>
     <string name="save">Save</string>
+
+    <!-- GPU driver installation -->
     <string name="select_gpu_driver_default">Default</string>
     <string name="select_gpu_driver_error">Invalid driver selected</string>
     <string name="driver_already_installed">Driver already installed</string>
@@ -772,6 +853,8 @@
     <string name="system_gpu_driver">System GPU driver</string>
     <string name="menu_driver_use_global">Use global driver</string>
     <string name="installing_driver">Installing driver…</string>
+
+    <!-- GPU driver fetcher -->
     <string name="show_releases">Show Releases</string>
     <string name="failed_to_fetch">Failed to fetch</string>
     <string name="error_during_fetch">Error during Fetch</string>
@@ -790,6 +873,8 @@
     <string name="gpu_model">GPU Model</string>
     <string name="unsupported_gpu">Unsupported GPU</string>
     <string name="unsupported_gpu_warning">Your GPU does not support driver injection. Attempting to set custom drivers is not recommended.</string>
+
+    <!-- Preferences Screen -->
     <string name="preferences_settings">Settings</string>
     <string name="preferences_system">System</string>
     <string name="preferences_system_description">Docked mode, region, language</string>
@@ -798,7 +883,7 @@
     <string name="quick_settings">Quick settings</string>
     <string name="enable_quick_settings">Quick settings</string>
     <string name="enable_quick_settings_description">Access quick settings during gameplay via three-finger upward swipe or in-game menu</string>
-    <string name="quick_settings_gesture_hint">💡 Quick settings: 3-finger swipe up</string>
+    <string name="quick_settings_gesture_hint">Quick settings: 3-finger swipe up</string>
     <string name="preferences_audio">Audio</string>
     <string name="preferences_audio_description">Output engine, volume</string>
     <string name="preferences_controls">Controls</string>
@@ -808,6 +893,8 @@
     <string name="preferences_debug_description">CPU/GPU debugging, graphics API, fastmem</string>
     <string name="preferences_custom_paths">Custom Paths</string>
     <string name="preferences_custom_paths_description">Save data directory</string>
+
+    <!-- Custom Paths settings -->
     <string name="custom_save_directory">Save Data Directory</string>
     <string name="custom_save_directory_description">Set a custom path for save data storage</string>
     <string name="reset_to_nand">Reset to Default</string>
@@ -825,6 +912,8 @@
     <string name="custom_sdmc_directory_description">Set a custom path for virtual SD card storage</string>
     <string name="path_set">Path set successfully</string>
     <string name="skip_migration">Skip</string>
+
+    <!-- Game properties -->
     <string name="info">Info</string>
     <string name="info_description">Program ID, developer, version</string>
     <string name="per_game_settings">Per-game settings</string>
@@ -869,8 +958,10 @@
     <string name="updates_and_dlc">Updates and DLC</string>
     <string name="mods_and_cheats">Mods and cheats</string>
     <string name="addon_notice">Important addon notice</string>
+    <!-- \"cheats/" "romfs/" and \"exefs/ should not be translated -->
     <string name="addon_notice_description">In order to install mods and cheats, you must select a folder that contains a cheats/, romfs/, or exefs/ directory. We can\'t verify if these will be compatible with your game so be careful!</string>
     <string name="invalid_directory">Invalid directory</string>
+    <!-- \"cheats/" "romfs/" and \"exefs/ should not be translated -->
     <string name="invalid_directory_description">Please make sure that the directory you selected contains a cheats/, romfs/, or exefs/ folder and try again.</string>
     <string name="addon_installed_successfully">Addon installed successfully</string>
     <string name="verifying_content">Verifying content…</string>
@@ -890,14 +981,19 @@
     <string name="import_config">Import Config</string>
     <string name="export_config">Export Config</string>
     <string name="share_config_failed">Failed to share configuration file</string>
+
+    <!-- ROM loading errors -->
     <string name="loader_error_encrypted">Your ROM is encrypted</string>
-    <string name="loader_error_encrypted_roms_description">Please follow the guides to redump your &lt;a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-physical-titles-game-cards\"&gt;game cartridges&lt;/a&gt; or &lt;a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-digital-titles-eshop\"&gt;installed titles&lt;/a&gt;.</string>
-    <string name="loader_error_encrypted_keys_description">Please ensure your &lt;a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-prodkeys-and-titlekeys\"&gt;prod.keys&lt;/a&gt; file is installed so that games can be decrypted.</string>
+    <string name="loader_error_encrypted_roms_description"><![CDATA[Please follow the guides to redump your <a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-physical-titles-game-cards\">game cartridges</a> or <a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-digital-titles-eshop\">installed titles</a>.]]></string>
+    <string name="loader_error_encrypted_keys_description"><![CDATA[Please ensure your <a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-prodkeys-and-titlekeys\">prod.keys</a> file is installed so that games can be decrypted.]]></string>
     <string name="loader_error_video_core">An error occurred initializing the video core</string>
     <string name="loader_error_video_core_description">This is usually caused by an incompatible GPU driver. Installing a custom GPU driver may resolve this problem.</string>
     <string name="loader_error_file_not_found">ROM file does not exist</string>
+
     <string name="loader_requires_firmware">Game Requires Firmware</string>
-    <string name="loader_requires_firmware_description">The game you are trying to launch requires firmware to boot or to get past the opening menu. Please &lt;a href=\"https://yuzu-mirror.github.io/help/quickstart\"&gt; dump and install firmware&lt;/a&gt;, or press \"OK\" to launch anyways.</string>
+    <string name="loader_requires_firmware_description"><![CDATA[The game you are trying to launch requires firmware to boot or to get past the opening menu. Please <a href=\"https://yuzu-mirror.github.io/help/quickstart\"> dump and install firmware</a>, or press \"OK\" to launch anyways.]]></string>
+
+    <!-- Intent Launch strings -->
     <string name="searching_for_game">Searching for game...</string>
     <string name="game_not_found_for_title_id">Game not found for Title ID: %1$s</string>
     <string name="custom_settings_failed_title">Custom Settings Failed</string>
@@ -912,6 +1008,8 @@
     <string name="custom_intent_launch_message">Would you like to launch %1$s?</string>
     <string name="custom_intent_launch_title">Launch Game</string>
     <string name="launch">Launch</string>
+
+    <!-- Custom Config strings -->
     <string name="config_write_failed">Failed to write configuration file</string>
     <string name="config_apply_failed">Failed to apply configuration</string>
     <string name="config_already_exists_title">Configuration Already Exists</string>
@@ -919,6 +1017,8 @@
     <string name="config_exists_prompt">Checking for existing configuration...</string>
     <string name="overwrite_cancelled">Overwrite cancelled</string>
     <string name="overwrite">Overwrite</string>
+
+    <!-- Driver strings -->
     <string name="driver_not_found">Required driver not installed: %s</string>
     <string name="invalid_driver_file">Invalid driver file: %s</string>
     <string name="network_unavailable">No network connection available. Please check your internet connection and try again.</string>
@@ -926,6 +1026,8 @@
     <string name="driver_missing_message">The game configuration requires GPU driver \"%s\" which is not installed on your device.\n\nWould you like to download and install it now?</string>
     <string name="driver_download_cancelled">Driver download cancelled. The game cannot be launched without the required driver.</string>
     <string name="download">Download</string>
+
+    <!-- Emulation Menu -->
     <string name="emulation_exit">Exit emulation</string>
     <string name="emulation_done">Done</string>
     <string name="emulation_toggle_controls">Toggle controls</string>
@@ -950,6 +1052,8 @@
     <string name="unlock_drawer">Unlock drawer</string>
     <string name="reset">Reset</string>
     <string name="game_fix_manual_override_warning">[!] Manual settings prioritized: %s. Auto-fix partially overridden.</string>
+
+    <!-- Amiibo -->
     <string name="amiibo_title">Amiibo</string>
     <string name="amiibo_removed_message">The current amiibo has been removed</string>
     <string name="amiibo_wrong_state">The current game is not looking for amiibo</string>
@@ -957,7 +1061,12 @@
     <string name="amiibo_in_use">The selected file is already in use</string>
     <string name="amiibo_unknown_error">An unknown error occurred</string>
     <string name="amiibo_load_success">Amiibo loaded</string>
+
+
+    <!-- Software keyboard -->
     <string name="software_keyboard">Software keyboard</string>
+
+    <!-- Errors and warnings -->
     <string name="abort_button">Abort</string>
     <string name="continue_button">Continue</string>
     <string name="system_archive_not_found">System Archive Not Found</string>
@@ -969,6 +1078,8 @@
     <string name="device_memory_inadequate">Device RAM: %1$s\nRecommended: %2$s</string>
     <string name="memory_formatted">%1$s %2$s</string>
     <string name="no_game_present">No bootable game present!</string>
+
+    <!-- Region Names -->
     <string name="region_japan">Japan</string>
     <string name="region_usa">USA</string>
     <string name="region_europe">Europe</string>
@@ -976,34 +1087,50 @@
     <string name="region_china">China</string>
     <string name="region_korea">Korea</string>
     <string name="region_taiwan">Taiwan</string>
+
+    <!-- Memory Layouts -->
     <string name="memory_4gb">4GB (Recommended)</string>
     <string name="memory_6gb">6GB (Unsafe)</string>
     <string name="memory_8gb">8GB (Unsafe)</string>
     <string name="memory_12gb">12GB (Ultra Unsafe)</string>
     <string name="memory_12gb_not_enough_ram">12GB DRAM mode requires a device with at least 12GB of physical RAM.</string>
+
+    <!-- CPU clock levels -->
     <string name="clock_normal">Normal</string>
     <string name="clock_boost">Boost</string>
     <string name="clock_fast">Overclock</string>
+
+    <!-- GPU clock levels -->
     <string name="fast_gpu_normal">Normal</string>
     <string name="fast_gpu_medium">Boost</string>
     <string name="fast_gpu_high">Overclock</string>
+
+    <!-- GPU swizzle texture size -->
     <string name="gpu_texturesizeswizzle_verysmall">Very Small (16 MB)</string>
     <string name="gpu_texturesizeswizzle_small">Small (32 MB)</string>
     <string name="gpu_texturesizeswizzle_normal">Normal (128 MB)</string>
     <string name="gpu_texturesizeswizzle_large">Large (256 MB)</string>
     <string name="gpu_texturesizeswizzle_verylarge">Very Large (512 MB)</string>
+
+    <!-- GPU swizzle streams -->
     <string name="gpu_swizzle_verylow">Very Low (4 MB)</string>
     <string name="gpu_swizzle_low">Low (8 MB)</string>
     <string name="gpu_swizzle_normal">Normal (16 MB)</string>
     <string name="gpu_swizzle_medium">Medium (32 MB)</string>
     <string name="gpu_swizzle_high">High (64 MB)</string>
+
+    <!-- GPU swizzle chunks -->
     <string name="gpu_swizzlechunk_verylow">Very Low (32)</string>
     <string name="gpu_swizzlechunk_low">Low (64)</string>
     <string name="gpu_swizzlechunk_normal">Normal (128)</string>
     <string name="gpu_swizzlechunk_medium">Medium (256)</string>
     <string name="gpu_swizzlechunk_high">High (512)</string>
+
+    <!-- Temperature Units -->
     <string name="temperature_celsius">Celsius</string>
     <string name="temperature_fahrenheit">Fahrenheit</string>
+
+    <!-- Language Names -->
     <string name="language_japanese" translatable="false">日本語</string>
     <string name="language_english" translatable="false">English</string>
     <string name="language_french" translatable="false">Français</string>
@@ -1024,6 +1151,8 @@
     <string name="language_brazilian_portuguese" translatable="false">Português do Brasil</string>
     <string name="language_polish" translatable="false">Polska</string>
     <string name="language_thai" translatable="false">แบบไทย</string>
+
+    <!-- Memory Sizes -->
     <string name="memory_byte_shorthand">B</string>
     <string name="memory_kilobyte">KB</string>
     <string name="memory_megabyte">MB</string>
@@ -1031,34 +1160,48 @@
     <string name="memory_terabyte">TB</string>
     <string name="memory_petabyte">PB</string>
     <string name="memory_exabyte">EB</string>
+
+    <!-- Renderer APIs -->
     <string name="renderer_vulkan" translatable="false">Vulkan</string>
     <string name="renderer_none">None</string>
+
+    <!-- Renderer Accuracy -->
     <string name="renderer_accuracy_low">Low</string>
     <string name="renderer_accuracy_normal">Normal</string>
     <string name="renderer_accuracy_high">High</string>
     <string name="renderer_accuracy_extreme">Extreme</string>
     <string name="enable_fast_gpu_time">Enable Fast GPU Time</string>
     <string name="enable_fast_gpu_time_description">Speeds up GPU timer queries to boost performance in games with heavy CPU-GPU synchronization, but may cause visual timing glitches in some titles.</string>
+
+    <!-- DMA Accuracy -->
     <string name="dma_accuracy_default">Default</string>
     <string name="dma_accuracy_normal">Normal</string>
     <string name="dma_accuracy_high">High</string>
     <string name="dma_accuracy_unsafe">Unsafe</string>
     <string name="dma_accuracy_safe">Safe</string>
+
+    <!-- GPU Fence Behavior -->
     <string name="gpu_fence_behavior_default">Default</string>
     <string name="gpu_fence_behavior_immediate">Immediate</string>
     <string name="gpu_fence_behavior_balanced">Balanced</string>
     <string name="gpu_fence_behavior_accurate">Accurate</string>
     <string name="gpu_fence_behavior_strict">Strict</string>
+
+    <!-- ASTC Decoding Method Choices -->
     <string name="accelerate_astc_cpu" translatable="false">CPU</string>
     <string name="accelerate_astc_gpu" translatable="false">GPU</string>
     <string name="accelerate_astc_async" translatable="false">CPU Async</string>
     <string name="accelerate_astc_hybrid">Hybrid</string>
+
+
     <string name="vram_usage_conservative">Conservative</string>
     <string name="vram_usage_normal">Normal</string>
     <string name="vram_usage_aggressive">Aggressive</string>
     <string name="vram_usage_mode_conservative">Conservative</string>
     <string name="vram_usage_mode_normal">Normal</string>
     <string name="vram_usage_mode_aggressive">Aggressive</string>
+
+    <!-- Resolutions -->
     <string name="resolution_quarter" translatable="false">0.25X (180p/270p)</string>
     <string name="resolution_half" translatable="false">0.5X (360p/540p)</string>
     <string name="resolution_three_quarter" translatable="false">0.75X (540p/810p)</string>
@@ -1068,6 +1211,8 @@
     <string name="resolution_two" translatable="false">2X (1440p/2160p) (Slow)</string>
     <string name="resolution_three" translatable="false">3X (2160p/3240p) (Slow)</string>
     <string name="resolution_four" translatable="false">4X (2880p/4320p) (Slow)</string>
+
+    <!-- Resolutions - Docked -->
     <string name="resolution_quarter_docked" translatable="false">0.25X (270p)</string>
     <string name="resolution_half_docked" translatable="false">0.5X (540p)</string>
     <string name="resolution_three_quarter_docked" translatable="false">0.75X (810p)</string>
@@ -1077,6 +1222,8 @@
     <string name="resolution_two_docked" translatable="false">2X (2160p / 4K) (Slow)</string>
     <string name="resolution_three_docked" translatable="false">3X (3240p / 6K) (Slow)</string>
     <string name="resolution_four_docked" translatable="false">4X (4320p / 8K) (Slow)</string>
+
+    <!-- Resolutions - Handheld -->
     <string name="resolution_quarter_handheld" translatable="false">0.25X (180p)</string>
     <string name="resolution_half_handheld" translatable="false">0.5X (360p)</string>
     <string name="resolution_three_quarter_handheld" translatable="false">0.75X (540p)</string>
@@ -1086,10 +1233,14 @@
     <string name="resolution_two_handheld" translatable="false">2X (1440p / 2K) (Slow)</string>
     <string name="resolution_three_handheld" translatable="false">3X (2160p / 4K) (Slow)</string>
     <string name="resolution_four_handheld" translatable="false">4X (2880p) (Slow)</string>
+
+    <!-- Renderer VSync -->
     <string name="renderer_vsync_immediate">Immediate (Off)</string>
     <string name="renderer_vsync_mailbox">Mailbox</string>
     <string name="renderer_vsync_fifo">FIFO (On)</string>
     <string name="renderer_vsync_fifo_relaxed">FIFO Relaxed</string>
+
+    <!-- Scaling Filters -->
     <string name="scaling_filter_nearest_neighbor" translatable="false">Nearest Neighbor</string>
     <string name="scaling_filter_bilinear" translatable="false">Bilinear</string>
     <string name="scaling_filter_bicubic" translatable="false">Bicubic</string>
@@ -1107,9 +1258,13 @@
     <string name="scaling_filter_sgsr_edge" translatable="false">Snapdragon GSR EdgeDir</string>
     <string name="scaling_filter_cas" translatable="false">AMD FidelityFX CAS</string>
     <string name="scaling_filter_omniscale" translatable="false">OmniScale HQ</string>
+
+    <!-- Anti-Aliasing -->
     <string name="anti_aliasing_none">None</string>
     <string name="anti_aliasing_fxaa" translatable="false">FXAA</string>
     <string name="anti_aliasing_smaa" translatable="false">SMAA</string>
+
+    <!-- Screen Layouts -->
     <string name="screen_layout_auto">Auto</string>
     <string name="screen_layout_sensor_landscape">Sensor landscape</string>
     <string name="screen_layout_landscape">Landscape</string>
@@ -1117,17 +1272,25 @@
     <string name="screen_layout_sensor_portrait">Sensor portrait</string>
     <string name="screen_layout_portrait">Portrait</string>
     <string name="screen_layout_reverse_portrait">Reverse portrait</string>
+
+    <!-- Aspect Ratios -->
     <string name="ratio_default" translatable="false">16:9</string>
     <string name="ratio_force_four_three" translatable="false">4:3</string>
     <string name="ratio_force_twenty_one_nine" translatable="false">21:9</string>
     <string name="ratio_force_sixteen_ten" translatable="false">16:10</string>
     <string name="ratio_stretch">Stretch to window</string>
+
+    <!-- CPU Backend -->
     <string name="cpu_backend_nce">NCE (Native Code Execution — Recommended)</string>
     <string name="cpu_backend_dynarmic">Dynarmic (JIT)</string>
+
+    <!-- CPU Accuracy -->
     <string name="cpu_accuracy_accurate">Accurate</string>
     <string name="cpu_accuracy_unsafe">Unsafe</string>
     <string name="cpu_accuracy_paranoid">Paranoid</string>
     <string name="cpu_accuracy_debugging">Debugging</string>
+
+    <!-- Freedreno Settings -->
     <string name="freedreno_settings_title">Freedreno Settings</string>
     <string name="gpu_driver_settings">GPU Driver Settings</string>
     <string name="freedreno_presets">Quick Presets</string>
@@ -1148,12 +1311,18 @@
     <string name="freedreno_per_game_title">Freedreno Settings</string>
     <string name="freedreno_per_game_description">Configure GPU driver settings for this game</string>
     <string name="freedreno_per_game_saved">Freedreno configuration saved</string>
+
+    <!-- Gamepad Buttons -->
     <string name="gamepad_d_pad">D-pad</string>
     <string name="gamepad_left_stick">Left stick</string>
     <string name="gamepad_right_stick">Right stick</string>
     <string name="gamepad_home">Home</string>
     <string name="gamepad_screenshot">Screenshot</string>
+
+    <!-- Disk shader cache -->
     <string name="building_shaders">Building shaders</string>
+
+    <!-- App options -->
     <string name="change_app_theme">Change app theme</string>
     <string name="theme_default">Default</string>
     <string name="theme_material_you">Material You</string>
@@ -1161,12 +1330,18 @@
     <string name="theme_and_color">Theme And Color</string>
     <string name="fullscreen_mode">Fullscreen mode</string>
     <string name="fullscreen_mode_description">Hide Android system bars across app screens. Swipe from an edge to reveal them temporarily.</string>
+
+    <!-- Theme Modes -->
     <string name="change_theme_mode">Theme</string>
     <string name="theme_mode_follow_system">Follow System</string>
     <string name="theme_mode_light">Light</string>
     <string name="theme_mode_dark">Dark</string>
+
+    <!-- Audio output engines -->
     <string name="sdl3" translatable="false">SDL3</string>
     <string name="cubeb" translatable="false">cubeb</string>
+
+    <!-- Anisotropic filtering options -->
     <string name="multiplier_x2" translatable="false">x2</string>
     <string name="multiplier_x4" translatable="false">x4</string>
     <string name="multiplier_x8" translatable="false">x8</string>
@@ -1174,12 +1349,18 @@
     <string name="multiplier_x32" translatable="false">x32</string>
     <string name="multiplier_x64" translatable="false">x64</string>
     <string name="multiplier_none">None</string>
+
+    <!-- Black backgrounds theme -->
     <string name="use_black_backgrounds">Black backgrounds</string>
     <string name="use_black_backgrounds_description">When using the dark theme, apply black backgrounds.</string>
+
+    <!-- Buttons -->
     <string name="enable_folder_button">Folder</string>
     <string name="enable_folder_button_description">Show the button to add game folders</string>
     <string name="enable_qlaunch_button">QLaunch</string>
     <string name="enable_qlaunch_button_description">Show the button to launch QLaunch</string>
+
+    <!-- App Language -->
     <string name="app_language">App Language</string>
     <string name="app_language_description">Change the language of the app interface</string>
     <string name="app_language_system">Follow System</string>
@@ -1209,6 +1390,8 @@
     <string name="app_language_serbian" translatable="false">Српски</string>
     <string name="app_language_thai" translatable="false">แบบไทย</string>
     <string name="app_language_hindi" translatable="false">हिन्दी</string>
+
+    <!-- Static Themes -->
     <string name="static_theme_color">STORM SWITCH Theme</string>
     <string name="theme_storm_dark">STORM DARK</string>
     <string name="theme_storm_night">STORM NIGHT</string>
@@ -1220,6 +1403,8 @@
     <string name="theme_storm_warhammer_40k">STORM WARHAMMER 40K</string>
     <string name="theme_storm_elemental">STORM ELEMENTAL</string>
     <string name="theme_storm_flagship">STORM</string>
+
+    <!-- Legacy alias for theme list -->
     <string name="eden_theme">STORM NIGHT (Default)</string>
     <string name="violet">STORM DAY</string>
     <string name="blue">STORM MIDNIGHT</string>
@@ -1230,6 +1415,8 @@
     <string name="orange">STORM EMERALD</string>
     <string name="pink">STORM GLACIER</string>
     <string name="gray">STORM AMETHYST</string>
+
+    <!-- GameBanana &amp; Add-ons -->
     <string name="search">Search</string>
     <string name="gamebanana_mods">GameBanana Mods</string>
     <string name="gamebanana_mods_description">Browse and download community mods from GameBanana</string>
@@ -1241,7 +1428,7 @@
     <string name="gamebanana_author">By %1$s</string>
     <string name="gamebanana_downloads">%1$d downloads</string>
     <string name="gamebanana_download_button">Download and install</string>
-    <string name="install_mod_title">Install Mod or Cheats</string>
+        <string name="install_mod_title">Install Mod or Cheats</string>
     <string name="install_mod_from_archive">Install from archive (.zip / .7z / .rar)</string>
     <string name="install_mod_from_folder">Install from folder</string>
     <string name="gamebanana_install_manual">Install mod manually</string>
@@ -1254,22 +1441,34 @@
     <string name="addons_overview">Add-ons and modifications</string>
     <string name="addons_overview_description">Manage installed updates, DLCs, and custom mods</string>
     <string name="game_version_label">Version %1$s</string>
+
+    <!-- Picture-In-Picture -->
     <string name="pause">Pause</string>
     <string name="play">Play</string>
     <string name="mute">Mute</string>
     <string name="unmute">Unmute</string>
+
+    <!-- Emulation vertical alignment -->
     <string name="top">Top</string>
     <string name="center">Center</string>
     <string name="bottom">Bottom</string>
+
+    <!-- Applet Modes -->
     <string name="applets_menu">Applets</string>
     <string name="applets_menu_description">Change applet frontends and settings</string>
+
     <string name="applet_hle">Custom Frontend</string>
     <string name="applet_lle">Real Applet</string>
+
     <string name="swkbd_applet">Software Keyboard</string>
+
     <string name="airplane_mode">Airplane Mode</string>
     <string name="airplane_mode_description">Passes Airplane Mode to the Switch OS</string>
+
     <string name="enable_overlay">Enable Overlay Applet</string>
     <string name="enable_overlay_description">Enables Horizon\'s built-in overlay applet. Press and hold the home button for 1 second to show it.</string>
+
+    <!-- Profile Management -->
     <string name="profile_manager">Profile Manager</string>
     <string name="profile_manager_description">Manage user profiles</string>
     <string name="profile_add_user">Add User</string>
@@ -1297,6 +1496,8 @@
     <string name="profile_image_load_error">Failed to load image: %1$s</string>
     <string name="profile_image_save_error">Failed to save image: %1$s</string>
     <string name="error">Error</string>
+
+    <!-- Licenses screen strings -->
     <string name="licenses">Licenses</string>
     <string name="license_fidelityfx_fsr" translatable="false">FidelityFX-FSR</string>
     <string name="license_fidelityfx_fsr_description">High-quality upscaling from AMD</string>
@@ -1802,9 +2003,12 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     </string>
+
     <string name="external_content">External Content</string>
     <string name="add_folders">Add Folder</string>
     <string name="percent">%1$d%%</string>
+
+    <!-- Amiibo Manager -->
     <string name="amiibo">Amiibo</string>
     <string name="amiibo_database_title">Online Amiibo Database</string>
     <string name="amiibo_tab_catalog">Catalog</string>
@@ -1822,6 +2026,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="amiibo_injected_success">%1$s successfully loaded into game!</string>
     <string name="amiibo_injected_fail">Failed to inject Amiibo. Make sure the game is requesting an Amiibo tag.</string>
     <string name="amiibo_pick_file">Choose local .bin file...</string>
+
+    <!-- GameBanana Mods -->
     <string name="sort_by">Sort by:</string>
     <string name="sort_downloads">Most Downloaded</string>
     <string name="sort_likes">Most Liked</string>
@@ -1835,8 +2041,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="gamebanana_no_files">No downloadable files found for this mod.</string>
     <string name="gamebanana_installed_success">%1$s installed successfully!</string>
     <string name="gamebanana_likes">%1$d likes</string>
+
+    <!-- Title display -->
     <string name="show_filename_as_title">Game Title from Filename</string>
     <string name="show_filename_as_title_description">Display clean game title parsed from filename instead of internal ROM name</string>
+
+    <!-- Auto-Translator (OCR + TTS) -->
     <string name="translator_title">STORM TRANSLATOR</string>
     <string name="translator_translate_screen">Translate Screen (OCR + TTS)</string>
     <string name="translator_enable_floating_button">Show Translate Button</string>
@@ -1845,6 +2055,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="translator_source_lang">Source Language</string>
     <string name="translator_target_lang">Target Language</string>
     <string name="translator_auto_tts">Auto Text-to-Speech</string>
+
+    <!-- Overlay Skin Themes -->
     <string name="overlay_skin_theme">Touch Controller Skin Theme</string>
     <string name="overlay_skin_theme_description">Choose color scheme and animations for virtual buttons and joysticks</string>
     <string name="skin_cyberpunk_neon">Eden Cyberpunk Neon (Cyan / Hot Pink)</string>
@@ -1862,14 +2074,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="skin_golden_zelda">Golden Zelda Triforce (Gold / Solar Orange)</string>
     <string name="skin_gameboy_color_purple">GameBoy Color Atomic Purple (Purple / Magenta)</string>
     <string name="skin_gameboy_dmg_retro">GameBoy DMG 1989 Retro (Olive / Maroon)</string>
+
     <string name="amiibo_disconnect_button">Disconnect Current Amiibo</string>
     <string name="amiibo_currently_attached">Active Amiibo: %1$s</string>
     <string name="amiibo_no_attached">No Amiibo currently active on controller</string>
     <string name="amiibo_removed_toast">Amiibo removed from controller</string>
+
     <string name="translator_floating_btn_title">Floating Translate Button</string>
     <string name="translator_floating_btn_description">Show floating screen translation button during gameplay</string>
     <string name="hotkey_quick_actions">Hotkeys and Quick Actions</string>
     <string name="hotkey_quick_actions_desc">Configure on-screen hotkeys and fast action overlays</string>
+
     <string name="cheats">Cheat Codes</string>
     <string name="cheats_description">Manage Atmosphere cheat codes, toggle active cheats, download online database</string>
     <string name="cheats_manager_title">Cheat Codes Manager</string>
@@ -1886,6 +2101,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="select_all">Select All</string>
     <string name="deselect_all">Deselect All</string>
     <string name="cheats_count_summary">Total cheats: %1$d | Enabled: %2$d</string>
+
+    <!-- Optimizations, Thermals &amp; Smoothness -->
     <string name="optimization_features">Optimization and Thermals</string>
     <string name="eco_thermal_mode">Eco / Thermal Governor</string>
     <string name="eco_thermal_mode_description">Controls burst clocks and throttles non-essential background draw calls to prevent device overheating and thermal throttling.</string>
@@ -1899,6 +2116,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="vulkan_pipeline_cache_description">Precompiles and serializes Vulkan binary pipeline caches on storage to eliminate runtime shader compilation stutter.</string>
     <string name="vram_garbage_collection">VRAM Garbage Collection</string>
     <string name="vram_garbage_collection_description">Periodically frees unreferenced texture memory and stale ASTC buffers to prevent Android LMK (Low Memory Killer) stutter.</string>
+
+    <!-- Auto Optimization Wizard -->
     <string name="auto_optimization_wizard_title">Auto-Configuration</string>
     <string name="auto_optimization_wizard_description">Analyzes CPU, GPU, and RAM to automatically apply ideal settings for your device</string>
     <string name="auto_optimization_device_info">Device Hardware Info</string>
@@ -1922,6 +2141,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="game_fix_dont_ask_again">Don\'t ask again for this game</string>
     <string name="game_fix_apply_and_launch">Apply Fixes and Launch</string>
     <string name="game_fix_skip_and_launch">Launch Without Changes</string>
+
+    <!-- Launch Modes and Global Settings -->
     <string name="launch_method_title">Launch method</string>
     <string name="launch_mode_auto_fix">Apply Auto-Fix &amp; Launch</string>
     <string name="launch_mode_auto_fix_description">Clean reference STORM SOFT profile for maximum stability</string>
@@ -1937,6 +2158,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="apply_global_to_all_games_confirm_message">Do you want to reset custom profiles for all games? Current global settings will be applied across your entire game library.</string>
     <string name="apply_global_to_all_games_positive">Apply to all</string>
     <string name="apply_global_to_all_games_success">⚡ Global settings successfully applied to all games (%d profiles reset)</string>
+
+    <!-- Settings Profiles -->
     <string name="settings_profiles_title">Settings Profiles</string>
     <string name="settings_profiles_description">Create, save, quickly load, rename, export and share settings profiles.</string>
     <string name="profile_preset_fast_title">⚡ Fast (Maximum FPS and Low Temp)</string>
@@ -1979,6 +2202,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="gamebanana_no_installed_mods">No mods installed for this game</string>
     <string name="gamebanana_installed_stats">Total: %1$d | Enabled: %2$d | Disabled: %3$d</string>
     <string name="gamebanana_mod_deleted">Mod "%1$s" deleted</string>
+
+    <!-- Overlay Toggle Controls -->
     <string name="overlay_ctrl_button_a">Button A</string>
     <string name="overlay_ctrl_button_a_desc">Primary action and confirm</string>
     <string name="overlay_ctrl_button_b">Button B</string>
@@ -2013,6 +2238,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="overlay_ctrl_button_home_desc">Return to home</string>
     <string name="overlay_ctrl_button_capture">Capture button</string>
     <string name="overlay_ctrl_button_capture_desc">Take screenshot</string>
+
+    <!-- Missing Default Localization Fallbacks -->
     <string name="gamebanana_delete_mod_confirm">Are you sure you want to delete mod \"%1$s\"?</string>
     <string name="anisotropic_filtering_2x">2x</string>
     <string name="anisotropic_filtering_4x">4x</string>
@@ -2071,6 +2298,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="ratio_32_10">32:10 (Dual 16:10)</string>
     <string name="ratio_48_9">48:9 (Triple 16:9)</string>
     <string name="ratio_auto_window">Auto Window Aspect (3D Native)</string>
+
     <string name="storm_notif_channel_name">STORM GAMES WORLD Downloads</string>
     <string name="storm_notif_channel_desc">Notifications for game and update downloads</string>
     <string name="storm_sync_subtitle">Cross-platform save synchronization</string>
@@ -2209,6 +2437,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="storm_dl_subtext_speed_eta_fmt">%1$s MB/s • ETA: %2$d min</string>
     <string name="storm_dl_progress_pct_fmt">Downloading: %1$d%%</string>
     <string name="storm_dl_game_fallback">Game</string>
+
     <string name="auto_opt_detected_hw">🔍 Detected Hardware</string>
     <string name="auto_opt_form_tablet">Tablet</string>
     <string name="auto_opt_form_phone">Smartphone</string>
@@ -2343,6 +2572,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="online_tools_err_install_fmt">Installation error: %1$s</string>
     <string name="online_tools_toast_err_fmt">Online installation failed: %1$s</string>
     <string name="online_tools_item_subtitle_fmt">File: %1$s • Size: %2$s</string>
+
     <string name="translator_quick_subtitle">Quick translation control menu</string>
     <string name="translator_quick_now_title">Translate screen now</string>
     <string name="translator_quick_now_desc">Instant capture and text overlay</string>
@@ -2413,7 +2643,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="translator_overlay_region_fmt">Region %1$d</string>
     <string name="translator_overlay_btn_add">+ Add region</string>
     <string name="translator_overlay_btn_clear">🧹 Clear</string>
-    <string name="translator_overlay_btn_save">💾 Save</string>
+    <string name="translator_overlay_btn_save">Save</string>
     <string name="translator_overlay_btn_close">✕ Close</string>
     <string name="translator_snack_auto_on">⚡ Auto-translation enabled</string>
     <string name="translator_snack_auto_off">⚡ Auto-translation disabled</string>
@@ -2459,7 +2689,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="emulation_hud_ram">RAM:</string>
     <string name="quick_settings_subtitle">Dynamic graphics and performance tuning</string>
     <string name="game_badge_update_avail_fmt">%1$s • Update available</string>
-    <string name="game_badge_dlc_count_fmt">Add-ons: %1$d</string>
+    <string name="game_badge_dlc_count_fmt">DLC: %1$d</string>
     <string name="release_dl_mirror_fmt">Downloading via mirror %1$d...</string>
     <string name="release_dl_progress_mb_fmt">Downloading: %1$s / %2$s MB</string>
     <string name="release_dl_done_mb_fmt">Downloaded: %1$s MB</string>
@@ -2604,6 +2834,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="post_shader_72">Sepia Vintage (Warm Antique Photograph Toning)</string>
     <string name="post_shader_73">Night Vision Goggles (Green Phosphor Tactical NVG)</string>
     <string name="post_shader_74">Halation &amp; Dual-Kawase Glow (Neon Atmospheric Highlight Bloom)</string>
+
+    <!-- Save State System (SESS v2) -->
     <string name="menu_quick_save">Quick Save (Slot 1)</string>
     <string name="menu_quick_load">Quick Load (Slot 1)</string>
     <string name="menu_save_state_manager">Save State Manager (Slots 1–5)</string>
@@ -2612,14 +2844,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="save_state_slot_fmt">Slot %1$d</string>
     <string name="save_state_empty">[Empty Slot]</string>
     <string name="save_state_no_preview">No Preview</string>
-    <string name="save_state_save">💾 Save</string>
-    <string name="save_state_load">📂 Load</string>
+    <string name="save_state_save">Save</string>
+    <string name="save_state_load">Load</string>
     <string name="save_state_delete">Delete</string>
-    <string name="save_state_saved_toast">💾 Quick Save (Slot %1$d) created successfully!</string>
-    <string name="save_state_loaded_toast">📂 Quick Save (Slot %1$d) loaded successfully!</string>
+    <string name="save_state_saved_toast">Quick Save (Slot %1$d) created successfully!</string>
+    <string name="save_state_loaded_toast">Quick Save (Slot %1$d) loaded successfully!</string>
     <string name="save_state_deleted_toast">🗑️ Save state for Slot %1$d deleted</string>
-    <string name="save_state_save_failed">❌ Failed to save state to Slot %1$d</string>
-    <string name="save_state_load_failed">⚠️ Slot %1$d is empty or corrupted</string>
+    <string name="save_state_save_failed">Failed to save state to Slot %1$d</string>
+    <string name="save_state_load_failed">Slot %1$d is empty or corrupted</string>
     <string name="save_state_confirm_delete">Are you sure you want to delete save state for Slot %1$d?</string>
     <string name="update">Update</string>
     <string name="fsr2_quality_mode">FSR 2.0 Quality Mode</string>
@@ -2630,6 +2862,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="fsr2_quality_ultra_performance">Ultra Performance (3.0x)</string>
     <string name="mali_driver_info">Mali/Immortalis/Xclipse GPUs use the manufacturer system Vulkan driver. Upstream Mesa PanVK is experimental and does not yet support full Switch Vulkan extensions. Custom .zip driver installation remains available for experimental builds, while Adreno Turnip drivers are filtered to prevent crashes.</string>
     <string name="mali_turnip_incompatible_warning">Warning: Adreno Turnip drivers are designed specifically for Qualcomm Adreno GPUs. Installing this driver on a Mali or non-Adreno GPU may cause graphics instability or app crashes. Do you want to continue?</string>
+
+    <!-- Auto-Optimization Dialog Strings -->
     <string name="auto_opt_dialog_title">Auto-Setup</string>
     <string name="auto_opt_dialog_subtitle">Intelligent Hardware Profiling</string>
     <string name="auto_opt_telemetry_title">HARDWARE TELEMETRY</string>
@@ -2651,10 +2885,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="auto_opt_mode_accurate_short">ULTRA QUALITY</string>
     <string name="auto_opt_mode_battery_short">ECO / PORTABLE</string>
     <string name="auto_opt_mode_default_short">DEFAULT</string>
+
     <string name="storm_check_updates_now">Check for Updates Now</string>
     <string name="storm_check_updates_now_desc">Check GitHub and STORM GAMES WORLD for a newer release and install it in place</string>
     <string name="storm_checking_updates">Checking for updates…</string>
     <string name="storm_up_to_date_fmt">You have the latest version installed (%1$s)</string>
+
     <string name="profile_btn_save_current">Save Current Profile</string>
     <string name="profile_active_badge">ACTIVE</string>
     <string name="profile_total_count">Total profiles: %1$d</string>
@@ -2664,14 +2900,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="auto_opt_hw_gpu_label">Graphics (GPU)</string>
     <string name="auto_opt_hw_ram_label">Memory (RAM)</string>
     <string name="auto_opt_hw_tier_label">Performance Tier</string>
+
     <string name="home_cat_quick_setup">Quick Setup &amp; Profiles</string>
     <string name="home_cat_performance_graphics">Performance, Graphics &amp; Drivers</string>
     <string name="home_cat_system_input">System, Input &amp; Audio</string>
     <string name="home_cat_catalog_storage">Catalog, Folders &amp; Storage</string>
     <string name="home_cat_diagnostics_about">Diagnostics, Logs &amp; About</string>
     <string name="per_game_custom_badge">CUSTOM</string>
-    <string name="vulkan_legacy_driver_warning">System Vulkan %1$s detected on %2$s. Many Switch titles require Vulkan 1.3 features. It is recommended to install a Mesa Turnip driver in Settings -&gt; GPU Driver Manager.</string>
+    <string name="vulkan_legacy_driver_warning">System Vulkan %1$s detected on %2$s. Many Switch titles require Vulkan 1.3 features. It is recommended to install a Mesa Turnip driver in Settings -> GPU Driver Manager.</string>
     <string name="profile_empty_state">No saved setting profiles\nTap \'Save Profile\' to create one</string>
+
     <string name="save_states_mode">Save States Mode</string>
     <string name="save_states_mode_description">Controls quick save and load behavior. RAM/CPU states may freeze unverified games.</string>
     <string name="save_states_mode_off">Off</string>
@@ -2704,6 +2942,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="freedreno_reset_recommended">Reset to Recommended</string>
     <string name="freedreno_reset_recommended_desc">Reset all Freedreno debug variables to maximum performance defaults</string>
     <string name="freedreno_reset_done_toast">Freedreno settings reset to recommended defaults</string>
+    <!-- PanVK & STORM DRIVER 10.0.0 additions -->
     <string name="tab_driver_all">All Drivers</string>
     <string name="tab_driver_storm">STORM DRIVER</string>
     <string name="tab_driver_turnip">Turnip (Adreno)</string>
@@ -2716,11 +2955,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="apply_driver_negative">Cancel</string>
     <string name="apply_driver_positive">Apply</string>
     <string name="game_fix_launch_method">@string/launch_method_title</string>
-    <string name="ui_design_style">UI Layout View</string>
-    <string name="ui_design_style_description">5 dynamic layout styles and visual aesthetics for game library</string>
-    <string name="ui_design_style_hyperion" translatable="false">HYPERION DOCKED CONSOLE</string>
-    <string name="ui_design_style_titanium" translatable="false">TITANIUM CYBER DECK</string>
-    <string name="ui_design_style_valkyrie" translatable="false">VALKYRIE TACTICAL RIG</string>
-    <string name="ui_design_style_solaris" translatable="false">SOLARIS SWITCH 2 PRO</string>
-    <string name="ui_design_style_aether" translatable="false">AETHER FROSTED STUDIO</string>
+
+    <!-- UI Design Styles -->
+    <string name="ui_design_style">UI Design</string>
+    <string name="ui_design_style_description">Volumetric 3D styling and tactile animations for the interface</string>
+    <string name="ui_design_style_hyperion" translatable="false">STORM HYPERION GLASS 3D</string>
+    <string name="ui_design_style_cyberdeck" translatable="false">STORM CYBER-DECK TACTILE</string>
+    <string name="ui_design_style_aurora" translatable="false">STORM AURORA QUANTUM</string>
+    <string name="ui_design_style_orbital" translatable="false">STORM ORBITAL SPATIAL UI</string>
+    <string name="ui_design_style_chrono" translatable="false">STORM CHRONO-NEXUS COMMANDER</string>
 </resources>

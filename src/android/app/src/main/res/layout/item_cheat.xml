@@ -5,8 +5,8 @@
     style="@style/EdenCard"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginVertical="1.5dp"
-    app:cardCornerRadius="8dp"
+    android:layout_marginVertical="2dp"
+    app:cardCornerRadius="10dp"
     app:cardElevation="0dp"
     app:cardBackgroundColor="?attr/colorSurfaceVariant"
     app:strokeColor="?attr/colorOutline"
@@ -17,8 +17,8 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingHorizontal="6dp"
-        android:paddingVertical="3dp">
+        android:paddingHorizontal="8dp"
+        android:paddingVertical="4dp">
 
         <com.google.android.material.checkbox.MaterialCheckBox
             android:id="@+id/checkbox_cheat"
@@ -27,7 +27,7 @@
             android:minWidth="0dp"
             android:minHeight="0dp"
             android:padding="0dp"
-            android:layout_marginEnd="4dp" />
+            android:layout_marginEnd="6dp" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -48,38 +48,40 @@
                     android:layout_weight="1"
                     android:text="Infinite Health"
                     android:textColor="?attr/colorOnSurface"
-                    android:textSize="12sp"
+                    android:textSize="12.5sp"
                     android:textStyle="bold"
                     android:ellipsize="end"
                     android:maxLines="3"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none" />
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/text_build_id_badge"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Build: A1B2C3"
+                    android:text="Build: ALL"
                     android:textSize="8sp"
                     android:textColor="?attr/colorPrimary"
-                    android:paddingHorizontal="4dp"
-                    android:paddingVertical="1dp"
+                    android:paddingHorizontal="6dp"
+                    android:paddingVertical="2dp"
                     android:background="@drawable/badge_pill_blue"
                     android:layout_marginStart="4dp"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none" />
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/text_cheat_status"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/cheat_status_active"
+                    android:text="АКТИВЕН В ИГРЕ"
                     android:textSize="9sp"
                     android:textColor="?attr/colorPrimary"
                     android:textStyle="bold"
+                    android:paddingHorizontal="6dp"
+                    android:paddingVertical="2dp"
                     android:layout_marginStart="4dp"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none" />
 
             </LinearLayout>
 
@@ -88,14 +90,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/cheat_item_desc_placeholder"
-                android:textSize="10sp"
+                android:textSize="10.5sp"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:maxLines="3"
                 android:ellipsize="end"
                 android:visibility="gone"
                 tools:visibility="visible"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                android:breakStrategy="simple"
+                android:hyphenationFrequency="none" />
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/text_code_preview"
@@ -103,12 +105,12 @@
                 android:layout_height="wrap_content"
                 android:text="04000000 01234567 00000001"
                 android:fontFamily="monospace"
-                android:textSize="9sp"
+                android:textSize="9.5sp"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:maxLines="1"
                 android:ellipsize="end"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                android:breakStrategy="simple"
+                android:hyphenationFrequency="none" />
 
         </LinearLayout>
 
@@ -116,12 +118,13 @@
             android:id="@+id/btn_edit_value"
             style="@style/EdenButton.Outlined"
             android:layout_width="wrap_content"
-            android:layout_height="28dp"
-            android:minHeight="0dp"
-            android:paddingHorizontal="8dp"
+            android:layout_height="wrap_content"
+            android:minHeight="36dp"
+            android:minWidth="68dp"
+            android:paddingHorizontal="12dp"
             android:paddingVertical="0dp"
-            android:text="@string/cheat_btn_edit_qty"
-            android:textSize="10sp"
+            android:text="Значение"
+            android:textSize="10.5sp"
             android:textStyle="bold"
             android:textColor="?attr/colorPrimary"
             android:backgroundTint="?attr/colorSurfaceVariant"
@@ -130,12 +133,16 @@
             app:cornerRadius="6dp"
             android:insetTop="0dp"
             android:insetBottom="0dp"
-            android:layout_marginStart="4dp"
+            android:layout_marginStart="6dp"
             android:visibility="visible"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"
-    android:maxLines="1"
-    android:ellipsize="none"/>
+            app:icon="@drawable/ic_edit"
+            app:iconSize="12dp"
+            app:iconPadding="4dp"
+            app:iconTint="?attr/colorPrimary"
+            android:breakStrategy="simple"
+            android:hyphenationFrequency="none"
+            android:maxLines="1"
+            android:ellipsize="none" />
 
     </LinearLayout>
 

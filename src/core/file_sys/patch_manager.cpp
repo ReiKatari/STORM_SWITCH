@@ -445,8 +445,16 @@ VirtualDir PatchManager::PatchExeFS(VirtualDir exefs) const {
     // LayeredExeFS
     const auto load_dir = fs_controller.GetModificationLoadRoot(title_id);
     const auto sdmc_load_dir = fs_controller.GetSDMCModificationLoadRoot(title_id);
+    const bool has_load_mods = load_dir != nullptr && (!load_dir->GetFiles().empty() || !load_dir->GetSubdirectories().empty());
+    const bool has_sdmc_mods = sdmc_load_dir != nullptr && (!sdmc_load_dir->GetFiles().empty() || !sdmc_load_dir->GetSubdirectories().empty());
+    if (!has_load_mods && !has_sdmc_mods) {
+        return exefs;
+    }
 
-    std::vector<VirtualDir> patch_dirs = {sdmc_load_dir};
+    std::vector<VirtualDir> patch_dirs;
+    if (sdmc_load_dir != nullptr) {
+        patch_dirs.push_back(sdmc_load_dir);
+    }
     if (load_dir != nullptr) {
         const auto load_patch_dirs = load_dir->GetSubdirectories();
         patch_dirs.insert(patch_dirs.end(), load_patch_dirs.begin(), load_patch_dirs.end());
@@ -494,6 +502,12 @@ std::vector<VirtualDir> PatchManager::GetPatchDirs() const {
     }
     const auto load_dir = fs_controller.GetModificationLoadRoot(title_id);
     const auto sdmc_load_dir = fs_controller.GetSDMCModificationLoadRoot(title_id);
+    const bool has_load_mods = load_dir != nullptr && (!load_dir->GetFiles().empty() || !load_dir->GetSubdirectories().empty());
+    const bool has_sdmc_mods = sdmc_load_dir != nullptr && (!sdmc_load_dir->GetFiles().empty() || !sdmc_load_dir->GetSubdirectories().empty());
+    if (!has_load_mods && !has_sdmc_mods) {
+        patch_cache->patch_dirs_cached = true;
+        return patch_cache->cached_patch_dirs;
+    }
     if (sdmc_load_dir != nullptr) {
         patch_cache->cached_patch_dirs.push_back(sdmc_load_dir);
     }
@@ -509,6 +523,9 @@ std::vector<VirtualDir> PatchManager::GetPatchDirs() const {
 
 std::vector<VirtualFile> PatchManager::CollectPatches(const std::vector<VirtualDir>& patch_dirs,
                                                       const std::string& build_id) const {
+    if (patch_dirs.empty()) {
+        return {};
+    }
     if (patch_cache) {
         std::scoped_lock lock{patch_cache->mutex};
         const auto it = patch_cache->cached_collected_patches.find(build_id);
@@ -685,10 +702,10 @@ std::vector<u8> PatchManager::PatchNSO(const std::vector<u8>& nso, const std::st
 }
 
 bool PatchManager::HasNSOPatch(const BuildID& build_id_, std::string_view name) const {
-    const auto build_id_raw = Common::HexToString(build_id_);
-    const auto build_id = build_id_raw.substr(0, build_id_raw.find_last_not_of('0') + 1);
-
-    LOG_INFO(Loader, "Querying NSO patch existence for build_id={}, name={}", build_id, name);
+    const auto load_dir = fs_controller.GetModificationLoadRoot(title_id);
+    const auto sdmc_load_dir = fs_controller.GetSDMCModificationLoadRoot(title_id);
+    const bool has_load_mods = load_dir != nullptr && (!load_dir->GetFiles().empty() || !load_dir->GetSubdirectories().empty());
+    const bool has_sdmc_mods = sdmc_load_dir != nullptr && (!sdmc_load_dir->GetFiles().empty() || !sdmc_load_dir->GetSubdirectories().empty());
 
     if (Settings::values.auto_aspect_ratio_patch.GetValue() &&
         (name == "main" || name == "subsdk0" || name == "subsdk1")) {
@@ -699,6 +716,15 @@ bool PatchManager::HasNSOPatch(const BuildID& build_id_, std::string_view name) 
             return true;
         }
     }
+
+    if (!has_load_mods && !has_sdmc_mods) {
+        return false;
+    }
+
+    const auto build_id_raw = Common::HexToString(build_id_);
+    const auto build_id = build_id_raw.substr(0, build_id_raw.find_last_not_of('0') + 1);
+
+    LOG_INFO(Loader, "Querying NSO patch existence for build_id={}, name={}", build_id, name);
 
     const auto patch_dirs = GetPatchDirs();
     if (patch_dirs.empty()) {
@@ -938,16 +964,24 @@ static void ApplyLayeredFS(VirtualFile& romfs, u64 title_id, ContentRecordType t
                            const Service::FileSystem::FileSystemController& fs_controller) {
     const auto load_dir = fs_controller.GetModificationLoadRoot(title_id);
     const auto sdmc_load_dir = fs_controller.GetSDMCModificationLoadRoot(title_id);
+    const bool has_load_mods = load_dir != nullptr && (!load_dir->GetFiles().empty() || !load_dir->GetSubdirectories().empty());
+    const bool has_sdmc_mods = sdmc_load_dir != nullptr && (!sdmc_load_dir->GetFiles().empty() || !sdmc_load_dir->GetSubdirectories().empty());
     if ((type != ContentRecordType::Program && type != ContentRecordType::Data &&
          type != ContentRecordType::HtmlDocument) ||
-        (load_dir == nullptr && sdmc_load_dir == nullptr)) {
+        (!has_load_mods && !has_sdmc_mods)) {
         return;
     }
 
     const auto& disabled = Settings::values.disabled_addons[title_id];
-    std::vector<VirtualDir> patch_dirs = load_dir->GetSubdirectories();
-    if (std::find(disabled.cbegin(), disabled.cend(), "SDMC") == disabled.cend()) {
+    std::vector<VirtualDir> patch_dirs;
+    if (load_dir != nullptr) {
+        patch_dirs = load_dir->GetSubdirectories();
+    }
+    if (sdmc_load_dir != nullptr && std::find(disabled.cbegin(), disabled.cend(), "SDMC") == disabled.cend()) {
         patch_dirs.push_back(sdmc_load_dir);
+    }
+    if (patch_dirs.empty()) {
+        return;
     }
     SortPatchDirsByPriority(patch_dirs, load_dir);
 
@@ -1167,7 +1201,13 @@ VirtualFile PatchManager::PatchRomFS(const NCA* base_nca, VirtualFile base_romfs
 
     // LayeredFS
     if (apply_layeredfs && romfs != nullptr) {
-        ApplyLayeredFS(romfs, title_id, type, fs_controller);
+        const auto load_dir = fs_controller.GetModificationLoadRoot(title_id);
+        const auto sdmc_load_dir = fs_controller.GetSDMCModificationLoadRoot(title_id);
+        const bool has_load_mods = load_dir != nullptr && (!load_dir->GetFiles().empty() || !load_dir->GetSubdirectories().empty());
+        const bool has_sdmc_mods = sdmc_load_dir != nullptr && (!sdmc_load_dir->GetFiles().empty() || !sdmc_load_dir->GetSubdirectories().empty());
+        if (has_load_mods || has_sdmc_mods) {
+            ApplyLayeredFS(romfs, title_id, type, fs_controller);
+        }
     }
 
     LOG_DEBUG(Loader, "PatchRomFS: Finished RomFS for title_id={:016X}, type={:02X}, size={}",

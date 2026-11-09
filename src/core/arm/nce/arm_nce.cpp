@@ -175,7 +175,31 @@ bool ArmNce::HandleFailedGuestFault(GuestContext* guest_ctx, void* raw_info, voi
             }
         }
 
-        // For data aborts, safely advance PC and recover, preventing game crashes on NCE (7.3.2 behavior)
+        // For data aborts, safely sanitize destination registers and advance PC, preventing unmapped garbage reads in Lunchpack
+        if (resolved_pc.has_value()) {
+            u32 fault_inst{};
+            std::memcpy(&fault_inst, reinterpret_cast<const void*>(host_ctx.pc), sizeof(fault_inst));
+            // Check ARM64 load instructions:
+            // (inst & 0x3B000000) == 0x39000000 -> LDR/LDRB/LDRH/LDRSB/LDRSH/LDRSW (immediate)
+            // (inst & 0x3B200C00) == 0x38400000 -> LDR/LDRB/LDRH/LDRSB/LDRSH/LDRSW (register offset / unscaled)
+            // (inst & 0x3F400000) == 0x29400000 -> LDP / LDNP (pair load)
+            const bool is_ldr_imm = (fault_inst & 0x3B000000) == 0x39000000;
+            const bool is_ldr_reg = (fault_inst & 0x3B200C00) == 0x38400000;
+            const bool is_ldp = (fault_inst & 0x3F400000) == 0x29400000;
+
+            if (is_ldr_imm || is_ldr_reg || is_ldp) {
+                const u32 rt = fault_inst & 0x1F;
+                if (rt < 31) {
+                    host_ctx.regs[rt] = 0;
+                }
+                if (is_ldp) {
+                    const u32 rt2 = (fault_inst >> 10) & 0x1F;
+                    if (rt2 < 31) {
+                        host_ctx.regs[rt2] = 0;
+                    }
+                }
+            }
+        }
         host_ctx.pc += 4;
         return true;
     } else if (Settings::values.cpuopt_ignore_memory_aborts.GetValue() ||
@@ -341,8 +365,8 @@ bool ArmNce::HandleGuestIllegalInstruction(GuestContext* guest_ctx, void* raw_in
         case 0x5807: // DCZID_EL0 (64-byte cache line zeroing)
             val = 0x00000004ULL;
             break;
-        case 0x4000: // MIDR_EL1 (Nintendo Switch Tegra X1 Cortex-A57 r1p3)
-            val = 0x411FD073ULL;
+        case 0x4000: // MIDR_EL1 (Switch 1 Tegra X1 Cortex-A57 r1p3 vs Switch 2 T239 Cortex-A78C r0p0)
+            val = Settings::IsCurrentProgramSwitch2() ? 0x410FD4B0ULL : 0x411FD073ULL;
             break;
         case 0x5920: // RNDR
         case 0x5921: // RNDRRS

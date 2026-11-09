@@ -132,6 +132,8 @@
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btn_copy_key"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
                             style="@style/Widget.Material3.Button.TonalButton"
                             android:layout_width="wrap_content"
                             android:layout_height="36dp"
@@ -210,6 +212,8 @@
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btn_connect"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
                             style="@style/Widget.Material3.Button.TonalButton"
                             android:layout_width="wrap_content"
                             android:layout_height="44dp"
@@ -235,6 +239,8 @@
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btn_search_devices"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
                             style="@style/Widget.Material3.Button.TextButton"
                             android:layout_width="wrap_content"
                             android:layout_height="36dp"
@@ -304,6 +310,8 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_sync_all"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
                     style="@style/EdenButton.Primary"
                     android:layout_width="wrap_content"
                     android:layout_height="36dp"
@@ -323,8 +331,6 @@
             <!-- Search Saves -->
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-        app:boxStrokeWidth="0dp"
-        app:boxStrokeWidthFocused="0dp"
                 app:boxBackgroundMode="outline"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

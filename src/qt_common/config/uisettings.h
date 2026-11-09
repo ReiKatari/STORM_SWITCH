@@ -376,7 +376,7 @@ struct Values {
 
     std::string theme;
 
-    Setting<std::string> ui_design{linkage, "titanium_cyber_deck", "ui_design", Category::Ui};
+    Setting<std::string> ui_design{linkage, "hyperion_glass", "ui_design", Category::Ui};
 
     Setting<std::string> accent_color{linkage, "#8B5CF6", "accent_color", Category::Ui};
 
@@ -477,7 +477,6 @@ struct Values {
     // perf overlay
 
     Setting<bool> show_perf_overlay{linkage, false, "show_perf_overlay", Category::UiGameList};
-    Setting<int> perf_overlay_style{linkage, 0, "perf_overlay_style", Category::UiGameList};
 
 
 

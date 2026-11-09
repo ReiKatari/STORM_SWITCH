@@ -1,12 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:fillViewport="true"
     android:background="?attr/colorSurface"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:scrollbars="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
 
     <!-- Header -->
     <LinearLayout
@@ -102,7 +108,7 @@
                     android:layout_marginTop="4dp"
                     android:textColor="?attr/colorOnSurface"
                     android:textSize="13sp"
-                    tools:text="📅 Дата и время: 14.09.2026 13:30"
+                    tools:text="Дата и время: 14.09.2026 13:30"
     android:breakStrategy="simple"
     android:hyphenationFrequency="none"/>
 
@@ -113,7 +119,7 @@
                     android:layout_marginTop="2dp"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="12sp"
-                    tools:text="📦 Размер данных: 1.42 МБ • Файлов: 6"
+                    tools:text="Размер данных: 1,42 МБ • Файлов: 6"
     android:breakStrategy="simple"
     android:hyphenationFrequency="none"/>
             </LinearLayout>
@@ -154,7 +160,7 @@
                     android:layout_marginTop="4dp"
                     android:textColor="?attr/colorOnSurface"
                     android:textSize="13sp"
-                    tools:text="📅 Дата и время: 14.09.2026 13:35"
+                    tools:text="Дата и время: 14.09.2026 13:35"
     android:breakStrategy="simple"
     android:hyphenationFrequency="none"/>
 
@@ -165,7 +171,7 @@
                     android:layout_marginTop="2dp"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="12sp"
-                    tools:text="📦 Размер данных: 1.50 МБ • Файлов: 6"
+                    tools:text="Размер данных: 1,50 МБ • Файлов: 6"
     android:breakStrategy="simple"
     android:hyphenationFrequency="none"/>
             </LinearLayout>
@@ -181,6 +187,9 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_replace_current"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:minHeight="42dp"
             style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="match_parent"
             android:layout_height="46dp"
@@ -197,6 +206,9 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_replace_remote"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:minHeight="42dp"
             style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="match_parent"
             android:layout_height="46dp"
@@ -214,6 +226,9 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_keep_both"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:minHeight="42dp"
             style="@style/EdenButton.Primary"
             android:layout_width="match_parent"
             android:layout_height="46dp"
@@ -232,6 +247,9 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_cancel_conflict"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:minHeight="42dp"
             style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="match_parent"
             android:layout_height="40dp"
@@ -246,3 +264,4 @@
     android:ellipsize="none"/>
     </LinearLayout>
 </LinearLayout>
+</androidx.core.widget.NestedScrollView>
