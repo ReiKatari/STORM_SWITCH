@@ -613,13 +613,7 @@ class SetupFragment : Fragment() {
     }
 
     private fun isFrameGenInstalled(): Boolean {
-        if (isStoragePermissionGranted()) {
-            val sharedStorm = File(android.os.Environment.getExternalStorageDirectory(), "STORM SWITCH")
-            if (sharedStorm.exists() && DirectoryInitialization.userDirectory != sharedStorm.canonicalPath) {
-                runCatching { DirectoryInitialization.initializeSharedStorage() }
-            }
-        }
-        return LosslessScalingHelper.refreshStatus()
+        return LosslessScalingHelper.isInstalled()
     }
 
     private fun areGamesConfigured(): Boolean {

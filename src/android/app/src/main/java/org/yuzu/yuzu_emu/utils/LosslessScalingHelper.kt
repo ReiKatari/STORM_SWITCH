@@ -4,6 +4,8 @@
 package org.yuzu.yuzu_emu.utils
 
 import android.net.Uri
+import android.os.Build
+import android.os.Environment
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,56 +22,68 @@ object LosslessScalingHelper {
     private val _statusText = MutableStateFlow("")
     val statusText: StateFlow<String> = _statusText.asStateFlow()
 
+    @Volatile
     private var installed: Boolean? = null
-    private var lastCheckedUserDir: String? = null
-    private var gpuSupported: Boolean? = null
+
+    @Volatile
+    private var lastCheckedPermGranted: Boolean? = null
+
+    private fun hasStorageAccess(): Boolean =
+        Build.VERSION.SDK_INT < Build.VERSION_CODES.R || Environment.isExternalStorageManager()
+
+    private fun resolveSafeUserDir(): String {
+        val raw = DirectoryInitialization.rawUserPath
+        if (!raw.isNullOrBlank()) return raw
+        return File(Environment.getExternalStorageDirectory(), "STORM SWITCH").absolutePath
+    }
+
+    fun invalidateCache() {
+        installed = null
+    }
 
     fun isInstalled(): Boolean {
-        val currentDir = runCatching { DirectoryInitialization.userDirectory }.getOrNull()
-        if (installed != true || currentDir != lastCheckedUserDir) {
-            return refreshStatus()
+        val permNow = hasStorageAccess()
+        val cached = installed
+        if (cached != null && lastCheckedPermGranted == permNow) {
+            return cached
         }
-        return installed == true
+        return refreshStatus()
     }
 
     fun isSupportedByGpu(): Boolean = true
 
     fun refreshStatus(): Boolean {
-        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.R ||
-            android.os.Environment.isExternalStorageManager()
-        ) {
-            val sharedRoot = File(android.os.Environment.getExternalStorageDirectory(), "STORM SWITCH")
-            val sharedDll = File(sharedRoot, "lossless/Lossless.dll")
-            val sharedLegacy = File(sharedRoot, "lossless/LosslessScaling.dll")
-            if ((sharedDll.exists() || sharedLegacy.exists()) &&
-                DirectoryInitialization.userDirectory != sharedRoot.canonicalPath
-            ) {
-                runCatching { DirectoryInitialization.initializeSharedStorage() }
-            }
-        }
+        val permNow = hasStorageAccess()
         migrateLegacyDll()
-        val currentDir = runCatching { DirectoryInitialization.userDirectory }.getOrNull()
-        val result = try { NativeLibrary.validateLosslessDll() == RESULT_OK } catch (_: Throwable) { false }
+        val result = try {
+            NativeLibrary.validateLosslessDll() == RESULT_OK
+        } catch (_: Exception) {
+            false
+        }
         installed = result
-        lastCheckedUserDir = currentDir
-        if (!result) {
-            try { BooleanSetting.RENDERER_FRAME_GEN.setBoolean(false) } catch (_: Throwable) {}
+        lastCheckedPermGranted = permNow
+        if (!result && DirectoryInitialization.areDirectoriesReady) {
+            try {
+                BooleanSetting.RENDERER_FRAME_GEN.setBoolean(false)
+            } catch (_: Exception) {}
         }
 
-        val context = YuzuApplication.appContext
-        _statusText.value = if (result) {
-            context.getString(R.string.lossless_scaling_installed)
-        } else {
-            context.getString(R.string.lossless_scaling_not_installed)
-        }
+        try {
+            val context = YuzuApplication.appContext
+            _statusText.value = if (result) {
+                context.getString(R.string.lossless_scaling_installed)
+            } else {
+                context.getString(R.string.lossless_scaling_not_installed)
+            }
+        } catch (_: Exception) {}
         return result
     }
 
     fun install(source: Uri): Int {
         return try {
-            var rawPath = try { NativeLibrary.getLosslessDllPath() } catch (_: Throwable) { "" }
+            var rawPath = try { NativeLibrary.getLosslessDllPath() } catch (_: Exception) { "" }
             if (rawPath.isBlank()) {
-                val userDir = DirectoryInitialization.userDirectory ?: ""
+                val userDir = resolveSafeUserDir()
                 rawPath = if (userDir.isNotBlank()) {
                     File(userDir, "lossless/Lossless.dll").absolutePath
                 } else {
@@ -79,7 +93,7 @@ object LosslessScalingHelper {
                 }
             }
             val destination = File(rawPath)
-            val fallbackUserDir = DirectoryInitialization.userDirectory ?: YuzuApplication.appContext.filesDir.absolutePath
+            val fallbackUserDir = resolveSafeUserDir().ifBlank { YuzuApplication.appContext.filesDir.absolutePath }
             val parentDir = destination.parentFile ?: File(fallbackUserDir, "lossless")
             parentDir.mkdirs()
 
@@ -93,17 +107,17 @@ object LosslessScalingHelper {
                 return RESULT_NOT_INSTALLED
             }
 
-            val result = try { NativeLibrary.prepareLosslessDll() } catch (_: Throwable) { RESULT_NOT_INSTALLED }
+            val result = try { NativeLibrary.prepareLosslessDll() } catch (_: Exception) { RESULT_NOT_INSTALLED }
             if (result != RESULT_OK) {
-                try { NativeLibrary.removeLosslessDll() } catch (_: Throwable) {}
+                try { NativeLibrary.removeLosslessDll() } catch (_: Exception) {}
             } else {
                 BooleanSetting.RENDERER_FRAME_GEN.setBoolean(true)
                 NativeConfig.saveGlobalConfig()
             }
             refreshStatus()
             result
-        } catch (t: Throwable) {
-            Log.error("[LosslessScalingHelper] Error during install: ${t.message}")
+        } catch (e: Exception) {
+            Log.error("[LosslessScalingHelper] Error during install: ${e.message}")
             refreshStatus()
             RESULT_NOT_INSTALLED
         }
@@ -118,10 +132,9 @@ object LosslessScalingHelper {
         return removed
     }
 
-
     private fun migrateLegacyDll() {
         try {
-            val userDir = DirectoryInitialization.userDirectory ?: ""
+            val userDir = resolveSafeUserDir()
             val parentDir = if (userDir.isNotBlank()) {
                 File(userDir, "lossless")
             } else {
@@ -142,7 +155,7 @@ object LosslessScalingHelper {
 
     private fun cleanCustomConfigsFrameGen() {
         try {
-            val customDir = File(DirectoryInitialization.userDirectory, "config/custom")
+            val customDir = File(resolveSafeUserDir(), "config/custom")
             if (customDir.exists() && customDir.isDirectory) {
                 customDir.listFiles { file -> file.name.endsWith(".ini") }?.forEach { iniFile ->
                     try {
@@ -151,11 +164,13 @@ object LosslessScalingHelper {
                         val newLines = lines.map { line ->
                             val trimmed = line.trim()
                             if (trimmed.startsWith("frame_gen=", ignoreCase = true) ||
-                                trimmed.startsWith("frame_gen =", ignoreCase = true)) {
+                                trimmed.startsWith("frame_gen =", ignoreCase = true)
+                            ) {
                                 modified = true
                                 "frame_gen=false"
                             } else if (trimmed.startsWith("frame_gen\\use_global=", ignoreCase = true) ||
-                                       trimmed.startsWith("frame_gen\\use_global =", ignoreCase = true)) {
+                                trimmed.startsWith("frame_gen\\use_global =", ignoreCase = true)
+                            ) {
                                 modified = true
                                 "frame_gen\\use_global=true"
                             } else {

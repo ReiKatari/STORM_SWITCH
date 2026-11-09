@@ -20,11 +20,20 @@ import org.yuzu.yuzu_emu.utils.PreferenceUtil.migratePreference
 
 object DirectoryInitialization {
     private var userPath: String? = null
+    @Volatile
+    private var isInitializing: Boolean = false
 
+    @Volatile
     var areDirectoriesReady: Boolean = false
 
+    val rawUserPath: String?
+        get() = userPath
+
+    @Synchronized
     fun start() {
-        if (!areDirectoriesReady) {
+        if (!areDirectoriesReady && !isInitializing) {
+            isInitializing = true
+            try {
             initializeInternalStorage()
             try {
                 NativeConfig.initializeGlobalConfig()
@@ -57,17 +66,22 @@ object DirectoryInitialization {
             try {
                 NativeLibrary.initializeSystem(false)
                 NativeLibrary.reloadProfiles()
+                LosslessScalingHelper.invalidateCache()
             } catch (e: Throwable) {
                 android.util.Log.e("STORM_SWITCH", "Failed NativeLibrary.initializeSystem: ${e.message}")
             }
             migrateSettings()
             areDirectoriesReady = true
+            LosslessScalingHelper.invalidateCache()
+            } finally {
+                isInitializing = false
+            }
         }
     }
 
     val userDirectory: String?
         get() {
-            if (!areDirectoriesReady) {
+            if (!areDirectoriesReady && !isInitializing) {
                 start()
             }
             return userPath ?: (File(Environment.getExternalStorageDirectory(), "STORM SWITCH").canonicalPath)
@@ -104,7 +118,6 @@ object DirectoryInitialization {
 
                 userPath = rootExternal.canonicalPath
                 NativeLibrary.setAppDirectory(userPath!!)
-                runCatching { LosslessScalingHelper.refreshStatus() }
                 areDirectoriesReady = true
                 NativeConfig.initializeGlobalConfig()
 
@@ -131,6 +144,7 @@ object DirectoryInitialization {
                 }
 
                 NativeLibrary.reloadProfiles()
+                LosslessScalingHelper.invalidateCache()
             }
         } catch (e: Throwable) {
             android.util.Log.e("STORM_SWITCH", "Failed to initializeSharedStorage: ${e.message}")
@@ -201,7 +215,6 @@ object DirectoryInitialization {
 
         userPath = stormExternalDir.canonicalPath
         NativeLibrary.setAppDirectory(userPath!!)
-                runCatching { LosslessScalingHelper.refreshStatus() }
     }
 
     private fun migrateSettings() {
