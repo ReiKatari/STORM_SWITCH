@@ -34,7 +34,7 @@
             app:cardElevation="0dp"
             app:cardBackgroundColor="?attr/colorSurfaceVariant"
             app:strokeColor="?attr/colorOutline"
-            app:strokeWidth="1dp">
+            app:strokeWidth="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -74,7 +74,7 @@
                     app:icon="@drawable/ic_clear"
                     app:iconSize="18dp"
                     app:iconTint="?attr/colorOnSurfaceVariant"
-        app:strokeWidth="1dp"
+        app:strokeWidth="0dp"
         app:strokeColor="?attr/colorOutline"
     android:breakStrategy="simple"
     android:hyphenationFrequency="none"

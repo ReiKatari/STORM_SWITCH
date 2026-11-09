@@ -114,453 +114,162 @@ DerivedTokens ComputeTokens(const StormTheme::Palette& pal, Preset preset) {
     const QString cardGlass = RgbaCss(t.card, pal.is_light ? 235 : 205);
     const QString surfGlass = RgbaCss(t.surface, pal.is_light ? 242 : 218);
 
+    const QColor inputHoverBg = MixColors(QColor(pal.inputBg), t.accent, pal.is_light ? 0.08 : 0.14);
+    const QColor inputFocusBg = MixColors(QColor(pal.surface), t.accent, pal.is_light ? 0.12 : 0.20);
+    const QString subtleDivider = RgbaCss(t.border, pal.is_light ? 110 : 90);
+
     switch (preset) {
     case Preset::HyperionGlass:
     default: {
-        t.cardRadius = QStringLiteral("13px");
+        t.cardRadius = QStringLiteral("12px");
+        t.btnRadius = QStringLiteral("8px");
+        t.inputRadius = QStringLiteral("8px");
+        t.tabRadius = QStringLiteral("8px");
+        t.windowBackdrop = pal.bg;
+        break;
+    }
+    case Preset::CyberDeck: {
+        t.cardRadius = QStringLiteral("6px");
+        t.btnRadius = QStringLiteral("5px");
+        t.inputRadius = QStringLiteral("5px");
+        t.tabRadius = QStringLiteral("5px");
+        t.windowBackdrop = pal.bg;
+        break;
+    }
+    case Preset::AuroraQuantum: {
+        t.cardRadius = QStringLiteral("14px");
         t.btnRadius = QStringLiteral("10px");
+        t.inputRadius = QStringLiteral("10px");
+        t.tabRadius = QStringLiteral("10px");
+        t.windowBackdrop = pal.bg;
+        break;
+    }
+    case Preset::OrbitalSpatial: {
+        t.cardRadius = QStringLiteral("14px");
+        t.btnRadius = QStringLiteral("9px");
         t.inputRadius = QStringLiteral("9px");
         t.tabRadius = QStringLiteral("9px");
-        t.windowBackdrop = QStringLiteral(
-            "qradialgradient(cx:0.18, cy:0.10, radius:1.18, fx:0.18, fy:0.10, "
-            "stop:0 %1, stop:0.46 %2, stop:1 %3)")
-            .arg(MixColors(t.surface, t.accent, pal.is_light ? 0.10 : 0.18).name(),
-                 pal.surface, pal.bg);
-
-        t.btnNormal = QStringLiteral(
-            "background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %1, stop:0.48 %2, stop:1 %3);"
-            "border-top: 1.5px solid %4;"
-            "border-left: 1px solid %5;"
-            "border-right: 1px solid %5;"
-            "border-bottom: 3px solid %6;"
-            "border-radius: 10px;"
-            "padding: 6px 16px;")
-            .arg(btnTop.name(), btnMid.name(), btnBot.name(), specBright, RgbaCss(t.border, 195), t.deepShadow.name());
-        t.btnHover = QStringLiteral(
-            "background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %1, stop:0.50 %2, stop:1 %3);"
-            "border-top: 1.5px solid %4;"
-            "border-left: 1px solid %5;"
-            "border-right: 1px solid %5;"
-            "border-bottom: 3px solid %6;")
-            .arg(hoverTop.name(), btnTop.name(), hoverBot.name(), t.accentLight.name(), pal.accent, t.accentDark.name());
-        t.btnPressed = QStringLiteral(
-            "background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %1, stop:1 %2);"
-            "border: 1px solid %3;"
-            "border-top: 2px solid %4;"
-            "padding: 8px 16px 4px 16px;")
-            .arg(btnBot.name(), btnMid.name(), pal.accent, t.deepShadow.name());
-
-        t.inputNormal = QStringLiteral(
-            "background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %1, stop:1 %2);"
-            "border-top: 2px solid %3;"
-            "border-left: 1px solid %4;"
-            "border-right: 1px solid %4;"
-            "border-bottom: 1px solid %5;"
-            "border-radius: 9px;")
-            .arg(t.deepWell.name(), pal.inputBg, t.deepShadow.name(), pal.border, specSoft);
-        t.inputHover = QStringLiteral(
-            "border-top: 1.5px solid %1; border-left: 1px solid %1; border-right: 1px solid %1; border-bottom: 1.5px solid %2; background-color: %3;")
-            .arg(pal.accent, t.accentLight.name(), pal.surface);
-        t.inputFocus = QStringLiteral(
-            "border: 1.5px solid %1; background-color: %2;")
-            .arg(t.accentLight.name(), pal.surface);
-
-        t.groupBoxRule = QStringLiteral(
-            "background-color: %1;"
-            "border-top: 1.5px solid %2;"
-            "border-left: 1px solid %3;"
-            "border-right: 1px solid %3;"
-            "border-bottom: 3px solid %4;"
-            "border-radius: 13px;"
-            "margin-top: 14px;"
-            "padding: 18px 14px 13px 14px;")
-            .arg(cardGlass, specSoft, RgbaCss(t.accent, 68), t.deepShadow.name());
-        t.groupTitleRule = QStringLiteral(
-            "subcontrol-origin: margin; subcontrol-position: top left; top: 1px; left: 14px;"
-            "padding: 2px 10px; border-radius: 7px; font-weight: 800; font-size: 12px;"
-            "color: %1; background-color: %2; border: 1px solid %3;")
-            .arg(pal.is_light ? pal.accent : t.accentLight.name(), pal.surface, RgbaCss(t.accent, 95));
+        t.windowBackdrop = pal.bg;
         break;
     }
-
-    case Preset::CyberDeck: {
-        t.cardRadius = QStringLiteral("4px");
-        t.btnRadius = QStringLiteral("3px");
-        t.inputRadius = QStringLiteral("3px");
-        t.tabRadius = QStringLiteral("3px");
-        t.windowBackdrop = QStringLiteral(
-            "qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-            "stop:0 %1, stop:0.52 %2, stop:0.86 %3, stop:1 %1)")
-            .arg(pal.bg, pal.surface, MixColors(t.bg, t.accent, pal.is_light ? 0.08 : 0.15).name());
-
-        t.btnNormal = QStringLiteral(
-            "background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %1, stop:1 %2);"
-            "border-left: 3.5px solid %3;"
-            "border-top: 1px solid %4;"
-            "border-right: 1px solid %5;"
-            "border-bottom: 3.5px solid %6;"
-            "border-radius: 3px;"
-            "padding: 6px 16px;")
-            .arg(btnTop.name(), btnBot.name(), pal.accent, RgbaCss(t.accentLight, 120), pal.border, t.deepShadow.name());
-        t.btnHover = QStringLiteral(
-            "background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 %1, stop:0.35 %2, stop:1 %3);"
-            "border-left: 4px solid %4;"
-            "border-top: 1px solid %4;"
-            "border-right: 1px solid %5;"
-            "border-bottom: 3.5px solid %6;")
-            .arg(accentTintMid, hoverTop.name(), btnMid.name(), t.accentLight.name(), pal.accent, t.deepShadow.name());
-        t.btnPressed = QStringLiteral(
-            "background-color: %1;"
-            "border-left: 4px solid %2;"
-            "border-top: 2px solid %3;"
-            "border-right: 1px solid %2;"
-            "border-bottom: 1px solid %2;"
-            "padding: 8px 16px 4px 16px;")
-            .arg(btnBot.name(), pal.accent, t.deepShadow.name());
-
-        t.inputNormal = QStringLiteral(
-            "background-color: %1;"
-            "border-left: 3px solid %2;"
-            "border-top: 2px solid %3;"
-            "border-right: 1px solid %4;"
-            "border-bottom: 1px solid %4;"
-            "border-radius: 3px;")
-            .arg(pal.inputBg, pal.accent, t.deepShadow.name(), pal.border);
-        t.inputHover = QStringLiteral(
-            "border-left: 3.5px solid %1; border-top: 1px solid %1; border-right: 1px solid %1; border-bottom: 1.5px solid %1; background-color: %2;")
-            .arg(t.accentLight.name(), pal.surface);
-        t.inputFocus = QStringLiteral(
-            "border-left: 4px solid %1; border-top: 1.5px solid %1; border-right: 1.5px solid %1; border-bottom: 1.5px solid %1; background-color: %2;")
-            .arg(t.accentLight.name(), pal.surface);
-
-        t.groupBoxRule = QStringLiteral(
-            "background-color: %1;"
-            "border-left: 3.5px solid %2;"
-            "border-top: 1px solid %3;"
-            "border-right: 1px solid %3;"
-            "border-bottom: 3px solid %4;"
-            "border-radius: 4px;"
-            "margin-top: 14px;"
-            "padding: 18px 14px 13px 14px;")
-            .arg(surfGlass, pal.accent, pal.border, t.deepShadow.name());
-        t.groupTitleRule = QStringLiteral(
-            "subcontrol-origin: margin; subcontrol-position: top left; top: 1px; left: 10px;"
-            "padding: 2px 10px; border-radius: 2px; font-weight: 800; font-size: 12px;"
-            "color: %1; background-color: %2; border-left: 3px solid %3; border-top: 1px solid %3; border-right: 1px solid %4; border-bottom: 1px solid %4;")
-            .arg(pal.textPrimary, pal.card, pal.accent, pal.border);
-        break;
-    }
-
-    case Preset::AuroraQuantum: {
-        t.cardRadius = QStringLiteral("18px");
-        t.btnRadius = QStringLiteral("15px");
-        t.inputRadius = QStringLiteral("14px");
-        t.tabRadius = QStringLiteral("13px");
-        t.windowBackdrop = QStringLiteral(
-            "qlineargradient(x1:0, y1:0, x2:1, y2:0.88, "
-            "stop:0 %1, stop:0.36 %2, stop:0.70 %3, stop:1 %4)")
-            .arg(MixColors(t.bg, t.accent, pal.is_light ? 0.12 : 0.22).name(),
-                 pal.bg, pal.surface,
-                 MixColors(t.surface, t.accentLight, pal.is_light ? 0.10 : 0.16).name());
-
-        const QColor metalUpper = MixColors(btnTop, t.accentLight, 0.18);
-        const QColor metalHorizon = MixColors(btnMid, t.accent, 0.10);
-        t.btnNormal = QStringLiteral(
-            "background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %1, stop:0.49 %2, stop:0.52 %3, stop:1 %4);"
-            "border-top: 1.5px solid %5;"
-            "border-left: 1px solid %6;"
-            "border-right: 1px solid %6;"
-            "border-bottom: 3px solid %7;"
-            "border-radius: 15px;"
-            "padding: 6px 18px;")
-            .arg(metalUpper.name(), metalHorizon.name(), btnMid.darker(106).name(), btnBot.name(),
-                 RgbaCss(t.accentLight, 175), RgbaCss(t.accent, 90), t.deepShadow.name());
-        t.btnHover = QStringLiteral(
-            "background-color: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 %1, stop:0.50 %2, stop:1 %3);"
-            "border-top: 1.5px solid %4;"
-            "border-left: 1.5px solid %5;"
-            "border-right: 1.5px solid %5;"
-            "border-bottom: 3px solid %6;")
-            .arg(hoverTop.name(), MixColors(btnTop, t.accent, 0.30).name(), hoverBot.name(),
-                 specBright, t.accentLight.name(), t.accentDark.name());
-        t.btnPressed = QStringLiteral(
-            "background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %1, stop:1 %2);"
-            "border: 1.5px solid %3;"
-            "padding: 8px 18px 4px 18px;")
-            .arg(btnBot.name(), metalHorizon.name(), pal.accent);
-
-        t.inputNormal = QStringLiteral(
-            "background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %1, stop:1 %2);"
-            "border-top: 2px solid %3;"
-            "border-left: 1px solid %4;"
-            "border-right: 1px solid %4;"
-            "border-bottom: 1.5px solid %5;"
-            "border-radius: 14px;")
-            .arg(t.deepWell.name(), pal.inputBg, t.deepShadow.name(), RgbaCss(t.accent, 72), RgbaCss(t.accentLight, 95));
-        t.inputHover = QStringLiteral(
-            "border: 1.5px solid %1; background-color: %2;")
-            .arg(pal.accent, pal.surface);
-        t.inputFocus = QStringLiteral(
-            "border: 2px solid %1; background-color: %2;")
-            .arg(t.accentLight.name(), pal.surface);
-
-        t.groupBoxRule = QStringLiteral(
-            "background-color: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 %1, stop:1 %2);"
-            "border-top: 1.5px solid %3;"
-            "border-left: 1px solid %4;"
-            "border-right: 1px solid %4;"
-            "border-bottom: 3px solid %5;"
-            "border-radius: 18px;"
-            "margin-top: 15px;"
-            "padding: 19px 15px 14px 15px;")
-            .arg(cardGlass, surfGlass, RgbaCss(t.accentLight, 135), RgbaCss(t.accent, 75), t.deepShadow.name());
-        t.groupTitleRule = QStringLiteral(
-            "subcontrol-origin: margin; subcontrol-position: top left; top: 1px; left: 16px;"
-            "padding: 2px 12px; border-radius: 10px; font-weight: 800; font-size: 12px;"
-            "color: #FFFFFF; background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 %1, stop:1 %2);"
-            "border: 1px solid %3;")
-            .arg(t.accentDark.name(), pal.accent, t.accentLight.name());
-        break;
-    }
-
-    case Preset::OrbitalSpatial: {
-        t.cardRadius = QStringLiteral("16px");
-        t.btnRadius = QStringLiteral("12px");
-        t.inputRadius = QStringLiteral("11px");
-        t.tabRadius = QStringLiteral("10px");
-        t.windowBackdrop = QStringLiteral(
-            "qradialgradient(cx:0.50, cy:0.02, radius:1.15, fx:0.50, fy:0.02, "
-            "stop:0 %1, stop:0.42 %2, stop:1 %3)")
-            .arg(MixColors(t.card, t.accent, pal.is_light ? 0.12 : 0.22).name(),
-                 pal.surface, pal.bg);
-
-        t.btnNormal = QStringLiteral(
-            "background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %1, stop:1 %2);"
-            "border-top: 1.5px solid %3;"
-            "border-left: 1px solid %4;"
-            "border-right: 1px solid %4;"
-            "border-bottom: 3.5px solid %5;"
-            "border-radius: 12px;"
-            "padding: 6px 16px;")
-            .arg(RgbaCss(btnTop, 235), RgbaCss(btnBot, 235), specBright, specSoft, t.deepShadow.name());
-        t.btnHover = QStringLiteral(
-            "background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %1, stop:1 %2);"
-            "border-top: 1.5px solid #FFFFFF;"
-            "border-left: 1px solid %3;"
-            "border-right: 1px solid %3;"
-            "border-bottom: 3.5px solid %4;")
-            .arg(hoverTop.name(), hoverBot.name(), t.accentLight.name(), t.accentDark.name());
-        t.btnPressed = QStringLiteral(
-            "background-color: %1;"
-            "border-top: 2px solid %2;"
-            "border-left: 1px solid %3;"
-            "border-right: 1px solid %3;"
-            "border-bottom: 1px solid %3;"
-            "padding: 8px 16px 4px 16px;")
-            .arg(btnBot.name(), t.deepShadow.name(), pal.accent);
-
-        t.inputNormal = QStringLiteral(
-            "background-color: %1;"
-            "border-top: 2px solid %2;"
-            "border-left: 1px solid %3;"
-            "border-right: 1px solid %3;"
-            "border-bottom: 1.5px solid %4;"
-            "border-radius: 11px;")
-            .arg(RgbaCss(QColor(pal.inputBg), 230), t.deepShadow.name(), pal.border, specSoft);
-        t.inputHover = QStringLiteral(
-            "border: 1.5px solid %1; background-color: %2;")
-            .arg(pal.accent, pal.surface);
-        t.inputFocus = QStringLiteral(
-            "border: 1.5px solid %1; border-top: 1.5px solid #FFFFFF; background-color: %2;")
-            .arg(t.accentLight.name(), pal.surface);
-
-        t.groupBoxRule = QStringLiteral(
-            "background-color: %1;"
-            "border-top: 1.5px solid %2;"
-            "border-left: 1px solid %3;"
-            "border-right: 1px solid %3;"
-            "border-bottom: 3.5px solid %4;"
-            "border-radius: 16px;"
-            "margin-top: 14px;"
-            "padding: 18px 14px 14px 14px;")
-            .arg(cardGlass, specBright, specSoft, t.deepShadow.name());
-        t.groupTitleRule = QStringLiteral(
-            "subcontrol-origin: margin; subcontrol-position: top left; top: 1px; left: 16px;"
-            "padding: 2px 11px; border-radius: 9px; font-weight: 800; font-size: 12px;"
-            "color: %1; background-color: %2; border-top: 1px solid %3; border-bottom: 2px solid %4; border-left: 1px solid %5; border-right: 1px solid %5;")
-            .arg(pal.is_light ? pal.accent : t.accentLight.name(), pal.surface, specBright, t.deepShadow.name(), RgbaCss(t.accent, 85));
-        break;
-    }
-
     case Preset::ChronoNexus: {
         t.cardRadius = QStringLiteral("8px");
         t.btnRadius = QStringLiteral("6px");
         t.inputRadius = QStringLiteral("6px");
         t.tabRadius = QStringLiteral("6px");
-        t.windowBackdrop = QStringLiteral(
-            "qlineargradient(x1:0, y1:0, x2:0, y2:1, "
-            "stop:0 %1, stop:0.20 %2, stop:0.84 %2, stop:1 %3)")
-            .arg(pal.surface, pal.bg, MixColors(t.bg, t.accent, pal.is_light ? 0.08 : 0.16).name());
-
-        t.btnNormal = QStringLiteral(
-            "background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %1, stop:1 %2);"
-            "border-top: 2px solid %3;"
-            "border-left: 1.5px solid %4;"
-            "border-right: 1.5px solid %5;"
-            "border-bottom: 4px solid %5;"
-            "border-radius: 6px;"
-            "padding: 6px 16px;"
-            "font-weight: 700;")
-            .arg(btnTop.name(), btnBot.name(), RgbaCss(t.accentLight, 150), pal.border, t.deepShadow.name());
-        t.btnHover = QStringLiteral(
-            "background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %1, stop:1 %2);"
-            "border-top: 2px solid %3;"
-            "border-left: 1.5px solid %4;"
-            "border-right: 1.5px solid %5;"
-            "border-bottom: 4px solid %5;")
-            .arg(hoverTop.name(), hoverBot.name(), t.accentLight.name(), pal.accent, t.deepShadow.name());
-        t.btnPressed = QStringLiteral(
-            "background-color: %1;"
-            "border-top: 3px solid %2;"
-            "border-left: 1.5px solid %2;"
-            "border-right: 1px solid %3;"
-            "border-bottom: 1px solid %3;"
-            "padding: 8px 16px 4px 16px;")
-            .arg(btnBot.name(), t.deepShadow.name(), pal.accent);
-
-        t.inputNormal = QStringLiteral(
-            "background-color: %1;"
-            "border-top: 2.5px solid %2;"
-            "border-left: 2px solid %2;"
-            "border-right: 1px solid %3;"
-            "border-bottom: 1.5px solid %4;"
-            "border-radius: 6px;")
-            .arg(pal.inputBg, t.deepShadow.name(), pal.border, RgbaCss(t.accentLight, 95));
-        t.inputHover = QStringLiteral(
-            "border-top: 2px solid %1; border-left: 1.5px solid %2; border-right: 1.5px solid %2; border-bottom: 2px solid %2; background-color: %3;")
-            .arg(t.deepShadow.name(), pal.accent, pal.surface);
-        t.inputFocus = QStringLiteral(
-            "border: 2px solid %1; background-color: %2;")
-            .arg(t.accentLight.name(), pal.surface);
-
-        t.groupBoxRule = QStringLiteral(
-            "background-color: %1;"
-            "border-top: 2px solid %2;"
-            "border-left: 1px solid %3;"
-            "border-right: 1.5px solid %4;"
-            "border-bottom: 3.5px solid %4;"
-            "border-radius: 8px;"
-            "margin-top: 14px;"
-            "padding: 18px 14px 13px 14px;")
-            .arg(pal.card, pal.accent, pal.border, t.deepShadow.name());
-        t.groupTitleRule = QStringLiteral(
-            "subcontrol-origin: margin; subcontrol-position: top left; top: 0px; left: 12px;"
-            "padding: 2px 10px; border-radius: 4px; font-weight: 800; font-size: 12px;"
-            "color: %1; background-color: %2; border-top: 2px solid %3; border-bottom: 2px solid %4; border-left: 1px solid %3; border-right: 1px solid %3;")
-            .arg(pal.is_light ? pal.accent : t.accentLight.name(), pal.surface, pal.accent, t.deepShadow.name());
+        t.windowBackdrop = pal.bg;
         break;
     }
     }
 
+    t.btnNormal = QStringLiteral(
+        "background-color: %1;"
+        "border: none;"
+        "border-radius: %2;"
+        "padding: 6px 16px;"
+        "outline: none;")
+        .arg(pal.buttonBg, t.btnRadius);
+
+    t.btnHover = QStringLiteral(
+        "background-color: %1;"
+        "border: none;")
+        .arg(hoverTop.name());
+
+    t.btnPressed = QStringLiteral(
+        "background-color: %1;"
+        "border: none;"
+        "padding: 6px 16px;")
+        .arg(btnBot.name());
+
+    t.inputNormal = QStringLiteral(
+        "background-color: %1;"
+        "border: none;"
+        "border-radius: %2;"
+        "outline: none;")
+        .arg(pal.inputBg, t.inputRadius);
+
+    t.inputHover = QStringLiteral(
+        "border: none;"
+        "background-color: %1;")
+        .arg(inputHoverBg.name());
+
+    t.inputFocus = QStringLiteral(
+        "border: none;"
+        "background-color: %1;")
+        .arg(inputFocusBg.name());
+
+    t.groupBoxRule = QStringLiteral(
+        "background-color: %1;"
+        "border: none;"
+        "border-radius: %2;"
+        "margin-top: 14px;"
+        "padding: 18px 14px 13px 14px;")
+        .arg(cardGlass, t.cardRadius);
+
+    t.groupTitleRule = QStringLiteral(
+        "subcontrol-origin: margin; subcontrol-position: top left; top: 1px; left: 12px;"
+        "padding: 2px 10px; border-radius: 6px; font-weight: 700; font-size: 12px;"
+        "color: %1; background-color: %2; border: none;")
+        .arg(pal.is_light ? pal.accent : t.accentLight.name(), pal.surface);
+
     t.btnPrimaryNormal = QStringLiteral(
-        "background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %1, stop:1 %2);"
+        "background-color: %1;"
         "color: #FFFFFF;"
-        "border-top: 1.5px solid %3;"
-        "border-left: 1px solid %4;"
-        "border-right: 1px solid %4;"
-        "border-bottom: 3.5px solid %5;"
-        "border-radius: %6;"
+        "border: none;"
+        "border-radius: %2;"
         "padding: 6px 18px;"
-        "font-weight: 800;")
-        .arg(t.accentLight.name(), pal.accent, specBright, t.accentLight.name(), t.accentDark.darker(135).name(), t.btnRadius);
+        "font-weight: 700;"
+        "outline: none;")
+        .arg(pal.accent, t.btnRadius);
 
     t.btnPrimaryHover = QStringLiteral(
-        "background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %1, stop:1 %2);"
+        "background-color: %1;"
         "color: #FFFFFF;"
-        "border-top: 1.5px solid #FFFFFF;"
-        "border-left: 1px solid %1;"
-        "border-right: 1px solid %1;"
-        "border-bottom: 3.5px solid %3;")
-        .arg(t.accentLight.lighter(115).name(), t.accentLight.name(), t.accentDark.name());
+        "border: none;")
+        .arg(t.accentLight.name());
 
     t.btnPrimaryPressed = QStringLiteral(
         "background-color: %1;"
         "color: #FFFFFF;"
-        "border: 1.5px solid %2;"
-        "padding: 8px 18px 4px 18px;")
-        .arg(t.accentDark.name(), t.accentLight.name());
+        "border: none;"
+        "padding: 6px 18px;")
+        .arg(t.accentDark.name());
 
     t.tabPaneRule = QStringLiteral(
-        "border: 1px solid %1; border-bottom: 3px solid %2; border-radius: %3; background-color: %4; top: -1px;")
-        .arg(pal.border, t.deepShadow.name(), t.cardRadius, pal.bg);
+        "border: none; border-radius: %1; background-color: %2; top: 0px;")
+        .arg(t.cardRadius, pal.bg);
 
-    if (preset == Preset::AuroraQuantum || preset == Preset::OrbitalSpatial) {
-        t.tabRule = QStringLiteral(
-            "QTabBar::tab {"
-            "  background-color: %1; color: %2; border: 1px solid %3; border-bottom: 2px solid %4;"
-            "  border-radius: %5; padding: 7px 16px; margin: 2px 4px 4px 0px; font-weight: 600;"
-            "}"
-            "QTabBar::tab:hover {"
-            "  background-color: %6; color: %7; border: 1px solid %8;"
-            "}"
-            "QTabBar::tab:selected {"
-            "  background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 %8, stop:1 %9);"
-            "  color: #FFFFFF; border-top: 1.5px solid %10; border-bottom: 2.5px solid %4; font-weight: 800;"
-            "}")
-            .arg(pal.card, pal.textSecondary, pal.border, t.deepShadow.name(), t.tabRadius,
-                 accentTintSoft, pal.textPrimary, pal.accent, t.accentDark.name(), specBright);
-    } else if (preset == Preset::CyberDeck) {
-        t.tabRule = QStringLiteral(
-            "QTabBar::tab {"
-            "  background-color: %1; color: %2; border: 1px solid %3; border-left: 2px solid %3;"
-            "  border-top-left-radius: 3px; border-top-right-radius: 3px; padding: 8px 16px; margin-right: 3px; font-weight: 700;"
-            "}"
-            "QTabBar::tab:hover {"
-            "  background-color: %4; color: %5; border-left: 3px solid %6;"
-            "}"
-            "QTabBar::tab:selected {"
-            "  background-color: %7; color: %6; border-left: 3.5px solid %6; border-top: 1.5px solid %6; border-right: 1px solid %3; border-bottom: 1px solid %7; font-weight: 800;"
-            "}")
-            .arg(pal.bg, pal.textSecondary, pal.border, accentTintSoft, pal.textPrimary, pal.accent, pal.surface);
-    } else {
-        t.tabRule = QStringLiteral(
-            "QTabBar::tab {"
-            "  background-color: %1; color: %2; border: 1px solid %3; border-bottom: none;"
-            "  border-top-left-radius: %4; border-top-right-radius: %4; padding: 8px 16px; margin-right: 3px; font-weight: 600;"
-            "}"
-            "QTabBar::tab:hover {"
-            "  background-color: %5; color: %6; border-top: 2px solid %7;"
-            "}"
-            "QTabBar::tab:selected {"
-            "  background-color: %8; color: %9; border-top: 2.5px solid %7; border-left: 1px solid %3; border-right: 1px solid %3; border-bottom: 1px solid %8; font-weight: 800;"
-            "}")
-            .arg(pal.bg, pal.textSecondary, pal.border, t.tabRadius,
-                 pal.card, pal.textPrimary, pal.accent, pal.surface,
-                 pal.is_light ? pal.accent : t.accentLight.name());
-    }
+    t.tabRule = QStringLiteral(
+        "QTabBar::tab {"
+        "  background-color: %1; color: %2; border: none;"
+        "  border-radius: %3; padding: 7px 16px; margin: 2px 4px 4px 0px; font-weight: 600;"
+        "}"
+        "QTabBar::tab:hover {"
+        "  background-color: %4; color: %5; border: none;"
+        "}"
+        "QTabBar::tab:selected {"
+        "  background-color: %6; color: #FFFFFF; border: none; font-weight: 700;"
+        "}")
+        .arg(pal.card, pal.textSecondary, t.tabRadius,
+             accentTintSoft, pal.textPrimary, pal.accent);
 
     t.selectorListRule = QStringLiteral(
         "QListWidget#selectorList, QListWidget#perGameSelectorList {"
-        "  background-color: %1; border: 1px solid %2; border-bottom: 3px solid %3; border-radius: %4; padding: 6px; outline: none;"
+        "  background-color: %1; border: none; border-radius: %2; padding: 6px; outline: none;"
         "}"
         "QListWidget#selectorList::item, QListWidget#perGameSelectorList::item {"
-        "  color: %5; background: transparent; border: 1px solid transparent; border-radius: %6;"
-        "  padding: 10px 14px; font-size: 13px; font-weight: 600; margin-bottom: 4px;"
+        "  color: %3; background: transparent; border: none; border-radius: %4;"
+        "  padding: 10px 14px; font-size: 13px; font-weight: 600; margin-bottom: 3px;"
         "}"
         "QListWidget#selectorList::item:hover, QListWidget#perGameSelectorList::item:hover {"
-        "  color: %5; background-color: %7; border: 1px solid %8;"
+        "  color: %3; background-color: %5; border: none;"
         "}"
         "QListWidget#selectorList::item:selected, QListWidget#perGameSelectorList::item:selected {"
-        "  color: #FFFFFF;"
-        "  background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 %9, stop:1 %10);"
-        "  border-top: 1px solid %11; border-left: 3px solid %12; border-right: 1px solid %9; border-bottom: 2.5px solid %3;"
-        "  font-weight: 800;"
+        "  color: #FFFFFF; background-color: %6; border: none; font-weight: 700;"
         "}")
-        .arg(surfGlass, pal.border, t.deepShadow.name(), t.cardRadius,
-             pal.textPrimary, t.btnRadius,
-             accentTintSoft, RgbaCss(t.accent, 110),
-             pal.accent, t.accentDark.name(), specBright, t.accentLight.name());
+        .arg(surfGlass, t.cardRadius, pal.textPrimary, t.btnRadius, accentTintSoft, pal.accent);
 
+    Q_UNUSED(subtleDivider);
     return t;
 }
 
@@ -569,14 +278,14 @@ QString BuildCoreControlsQss(const StormTheme::Palette& pal, const DerivedTokens
     qss.reserve(8192);
 
     qss += QStringLiteral(
-        "QLabel, QCheckBox, QRadioButton { color: %1; background: transparent; background-color: transparent; }"
+        "QLabel, QCheckBox, QRadioButton { color: %1; background: transparent; background-color: transparent; outline: none; }"
         "QWidget#StormSettingRow, QGroupBox QLabel, QGroupBox QCheckBox, QGroupBox QRadioButton { background: transparent; background-color: transparent; }"
         "QTabWidget, QTabWidget > QStackedWidget, QTabWidget QStackedWidget, QStackedWidget {"
         "  background: %2; background-color: %2; color: %1;"
         "}"
         "QScrollArea, QScrollArea > QWidget, QScrollArea > QWidget > QWidget, "
         "QWidget#qt_scrollarea_viewport, QWidget#scrollAreaWidgetContents {"
-        "  background: %2; background-color: %2; color: %1;"
+        "  background: %2; background-color: %2; color: %1; border: none;"
         "}"
     ).arg(pal.textPrimary, pal.bg);
 
@@ -588,7 +297,7 @@ QString BuildCoreControlsQss(const StormTheme::Palette& pal, const DerivedTokens
     qss += t.tabRule;
     qss += t.selectorListRule;
 
-    // 3D Volumetric Inputs, SpinBoxes & Dropdowns
+    // Clean Borderless Inputs, SpinBoxes & Dropdowns (Zero Faceted Stroke Glow)
     qss += QStringLiteral(
         "QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox, QDateTimeEdit {"
         "  %1"
@@ -607,64 +316,67 @@ QString BuildCoreControlsQss(const StormTheme::Palette& pal, const DerivedTokens
         "  %5"
         "}"
         "QComboBox::drop-down {"
-        "  subcontrol-origin: border; subcontrol-position: top right; width: 24px;"
-        "  margin: 1px 1px 1px 0px; border-left: 1px solid %6;"
+        "  subcontrol-origin: padding; subcontrol-position: top right; width: 24px;"
+        "  margin: 0px; border: none;"
         "  border-top-right-radius: %7; border-bottom-right-radius: %7;"
-        "  background-color: %8;"
+        "  background-color: transparent;"
         "}"
         "QComboBox::down-arrow { image: url(:/icons/down_arrow.svg); width: 12px; height: 12px; }"
         "QComboBoxPrivateContainer, QComboBox QListView, QComboBox QAbstractItemView {"
-        "  background-color: %9; color: %2; border: 1.5px solid %3; border-radius: %7;"
+        "  background-color: %9; color: %2; border: 1px solid %6; border-radius: %7;"
         "  selection-background-color: %3; selection-color: #FFFFFF; outline: none; padding: 4px;"
         "}"
         "QComboBox QAbstractItemView::item {"
-        "  min-height: 26px; padding: 4px 10px; border-radius: 5px; color: %2;"
+        "  min-height: 26px; padding: 4px 10px; border-radius: 5px; color: %2; border: none;"
         "}"
         "QComboBox QAbstractItemView::item:selected, QComboBox QAbstractItemView::item:hover {"
-        "  background-color: %3; color: #FFFFFF;"
+        "  background-color: %3; color: #FFFFFF; border: none;"
         "}")
         .arg(t.inputNormal, pal.textPrimary, pal.accent, t.inputHover, t.inputFocus,
-             pal.border, t.inputRadius, RgbaCss(t.accent, 28), pal.surface);
+             pal.border, t.inputRadius, RgbaCss(t.accent, 20), pal.surface);
 
-    // 3D Volumetric Sliders & Indicators
+    // Clean Sliders & Indicators (Zero harsh border glow)
     qss += QStringLiteral(
         "QSlider::groove:horizontal {"
-        "  border: 1px solid %1; border-top: 2px solid %2; height: 7px; background: %3; border-radius: 4px;"
+        "  border: none; height: 6px; background: %3; border-radius: 3px;"
         "}"
         "QSlider::sub-page:horizontal {"
-        "  background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 %4, stop:1 %5); border-radius: 4px;"
+        "  background: %4; border-radius: 3px;"
         "}"
         "QSlider::thumb:horizontal {"
-        "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FFFFFF, stop:1 %5);"
-        "  border: 2px solid %4; width: 16px; margin-top: -6px; margin-bottom: -6px; border-radius: 8px;"
+        "  background: #FFFFFF;"
+        "  border: none; width: 16px; margin-top: -5px; margin-bottom: -5px; border-radius: 8px;"
         "}"
-        "QSlider::thumb:horizontal:hover { background: #FFFFFF; border: 2px solid %5; }"
+        "QSlider::thumb:horizontal:hover { background: %5; border: none; }"
         "QCheckBox::indicator:unchecked, QGroupBox::indicator:unchecked, QTreeView::indicator:unchecked, QListView::indicator:unchecked, QTableView::indicator:unchecked {"
-        "  width: 16px; height: 16px; border: 1.5px solid #EF4444; border-radius: 4px; background: rgba(239, 68, 68, 0.18); image: none;"
+        "  width: 16px; height: 16px; border: none; border-radius: 4px; background: %3; image: none;"
         "}"
         "QCheckBox::indicator:checked, QGroupBox::indicator:checked, QTreeView::indicator:checked, QListView::indicator:checked, QTableView::indicator:checked {"
-        "  width: 16px; height: 16px; background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #34D399, stop:1 #10B981); border: 1.5px solid #10B981; border-radius: 4px; image: none;"
+        "  width: 16px; height: 16px; background: %4; border: none; border-radius: 4px; image: none;"
         "}")
         .arg(pal.border, t.deepShadow.name(), pal.inputBg, pal.accent, t.accentLight.name());
 
-    // Tables, Headers (Centered Bold) & Corner Button (Zero White Square!)
+    // Tables, Headers & Lists (No viewport-clipping border-radius or glowing outlines)
     qss += QStringLiteral(
         "QTableWidget, QTableView, QTreeWidget, QTreeView, QListWidget {"
         "  background-color: %1; alternate-background-color: %2; color: %3;"
-        "  border: 1px solid %4; border-radius: %5; gridline-color: %4;"
+        "  border: none; gridline-color: %4; outline: none;"
         "  selection-background-color: %6; selection-color: #FFFFFF;"
         "}"
+        "QTableWidget::item, QTableView::item, QTreeWidget::item, QTreeView::item, QListWidget::item {"
+        "  border: none; outline: none;"
+        "}"
         "QHeaderView::section {"
-        "  background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %2, stop:1 %7);"
-        "  color: %3; border: none; border-right: 1px solid %4; border-bottom: 2px solid %6;"
-        "  padding: 6px 10px; font-weight: 800; text-align: center; qproperty-alignment: AlignCenter;"
+        "  background-color: %7;"
+        "  color: %3; border: none; border-right: 1px solid %4; border-bottom: 1px solid %4;"
+        "  padding: 6px 10px; font-weight: 700; text-align: center; qproperty-alignment: AlignCenter;"
         "}"
         "QTableCornerButton::section, QTableView QTableCornerButton::section, QTableWidget QTableCornerButton::section {"
-        "  background-color: %7; border: none; border-right: 1px solid %4; border-bottom: 2px solid %6;"
+        "  background-color: %7; border: none; border-right: 1px solid %4; border-bottom: 1px solid %4;"
         "}")
         .arg(pal.inputBg, pal.card, pal.textPrimary, pal.border, t.inputRadius, pal.accent, pal.surface);
 
-    // Themed ScrollBars (Law 12)
+    // Themed ScrollBars
     qss += QStringLiteral(
         "QScrollBar:vertical {"
         "  background: transparent; width: 9px; margin: 2px 2px 2px 0px; border-radius: 4px; border: none;"
@@ -686,7 +398,7 @@ QString BuildCoreControlsQss(const StormTheme::Palette& pal, const DerivedTokens
         "QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal { background: transparent; }")
         .arg(RgbaCss(t.accent, 115), pal.accent);
 
-    // 3D Volumetric Tactile Buttons
+    // Clean Solid/Tonal Buttons (Zero Faceted Border Glow)
     qss += QStringLiteral(
         "QPushButton, QDialogButtonBox QPushButton, QToolButton, QCommandLinkButton, QWizard QPushButton, QMessageBox QPushButton, QPushButton[flat=\"true\"], QToolButton[flat=\"true\"] {"
         "  %1 color: %2; font-weight: 600; min-height: 24px;"
@@ -701,7 +413,7 @@ QString BuildCoreControlsQss(const StormTheme::Palette& pal, const DerivedTokens
         "  %5"
         "}"
         "QPushButton:disabled, QDialogButtonBox QPushButton:disabled, QToolButton:disabled {"
-        "  background-color: %6; color: %7; border: 1px solid %8; border-radius: %9; padding: 6px 16px;"
+        "  background-color: %6; color: %7; border: none; border-radius: %9; padding: 6px 16px;"
         "}"
         "QPushButton:default, QDialogButtonBox QPushButton:default, QWizard QPushButton:default, QMessageBox QPushButton:default, QPushButton[primary=\"true\"], QToolButton[primary=\"true\"] {"
         "  %5"
@@ -719,9 +431,6 @@ QString BuildCoreControlsQss(const StormTheme::Palette& pal, const DerivedTokens
     return qss;
 }
 
-// -----------------------------------------------------------------------------
-// 60/120 FPS Interactive 3D Hover, Press & Spatial Transition Animator
-// -----------------------------------------------------------------------------
 class GlobalDesignAnimator final : public QObject {
 public:
     explicit GlobalDesignAnimator(QObject* parent = nullptr) : QObject(parent) {}
@@ -731,57 +440,13 @@ protected:
         if (!watched || !event) {
             return QObject::eventFilter(watched, event);
         }
-
-        const auto type = event->type();
-
-        // Smooth spatial cross-fade when switching tabs inside dialogs
-        if (type == QEvent::Show) {
-            if (auto* tab_widget = qobject_cast<QTabWidget*>(watched)) {
-                if (!tab_widget->property("_stormTabAnimHooked").toBool()) {
-                    tab_widget->setProperty("_stormTabAnimHooked", true);
-                    connect(tab_widget, &QTabWidget::currentChanged, this, [tab_widget](int idx) {
-                        QWidget* page = tab_widget->widget(idx);
-                        if (!page || !page->isVisible()) {
-                            return;
-                        }
-                        if (page->graphicsEffect() != nullptr) {
-                            return;
-                        }
-                        auto* fx = new QGraphicsOpacityEffect(page);
-                        fx->setOpacity(0.58);
-                        page->setGraphicsEffect(fx);
-                        auto* anim = new QVariantAnimation(page);
-                        anim->setDuration(140);
-                        anim->setStartValue(0.58);
-                        anim->setEndValue(1.0);
-                        anim->setEasingCurve(QEasingCurve::OutCubic);
-                        QPointer<QWidget> safe_page(page);
-                        QPointer<QGraphicsOpacityEffect> safe_fx(fx);
-                        connect(anim, &QVariantAnimation::valueChanged, page, [safe_fx](const QVariant& v) {
-                            if (safe_fx) {
-                                safe_fx->setOpacity(v.toReal());
-                            }
-                        });
-                        connect(anim, &QVariantAnimation::finished, page, [safe_page, safe_fx]() {
-                            if (safe_page && safe_page->graphicsEffect() == safe_fx) {
-                                safe_page->setGraphicsEffect(nullptr);
-                            }
-                        });
-                        anim->start(QAbstractAnimation::DeleteWhenStopped);
-                    });
-                }
-            }
-            return QObject::eventFilter(watched, event);
-        }
-
-        // Clean up any stale QGraphicsDropShadowEffect if attached to controls (Law 17 & 23)
+        // Clean up any stale QGraphicsDropShadowEffect if attached to controls (zero opacity backing-store flicker)
         if (auto* widget = qobject_cast<QWidget*>(watched)) {
             if (widget->graphicsEffect() != nullptr &&
                 widget->graphicsEffect()->property("_stormAnimShadow").toBool()) {
                 widget->setGraphicsEffect(nullptr);
             }
         }
-
         return QObject::eventFilter(watched, event);
     }
 };
@@ -933,14 +598,14 @@ QString BuildDialogStylesheet(const StormTheme::Palette& pal, const std::string&
 
     qss += QStringLiteral(
         "QLineEdit#SettingsSearchEdit, QLineEdit[stormSearchBox=\"true\"] {"
-        "  background-color: %1; border: 1px solid %2; border-radius: 8px;"
+        "  background-color: %1; border: none; border-radius: 8px;"
         "  padding: 6px 14px; color: %3; font-size: 12.5px; min-height: 32px;"
         "}"
         "QLineEdit#SettingsSearchEdit:focus, QLineEdit[stormSearchBox=\"true\"]:focus {"
-        "  border: 1.5px solid %4; background-color: %5;"
+        "  border: none; background-color: %5;"
         "}"
         "QListWidget#SettingsSearchResultsList {"
-        "  background-color: %5; color: %3; border: 1.5px solid %4; border-radius: 7px; padding: 4px;"
+        "  background-color: %5; color: %3; border: 1px solid %2; border-radius: 7px; padding: 4px;"
         "}"
         "QListWidget#SettingsSearchResultsList::item {"
         "  padding: 6px 10px; border-radius: 5px; color: %3;"
@@ -949,20 +614,20 @@ QString BuildDialogStylesheet(const StormTheme::Palette& pal, const std::string&
         "  background-color: %4; color: #FFFFFF;"
         "}"
         "QLabel#StormSectionBadge, QLabel[stormSectionBadge=\"true\"] {"
-        "  background: %6; border: 1px solid %4; color: %4; border-radius: 4px; padding: 2px 6px; font-weight: bold; font-size: 8.5pt;"
+        "  background: %6; border: none; color: %4; border-radius: 4px; padding: 2px 6px; font-weight: bold; font-size: 8.5pt;"
         "}"
         "QPushButton#StormGamePill, QPushButton[stormGamePill=\"true\"] {"
-        "  background: rgba(255, 255, 255, 0.08); border: 1px solid %2; color: %3; border-radius: 12px; padding: 3px 10px; font-weight: 600; font-size: 8.5pt;"
+        "  background: rgba(255, 255, 255, 0.08); border: none; color: %3; border-radius: 12px; padding: 3px 10px; font-weight: 600; font-size: 8.5pt;"
         "}"
         "QPushButton#StormGamePill:hover, QPushButton[stormGamePill=\"true\"]:hover {"
-        "  background: %7; border-color: %4; color: %4;"
+        "  background: %7; border: none; color: %4;"
         "}"
         "QGroupBox[stormCard=\"true\"], QGroupBox#groupBox[stormHeroCard=\"true\"], QGroupBox#BentoGameHeaderCard {"
-        "  background-color: %8; border: 1px solid %2; border-radius: 10px; margin-top: 14px; padding: 24px 14px 14px 14px;"
+        "  background-color: %8; border: none; border-radius: 10px; margin-top: 14px; padding: 24px 14px 14px 14px;"
         "}"
         "QGroupBox[stormCard=\"true\"]::title, QGroupBox#groupBox[stormHeroCard=\"true\"]::title, QGroupBox#BentoGameHeaderCard::title {"
         "  subcontrol-origin: margin; subcontrol-position: top left; left: 14px; padding: 2px 10px;"
-        "  color: %4; font-size: 12px; font-weight: bold; background-color: %5; border: 1px solid %2; border-radius: 4px;"
+        "  color: %4; font-size: 12px; font-weight: bold; background-color: %5; border: none; border-radius: 4px;"
         "}"
         "QWidget[stormOverrideRow=\"true\"], ConfigurationShared--Widget[stormOverrideRow=\"true\"] {"
         "  border-left: 3px solid %4; background-color: %6; border-radius: 4px;"
@@ -990,16 +655,16 @@ QString BuildConfigDialogStylesheet(const StormTheme::Palette& pal, bool is_per_
     if (is_per_game) {
         qss += QStringLiteral(
             "QFrame#gameInfoCard {"
-            "  background-color: %1; border-top: 1.5px solid %2; border-left: 1px solid %3; border-right: 1px solid %3; border-bottom: 3px solid %4; border-radius: %5;"
+            "  background-color: %1; border: none; border-radius: %5;"
             "}"
             "QLineEdit#display_name, QTextEdit#display_filename {"
-            "  background-color: %6; border: 1px solid %3; border-radius: %7; padding: 4px 8px; color: %8; font-size: 12px;"
+            "  background-color: %6; border: none; border-radius: %7; padding: 4px 8px; color: %8; font-size: 12px;"
             "}"
             "QLineEdit#display_developer, QLineEdit#display_version, QLineEdit#display_format, QLineEdit#display_size {"
-            "  background-color: %6; border: 1px solid %3; border-radius: %7; padding: 3px 8px; color: %8; font-size: 11.5px;"
+            "  background-color: %6; border: none; border-radius: %7; padding: 3px 8px; color: %8; font-size: 11.5px;"
             "}"
             "QLineEdit#display_title_id {"
-            "  background-color: %6; border: 1px solid %3; border-radius: %7; padding: 3px 8px; color: %9;"
+            "  background-color: %6; border: none; border-radius: %7; padding: 3px 8px; color: %9;"
             "  font-family: 'Consolas', 'Courier New', monospace; font-size: 11.5px; font-weight: 700;"
             "}")
             .arg(pal.surface, RgbaCss(t.accentLight, 120), pal.border, t.deepShadow.name(), t.cardRadius,
@@ -1066,7 +731,7 @@ QString BuildMainWindowDesignOverlay(const StormTheme::Palette& pal, const std::
         "  color: %3;"
         "  border: none;"
         "  border-right: 1px solid %5;"
-        "  border-bottom: 2px solid %13;"
+        "  border-bottom: 1px solid %5;"
         "  padding: 6px 10px;"
         "  font-weight: 800;"
         "  text-align: center;"
@@ -1076,7 +741,7 @@ QString BuildMainWindowDesignOverlay(const StormTheme::Palette& pal, const std::
         "  background-color: %4;"
         "  border: none;"
         "  border-right: 1px solid %5;"
-        "  border-bottom: 2px solid %13;"
+        "  border-bottom: 1px solid %5;"
         "}\n")
         .arg(t.windowBackdrop, pal.bg, pal.textPrimary, pal.surface, pal.border,
              t.btnRadius, RgbaCss(t.accent, 145), t.deepShadow.name(),

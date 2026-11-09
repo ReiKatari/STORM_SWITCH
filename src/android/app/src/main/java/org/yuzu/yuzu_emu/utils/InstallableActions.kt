@@ -106,10 +106,14 @@ object InstallableActions {
         result: Uri,
         extension: String = "keys"
     ) {
-        activity.contentResolver.takePersistableUriPermission(
-            result,
-            Intent.FLAG_GRANT_READ_URI_PERMISSION
-        )
+        if (result.scheme == "content") {
+            runCatching {
+                activity.contentResolver.takePersistableUriPermission(
+                    result,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+            }
+        }
 
         val resultCode = NativeLibrary.installKeys(result.toString(), extension)
         if (resultCode == 0) {
@@ -136,6 +140,36 @@ object InstallableActions {
         gamesViewModel: GamesViewModel,
         treeUri: Uri
     ) {
+        if (treeUri.scheme == "file") {
+            val srcDir = File(treeUri.path ?: "")
+            if (!srcDir.exists() || !srcDir.isDirectory) {
+                Toast.makeText(activity, R.string.keys_failed, Toast.LENGTH_SHORT).show()
+                return
+            }
+            val userDir = DirectoryInitialization.userDirectory
+            val targetDir = File(userDir, "keys").apply { mkdirs() }
+            var keysCopied = 0
+            srcDir.listFiles()?.forEach { file ->
+                val name = file.name.lowercase()
+                if (file.isFile && (name == "prod.keys" || name == "title.keys" || name.endsWith(".keys"))) {
+                    runCatching {
+                        val dest = File(targetDir, file.name)
+                        if (file.canonicalPath != dest.canonicalPath) {
+                            file.copyTo(dest, overwrite = true)
+                        }
+                        keysCopied++
+                    }
+                }
+            }
+            NativeLibrary.reloadKeys()
+            if (keysCopied > 0 && NativeLibrary.areKeysPresent()) {
+                Toast.makeText(activity, R.string.keys_install_success, Toast.LENGTH_SHORT).show()
+                gamesViewModel.reloadGames(true)
+            } else {
+                Toast.makeText(activity, R.string.keys_failed, Toast.LENGTH_SHORT).show()
+            }
+            return
+        }
         val rootDoc = DocumentFile.fromTreeUri(activity, treeUri)
         if (rootDoc == null || !rootDoc.isDirectory) {
             Toast.makeText(activity, R.string.keys_failed, Toast.LENGTH_SHORT).show()
@@ -184,6 +218,32 @@ object InstallableActions {
         ) { progressCallback, _ ->
             var messageToShow: Any
             try {
+                if (treeUri.scheme == "file") {
+                    val srcDir = File(treeUri.path ?: "")
+                    val directNcas = srcDir.listFiles()?.filter { it.isFile && it.name.endsWith(".nca", ignoreCase = true) } ?: emptyList()
+                    if (directNcas.isEmpty()) {
+                        messageToShow = MessageDialogFragment.newInstance(
+                            activity,
+                            titleId = R.string.firmware_installed_failure,
+                            descriptionId = R.string.firmware_installed_failure_description
+                        )
+                    } else {
+                        if (srcDir.canonicalPath != firmwarePath.canonicalPath) {
+                            firmwarePath.deleteRecursively()
+                            firmwarePath.mkdirs()
+                            val total = directNcas.size.toLong()
+                            directNcas.forEachIndexed { index, f ->
+                                f.copyTo(File(firmwarePath, f.name), overwrite = true)
+                                progressCallback.invoke(total, (index + 1).toLong())
+                            }
+                        }
+                        NativeLibrary.initializeSystem(true)
+                        homeViewModel.setCheckKeys(true)
+                        messageToShow = activity.getString(R.string.save_file_imported_success)
+                    }
+                    activity.runOnUiThread { onComplete?.invoke() }
+                    return@newInstance messageToShow
+                }
                 val rootDoc = DocumentFile.fromTreeUri(activity, treeUri)
                 val ncaFiles = rootDoc?.listFiles()?.filter { it.name?.endsWith(".nca", ignoreCase = true) == true } ?: emptyList()
                 if (ncaFiles.isEmpty()) {

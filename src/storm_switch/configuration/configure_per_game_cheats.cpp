@@ -177,7 +177,7 @@ ConfigurePerGameCheats::ConfigurePerGameCheats(Core::System& system_, u64 title_
     search_field->setStyleSheet(QStringLiteral(
         "QLineEdit {"
         "  background-color: %1;"
-        "  border: 1px solid %2;"
+        "  border: none;"
         "  border-radius: 6px;"
         "  padding: 6px 10px;"
         "  color: %3;"
@@ -185,7 +185,7 @@ ConfigurePerGameCheats::ConfigurePerGameCheats(Core::System& system_, u64 title_
         "  min-height: 28px;"
         "}"
         "QLineEdit:focus {"
-        "  border: 1px solid %4;"
+        "  border: none;"
         "  background-color: %5;"
         "}"
     ).arg(pal.inputBg, pal.border, pal.textPrimary, pal.accent, pal.surface));
@@ -201,7 +201,7 @@ ConfigurePerGameCheats::ConfigurePerGameCheats(Core::System& system_, u64 title_
         "QPushButton {"
         "  background-color: %1;"
         "  color: %2;"
-        "  border: 1px solid %3;"
+        "  border: none;"
         "  border-radius: 6px;"
         "  padding: 6px 14px;"
         "  font-weight: 600;"
@@ -210,7 +210,7 @@ ConfigurePerGameCheats::ConfigurePerGameCheats(Core::System& system_, u64 title_
         "}"
         "QPushButton:hover {"
         "  background-color: %4;"
-        "  border-color: %2;"
+        "  border: none;"
         "  color: #FFFFFF;"
         "}"
         "QPushButton:pressed {"
@@ -229,7 +229,7 @@ ConfigurePerGameCheats::ConfigurePerGameCheats(Core::System& system_, u64 title_
         "QPushButton {"
         "  background-color: %1;"
         "  color: %2;"
-        "  border: 1px solid %3;"
+        "  border: none;"
         "  border-radius: 6px;"
         "  padding: 6px 14px;"
         "  font-weight: 600;"
@@ -238,7 +238,7 @@ ConfigurePerGameCheats::ConfigurePerGameCheats(Core::System& system_, u64 title_
         "}"
         "QPushButton:hover {"
         "  background-color: %4;"
-        "  border-color: %5;"
+        "  border: none;"
         "}"
     ).arg(pal.buttonBg, pal.textPrimary, pal.buttonBorder, pal.itemHover, pal.accent));
     toolbar_layout->addWidget(add_button);
@@ -253,7 +253,7 @@ ConfigurePerGameCheats::ConfigurePerGameCheats(Core::System& system_, u64 title_
         "QPushButton {"
         "  background-color: %1;"
         "  color: %2;"
-        "  border: 1px solid %3;"
+        "  border: none;"
         "  border-radius: 6px;"
         "  padding: 6px 14px;"
         "  font-weight: 600;"
@@ -262,7 +262,7 @@ ConfigurePerGameCheats::ConfigurePerGameCheats(Core::System& system_, u64 title_
         "}"
         "QPushButton:hover {"
         "  background-color: %4;"
-        "  border-color: %5;"
+        "  border: none;"
         "  color: %6;"
         "}"
     ).arg(pal.buttonBg, pal.textSecondary, pal.buttonBorder, pal.itemHover, pal.accent, pal.textPrimary));
@@ -291,7 +291,7 @@ ConfigurePerGameCheats::ConfigurePerGameCheats(Core::System& system_, u64 title_
         "QTreeWidget {"
         "  background-color: %1;"
         "  alternate-background-color: %2;"
-        "  border: 1px solid %3;"
+        "  border: none;"
         "  border-radius: 6px;"
         "  color: %4;"
         "  outline: none;"
@@ -311,16 +311,16 @@ ConfigurePerGameCheats::ConfigurePerGameCheats(Core::System& system_, u64 title_
         "QTreeWidget::indicator {"
         "  width: 18px;"
         "  height: 18px;"
-        "  border: 1px solid %8;"
+        "  border: none;"
         "  border-radius: 4px;"
         "  background-color: %9;"
         "}"
         "QTreeWidget::indicator:hover {"
-        "  border-color: %10;"
+        "  border: none;"
         "}"
         "QTreeWidget::indicator:checked {"
         "  background-color: %10;"
-        "  border-color: %10;"
+        "  border: none;"
         "  image: none;"
         "}"
         "QHeaderView::section {"
@@ -370,16 +370,16 @@ ConfigurePerGameCheats::ConfigurePerGameCheats(Core::System& system_, u64 title_
     select_all_button = new QPushButton(StormLang(QStringLiteral("Включить все"), QStringLiteral("Enable All")), this);
     select_all_button->setIcon(MakeCheatIcon(CheatIconType::Check, QColor(pal.accent)));
     select_all_button->setStyleSheet(QStringLiteral(
-        "QPushButton { background-color: %1; color: %2; border: 1px solid %3; border-radius: 5px; padding: 5px 12px; font-weight: 600; font-size: 8.5pt; min-height: 24px; }"
-        "QPushButton:hover { background-color: %4; border-color: %5; color: #FFFFFF; }"
+        "QPushButton { background-color: %1; color: %2; border: none; border-radius: 5px; padding: 5px 12px; font-weight: 600; font-size: 8.5pt; min-height: 24px; }"
+        "QPushButton:hover { background-color: %4; border: none; color: #FFFFFF; }"
     ).arg(pal.buttonBg, pal.textPrimary, pal.buttonBorder, pal.itemHover, pal.accent));
     bottom_layout->addWidget(select_all_button);
 
     deselect_all_button = new QPushButton(StormLang(QStringLiteral("Отключить все"), QStringLiteral("Disable All")), this);
     deselect_all_button->setIcon(MakeCheatIcon(CheatIconType::Cross, QColor(pal.textSecondary)));
     deselect_all_button->setStyleSheet(QStringLiteral(
-        "QPushButton { background-color: %1; color: %2; border: 1px solid %3; border-radius: 5px; padding: 5px 12px; font-weight: 600; font-size: 8.5pt; min-height: 24px; }"
-        "QPushButton:hover { background-color: %4; border-color: %5; color: #FFFFFF; }"
+        "QPushButton { background-color: %1; color: %2; border: none; border-radius: 5px; padding: 5px 12px; font-weight: 600; font-size: 8.5pt; min-height: 24px; }"
+        "QPushButton:hover { background-color: %4; border: none; color: #FFFFFF; }"
     ).arg(pal.buttonBg, pal.textSecondary, pal.buttonBorder, pal.itemHover, pal.accent));
     bottom_layout->addWidget(deselect_all_button);
 
@@ -387,9 +387,9 @@ ConfigurePerGameCheats::ConfigurePerGameCheats(Core::System& system_, u64 title_
     filter_enabled_btn->setCheckable(true);
     filter_enabled_btn->setIcon(MakeCheatIcon(CheatIconType::Lightning, QColor(pal.accent)));
     filter_enabled_btn->setStyleSheet(QStringLiteral(
-        "QPushButton { background-color: %1; color: %2; border: 1px solid %3; border-radius: 5px; padding: 5px 12px; font-weight: 600; font-size: 8.5pt; min-height: 24px; }"
-        "QPushButton:checked { background-color: %4; color: #FFFFFF; border-color: %5; }"
-        "QPushButton:hover { border-color: %5; }"
+        "QPushButton { background-color: %1; color: %2; border: none; border-radius: 5px; padding: 5px 12px; font-weight: 600; font-size: 8.5pt; min-height: 24px; }"
+        "QPushButton:checked { background-color: %4; color: #FFFFFF; border: none; }"
+        "QPushButton:hover { border: none; }"
     ).arg(pal.buttonBg, pal.textPrimary, pal.buttonBorder, pal.accent, pal.accentHover));
     bottom_layout->addWidget(filter_enabled_btn);
 

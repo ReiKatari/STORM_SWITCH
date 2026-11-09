@@ -1,3 +1,4 @@
+#include "video_core/frame_gen/lossless_dll.h"
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -890,11 +891,9 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
         const auto lossless_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::LosslessDir);
         const auto lossless_file = lossless_dir / "Lossless.dll";
 
-        bool lossless_installed = false;
-        std::error_code ec_ls;
-        if (std::filesystem::exists(lossless_file, ec_ls)) {
-            lossless_installed = true;
-        }
+        bool lossless_installed =
+            (VideoCore::FrameGen::ValidateLosslessDll(lossless_file) == VideoCore::FrameGen::LosslessStatus::Ok) ||
+            (VideoCore::FrameGen::GetInstalledLosslessStatus() == VideoCore::FrameGen::LosslessStatus::Ok);
 
         bool steam_detected = false;
         std::filesystem::path steam_lossless_path;

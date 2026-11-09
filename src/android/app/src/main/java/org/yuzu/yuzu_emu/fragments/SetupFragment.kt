@@ -247,7 +247,14 @@ class SetupFragment : Fragment() {
                                 R.string.games_description,
                                 {
                                     pageButtonCallback = it
-                                    getGamesDirectory.launch(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).data)
+                                    StormFolderPickerDialog.show(
+                                        childFragmentManager,
+                                        title = getString(R.string.games),
+                                        onSystemPickerRequested = { getGamesDirectory.launch(null) }
+                                    ) { pickedUri ->
+                                        mainActivity.processGamesDir(pickedUri, false)
+                                        refreshAllButtonStates()
+                                    }
                                 },
                                 {
                                     if (areGamesConfigured()) {
@@ -332,6 +339,7 @@ class SetupFragment : Fragment() {
                 }
 
                 previousPosition = position
+                refreshAllButtonStates()
             }
         })
 
@@ -605,7 +613,13 @@ class SetupFragment : Fragment() {
     }
 
     private fun isFrameGenInstalled(): Boolean {
-        return LosslessScalingHelper.isInstalled()
+        if (isStoragePermissionGranted()) {
+            val sharedStorm = File(android.os.Environment.getExternalStorageDirectory(), "STORM SWITCH")
+            if (sharedStorm.exists() && DirectoryInitialization.userDirectory != sharedStorm.canonicalPath) {
+                runCatching { DirectoryInitialization.initializeSharedStorage() }
+            }
+        }
+        return LosslessScalingHelper.refreshStatus()
     }
 
     private fun areGamesConfigured(): Boolean {
@@ -619,7 +633,8 @@ class SetupFragment : Fragment() {
         return dirs.any { d ->
             val uri = android.net.Uri.parse(d.uriString)
             if (uri.scheme == "file" || uri.scheme.isNullOrEmpty()) {
-                File(d.uriString).exists()
+                val p = if (uri.scheme == "file") (uri.path ?: android.net.Uri.decode(d.uriString.removePrefix("file://"))) else d.uriString
+                File(p).exists()
             } else {
                 persisted.any { p -> p.uri == uri && p.isReadPermission }
             }
@@ -781,7 +796,14 @@ class SetupFragment : Fragment() {
                             onlineDialog.show(parentFragmentManager, OnlineToolsDialogFragment.TAG)
                         }
                         1 -> getProdKey.launch(arrayOf("*/*"))
-                        2 -> getKeysFolder.launch(null)
+                        2 -> StormFolderPickerDialog.show(
+                            childFragmentManager,
+                            title = getString(R.string.select_keys_folder),
+                            onSystemPickerRequested = { getKeysFolder.launch(null) }
+                        ) { pickedUri ->
+                            mainActivity.processKeysFolder(pickedUri)
+                            refreshAllButtonStates()
+                        }
                     }
                 }
             }
@@ -866,7 +888,15 @@ class SetupFragment : Fragment() {
                             onlineDialog.show(parentFragmentManager, OnlineToolsDialogFragment.TAG)
                         }
                         1 -> getFirmware.launch(arrayOf("application/zip", "application/x-zip-compressed", "*/*"))
-                        2 -> getFirmwareFolder.launch(null)
+                        2 -> StormFolderPickerDialog.show(
+                            childFragmentManager,
+                            title = getString(R.string.select_firmware_folder),
+                            onSystemPickerRequested = { getFirmwareFolder.launch(null) }
+                        ) { pickedUri ->
+                            mainActivity.processFirmwareFolder(pickedUri) {
+                                refreshAllButtonStates()
+                            }
+                        }
                     }
                 }
             }

@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     app:cardCornerRadius="18dp"
     app:cardElevation="12dp"
-    app:strokeWidth="1.5dp"
+    app:strokeWidth="0dp"
     app:strokeColor="#4000D2FF"
     app:cardBackgroundColor="#F00F172A">
 
@@ -147,7 +147,7 @@
                     app:cornerRadius="8dp"
                     android:textColor="#FFFFFF"
                     app:backgroundTint="#1E293B"
-                    app:strokeWidth="1dp"
+                    app:strokeWidth="0dp"
                     app:strokeColor="?attr/colorOutline" />
 
                 <com.google.android.material.button.MaterialButton
@@ -167,7 +167,7 @@
                     app:cornerRadius="8dp"
                     android:textColor="#FFFFFF"
                     app:backgroundTint="#334155"
-                    app:strokeWidth="1dp"
+                    app:strokeWidth="0dp"
                     app:strokeColor="?attr/colorOutline" />
 
             </LinearLayout>
@@ -189,7 +189,7 @@
                 android:textColor="#0F172A"
                 android:textStyle="bold"
                 app:backgroundTint="#00D2FF"
-                app:strokeWidth="1dp"
+                app:strokeWidth="0dp"
                 app:strokeColor="?attr/colorOutline" />
 
         </LinearLayout>

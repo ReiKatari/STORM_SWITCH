@@ -93,7 +93,7 @@
                 app:cardCornerRadius="10dp"
                 app:cardElevation="2dp"
                 app:strokeColor="?attr/colorOutline"
-                app:strokeWidth="1dp">
+                app:strokeWidth="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -143,7 +143,7 @@
                             app:backgroundTint="?attr/colorSurface"
                             app:icon="@drawable/ic_copy"
                             app:iconTint="?attr/colorPrimary"
-        app:strokeWidth="1dp"
+        app:strokeWidth="0dp"
         app:strokeColor="?attr/colorPrimary"
     android:breakStrategy="simple"
     android:hyphenationFrequency="none"
@@ -173,7 +173,7 @@
                 app:cardCornerRadius="10dp"
                 app:cardElevation="2dp"
                 app:strokeColor="?attr/colorOutline"
-                app:strokeWidth="1dp">
+                app:strokeWidth="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -223,7 +223,7 @@
                             android:textSize="12sp"
                             app:backgroundTint="?attr/colorSurface"
                             app:strokeColor="?attr/colorPrimary"
-                            app:strokeWidth="1dp"
+                            app:strokeWidth="0dp"
     android:breakStrategy="simple"
     android:hyphenationFrequency="none"
     android:maxLines="1"
@@ -249,7 +249,7 @@
                             android:textSize="12sp"
                             app:icon="@drawable/ic_network"
                             app:iconTint="?attr/colorPrimary"
-        app:strokeWidth="1dp"
+        app:strokeWidth="0dp"
         app:strokeColor="?attr/colorPrimary"
     android:breakStrategy="simple"
     android:hyphenationFrequency="none"
@@ -320,7 +320,7 @@
                     android:textSize="12sp"
                     android:textStyle="bold"
                     app:backgroundTint="?attr/colorPrimary"
-        app:strokeWidth="1dp"
+        app:strokeWidth="0dp"
         app:strokeColor="?attr/colorPrimary"
     android:breakStrategy="simple"
     android:hyphenationFrequency="none"

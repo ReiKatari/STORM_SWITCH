@@ -97,7 +97,7 @@ CheatsDialog::CheatsDialog(QWidget* parent, Core::System& system, u64 title_id, 
         "QPushButton {"
         "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %1, stop:1 %2);"
         "  color: #FFFFFF;"
-        "  border: 1px solid %1;"
+        "  border: none;"
         "  border-radius: 6px;"
         "  font-weight: 700;"
         "  font-size: 10pt;"
@@ -106,7 +106,7 @@ CheatsDialog::CheatsDialog(QWidget* parent, Core::System& system, u64 title_id, 
         "}"
         "QPushButton:hover {"
         "  background: %1;"
-        "  border: 1px solid #FFFFFF;"
+        "  border: none;"
         "}"
         "QPushButton:pressed {"
         "  background: %2;"
@@ -140,7 +140,7 @@ void CheatsDialog::SetupGameHeader(QWidget* parent_widget) {
     header_card->setStyleSheet(QStringLiteral(
         "QGroupBox#cheatsHeaderCard {"
         "  background-color: %1;"
-        "  border: 1px solid %2;"
+        "  border: none;"
         "  border-radius: 8px;"
         "  padding: 10px 14px;"
         "  margin: 0px;"
@@ -166,7 +166,7 @@ void CheatsDialog::SetupGameHeader(QWidget* parent_widget) {
     m_counter_pill->setStyleSheet(QStringLiteral(
         "background-color: %1;"
         "color: %2;"
-        "border: 1px solid %3;"
+        "border: none;"
         "border-radius: 12px;"
         "padding: 4px 12px;"
         "font-size: 9pt;"
@@ -187,7 +187,7 @@ void CheatsDialog::SetupGameHeader(QWidget* parent_widget) {
     tid_lbl->setStyleSheet(QStringLiteral(
         "background-color: %1;"
         "color: %2;"
-        "border: 1px solid %3;"
+        "border: none;"
         "border-radius: 4px;"
         "padding: 3px 8px;"
         "font-family: monospace;"
@@ -202,7 +202,7 @@ void CheatsDialog::SetupGameHeader(QWidget* parent_widget) {
     bid_lbl->setStyleSheet(QStringLiteral(
         "background-color: %1;"
         "color: %2;"
-        "border: 1px solid %3;"
+        "border: none;"
         "border-radius: 4px;"
         "padding: 3px 8px;"
         "font-family: monospace;"
@@ -220,7 +220,7 @@ void CheatsDialog::SetupGameHeader(QWidget* parent_widget) {
         "QPushButton {"
         "  background-color: %1;"
         "  color: %2;"
-        "  border: 1px solid %3;"
+        "  border: none;"
         "  border-radius: 4px;"
         "  padding: 3px 10px;"
         "  font-size: 8.5pt;"
@@ -230,7 +230,7 @@ void CheatsDialog::SetupGameHeader(QWidget* parent_widget) {
         "QPushButton:hover {"
         "  background-color: %2;"
         "  color: #FFFFFF;"
-        "  border-color: %2;"
+        "  border: none;"
         "}"
     ).arg(pal.buttonBg, pal.accent, pal.border));
 

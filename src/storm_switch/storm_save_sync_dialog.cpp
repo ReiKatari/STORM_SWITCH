@@ -253,7 +253,7 @@ StormSaveConflictDialog::StormSaveConflictDialog(QWidget* parent, const StormSav
         "}"
         "QFrame#CardLocal, QFrame#CardRemote {"
         "    background: %3;"
-        "    border: 1px solid %4;"
+        "    border: none;"
         "    border-radius: 8px;"
         "    padding: 12px;"
         "}"
@@ -268,7 +268,7 @@ StormSaveConflictDialog::StormSaveConflictDialog(QWidget* parent, const StormSav
         "}"
         "QPushButton, QDialogButtonBox QPushButton, QToolButton {"
         "    background-color: %6;"
-        "    border: 1px solid %4;"
+        "    border: none;"
         "    border-radius: 7px;"
         "    color: %2;"
         "    padding: 6px 16px;"
@@ -278,18 +278,18 @@ StormSaveConflictDialog::StormSaveConflictDialog(QWidget* parent, const StormSav
         "}"
         "QPushButton:hover, QDialogButtonBox QPushButton:hover, QToolButton:hover {"
         "    background-color: %7;"
-        "    border: 1px solid %5;"
+        "    border: none;"
         "    color: %2;"
         "}"
         "QPushButton:pressed, QDialogButtonBox QPushButton:pressed, QToolButton:pressed {"
         "    background-color: %3;"
-        "    border: 1px solid %5;"
+        "    border: none;"
         "    padding: 6px 16px;"
         "    color: %2;"
         "}"
         "QPushButton#HeroBtn {"
         "    background-color: %5;"
-        "    border: 1px solid %5;"
+        "    border: none;"
         "    border-radius: 7px;"
         "    padding: 6px 16px;"
         "    color: %8;"
@@ -297,12 +297,12 @@ StormSaveConflictDialog::StormSaveConflictDialog(QWidget* parent, const StormSav
         "}"
         "QPushButton#HeroBtn:hover {"
         "    background-color: %9;"
-        "    border: 1px solid %9;"
+        "    border: none;"
         "    color: %8;"
         "}"
         "QPushButton#HeroBtn:pressed {"
         "    background-color: %5;"
-        "    border: 1px solid %5;"
+        "    border: none;"
         "    padding: 6px 16px;"
         "    color: %8;"
         "}"
@@ -779,7 +779,7 @@ void StormSaveSyncDialog::OnSwitchIpClicked() {
 
     QMenu menu(this);
     menu.setStyleSheet(QStringLiteral(
-        "QMenu { background-color: #141B26; color: #FFFFFF; border: 1px solid #20354E; padding: 4px; }"
+        "QMenu { background-color: #141B26; color: #FFFFFF; border: none; padding: 4px; }"
         "QMenu::item { padding: 6px 14px; border-radius: 4px; font-weight: bold; }"
         "QMenu::item:selected { background-color: #00D2FF; color: #000000; }"
     ));
@@ -875,7 +875,7 @@ void StormSaveSyncDialog::SetupUI() {
     auto* key_row = new QHBoxLayout();
     key_row->setSpacing(8);
     m_local_key_label = new QLabel(tr("Ключ: инициализация..."), header_card);
-    m_local_key_label->setStyleSheet(QStringLiteral("font-family: monospace; font-size: 13px; font-weight: bold; color: %1; background: %2; border: 1px solid %3; border-radius: 6px; padding: 4px 10px;").arg(pal.accent, pal.inputBg, pal.border));
+    m_local_key_label->setStyleSheet(QStringLiteral("font-family: monospace; font-size: 13px; font-weight: bold; color: %1; background: %2; border: none; border-radius: 6px; padding: 4px 10px;").arg(pal.accent, pal.inputBg, pal.border));
     key_row->addWidget(m_local_key_label);
 
     auto* copy_key_btn = new QPushButton(tr("Скопировать"), header_card);
@@ -1115,7 +1115,7 @@ void StormSaveSyncDialog::SetupUI() {
     auto* time_machine_btn = new QPushButton(tr("Тайм-машина (Бэкапы)"), this);
     time_machine_btn->setIcon(MakeDialogVectorIcon(DialogIcon::TimeMachine, QColor(168, 85, 247), 16));
     time_machine_btn->setMinimumHeight(28);
-    time_machine_btn->setStyleSheet(QStringLiteral("border: 1px solid #A855F7; color: #E9D5FF; font-weight: bold;"));
+    time_machine_btn->setStyleSheet(QStringLiteral("border: none; color: #E9D5FF; font-weight: bold;"));
     time_machine_btn->setToolTip(tr("Просмотр и восстановление автоматических и ручных резервных копий сохранений"));
     connect(time_machine_btn, &QPushButton::clicked, this, &StormSaveSyncDialog::OnTimeMachineClicked);
     bottom_layout->addWidget(time_machine_btn);
@@ -1123,7 +1123,7 @@ void StormSaveSyncDialog::SetupUI() {
     m_sync_all_btn = new QPushButton(tr("Синхронизировать всё"), this);
     m_sync_all_btn->setIcon(MakeDialogVectorIcon(DialogIcon::Sync, Qt::white, 16));
     m_sync_all_btn->setMinimumHeight(28);
-    m_sync_all_btn->setStyleSheet(QStringLiteral("background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 %1, stop:1 %2); border: 1px solid %1; color: #FFFFFF; font-weight: bold;").arg(pal.accent, pal.accentHover));
+    m_sync_all_btn->setStyleSheet(QStringLiteral("background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 %1, stop:1 %2); border: none; color: #FFFFFF; font-weight: bold;").arg(pal.accent, pal.accentHover));
     connect(m_sync_all_btn, &QPushButton::clicked, this, &StormSaveSyncDialog::OnSyncAllClicked);
     bottom_layout->addWidget(m_sync_all_btn);
 
@@ -1150,7 +1150,7 @@ void StormSaveSyncDialog::ApplyStormStyles() {
         "}"
         "QFrame#HeaderCard, QFrame#ConnFrame {"
         "    background: %3;"
-        "    border: 1px solid %4;"
+        "    border: none;"
         "    border-radius: 8px;"
         "}"
         "QLabel#AppTitle {"
@@ -1165,19 +1165,19 @@ void StormSaveSyncDialog::ApplyStormStyles() {
         "}"
         "QLineEdit {"
         "    background: %7;"
-        "    border: 1px solid %4;"
+        "    border: none;"
         "    border-radius: 6px;"
         "    padding: 6px 10px;"
         "    color: %2;"
         "    font-size: 12px;"
         "}"
         "QLineEdit:focus {"
-        "    border: 1px solid %5;"
+        "    border: none;"
         "    background: %8;"
         "}"
         "QComboBox {"
         "    background: %7;"
-        "    border: 1px solid %4;"
+        "    border: none;"
         "    border-radius: 6px;"
         "    color: %2;"
         "    padding: 5px 10px;"
@@ -1188,11 +1188,11 @@ void StormSaveSyncDialog::ApplyStormStyles() {
         "    color: %2;"
         "    selection-background-color: %5;"
         "    selection-color: %10;"
-        "    border: 1px solid %4;"
+        "    border: none;"
         "}"
         "QTableWidget {"
         "    background-color: %7;"
-        "    border: 1px solid %4;"
+        "    border: none;"
         "    border-radius: 8px;"
         "    color: %2;"
         "    alternate-background-color: %11;"
@@ -1214,7 +1214,7 @@ void StormSaveSyncDialog::ApplyStormStyles() {
         "}"
         "QPushButton {"
         "    background: %13;"
-        "    border: 1px solid %14;"
+        "    border: none;"
         "    color: %2;"
         "    padding: 6px 16px;"
         "    border-radius: 6px;"
@@ -1224,18 +1224,18 @@ void StormSaveSyncDialog::ApplyStormStyles() {
         "}"
         "QPushButton:hover {"
         "    background: %15;"
-        "    border: 1px solid %5;"
+        "    border: none;"
         "    color: %5;"
         "}"
         "QPushButton:pressed {"
         "    background: %7;"
-        "    border: 1px solid %5;"
+        "    border: none;"
         "    color: %2;"
         "}"
         "QPushButton:disabled {"
         "    background: transparent;"
         "    color: %6;"
-        "    border: 1px solid %4;"
+        "    border: none;"
         "}"
         "QCheckBox {"
         "    color: %2;"
@@ -1246,16 +1246,16 @@ void StormSaveSyncDialog::ApplyStormStyles() {
         "QCheckBox::indicator {"
         "    width: 16px;"
         "    height: 16px;"
-        "    border: 1px solid %4;"
+        "    border: none;"
         "    border-radius: 4px;"
         "    background: %7;"
         "}"
         "QCheckBox::indicator:checked {"
         "    background: %5;"
-        "    border-color: %5;"
+        "    border: none;"
         "}"
         "QProgressBar {"
-        "    border: 1px solid %4;"
+        "    border: none;"
         "    border-radius: 4px;"
         "    text-align: center;"
         "    background: %7;"
@@ -2018,8 +2018,8 @@ void StormSaveSyncDialog::PopulateTable() {
             action_btn->setIcon(MakeDialogVectorIcon(DialogIcon::Check, QColor(16, 185, 129), 14));
             btn_style = QStringLiteral(
                 "QPushButton { background: rgba(16, 185, 129, 0.12); "
-                "border: 1px solid #10B981; color: #10B981; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 2px 8px; }"
-                "QPushButton:disabled { background: rgba(16, 185, 129, 0.08); border: 1px solid #059669; color: #34D399; }");
+                "border: none; color: #10B981; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 2px 8px; }"
+                "QPushButton:disabled { background: rgba(16, 185, 129, 0.08); border: none; color: #34D399; }");
             btn_enabled = false;
             break;
         case StormSaveSyncStatus::Conflict:
@@ -2027,8 +2027,8 @@ void StormSaveSyncDialog::PopulateTable() {
             action_btn->setIcon(MakeDialogVectorIcon(DialogIcon::Warning, Qt::white, 14));
             btn_style = QStringLiteral(
                 "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #B45309, stop:1 #78350F); "
-                "border: 1px solid #F59E0B; color: #FFFFFF; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 2px 8px; }"
-                "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #D97706, stop:1 #92400E); border-color: #FBBF24; }"
+                "border: none; color: #FFFFFF; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 2px 8px; }"
+                "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #D97706, stop:1 #92400E); border: none; }"
                 "QPushButton:pressed { background: #F59E0B; color: #000000; }");
             break;
         case StormSaveSyncStatus::LocalOnly:
@@ -2036,8 +2036,8 @@ void StormSaveSyncDialog::PopulateTable() {
             action_btn->setIcon(MakeDialogVectorIcon(DialogIcon::Upload, Qt::white, 14));
             btn_style = QStringLiteral(
                 "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1D4ED8, stop:1 #1E3A8A); "
-                "border: 1px solid #3B82F6; color: #FFFFFF; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 2px 8px; }"
-                "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #2563EB, stop:1 #1D4ED8); border-color: #60A5FA; }"
+                "border: none; color: #FFFFFF; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 2px 8px; }"
+                "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #2563EB, stop:1 #1D4ED8); border: none; }"
                 "QPushButton:pressed { background: #3B82F6; color: #FFFFFF; }");
             break;
         case StormSaveSyncStatus::RemoteOnly:
@@ -2045,15 +2045,15 @@ void StormSaveSyncDialog::PopulateTable() {
             action_btn->setIcon(MakeDialogVectorIcon(DialogIcon::Download, Qt::white, 14));
             btn_style = QStringLiteral(
                 "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #0099CC, stop:1 #006699); "
-                "border: 1px solid #00D2FF; color: #FFFFFF; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 2px 8px; }"
-                "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #00BFFF, stop:1 #0088CC); border-color: #38BDF8; }"
+                "border: none; color: #FFFFFF; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 2px 8px; }"
+                "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #00BFFF, stop:1 #0088CC); border: none; }"
                 "QPushButton:pressed { background: #00D2FF; color: #000000; }");
             break;
         default:
             btn_text = tr("Синхронизировать");
             btn_style = QStringLiteral(
-                "QPushButton { background: #1A2434; border: 1px solid #2A3B52; color: #FFFFFF; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 2px 8px; }"
-                "QPushButton:hover { border-color: #00D2FF; }");
+                "QPushButton { background: #1A2434; border: none; color: #FFFFFF; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 2px 8px; }"
+                "QPushButton:hover { border: none; }");
             break;
         }
 

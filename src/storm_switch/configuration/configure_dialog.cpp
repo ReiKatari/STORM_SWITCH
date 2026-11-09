@@ -948,7 +948,7 @@ void ConfigureDialog::ActivateSearchResult(QListWidgetItem* item) {
         const QColor acc(pal.accent);
         target_widget->setStyleSheet(
             m_highlighted_prev_style +
-            QStringLiteral(" QWidget { border: 1.5px solid %1; background-color: rgba(%2, %3, %4, 0.15); border-radius: 6px; }")
+            QStringLiteral(" background-color: rgba(%2, %3, %4, 0.14); border: none; border-radius: 6px; /* %1 */")
                 .arg(pal.accent).arg(acc.red()).arg(acc.green()).arg(acc.blue()));
 
         QWidget* p = target_widget->parentWidget();

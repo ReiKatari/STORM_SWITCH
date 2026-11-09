@@ -71,7 +71,7 @@
                 app:cardBackgroundColor="?attr/colorSurfaceVariant"
                 app:cardElevation="0dp"
                 app:strokeColor="?attr/colorOutline"
-                app:strokeWidth="1dp"
+                app:strokeWidth="0dp"
                 android:clickable="true"
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackgroundBorderless">
@@ -95,7 +95,7 @@
                 app:cardBackgroundColor="?attr/colorSurfaceVariant"
                 app:cardElevation="0dp"
                 app:strokeColor="?attr/colorOutline"
-                app:strokeWidth="1dp"
+                app:strokeWidth="0dp"
                 android:clickable="true"
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackgroundBorderless">
@@ -119,7 +119,7 @@
                 app:cardBackgroundColor="?attr/colorSurfaceVariant"
                 app:cardElevation="0dp"
                 app:strokeColor="?attr/colorOutline"
-                app:strokeWidth="1dp"
+                app:strokeWidth="0dp"
                 android:clickable="true"
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackgroundBorderless">
@@ -142,7 +142,7 @@
                 app:cardBackgroundColor="?attr/colorSurfaceVariant"
                 app:cardElevation="0dp"
                 app:strokeColor="?attr/colorOutline"
-                app:strokeWidth="1dp"
+                app:strokeWidth="0dp"
                 android:clickable="true"
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackgroundBorderless">
@@ -179,7 +179,7 @@
             app:cardBackgroundColor="?attr/colorSurfaceVariant"
             app:cardElevation="0dp"
             app:strokeColor="?attr/colorOutline"
-            app:strokeWidth="1dp">
+            app:strokeWidth="0dp">
 
             <LinearLayout
                 android:id="@+id/search_container"

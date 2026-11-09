@@ -352,7 +352,23 @@ class GameBananaDialogFragment : DialogFragment() {
                 .setItems(options) { _, which ->
                     when (which) {
                         0 -> installManualModFile.launch(arrayOf("application/zip", "application/x-zip-compressed", "application/octet-stream", "*/*"))
-                        1 -> installManualModFolder.launch(null)
+                        1 -> StormFolderPickerDialog.show(
+                childFragmentManager,
+                onSystemPickerRequested = { installManualModFolder.launch(null) }
+            ) { pickedUri ->
+                val targetGame = game ?: return@show
+                lifecycleScope.launch {
+                    Toast.makeText(requireContext(), R.string.gamebanana_installing_manual, Toast.LENGTH_SHORT).show()
+                    val (ok, modName) = GameBananaHelper.installManualModDirectory(targetGame, pickedUri, requireContext())
+                    if (ok) {
+                        Toast.makeText(requireContext(), getString(R.string.gamebanana_manual_success, modName), Toast.LENGTH_LONG).show()
+                        onModsUpdated?.invoke()
+                        loadInstalledMods()
+                    } else {
+                        Toast.makeText(requireContext(), getString(R.string.gamebanana_manual_error), Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
                     }
                 }
                 .setNegativeButton(R.string.close, null)

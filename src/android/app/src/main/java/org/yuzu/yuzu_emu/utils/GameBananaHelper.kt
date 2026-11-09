@@ -759,6 +759,23 @@ object GameBananaHelper {
         onProgress: (Int) -> Unit = {}
     ): Pair<Boolean, String> = withContext(Dispatchers.IO) {
         try {
+            if (treeUri.scheme == "file") {
+                val srcDir = File(treeUri.path ?: return@withContext Pair(false, "Invalid directory"))
+                if (!srcDir.exists() || !srcDir.isDirectory) {
+                    return@withContext Pair(false, "Invalid directory")
+                }
+                val cleanModName = srcDir.name.replace(Regex("[^a-zA-Z0-9._ -]"), "_").trim()
+                val finalModName = if (cleanModName.isEmpty()) "ManualMod_${System.currentTimeMillis()}" else cleanModName
+                val targetDir = File(game.addonDir, finalModName).apply { mkdirs() }
+                val tempDir = File(game.addonDir, "temp_tree_${System.currentTimeMillis()}").apply { mkdirs() }
+                try {
+                    srcDir.copyRecursively(tempDir, overwrite = true)
+                    organizeModStructure(tempDir, targetDir)
+                } finally {
+                    tempDir.deleteRecursively()
+                }
+                return@withContext Pair(true, finalModName)
+            }
             val docDir = DocumentFile.fromTreeUri(context, treeUri)
                 ?: return@withContext Pair(false, "Invalid directory")
             val dirName = docDir.name ?: "ManualMod"

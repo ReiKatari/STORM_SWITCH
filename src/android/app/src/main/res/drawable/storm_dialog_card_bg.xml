@@ -1,21 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Outer 1dp faceted border using theme outline -->
-    <item>
-        <shape android:shape="rectangle">
-            <corners android:radius="20dp" />
-            <solid android:color="?attr/colorOutline" />
-        </shape>
-    </item>
-    <!-- Deep theme surface interior -->
-    <item
-        android:left="1dp"
-        android:top="1dp"
-        android:right="1dp"
-        android:bottom="1dp">
-        <shape android:shape="rectangle">
-            <corners android:radius="19dp" />
-            <solid android:color="?attr/colorSurface" />
-        </shape>
-    </item>
-</layer-list>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <corners android:radius="20dp" />
+    <solid android:color="?attr/colorSurface" />
+</shape>

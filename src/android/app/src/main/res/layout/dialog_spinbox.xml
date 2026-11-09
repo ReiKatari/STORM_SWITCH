@@ -32,7 +32,7 @@
             app:backgroundTint="?attr/colorSurfaceVariant"
             app:cornerRadius="10dp"
             app:strokeColor="?attr/colorPrimary"
-            app:strokeWidth="1.5dp"
+            app:strokeWidth="0dp"
     android:breakStrategy="simple"
     android:hyphenationFrequency="none"
     android:maxLines="1"
@@ -51,7 +51,7 @@
             app:boxCornerRadiusTopEnd="10dp"
             app:boxCornerRadiusTopStart="10dp"
             app:boxStrokeColor="?attr/colorPrimary"
-            app:boxStrokeWidth="1.5dp"
+            app:boxStrokeWidth="0dp"
             app:hintTextColor="?attr/colorPrimary">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -85,7 +85,7 @@
             app:backgroundTint="?attr/colorSurfaceVariant"
             app:cornerRadius="10dp"
             app:strokeColor="?attr/colorPrimary"
-            app:strokeWidth="1.5dp"
+            app:strokeWidth="0dp"
     android:breakStrategy="simple"
     android:hyphenationFrequency="none"
     android:maxLines="1"

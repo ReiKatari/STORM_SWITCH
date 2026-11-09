@@ -95,7 +95,7 @@ object FileUtil {
         try {
             if (path.isNullOrEmpty()) return -1
             if (path.startsWith("/") || path.startsWith("file://")) {
-                val cleanPath = if (path.startsWith("file://")) path.substring(7) else path
+                val cleanPath = if (path.startsWith("file://")) (Uri.parse(path).path ?: Uri.decode(path.substring(7))) else path
                 val f = File(cleanPath)
                 if (f.exists()) {
                     val mode = when (openMode) {
@@ -273,7 +273,7 @@ object FileUtil {
     fun exists(path: String?, suppressLog: Boolean = false): Boolean {
         if (path.isNullOrEmpty()) return false
         if (path.startsWith("/") || path.startsWith("file://")) {
-            val clean = if (path.startsWith("file://")) path.substring(7) else path
+            val clean = if (path.startsWith("file://")) (Uri.parse(path).path ?: Uri.decode(path.substring(7))) else path
             return File(clean).exists()
         }
         var c: Cursor? = null
@@ -299,7 +299,7 @@ object FileUtil {
      */
     fun isDirectory(path: String): Boolean {
         if (path.startsWith("/") || path.startsWith("file://")) {
-            val clean = if (path.startsWith("file://")) path.substring(7) else path
+            val clean = if (path.startsWith("file://")) (Uri.parse(path).path ?: Uri.decode(path.substring(7))) else path
             return File(clean).isDirectory
         }
         val resolver = context.contentResolver
@@ -376,7 +376,7 @@ object FileUtil {
     @JvmStatic
     fun getFileSize(path: String): Long {
         if (path.startsWith("/") || path.startsWith("file://")) {
-            val clean = if (path.startsWith("file://")) path.substring(7) else path
+            val clean = if (path.startsWith("file://")) (Uri.parse(path).path ?: Uri.decode(path.substring(7))) else path
             return File(clean).length()
         }
         val resolver = context.contentResolver
@@ -418,7 +418,11 @@ object FileUtil {
             } else {
                 getFilename(sourceUri).removePrefix("/")
             }
-            val inputStream = context.contentResolver.openInputStream(sourceUri) ?: return null
+            val inputStream = if (sourceUri.scheme == "file") {
+                File(sourceUri.path ?: return null).inputStream()
+            } else {
+                context.contentResolver.openInputStream(sourceUri) ?: return null
+            }
 
             val parentDir = File(destinationParentPath).apply { mkdirs() }
             val destinationFile = File(parentDir, cleanName)

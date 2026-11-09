@@ -67,7 +67,7 @@
             <!-- Reset to Recommended Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_reset_freedreno_recommended"
-                style="@style/Widget.Material3.Button.OutlinedButton"
+                style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
@@ -124,7 +124,7 @@
                 app:cardElevation="0dp"
                 app:cardBackgroundColor="?attr/colorSurfaceVariant"
                 app:strokeColor="?attr/colorPrimary"
-                app:strokeWidth="1.5dp">
+                app:strokeWidth="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -177,7 +177,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/freedreno_add_variable"
                         app:cornerRadius="12dp"
-        app:strokeWidth="1dp"
+        app:strokeWidth="0dp"
         app:strokeColor="?attr/colorOutline"
     android:breakStrategy="simple"
     android:hyphenationFrequency="none"
@@ -204,7 +204,7 @@
                     android:layout_weight="1"
                     android:text="@string/freedreno_clear_all"
                     app:cornerRadius="14dp"
-        app:strokeWidth="1dp"
+        app:strokeWidth="0dp"
         app:strokeColor="?attr/colorOutline"
     android:breakStrategy="simple"
     android:hyphenationFrequency="none"
@@ -220,7 +220,7 @@
                     android:layout_weight="1"
                     android:text="@string/save"
                     app:cornerRadius="14dp"
-        app:strokeWidth="1dp"
+        app:strokeWidth="0dp"
         app:strokeColor="?attr/colorOutline"
     android:breakStrategy="simple"
     android:hyphenationFrequency="none"
@@ -238,7 +238,7 @@
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
                 app:cardBackgroundColor="?attr/colorSurfaceVariant"
-                app:strokeWidth="1.5dp"
+                app:strokeWidth="0dp"
                 app:strokeColor="?attr/colorPrimary">
 
                 <LinearLayout

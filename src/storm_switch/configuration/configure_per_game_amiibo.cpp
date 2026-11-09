@@ -321,7 +321,7 @@ void ConfigurePerGameAmiibo::SetupUi() {
     m_image_label->setMinimumSize(160, 160);
     m_image_label->setMaximumHeight(200);
     m_image_label->setAlignment(Qt::AlignCenter);
-    m_image_label->setStyleSheet(QStringLiteral("background-color: #0c1018; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;"));
+    m_image_label->setStyleSheet(QStringLiteral("background-color: #0c1018; border: none; border-radius: 8px;"));
     m_image_label->setText(tr("Выберите фигурку"));
     details_layout->addWidget(m_image_label);
 
@@ -345,7 +345,7 @@ void ConfigurePerGameAmiibo::SetupUi() {
     m_reward_card->setStyleSheet(QStringLiteral(
         "QWidget#AmiiboRewardCard {"
         "  background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 %1, stop:1 %2);"
-        "  border: 1px solid %3;"
+        "  border: none;"
         "  border-radius: 8px;"
         "}"
     ).arg(amiibo_pal.surface, amiibo_pal.bg, amiibo_pal.accent));
@@ -361,7 +361,7 @@ void ConfigurePerGameAmiibo::SetupUi() {
 
     m_reward_category_badge = new QLabel(tr("УНИВЕРСАЛЬНЫЙ БОНУС"), m_reward_card);
     m_reward_category_badge->setStyleSheet(QStringLiteral(
-        "background-color: %1; color: %2; border: 1px solid %2; border-radius: 4px; padding: 2px 6px; font-weight: bold; font-size: 8pt;"
+        "background-color: %1; color: %2; border: none; border-radius: 4px; padding: 2px 6px; font-weight: bold; font-size: 8pt;"
     ).arg(amiibo_pal.card, amiibo_pal.accent));
     card_header->addWidget(m_reward_category_badge, 0, Qt::AlignRight);
     card_layout->addLayout(card_header);
@@ -390,7 +390,7 @@ void ConfigurePerGameAmiibo::SetupUi() {
     auto* btn_layout = new QHBoxLayout();
     m_install_btn = new QPushButton(StormLang(QStringLiteral("Включить / Установить"), QStringLiteral("Enable / Install")), this);
     m_install_btn->setIcon(MakeAmiiboIcon(AmiiboIconType::Controller, QColor(QStringLiteral("#FFFFFF"))));
-    m_install_btn->setStyleSheet(QStringLiteral("background-color: #004d40; border-color: #00e676; color: #ffffff; padding: 6px 12px; font-weight: bold;"));
+    m_install_btn->setStyleSheet(QStringLiteral("background-color: #004d40; border: none; color: #ffffff; padding: 6px 12px; font-weight: bold;"));
     m_install_btn->setEnabled(false);
     connect(m_install_btn, &QPushButton::clicked, this, [this]() {
         auto* cur = m_amiibo_list->currentItem();

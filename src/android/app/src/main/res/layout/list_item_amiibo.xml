@@ -12,7 +12,7 @@
     app:cardElevation="0dp"
     app:cardBackgroundColor="?attr/colorSurfaceVariant"
     app:strokeColor="?attr/colorOutline"
-    app:strokeWidth="1dp">
+    app:strokeWidth="0dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -137,7 +137,7 @@
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
                 app:cornerRadius="6dp"
-                app:strokeWidth="1dp"
+                app:strokeWidth="0dp"
                 app:strokeColor="?attr/colorPrimary"
                 android:breakStrategy="simple"
                 android:hyphenationFrequency="none"
@@ -160,7 +160,7 @@
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
                 app:cornerRadius="6dp"
-                app:strokeWidth="1dp"
+                app:strokeWidth="0dp"
                 app:strokeColor="?attr/colorOutline"
                 android:breakStrategy="simple"
                 android:hyphenationFrequency="none"

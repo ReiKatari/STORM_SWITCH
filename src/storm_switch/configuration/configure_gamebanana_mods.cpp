@@ -338,7 +338,7 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
             "QPushButton {"
             "  background: %1;"
             "  color: %2;"
-            "  border: 1px solid %3;"
+            "  border: none;"
             "  border-radius: 12px;"
             "  padding: 4px 12px;"
             "  font-size: 8.5pt;"
@@ -348,10 +348,10 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
             "QPushButton:checked {"
             "  background: %4;"
             "  color: #FFFFFF;"
-            "  border-color: %4;"
+            "  border: none;"
             "}"
             "QPushButton:hover {"
-            "  border-color: %4;"
+            "  border: none;"
             "}"
         ).arg(pal.surface, pal.textSecondary, pal.border, pal.accent));
         category_pill_buttons.push_back(pbtn);
@@ -430,7 +430,7 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
     auto make_pill = [&](QLabel*& lbl) {
         lbl = new QLabel(details_widget);
         lbl->setStyleSheet(QStringLiteral(
-            "background-color: %1; color: %2; border: 1px solid %3; border-radius: 4px; padding: 2px 8px; font-size: 8.5pt; font-weight: 600;"
+            "background-color: %1; color: %2; border: none; border-radius: 4px; padding: 2px 8px; font-size: 8.5pt; font-weight: 600;"
         ).arg(pal.cardAlt, pal.textSecondary, pal.border));
         meta_row->addWidget(lbl);
     };
@@ -1021,7 +1021,7 @@ void ConfigureGameBananaMods::LoadModDetails(int mod_id) {
             mod_category_pill->setText(obj.value(QStringLiteral("_sModelName")).toString());
         }
 
-        QString html = QStringLiteral("<div style='color:%1; line-height:1.4;'><p><i>%2</i></p><hr style='border:1px solid %3;'/><div>%4</div></div>")
+        QString html = QStringLiteral("<div style='color:%1; line-height:1.4;'><p><i>%2</i></p><hr style='border: none;'/><div>%4</div></div>")
                            .arg(pal.textPrimary, desc, pal.border, text.isEmpty() ? desc : text);
         detail_browser->setHtml(html);
 

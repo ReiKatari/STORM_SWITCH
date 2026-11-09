@@ -299,7 +299,16 @@ class SettingsFragment : Fragment() {
             DirectoryInitialization.userDirectory ?: ""
         }
         val initialUri = if (targetPath.isNotBlank()) PathUtil.getInitialUriForPath(targetPath) else null
-        directoryPickerLauncher.launch(initialUri)
+        org.yuzu.yuzu_emu.fragments.StormFolderPickerDialog.show(
+            childFragmentManager,
+            initialPath = targetPath.ifBlank { null },
+            onSystemPickerRequested = { directoryPickerLauncher.launch(initialUri) }
+        ) { pickedUri ->
+            val rawPath = PathUtil.getPathFromUri(pickedUri)
+            if (rawPath != null) {
+                pathSetting?.let { handleSelectedPath(it, rawPath) }
+            }
+        }
     }
 
     private val directoryPickerLauncher = registerForActivityResult(
@@ -309,7 +318,7 @@ class SettingsFragment : Fragment() {
             val pathSetting = settingsViewModel.clickedItem as? PathSetting ?: return@registerForActivityResult
             val rawPath = PathUtil.getPathFromUri(uri)
             if (rawPath != null) {
-                handleSelectedPath(pathSetting, rawPath)
+                pathSetting?.let { handleSelectedPath(it, rawPath) }
             } else {
                 Toast.makeText(
                     requireContext(),

@@ -123,7 +123,7 @@
                     app:autoSizeMinTextSize="10sp"
                     app:autoSizeMaxTextSize="13sp"
                     android:text="@string/gpu_unswizzle_default_button"
-                    app:strokeWidth="1dp"
+                    app:strokeWidth="0dp"
                     app:strokeColor="?attr/colorOutline" />
 
                 <com.google.android.material.button.MaterialButton
@@ -138,7 +138,7 @@
                     android:hyphenationFrequency="none"
                     android:breakStrategy="simple"
                     android:text="@android:string/cancel"
-                    app:strokeWidth="1dp"
+                    app:strokeWidth="0dp"
                     app:strokeColor="?attr/colorOutline" />
             </LinearLayout>
 
@@ -155,7 +155,7 @@
                 android:hyphenationFrequency="none"
                 android:breakStrategy="simple"
                 android:text="@android:string/ok"
-                app:strokeWidth="1dp"
+                app:strokeWidth="0dp"
                 app:strokeColor="?attr/colorOutline" />
         </LinearLayout>
 

@@ -255,7 +255,7 @@ void AmiiboBrowserDialog::SetupUi() {
         "}"
         "QGroupBox {"
         "  font-weight: bold;"
-        "  border: 1px solid %3;"
+        "  border: none;"
         "  border-radius: 6px;"
         "  margin-top: 10px;"
         "  padding-top: 14px;"
@@ -270,19 +270,19 @@ void AmiiboBrowserDialog::SetupUi() {
         "}"
         "QLineEdit, QComboBox {"
         "  background-color: %6;"
-        "  border: 1px solid %3;"
+        "  border: none;"
         "  border-radius: 4px;"
         "  padding: 5px 8px;"
         "  color: %2;"
         "  font-size: 9pt;"
         "}"
         "QLineEdit:focus, QComboBox:focus {"
-        "  border: 1px solid %5;"
+        "  border: none;"
         "  background-color: %4;"
         "}"
         "QListWidget {"
         "  background-color: %4;"
-        "  border: 1px solid %3;"
+        "  border: none;"
         "  border-radius: 6px;"
         "  color: %2;"
         "  padding: 4px;"
@@ -299,11 +299,11 @@ void AmiiboBrowserDialog::SetupUi() {
         "QListWidget::item:selected {"
         "  background-color: %8;"
         "  color: #ffffff;"
-        "  border: 1px solid %5;"
+        "  border: none;"
         "}"
         "QPushButton {"
         "  background-color: %6;"
-        "  border: 1px solid %9;"
+        "  border: none;"
         "  border-radius: 5px;"
         "  color: %2;"
         "  padding: 6px 14px;"
@@ -312,7 +312,7 @@ void AmiiboBrowserDialog::SetupUi() {
         "}"
         "QPushButton:hover {"
         "  background-color: %10;"
-        "  border-color: %5;"
+        "  border: none;"
         "  color: #ffffff;"
         "}"
         "QPushButton:pressed {"
@@ -321,13 +321,13 @@ void AmiiboBrowserDialog::SetupUi() {
         "}"
         "QTextEdit {"
         "  background-color: %6;"
-        "  border: 1px solid %3;"
+        "  border: none;"
         "  border-radius: 4px;"
         "  color: %2;"
         "  font-size: 8.5pt;"
         "}"
         "QProgressBar {"
-        "  border: 1px solid %3;"
+        "  border: none;"
         "  border-radius: 3px;"
         "  text-align: center;"
         "  background-color: %4;"
@@ -437,7 +437,7 @@ void AmiiboBrowserDialog::SetupUi() {
     m_image_label->setFixedSize(140, 140);
     m_image_label->setMaximumHeight(220);
     m_image_label->setAlignment(Qt::AlignCenter);
-    m_image_label->setStyleSheet(QStringLiteral("background-color: #0c1018; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;"));
+    m_image_label->setStyleSheet(QStringLiteral("background-color: #0c1018; border: none; border-radius: 8px;"));
     m_image_label->setPixmap(MakeAmiiboPedestalPlaceholder(140, 140, StormTheme::GetThemePalette()));
     details_layout->addWidget(m_image_label);
 
@@ -531,7 +531,7 @@ void AmiiboBrowserDialog::SetupUi() {
     m_reward_card->setStyleSheet(QStringLiteral(
         "QWidget#AmiiboRewardCard {"
         "  background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 %1, stop:1 %2);"
-        "  border: 1px solid %3;"
+        "  border: none;"
         "  border-radius: 8px;"
         "}"
     ).arg(abd_pal.surface, abd_pal.bg, abd_pal.accent));
@@ -547,7 +547,7 @@ void AmiiboBrowserDialog::SetupUi() {
 
     m_reward_category_badge = new QLabel(tr("УНИВЕРСАЛЬНЫЙ БОНУС"), m_reward_card);
     m_reward_category_badge->setStyleSheet(QStringLiteral(
-        "background-color: %1; color: %2; border: 1px solid %2; border-radius: 4px; padding: 2px 6px; font-weight: bold; font-size: 8pt;"
+        "background-color: %1; color: %2; border: none; border-radius: 4px; padding: 2px 6px; font-weight: bold; font-size: 8pt;"
     ).arg(abd_pal.card, abd_pal.accent));
     card_header->addWidget(m_reward_category_badge, 0, Qt::AlignRight);
     card_layout->addLayout(card_header);
@@ -605,7 +605,7 @@ void AmiiboBrowserDialog::SetupUi() {
     m_save_btn->setIcon(MakeAmiiboIcon(AmiiboIconType::Download, QColor(abd_pal.textPrimary)));
     m_save_btn->setCursor(Qt::PointingHandCursor);
     m_save_btn->setEnabled(false);
-    m_save_btn->setStyleSheet(QStringLiteral("background-color: #004d40; border-color: #00e676; color: #ffffff;"));
+    m_save_btn->setStyleSheet(QStringLiteral("background-color: #004d40; border: none; color: #ffffff;"));
     connect(m_save_btn, &QPushButton::clicked, this, &AmiiboBrowserDialog::OnSaveAmiiboClicked);
     act_btn_layout->addWidget(m_save_btn);
 
@@ -613,14 +613,14 @@ void AmiiboBrowserDialog::SetupUi() {
     m_load_btn->setIcon(MakeAmiiboIcon(AmiiboIconType::Controller, QColor(QStringLiteral("#FFFFFF"))));
     m_load_btn->setCursor(Qt::PointingHandCursor);
     m_load_btn->setEnabled(false);
-    m_load_btn->setStyleSheet(QStringLiteral("background-color: %1; border-color: %2; color: %3;").arg(abd_pal.card, abd_pal.accent, abd_pal.textPrimary));
+    m_load_btn->setStyleSheet(QStringLiteral("background-color: %1; border: none; color: %3;").arg(abd_pal.card, abd_pal.accent, abd_pal.textPrimary));
     connect(m_load_btn, &QPushButton::clicked, this, &AmiiboBrowserDialog::OnLoadAmiiboClicked);
     act_btn_layout->addWidget(m_load_btn);
 
     m_disconnect_btn = new QPushButton(tr("Отключить"), this);
     m_disconnect_btn->setIcon(MakeAmiiboIcon(AmiiboIconType::Disconnect, QColor(abd_pal.textSecondary)));
     m_disconnect_btn->setCursor(Qt::PointingHandCursor);
-    m_disconnect_btn->setStyleSheet(QStringLiteral("background-color: #3b1111; border-color: #ff5252; color: #ff8a80;"));
+    m_disconnect_btn->setStyleSheet(QStringLiteral("background-color: #3b1111; border: none; color: #ff8a80;"));
     connect(m_disconnect_btn, &QPushButton::clicked, this, &AmiiboBrowserDialog::OnDisconnectAmiiboClicked);
     act_btn_layout->addWidget(m_disconnect_btn);
 

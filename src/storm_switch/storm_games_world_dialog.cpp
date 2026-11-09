@@ -543,13 +543,13 @@ public:
             "}"
             "QFrame#HeaderBox {"
             "    background: %3;"
-            "    border: 1px solid %4;"
+            "    border: none;"
             "    border-radius: 10px;"
             "    padding: 10px;"
             "}"
             "QTreeWidget {"
             "    background-color: %5;"
-            "    border: 1px solid %4;"
+            "    border: none;"
             "    border-radius: 8px;"
             "    color: %2;"
             "    alternate-background-color: %1;"
@@ -576,7 +576,7 @@ public:
             "}"
             "QPushButton {"
             "    background-color: %8;"
-            "    border: 1px solid %8;"
+            "    border: none;"
             "    border-radius: 6px;"
             "    color: %9;"
             "    font-weight: bold;"
@@ -586,12 +586,12 @@ public:
             "}"
             "QPushButton:hover {"
             "    background-color: %10;"
-            "    border: 1px solid %10;"
+            "    border: none;"
             "    color: %9;"
             "}"
             "QPushButton:pressed {"
             "    background-color: %8;"
-            "    border: 1px solid %8;"
+            "    border: none;"
             "    padding: 8px 26px;"
             "    color: %9;"
             "}"
@@ -2044,7 +2044,7 @@ void StormGamesWorldDialog::SetupUI() {
 
     // Download Box
     auto* download_box = new QGroupBox(tr("Менеджер загрузки"), details_panel);
-    download_box->setStyleSheet(QStringLiteral("QGroupBox { font-weight: bold; color: #00F0FF; border: 1px solid rgba(0, 240, 255, 0.3); border-radius: 8px; margin-top: 10px; padding-top: 10px; }"));
+    download_box->setStyleSheet(QStringLiteral("QGroupBox { font-weight: bold; color: #00F0FF; border: none; border-radius: 8px; margin-top: 10px; padding-top: 10px; }"));
     auto* dl_box_layout = new QVBoxLayout(download_box);
     dl_box_layout->setSpacing(8);
 
@@ -2053,7 +2053,7 @@ void StormGamesWorldDialog::SetupUI() {
     progress_bar->setValue(0);
     progress_bar->setTextVisible(true);
     progress_bar->setStyleSheet(QStringLiteral(
-        "QProgressBar { background: rgba(0,0,0,0.5); border: 1px solid #00D2FF; border-radius: 5px; text-align: center; color: #FFFFFF; font-weight: bold; height: 22px; }"
+        "QProgressBar { background: rgba(0,0,0,0.5); border: none; border-radius: 5px; text-align: center; color: #FFFFFF; font-weight: bold; height: 22px; }"
         "QProgressBar::chunk { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0072ff, stop:1 #00f2fe); border-radius: 4px; }"
     ));
     dl_box_layout->addWidget(progress_bar);
@@ -2140,29 +2140,29 @@ void StormGamesWorldDialog::ApplyStormStyles() {
         "}"
         "QFrame#details_panel {"
         "    background: %3;"
-        "    border: 1px solid %4;"
+        "    border: none;"
         "    border-radius: 10px;"
         "}"
         "QFrame#HeaderCard, QFrame#DownloadBox {"
         "    background: %5;"
-        "    border: 1px solid %4;"
+        "    border: none;"
         "    border-radius: 8px;"
         "}"
         "QLineEdit {"
         "    background: %6;"
-        "    border: 1px solid %4;"
+        "    border: none;"
         "    border-radius: 6px;"
         "    padding: 6px 12px;"
         "    color: %2;"
         "    font-size: 12px;"
         "}"
         "QLineEdit:focus {"
-        "    border: 1px solid %7;"
+        "    border: none;"
         "    background: %8;"
         "}"
         "QTreeWidget {"
         "    background-color: %6;"
-        "    border: 1px solid %4;"
+        "    border: none;"
         "    border-radius: 8px;"
         "    color: %2;"
         "    alternate-background-color: %5;"
@@ -2192,7 +2192,7 @@ void StormGamesWorldDialog::ApplyStormStyles() {
         "}"
         "QTextBrowser {"
         "    background-color: %6;"
-        "    border: 1px solid %4;"
+        "    border: none;"
         "    border-radius: 8px;"
         "    color: %12;"
         "    font-size: 12px;"
@@ -2200,7 +2200,7 @@ void StormGamesWorldDialog::ApplyStormStyles() {
         "}"
         "QComboBox {"
         "    background: %6;"
-        "    border: 1px solid %4;"
+        "    border: none;"
         "    border-radius: 6px;"
         "    color: %2;"
         "    padding: 5px 10px;"
@@ -2211,11 +2211,11 @@ void StormGamesWorldDialog::ApplyStormStyles() {
         "    color: %2;"
         "    selection-background-color: %7;"
         "    selection-color: %13;"
-        "    border: 1px solid %4;"
+        "    border: none;"
         "}"
         "QPushButton {"
         "    background: %14;"
-        "    border: 1px solid %15;"
+        "    border: none;"
         "    color: %2;"
         "    padding: 6px 14px;"
         "    border-radius: 6px;"
@@ -2225,23 +2225,23 @@ void StormGamesWorldDialog::ApplyStormStyles() {
         "}"
         "QPushButton:hover {"
         "    background: %16;"
-        "    border: 1px solid %7;"
+        "    border: none;"
         "    color: %7;"
         "}"
         "QPushButton:pressed {"
         "    background: %6;"
         "    color: %2;"
-        "    border: 1px solid %7;"
+        "    border: none;"
         "}"
         "QPushButton:disabled {"
         "    background: transparent;"
         "    color: %17;"
-        "    border: 1px solid %4;"
+        "    border: none;"
         "}"
         "QPushButton#FilterPill {"
         "    background: %5;"
         "    color: %2;"
-        "    border: 1px solid %4;"
+        "    border: none;"
         "    border-radius: 6px;"
         "    padding: 4px 14px;"
         "    font-size: 11px;"
@@ -2250,11 +2250,11 @@ void StormGamesWorldDialog::ApplyStormStyles() {
         "}"
         "QPushButton#FilterPill:hover, QPushButton#FilterPill:checked {"
         "    background: %8;"
-        "    border: 1px solid %7;"
+        "    border: none;"
         "    color: %7;"
         "}"
         "QProgressBar {"
-        "    border: 1px solid %4;"
+        "    border: none;"
         "    border-radius: 5px;"
         "    text-align: center;"
         "    background: %6;"
@@ -2974,46 +2974,46 @@ void StormGamesWorldDialog::DisplayGameDetails(const StormWorldGame& game) {
 
     if (game.is_recommended) {
         version_badge->setText(tr("Версия: %1 (Рекомендуемая)").arg(clean_gv));
-        version_badge->setStyleSheet(QStringLiteral("background: rgba(16, 185, 129, 0.18); border: 1px solid #10B981; border-radius: 4px; padding: 2px 8px; color: #10B981; font-size: 11px; font-weight: bold;"));
+        version_badge->setStyleSheet(QStringLiteral("background: rgba(16, 185, 129, 0.18); border: none; border-radius: 4px; padding: 2px 8px; color: #10B981; font-size: 11px; font-weight: bold;"));
     } else {
         version_badge->setText(tr("Версия: %1").arg(clean_gv));
-        version_badge->setStyleSheet(QStringLiteral("background: %1; border: 1px solid %2; border-radius: 4px; padding: 2px 8px; color: %2; font-size: 11px; font-weight: bold;").arg(acc_15, pal.accent));
+        version_badge->setStyleSheet(QStringLiteral("background: %1; border: none; border-radius: 4px; padding: 2px 8px; color: %2; font-size: 11px; font-weight: bold;").arg(acc_15, pal.accent));
     }
     const QString int_ver = ExtractInternalVersion(game.title, game.version);
     internal_version_badge->setText(tr("Сборка: %1").arg(int_ver));
-    internal_version_badge->setStyleSheet(QStringLiteral("background: rgba(168, 85, 247, 0.15); border: 1px solid #A855F7; border-radius: 4px; padding: 2px 8px; color: #C084FC; font-size: 11px; font-weight: bold; font-family: monospace;"));
+    internal_version_badge->setStyleSheet(QStringLiteral("background: rgba(168, 85, 247, 0.15); border: none; border-radius: 4px; padding: 2px 8px; color: #C084FC; font-size: 11px; font-weight: bold; font-family: monospace;"));
 
     QString ext_tag = game.real_extension.isEmpty() ? QStringLiteral("NSP") : game.real_extension;
     ext_tag.remove(QLatin1Char('.'));
     ext_tag = ext_tag.toUpper();
     if (format_badge) {
         format_badge->setText(tr("Формат: %1").arg(ext_tag));
-        format_badge->setStyleSheet(QStringLiteral("background: rgba(59, 130, 246, 0.15); border: 1px solid #3B82F6; border-radius: 4px; padding: 2px 8px; color: #60A5FA; font-size: 11px; font-weight: bold;"));
+        format_badge->setStyleSheet(QStringLiteral("background: rgba(59, 130, 246, 0.15); border: none; border-radius: 4px; padding: 2px 8px; color: #60A5FA; font-size: 11px; font-weight: bold;"));
     }
 
     const QString disp_size = (game.file_size_bytes > 0)
         ? StormFormat::ReadableByteSize(static_cast<qulonglong>(game.file_size_bytes))
         : (game.size.isEmpty() ? tr("Неизвестно") : LocalizeSizeString(game.size));
     size_badge->setText(tr("Размер: %1").arg(disp_size));
-    size_badge->setStyleSheet(QStringLiteral("background: rgba(16, 185, 129, 0.15); border: 1px solid #10B981; border-radius: 4px; padding: 2px 8px; color: #10B981; font-size: 11px; font-weight: bold;"));
+    size_badge->setStyleSheet(QStringLiteral("background: rgba(16, 185, 129, 0.15); border: none; border-radius: 4px; padding: 2px 8px; color: #10B981; font-size: 11px; font-weight: bold;"));
 
     if (game.dlc_count > 0) {
         dlc_badge->setText(tr("Дополнений: %1").arg(game.dlc_count));
         dlc_badge->setStyleSheet(QStringLiteral(
-            "background: %1; border: 1px solid %2; "
+            "background: %1; border: none; "
             "border-radius: 4px; padding: 2px 8px; color: %2; font-size: 11px; font-weight: bold;").arg(acc_15, pal.accent));
         dlc_badge->setToolTip(tr("Нажмите для просмотра списка дополнений"));
     } else {
         dlc_badge->setText(tr("Дополнений: 0"));
         dlc_badge->setStyleSheet(QStringLiteral(
-            "background: %1; border: 1px solid %2; "
+            "background: %1; border: none; "
             "border-radius: 4px; padding: 2px 8px; color: %3; font-size: 11px; font-weight: bold;").arg(pal.surface, pal.border, pal.textSecondary));
         dlc_badge->setToolTip(QString());
     }
 
     if (game.mod_count > 0) {
         mod_badge->setText(tr("+%1 MOD").arg(game.mod_count));
-        mod_badge->setStyleSheet(QStringLiteral("background: rgba(168, 85, 247, 0.18); border: 1px solid #A855F7; border-radius: 4px; padding: 2px 8px; color: #C084FC; font-size: 11px; font-weight: bold;"));
+        mod_badge->setStyleSheet(QStringLiteral("background: rgba(168, 85, 247, 0.18); border: none; border-radius: 4px; padding: 2px 8px; color: #C084FC; font-size: 11px; font-weight: bold;"));
         mod_badge->setToolTip(tr("В сборку вшиты модификации / русификатор (%1 MOD)").arg(game.mod_count));
         mod_badge->setVisible(true);
     } else {

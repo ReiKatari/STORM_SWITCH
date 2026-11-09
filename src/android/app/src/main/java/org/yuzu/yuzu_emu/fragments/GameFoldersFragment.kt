@@ -100,10 +100,22 @@ class GameFoldersFragment : Fragment() {
                 .setItems(options) { _, which ->
                     when (which) {
                         0 -> { // Game Folder
-                            getGamesDirectory.launch(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).data)
+                            StormFolderPickerDialog.show(
+                                childFragmentManager,
+                                title = getString(R.string.games),
+                                onSystemPickerRequested = { getGamesDirectory.launch(null) }
+                            ) { pickedUri ->
+                                processGamesDir(pickedUri)
+                            }
                         }
                         1 -> { // External Content Folder
-                            getExternalContentDirectory.launch(null)
+                            StormFolderPickerDialog.show(
+                                childFragmentManager,
+                                title = getString(R.string.external_content),
+                                onSystemPickerRequested = { getExternalContentDirectory.launch(null) }
+                            ) { pickedUri ->
+                                processExternalContentDir(pickedUri)
+                            }
                         }
                     }
                 }
@@ -119,7 +131,7 @@ class GameFoldersFragment : Fragment() {
     }
 
     private fun processGamesDir(result: Uri) {
-        try {
+        if (result.scheme == "content") try {
             requireContext().contentResolver.takePersistableUriPermission(
                 result,
                 Intent.FLAG_GRANT_READ_URI_PERMISSION
@@ -144,7 +156,7 @@ class GameFoldersFragment : Fragment() {
     }
 
     private fun processExternalContentDir(result: Uri) {
-        try {
+        if (result.scheme == "content") try {
             requireContext().contentResolver.takePersistableUriPermission(
                 result,
                 Intent.FLAG_GRANT_READ_URI_PERMISSION

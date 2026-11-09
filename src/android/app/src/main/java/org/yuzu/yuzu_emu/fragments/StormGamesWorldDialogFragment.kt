@@ -262,7 +262,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 NativeConfig.addGameDir(GameDir(uriStr, true))
             }
 
-            val friendlyName = DocumentFile.fromTreeUri(ctx, uri)?.name ?: uri.lastPathSegment ?: ctx.getString(R.string.storm_world_folder_default_name)
+            val friendlyName = (if (uri.scheme == "content") runCatching { DocumentFile.fromTreeUri(ctx, uri)?.name }.getOrNull() else uri.path) ?: uri.lastPathSegment ?: ctx.getString(R.string.storm_world_folder_default_name)
             binding.detailSaveFolder.text = ctx.getString(R.string.storm_world_folder_label_fmt, friendlyName)
             Toast.makeText(ctx, ctx.getString(R.string.storm_world_toast_download_folder_fmt, friendlyName), Toast.LENGTH_SHORT).show()
         }
@@ -1178,11 +1178,27 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         val actions = mutableListOf<() -> Unit>()
 
         options.add(ctx.getString(R.string.storm_world_pick_new_folder))
-        actions.add { selectDownloadDirLauncher.launch(null) }
+        actions.add { StormFolderPickerDialog.show(
+                childFragmentManager,
+                onSystemPickerRequested = { selectDownloadDirLauncher.launch(null) }
+            ) { uri ->
+                val ctx = context ?: return@show
+                val prefs = PreferenceManager.getDefaultSharedPreferences(ctx)
+                prefs.edit().putString(StormDownloadManager.PREF_CUSTOM_DOWNLOAD_DIR, uri.toString()).apply()
+                val uriStr = uri.toString()
+                val existing = NativeConfig.getGameDirs()
+                if (existing.none { it.uriString == uriStr }) {
+                    NativeConfig.addGameDir(GameDir(uriStr, true))
+                    NativeConfig.saveGlobalConfig()
+                }
+                val friendlyName = uri.path ?: uri.lastPathSegment ?: ctx.getString(R.string.storm_world_folder_default_name)
+                binding.detailSaveFolder.text = ctx.getString(R.string.storm_world_folder_label_fmt, friendlyName)
+                Toast.makeText(ctx, ctx.getString(R.string.storm_world_toast_download_folder_fmt, friendlyName), Toast.LENGTH_SHORT).show()
+            } }
 
         for (dir in gameDirs) {
             val uri = Uri.parse(dir.uriString)
-            val name = DocumentFile.fromTreeUri(ctx, uri)?.name ?: uri.lastPathSegment ?: dir.uriString
+            val name = (if (uri.scheme == "content") runCatching { DocumentFile.fromTreeUri(ctx, uri)?.name }.getOrNull() else uri.path) ?: uri.lastPathSegment ?: dir.uriString
             options.add(ctx.getString(R.string.storm_world_game_folder_item_fmt, name))
             actions.add {
                 val prefs = PreferenceManager.getDefaultSharedPreferences(ctx)
@@ -1218,7 +1234,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         val customUriStr = prefs.getString(StormDownloadManager.PREF_CUSTOM_DOWNLOAD_DIR, null)
         if (!customUriStr.isNullOrBlank()) {
             val uri = Uri.parse(customUriStr)
-            val name = DocumentFile.fromTreeUri(ctx, uri)?.name ?: uri.lastPathSegment
+            val name = (if (uri.scheme == "content") runCatching { DocumentFile.fromTreeUri(ctx, uri)?.name }.getOrNull() else uri.path) ?: uri.lastPathSegment
             if (!name.isNullOrBlank()) return name
         }
 
@@ -1230,7 +1246,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
         if (preferredDir != null) {
             val uri = Uri.parse(preferredDir.uriString)
-            val name = DocumentFile.fromTreeUri(ctx, uri)?.name ?: uri.lastPathSegment
+            val name = (if (uri.scheme == "content") runCatching { DocumentFile.fromTreeUri(ctx, uri)?.name }.getOrNull() else uri.path) ?: uri.lastPathSegment
             if (!name.isNullOrBlank()) return name
         }
 

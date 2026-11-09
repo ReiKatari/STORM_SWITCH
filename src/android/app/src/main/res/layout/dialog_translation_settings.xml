@@ -7,7 +7,7 @@
     app:cardElevation="0dp"
     app:cardBackgroundColor="?attr/colorSurfaceVariant"
     app:strokeColor="?attr/colorPrimary"
-    app:strokeWidth="1.5dp">
+    app:strokeWidth="0dp">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -29,7 +29,7 @@
             app:cardElevation="0dp"
             app:cardBackgroundColor="?attr/colorSurfaceVariant"
             app:strokeColor="?attr/colorPrimary"
-            app:strokeWidth="1.5dp">
+            app:strokeWidth="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -103,7 +103,7 @@
             app:cardElevation="0dp"
             app:cardBackgroundColor="?attr/colorSurfaceVariant"
             app:strokeColor="?attr/colorOutline"
-            app:strokeWidth="1dp">
+            app:strokeWidth="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -226,7 +226,7 @@
             app:cardElevation="0dp"
             app:cardBackgroundColor="?attr/colorSurfaceVariant"
             app:strokeColor="?attr/colorOutline"
-            app:strokeWidth="1dp">
+            app:strokeWidth="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -292,7 +292,7 @@
             app:cardElevation="0dp"
             app:cardBackgroundColor="?attr/colorSurfaceVariant"
             app:strokeColor="?attr/colorOutline"
-            app:strokeWidth="1dp">
+            app:strokeWidth="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -352,7 +352,7 @@
                     android:layout_marginTop="10dp"
                     android:text="@string/translator_btn_custom_roi"
                     android:textSize="13sp"
-        app:strokeWidth="1dp"
+        app:strokeWidth="0dp"
         app:strokeColor="?attr/colorOutline"
     android:breakStrategy="simple"
     android:hyphenationFrequency="none"
@@ -373,7 +373,7 @@
             app:cardElevation="0dp"
             app:cardBackgroundColor="?attr/colorSurfaceVariant"
             app:strokeColor="?attr/colorOutline"
-            app:strokeWidth="1dp">
+            app:strokeWidth="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -498,7 +498,7 @@
                     android:layout_marginTop="4dp"
                     android:text="@string/translator_btn_test_voice"
                     android:textSize="12sp"
-        app:strokeWidth="1dp"
+        app:strokeWidth="0dp"
         app:strokeColor="?attr/colorOutline"
     android:breakStrategy="simple"
     android:hyphenationFrequency="none"
@@ -519,7 +519,7 @@
             app:cardElevation="0dp"
             app:cardBackgroundColor="?attr/colorSurfaceVariant"
             app:strokeColor="?attr/colorOutline"
-            app:strokeWidth="1dp">
+            app:strokeWidth="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -618,7 +618,7 @@
             android:layout_marginTop="8dp"
             android:text="@string/close"
             app:cornerRadius="14dp"
-        app:strokeWidth="1dp"
+        app:strokeWidth="0dp"
         app:strokeColor="?attr/colorOutline"
     android:breakStrategy="simple"
     android:hyphenationFrequency="none"

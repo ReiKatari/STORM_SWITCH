@@ -411,17 +411,23 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
         }
 
     fun processGamesDir(result: Uri, calledFromGameFragment: Boolean = false) {
-        try {
-            contentResolver.takePersistableUriPermission(
-                result,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION
-            )
-        } catch (e: Throwable) {
-            android.util.Log.e("STORM_SWITCH", "takePersistableUriPermission error: ${e.message}")
+        if (result.scheme == "content") {
+            try {
+                contentResolver.takePersistableUriPermission(
+                    result,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+            } catch (e: Throwable) {
+                android.util.Log.e("STORM_SWITCH", "takePersistableUriPermission error: ${e.message}")
+            }
         }
 
         val uriString = result.toString()
-        val folder = gamesViewModel.folders.value.firstOrNull { it.uriString == uriString }
+        val normNew = org.yuzu.yuzu_emu.utils.PathUtil.getPathFromUri(result)?.trimEnd('/') ?: uriString.trimEnd('/')
+        val folder = gamesViewModel.folders.value.firstOrNull {
+            val normExisting = org.yuzu.yuzu_emu.utils.PathUtil.getPathFromUri(Uri.parse(it.uriString))?.trimEnd('/') ?: it.uriString.trimEnd('/')
+            it.uriString == uriString || normExisting == normNew
+        }
         if (folder != null) {
             Toast.makeText(
                 applicationContext,
@@ -436,13 +442,15 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
     }
 
     fun processExternalContentDir(result: Uri) {
-        try {
-            contentResolver.takePersistableUriPermission(
-                result,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION
-            )
-        } catch (e: Throwable) {
-            android.util.Log.e("STORM_SWITCH", "processExternalContentDir takePermission error: ${e.message}")
+        if (result.scheme == "content") {
+            try {
+                contentResolver.takePersistableUriPermission(
+                    result,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+            } catch (e: Throwable) {
+                android.util.Log.e("STORM_SWITCH", "processExternalContentDir takePermission error: ${e.message}")
+            }
         }
 
         val uriString = result.toString()

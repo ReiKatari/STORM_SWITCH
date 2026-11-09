@@ -28,7 +28,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/multiplayer_unban"
-        app:strokeWidth="1dp"
+        app:strokeWidth="0dp"
         app:strokeColor="?attr/colorOutline"
     android:breakStrategy="simple"
     android:hyphenationFrequency="none"

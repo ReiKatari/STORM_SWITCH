@@ -177,18 +177,18 @@ ModManagerDialog::ModManagerDialog(QWidget* parent, Core::System& system_, u64 t
     const StormTheme::Palette pal = StormTheme::GetThemePalette();
     setStyleSheet(QStringLiteral(
         "QDialog { background-color: %1; color: %2; font-family: 'Segoe UI', sans-serif; font-size: 12px; }"
-        "QTabWidget::pane { border: 1px solid %3; background: %4; border-radius: 8px; }"
-        "QTabBar::tab { background: %1; color: %2; padding: 8px 18px; border: 1px solid %3; "
+        "QTabWidget::pane { border: none; background: %4; border-radius: 8px; }"
+        "QTabBar::tab { background: %1; color: %2; padding: 8px 18px; border: none; "
         "border-top-left-radius: 6px; border-top-right-radius: 6px; margin-right: 2px; font-weight: bold; }"
         "QTabBar::tab:selected { background: %3; color: %5; border-bottom: 2px solid %5; }"
-        "QTableWidget { background-color: %6; border: 1px solid %3; border-radius: 6px; gridline-color: %3; selection-background-color: %3; selection-color: %5; color: %2; }"
-        "QHeaderView::section { background-color: %4; color: %2; padding: 6px; font-weight: bold; border: 1px solid %3; }"
-        "QPushButton, QDialogButtonBox QPushButton, QToolButton { background-color: %7; border: 1px solid %3; border-radius: 6px; padding: 6px 16px; color: %2; font-weight: 600; min-height: 22px; }"
-        "QPushButton:hover, QDialogButtonBox QPushButton:hover, QToolButton:hover { background-color: %3; border: 1px solid %5; color: %5; }"
-        "QPushButton:pressed, QDialogButtonBox QPushButton:pressed, QToolButton:pressed { background-color: %4; border: 1px solid %5; padding: 6px 16px; color: %2; }"
-        "QPushButton:disabled { background: %6; border: 1px solid %3; color: %8; }"
-        "QCheckBox::indicator:unchecked { border: 1px solid #EF4444; background-color: rgba(239, 68, 68, 0.18); border-radius: 4px; width: 15px; height: 15px; }"
-        "QCheckBox::indicator:checked { border: 1px solid #10B981; background-color: #10B981; border-radius: 4px; width: 15px; height: 15px; }"
+        "QTableWidget { background-color: %6; border: none; border-radius: 6px; gridline-color: %3; selection-background-color: %3; selection-color: %5; color: %2; }"
+        "QHeaderView::section { background-color: %4; color: %2; padding: 6px; font-weight: bold; border: none; }"
+        "QPushButton, QDialogButtonBox QPushButton, QToolButton { background-color: %7; border: none; border-radius: 6px; padding: 6px 16px; color: %2; font-weight: 600; min-height: 22px; }"
+        "QPushButton:hover, QDialogButtonBox QPushButton:hover, QToolButton:hover { background-color: %3; border: none; color: %5; }"
+        "QPushButton:pressed, QDialogButtonBox QPushButton:pressed, QToolButton:pressed { background-color: %4; border: none; padding: 6px 16px; color: %2; }"
+        "QPushButton:disabled { background: %6; border: none; color: %8; }"
+        "QCheckBox::indicator:unchecked { border: none; background-color: rgba(239, 68, 68, 0.18); border-radius: 4px; width: 15px; height: 15px; }"
+        "QCheckBox::indicator:checked { border: none; background-color: #10B981; border-radius: 4px; width: 15px; height: 15px; }"
     ).arg(
         pal.bg, pal.textPrimary, pal.border, pal.surface, pal.accent, pal.inputBg, pal.buttonBg, pal.textSecondary
     ));
@@ -233,7 +233,7 @@ ModManagerDialog::ModManagerDialog(QWidget* parent, Core::System& system_, u64 t
     gen_patch_btn->setIcon(MakeModIcon(ModIconType::Lightning, QColor(pal.accent)));
     gen_patch_btn->setStyleSheet(QStringLiteral(
         "background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0F766E, stop:1 #0284C7); "
-        "color: #FFFFFF; font-weight: bold; border: 1px solid #38BDF8;"));
+        "color: #FFFFFF; font-weight: bold; border: none;"));
     connect(gen_patch_btn, &QPushButton::clicked, this, &ModManagerDialog::OnGenerateAutoPatch);
     bottom_layout->addWidget(gen_patch_btn);
 
@@ -248,7 +248,7 @@ ModManagerDialog::ModManagerDialog(QWidget* parent, Core::System& system_, u64 t
 
     auto* apply_btn = new QPushButton(StormLang(QStringLiteral("Сохранить приоритеты и применить"), QStringLiteral("Save & Apply Priorities")), this);
     apply_btn->setIcon(MakeModIcon(ModIconType::Check, QColor(QStringLiteral("#FFFFFF"))));
-    apply_btn->setStyleSheet(QStringLiteral("background: #0284C7; color: #FFFFFF; font-weight: bold; border-color: #00D2FF;"));
+    apply_btn->setStyleSheet(QStringLiteral("background: #0284C7; color: #FFFFFF; font-weight: bold; border: none;"));
     connect(apply_btn, &QPushButton::clicked, this, &ModManagerDialog::OnApplyAndClose);
     bottom_layout->addWidget(apply_btn);
 
@@ -272,7 +272,7 @@ void ModManagerDialog::SetupPriorityTab(QWidget* tab) {
         tr("<b>Совет:</b> Перетаскивайте папки или ZIP-архивы модов прямо в это окно для быстрой установки.<br>"
            "Используйте кнопки «▲ Выше» и «▼ Ниже» для настройки порядка загрузки LayeredFS (верхние моды перекрывают файлы нижних)."),
         tab);
-    banner->setStyleSheet(QStringLiteral("background: rgba(14, 165, 233, 0.12); border: 1px solid #0284C7; border-radius: 6px; padding: 8px; color: #BAE6FD;"));
+    banner->setStyleSheet(QStringLiteral("background: rgba(14, 165, 233, 0.12); border: none; border-radius: 6px; padding: 8px; color: #BAE6FD;"));
     layout->addWidget(banner);
 
     auto* content_layout = new QHBoxLayout();
@@ -706,9 +706,9 @@ void ModManagerDialog::OnGenerateAutoPatch() {
     dlg.setWindowTitle(StormLang(QStringLiteral("Генератор патчей 60/120 FPS и формата экрана"), QStringLiteral("60/120 FPS & Aspect Ratio Patch Generator")));
     dlg.setMinimumWidth(560);
     dlg.setStyleSheet(styleSheet() + QStringLiteral(
-        "QGroupBox { border: 1px solid #1E293B; border-radius: 8px; margin-top: 10px; padding-top: 12px; color: #00D2FF; font-weight: bold; }"
+        "QGroupBox { border: none; border-radius: 8px; margin-top: 10px; padding-top: 12px; color: #00D2FF; font-weight: bold; }"
         "QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 5px; }"
-        "QComboBox { background: #0F172A; border: 1px solid #334155; border-radius: 6px; padding: 6px 10px; color: #FFFFFF; }"
+        "QComboBox { background: #0F172A; border: none; border-radius: 6px; padding: 6px 10px; color: #FFFFFF; }"
         "QCheckBox { color: #FFFFFF; spacing: 8px; }"
     ));
 
@@ -721,7 +721,7 @@ void ModManagerDialog::OnGenerateAutoPatch() {
             .arg(game_name.isEmpty() ? QStringLiteral("0x%1").arg(title_id, 16, 16, QLatin1Char('0')).toUpper() : game_name),
         &dlg);
     desc->setWordWrap(true);
-    desc->setStyleSheet(QStringLiteral("background: rgba(14, 165, 233, 0.12); border: 1px solid #0284C7; border-radius: 6px; padding: 8px; color: #BAE6FD;"));
+    desc->setStyleSheet(QStringLiteral("background: rgba(14, 165, 233, 0.12); border: none; border-radius: 6px; padding: 8px; color: #BAE6FD;"));
     vbox->addWidget(desc);
 
     // Aspect Ratio Group (All 17 variants)
@@ -794,7 +794,7 @@ void ModManagerDialog::OnGenerateAutoPatch() {
     btn_row->addWidget(cancel_b);
 
     auto* create_b = new QPushButton(StormLang(QStringLiteral("Сгенерировать и активировать патч"), QStringLiteral("Generate & Apply Patch")), &dlg);
-    create_b->setStyleSheet(QStringLiteral("background: #0284C7; color: #FFFFFF; font-weight: bold; border-color: #00D2FF;"));
+    create_b->setStyleSheet(QStringLiteral("background: #0284C7; color: #FFFFFF; font-weight: bold; border: none;"));
     connect(create_b, &QPushButton::clicked, &dlg, &QDialog::accept);
     btn_row->addWidget(create_b);
     vbox->addLayout(btn_row);
@@ -988,7 +988,7 @@ void ModManagerDialog::SetupCnxBuilderTab(QWidget* tab) {
         tab);
     banner->setWordWrap(true);
     banner->setStyleSheet(QStringLiteral(
-        "background: rgba(14, 165, 233, 0.12); border: 1px solid #0284C7; border-radius: 6px; padding: 10px; color: #BAE6FD;"));
+        "background: rgba(14, 165, 233, 0.12); border: none; border-radius: 6px; padding: 10px; color: #BAE6FD;"));
     root_layout->addWidget(banner);
 
     auto* mid_layout = new QHBoxLayout();
@@ -996,8 +996,8 @@ void ModManagerDialog::SetupCnxBuilderTab(QWidget* tab) {
 
     auto* form_group = new QGroupBox(tr("Параметры пакета и метаданных NACP"), tab);
     form_group->setStyleSheet(QStringLiteral(
-        "QGroupBox { border: 1px solid #1E293B; border-radius: 8px; margin-top: 8px; padding-top: 10px; font-weight: bold; color: #38BDF8; }"
-        "QLineEdit { background: #0A0E17; border: 1px solid #334155; border-radius: 6px; padding: 6px 10px; color: #FFFFFF; }"));
+        "QGroupBox { border: none; border-radius: 8px; margin-top: 8px; padding-top: 10px; font-weight: bold; color: #38BDF8; }"
+        "QLineEdit { background: #0A0E17; border: none; border-radius: 6px; padding: 6px 10px; color: #FFFFFF; }"));
     auto* form = new QFormLayout(form_group);
     form->setSpacing(10);
 
@@ -1092,7 +1092,7 @@ void ModManagerDialog::SetupCnxBuilderTab(QWidget* tab) {
     btn_build->setIcon(MakeModIcon(ModIconType::Zip, QColor(QStringLiteral("#FFFFFF"))));
     btn_build->setStyleSheet(QStringLiteral(
         "QPushButton { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0284C7, stop:1 #2563EB); "
-        "border: 1px solid #38BDF8; border-radius: 6px; color: #FFFFFF; font-weight: bold; padding: 9px 22px; font-size: 13px; }"
+        "border: none; border-radius: 6px; color: #FFFFFF; font-weight: bold; padding: 9px 22px; font-size: 13px; }"
         "QPushButton:hover { background: #00D2FF; color: #000000; }"));
     connect(btn_build, &QPushButton::clicked, this, &ModManagerDialog::OnCnxBuildInstaller);
     build_row->addWidget(btn_build);

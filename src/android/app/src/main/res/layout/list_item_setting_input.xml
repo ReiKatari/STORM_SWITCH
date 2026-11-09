@@ -14,7 +14,7 @@
     app:cardBackgroundColor="?attr/colorSurfaceVariant"
     app:cardElevation="0dp"
     app:strokeColor="?attr/colorOutline"
-    app:strokeWidth="1dp"
+    app:strokeWidth="0dp"
     android:nextFocusRight="@id/button_options">
 
     <LinearLayout

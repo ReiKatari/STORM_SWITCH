@@ -14,7 +14,7 @@
     android:background="@drawable/storm_btn_3d_tonal"
     app:iconSize="18dp"
     app:iconTint="?attr/colorPrimary"
-        app:strokeWidth="1dp"
+        app:strokeWidth="0dp"
         app:strokeColor="?attr/colorPrimary"
     android:breakStrategy="simple"
     android:hyphenationFrequency="none"

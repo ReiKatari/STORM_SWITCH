@@ -5,23 +5,20 @@
         <selector>
             <item android:state_enabled="false">
                 <shape android:shape="rectangle">
-                    <corners android:radius="10dp" />
+                    <corners android:radius="12dp" />
                     <solid android:color="#151D2A" />
-                    <stroke android:width="1dp" android:color="#233044" />
                 </shape>
             </item>
             <item android:state_pressed="true">
                 <shape android:shape="rectangle">
-                    <corners android:radius="10dp" />
-                    <solid android:color="#3822C55E" />
-                    <stroke android:width="1dp" android:color="#6622C55E" />
+                    <corners android:radius="12dp" />
+                    <solid android:color="#15803D" />
                 </shape>
             </item>
             <item>
                 <shape android:shape="rectangle">
-                    <corners android:radius="10dp" />
-                    <solid android:color="#2222C55E" />
-                    <stroke android:width="1dp" android:color="#6622C55E" />
+                    <corners android:radius="12dp" />
+                    <solid android:color="#16A34A" />
                 </shape>
             </item>
         </selector>

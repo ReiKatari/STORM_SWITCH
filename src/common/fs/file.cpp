@@ -276,10 +276,29 @@ void IOFile::Open(const fs::path& path, FileAccessMode mode, FileType type, File
         _wfopen_s(&file, win_open_path.c_str(), AccessModeToWStr(mode, type));
     }
 #elif __ANDROID__
-    std::string resolved_path = path;
-    if (resolved_path.starts_with("file://")) {
-        resolved_path = resolved_path.substr(7);
-    }
+    auto decode_file_uri = [](std::string s) -> std::string {
+        if (s.starts_with("file://")) {
+            s = s.substr(7);
+            std::string out;
+            out.reserve(s.size());
+            for (size_t i = 0; i < s.size(); ++i) {
+                if (s[i] == '%' && i + 2 < s.size()) {
+                    auto hv = [](char c) -> int {
+                        if (c >= '0' && c <= '9') return c - '0';
+                        if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+                        if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+                        return -1;
+                    };
+                    int hi = hv(s[i + 1]), lo = hv(s[i + 2]);
+                    if (hi >= 0 && lo >= 0) { out.push_back(static_cast<char>((hi << 4) | lo)); i += 2; continue; }
+                }
+                out.push_back(s[i]);
+            }
+            return out;
+        }
+        return s;
+    };
+    std::string resolved_path = decode_file_uri(path);
     if (Android::IsContentUri(resolved_path)) {
         ASSERT_MSG(mode == FileAccessMode::Read, "Content URI file access is for read-only!");
         const auto fd = Android::OpenContentUri(resolved_path, Android::OpenMode::Read);
@@ -436,7 +455,7 @@ u64 IOFile::GetSize() const {
     return file_size;
 #elif defined(__ANDROID__)
     u64 file_size = 0;
-    if (Android::IsContentUri(file_path)) {
+    if (Android::IsContentUri(PathToUTF8String(file_path))) {
         file_size = Android::GetSize(file_path);
     } else {
         std::error_code ec;

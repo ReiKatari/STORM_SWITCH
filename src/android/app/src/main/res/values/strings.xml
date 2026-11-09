@@ -2964,4 +2964,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="ui_design_style_aurora" translatable="false">STORM AURORA QUANTUM</string>
     <string name="ui_design_style_orbital" translatable="false">STORM ORBITAL SPATIAL UI</string>
     <string name="ui_design_style_chrono" translatable="false">STORM CHRONO-NEXUS COMMANDER</string>
+    <string name="storm_folder_picker_title">Select Folder</string>
+    <string name="storm_folder_picker_select_current">Select This Folder</string>
+    <string name="storm_folder_picker_system_saf">System Picker</string>
+    <string name="storm_folder_picker_up">.. (Parent Folder)</string>
+    <string name="storm_folder_picker_internal">Internal Storage</string>
+    <string name="storm_folder_picker_sd_card">SD / External (%1$s)</string>
+    <string name="storm_folder_picker_empty">No subfolders inside — tap "Select This Folder" below to use this directory.</string>
+    <string name="storm_folder_picker_grant_permission">Grant All Files Access to view folders in root storage</string>
+    <string name="storm_folder_picker_grant_btn">Grant Access</string>
+    <string name="storm_folder_picker_stats_games">%1$d folders • %2$d game files</string>
+    <string name="storm_folder_picker_stats_folders">%1$d subfolders</string>
 </resources>

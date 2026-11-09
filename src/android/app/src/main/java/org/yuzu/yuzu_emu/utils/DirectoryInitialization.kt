@@ -91,7 +91,8 @@ object DirectoryInitialization {
                     "crash_reports",
                     "screenshots",
                     "profiles",
-                    "keys"
+                    "keys",
+                    "lossless"
                 )
                 for (subdir in subdirs) {
                     File(rootExternal, subdir).mkdirs()
@@ -103,6 +104,7 @@ object DirectoryInitialization {
 
                 userPath = rootExternal.canonicalPath
                 NativeLibrary.setAppDirectory(userPath!!)
+                runCatching { LosslessScalingHelper.refreshStatus() }
                 areDirectoriesReady = true
                 NativeConfig.initializeGlobalConfig()
 
@@ -199,6 +201,7 @@ object DirectoryInitialization {
 
         userPath = stormExternalDir.canonicalPath
         NativeLibrary.setAppDirectory(userPath!!)
+                runCatching { LosslessScalingHelper.refreshStatus() }
     }
 
     private fun migrateSettings() {

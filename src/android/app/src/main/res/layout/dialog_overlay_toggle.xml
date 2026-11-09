@@ -8,7 +8,7 @@
     app:cardElevation="8dp"
     app:cardBackgroundColor="?attr/colorSurface"
     app:strokeColor="?attr/colorOutline"
-    app:strokeWidth="1.5dp">
+    app:strokeWidth="0dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -72,7 +72,7 @@
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
                 app:backgroundTint="?attr/colorSurfaceVariant"
-        app:strokeWidth="1dp"
+        app:strokeWidth="0dp"
         app:strokeColor="?attr/colorOutline"
     android:breakStrategy="simple"
     android:hyphenationFrequency="none"
@@ -129,7 +129,7 @@
                 android:textColor="?attr/colorOnPrimary"
                 app:cornerRadius="10dp"
                 app:backgroundTint="?attr/colorPrimary"
-        app:strokeWidth="1dp"
+        app:strokeWidth="0dp"
         app:strokeColor="?attr/colorPrimary"
     android:breakStrategy="simple"
     android:hyphenationFrequency="none"

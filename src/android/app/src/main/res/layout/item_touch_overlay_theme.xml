@@ -14,7 +14,7 @@
     app:cardElevation="3dp"
     app:cardBackgroundColor="?attr/colorSurfaceVariant"
     app:strokeColor="?attr/colorOutline"
-    app:strokeWidth="1.5dp">
+    app:strokeWidth="0dp">
 
     <LinearLayout
         android:layout_width="match_parent"

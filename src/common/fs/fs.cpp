@@ -588,14 +588,41 @@ void IterateDirEntriesRecursively(const std::filesystem::path& path, const DirEn
 }
 
 // Generic Filesystem Operations
+#ifdef __ANDROID__
+static std::string DecodeAndroidFileUri(std::string s) {
+    if (s.starts_with("file://")) {
+        s = s.substr(7);
+        std::string out;
+        out.reserve(s.size());
+        for (size_t i = 0; i < s.size(); ++i) {
+            if (s[i] == '%' && i + 2 < s.size()) {
+                auto hex_val = [](char c) -> int {
+                    if (c >= '0' && c <= '9') return c - '0';
+                    if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+                    if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+                    return -1;
+                };
+                const int hi = hex_val(s[i + 1]);
+                const int lo = hex_val(s[i + 2]);
+                if (hi >= 0 && lo >= 0) {
+                    out.push_back(static_cast<char>((hi << 4) | lo));
+                    i += 2;
+                    continue;
+                }
+            }
+            out.push_back(s[i]);
+        }
+        return out;
+    }
+    return s;
+}
+#endif
+
 
 bool Exists(const fs::path& path) {
     std::error_code ec;
 #ifdef __ANDROID__
-    std::string path_str = path.string();
-    if (path_str.starts_with("file://")) {
-        path_str = path_str.substr(7);
-    }
+    std::string path_str = DecodeAndroidFileUri(path.string());
     if (Android::IsContentUri(path_str)) {
         return Android::Exists(path_str);
     } else {
@@ -609,10 +636,7 @@ bool Exists(const fs::path& path) {
 bool IsFile(const fs::path& path) {
     std::error_code ec;
 #ifdef __ANDROID__
-    std::string path_str = path.string();
-    if (path_str.starts_with("file://")) {
-        path_str = path_str.substr(7);
-    }
+    std::string path_str = DecodeAndroidFileUri(path.string());
     if (Android::IsContentUri(path_str)) {
         return !Android::IsDirectory(path_str);
     } else {
@@ -626,10 +650,7 @@ bool IsFile(const fs::path& path) {
 bool IsDir(const fs::path& path) {
     std::error_code ec;
 #ifdef __ANDROID__
-    std::string path_str = path.string();
-    if (path_str.starts_with("file://")) {
-        path_str = path_str.substr(7);
-    }
+    std::string path_str = DecodeAndroidFileUri(path.string());
     if (Android::IsContentUri(path_str)) {
         return Android::IsDirectory(path_str);
     } else {
@@ -683,10 +704,14 @@ fs::file_type GetEntryType(const fs::path& path) {
 
 u64 GetSize(const fs::path& path) {
 #ifdef __ANDROID__
-    if (Android::IsContentUri(path)) {
-        return Android::GetSize(path);
+    const std::string android_path = DecodeAndroidFileUri(path.string());
+    if (Android::IsContentUri(android_path)) {
+        return Android::GetSize(android_path);
     }
-#endif
+    std::error_code ec_and;
+    const auto sz_and = fs::file_size(android_path, ec_and);
+    return ec_and ? 0 : sz_and;
+#else
 
     std::error_code ec;
 
@@ -699,6 +724,7 @@ u64 GetSize(const fs::path& path) {
     }
 
     return file_size;
+#endif
 }
 
 u64 GetFreeSpaceSize(const fs::path& path) {

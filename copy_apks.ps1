@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
 $baseDir = Split-Path -Parent $PSScriptRoot
-$version = '17.2.0'
+$version = '17.3.0'
 if (Test-Path "$PSScriptRoot\GIT-RELEASE") {
     $v = (Get-Content "$PSScriptRoot\GIT-RELEASE" -Raw).Trim()
     if ($v) { $version = $v }
@@ -81,8 +81,6 @@ if (Test-Path $mainline) {
     Copy-Item $mainline $dst1 -Force
     Sign-ApkWithRotation $dst1
     Copy-Item $dst1 "$assemblingDir\STORM_SWITCH_$version.apk" -Force
-    Copy-Item $dst1 "$filesDir\STORM_SWITCH_Android_Universal_$version.apk" -Force
-    Copy-Item $dst1 "$assemblingDir\STORM_SWITCH_Android_Universal_$version.apk" -Force
 }
 
 if (Test-Path $legacy) {
@@ -90,8 +88,6 @@ if (Test-Path $legacy) {
     Copy-Item $legacy $dst2 -Force
     Sign-ApkWithRotation $dst2
     Copy-Item $dst2 "$assemblingDir\STORM_SWITCH_${version}_LEGACY.apk" -Force
-    Copy-Item $dst2 "$filesDir\STORM_SWITCH_Android_GooglePlay_$version.apk" -Force
-    Copy-Item $dst2 "$assemblingDir\STORM_SWITCH_Android_GooglePlay_$version.apk" -Force
 }
 
 if (Test-Path $sdk27) {
@@ -99,8 +95,6 @@ if (Test-Path $sdk27) {
     Copy-Item $sdk27 $dst3 -Force
     Sign-ApkWithRotation $dst3
     Copy-Item $dst3 "$assemblingDir\STORM_SWITCH_${version}_SDK27.apk" -Force
-    Copy-Item $dst3 "$filesDir\STORM_SWITCH_Android_ChromeOS_$version.apk" -Force
-    Copy-Item $dst3 "$assemblingDir\STORM_SWITCH_Android_ChromeOS_$version.apk" -Force
 }
 
 Get-ChildItem -Path $filesDir -Filter "*.idsig" | Remove-Item -Force -ErrorAction SilentlyContinue

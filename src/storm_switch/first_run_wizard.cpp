@@ -186,8 +186,8 @@ void FirstRunWizard::SetupPages() {
     lay2->addWidget(keys_btn_box);
 
     auto* keys_hint = new QLabel(StormLang(
-        QStringLiteral("💡 Если у вас пока нет файлов ключей, вы можете пропустить этот шаг и добавить их позже через меню «Инструменты»."),
-        QStringLiteral("💡 If you don't have keys right now, you can skip this step and install them later via the Tools menu.")), m_page_keys);
+        QStringLiteral("Если у вас пока нет файлов ключей, вы можете пропустить этот шаг и добавить их позже через меню «Инструменты»."),
+        QStringLiteral("If you don't have keys right now, you can skip this step and install them later via the Tools menu.")), m_page_keys);
     keys_hint->setStyleSheet(QStringLiteral("color: rgba(255, 255, 255, 0.65); font-size: 8.5pt;"));
     keys_hint->setWordWrap(true);
     lay2->addWidget(keys_hint);
@@ -220,8 +220,8 @@ void FirstRunWizard::SetupPages() {
     fw_btn_lay->setSpacing(10);
 
     m_install_firmware_zip_btn = new QPushButton(StormLang(
-        QStringLiteral("📦 Установить из архива ZIP..."),
-        QStringLiteral("📦 Install from ZIP archive...")), fw_btn_box);
+        QStringLiteral("Установить из архива ZIP..."),
+        QStringLiteral("Install from ZIP archive...")), fw_btn_box);
     m_install_firmware_zip_btn->setCursor(Qt::PointingHandCursor);
     connect(m_install_firmware_zip_btn, &QPushButton::clicked, this, [this]() {
         QtCommon::Content::InstallFirmwareZip();
@@ -230,8 +230,8 @@ void FirstRunWizard::SetupPages() {
     fw_btn_lay->addWidget(m_install_firmware_zip_btn);
 
     m_install_firmware_folder_btn = new QPushButton(StormLang(
-        QStringLiteral("📁 Установить из папки..."),
-        QStringLiteral("📁 Install from Folder...")), fw_btn_box);
+        QStringLiteral("Установить из папки..."),
+        QStringLiteral("Install from Folder...")), fw_btn_box);
     m_install_firmware_folder_btn->setCursor(Qt::PointingHandCursor);
     connect(m_install_firmware_folder_btn, &QPushButton::clicked, this, [this]() {
         QtCommon::Content::InstallFirmware();
@@ -241,8 +241,8 @@ void FirstRunWizard::SetupPages() {
     lay3->addWidget(fw_btn_box);
 
     auto* fw_hint = new QLabel(StormLang(
-        QStringLiteral("💡 Установка прошивки не является строго обязательной для всех игр. Вы можете пропустить этот шаг."),
-        QStringLiteral("💡 Firmware installation is optional for many titles. You can skip this step and proceed.")), m_page_firmware);
+        QStringLiteral("Установка прошивки не является строго обязательной для всех игр. Вы можете пропустить этот шаг."),
+        QStringLiteral("Firmware installation is optional for many titles. You can skip this step and proceed.")), m_page_firmware);
     fw_hint->setStyleSheet(QStringLiteral("color: rgba(255, 255, 255, 0.65); font-size: 8.5pt;"));
     fw_hint->setWordWrap(true);
     lay3->addWidget(fw_hint);
@@ -276,25 +276,32 @@ void FirstRunWizard::SetupPages() {
     gd_btn_lay->setSpacing(10);
 
     m_add_gamedir_btn = new QPushButton(StormLang(
-        QStringLiteral("➕ Добавить папку с играми..."),
-        QStringLiteral("➕ Add Game Folder...")), gd_btn_box);
+        QStringLiteral("Добавить папку с играми..."),
+        QStringLiteral("Add Game Folder...")), gd_btn_box);
     m_add_gamedir_btn->setCursor(Qt::PointingHandCursor);
     connect(m_add_gamedir_btn, &QPushButton::clicked, this, [this]() {
         const QString dir = QFileDialog::getExistingDirectory(this,
             StormLang(QStringLiteral("Выберите папку с играми"), QStringLiteral("Select Game Folder")));
         if (!dir.isEmpty()) {
-            UISettings::GameDir gd;
-            gd.path = dir.toStdString();
-            gd.deep_scan = true;
-            UISettings::values.game_dirs.append(gd);
+            const std::string std_dir = dir.toStdString();
+            bool exists = false;
+            for (const auto& existing : UISettings::values.game_dirs) {
+                if (existing.path == std_dir) { exists = true; break; }
+            }
+            if (!exists) {
+                UISettings::GameDir gd;
+                gd.path = std_dir;
+                gd.deep_scan = true;
+                UISettings::values.game_dirs.append(gd);
+            }
             RefreshGameDirsList();
         }
     });
     gd_btn_lay->addWidget(m_add_gamedir_btn);
 
     m_remove_gamedir_btn = new QPushButton(StormLang(
-        QStringLiteral("➖ Удалить выбранную"),
-        QStringLiteral("➖ Remove Selected")), gd_btn_box);
+        QStringLiteral("Удалить выбранную"),
+        QStringLiteral("Remove Selected")), gd_btn_box);
     m_remove_gamedir_btn->setCursor(Qt::PointingHandCursor);
     connect(m_remove_gamedir_btn, &QPushButton::clicked, this, [this]() {
         const int row = m_gamedirs_list->currentRow();

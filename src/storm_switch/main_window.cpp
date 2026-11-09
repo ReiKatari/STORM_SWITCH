@@ -6019,7 +6019,7 @@ void MainWindow::InitializeWidgets() {
         "QPushButton#FooterCustomizeButton {"
         "  background-color: rgba(255, 255, 255, 0.08);"
         "  color: %1;"
-        "  border: 1px solid rgba(255, 255, 255, 0.15);"
+        "  border: none;"
         "  border-radius: 4px;"
         "  font-size: 11pt;"
         "  font-weight: bold;"
@@ -6100,7 +6100,7 @@ void MainWindow::InitializeWidgets() {
 
             "  margin: 0px 1px 2px 1px;"
 
-            "  border: 1px solid rgba(255, 255, 255, 0.08);"
+            "  border: none;"
 
             "  border-radius: 3px;"
 
@@ -6124,7 +6124,7 @@ void MainWindow::InitializeWidgets() {
 
             "  color: #ffffff;"
 
-            "  border: 1px solid rgba(255, 255, 255, 0.13);"
+            "  border: none;"
 
             "  border-radius: 4px;"
 
@@ -9629,6 +9629,8 @@ void MainWindow::CheckFirstRunWizard() {
     if (UISettings::values.first_start.GetValue() && (!ContentManager::AreKeysPresent() || UISettings::values.game_dirs.isEmpty())) {
         FirstRunWizard wizard(this, *QtCommon::system, *input_subsystem);
         wizard.exec();
+        OnSaveConfig();
+        OnGameListRefresh();
     }
 }
 

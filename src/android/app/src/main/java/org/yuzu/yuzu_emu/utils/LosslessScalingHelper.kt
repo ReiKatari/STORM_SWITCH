@@ -21,16 +21,37 @@ object LosslessScalingHelper {
     val statusText: StateFlow<String> = _statusText.asStateFlow()
 
     private var installed: Boolean? = null
+    private var lastCheckedUserDir: String? = null
     private var gpuSupported: Boolean? = null
 
-    fun isInstalled(): Boolean = installed ?: refreshStatus()
+    fun isInstalled(): Boolean {
+        val currentDir = runCatching { DirectoryInitialization.userDirectory }.getOrNull()
+        if (installed != true || currentDir != lastCheckedUserDir) {
+            return refreshStatus()
+        }
+        return installed == true
+    }
 
     fun isSupportedByGpu(): Boolean = true
 
     fun refreshStatus(): Boolean {
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.R ||
+            android.os.Environment.isExternalStorageManager()
+        ) {
+            val sharedRoot = File(android.os.Environment.getExternalStorageDirectory(), "STORM SWITCH")
+            val sharedDll = File(sharedRoot, "lossless/Lossless.dll")
+            val sharedLegacy = File(sharedRoot, "lossless/LosslessScaling.dll")
+            if ((sharedDll.exists() || sharedLegacy.exists()) &&
+                DirectoryInitialization.userDirectory != sharedRoot.canonicalPath
+            ) {
+                runCatching { DirectoryInitialization.initializeSharedStorage() }
+            }
+        }
         migrateLegacyDll()
+        val currentDir = runCatching { DirectoryInitialization.userDirectory }.getOrNull()
         val result = try { NativeLibrary.validateLosslessDll() == RESULT_OK } catch (_: Throwable) { false }
         installed = result
+        lastCheckedUserDir = currentDir
         if (!result) {
             try { BooleanSetting.RENDERER_FRAME_GEN.setBoolean(false) } catch (_: Throwable) {}
         }

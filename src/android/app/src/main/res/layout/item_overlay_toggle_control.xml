@@ -11,7 +11,7 @@
     app:cardElevation="3dp"
     app:cardBackgroundColor="#CC172033"
     app:strokeColor="#3000D2FF"
-    app:strokeWidth="1dp"
+    app:strokeWidth="0dp"
     app:rippleColor="#4000D2FF">
 
     <LinearLayout

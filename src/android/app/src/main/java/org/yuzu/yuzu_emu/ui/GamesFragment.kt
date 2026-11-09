@@ -195,7 +195,13 @@ class GamesFragment : Fragment() {
         updateButtonsVisibility()
 
         binding.addDirectory.setOnClickListener {
-            getGamesDirectory.launch(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).data)
+            org.yuzu.yuzu_emu.fragments.StormFolderPickerDialog.show(
+                childFragmentManager,
+                title = getString(R.string.games),
+                onSystemPickerRequested = { getGamesDirectory.launch(null) }
+            ) { pickedUri ->
+                mainActivity.processGamesDir(pickedUri, true)
+            }
         }
 
         binding.launchQlaunch?.setOnClickListener {

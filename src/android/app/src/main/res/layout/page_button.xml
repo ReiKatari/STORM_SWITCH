@@ -8,7 +8,7 @@
     android:textStyle="bold"
     app:backgroundTint="?attr/colorSurfaceVariant"
     app:strokeColor="?attr/colorPrimary"
-    app:strokeWidth="1.5dp"
+    app:strokeWidth="0dp"
     app:cornerRadius="14dp"
     app:elevation="4dp"
     app:iconTint="?attr/colorPrimary"

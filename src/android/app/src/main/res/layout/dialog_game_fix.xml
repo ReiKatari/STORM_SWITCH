@@ -153,7 +153,7 @@
                 app:cardElevation="0dp"
                 app:cardBackgroundColor="?attr/colorSurfaceVariant"
                 app:strokeColor="?attr/colorOutline"
-                app:strokeWidth="1dp">
+                app:strokeWidth="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -211,7 +211,7 @@
                 app:cardElevation="0dp"
                 app:cardBackgroundColor="#0D2B36"
                 app:strokeColor="#00E5FF"
-                app:strokeWidth="1.2dp">
+                app:strokeWidth="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -285,7 +285,7 @@
                 app:cardElevation="0dp"
                 app:cardBackgroundColor="?attr/colorSurfaceVariant"
                 app:strokeColor="?attr/colorPrimary"
-                app:strokeWidth="1.5dp">
+                app:strokeWidth="0dp">
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/text_game_fix_launch_method"
@@ -318,7 +318,7 @@
                 app:cardElevation="0dp"
                 app:cardBackgroundColor="?attr/colorSurfaceVariant"
                 app:strokeColor="?attr/colorPrimary"
-                app:strokeWidth="1.5dp">
+                app:strokeWidth="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -385,7 +385,7 @@
                 app:cardElevation="0dp"
                 app:cardBackgroundColor="?attr/colorSurfaceVariant"
                 app:strokeColor="?attr/colorPrimary"
-                app:strokeWidth="1.2dp">
+                app:strokeWidth="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -452,7 +452,7 @@
                 app:cardElevation="0dp"
                 app:cardBackgroundColor="?attr/colorSurfaceVariant"
                 app:strokeColor="?attr/colorOutline"
-                app:strokeWidth="1dp">
+                app:strokeWidth="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -519,7 +519,7 @@
                 app:cardElevation="0dp"
                 app:cardBackgroundColor="?attr/colorSurfaceVariant"
                 app:strokeColor="?attr/colorOutline"
-                app:strokeWidth="1dp">
+                app:strokeWidth="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -598,14 +598,14 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_cancel"
-            style="@style/Widget.Material3.Button.OutlinedButton"
+            style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="wrap_content"
             android:layout_height="38dp"
             android:minHeight="38dp"
             android:minWidth="115dp"
             android:paddingHorizontal="18dp"
             app:cornerRadius="10dp"
-            app:strokeWidth="1.5dp"
+            app:strokeWidth="0dp"
             app:strokeColor="?attr/colorOutline"
             android:text="@string/cancel"
             android:textSize="11.5sp"

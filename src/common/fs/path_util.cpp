@@ -485,6 +485,22 @@ std::string SanitizePath(std::string_view path_, DirectorySeparator directory_se
     }
     if (path.starts_with("file://")) {
         path = path.substr(7);
+        std::string decoded;
+        decoded.reserve(path.size());
+        for (size_t i = 0; i < path.size(); ++i) {
+            if (path[i] == '%' && i + 2 < path.size()) {
+                auto hv = [](char c) -> int {
+                    if (c >= '0' && c <= '9') return c - '0';
+                    if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+                    if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+                    return -1;
+                };
+                int hi = hv(path[i + 1]), lo = hv(path[i + 2]);
+                if (hi >= 0 && lo >= 0) { decoded.push_back(static_cast<char>((hi << 4) | lo)); i += 2; continue; }
+            }
+            decoded.push_back(path[i]);
+        }
+        path = std::move(decoded);
     }
 #endif // __ANDROID__
 
