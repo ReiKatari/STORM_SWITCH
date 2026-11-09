@@ -195,12 +195,20 @@ class GamesFragment : Fragment() {
         updateButtonsVisibility()
 
         binding.addDirectory.setOnClickListener {
-            org.yuzu.yuzu_emu.fragments.StormFolderPickerDialog.show(
+            org.yuzu.yuzu_emu.fragments.StormFolderPickerDialog.showMulti(
                 childFragmentManager,
                 title = getString(R.string.games),
+                existingUris = gamesViewModel.folders.value
+                    .filter { it.type == org.yuzu.yuzu_emu.model.DirectoryType.GAME && it.uriString.isNotBlank() }
+                    .map { it.uriString },
+                onRemoveExistingUri = { uriToRemove ->
+                    gamesViewModel.folders.value.firstOrNull { it.uriString == uriToRemove }?.let {
+                        gamesViewModel.removeFolder(it)
+                    }
+                },
                 onSystemPickerRequested = { getGamesDirectory.launch(null) }
-            ) { pickedUri ->
-                mainActivity.processGamesDir(pickedUri, true)
+            ) { pickedUris, deepScan ->
+                mainActivity.processMultipleGamesDirs(pickedUris, deepScan, true)
             }
         }
 

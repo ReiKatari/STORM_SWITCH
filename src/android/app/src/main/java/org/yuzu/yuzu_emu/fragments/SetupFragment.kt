@@ -247,12 +247,19 @@ class SetupFragment : Fragment() {
                                 R.string.games_description,
                                 {
                                     pageButtonCallback = it
-                                    StormFolderPickerDialog.show(
+                                    StormFolderPickerDialog.showMulti(
                                         childFragmentManager,
                                         title = getString(R.string.games),
+                                        existingUris = NativeConfig.getGameDirs().map { d -> d.uriString }.filter { u -> u.isNotBlank() },
+                                        onRemoveExistingUri = { uriToRemove ->
+                                            gamesViewModel.folders.value.firstOrNull { f -> f.uriString == uriToRemove }?.let { f ->
+                                                gamesViewModel.removeFolder(f)
+                                            }
+                                            refreshAllButtonStates()
+                                        },
                                         onSystemPickerRequested = { getGamesDirectory.launch(null) }
-                                    ) { pickedUri ->
-                                        mainActivity.processGamesDir(pickedUri, false)
+                                    ) { pickedUris, deepScan ->
+                                        mainActivity.processMultipleGamesDirs(pickedUris, deepScan, false)
                                         refreshAllButtonStates()
                                     }
                                 },
@@ -306,6 +313,9 @@ class SetupFragment : Fragment() {
             viewLifecycleOwner,
             resetState = { homeViewModel.setGamesDirSelected(false) }
         ) { if (it) checkForButtonState.invoke() }
+        gamesViewModel.folders.collect(viewLifecycleOwner) {
+            refreshAllButtonStates()
+        }
         homeViewModel.checkKeys.collect(
             viewLifecycleOwner,
             resetState = { homeViewModel.setCheckKeys(false) }

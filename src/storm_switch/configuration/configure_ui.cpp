@@ -196,6 +196,7 @@ ConfigureUi::ConfigureUi(Core::System& system_, QWidget* parent)
 
 
     if (ui->design_label) {
+        ui->design_label->setVisible(false);
 
         ui->design_label->setText(StormDesign::GetDesignSelectorLabel());
 
@@ -204,6 +205,7 @@ ConfigureUi::ConfigureUi(Core::System& system_, QWidget* parent)
     }
 
     if (ui->design_combobox) {
+        ui->design_combobox->setVisible(false);
 
         ui->design_combobox->setToolTip(StormDesign::GetLocalizedDesignTooltip());
 

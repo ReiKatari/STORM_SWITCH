@@ -209,13 +209,9 @@ class CheatsDialogFragment : DialogFragment() {
 
     private fun applyWindowDimensions() {
         dialog?.window?.let { window ->
-            val dm = resources.displayMetrics
-            val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-            val width = if (isLandscape) (dm.widthPixels * 0.94).toInt() else (dm.widthPixels * 0.95).toInt()
-            val height = if (isLandscape) (dm.heightPixels * 0.90).toInt() else (dm.heightPixels * 0.86).toInt()
-            window.setLayout(width, height)
-            window.setGravity(Gravity.CENTER)
+            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             window.setBackgroundDrawableResource(android.R.color.transparent)
+            androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
             ThemeHelper.applySystemBarsTheme(window, requireContext())
         }
 

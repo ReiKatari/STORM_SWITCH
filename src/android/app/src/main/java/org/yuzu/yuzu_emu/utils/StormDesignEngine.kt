@@ -161,9 +161,7 @@ object StormDesignEngine {
     }
 
     private fun getDesignStyle(): Int {
-        return runCatching { IntSetting.UI_DESIGN_STYLE.getInt() }
-            .getOrDefault(DESIGN_HYPERION_GLASS_3D)
-            .coerceIn(DESIGN_HYPERION_GLASS_3D, DESIGN_CHRONO_NEXUS_COMMANDER)
+        return DESIGN_HYPERION_GLASS_3D
     }
 
     private fun clearStyleTags(view: View) {
@@ -316,18 +314,31 @@ object StormDesignEngine {
         val context = layout.context
         val density = context.resources.displayMetrics.density
 
-        val radius = when (design) {
-            DESIGN_HYPERION_GLASS_3D -> 12f * density
-            DESIGN_CYBER_DECK_TACTILE -> 6f * density
-            DESIGN_AURORA_QUANTUM -> 16f * density
-            DESIGN_ORBITAL_SPATIAL_UI -> 14f * density
-            DESIGN_CHRONO_NEXUS_COMMANDER -> 8f * density
-            else -> 10f * density
-        }
-
+        val radius = 12f * density
+        layout.boxBackgroundMode = TextInputLayout.BOX_BACKGROUND_OUTLINE
         layout.setBoxCornerRadii(radius, radius, radius, radius)
         layout.boxStrokeWidth = 0
         layout.boxStrokeWidthFocused = 0
+
+        var insideCard = false
+        var p = layout.parent
+        var depth = 0
+        while (p is View && depth < 5) {
+            val pv = p as View
+            if (pv is MaterialCardView) {
+                insideCard = true
+                break
+            }
+            p = pv.parent
+            depth++
+        }
+
+        val wellColor = if (insideCard) {
+            resolveColor(context, com.google.android.material.R.attr.colorSurface, 0xFF0E131D.toInt())
+        } else {
+            resolveColor(context, com.google.android.material.R.attr.colorSurfaceVariant, 0xFF1B2436.toInt())
+        }
+        layout.boxBackgroundColor = wellColor
     }
 
     private fun styleChip(chip: Chip, design: Int) {

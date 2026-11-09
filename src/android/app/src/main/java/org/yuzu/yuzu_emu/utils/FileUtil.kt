@@ -273,8 +273,14 @@ object FileUtil {
     fun exists(path: String?, suppressLog: Boolean = false): Boolean {
         if (path.isNullOrEmpty()) return false
         if (path.startsWith("/") || path.startsWith("file://")) {
-            val clean = if (path.startsWith("file://")) (Uri.parse(path).path ?: Uri.decode(path.substring(7))) else path
-            return File(clean).exists()
+            val clean = if (path.startsWith("file://")) {
+                Uri.parse(path).path ?: Uri.decode(path.substring(7))
+            } else {
+                path
+            }
+            if (File(clean).exists()) return true
+            val decoded = runCatching { Uri.decode(clean) }.getOrDefault(clean)
+            return File(decoded).exists()
         }
         var c: Cursor? = null
         try {

@@ -2149,7 +2149,7 @@ void StormGamesWorldDialog::ApplyStormStyles() {
         "    border-radius: 8px;"
         "}"
         "QLineEdit {"
-        "    background: %6;"
+        "    background: %5;"
         "    border: none;"
         "    border-radius: 6px;"
         "    padding: 6px 12px;"

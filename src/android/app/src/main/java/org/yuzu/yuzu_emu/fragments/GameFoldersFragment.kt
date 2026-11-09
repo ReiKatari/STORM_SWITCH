@@ -100,12 +100,21 @@ class GameFoldersFragment : Fragment() {
                 .setItems(options) { _, which ->
                     when (which) {
                         0 -> { // Game Folder
-                            StormFolderPickerDialog.show(
+                            StormFolderPickerDialog.showMulti(
                                 childFragmentManager,
                                 title = getString(R.string.games),
+                                existingUris = gamesViewModel.folders.value
+                                    .filter { it.type == DirectoryType.GAME && it.uriString.isNotBlank() }
+                                    .map { it.uriString },
+                                onRemoveExistingUri = { uriToRemove ->
+                                    gamesViewModel.folders.value.firstOrNull { it.uriString == uriToRemove }?.let {
+                                        gamesViewModel.removeFolder(it)
+                                    }
+                                },
                                 onSystemPickerRequested = { getGamesDirectory.launch(null) }
-                            ) { pickedUri ->
-                                processGamesDir(pickedUri)
+                            ) { pickedUris, deepScan ->
+                                (requireActivity() as? org.yuzu.yuzu_emu.ui.main.MainActivity)
+                                    ?.processMultipleGamesDirs(pickedUris, deepScan, false)
                             }
                         }
                         1 -> { // External Content Folder

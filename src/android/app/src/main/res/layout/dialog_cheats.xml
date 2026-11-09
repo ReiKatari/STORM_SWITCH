@@ -4,14 +4,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/transparent"
+    android:background="?attr/colorSurface"
+    android:clickable="true"
+    android:focusable="true"
     android:clipToPadding="false">
 
     <LinearLayout
         android:id="@+id/card_root_dialog"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/storm_dialog_card_bg"
+        android:background="?attr/colorSurface"
         android:orientation="vertical"
         android:padding="12dp">
 
@@ -64,12 +66,14 @@
 
             <ImageView
                 android:id="@+id/btn_close"
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:padding="4dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@drawable/storm_btn_3d_secondary"
+                android:elevation="2dp"
+                android:padding="8dp"
+                android:scaleType="fitCenter"
                 android:src="@drawable/ic_clear"
-                app:tint="?attr/colorOnSurfaceVariant" />
+                app:tint="?attr/colorOnSurface" />
 
         </LinearLayout>
 

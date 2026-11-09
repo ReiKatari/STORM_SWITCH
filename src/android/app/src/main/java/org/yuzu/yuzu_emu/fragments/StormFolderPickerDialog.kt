@@ -30,7 +30,9 @@ import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.materialswitch.MaterialSwitch
 import org.yuzu.yuzu_emu.R
 import java.io.File
 import java.util.Locale
@@ -38,11 +40,23 @@ import java.util.Locale
 class StormFolderPickerDialog : DialogFragment() {
 
     var onFolderPicked: ((Uri) -> Unit)? = null
+    var onFoldersPicked: ((List<Uri>, Boolean) -> Unit)? = null
+    var onRemoveExistingUri: ((String) -> Unit)? = null
     var onSystemPickerRequested: (() -> Unit)? = null
+
+    private var allowMultiple: Boolean = false
+    private val selectedPaths = LinkedHashSet<String>()
+    private val existingUriMap = LinkedHashMap<String, String>() // normalizedPath -> rawUriString
 
     private var currentDir: File = Environment.getExternalStorageDirectory()
     private var rootMinDir: File = Environment.getExternalStorageDirectory()
     private lateinit var pathTextView: TextView
+    private var addCurrentBtn: MaterialButton? = null
+    private var selectedSection: LinearLayout? = null
+    private var selectedHeaderText: TextView? = null
+    private var selectedChipsContainer: LinearLayout? = null
+    private var deepScanSwitch: MaterialSwitch? = null
+    private lateinit var selectBtn: MaterialButton
     private lateinit var emptyTextView: TextView
     private lateinit var permissionBanner: LinearLayout
     private lateinit var recyclerView: RecyclerView
@@ -63,10 +77,32 @@ class StormFolderPickerDialog : DialogFragment() {
         }
     }
 
+    private fun normalizePathFromUriString(uriStr: String): String {
+        val parsed = runCatching { Uri.parse(uriStr) }.getOrNull()
+        if (parsed != null && parsed.scheme == "file") {
+            val p = parsed.path ?: Uri.decode(uriStr.removePrefix("file://"))
+            return p.trimEnd('/').ifEmpty { "/" }
+        }
+        val pathPart = parsed?.path?.let { runCatching { Uri.decode(it) }.getOrDefault(it) } ?: uriStr
+        if (pathPart.contains("/tree/primary:")) {
+            val rel = pathPart.substringAfter("/tree/primary:").trim('/')
+            val ext = Environment.getExternalStorageDirectory().absolutePath.trimEnd('/')
+            return if (rel.isEmpty()) ext else "$ext/$rel"
+        }
+        return pathPart.trimEnd('/').ifEmpty { uriStr }
+    }
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val ctx = requireContext()
         val density = resources.displayMetrics.density
         fun dp(v: Float): Int = (v * density).toInt()
+
+        allowMultiple = arguments?.getBoolean(ARG_ALLOW_MULTIPLE, false) ?: false
+        arguments?.getStringArrayList(ARG_EXISTING_URIS)?.forEach { rawUri ->
+            if (rawUri.isNotBlank()) {
+                existingUriMap[normalizePathFromUriString(rawUri)] = rawUri
+            }
+        }
 
         val initialPath = arguments?.getString(ARG_INITIAL_PATH)
         val startFile = if (!initialPath.isNullOrBlank()) File(initialPath) else Environment.getExternalStorageDirectory()
@@ -79,10 +115,11 @@ class StormFolderPickerDialog : DialogFragment() {
         val primaryColor = resolveAttrColor(com.google.android.material.R.attr.colorPrimary, 0xFF38BDF8.toInt())
         val onSurfaceColor = resolveAttrColor(com.google.android.material.R.attr.colorOnSurface, Color.WHITE)
         val onSurfaceVarColor = resolveAttrColor(com.google.android.material.R.attr.colorOnSurfaceVariant, 0xFF94A3B8.toInt())
+        val emeraldColor = 0xFF10B981.toInt()
 
         val rootLayout = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(18f), dp(16f), dp(18f), dp(14f))
+            setPadding(dp(16f), dp(14f), dp(16f), dp(12f))
         }
 
         // Title
@@ -91,9 +128,9 @@ class StormFolderPickerDialog : DialogFragment() {
         val titleView = TextView(ctx).apply {
             text = titleStr
             setTextColor(onSurfaceColor)
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 17.5f)
             setTypeface(typeface, Typeface.BOLD)
-            setPadding(0, 0, 0, dp(10f))
+            setPadding(0, 0, 0, dp(8f))
         }
         rootLayout.addView(titleView)
 
@@ -102,7 +139,7 @@ class StormFolderPickerDialog : DialogFragment() {
         if (roots.isNotEmpty()) {
             val hsv = HorizontalScrollView(ctx).apply {
                 isHorizontalScrollBarEnabled = false
-                setPadding(0, 0, 0, dp(8f))
+                setPadding(0, 0, 0, dp(6f))
             }
             val chipsRow = LinearLayout(ctx).apply {
                 orientation = LinearLayout.HORIZONTAL
@@ -115,15 +152,15 @@ class StormFolderPickerDialog : DialogFragment() {
                     insetTop = 0
                     insetBottom = 0
                     cornerRadius = dp(10f)
-                    minHeight = dp(36f)
-                    minimumHeight = dp(36f)
-                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 12.5f)
+                    minHeight = dp(34f)
+                    minimumHeight = dp(34f)
+                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
                     setPadding(dp(12f), 0, dp(12f), 0)
                     backgroundTintList = ColorStateList.valueOf(surfaceVarColor)
                     setTextColor(onSurfaceColor)
                     layoutParams = LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.WRAP_CONTENT,
-                        dp(36f)
+                        dp(34f)
                     ).apply { marginEnd = dp(8f) }
                     setOnClickListener {
                         rootMinDir = rootFile
@@ -137,25 +174,105 @@ class StormFolderPickerDialog : DialogFragment() {
             rootLayout.addView(hsv)
         }
 
-        // Current path pill (clean borderless well)
+        // Current path row + "+ Current" toggle button in multi-select mode
+        val pathRow = LinearLayout(ctx).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { bottomMargin = dp(8f) }
+        }
+
         pathTextView = TextView(ctx).apply {
             setTextColor(primaryColor)
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12.5f)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
             setTypeface(Typeface.MONOSPACE, Typeface.BOLD)
             maxLines = 2
             ellipsize = TextUtils.TruncateAt.START
-            setPadding(dp(12f), dp(8f), dp(12f), dp(8f))
+            setPadding(dp(10f), dp(7f), dp(10f), dp(7f))
             background = GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
                 cornerRadius = dp(10f).toFloat()
                 setColor(surfaceVarColor)
             }
             layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply { bottomMargin = dp(10f) }
+                0,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                1f
+            )
         }
-        rootLayout.addView(pathTextView)
+        pathRow.addView(pathTextView)
+
+        if (allowMultiple) {
+            addCurrentBtn = MaterialButton(ctx).apply {
+                text = getString(R.string.storm_folder_picker_add_current)
+                isAllCaps = false
+                strokeWidth = 0
+                insetTop = 0
+                insetBottom = 0
+                cornerRadius = dp(10f)
+                minHeight = dp(34f)
+                minimumHeight = dp(34f)
+                setPadding(dp(10f), 0, dp(10f), 0)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 11.5f)
+                setTypeface(typeface, Typeface.BOLD)
+                backgroundTintList = ColorStateList.valueOf(surfaceVarColor)
+                setTextColor(primaryColor)
+                layoutParams = LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    dp(34f)
+                ).apply { marginStart = dp(6f) }
+                setOnClickListener {
+                    val normCur = currentDir.absolutePath.trimEnd('/').ifEmpty { "/" }
+                    if (existingUriMap.containsKey(normCur)) {
+                        val raw = existingUriMap.remove(normCur)
+                        if (raw != null) onRemoveExistingUri?.invoke(raw)
+                    } else if (selectedPaths.contains(normCur)) {
+                        selectedPaths.remove(normCur)
+                    } else {
+                        selectedPaths.add(normCur)
+                    }
+                    updateMultiSelectionUi(surfaceVarColor, primaryColor, emeraldColor, onSurfaceColor, onSurfaceVarColor)
+                    adapter.notifyDataSetChanged()
+                }
+            }
+            pathRow.addView(addCurrentBtn)
+        }
+        rootLayout.addView(pathRow)
+
+        // Multi-folder Selected & Already-Added strip
+        if (allowMultiple) {
+            val sec = LinearLayout(ctx).apply {
+                orientation = LinearLayout.VERTICAL
+                visibility = View.GONE
+                layoutParams = LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                ).apply { bottomMargin = dp(8f) }
+            }
+            val hdr = TextView(ctx).apply {
+                setTextColor(onSurfaceVarColor)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 11.5f)
+                setTypeface(typeface, Typeface.BOLD)
+                setPadding(dp(2f), 0, dp(2f), dp(4f))
+            }
+            val chipsScroll = HorizontalScrollView(ctx).apply {
+                isHorizontalScrollBarEnabled = false
+            }
+            val chipsRow = LinearLayout(ctx).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+            }
+            chipsScroll.addView(chipsRow)
+            sec.addView(hdr)
+            sec.addView(chipsScroll)
+
+            selectedSection = sec
+            selectedHeaderText = hdr
+            selectedChipsContainer = chipsRow
+            rootLayout.addView(sec)
+        }
 
         // All-Files-Access prompt banner (visible only if permission is missing)
         permissionBanner = LinearLayout(ctx).apply {
@@ -170,7 +287,7 @@ class StormFolderPickerDialog : DialogFragment() {
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply { bottomMargin = dp(10f) }
+            ).apply { bottomMargin = dp(8f) }
             visibility = View.GONE
 
             val msg = TextView(ctx).apply {
@@ -201,12 +318,33 @@ class StormFolderPickerDialog : DialogFragment() {
 
         // Folder list RecyclerView
         val screenH = resources.displayMetrics.heightPixels
-        val listHeight = (screenH * 0.46f).toInt().coerceIn(dp(220f), dp(420f))
+        val heightRatio = if (allowMultiple) 0.40f else 0.46f
+        val listHeight = (screenH * heightRatio).toInt().coerceIn(dp(190f), dp(390f))
 
-        adapter = FolderEntryAdapter(surfaceVarColor, primaryColor, onSurfaceColor, onSurfaceVarColor) { clickedEntry ->
-            currentDir = clickedEntry.file
-            refreshDirectory()
-        }
+        adapter = FolderEntryAdapter(
+            rowBgColor = surfaceVarColor,
+            iconTintColor = primaryColor,
+            emeraldColor = emeraldColor,
+            titleColor = onSurfaceColor,
+            subColor = onSurfaceVarColor,
+            onNavigate = { clickedEntry ->
+                currentDir = clickedEntry.file
+                refreshDirectory()
+            },
+            onToggleSelect = { toggledEntry ->
+                val norm = toggledEntry.file.absolutePath.trimEnd('/').ifEmpty { "/" }
+                if (existingUriMap.containsKey(norm)) {
+                    val raw = existingUriMap.remove(norm)
+                    if (raw != null) onRemoveExistingUri?.invoke(raw)
+                } else if (selectedPaths.contains(norm)) {
+                    selectedPaths.remove(norm)
+                } else {
+                    selectedPaths.add(norm)
+                }
+                updateMultiSelectionUi(surfaceVarColor, primaryColor, emeraldColor, onSurfaceColor, onSurfaceVarColor)
+                adapter.notifyDataSetChanged()
+            }
+        )
 
         recyclerView = RecyclerView(ctx).apply {
             layoutManager = LinearLayoutManager(ctx)
@@ -222,12 +360,28 @@ class StormFolderPickerDialog : DialogFragment() {
         emptyTextView = TextView(ctx).apply {
             text = getString(R.string.storm_folder_picker_empty)
             setTextColor(onSurfaceVarColor)
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12.5f)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
             gravity = Gravity.CENTER
-            setPadding(dp(12f), dp(12f), dp(12f), dp(12f))
+            setPadding(dp(10f), dp(10f), dp(10f), dp(10f))
             visibility = View.GONE
         }
         rootLayout.addView(emptyTextView)
+
+        // Deep scan switch in multi-folder mode
+        if (allowMultiple) {
+            val sw = MaterialSwitch(ctx).apply {
+                text = getString(R.string.storm_folder_picker_deep_scan)
+                isChecked = true
+                setTextColor(onSurfaceColor)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 12.5f)
+                layoutParams = LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                ).apply { topMargin = dp(6f) }
+            }
+            deepScanSwitch = sw
+            rootLayout.addView(sw)
+        }
 
         // Bottom Action Bar
         val actionsRow = LinearLayout(ctx).apply {
@@ -236,7 +390,7 @@ class StormFolderPickerDialog : DialogFragment() {
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply { topMargin = dp(12f) }
+            ).apply { topMargin = dp(10f) }
         }
 
         if (onSystemPickerRequested != null) {
@@ -247,18 +401,24 @@ class StormFolderPickerDialog : DialogFragment() {
                 insetTop = 0
                 insetBottom = 0
                 cornerRadius = dp(10f)
-                minHeight = dp(42f)
+                minHeight = dp(40f)
                 backgroundTintList = ColorStateList.valueOf(surfaceVarColor)
                 setTextColor(onSurfaceVarColor)
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, 12.5f)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
                 layoutParams = LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT,
-                    dp(42f)
+                    dp(40f)
                 ).apply { marginEnd = dp(6f) }
                 setOnClickListener {
-                    val cb = onSystemPickerRequested
+                    val sysCb = onSystemPickerRequested
+                    // Save any already-ticked folders before launching system SAF picker
+                    if (allowMultiple && selectedPaths.isNotEmpty()) {
+                        val uris = selectedPaths.map { Uri.fromFile(File(it)) }
+                        val ds = deepScanSwitch?.isChecked ?: true
+                        onFoldersPicked?.invoke(uris, ds)
+                    }
                     dismissAllowingStateLoss()
-                    cb?.invoke()
+                    sysCb?.invoke()
                 }
             }
             actionsRow.addView(sysBtn)
@@ -276,39 +436,60 @@ class StormFolderPickerDialog : DialogFragment() {
             insetTop = 0
             insetBottom = 0
             cornerRadius = dp(10f)
-            minHeight = dp(42f)
+            minHeight = dp(40f)
             backgroundTintList = ColorStateList.valueOf(surfaceVarColor)
             setTextColor(onSurfaceColor)
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12.5f)
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
-                dp(42f)
+                dp(40f)
             ).apply { marginEnd = dp(8f) }
             setOnClickListener { dismissAllowingStateLoss() }
         }
         actionsRow.addView(cancelBtn)
 
-        val selectBtn = MaterialButton(ctx).apply {
+        selectBtn = MaterialButton(ctx).apply {
             text = getString(R.string.storm_folder_picker_select_current)
             isAllCaps = false
             strokeWidth = 0
             insetTop = 0
             insetBottom = 0
             cornerRadius = dp(10f)
-            minHeight = dp(42f)
+            minHeight = dp(40f)
             backgroundTintList = ColorStateList.valueOf(primaryColor)
             setTextColor(Color.WHITE)
             setTypeface(typeface, Typeface.BOLD)
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 13.5f)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
-                dp(42f)
+                dp(40f)
             )
             setOnClickListener {
-                val chosenUri = Uri.fromFile(currentDir)
-                val cb = onFolderPicked
-                dismissAllowingStateLoss()
-                cb?.invoke(chosenUri)
+                if (allowMultiple) {
+                    val ds = deepScanSwitch?.isChecked ?: true
+                    val urisToDeliver = if (selectedPaths.isNotEmpty()) {
+                        selectedPaths.map { Uri.fromFile(File(it)) }
+                    } else {
+                        val normCur = currentDir.absolutePath.trimEnd('/').ifEmpty { "/" }
+                        if (existingUriMap.containsKey(normCur)) emptyList()
+                        else listOf(Uri.fromFile(currentDir))
+                    }
+                    val multiCb = onFoldersPicked
+                    val singleCb = onFolderPicked
+                    dismissAllowingStateLoss()
+                    if (multiCb != null) {
+                        if (urisToDeliver.isNotEmpty()) {
+                            multiCb.invoke(urisToDeliver, ds)
+                        }
+                    } else if (singleCb != null && urisToDeliver.isNotEmpty()) {
+                        singleCb.invoke(urisToDeliver.first())
+                    }
+                } else {
+                    val chosenUri = Uri.fromFile(currentDir)
+                    val cb = onFolderPicked
+                    dismissAllowingStateLoss()
+                    cb?.invoke(chosenUri)
+                }
             }
         }
         actionsRow.addView(selectBtn)
@@ -325,6 +506,103 @@ class StormFolderPickerDialog : DialogFragment() {
             setColor(surfaceColor)
         })
         return dlg
+    }
+
+    private fun updateMultiSelectionUi(
+        surfaceVarColor: Int,
+        primaryColor: Int,
+        emeraldColor: Int,
+        onSurfaceColor: Int,
+        onSurfaceVarColor: Int
+    ) {
+        if (!allowMultiple) return
+        val ctx = context ?: return
+        val density = resources.displayMetrics.density
+        fun dp(v: Float): Int = (v * density).toInt()
+
+        val normCur = currentDir.absolutePath.trimEnd('/').ifEmpty { "/" }
+        val curChecked = existingUriMap.containsKey(normCur) || selectedPaths.contains(normCur)
+        addCurrentBtn?.apply {
+            text = if (curChecked) "✓" else getString(R.string.storm_folder_picker_add_current)
+            setTextColor(if (curChecked) emeraldColor else primaryColor)
+        }
+
+        val totalActive = existingUriMap.size + selectedPaths.size
+        val sec = selectedSection
+        val hdr = selectedHeaderText
+        val chipsRow = selectedChipsContainer
+        if (sec != null && hdr != null && chipsRow != null) {
+            if (totalActive == 0) {
+                sec.visibility = View.GONE
+            } else {
+                sec.visibility = View.VISIBLE
+                hdr.text = getString(R.string.storm_folder_picker_selected_header, totalActive)
+                chipsRow.removeAllViews()
+
+                fun addChip(displayPath: String, isSaved: Boolean, onRemove: () -> Unit) {
+                    val shortLabel = displayPath.trimEnd('/').substringAfterLast('/').ifEmpty { displayPath }
+                    val chip = LinearLayout(ctx).apply {
+                        orientation = LinearLayout.HORIZONTAL
+                        gravity = Gravity.CENTER_VERTICAL
+                        setPadding(dp(10f), dp(4f), dp(8f), dp(4f))
+                        background = GradientDrawable().apply {
+                            shape = GradientDrawable.RECTANGLE
+                            cornerRadius = dp(8f).toFloat()
+                            setColor(surfaceVarColor)
+                        }
+                        layoutParams = LinearLayout.LayoutParams(
+                            ViewGroup.LayoutParams.WRAP_CONTENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT
+                        ).apply { marginEnd = dp(6f) }
+                    }
+                    val tv = TextView(ctx).apply {
+                        text = shortLabel
+                        setTextColor(if (isSaved) emeraldColor else primaryColor)
+                        setTextSize(TypedValue.COMPLEX_UNIT_SP, 11.5f)
+                        setTypeface(typeface, Typeface.BOLD)
+                        maxLines = 1
+                    }
+                    val closeTv = TextView(ctx).apply {
+                        text = "×"
+                        setTextColor(onSurfaceVarColor)
+                        setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+                        setTypeface(typeface, Typeface.BOLD)
+                        setPadding(dp(6f), 0, dp(2f), 0)
+                        setOnClickListener { onRemove() }
+                    }
+                    chip.setOnClickListener { onRemove() }
+                    chip.addView(tv)
+                    chip.addView(closeTv)
+                    chipsRow.addView(chip)
+                }
+
+                existingUriMap.entries.toList().forEach { (norm, rawUri) ->
+                    addChip(norm, isSaved = true) {
+                        existingUriMap.remove(norm)
+                        onRemoveExistingUri?.invoke(rawUri)
+                        updateMultiSelectionUi(surfaceVarColor, primaryColor, emeraldColor, onSurfaceColor, onSurfaceVarColor)
+                        adapter.notifyDataSetChanged()
+                    }
+                }
+                selectedPaths.toList().forEach { norm ->
+                    addChip(norm, isSaved = false) {
+                        selectedPaths.remove(norm)
+                        updateMultiSelectionUi(surfaceVarColor, primaryColor, emeraldColor, onSurfaceColor, onSurfaceVarColor)
+                        adapter.notifyDataSetChanged()
+                    }
+                }
+            }
+        }
+
+        if (::selectBtn.isInitialized) {
+            if (selectedPaths.isNotEmpty()) {
+                selectBtn.text = getString(R.string.storm_folder_picker_select_multiple, selectedPaths.size)
+            } else if (existingUriMap.isNotEmpty() && existingUriMap.containsKey(normCur)) {
+                selectBtn.text = getString(android.R.string.ok)
+            } else {
+                selectBtn.text = getString(R.string.storm_folder_picker_select_current)
+            }
+        }
     }
 
     private fun hasAllFilesAccess(): Boolean {
@@ -417,6 +695,14 @@ class StormFolderPickerDialog : DialogFragment() {
 
         adapter.submit(entries)
         emptyTextView.visibility = if (subDirs.isEmpty() && permOk) View.VISIBLE else View.GONE
+
+        if (allowMultiple) {
+            val surfaceVarColor = resolveAttrColor(com.google.android.material.R.attr.colorSurfaceVariant, 0xFF1B2436.toInt())
+            val primaryColor = resolveAttrColor(com.google.android.material.R.attr.colorPrimary, 0xFF38BDF8.toInt())
+            val onSurfaceColor = resolveAttrColor(com.google.android.material.R.attr.colorOnSurface, Color.WHITE)
+            val onSurfaceVarColor = resolveAttrColor(com.google.android.material.R.attr.colorOnSurfaceVariant, 0xFF94A3B8.toInt())
+            updateMultiSelectionUi(surfaceVarColor, primaryColor, 0xFF10B981.toInt(), onSurfaceColor, onSurfaceVarColor)
+        }
     }
 
     private fun resolveAttrColor(attr: Int, fallback: Int): Int {
@@ -442,9 +728,11 @@ class StormFolderPickerDialog : DialogFragment() {
     private inner class FolderEntryAdapter(
         private val rowBgColor: Int,
         private val iconTintColor: Int,
+        private val emeraldColor: Int,
         private val titleColor: Int,
         private val subColor: Int,
-        private val onClick: (FolderRow) -> Unit
+        private val onNavigate: (FolderRow) -> Unit,
+        private val onToggleSelect: (FolderRow) -> Unit
     ) : RecyclerView.Adapter<FolderEntryAdapter.VH>() {
 
         private val items = ArrayList<FolderRow>()
@@ -459,7 +747,8 @@ class StormFolderPickerDialog : DialogFragment() {
             val container: LinearLayout,
             val icon: ImageView,
             val title: TextView,
-            val subtitle: TextView
+            val subtitle: TextView,
+            val checkBox: MaterialCheckBox
         ) : RecyclerView.ViewHolder(container)
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
@@ -470,7 +759,7 @@ class StormFolderPickerDialog : DialogFragment() {
             val row = LinearLayout(ctx).apply {
                 orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.CENTER_VERTICAL
-                setPadding(dp(14f), dp(11f), dp(14f), dp(11f))
+                setPadding(dp(12f), dp(9f), dp(10f), dp(9f))
                 isClickable = true
                 isFocusable = true
                 background = GradientDrawable().apply {
@@ -488,7 +777,7 @@ class StormFolderPickerDialog : DialogFragment() {
                 setImageResource(R.drawable.ic_folder_open)
                 imageTintList = ColorStateList.valueOf(iconTintColor)
                 layoutParams = LinearLayout.LayoutParams(dp(24f), dp(24f)).apply {
-                    marginEnd = dp(12f)
+                    marginEnd = dp(10f)
                 }
             }
 
@@ -499,7 +788,7 @@ class StormFolderPickerDialog : DialogFragment() {
 
             val title = TextView(ctx).apply {
                 setTextColor(titleColor)
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, 14.5f)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
                 setTypeface(typeface, Typeface.BOLD)
                 maxLines = 1
                 ellipsize = TextUtils.TruncateAt.END
@@ -512,11 +801,24 @@ class StormFolderPickerDialog : DialogFragment() {
                 ellipsize = TextUtils.TruncateAt.END
             }
 
+            val checkBox = MaterialCheckBox(ctx).apply {
+                minWidth = dp(32f)
+                minHeight = dp(32f)
+                minimumWidth = dp(32f)
+                minimumHeight = dp(32f)
+                buttonTintList = ColorStateList.valueOf(iconTintColor)
+                layoutParams = LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                ).apply { marginStart = dp(6f) }
+            }
+
             textCol.addView(title)
             textCol.addView(subtitle)
             row.addView(icon)
             row.addView(textCol)
-            return VH(row, icon, title, subtitle)
+            row.addView(checkBox)
+            return VH(row, icon, title, subtitle, checkBox)
         }
 
         override fun onBindViewHolder(holder: VH, position: Int) {
@@ -528,7 +830,32 @@ class StormFolderPickerDialog : DialogFragment() {
                 holder.subtitle.visibility = View.VISIBLE
                 holder.subtitle.text = item.subtitle
             }
-            holder.container.setOnClickListener { onClick(item) }
+
+            if (allowMultiple && !item.isParent) {
+                val norm = item.file.absolutePath.trimEnd('/').ifEmpty { "/" }
+                val isSaved = existingUriMap.containsKey(norm)
+                val isSelected = selectedPaths.contains(norm)
+                holder.checkBox.visibility = View.VISIBLE
+                holder.checkBox.setOnCheckedChangeListener(null)
+                holder.checkBox.isChecked = isSaved || isSelected
+                holder.checkBox.buttonTintList = ColorStateList.valueOf(if (isSaved) emeraldColor else iconTintColor)
+                holder.checkBox.setOnClickListener {
+                    onToggleSelect(item)
+                }
+            } else {
+                holder.checkBox.setOnCheckedChangeListener(null)
+                holder.checkBox.visibility = View.GONE
+            }
+
+            holder.container.setOnClickListener { onNavigate(item) }
+            holder.container.setOnLongClickListener {
+                if (allowMultiple && !item.isParent) {
+                    onToggleSelect(item)
+                    true
+                } else {
+                    false
+                }
+            }
         }
 
         override fun getItemCount(): Int = items.size
@@ -538,6 +865,8 @@ class StormFolderPickerDialog : DialogFragment() {
         const val TAG = "StormFolderPickerDialog"
         private const val ARG_INITIAL_PATH = "initial_path"
         private const val ARG_TITLE = "title"
+        private const val ARG_ALLOW_MULTIPLE = "allow_multiple"
+        private const val ARG_EXISTING_URIS = "existing_uris"
 
         fun show(
             fragmentManager: FragmentManager,
@@ -550,8 +879,32 @@ class StormFolderPickerDialog : DialogFragment() {
                 arguments = Bundle().apply {
                     if (!title.isNullOrBlank()) putString(ARG_TITLE, title)
                     if (!initialPath.isNullOrBlank()) putString(ARG_INITIAL_PATH, initialPath)
+                    putBoolean(ARG_ALLOW_MULTIPLE, false)
                 }
                 this.onFolderPicked = onFolderPicked
+                this.onSystemPickerRequested = onSystemPickerRequested
+            }
+            dialog.show(fragmentManager, TAG)
+        }
+
+        fun showMulti(
+            fragmentManager: FragmentManager,
+            title: String? = null,
+            initialPath: String? = null,
+            existingUris: List<String> = emptyList(),
+            onRemoveExistingUri: ((String) -> Unit)? = null,
+            onSystemPickerRequested: (() -> Unit)? = null,
+            onFoldersPicked: (List<Uri>, Boolean) -> Unit
+        ) {
+            val dialog = StormFolderPickerDialog().apply {
+                arguments = Bundle().apply {
+                    if (!title.isNullOrBlank()) putString(ARG_TITLE, title)
+                    if (!initialPath.isNullOrBlank()) putString(ARG_INITIAL_PATH, initialPath)
+                    putBoolean(ARG_ALLOW_MULTIPLE, true)
+                    putStringArrayList(ARG_EXISTING_URIS, ArrayList(existingUris))
+                }
+                this.onFoldersPicked = onFoldersPicked
+                this.onRemoveExistingUri = onRemoveExistingUri
                 this.onSystemPickerRequested = onSystemPickerRequested
             }
             dialog.show(fragmentManager, TAG)

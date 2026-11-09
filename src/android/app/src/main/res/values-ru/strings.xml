@@ -2441,4 +2441,10 @@
     <string name="storm_folder_picker_grant_btn">Выдать доступ</string>
     <string name="storm_folder_picker_stats_games">Папок: %1$d • Игр: %2$d</string>
     <string name="storm_folder_picker_stats_folders">Подпапок: %1$d</string>
+    <string name="storm_folder_picker_select_multiple">Выбрать папки (%1$d)</string>
+    <string name="storm_folder_picker_add_current">+ Текущую</string>
+    <string name="storm_folder_picker_selected_header">Выбранные и добавленные папки (%1$d):</string>
+    <string name="storm_folder_picker_deep_scan">Сканировать вложенные подпапки</string>
+    <string name="storm_folder_picker_added_count">Добавлено папок с играми: %1$d</string>
+    <string name="storm_setup_games_multi_status">Игры (папок: %1$d — нажмите, чтобы добавить ещё)</string>
 </resources>

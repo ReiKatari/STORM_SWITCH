@@ -441,6 +441,59 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
             .show(supportFragmentManager, AddGameFolderDialogFragment.TAG)
     }
 
+    fun processMultipleGamesDirs(
+        results: List<Uri>,
+        deepScan: Boolean = true,
+        calledFromGameFragment: Boolean = false
+    ) {
+        if (results.isEmpty()) return
+        val newGameDirs = mutableListOf<org.yuzu.yuzu_emu.model.GameDir>()
+        val existingNorms = gamesViewModel.folders.value.map {
+            (org.yuzu.yuzu_emu.utils.PathUtil.getPathFromUri(Uri.parse(it.uriString))?.trimEnd('/') ?: it.uriString.trimEnd('/'))
+        }.toMutableSet()
+
+        for (result in results) {
+            if (result.scheme == "content") {
+                try {
+                    contentResolver.takePersistableUriPermission(
+                        result,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    )
+                } catch (e: Throwable) {
+                    android.util.Log.e("STORM_SWITCH", "takePersistableUriPermission error: ${e.message}")
+                }
+            }
+            val uriString = result.toString()
+            val normNew = org.yuzu.yuzu_emu.utils.PathUtil.getPathFromUri(result)?.trimEnd('/') ?: uriString.trimEnd('/')
+            if (existingNorms.add(normNew)) {
+                newGameDirs.add(org.yuzu.yuzu_emu.model.GameDir(uriString, deepScan))
+            }
+        }
+
+        if (newGameDirs.isEmpty()) {
+            Toast.makeText(
+                applicationContext,
+                R.string.folder_already_added,
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
+        val job = gamesViewModel.addFoldersBatch(newGameDirs, calledFromGameFragment)
+        job.invokeOnCompletion {
+            runOnUiThread {
+                try {
+                    homeViewModel.setGamesDirSelected(true)
+                } catch (_: Exception) {}
+                Toast.makeText(
+                    applicationContext,
+                    getString(R.string.storm_folder_picker_added_count, newGameDirs.size),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+
     fun processExternalContentDir(result: Uri) {
         if (result.scheme == "content") {
             try {

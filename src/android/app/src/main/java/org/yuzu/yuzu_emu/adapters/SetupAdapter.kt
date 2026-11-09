@@ -120,6 +120,18 @@ class SetupAdapter(val activity: AppCompatActivity, pages: List<SetupPage>) :
             val onSurfaceColor = ThemeHelper.getColor(activity, com.google.android.material.R.attr.colorOnSurface)
 
             if (isComplete) {
+                if (pageButton.titleId == R.string.games) {
+                    val count = runCatching {
+                        org.yuzu.yuzu_emu.utils.NativeConfig.getGameDirs().count { it.uriString.isNotBlank() }
+                    }.getOrDefault(0)
+                    button.text = if (count > 0) {
+                        activity.getString(R.string.storm_setup_games_multi_status, count)
+                    } else {
+                        activity.resources.getString(pageButton.titleId)
+                    }
+                } else {
+                    button.text = activity.resources.getString(pageButton.titleId)
+                }
                 val greenColor = 0xFF10B981.toInt()
                 val greenList = ColorStateList.valueOf(greenColor)
                 button.strokeColor = greenList
@@ -132,6 +144,7 @@ class SetupAdapter(val activity: AppCompatActivity, pages: List<SetupPage>) :
                 )
                 button.alpha = 0.95f
             } else {
+                button.text = activity.resources.getString(pageButton.titleId)
                 button.strokeColor = ColorStateList.valueOf(outlineColor)
                 button.iconTint = ColorStateList.valueOf(primaryColor)
                 button.setTextColor(onSurfaceColor)

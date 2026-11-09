@@ -204,6 +204,32 @@ class GamesViewModel : ViewModel() {
             }
         }
 
+    fun addFoldersBatch(gameDirs: List<GameDir>, savedFromGameFragment: Boolean = false) =
+        viewModelScope.launch {
+            if (gameDirs.isEmpty()) return@launch
+            withContext(Dispatchers.IO) {
+                val prefs = PreferenceManager.getDefaultSharedPreferences(YuzuApplication.appContext)
+                val currentBackup = prefs.getStringSet("game_directories_backup", emptySet())?.toMutableSet() ?: mutableSetOf()
+                for (gameDir in gameDirs) {
+                    when (gameDir.type) {
+                        DirectoryType.GAME -> {
+                            NativeConfig.addGameDir(gameDir)
+                            currentBackup.add(gameDir.uriString)
+                        }
+                        DirectoryType.EXTERNAL_CONTENT -> {
+                            addExternalContentDir(gameDir.uriString)
+                        }
+                    }
+                }
+                prefs.edit().putStringSet("game_directories_backup", currentBackup).apply()
+                NativeConfig.saveGlobalConfig()
+                getGameDirsAndExternalContent(reloadList = true)
+            }
+            if (savedFromGameFragment) {
+                NativeConfig.saveGlobalConfig()
+            }
+        }
+
     fun removeFolder(gameDir: GameDir) =
         viewModelScope.launch {
             withContext(Dispatchers.IO) {

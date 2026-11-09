@@ -2975,4 +2975,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="storm_folder_picker_grant_btn">Grant Access</string>
     <string name="storm_folder_picker_stats_games">%1$d folders • %2$d game files</string>
     <string name="storm_folder_picker_stats_folders">%1$d subfolders</string>
+    <string name="storm_folder_picker_select_multiple">Select Folders (%1$d)</string>
+    <string name="storm_folder_picker_add_current">+ Current</string>
+    <string name="storm_folder_picker_selected_header">Selected &amp; Added Folders (%1$d):</string>
+    <string name="storm_folder_picker_deep_scan">Scan subfolders automatically</string>
+    <string name="storm_folder_picker_added_count">Game folders added: %1$d</string>
+    <string name="storm_setup_games_multi_status">Games (%1$d folders — tap to add more)</string>
 </resources>

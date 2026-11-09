@@ -2609,54 +2609,6 @@ class SettingsFragmentPresenter(
 
             )
 
-            val uiDesignStyle: AbstractIntSetting = object : AbstractIntSetting {
-                override fun getInt(needsGlobal: Boolean): Int = IntSetting.UI_DESIGN_STYLE.getInt()
-
-                override fun setInt(value: Int) {
-                    IntSetting.UI_DESIGN_STYLE.setInt(value)
-                    try {
-                        NativeConfig.saveGlobalConfig()
-                    } catch (_: Throwable) {}
-                    try {
-                        androidx.preference.PreferenceManager.getDefaultSharedPreferences(context).edit()
-                            .putInt(Settings.PREF_UI_DESIGN_STYLE, value)
-                            .apply()
-                    } catch (_: Throwable) {}
-                    settingsViewModel.setShouldRecreate(true)
-                }
-
-                override val key: String = IntSetting.UI_DESIGN_STYLE.key
-                override val isRuntimeModifiable: Boolean = true
-
-                override fun getValueAsString(needsGlobal: Boolean): String =
-                    IntSetting.UI_DESIGN_STYLE.getValueAsString()
-
-                override val defaultValue: Int = 0
-
-                override fun reset() {
-                    IntSetting.UI_DESIGN_STYLE.setInt(defaultValue)
-                    try {
-                        NativeConfig.saveGlobalConfig()
-                    } catch (_: Throwable) {}
-                    try {
-                        androidx.preference.PreferenceManager.getDefaultSharedPreferences(context).edit()
-                            .putInt(Settings.PREF_UI_DESIGN_STYLE, defaultValue)
-                            .apply()
-                    } catch (_: Throwable) {}
-                    settingsViewModel.setShouldRecreate(true)
-                }
-            }
-
-            add(
-                SingleChoiceSetting(
-                    uiDesignStyle,
-                    titleId = R.string.ui_design_style,
-                    descriptionId = R.string.ui_design_style_description,
-                    choicesId = R.array.uiDesignStyleNames,
-                    valuesId = R.array.uiDesignStyleValues
-                )
-            )
-
 
 
             val fullscreenSetting: AbstractBooleanSetting = object : AbstractBooleanSetting {

@@ -149,9 +149,9 @@ android {
 
         targetSdk = 36
 
-        versionName = "17.3.1"
+        versionName = "17.3.2"
 
-        versionCode = 34300174
+        versionCode = 34300175
 
 
 
@@ -935,7 +935,7 @@ fun getGitVersion(): String {
 
     }
 
-    return "17.3.1"
+    return "17.3.2"
 
 }
 
