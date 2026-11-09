@@ -53,6 +53,8 @@
 #include "common/fs/path_util.h"
 #include "storm_switch/common/storm_theme.h"
 #include "storm_switch/configuration/configure_graphics.h"
+#include "storm_switch/settings_profiles_dialog.h"
+#include "storm_switch/game_fix_dialog.h"
 #include "storm_switch/configuration/retroarch_shader_catalog.h"
 #include "storm_switch/common/storm_lang.h"
 #include "storm_switch/configuration/shared_widget.h"
@@ -436,28 +438,79 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
     auto* presets_frame = new QFrame(api_grid_widget);
     presets_frame->setStyleSheet(QStringLiteral(
         "QFrame {"
-        "    background: rgba(15, 23, 42, 0.7);"
-        "    border: 1px solid rgba(%1, %2, %3, 0.30);"
+        "    background-color: %1;"
+        "    border: none;"
         "    border-radius: 8px;"
         "    margin-bottom: 6px;"
         "}"
-    ).arg(presets_acc.red()).arg(presets_acc.green()).arg(presets_acc.blue()));
+    ).arg(presets_pal.card));
     auto* presets_vbox = new QVBoxLayout(presets_frame);
-    presets_vbox->setContentsMargins(10, 6, 10, 8);
-    presets_vbox->setSpacing(6);
+    presets_vbox->setContentsMargins(10, 8, 10, 8);
+    presets_vbox->setSpacing(8);
+
+    auto* presets_hdr_lay = new QHBoxLayout();
+    presets_hdr_lay->setContentsMargins(0, 0, 0, 0);
 
     auto* presets_title = new QLabel(StormLang(
-        QStringLiteral("<b>Быстрые профили графики и производительности (в 1 клик):</b>"),
-        QStringLiteral("<b>1-Click Graphics & Performance Presets:</b>"),
-        QStringLiteral("<b>1-Klick-Grafik- & Leistungsprofile:</b>"),
-        QStringLiteral("<b>Profils graphiques et performances en 1 clic :</b>"),
-        QStringLiteral("<b>一键图形与性能预设配置：</b>"),
-        QStringLiteral("<b>ワンクリック描画・パフォーマンスプリセット:</b>"),
-        QStringLiteral("<b>ملفات تعريف الرسوميات والأداء بنقرة واحدة:</b>"),
-        QStringLiteral("<b>Perfiles de gráficos y rendimiento en 1 clic:</b>")), presets_frame);
+        QStringLiteral("<b>Быстрые профили графики и производительности:</b>"),
+        QStringLiteral("<b>Quick Graphics & Performance Presets:</b>")), presets_frame);
     presets_title->setObjectName(QStringLiteral("presetsTitleLabel"));
     presets_title->setStyleSheet(QStringLiteral("color: %1; font-size: 11.5px; border: none; background: transparent;").arg(presets_pal.accent));
-    presets_vbox->addWidget(presets_title);
+    presets_hdr_lay->addWidget(presets_title);
+    presets_hdr_lay->addStretch();
+
+    // Clean entry buttons to open Settings Profiles and Auto-Config dialogs
+    auto* open_profiles_btn = new QPushButton(StormLang(
+        QStringLiteral("Профили настроек..."),
+        QStringLiteral("Settings Profiles...")), presets_frame);
+    open_profiles_btn->setCursor(Qt::PointingHandCursor);
+    open_profiles_btn->setStyleSheet(QStringLiteral(
+        "QPushButton {"
+        "    background: %1;"
+        "    color: %2;"
+        "    font-weight: 700;"
+        "    font-size: 11px;"
+        "    padding: 4px 10px;"
+        "    border-radius: 5px;"
+        "    border: none;"
+        "}"
+        "QPushButton:hover { background: %3; color: #FFFFFF; }"
+    ).arg(presets_pal.surface, presets_pal.accent, presets_pal.accent));
+    connect(open_profiles_btn, &QPushButton::clicked, this, [this]() {
+        SettingsProfilesDialog dlg(this, const_cast<Core::System*>(&system));
+        dlg.exec();
+        SetConfiguration();
+        ConfigurationShared::ReloadAllActiveWidgets();
+        ConfigurationShared::NotifyGlobalSettingChanged();
+    });
+    presets_hdr_lay->addWidget(open_profiles_btn);
+
+    auto* open_autoconfig_btn = new QPushButton(StormLang(
+        QStringLiteral("Авто-настройка..."),
+        QStringLiteral("Auto-Config...")), presets_frame);
+    open_autoconfig_btn->setCursor(Qt::PointingHandCursor);
+    open_autoconfig_btn->setStyleSheet(QStringLiteral(
+        "QPushButton {"
+        "    background: %1;"
+        "    color: %2;"
+        "    font-weight: 700;"
+        "    font-size: 11px;"
+        "    padding: 4px 10px;"
+        "    border-radius: 5px;"
+        "    border: none;"
+        "}"
+        "QPushButton:hover { background: %3; color: #FFFFFF; }"
+    ).arg(presets_pal.surface, presets_pal.accent, presets_pal.accent));
+    connect(open_autoconfig_btn, &QPushButton::clicked, this, [this]() {
+        GameFixDialog dlg(this, 0, QString(), true, const_cast<Core::System&>(system));
+        dlg.Execute();
+        SetConfiguration();
+        ConfigurationShared::ReloadAllActiveWidgets();
+        ConfigurationShared::NotifyGlobalSettingChanged();
+    });
+    presets_hdr_lay->addWidget(open_autoconfig_btn);
+
+    presets_vbox->addLayout(presets_hdr_lay);
 
     auto* presets_hbox = new QHBoxLayout();
     presets_hbox->setSpacing(8);
@@ -469,20 +522,24 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
         btn->setCursor(Qt::PointingHandCursor);
         btn->setStyleSheet(QStringLiteral(
             "QPushButton {"
-            "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #1E293B, stop:1 #0F172A);"
-            "    color: #FFFFFF;"
+            "    background: %1;"
+            "    color: %2;"
             "    font-weight: 600;"
             "    font-size: 11.5px;"
-            "    padding: 5px 10px;"
-            "    border-radius: 5px;"
-            "    border: 1px solid rgba(%1, %2, %3, 0.35);"
+            "    padding: 6px 12px;"
+            "    border-radius: 6px;"
+            "    border: none;"
             "}"
             "QPushButton:hover {"
-            "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0284C7, stop:1 #0369A1);"
-            "    color: #FFFFFF;"
-            "    border: 1px solid %4;"
+            "    background: %3;"
+            "    color: %4;"
+            "    border: none;"
             "}"
-        ).arg(presets_acc.red()).arg(presets_acc.green()).arg(presets_acc.blue()).arg(presets_pal.accent));
+            "QPushButton:pressed {"
+            "    background: %5;"
+            "    border: none;"
+            "}"
+        ).arg(presets_pal.cardAlt, presets_pal.textPrimary, presets_pal.surface, presets_pal.accent, presets_pal.bg));
         connect(btn, &QPushButton::clicked, this, [this, apply_fn]() {
             apply_fn();
             Settings::UpdateGPUAccuracy();
@@ -501,67 +558,38 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
 
     make_preset_btn(
         QStringLiteral("presetBtnMaxFps"),
-        StormLang(QStringLiteral("Максимум FPS"), QStringLiteral("Maximum FPS"),
-                  QStringLiteral("Max. FPS"), QStringLiteral("FPS Max"),
-                  QStringLiteral("最高帧率"), QStringLiteral("最大 FPS"),
-                  QStringLiteral("أقصى إطارات"), QStringLiteral("Máx. FPS")),
-        StormLang(QStringLiteral("Максимальная скорость: точность ГП «Нормальный», асинхронные шейдеры, быстрый таймер ГП"),
-                  QStringLiteral("Maximum speed: Low GPU accuracy, async shaders, fast GPU time"),
-                  QStringLiteral("Maximale Geschwindigkeit: Niedrige GPU-Genauigkeit, asynchrone Shader, schnelle GPU-Zeit"),
-                  QStringLiteral("Vitesse maximale : Précision GPU basse, shaders asynchrones, temps GPU rapide"),
-                  QStringLiteral("最高速度：低 GPU 精度、异步着色器、快速 GPU 时间"),
-                  QStringLiteral("最高速度：GPU 精度（低）、非同期シェーダー、高速 GPU 時間"),
-                  QStringLiteral("أقصى سرعة: دقة GPU منخفضة، تظليل غير متزامن، وقت GPU سريع"),
-                  QStringLiteral("Velocidad máxima: precisión GPU baja, sombreadores asíncronos, tiempo GPU rápido")),
+        StormLang(QStringLiteral("Максимум FPS"), QStringLiteral("Maximum FPS")),
+        StormLang(QStringLiteral("Максимальная скорость: точность ГП «Низкая», асинхронные шейдеры"),
+                  QStringLiteral("Maximum speed: Low GPU accuracy, async shaders")),
         [set_preset]() {
             set_preset(Settings::values.gpu_accuracy, Settings::GpuAccuracy::Low);
             set_preset(Settings::values.use_asynchronous_shaders, true);
             set_preset(Settings::values.async_presentation, true);
             set_preset(Settings::values.use_reactive_flushing, false);
-            set_preset(Settings::values.use_fast_gpu_time, true);
-            set_preset(Settings::values.vram_garbage_collection, true);
-            set_preset(Settings::values.storm_lowend_turbo, false);
+            set_preset(Settings::values.storm_lowend_turbo, true);
         });
 
     make_preset_btn(
         QStringLiteral("presetBtnBalanced"),
-        StormLang(QStringLiteral("Баланс (Рекомендуется)"), QStringLiteral("Balanced (Recommended)"),
-                  QStringLiteral("Ausgewogen (Empfohlen)"), QStringLiteral("Équilibré (Recommandé)"),
-                  QStringLiteral("平衡（推荐）"), QStringLiteral("バランス（推奨）"),
-                  QStringLiteral("متوازن (موصى به)"), QStringLiteral("Equilibrado (Recomendado)")),
-        StormLang(QStringLiteral("Идеальный баланс стабильности и FPS: точность ГП «Высокий», сжатие BC1, асинхронная презентация"),
-                  QStringLiteral("Optimal stability & FPS balance: High GPU accuracy, BC1, async presentation"),
-                  QStringLiteral("Optimale Balance aus Stabilität & FPS: Hohe GPU-Genauigkeit, BC1, asynchrone Präsentation"),
-                  QStringLiteral("Équilibre optimal stabilité & FPS : Précision GPU élevée, BC1, présentation asynchrone"),
-                  QStringLiteral("最佳稳定性与帧率平衡：高 GPU 精度、BC1 压缩、异步呈现"),
-                  QStringLiteral("安定性と FPS の最適バランス：GPU 精度（高）、BC1、非同期プレゼンテーション"),
-                  QStringLiteral("توازن مثالي بين الاستقرار والإطارات: دقة GPU عالية، BC1، عرض غير متزامن"),
-                  QStringLiteral("Equilibrio óptimo entre estabilidad y FPS: precisión GPU alta, BC1, presentación asíncrona")),
+        StormLang(QStringLiteral("Сбалансированный"), QStringLiteral("Balanced")),
+        StormLang(QStringLiteral("Рекомендуемый баланс качества и 60 FPS для большинства игр Switch"),
+                  QStringLiteral("Recommended balance of quality and 60 FPS for most Switch games")),
         [set_preset]() {
-            set_preset(Settings::values.gpu_accuracy, Settings::GpuAccuracy::High);
+            set_preset(Settings::values.gpu_accuracy, Settings::GpuAccuracy::Normal);
             set_preset(Settings::values.resolution_setup, Settings::ResolutionSetup::Res1X);
-            set_preset(Settings::values.astc_recompression, Settings::AstcRecompression::Bc1);
             set_preset(Settings::values.use_asynchronous_shaders, true);
             set_preset(Settings::values.async_presentation, true);
-            set_preset(Settings::values.use_reactive_flushing, false);
-            set_preset(Settings::values.use_fast_gpu_time, true);
+            set_preset(Settings::values.use_reactive_flushing, true);
+            set_preset(Settings::values.anti_aliasing, Settings::AntiAliasing::Fxaa);
+            set_preset(Settings::values.scaling_filter, Settings::ScalingFilter::Fsr);
             set_preset(Settings::values.storm_lowend_turbo, false);
         });
 
     make_preset_btn(
-        QStringLiteral("presetBtn4k"),
-        StormLang(QStringLiteral("4K Качество"), QStringLiteral("4K Quality"),
-                  QStringLiteral("4K-Qualität"), QStringLiteral("Qualité 4K"),
-                  QStringLiteral("4K 极致画质"), QStringLiteral("4K 高画質"),
-                  QStringLiteral("جودة 4K"), QStringLiteral("Calidad 4K")),
-        StormLang(QStringLiteral("Максимальное качество: 2X (4K), фильтр FSR, сглаживание SMAA, анизотропия 16x, ASTC без сжатия"),
-                  QStringLiteral("Ultra visual quality: 2X (4K), FSR scaling, SMAA anti-aliasing, 16x AF, Uncompressed ASTC"),
-                  QStringLiteral("Maximale Bildqualität: 2X (4K), FSR-Skalierung, SMAA-Kantenglättung, 16x AF, unkomprimiertes ASTC"),
-                  QStringLiteral("Qualité visuelle ultra : 2X (4K), mise à l'échelle FSR, anticrénelage SMAA, AF 16x, ASTC non compressé"),
-                  QStringLiteral("极致视觉画质：2X (4K)、FSR 缩放、SMAA 抗锯齿、16x 各向异性过滤、未压缩 ASTC"),
-                  QStringLiteral("最高画質：2X (4K)、FSR スケーリング、SMAA アンチエイリアス、16x 異方性フィルタリング、非圧縮 ASTC"),
-                  QStringLiteral("جودة بصرية فائقة: 2X (4K)، تحجيم FSR، تنعيم SMAA، تصفية 16x، ASTC غير مضغوط"),
-                  QStringLiteral("Calidad visual ultra: 2X (4K), escalado FSR, antialiasing SMAA, AF 16x, ASTC sin comprimir")),
+        QStringLiteral("presetBtnUltra"),
+        StormLang(QStringLiteral("Ультра 2K/4K"), QStringLiteral("Ultra 2K/4K")),
+        StormLang(QStringLiteral("Максимальная графика: 2X разрешение, SMAA, анизотропная фильтрация 16x"),
+                  QStringLiteral("Ultra graphics: 2X resolution, SMAA, 16x anisotropic filtering")),
         [set_preset]() {
             set_preset(Settings::values.gpu_accuracy, Settings::GpuAccuracy::High);
             set_preset(Settings::values.resolution_setup, Settings::ResolutionSetup::Res2X);
@@ -575,18 +603,9 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
 
     make_preset_btn(
         QStringLiteral("presetBtnEco"),
-        StormLang(QStringLiteral("Эко / Портатив"), QStringLiteral("Eco / Handheld"),
-                  QStringLiteral("Eco / Handheld"), QStringLiteral("Éco / Portable"),
-                  QStringLiteral("节能 / 掌机"), QStringLiteral("エコ / 携帯機"),
-                  QStringLiteral("اقتصادي / محمول"), QStringLiteral("Eco / Portátil")),
-        StormLang(QStringLiteral("Для слабых ПК и портативных консолей: экономия видеопамяти, Турбо для слабых ПК и термоконтроль"),
-                  QStringLiteral("For low-end PCs and handhelds: VRAM governor, Low-End Turbo, thermal control"),
-                  QStringLiteral("Für schwache PCs und Handhelds: VRAM-Begrenzer, Low-End-Turbo, Temperaturregelung"),
-                  QStringLiteral("Pour PC modestes et consoles portables : Économie VRAM, Turbo bas de gamme, contrôle thermique"),
-                  QStringLiteral("适用于低配电脑与掌机：显存预算控制、低端设备加速与温度控制"),
-                  QStringLiteral("低スペック PC・携帯機向け：VRAM 節約、低スペック高速化、温度管理"),
-                  QStringLiteral("للأجهزة الضعيفة والمحمولة: توفير ذاكرة الفيديو، توربو للأجهزة الضعيفة، التحكم الحراري"),
-                  QStringLiteral("Para PCs de gama baja y portátiles: ahorro de VRAM, Turbo de gama baja y control térmico")),
+        StormLang(QStringLiteral("Тихий / Эко-режим"), QStringLiteral("Quiet / Eco Mode")),
+        StormLang(QStringLiteral("Для тихой работы и ноутбуков: экономия видеопамяти и термоконтроль"),
+                  QStringLiteral("For quiet operation and laptops: VRAM saving and thermal control")),
         [set_preset]() {
             set_preset(Settings::values.gpu_accuracy, Settings::GpuAccuracy::Low);
             set_preset(Settings::values.resolution_setup, Settings::ResolutionSetup::Res1X);
@@ -594,7 +613,6 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
             set_preset(Settings::values.eco_thermal_mode, true);
             set_preset(Settings::values.eco_frame_pacing, true);
             set_preset(Settings::values.smart_shader_throttle, true);
-            set_preset(Settings::values.vram_budget_governor, true);
             set_preset(Settings::values.storm_lowend_turbo, true);
         });
 
@@ -1447,39 +1465,8 @@ Settings::RendererBackend ConfigureGraphics::GetCurrentGraphicsBackend() const {
 }
 
 void ConfigureGraphics::SetupPerformancePresets() {
-    auto* preset_group = new QGroupBox(StormLang(
-        QStringLiteral("Профиль производительности"),
-        QStringLiteral("Performance Preset")), this);
-    auto* preset_layout = new QHBoxLayout(preset_group);
-    preset_layout->setContentsMargins(10, 6, 10, 6);
-    preset_layout->setSpacing(8);
-    auto* preset_label = new QLabel(StormLang(
-        QStringLiteral("Режим:"),
-        QStringLiteral("Mode:")), preset_group);
-    m_preset_combobox = new QComboBox(preset_group);
-    m_preset_combobox->addItem(StormLang(QStringLiteral("Экономия батареи"), QStringLiteral("Battery Saver")), 0);
-    m_preset_combobox->addItem(StormLang(QStringLiteral("Баланс (Рекомендуется)"), QStringLiteral("Balanced (Recommended)")), 1);
-    m_preset_combobox->addItem(StormLang(QStringLiteral("Максимальное качество"), QStringLiteral("Maximum Quality")), 2);
-    m_preset_combobox->addItem(StormLang(QStringLiteral("Пользовательский"), QStringLiteral("Custom")), 3);
-
-    preset_layout->addWidget(preset_label);
-    preset_layout->addWidget(m_preset_combobox, 1);
-    const auto pgroup_pal = StormTheme::GetThemePalette();
-    const QColor pgroup_acc(pgroup_pal.accent);
-    preset_group->setStyleSheet(QStringLiteral(
-        "QGroupBox { font-weight: bold; margin-top: 4px; margin-bottom: 6px; padding: 8px 10px; "
-        "border: 1px solid rgba(%1, %2, %3, 0.35); border-radius: 8px; background: rgba(%1, %2, %3, 0.08); }")
-        .arg(pgroup_acc.red()).arg(pgroup_acc.green()).arg(pgroup_acc.blue()));
-
-    if (ui->verticalLayout_2) {
-        ui->verticalLayout_2->insertWidget(0, preset_group);
-    }
-
-    connect(m_preset_combobox, qOverload<int>(&QComboBox::activated), this, [this](int index) {
-        if (index >= 0 && index <= 2) {
-            ApplyPerformancePreset(index);
-        }
-    });
+    // Redundant duplicate combobox removed in favor of unified 1-Click presets and SettingsProfilesDialog
+    m_preset_combobox = nullptr;
 }
 
 void ConfigureGraphics::UpdatePresetSelection() {

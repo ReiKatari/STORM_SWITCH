@@ -84,7 +84,7 @@ namespace AndroidSettings {
         Settings::Setting<s32> overlay_opacity{linkage, 60, "control_opacity",
                                                Settings::Category::Overlay,
                                                Settings::Specialization::Default, true, true};
-        Settings::Setting<s32> overlay_skin_theme{linkage, 1, "overlay_skin_theme",
+        Settings::Setting<s32> overlay_skin_theme{linkage, 15, "overlay_skin_theme",
                                                   Settings::Category::Overlay,
                                                   Settings::Specialization::Default, true, true};
 

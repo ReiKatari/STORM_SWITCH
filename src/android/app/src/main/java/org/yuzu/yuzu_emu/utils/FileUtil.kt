@@ -131,8 +131,12 @@ object FileUtil {
         val results: MutableList<MinimalDocumentFile> = ArrayList()
 
         if (uri.scheme == "file" || !uri.toString().startsWith("content://")) {
-            val path = if (uri.scheme == "file") uri.path ?: "" else uri.toString()
-            val file = File(path)
+            val rawPath = if (uri.scheme == "file") uri.path ?: "" else uri.toString()
+            var file = File(rawPath)
+            if (!file.exists()) {
+                val decoded = try { Uri.decode(rawPath) } catch (_: Exception) { rawPath }
+                file = File(decoded)
+            }
             if (file.exists() && file.isDirectory) {
                 file.listFiles()?.forEach { f ->
                     val mime = if (f.isDirectory) DocumentsContract.Document.MIME_TYPE_DIR else "application/octet-stream"
@@ -171,7 +175,8 @@ object FileUtil {
                             "$treeDocId/${f.name}"
                         }
                         runCatching {
-                            DocumentsContract.buildDocumentUriUsingTree(uri, childDocId)
+                            val rootTree = try { DocumentsContract.buildTreeDocumentUri(uri.authority, DocumentsContract.getTreeDocumentId(uri)) } catch (_: Exception) { uri }
+                            DocumentsContract.buildDocumentUriUsingTree(rootTree, childDocId)
                         }.getOrDefault(Uri.fromFile(f))
                     } else {
                         Uri.fromFile(f)
@@ -186,9 +191,7 @@ object FileUtil {
                         )
                     )
                 }
-                if (results.isNotEmpty()) {
-                    return results.toTypedArray()
-                }
+                return results.toTypedArray()
             }
         }
 
@@ -202,12 +205,14 @@ object FileUtil {
         )
         var c: Cursor? = null
         try {
+            val treeDocId = try { DocumentsContract.getTreeDocumentId(uri) } catch (_: Exception) { "" }
+            val treeUri = if (treeDocId.isNotEmpty()) DocumentsContract.buildTreeDocumentUri(uri.authority, treeDocId) else uri
             val docId: String = if (isRootTreeUri(uri)) {
-                DocumentsContract.getTreeDocumentId(uri)
+                treeDocId.ifEmpty { DocumentsContract.getDocumentId(uri) }
             } else {
                 DocumentsContract.getDocumentId(uri)
             }
-            val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(uri, docId)
+            val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(treeUri, docId)
             c = resolver.query(childrenUri, columns, null, null, null)
             if (c != null) {
                 val docIdCol = c.getColumnIndex(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
@@ -222,7 +227,7 @@ object FileUtil {
                     val documentMimeType = (if (mimeCol >= 0) c.getString(mimeCol) else c.getString(2)) ?: ""
                     val lastModified = if (lastModCol >= 0 && !c.isNull(lastModCol)) c.getLong(lastModCol) else 0L
                     val fileSize = if (sizeCol >= 0 && !c.isNull(sizeCol)) c.getLong(sizeCol) else 0L
-                    val documentUri = DocumentsContract.buildDocumentUriUsingTree(uri, documentId)
+                    val documentUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, documentId)
                     val document = MinimalDocumentFile(
                         filename = documentName,
                         mimeType = documentMimeType,
@@ -241,20 +246,22 @@ object FileUtil {
 
         if (results.isEmpty()) {
             try {
-                val treeDoc = DocumentFile.fromTreeUri(context, uri)
-                if (treeDoc != null && treeDoc.isDirectory) {
-                    treeDoc.listFiles().forEach { doc ->
-                        val name = doc.name ?: ""
-                        val mime = doc.type ?: if (doc.isDirectory) DocumentsContract.Document.MIME_TYPE_DIR else ""
-                        results.add(
-                            MinimalDocumentFile(
-                                filename = name,
-                                mimeType = mime,
-                                uri = doc.uri,
-                                lastModified = doc.lastModified(),
-                                fileSize = doc.length()
+                if (DocumentsContract.isTreeUri(uri)) {
+                    val treeDoc = DocumentFile.fromTreeUri(context, uri)
+                    if (treeDoc != null && treeDoc.isDirectory) {
+                        treeDoc.listFiles().forEach { doc ->
+                            val name = doc.name ?: ""
+                            val mime = doc.type ?: if (doc.isDirectory) DocumentsContract.Document.MIME_TYPE_DIR else ""
+                            results.add(
+                                MinimalDocumentFile(
+                                    filename = name,
+                                    mimeType = mime,
+                                    uri = doc.uri,
+                                    lastModified = doc.lastModified(),
+                                    fileSize = doc.length()
+                                )
                             )
-                        )
+                        }
                     }
                 }
             } catch (e: Exception) {
@@ -665,7 +672,12 @@ object FileUtil {
 
     fun isTreeUriValid(uri: Uri): Boolean {
         if (uri.scheme == "file" || !uri.toString().startsWith("content://")) {
-            val f = if (uri.scheme == "file") File(uri.path ?: "") else File(uri.toString())
+            val rawPath = if (uri.scheme == "file") uri.path ?: "" else uri.toString()
+            var f = File(rawPath)
+            if (!f.exists()) {
+                val decoded = try { Uri.decode(rawPath) } catch (_: Exception) { rawPath }
+                f = File(decoded)
+            }
             return f.exists() && f.canRead()
         }
         val realPath = PathUtil.getPathFromUri(uri)
@@ -682,18 +694,30 @@ object FileUtil {
             DocumentsContract.Document.COLUMN_MIME_TYPE
         )
         return try {
+            val treeDocId = try { DocumentsContract.getTreeDocumentId(uri) } catch (_: Exception) { "" }
+            val treeUri = if (treeDocId.isNotEmpty()) DocumentsContract.buildTreeDocumentUri(uri.authority, treeDocId) else uri
             val docId: String = if (isRootTreeUri(uri)) {
-                DocumentsContract.getTreeDocumentId(uri)
+                treeDocId.ifEmpty { DocumentsContract.getDocumentId(uri) }
             } else {
                 DocumentsContract.getDocumentId(uri)
             }
-            val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(uri, docId)
+            val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(treeUri, docId)
             val cursor = resolver.query(childrenUri, columns, null, null, null)
             val hasCursor = cursor?.use { true } ?: false
-            if (hasCursor) true else (DocumentFile.fromTreeUri(context, uri)?.canRead() == true)
+            if (hasCursor) {
+                true
+            } else if (DocumentsContract.isTreeUri(uri)) {
+                DocumentFile.fromTreeUri(context, uri)?.canRead() == true
+            } else {
+                false
+            }
         } catch (_: Exception) {
             try {
-                DocumentFile.fromTreeUri(context, uri)?.canRead() == true
+                if (DocumentsContract.isTreeUri(uri)) {
+                    DocumentFile.fromTreeUri(context, uri)?.canRead() == true
+                } else {
+                    false
+                }
             } catch (_: Exception) {
                 false
             }

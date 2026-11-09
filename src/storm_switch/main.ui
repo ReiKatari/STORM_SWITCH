@@ -91,6 +91,8 @@
     <addaction name="separator"/>
     <addaction name="action_Configure"/>
     <addaction name="action_Configure_Current_Game"/>
+    <addaction name="action_Settings_Profiles"/>
+    <addaction name="action_Auto_Config"/>
    </widget>
    <widget class="QMenu" name="menu_View">
     <property name="title">
@@ -334,6 +336,22 @@
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::PreferencesRole</enum>
+   </property>
+  </action>
+  <action name="action_Settings_Profiles">
+   <property name="text">
+    <string>Settings &amp;Profiles...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+P</string>
+   </property>
+  </action>
+  <action name="action_Auto_Config">
+   <property name="text">
+    <string>&amp;Auto-Optimization &amp; Fixes...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+F</string>
    </property>
   </action>
   <action name="action_Enable_Overlay_Applet">

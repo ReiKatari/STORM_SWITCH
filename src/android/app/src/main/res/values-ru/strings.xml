@@ -2446,5 +2446,5 @@
     <string name="storm_folder_picker_selected_header">Выбранные и добавленные папки (%1$d):</string>
     <string name="storm_folder_picker_deep_scan">Сканировать вложенные подпапки</string>
     <string name="storm_folder_picker_added_count">Добавлено папок с играми: %1$d</string>
-    <string name="storm_setup_games_multi_status">Игры (папок: %1$d — нажмите, чтобы добавить ещё)</string>
+    <string name="storm_setup_games_multi_status">Игры (папок: %1$d)</string>
 </resources>

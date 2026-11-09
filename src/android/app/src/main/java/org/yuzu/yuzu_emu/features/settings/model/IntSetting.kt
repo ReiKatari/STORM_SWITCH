@@ -180,7 +180,13 @@ enum class IntSetting(override val key: String) : AbstractIntSetting {
         NativeConfig.setInt(key, value)
     }
 
-    override val defaultValue: Int by lazy { NativeConfig.getDefaultToString(key).toInt() }
+    override val defaultValue: Int by lazy {
+        if (this == OVERLAY_SKIN_THEME) {
+            15
+        } else {
+            NativeConfig.getDefaultToString(key).toInt()
+        }
+    }
 
     override fun getValueAsString(needsGlobal: Boolean): String = getInt(needsGlobal).toString()
 

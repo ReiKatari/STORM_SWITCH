@@ -25,6 +25,7 @@ import org.yuzu.yuzu_emu.features.settings.model.IntSetting
 import org.yuzu.yuzu_emu.overlay.model.OverlayRenderStyle
 import org.yuzu.yuzu_emu.overlay.model.OverlayTheme
 import org.yuzu.yuzu_emu.utils.NativeConfig
+import org.yuzu.yuzu_emu.utils.ThemeHelper
 
 class TouchOverlayStyleDialogFragment : DialogFragment() {
 
@@ -45,13 +46,17 @@ class TouchOverlayStyleDialogFragment : DialogFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setStyle(STYLE_NO_TITLE, 0)
+        setStyle(STYLE_NORMAL, 0)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
         dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE)
-        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        val surfaceColor = ThemeHelper.getColorFromAttr(
+            requireContext(),
+            com.google.android.material.R.attr.colorSurface
+        )
+        dialog.window?.setBackgroundDrawable(ColorDrawable(surfaceColor))
         dialog.setOnKeyListener { _, keyCode, event ->
             if (keyCode == android.view.KeyEvent.KEYCODE_ESCAPE && event.action == android.view.KeyEvent.ACTION_UP) {
                 dismissAllowingStateLoss()
@@ -74,6 +79,8 @@ class TouchOverlayStyleDialogFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        binding.root.strokeWidth = 0
 
         binding.btnClose.setOnClickListener {
             dismiss()
@@ -104,16 +111,16 @@ class TouchOverlayStyleDialogFragment : DialogFragment() {
     override fun onStart() {
         super.onStart()
         dialog?.window?.let { window ->
-            val dm = resources.displayMetrics
-            val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-            val width = if (isLandscape) (dm.widthPixels * 0.92).toInt() else (dm.widthPixels * 0.95).toInt()
-            val height = if (isLandscape) (dm.heightPixels * 0.92).toInt() else (dm.heightPixels * 0.85).toInt()
-            window.setLayout(width, height)
-            window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            val surfaceColor = ThemeHelper.getColorFromAttr(
+                requireContext(),
+                com.google.android.material.R.attr.colorSurface
+            )
+            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            window.setBackgroundDrawable(ColorDrawable(surfaceColor))
             window.setGravity(Gravity.CENTER)
             val lp = window.attributes
-            lp.width = width
-            lp.height = height
+            lp.width = ViewGroup.LayoutParams.MATCH_PARENT
+            lp.height = ViewGroup.LayoutParams.MATCH_PARENT
             lp.gravity = Gravity.CENTER
             window.attributes = lp
         }
@@ -155,8 +162,8 @@ class TouchOverlayStyleDialogFragment : DialogFragment() {
             holder.binding.viewColorPreviewBg.backgroundTintList = ColorStateList.valueOf(theme.colorDefault)
             holder.binding.viewColorPressedDot.backgroundTintList = ColorStateList.valueOf(theme.colorPressed)
 
-            val activeColor = org.yuzu.yuzu_emu.utils.ThemeHelper.getColorFromAttr(context, com.google.android.material.R.attr.colorPrimary)
-            val defaultOutline = org.yuzu.yuzu_emu.utils.ThemeHelper.getColorFromAttr(context, com.google.android.material.R.attr.colorOutline)
+            val activeColor = ThemeHelper.getColorFromAttr(context, com.google.android.material.R.attr.colorPrimary)
+            val defaultOutline = ThemeHelper.getColorFromAttr(context, com.google.android.material.R.attr.colorOutline)
 
             holder.binding.cardTheme.strokeColor = if (isSelected) activeColor else defaultOutline
             holder.binding.cardTheme.strokeWidth = if (isSelected) 5 else 2
@@ -171,15 +178,27 @@ class TouchOverlayStyleDialogFragment : DialogFragment() {
         }
 
         private fun getStyleDescription(theme: OverlayTheme): String {
+            if (theme.descResId != 0) {
+                return context.getString(theme.descResId)
+            }
             return when (theme.renderStyle) {
-                OverlayRenderStyle.NEON_GLOW -> context.getString(R.string.overlay_style_neon_glow)
-                OverlayRenderStyle.SWITCH_JOYCON -> context.getString(R.string.overlay_style_switch_joycon)
-                OverlayRenderStyle.FROST_GLASS_3D -> context.getString(R.string.overlay_style_frost_glass)
-                OverlayRenderStyle.TITANIUM_MECHA -> context.getString(R.string.overlay_style_titanium_mecha)
+                OverlayRenderStyle.NEON_GLOW,
+                OverlayRenderStyle.CYBERPUNK_EDGE -> context.getString(R.string.overlay_style_neon_glow)
+                OverlayRenderStyle.SWITCH_JOYCON,
+                OverlayRenderStyle.SWITCH_2_MAGNETIC -> context.getString(R.string.overlay_style_switch_joycon)
+                OverlayRenderStyle.FROST_GLASS_3D,
+                OverlayRenderStyle.AURORA_GLASS_3D -> context.getString(R.string.overlay_style_frost_glass)
+                OverlayRenderStyle.TITANIUM_MECHA,
+                OverlayRenderStyle.TITANIUM_TACTICAL -> context.getString(R.string.overlay_style_titanium_mecha)
                 OverlayRenderStyle.ARCADE_CANDY_3D -> context.getString(R.string.overlay_style_arcade_candy)
-                OverlayRenderStyle.FLAT_MINIMAL -> context.getString(R.string.overlay_style_flat_minimal)
-                OverlayRenderStyle.RETRO_CLASSIC -> context.getString(R.string.overlay_style_retro_classic)
-                OverlayRenderStyle.GOLDEN_ORNATE -> context.getString(R.string.overlay_style_golden_ornate)
+                OverlayRenderStyle.FLAT_MINIMAL,
+                OverlayRenderStyle.OLED_GHOST -> context.getString(R.string.overlay_style_flat_minimal)
+                OverlayRenderStyle.RETRO_CLASSIC,
+                OverlayRenderStyle.RETRO_PIXEL -> context.getString(R.string.overlay_style_retro_classic)
+                OverlayRenderStyle.GOLDEN_ORNATE,
+                OverlayRenderStyle.HYRULE_RELIC -> context.getString(R.string.overlay_style_golden_ornate)
+                OverlayRenderStyle.SANCTUARY_BLOOD -> context.getString(R.string.storm_ov20_desc_sanctuary_blood)
+                OverlayRenderStyle.LIQUID_QUARTZ -> context.getString(R.string.storm_ov20_desc_liquid_quartz)
             }
         }
     }

@@ -4,31 +4,35 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="?attr/colorSurface">
+    android:background="?attr/colorSurface"
+    android:clickable="true"
+    android:focusable="true"
+    android:orientation="vertical">
 
     <!-- Top Pinned Header Bar -->
     <LinearLayout
+        android:id="@+id/layout_auto_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingHorizontal="16dp"
-        android:paddingTop="12dp"
-        android:paddingBottom="10dp">
+        android:paddingTop="10dp"
+        android:paddingBottom="8dp">
 
         <FrameLayout
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
             android:background="@drawable/storm_tile_3d_recessed"
-            android:layout_marginEnd="12dp">
+            android:layout_marginEnd="10dp">
 
             <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_storm_lightning"
-                app:tint="?attr/colorPrimary" />
+                app:tint="?attr/colorPrimary"
+                tools:ignore="ContentDescription" />
         </FrameLayout>
 
         <LinearLayout
@@ -39,39 +43,71 @@
 
             <TextView
                 android:id="@+id/text_wizard_title"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/auto_opt_dialog_title"
+                android:text="@string/storm_auto_title"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="17sp"
                 android:textStyle="bold"
-                android:letterSpacing="0.02"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                android:letterSpacing="0.01"
+                android:breakStrategy="simple"
+                android:hyphenationFrequency="none" />
 
             <TextView
+                android:id="@+id/text_wizard_subtitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="1dp"
-                android:text="@string/auto_opt_dialog_subtitle"
+                android:text="@string/storm_auto_subtitle"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="11.5sp"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                android:breakStrategy="simple"
+                android:hyphenationFrequency="none" />
         </LinearLayout>
 
-        <!-- Faceted Close Button -->
-        <ImageView
+        <!-- 3D Reset Defaults Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_reset_defaults"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_marginEnd="8dp"
+            android:paddingHorizontal="10dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:background="@drawable/storm_btn_3d_secondary"
+            app:backgroundTint="@null"
+            app:strokeWidth="0dp"
+            android:text="@string/storm_auto_btn_reset"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="11.5sp"
+            app:icon="@drawable/ic_restore"
+            app:iconSize="15dp"
+            app:iconTint="?attr/colorPrimary"
+            android:breakStrategy="simple"
+            android:hyphenationFrequency="none"
+            android:maxLines="1"
+            android:ellipsize="none" />
+
+        <!-- 3D Close Button -->
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_close"
+            style="@style/Widget.Material3.Button"
             android:layout_width="36dp"
             android:layout_height="36dp"
-            android:padding="8dp"
-            android:background="@drawable/bg_storm_circle_button"
-            android:src="@drawable/ic_clear"
-            app:tint="?attr/colorOnSurfaceVariant"
+            android:padding="0dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:background="@drawable/storm_btn_3d_secondary"
+            app:backgroundTint="@null"
+            app:strokeWidth="0dp"
+            app:icon="@drawable/ic_x"
+            app:iconSize="15dp"
+            app:iconTint="?attr/colorOnSurfaceVariant"
+            app:iconGravity="textStart"
             android:contentDescription="@string/close" />
 
-        <ImageView
+        <!-- Hidden Compatibility Alias -->
+        <View
             android:id="@+id/btn_close_wizard"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -79,697 +115,1046 @@
 
     </LinearLayout>
 
-    <!-- Header Divider -->
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="?attr/colorOutline" />
 
-    <!-- Inner Scrollable Body (Structured 2-Column Bento Layout) -->
-    <androidx.core.widget.NestedScrollView
+    <!-- Landscape 2-Pane Split -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:clipToPadding="true"
-        android:fillViewport="true"
-        android:padding="16dp">
+        android:baselineAligned="false"
+        android:orientation="horizontal">
 
+        <!-- LEFT PANE: Group 1 (Bento Grid) + Group 2 (Mode Cards) -->
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:fillViewport="true"
+            android:overScrollMode="never"
+            android:paddingHorizontal="14dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- ГРУППА 1: Аппаратная диагностика устройства -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/storm_auto_group_hw"
+                    android:textColor="?attr/colorPrimary"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.06"
+                    android:layout_marginBottom="6dp" />
+
+                <!-- 2x2 Bento Grid -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:baselineAligned="false"
+                    android:layout_marginBottom="6dp">
+
+                    <!-- Bento Card 1: SoC -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/card_hw_soc"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="4dp"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="0dp"
+                        app:cardBackgroundColor="?attr/colorSurfaceVariant">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="10dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:layout_marginBottom="4dp">
+
+                                <ImageView
+                                    android:layout_width="16dp"
+                                    android:layout_height="16dp"
+                                    android:src="@drawable/ic_storm_hud_cpu"
+                                    app:tint="?attr/colorPrimary"
+                                    tools:ignore="ContentDescription" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="5dp"
+                                    android:text="@string/storm_auto_hw_soc_title"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
+                                    android:textSize="10.5sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                            <TextView
+                                android:id="@+id/text_hw_soc"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Snapdragon (8 ядер)"
+                                android:textColor="?attr/colorOnSurface"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Bento Card 2: GPU -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/card_hw_gpu"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="4dp"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="0dp"
+                        app:cardBackgroundColor="?attr/colorSurfaceVariant">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="10dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:layout_marginBottom="4dp">
+
+                                <ImageView
+                                    android:layout_width="16dp"
+                                    android:layout_height="16dp"
+                                    android:src="@drawable/ic_storm_hud_gpu"
+                                    app:tint="?attr/colorPrimary"
+                                    tools:ignore="ContentDescription" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="5dp"
+                                    android:text="@string/storm_auto_hw_gpu_title"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
+                                    android:textSize="10.5sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                            <TextView
+                                android:id="@+id/text_hw_gpu"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Adreno GPU"
+                                android:textColor="?attr/colorOnSurface"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:baselineAligned="false"
+                    android:layout_marginBottom="6dp">
+
+                    <!-- Bento Card 3: RAM -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/card_hw_ram"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="4dp"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="0dp"
+                        app:cardBackgroundColor="?attr/colorSurfaceVariant">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="10dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:layout_marginBottom="4dp">
+
+                                <ImageView
+                                    android:layout_width="16dp"
+                                    android:layout_height="16dp"
+                                    android:src="@drawable/ic_storm_hud_ram"
+                                    app:tint="?attr/colorPrimary"
+                                    tools:ignore="ContentDescription" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="5dp"
+                                    android:text="@string/storm_auto_hw_ram_title"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
+                                    android:textSize="10.5sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                            <TextView
+                                android:id="@+id/text_hw_ram"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="12,0 ГБ всего"
+                                android:textColor="?attr/colorOnSurface"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Bento Card 4: Tier -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/card_hw_tier"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="4dp"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="0dp"
+                        app:cardBackgroundColor="?attr/colorSurfaceVariant">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="10dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:layout_marginBottom="4dp">
+
+                                <ImageView
+                                    android:layout_width="16dp"
+                                    android:layout_height="16dp"
+                                    android:src="@drawable/ic_tune"
+                                    app:tint="?attr/colorPrimary"
+                                    tools:ignore="ContentDescription" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="5dp"
+                                    android:text="@string/storm_auto_hw_tier_title"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
+                                    android:textSize="10.5sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                            <TextView
+                                android:id="@+id/text_hw_tier"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Флагман"
+                                android:textColor="?attr/colorPrimary"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tv_hardware_info"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:text="@string/storm_auto_hw_summary"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="11sp" />
+
+                <!-- ГРУППА 2: Профиль автоматической настройки -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/storm_auto_group_modes"
+                    android:textColor="?attr/colorPrimary"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.06"
+                    android:layout_marginBottom="6dp" />
+
+                <!-- Mode Card 1: Fast -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_preset_max_fps"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="6dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="1dp"
+                    app:strokeWidth="0dp"
+                    app:cardBackgroundColor="?attr/colorSurfaceVariant">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="10dp">
+
+                        <FrameLayout
+                            android:layout_width="34dp"
+                            android:layout_height="34dp"
+                            android:background="@drawable/storm_tile_3d_recessed"
+                            android:layout_marginEnd="10dp">
+
+                            <ImageView
+                                android:layout_width="18dp"
+                                android:layout_height="18dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_storm_hud_fps"
+                                app:tint="?attr/colorPrimary"
+                                tools:ignore="ContentDescription" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/storm_auto_mode_fast_title"
+                                android:textColor="?attr/colorOnSurface"
+                                android:textSize="13sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/storm_auto_mode_fast_desc"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:textSize="11sp" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:id="@+id/radio_mode_fast"
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_marginStart="8dp"
+                            android:src="@drawable/ic_check_circle"
+                            app:tint="?attr/colorPrimary"
+                            android:visibility="gone"
+                            tools:ignore="ContentDescription" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Mode Card 2: Balanced -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_preset_balanced"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="6dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="1dp"
+                    app:strokeWidth="0dp"
+                    app:cardBackgroundColor="?attr/colorSecondaryContainer">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="10dp">
+
+                        <FrameLayout
+                            android:layout_width="34dp"
+                            android:layout_height="34dp"
+                            android:background="@drawable/storm_tile_3d_recessed"
+                            android:layout_marginEnd="10dp">
+
+                            <ImageView
+                                android:layout_width="18dp"
+                                android:layout_height="18dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_tune"
+                                app:tint="?attr/colorPrimary"
+                                tools:ignore="ContentDescription" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/storm_auto_mode_normal_title"
+                                android:textColor="?attr/colorOnSurface"
+                                android:textSize="13sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/storm_auto_mode_normal_desc"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:textSize="11sp" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:id="@+id/radio_mode_normal"
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_marginStart="8dp"
+                            android:src="@drawable/ic_check_circle"
+                            app:tint="?attr/colorPrimary"
+                            android:visibility="visible"
+                            tools:ignore="ContentDescription" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Mode Card 3: Quality -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_preset_quality"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="6dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="1dp"
+                    app:strokeWidth="0dp"
+                    app:cardBackgroundColor="?attr/colorSurfaceVariant">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="10dp">
+
+                        <FrameLayout
+                            android:layout_width="34dp"
+                            android:layout_height="34dp"
+                            android:background="@drawable/storm_tile_3d_recessed"
+                            android:layout_marginEnd="10dp">
+
+                            <ImageView
+                                android:layout_width="18dp"
+                                android:layout_height="18dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_graphics"
+                                app:tint="?attr/colorPrimary"
+                                tools:ignore="ContentDescription" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/storm_auto_mode_accurate_title"
+                                android:textColor="?attr/colorOnSurface"
+                                android:textSize="13sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/storm_auto_mode_accurate_desc"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:textSize="11sp" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:id="@+id/radio_mode_accurate"
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_marginStart="8dp"
+                            android:src="@drawable/ic_check_circle"
+                            app:tint="?attr/colorPrimary"
+                            android:visibility="gone"
+                            tools:ignore="ContentDescription" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Mode Card 4: Battery -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_preset_battery"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="1dp"
+                    app:strokeWidth="0dp"
+                    app:cardBackgroundColor="?attr/colorSurfaceVariant">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="10dp">
+
+                        <FrameLayout
+                            android:layout_width="34dp"
+                            android:layout_height="34dp"
+                            android:background="@drawable/storm_tile_3d_recessed"
+                            android:layout_marginEnd="10dp">
+
+                            <ImageView
+                                android:layout_width="18dp"
+                                android:layout_height="18dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_storm_hud_temp"
+                                app:tint="?attr/colorPrimary"
+                                tools:ignore="ContentDescription" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/storm_auto_mode_battery_title"
+                                android:textColor="?attr/colorOnSurface"
+                                android:textSize="13sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/storm_auto_mode_battery_desc"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:textSize="11sp" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:id="@+id/radio_mode_default"
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_marginStart="8dp"
+                            android:src="@drawable/ic_check_circle"
+                            app:tint="?attr/colorPrimary"
+                            android:visibility="gone"
+                            tools:ignore="ContentDescription" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="?attr/colorOutline" />
+
+        <!-- RIGHT PANE: Group 3 (Preview) + Pinned Actions -->
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1.2"
             android:orientation="vertical">
 
-            <!-- Hardware Telemetry Bento Grid Card -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:cardCornerRadius="18dp"
-            app:cardElevation="4dp"
-            app:cardBackgroundColor="?attr/colorSurfaceVariant"
-            app:strokeColor="?attr/colorOutline"
-            app:strokeWidth="1.2dp">
-
-            <LinearLayout
+            <androidx.core.widget.NestedScrollView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:clipToPadding="false"
+                android:fillViewport="true"
+                android:overScrollMode="never"
+                android:paddingHorizontal="14dp"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp">
 
-                <!-- Header Row: Telemetry Title & Tier Badge -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="12dp">
+                    android:orientation="vertical">
 
+                    <!-- ГРУППА 3: Детализация параметров по категориям -->
                     <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/auto_opt_telemetry_title"
-                        android:textColor="?attr/colorPrimary"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:letterSpacing="0.05"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-                    <TextView
-                        android:id="@+id/text_hw_tier"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/bg_storm_badge_capsule"
-                        android:paddingHorizontal="10dp"
-                        android:paddingVertical="4dp"
-                        android:text="ELITE TIER"
-                        android:textColor="#34D399"
+                        android:text="@string/storm_auto_group_preview"
+                        android:textColor="?attr/colorPrimary"
                         android:textSize="11sp"
                         android:textStyle="bold"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                        android:letterSpacing="0.06"
+                        android:layout_marginBottom="6dp" />
 
-                </LinearLayout>
-
-                <!-- Bento 2x2 Tiles (Zero Clipped Text, Full Multi-line Wrapping) -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="8dp">
-
-                    <!-- Tile 1: SoC / Processor -->
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="4dp"
-                        android:background="@drawable/storm_tile_3d_recessed"
-                        android:orientation="vertical"
-                        android:padding="10dp">
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/auto_opt_hw_soc_label"
-                            android:textColor="?attr/colorPrimary"
-                            android:textSize="10sp"
-                            android:textStyle="bold"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-                        <TextView
-                            android:id="@+id/text_hw_soc"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="3dp"
-                            android:text="Snapdragon 8 Gen 2 (8 Cores)"
-                            android:textColor="?attr/colorOnSurface"
-                            android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:maxLines="3"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-                    </LinearLayout>
-
-                    <!-- Tile 2: GPU / Driver -->
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="4dp"
-                        android:background="@drawable/storm_tile_3d_recessed"
-                        android:orientation="vertical"
-                        android:padding="10dp">
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/auto_opt_hw_gpu_label"
-                            android:textColor="?attr/colorPrimary"
-                            android:textSize="10sp"
-                            android:textStyle="bold"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-                        <TextView
-                            android:id="@+id/text_hw_gpu"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="3dp"
-                            android:text="Adreno 740 / Turnip"
-                            android:textColor="?attr/colorOnSurface"
-                            android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:maxLines="3"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-                    </LinearLayout>
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <!-- Tile 3: RAM -->
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="4dp"
-                        android:background="@drawable/storm_tile_3d_recessed"
-                        android:orientation="vertical"
-                        android:padding="10dp">
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/auto_opt_hw_ram_label"
-                            android:textColor="#34D399"
-                            android:textSize="10sp"
-                            android:textStyle="bold"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-                        <TextView
-                            android:id="@+id/text_hw_ram"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="3dp"
-                            android:text="12.0 GB (Avail: 8.5 GB)"
-                            android:textColor="?attr/colorOnSurface"
-                            android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:maxLines="2"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-                    </LinearLayout>
-
-                    <!-- Tile 4: Active Features / Engine Status -->
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="4dp"
-                        android:background="@drawable/storm_tile_3d_recessed"
-                        android:orientation="vertical"
-                        android:padding="10dp">
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/auto_opt_hw_tier_label"
-                            android:textColor="#F59E0B"
-                            android:textSize="10sp"
-                            android:textStyle="bold"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-                        <TextView
-                            android:id="@+id/tv_hardware_info"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="3dp"
-                            android:text="✓ NCE • Affinity • Fast GPU"
-                            android:textColor="?attr/colorOnSurfaceVariant"
-                            android:textSize="11sp"
-                            android:maxLines="3"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-                    </LinearLayout>
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Section Title: Profiles -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:text="@string/auto_opt_profiles_title"
-            android:textColor="?attr/colorPrimary"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:letterSpacing="0.04"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-            <!-- 2-Column Grid for Preset Cards -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:baselineAligned="false">
-
-                <!-- Left Column: Preset 1 (Max FPS) & Preset 2 (Balanced) -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="8dp"
-                    android:orientation="vertical">
-
-                    <!-- Preset 1: Maximum FPS (60 FPS) -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/card_preset_max_fps"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:clickable="true"
-            android:focusable="true"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="3dp"
-            app:cardBackgroundColor="?attr/colorSurfaceVariant"
-            app:strokeColor="?attr/colorOutline"
-            app:strokeWidth="1.2dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:padding="14dp">
-
-                <com.google.android.material.radiobutton.MaterialRadioButton
-                    android:id="@+id/radio_mode_fast"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:clickable="false"
-                    android:focusable="false"
-                    app:buttonTint="?attr/colorPrimary"
-                    android:layout_marginEnd="10dp" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <LinearLayout
+                    <!-- Subgroup 1: Graphics -->
+                    <com.google.android.material.card.MaterialCardView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:layout_marginBottom="6dp"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="0dp"
+                        app:cardBackgroundColor="?attr/colorSurfaceVariant">
 
-                        <TextView
-                            android:layout_width="0dp"
+                        <LinearLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/auto_opt_profile_fast_title"
-                            android:textColor="?attr/colorOnSurface"
-                            android:textSize="14sp"
-                            android:textStyle="bold"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                            android:orientation="vertical"
+                            android:padding="10dp">
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:background="@drawable/bg_storm_badge_capsule"
-                            android:paddingHorizontal="8dp"
-                            android:paddingVertical="2dp"
-                            android:text="@string/auto_opt_badge_60fps"
-                            android:textColor="?attr/colorPrimary"
-                            android:textSize="10sp"
-                            android:textStyle="bold"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:layout_marginBottom="6dp">
 
-                    </LinearLayout>
+                                <ImageView
+                                    android:layout_width="15dp"
+                                    android:layout_height="15dp"
+                                    android:src="@drawable/ic_graphics"
+                                    app:tint="?attr/colorPrimary"
+                                    tools:ignore="ContentDescription" />
 
-                    <TextView
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="6dp"
+                                    android:text="@string/storm_auto_cat_graphics"
+                                    android:textColor="?attr/colorOnSurface"
+                                    android:textSize="11.5sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:layout_marginBottom="3dp">
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="@string/storm_auto_param_resolution"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
+                                    android:textSize="11sp" />
+
+                                <TextView
+                                    android:id="@+id/text_preview_res_val"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="1.0X (720p / 1080p)"
+                                    android:textColor="?attr/colorOnSurface"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:layout_marginBottom="3dp">
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="@string/storm_auto_param_filtering"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
+                                    android:textSize="11sp" />
+
+                                <TextView
+                                    android:id="@+id/text_preview_scaling_val"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="AMD FSR (80%) • Без AA"
+                                    android:textColor="?attr/colorOnSurface"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:layout_marginBottom="3dp">
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="@string/storm_auto_param_gpu_acc"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
+                                    android:textSize="11sp" />
+
+                                <TextView
+                                    android:id="@+id/text_preview_gpu_acc_val"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Нормальная • Mailbox"
+                                    android:textColor="?attr/colorOnSurface"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="@string/storm_auto_param_astc"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
+                                    android:textSize="11sp" />
+
+                                <TextView
+                                    android:id="@+id/text_preview_astc_val"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="GPU (аппаратное)"
+                                    android:textColor="?attr/colorOnSurface"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Subgroup 2: CPU & Memory -->
+                    <com.google.android.material.card.MaterialCardView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="3dp"
-                        android:text="@string/auto_opt_profile_fast_desc"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="12sp"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                        android:layout_marginBottom="6dp"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="0dp"
+                        app:cardBackgroundColor="?attr/colorSurfaceVariant">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="10dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:layout_marginBottom="6dp">
+
+                                <ImageView
+                                    android:layout_width="15dp"
+                                    android:layout_height="15dp"
+                                    android:src="@drawable/ic_system"
+                                    app:tint="?attr/colorPrimary"
+                                    tools:ignore="ContentDescription" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="6dp"
+                                    android:text="@string/storm_auto_cat_cpu_mem"
+                                    android:textColor="?attr/colorOnSurface"
+                                    android:textSize="11.5sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:layout_marginBottom="3dp">
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="@string/storm_auto_param_cpu_backend"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
+                                    android:textSize="11sp" />
+
+                                <TextView
+                                    android:id="@+id/text_preview_cpu_backend_val"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="NCE (нативное)"
+                                    android:textColor="?attr/colorOnSurface"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:layout_marginBottom="3dp">
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="@string/storm_auto_param_cpu_accuracy"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
+                                    android:textSize="11sp" />
+
+                                <TextView
+                                    android:id="@+id/text_preview_cpu_acc_val"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Автоматическая"
+                                    android:textColor="?attr/colorOnSurface"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="@string/storm_auto_param_dram"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
+                                    android:textSize="11sp" />
+
+                                <TextView
+                                    android:id="@+id/text_preview_dram_val"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="4 ГБ (Стандарт)"
+                                    android:textColor="?attr/colorOnSurface"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Subgroup 3: Shaders -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="4dp"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="0dp"
+                        app:cardBackgroundColor="?attr/colorSurfaceVariant">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="10dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:layout_marginBottom="6dp">
+
+                                <ImageView
+                                    android:layout_width="15dp"
+                                    android:layout_height="15dp"
+                                    android:src="@drawable/ic_storm_lightning"
+                                    app:tint="?attr/colorPrimary"
+                                    tools:ignore="ContentDescription" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="6dp"
+                                    android:text="@string/storm_auto_cat_shaders"
+                                    android:textColor="?attr/colorOnSurface"
+                                    android:textSize="11.5sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:layout_marginBottom="3dp">
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="@string/storm_auto_param_async_shaders"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
+                                    android:textSize="11sp" />
+
+                                <TextView
+                                    android:id="@+id/text_preview_async_val"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Включены (без фризов)"
+                                    android:textColor="?attr/colorOnSurface"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:layout_marginBottom="3dp">
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="@string/storm_auto_param_reactive_flush"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
+                                    android:textSize="11sp" />
+
+                                <TextView
+                                    android:id="@+id/text_preview_flushing_val"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Отключена (скорость)"
+                                    android:textColor="?attr/colorOnSurface"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="@string/storm_auto_param_thermals"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
+                                    android:textSize="11sp" />
+
+                                <TextView
+                                    android:id="@+id/text_preview_thermals_val"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Стандартный режим"
+                                    android:textColor="?attr/colorOnSurface"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
 
                 </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
 
-            </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
-
-                    <!-- Preset 2: Balanced (Recommended) -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/card_preset_balanced"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:clickable="true"
-            android:focusable="true"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="3dp"
-            app:cardBackgroundColor="?attr/colorSurfaceVariant"
-            app:strokeColor="?attr/colorOutline"
-            app:strokeWidth="2.5dp">
-
+            <!-- Bottom Pinned Action Bar in Landscape -->
             <LinearLayout
+                android:id="@+id/layout_auto_bottom_bar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:padding="14dp">
-
-                <com.google.android.material.radiobutton.MaterialRadioButton
-                    android:id="@+id/radio_mode_normal"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:clickable="false"
-                    android:focusable="false"
-                    app:buttonTint="?attr/colorPrimary"
-                    android:layout_marginEnd="10dp" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/auto_opt_profile_balance_title"
-                            android:textColor="?attr/colorOnSurface"
-                            android:textSize="14sp"
-                            android:textStyle="bold"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:background="@drawable/bg_storm_badge_capsule"
-                            android:paddingHorizontal="8dp"
-                            android:paddingVertical="2dp"
-                            android:text="@string/auto_opt_badge_recommended"
-                            android:textColor="?attr/colorPrimary"
-                            android:textSize="10sp"
-                            android:textStyle="bold"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-                    </LinearLayout>
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="3dp"
-                        android:text="@string/auto_opt_profile_balance_desc"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="12sp"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
-
-                </LinearLayout>
-
-                <!-- Right Column: Preset 3 (Quality) & Preset 4 (Battery) -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    android:orientation="vertical">
-
-                    <!-- Preset 3: Ultra Quality (2K / FSR) -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/card_preset_quality"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:clickable="true"
-            android:focusable="true"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="3dp"
-            app:cardBackgroundColor="?attr/colorSurfaceVariant"
-            app:strokeColor="?attr/colorOutline"
-            app:strokeWidth="1.2dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:background="?attr/colorSurfaceVariant"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:padding="14dp">
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="8dp">
 
-                <com.google.android.material.radiobutton.MaterialRadioButton
-                    android:id="@+id/radio_mode_accurate"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:clickable="false"
-                    android:focusable="false"
-                    app:buttonTint="?attr/colorPrimary"
-                    android:layout_marginEnd="10dp" />
-
-                <LinearLayout
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_save_as_profile"
+                    style="@style/Widget.Material3.Button"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="38dp"
                     android:layout_weight="1"
-                    android:orientation="vertical">
+                    android:layout_marginEnd="6dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:background="@drawable/storm_btn_3d_secondary"
+                    app:backgroundTint="@null"
+                    app:strokeWidth="0dp"
+                    android:text="@string/storm_auto_btn_save_profile"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="11.5sp"
+                    app:icon="@drawable/ic_save"
+                    app:iconSize="15dp"
+                    app:iconTint="?attr/colorPrimary"
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none"
+                    android:maxLines="1"
+                    android:ellipsize="none" />
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/auto_opt_profile_ultra_title"
-                            android:textColor="?attr/colorOnSurface"
-                            android:textSize="14sp"
-                            android:textStyle="bold"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:background="@drawable/bg_storm_badge_capsule"
-                            android:paddingHorizontal="8dp"
-                            android:paddingVertical="2dp"
-                            android:text="@string/auto_opt_badge_2k_fsr"
-                            android:textColor="#F59E0B"
-                            android:textSize="10sp"
-                            android:textStyle="bold"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-                    </LinearLayout>
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="3dp"
-                        android:text="@string/auto_opt_profile_ultra_desc"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="12sp"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
-
-                    <!-- Preset 4: Eco / Battery -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/card_preset_battery"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:clickable="true"
-            android:focusable="true"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="3dp"
-            app:cardBackgroundColor="?attr/colorSurfaceVariant"
-            app:strokeColor="?attr/colorOutline"
-            app:strokeWidth="1.2dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:padding="14dp">
-
-                <com.google.android.material.radiobutton.MaterialRadioButton
-                    android:id="@+id/radio_mode_default"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:clickable="false"
-                    android:focusable="false"
-                    app:buttonTint="?attr/colorPrimary"
-                    android:layout_marginEnd="10dp" />
-
-                <LinearLayout
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_apply_wizard"
+                    style="@style/Widget.Material3.Button"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
+                    android:layout_height="38dp"
+                    android:layout_weight="1.2"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:background="@drawable/storm_btn_3d_primary"
+                    app:backgroundTint="@null"
+                    app:strokeWidth="0dp"
+                    android:text="@string/storm_auto_btn_apply"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    app:icon="@drawable/ic_check"
+                    app:iconSize="15dp"
+                    app:iconTint="#FFFFFF"
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none"
+                    android:maxLines="1"
+                    android:ellipsize="none" />
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                <!-- Compatibility aliases -->
+                <View
+                    android:id="@+id/btn_cancel"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:visibility="gone" />
 
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/auto_opt_profile_eco_title"
-                            android:textColor="?attr/colorOnSurface"
-                            android:textSize="14sp"
-                            android:textStyle="bold"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:background="@drawable/bg_storm_badge_capsule"
-                            android:paddingHorizontal="8dp"
-                            android:paddingVertical="2dp"
-                            android:text="@string/auto_opt_badge_cool"
-                            android:textColor="#34D399"
-                            android:textSize="10sp"
-                            android:textStyle="bold"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-                    </LinearLayout>
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="3dp"
-                        android:text="@string/auto_opt_profile_eco_desc"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="12sp"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
-
-                </LinearLayout>
+                <View
+                    android:id="@+id/btn_cancel_wizard"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:visibility="gone" />
 
             </LinearLayout>
 
         </LinearLayout>
-
-    </androidx.core.widget.NestedScrollView>
-
-    <!-- Bottom Divider -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="?attr/colorOutline" />
-
-    <!-- Pinned Bottom Bar -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="10dp">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_reset_defaults"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:minHeight="46dp"
-            android:layout_weight="1"
-            android:layout_marginEnd="8dp"
-            android:text="@string/auto_opt_btn_reset"
-            android:textSize="12sp"
-            app:strokeWidth="1dp"
-            app:strokeColor="?attr/colorOutline"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"
-    android:maxLines="1"
-    android:ellipsize="none"/>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_cancel"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:minHeight="46dp"
-            android:layout_weight="1"
-            android:layout_marginEnd="8dp"
-            android:text="@android:string/cancel"
-            android:textSize="12sp"
-            app:strokeWidth="1dp"
-            app:strokeColor="?attr/colorOutline"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"
-    android:maxLines="1"
-    android:ellipsize="none"/>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_apply_wizard"
-            style="@style/Widget.Material3.Button.TonalButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:minHeight="46dp"
-            android:layout_weight="1.5"
-            android:text="@string/auto_opt_btn_apply"
-            android:textSize="13sp"
-            app:icon="@drawable/ic_check"
-            app:iconTint="?attr/colorPrimary"
-            app:iconSize="18dp"
-            app:strokeWidth="1dp"
-            app:strokeColor="?attr/colorPrimary"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"
-    android:maxLines="1"
-    android:ellipsize="none"/>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_cancel_wizard"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:visibility="gone"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"
-    android:maxLines="1"
-    android:ellipsize="none"/>
 
     </LinearLayout>
 

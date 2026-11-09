@@ -1,193 +1,276 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/transparent"
-    android:paddingHorizontal="16dp"
-    android:paddingVertical="20dp">
+    android:background="?attr/colorSurface"
+    android:clickable="true"
+    android:focusable="true"
+    android:orientation="vertical">
 
-    <!-- Flagship Sculpted Dark Glassmorphic Container themed with ?attr/colorSurface -->
+    <!-- Top Header Bar -->
     <LinearLayout
+        android:id="@+id/layout_profiles_header"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@drawable/storm_dialog_card_bg"
-        android:orientation="vertical"
-        android:padding="18dp">
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="14dp"
+        android:paddingBottom="12dp">
 
-        <!-- Top Header Bar -->
+        <FrameLayout
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:background="@drawable/storm_tile_3d_recessed"
+            android:layout_marginEnd="12dp">
+
+            <ImageView
+                android:id="@+id/image_profiles_header_icon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_folder_open"
+                app:tint="?attr/colorPrimary"
+                tools:ignore="ContentDescription" />
+        </FrameLayout>
+
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:layout_marginBottom="12dp">
-
-            <FrameLayout
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                android:background="@drawable/storm_tile_3d_recessed"
-                android:layout_marginEnd="12dp">
-
-                <ImageView
-                    android:id="@+id/image_profiles_header_icon"
-                    android:layout_width="26dp"
-                    android:layout_height="26dp"
-                    android:layout_gravity="center"
-                    android:src="@drawable/ic_folder_open"
-                    app:tint="?attr/colorPrimary" />
-            </FrameLayout>
+            android:layout_weight="1"
+            android:orientation="vertical">
 
             <LinearLayout
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:id="@+id/text_profiles_title"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/settings_profiles_title"
-                        android:textColor="?attr/colorOnSurface"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        android:letterSpacing="0.02"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-                    <!-- Counter pill -->
-                    <TextView
-                        android:id="@+id/text_profiles_counter"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:background="@drawable/bg_storm_badge_capsule"
-                        android:paddingHorizontal="10dp"
-                        android:paddingVertical="4dp"
-                        android:text="0"
-                        android:textColor="?attr/colorPrimary"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-                </LinearLayout>
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
                 <TextView
-                    android:id="@+id/text_profiles_subtitle"
-                    android:layout_width="match_parent"
+                    android:id="@+id/text_profiles_title"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="3dp"
-                    android:text="@string/settings_profiles_description"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="12sp"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                    android:text="@string/storm_prof_title"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.01"
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none" />
+
+                <TextView
+                    android:id="@+id/text_profiles_counter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_storm_badge_capsule"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="3dp"
+                    android:text="4"
+                    android:textColor="?attr/colorPrimary"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none" />
             </LinearLayout>
 
-            <!-- Faceted Close Button -->
-            <ImageView
-                android:id="@+id/btn_close_profiles"
-                android:layout_width="38dp"
-                android:layout_height="38dp"
-                android:layout_marginStart="10dp"
-                android:padding="9dp"
-                android:background="@drawable/bg_storm_circle_button"
-                android:src="@drawable/ic_clear"
-                app:tint="?attr/colorOnSurfaceVariant"
-                android:contentDescription="@string/close" />
-
+            <TextView
+                android:id="@+id/text_profiles_subtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Готовых пресетов: 4 • Пользовательских: 0"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="12sp"
+                android:breakStrategy="simple"
+                android:hyphenationFrequency="none" />
         </LinearLayout>
 
-        <!-- Divider line -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="?attr/colorOutline"
-            android:layout_marginBottom="12dp" />
+        <!-- Top Header Action Buttons: Save & Import & Close -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_save_current_profile"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="38dp"
+            android:layout_marginEnd="6dp"
+            android:paddingHorizontal="10dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:background="@drawable/storm_btn_3d_secondary"
+            app:backgroundTint="@null"
+            app:strokeWidth="0dp"
+            android:text="@string/storm_prof_btn_save"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="12sp"
+            app:icon="@drawable/ic_add"
+            app:iconSize="16dp"
+            app:iconTint="?attr/colorPrimary"
+            android:breakStrategy="simple"
+            android:hyphenationFrequency="none"
+            android:maxLines="1"
+            android:ellipsize="none" />
 
-        <!-- Top Action Bar: Themed Faceted Buttons (Zero abbreviation, Zero truncation) -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:layout_marginBottom="14dp">
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_import_profile"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="38dp"
+            android:layout_marginEnd="6dp"
+            android:paddingHorizontal="10dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:background="@drawable/storm_btn_3d_secondary"
+            app:backgroundTint="@null"
+            app:strokeWidth="0dp"
+            android:text="@string/storm_prof_btn_import"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="12sp"
+            app:icon="@drawable/ic_import"
+            app:iconSize="16dp"
+            app:iconTint="?attr/colorPrimary"
+            android:breakStrategy="simple"
+            android:hyphenationFrequency="none"
+            android:maxLines="1"
+            android:ellipsize="none" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_save_current_profile"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:minHeight="48dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="6dp"
-                android:text="@string/profile_btn_save_current"
-                android:textSize="13sp"
-                app:icon="@drawable/ic_add"
-                app:iconTint="?attr/colorPrimary"
-                app:iconSize="18dp"
-        app:strokeWidth="0dp"
-        app:strokeColor="?attr/colorPrimary"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"
-    android:maxLines="1"
-    android:ellipsize="none"/>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_import_profile"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:minHeight="48dp"
-                android:layout_weight="1"
-                android:layout_marginStart="6dp"
-                android:text="@string/profile_btn_import"
-                android:textSize="13sp"
-                app:icon="@drawable/ic_folder_open"
-                app:iconTint="?attr/colorOnSurfaceVariant"
-                app:iconSize="18dp"
-        app:strokeWidth="0dp"
-        app:strokeColor="?attr/colorOutline"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"
-    android:maxLines="1"
-    android:ellipsize="none"/>
-
-        </LinearLayout>
-
-        <!-- List of Profile Cards -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/list_profiles"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:clipToPadding="false"
-            android:overScrollMode="never"
-            android:paddingBottom="8dp" />
-
-        <!-- Empty state when zero profiles exist -->
-        <TextView
-            android:id="@+id/text_empty_profiles"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="@string/profile_empty_state"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            android:textSize="13sp"
-            android:visibility="gone"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_close_profiles"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:padding="0dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:background="@drawable/storm_btn_3d_secondary"
+            app:backgroundTint="@null"
+            app:strokeWidth="0dp"
+            app:icon="@drawable/ic_x"
+            app:iconSize="16dp"
+            app:iconTint="?attr/colorOnSurfaceVariant"
+            app:iconGravity="textStart"
+            android:contentDescription="@string/close" />
 
     </LinearLayout>
 
-</FrameLayout>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?attr/colorOutline" />
+
+    <!-- Filter Chips + Search Section -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="6dp">
+
+        <!-- Category Filter Chips -->
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chip_group_profiles"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:singleSelection="true"
+            app:selectionRequired="true"
+            android:layout_marginBottom="8dp">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_filter_all"
+                style="@style/Widget.Material3.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="38dp"
+                android:checked="true"
+                android:text="@string/storm_prof_filter_all"
+                android:textSize="12sp"
+                app:strokeWidth="0dp" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_filter_presets"
+                style="@style/Widget.Material3.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="38dp"
+                android:text="@string/storm_prof_filter_presets"
+                android:textSize="12sp"
+                app:strokeWidth="0dp" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_filter_custom"
+                style="@style/Widget.Material3.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="38dp"
+                android:text="@string/storm_prof_filter_custom"
+                android:textSize="12sp"
+                app:strokeWidth="0dp" />
+
+        </com.google.android.material.chip.ChipGroup>
+
+        <!-- Search Bar -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/layout_search_profile"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/storm_prof_search_hint"
+            app:boxBackgroundColor="?attr/colorSurfaceVariant"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp"
+            app:boxStrokeWidth="0dp"
+            app:boxStrokeWidthFocused="0dp"
+            app:startIconDrawable="@drawable/ic_search"
+            app:startIconTint="?attr/colorOnSurfaceVariant"
+            app:endIconMode="clear_text">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edit_search_profile"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:paddingTop="0dp"
+                android:paddingBottom="0dp"
+                android:inputType="text"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:textColor="?attr/colorOnSurface"
+                android:textColorHint="?attr/colorOnSurfaceVariant"
+                android:textSize="13sp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+    </LinearLayout>
+
+    <!-- Profiles RecyclerView & Empty State Container -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingHorizontal="14dp"
+        android:paddingTop="6dp"
+        android:paddingBottom="8dp">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/list_profiles"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:overScrollMode="never" />
+
+        <TextView
+            android:id="@+id/text_empty_profiles"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:padding="24dp"
+            android:text="@string/storm_prof_empty_search"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="14sp"
+            android:visibility="gone"
+            android:breakStrategy="simple"
+            android:hyphenationFrequency="none" />
+
+    </FrameLayout>
+
+</LinearLayout>

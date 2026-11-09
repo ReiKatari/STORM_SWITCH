@@ -43,6 +43,9 @@
 #include "storm_switch/configuration/configure_cpu.h"
 #include "storm_switch/configuration/configure_debug_tab.h"
 #include "storm_switch/configuration/configure_dialog.h"
+#include "storm_switch/settings_profiles_dialog.h"
+#include "storm_switch/game_fix_dialog.h"
+#include "storm_switch/common/storm_theme.h"
 #include "storm_switch/configuration/configure_filesystem.h"
 #include "storm_switch/configuration/configure_general.h"
 #include "storm_switch/configuration/configure_graphics.h"
@@ -186,6 +189,48 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
         QStringLiteral("Búsqueda rápida de ajustes (ej.: Vulkan, FSR, audio, memoria, FPS)...")
     ));
     ui->verticalLayout->insertWidget(0, m_search_edit);
+
+    const auto cd_pal = StormTheme::GetThemePalette();
+    auto* quick_actions_row = new QWidget(this);
+    auto* qa_lay = new QHBoxLayout(quick_actions_row);
+    qa_lay->setContentsMargins(0, 2, 0, 4);
+    qa_lay->setSpacing(6);
+
+    auto* open_profiles_btn = new QPushButton(StormLang(
+        QStringLiteral("Профили настроек"),
+        QStringLiteral("Settings Profiles")), quick_actions_row);
+    open_profiles_btn->setCursor(Qt::PointingHandCursor);
+    open_profiles_btn->setStyleSheet(QStringLiteral(
+        "QPushButton { background: %1; color: %2; border: none; border-radius: 6px; padding: 5px 8px; font-weight: 600; font-size: 11px; }"
+        "QPushButton:hover { background: %3; color: %4; }"
+    ).arg(cd_pal.card, cd_pal.textPrimary, cd_pal.cardAlt, cd_pal.accent));
+    connect(open_profiles_btn, &QPushButton::clicked, this, [this]() {
+        SettingsProfilesDialog dlg(this, const_cast<Core::System*>(&system));
+        dlg.exec();
+        SetConfiguration();
+        ConfigurationShared::ReloadAllActiveWidgets();
+        ConfigurationShared::NotifyGlobalSettingChanged();
+    });
+    qa_lay->addWidget(open_profiles_btn);
+
+    auto* open_autoconfig_btn = new QPushButton(StormLang(
+        QStringLiteral("Авто-настройка"),
+        QStringLiteral("Auto-Config")), quick_actions_row);
+    open_autoconfig_btn->setCursor(Qt::PointingHandCursor);
+    open_autoconfig_btn->setStyleSheet(QStringLiteral(
+        "QPushButton { background: %1; color: %2; border: none; border-radius: 6px; padding: 5px 8px; font-weight: 600; font-size: 11px; }"
+        "QPushButton:hover { background: %3; color: %4; }"
+    ).arg(cd_pal.card, cd_pal.textPrimary, cd_pal.cardAlt, cd_pal.accent));
+    connect(open_autoconfig_btn, &QPushButton::clicked, this, [this]() {
+        GameFixDialog dlg(this, 0, QString(), true, const_cast<Core::System&>(system));
+        dlg.Execute();
+        SetConfiguration();
+        ConfigurationShared::ReloadAllActiveWidgets();
+        ConfigurationShared::NotifyGlobalSettingChanged();
+    });
+    qa_lay->addWidget(open_autoconfig_btn);
+
+    ui->verticalLayout->insertWidget(1, quick_actions_row);
 
     m_search_results_list = new QListWidget(this);
     m_search_results_list->setObjectName(QStringLiteral("SettingsSearchResultsList"));

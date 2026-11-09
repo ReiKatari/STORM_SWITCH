@@ -1,171 +1,324 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorSurface"
-    android:orientation="horizontal"
-    android:baselineAligned="false"
-    android:padding="12dp">
+    android:clickable="true"
+    android:focusable="true"
+    android:orientation="vertical">
 
-    <!-- LEFT COLUMN: Header + Subtitle + Action Buttons -->
+    <!-- Top Header Bar -->
     <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:layout_marginEnd="8dp"
-        android:orientation="vertical">
+        android:id="@+id/layout_profiles_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="8dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="6dp">
+        <FrameLayout
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:background="@drawable/storm_tile_3d_recessed"
+            android:layout_marginEnd="10dp">
 
             <ImageView
                 android:id="@+id/image_profiles_header_icon"
-                android:layout_width="26dp"
-                android:layout_height="26dp"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_gravity="center"
                 android:src="@drawable/ic_folder_open"
-                app:tint="?attr/colorPrimary" />
-
-            <TextView
-                android:id="@+id/text_profiles_title"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_weight="1"
-                android:text="@string/settings_profiles_title"
-                android:textColor="?attr/colorOnSurface"
-                android:textSize="16sp"
-                android:textStyle="bold"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-            <TextView
-                android:id="@+id/text_profiles_counter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:layout_marginEnd="6dp"
-                android:background="@drawable/bg_storm_badge_capsule"
-                android:paddingHorizontal="8dp"
-                android:paddingVertical="2dp"
-                android:text="0"
-                android:textColor="?attr/colorPrimary"
-                android:textSize="11sp"
-                android:textStyle="bold"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-            <ImageButton
-                android:id="@+id/btn_close_profiles"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_clear"
-                app:tint="?attr/colorOnSurfaceVariant"
-                android:contentDescription="@string/close" />
-
-        </LinearLayout>
-
-        <TextView
-            android:id="@+id/text_profiles_subtitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/settings_profiles_description"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            android:textSize="11.5sp"
-            android:lineSpacingExtra="2dp"
-            android:layout_marginBottom="16dp"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
+                app:tint="?attr/colorPrimary"
+                tools:ignore="ContentDescription" />
+        </FrameLayout>
 
         <LinearLayout
-            android:id="@+id/layout_profile_bottom_buttons"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:orientation="vertical">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_save_current_profile"
-                style="@style/Widget.Material3.Button.TonalButton"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="42dp"
-                android:layout_marginBottom="6dp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:gravity="center"
-                android:text="@string/profile_btn_create"
-                android:textSize="12sp"
-                app:icon="@drawable/ic_add"
-                app:iconTint="?attr/colorPrimary"
-                app:iconSize="16dp"
-                app:cornerRadius="10dp"
-        app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorPrimary"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"
-    android:maxLines="1"
-    android:ellipsize="none"/>
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_import_profile"
-                style="@style/Widget.Material3.Button.OutlinedButton"
+                <TextView
+                    android:id="@+id/text_profiles_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/storm_prof_title"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="17sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.01"
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none" />
+
+                <TextView
+                    android:id="@+id/text_profiles_counter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_storm_badge_capsule"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="2dp"
+                    android:text="4"
+                    android:textColor="?attr/colorPrimary"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/text_profiles_subtitle"
                 android:layout_width="match_parent"
-                android:layout_height="42dp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:gravity="center"
-                android:text="@string/profile_btn_import"
-                android:textSize="12sp"
-                app:icon="@drawable/ic_install"
-                app:iconTint="?attr/colorOnSurfaceVariant"
-                app:iconSize="16dp"
-                app:cornerRadius="10dp"
-        app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"
-    android:maxLines="1"
-    android:ellipsize="none"/>
-
+                android:layout_height="wrap_content"
+                android:text="Готовых пресетов: 4 • Пользовательских: 0"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="11.5sp"
+                android:breakStrategy="simple"
+                android:hyphenationFrequency="none" />
         </LinearLayout>
+
+        <!-- Top Header Action Buttons: Save & Import & Close -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_save_current_profile"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_marginEnd="6dp"
+            android:paddingHorizontal="10dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:background="@drawable/storm_btn_3d_secondary"
+            app:backgroundTint="@null"
+            app:strokeWidth="0dp"
+            android:text="@string/storm_prof_btn_save"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="11.5sp"
+            app:icon="@drawable/ic_add"
+            app:iconSize="15dp"
+            app:iconTint="?attr/colorPrimary"
+            android:breakStrategy="simple"
+            android:hyphenationFrequency="none"
+            android:maxLines="1"
+            android:ellipsize="none" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_import_profile"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_marginEnd="6dp"
+            android:paddingHorizontal="10dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:background="@drawable/storm_btn_3d_secondary"
+            app:backgroundTint="@null"
+            app:strokeWidth="0dp"
+            android:text="@string/storm_prof_btn_import"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="11.5sp"
+            app:icon="@drawable/ic_import"
+            app:iconSize="15dp"
+            app:iconTint="?attr/colorPrimary"
+            android:breakStrategy="simple"
+            android:hyphenationFrequency="none"
+            android:maxLines="1"
+            android:ellipsize="none" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_close_profiles"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:padding="0dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:background="@drawable/storm_btn_3d_secondary"
+            app:backgroundTint="@null"
+            app:strokeWidth="0dp"
+            app:icon="@drawable/ic_x"
+            app:iconSize="15dp"
+            app:iconTint="?attr/colorOnSurfaceVariant"
+            app:iconGravity="textStart"
+            android:contentDescription="@string/close" />
 
     </LinearLayout>
 
-    <!-- RIGHT COLUMN: Profiles List & Empty State -->
-    <FrameLayout
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1.4"
-        android:layout_marginStart="8dp">
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?attr/colorOutline" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/list_profiles"
-            android:layout_width="match_parent"
+    <!-- Landscape 2-Pane Split: Left Controls / Right Profiles List -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:baselineAligned="false"
+        android:orientation="horizontal"
+        android:paddingHorizontal="14dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp">
+
+        <!-- Left Column: Search & Filter Chips -->
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:clipToPadding="false" />
+            android:layout_weight="1"
+            android:layout_marginEnd="10dp"
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/text_empty_profiles"
-            android:layout_width="match_parent"
+            <!-- Search Field -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layout_search_profile"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/storm_prof_search_hint"
+                app:boxBackgroundColor="?attr/colorSurfaceVariant"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp"
+                app:boxStrokeWidth="0dp"
+                app:boxStrokeWidthFocused="0dp"
+                app:startIconDrawable="@drawable/ic_search"
+                app:startIconTint="?attr/colorOnSurfaceVariant"
+                app:endIconMode="clear_text"
+                android:layout_marginBottom="10dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edit_search_profile"
+                    android:layout_width="match_parent"
+                    android:layout_height="42dp"
+                    android:paddingTop="0dp"
+                    android:paddingBottom="0dp"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:singleLine="true"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textColorHint="?attr/colorOnSurfaceVariant"
+                    android:textSize="12.5sp" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Filter Chips Group -->
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chip_group_profiles"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:singleSelection="true"
+                app:selectionRequired="true"
+                android:layout_marginBottom="12dp">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_filter_all"
+                    style="@style/Widget.Material3.Chip.Filter"
+                    android:layout_width="match_parent"
+                    android:layout_height="36dp"
+                    android:checked="true"
+                    android:text="@string/storm_prof_filter_all"
+                    android:textSize="12sp"
+                    app:strokeWidth="0dp" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_filter_presets"
+                    style="@style/Widget.Material3.Chip.Filter"
+                    android:layout_width="match_parent"
+                    android:layout_height="36dp"
+                    android:text="@string/storm_prof_filter_presets"
+                    android:textSize="12sp"
+                    app:strokeWidth="0dp" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_filter_custom"
+                    style="@style/Widget.Material3.Chip.Filter"
+                    android:layout_width="match_parent"
+                    android:layout_height="36dp"
+                    android:text="@string/storm_prof_filter_custom"
+                    android:textSize="12sp"
+                    app:strokeWidth="0dp" />
+
+            </com.google.android.material.chip.ChipGroup>
+
+            <!-- Guide Card for Landscape -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                app:cardCornerRadius="12dp"
+                app:strokeWidth="0dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/storm_prof_section_presets"
+                        android:textColor="?attr/colorPrimary"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.04"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="4 готовых пресета оптимизированы под разные классы устройств и сценарии игры. Создавайте собственные профили под конкретные игры и делитесь ими."
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="11sp"
+                        android:lineSpacingExtra="2dp" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+
+        <!-- Right Column: Profiles RecyclerView -->
+        <FrameLayout
+            android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:gravity="center"
-            android:text="@string/profile_empty_state"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            android:textSize="13sp"
-            android:visibility="gone"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+            android:layout_weight="1.8"
+            android:layout_marginStart="4dp">
 
-    </FrameLayout>
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/list_profiles"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:overScrollMode="never" />
+
+            <TextView
+                android:id="@+id/text_empty_profiles"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:padding="24dp"
+                android:text="@string/storm_prof_empty_search"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="13.5sp"
+                android:visibility="gone"
+                android:breakStrategy="simple"
+                android:hyphenationFrequency="none" />
+
+        </FrameLayout>
+
+    </LinearLayout>
 
 </LinearLayout>

@@ -163,9 +163,7 @@ class GamesFragment : Fragment() {
             (binding.swipeRefresh as? SwipeRefreshLayout)?.isRefreshing = false
         }
         gamesViewModel.games.collect(viewLifecycleOwner) {
-            if (it.isNotEmpty()) {
-                setAdapter(it)
-            }
+            setAdapter(it)
         }
         gamesViewModel.shouldSwapData.collect(
             viewLifecycleOwner,
@@ -281,10 +279,9 @@ class GamesFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        (binding.swipeRefresh as? SwipeRefreshLayout)?.isRefreshing = gamesViewModel.isReloading.value
         val currentGames = gamesViewModel.games.value
-        if (currentGames.isNotEmpty()) {
-            setAdapter(currentGames)
-        }
+        setAdapter(currentGames)
         if (getCurrentViewType() == GameAdapter.VIEW_TYPE_CAROUSEL) {
             (binding.gridGames as? CarouselRecyclerView)?.setupCarousel(true)
             (binding.gridGames as? CarouselRecyclerView)?.restoreScrollState(gamesViewModel.lastScrollPosition)

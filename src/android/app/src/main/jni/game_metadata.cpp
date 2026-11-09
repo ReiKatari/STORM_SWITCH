@@ -289,8 +289,8 @@ static RomMetadata CacheRomMetadata(const std::string& raw_path) {
     std::string path = raw_path;
     if (path.starts_with("file://")) {
         path = path.substr(7);
-        path = UrlDecodePath(path);
     }
+    path = UrlDecodePath(path);
     if (!Core::Crypto::KeyManager::Instance().AreKeysLoaded()) {
         Core::Crypto::KeyManager::Instance().ReloadKeys();
     }
@@ -613,6 +613,7 @@ static RomMetadata GetRomMetadata(const std::string& raw_path, bool reload = fal
     if (path.starts_with("file://")) {
         path = path.substr(7);
     }
+    path = UrlDecodePath(path);
     if (!reload) {
         if (auto it = m_rom_metadata_cache.find(path); it != m_rom_metadata_cache.end()) {
             return it->second;
@@ -627,8 +628,8 @@ jboolean Java_org_yuzu_yuzu_1emu_utils_GameMetadata_getIsValid(JNIEnv* env, jobj
     std::string path_str = Common::Android::GetJString(env, jpath);
     if (path_str.starts_with("file://")) {
         path_str = path_str.substr(7);
-        path_str = UrlDecodePath(path_str);
     }
+    path_str = UrlDecodePath(path_str);
     const auto l_path = Common::ToLower(path_str);
     if (l_path.ends_with(".part") || l_path.ends_with(".tmp") ||
         l_path.ends_with(".crdownload") || l_path.ends_with(".downloading") ||

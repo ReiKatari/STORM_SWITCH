@@ -2980,5 +2980,5 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="storm_folder_picker_selected_header">Selected &amp; Added Folders (%1$d):</string>
     <string name="storm_folder_picker_deep_scan">Scan subfolders automatically</string>
     <string name="storm_folder_picker_added_count">Game folders added: %1$d</string>
-    <string name="storm_setup_games_multi_status">Games (%1$d folders — tap to add more)</string>
+    <string name="storm_setup_games_multi_status">Games (folders: %1$d)</string>
 </resources>

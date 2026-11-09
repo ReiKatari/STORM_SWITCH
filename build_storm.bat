@@ -37,9 +37,9 @@ if not exist "%BUILD_DIR%\build.ninja" (
         -DCMAKE_BUILD_TYPE=Release ^
         -DCMAKE_CXX_FLAGS_RELEASE="/MD /O2 /Ob3 /Oi /Ot /Gw /Gy /Zc:inline /DNDEBUG" ^
         -DCMAKE_C_FLAGS_RELEASE="/MD /O2 /Ob3 /Oi /Ot /Gw /Gy /Zc:inline /DNDEBUG" ^
-        -DGIT_TAG="17.3.2" ^
-        -DGIT_RELEASE="17.3.2" ^
-        -DBUILD_VERSION="17.3.2" ^
+        -DGIT_TAG="17.3.3" ^
+        -DGIT_RELEASE="17.3.3" ^
+        -DBUILD_VERSION="17.3.3" ^
         -DENABLE_QT=ON ^
         -DENABLE_QT_TRANSLATION=ON ^
         -DYUZU_USE_BUNDLED_QT=ON ^
@@ -56,8 +56,8 @@ if not exist "%BUILD_DIR%\build.ninja" (
         exit /b 1
     )
 ) else (
-    echo [1/3] Updating SCM revision for 17.3.2...
-    "%CMAKE%" -DGIT_TAG="17.3.2" -DGIT_RELEASE="17.3.2" -DBUILD_VERSION="17.3.2" -DSRC_DIR="%SRC_DIR%" -P "%SRC_DIR%\CMakeModules\GenerateSCMRev.cmake" 2>nul
+    echo [1/3] Updating SCM revision for 17.3.3...
+    "%CMAKE%" -DGIT_TAG="17.3.3" -DGIT_RELEASE="17.3.3" -DBUILD_VERSION="17.3.3" -DSRC_DIR="%SRC_DIR%" -P "%SRC_DIR%\CMakeModules\GenerateSCMRev.cmake" 2>nul
 )
 
 echo [2/3] Compiling STORM SWITCH with Low-Load Ninja (-j 4, BelowNormal)...

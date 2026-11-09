@@ -2,11 +2,12 @@
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/card_save_profile"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:cardCornerRadius="22dp"
+    app:cardCornerRadius="20dp"
     app:cardElevation="8dp"
-    app:strokeColor="?attr/colorOutline"
     app:strokeWidth="0dp"
     app:cardBackgroundColor="?attr/colorSurface">
 
@@ -16,6 +17,7 @@
         android:orientation="vertical"
         android:padding="22dp">
 
+        <!-- Top Row: Recessed Tile + Title -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -31,24 +33,25 @@
 
                 <ImageView
                     android:id="@+id/image_save_profile_icon"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
                     android:layout_gravity="center"
                     android:src="@drawable/ic_folder_open"
-                    app:tint="?attr/colorPrimary" />
+                    app:tint="?attr/colorPrimary"
+                    tools:ignore="ContentDescription" />
             </FrameLayout>
 
             <TextView
                 android:id="@+id/text_save_profile_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/profile_create_title"
+                android:text="@string/storm_prof_save_title"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:letterSpacing="0.02"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                android:letterSpacing="0.01"
+                android:breakStrategy="simple"
+                android:hyphenationFrequency="none" />
 
         </LinearLayout>
 
@@ -56,29 +59,30 @@
             android:id="@+id/text_save_profile_msg"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/profile_create_msg"
+            android:text="@string/storm_prof_save_subtitle"
             android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="13sp"
             android:layout_marginBottom="16dp"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+            android:breakStrategy="simple"
+            android:hyphenationFrequency="none" />
 
-        <!-- Themed TextInput Box -->
+        <!-- Profile Name Input Field -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/input_layout_profile_name"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/profile_name_hint"
-            app:boxCornerRadiusTopStart="14dp"
-            app:boxCornerRadiusTopEnd="14dp"
-            app:boxCornerRadiusBottomStart="14dp"
-            app:boxCornerRadiusBottomEnd="14dp"
-            app:boxStrokeColor="?attr/colorPrimary"
+            android:hint="@string/storm_prof_save_hint"
+            app:boxBackgroundColor="?attr/colorSurfaceVariant"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp"
             app:boxStrokeWidth="0dp"
+            app:boxStrokeWidthFocused="0dp"
             app:hintTextColor="?attr/colorPrimary"
             app:endIconMode="clear_text"
-            android:layout_marginBottom="22dp">
+            android:layout_marginBottom="20dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/edit_profile_name"
@@ -88,11 +92,12 @@
                 android:maxLines="1"
                 android:singleLine="true"
                 android:textColor="?attr/colorOnSurface"
-                android:textColorHint="?attr/colorOnSurfaceVariant" />
+                android:textColorHint="?attr/colorOnSurfaceVariant"
+                android:textSize="14sp" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Themed Action Buttons -->
+        <!-- 3D Actions: Cancel & Save -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -101,36 +106,46 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_cancel_save_profile"
-                style="@style/Widget.Material3.Button.TonalButton"
+                style="@style/Widget.Material3.Button"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:minHeight="44dp"
+                android:layout_height="42dp"
+                android:layout_marginEnd="10dp"
+                android:paddingHorizontal="16dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:background="@drawable/storm_btn_3d_secondary"
+                app:backgroundTint="@null"
+                app:strokeWidth="0dp"
                 android:text="@android:string/cancel"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="13sp"
-                android:layout_marginEnd="10dp"
-        app:strokeWidth="0dp"
-        app:strokeColor="?attr/colorOutline"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"
-    android:maxLines="1"
-    android:ellipsize="none"/>
+                android:breakStrategy="simple"
+                android:hyphenationFrequency="none"
+                android:maxLines="1"
+                android:ellipsize="none" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_confirm_save_profile"
-                style="@style/Widget.Material3.Button.TonalButton"
+                style="@style/Widget.Material3.Button"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:minHeight="44dp"
-                android:text="@string/save"
-                android:textColor="?attr/colorPrimary"
+                android:layout_height="42dp"
+                android:paddingHorizontal="20dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:background="@drawable/storm_btn_3d_primary"
+                app:backgroundTint="@null"
+                app:strokeWidth="0dp"
+                android:text="@string/storm_prof_save_btn"
+                android:textColor="#FFFFFF"
                 android:textSize="13sp"
-        app:strokeWidth="0dp"
-        app:strokeColor="?attr/colorPrimary"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"
-    android:maxLines="1"
-    android:ellipsize="none"/>
+                android:textStyle="bold"
+                app:icon="@drawable/ic_check"
+                app:iconSize="16dp"
+                app:iconTint="#FFFFFF"
+                android:breakStrategy="simple"
+                android:hyphenationFrequency="none"
+                android:maxLines="1"
+                android:ellipsize="none" />
 
         </LinearLayout>
 

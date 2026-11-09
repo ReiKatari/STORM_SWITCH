@@ -26,6 +26,9 @@ object DirectoryInitialization {
     @Volatile
     var areDirectoriesReady: Boolean = false
 
+    @Volatile
+    private var sharedStorageInitialized = false
+
     val rawUserPath: String?
         get() = userPath
 
@@ -90,6 +93,9 @@ object DirectoryInitialization {
     fun initializeSharedStorage() {
         try {
             val rootExternal = File(Environment.getExternalStorageDirectory(), "STORM SWITCH")
+            if (sharedStorageInitialized && areDirectoriesReady && rootExternal.exists() && userPath == rootExternal.canonicalPath) {
+                return
+            }
             if (rootExternal.exists() || rootExternal.mkdirs()) {
                 val subdirs = arrayOf(
                     "config",
@@ -145,6 +151,7 @@ object DirectoryInitialization {
 
                 NativeLibrary.reloadProfiles()
                 LosslessScalingHelper.invalidateCache()
+                sharedStorageInitialized = true
             }
         } catch (e: Throwable) {
             android.util.Log.e("STORM_SWITCH", "Failed to initializeSharedStorage: ${e.message}")

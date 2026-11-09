@@ -59,6 +59,32 @@ object StormHardwareCalibrator {
         val cpuCores: Int
     )
 
+
+
+    data class AutoOptPreviewData(
+
+        val resolution: String,
+
+        val scaling: String,
+
+        val gpuAccuracy: String,
+
+        val astc: String,
+
+        val cpuBackend: String,
+
+        val cpuAccuracy: String,
+
+        val dram: String,
+
+        val asyncShaders: String,
+
+        val reactiveFlushing: String,
+
+        val thermals: String
+
+    )
+
     @Volatile
     private var cachedRawGpuModel: String? = null
 
@@ -813,4 +839,228 @@ object StormHardwareCalibrator {
         BooleanSetting.VULKAN_PIPELINE_CACHE.setBoolean(true)
         BooleanSetting.VRAM_GARBAGE_COLLECTION.setBoolean(profile.totalRamGb < 6.5)
     }
+
+
+    fun getPresetPreview(preset: StormPreset, profile: DeviceHardwareProfile, context: Context): AutoOptPreviewData {
+
+        val isRussian = runCatching { context.resources.configuration.locales[0].language.startsWith("ru") }.getOrDefault(true)
+
+
+
+        return when (preset) {
+
+            StormPreset.FAST -> {
+
+                val resStr = if (profile.isAdreno830) "1.0X (720p / 1080p)" else if (profile.tier >= HardwareTier.MIDRANGE && !profile.isAdreno6xx && profile.totalRamGb >= 6.0) "0.75X (540p / 810p)" else "0.5X (360p / 540p)"
+
+                val vsyncStr = if (profile.isAdreno && profile.tier >= HardwareTier.FLAGSHIP) "Mailbox" else "FIFO"
+
+                val astcStr = if (profile.isAdreno6xx || profile.totalRamGb < 6.5) {
+
+                    if (isRussian) "GPU • BC3 сжатие" else "GPU • BC3 Compression"
+
+                } else {
+
+                    if (isRussian) "GPU (аппаратное)" else "GPU (Hardware)"
+
+                }
+
+                AutoOptPreviewData(
+
+                    resolution = resStr,
+
+                    scaling = "AMD FSR (80%) • " + (if (isRussian) "Без AA" else "No AA"),
+
+                    gpuAccuracy = (if (isRussian) "Нормальная • " else "Normal • ") + vsyncStr,
+
+                    astc = astcStr,
+
+                    cpuBackend = "NCE (" + (if (isRussian) "нативное" else "native") + ")",
+
+                    cpuAccuracy = if (isRussian) "Автоматическая" else "Auto",
+
+                    dram = if (isRussian) "4 ГБ (Стандарт)" else "4 GB (Standard)",
+
+                    asyncShaders = if (isRussian) "Включены (без фризов)" else "Enabled (Smooth)",
+
+                    reactiveFlushing = if (isRussian) "Отключена (макс. FPS)" else "Disabled (Max FPS)",
+
+                    thermals = if (isRussian) "Стандартный режим" else "Standard Mode"
+
+                )
+
+            }
+
+            StormPreset.NORMAL -> {
+
+                val resStr = if (profile.totalRamGb < 5.0) "0.5X (360p / 540p)" else if (profile.isDimensity9400 || profile.isDimensity9300Or9200 || profile.isAdreno6xx || (profile.tier <= HardwareTier.MIDRANGE)) "0.75X (540p / 810p)" else "1.0X (720p / 1080p)"
+
+                val vsyncStr = if (profile.isAdreno && profile.tier >= HardwareTier.FLAGSHIP) "Mailbox" else "FIFO"
+
+                val astcStr = if (profile.totalRamGb < 5.5) {
+
+                    if (isRussian) "GPU • BC3 сжатие" else "GPU • BC3 Compression"
+
+                } else {
+
+                    if (isRussian) "GPU (аппаратное)" else "GPU (Hardware)"
+
+                }
+
+                AutoOptPreviewData(
+
+                    resolution = resStr,
+
+                    scaling = "AMD FSR (80%) • " + (if (isRussian) "Без AA" else "No AA"),
+
+                    gpuAccuracy = (if (isRussian) "Нормальная • " else "Normal • ") + vsyncStr,
+
+                    astc = astcStr,
+
+                    cpuBackend = "NCE (" + (if (isRussian) "нативное" else "native") + ")",
+
+                    cpuAccuracy = if (isRussian) "Автоматическая" else "Auto",
+
+                    dram = if (isRussian) "4 ГБ (Стандарт)" else "4 GB (Standard)",
+
+                    asyncShaders = if (isRussian) "Включены (без фризов)" else "Enabled (Smooth)",
+
+                    reactiveFlushing = if (isRussian) "Отключена (баланс)" else "Disabled (Balanced)",
+
+                    thermals = if (isRussian) "Сбалансированный" else "Balanced"
+
+                )
+
+            }
+
+            StormPreset.ACCURATE -> {
+
+                val resStr = if (profile.isAdreno6xx || profile.totalRamGb < 6.5) "0.75X (540p / 810p)" else if (profile.tier >= HardwareTier.FLAGSHIP && profile.isAdreno && profile.totalRamGb >= 11.0) "1.5X (1080p / 1620p)" else "1.0X (720p / 1080p)"
+
+                val aaStr = if (profile.isAdreno6xx || profile.totalRamGb < 7.0) (if (isRussian) "Без AA" else "No AA") else if (profile.tier >= HardwareTier.FLAGSHIP) "SMAA" else "FXAA"
+
+                val dramStr = if (profile.isAdreno6xx || profile.totalRamGb < 5.5) {
+
+                    if (isRussian) "4 ГБ (Стандарт)" else "4 GB (Standard)"
+
+                } else if (profile.tier >= HardwareTier.FLAGSHIP && profile.totalRamGb >= 11.0) {
+
+                    if (isRussian) "8 ГБ (Расширенная)" else "8 GB (Extended)"
+
+                } else {
+
+                    if (isRussian) "6 ГБ (Расширенная)" else "6 GB (Extended)"
+
+                }
+
+                val astcStr = if (profile.totalRamGb < 5.5) {
+
+                    if (isRussian) "GPU • BC3 сжатие" else "GPU • BC3 Compression"
+
+                } else {
+
+                    if (isRussian) "GPU (аппаратное)" else "GPU (Hardware)"
+
+                }
+
+                AutoOptPreviewData(
+
+                    resolution = resStr,
+
+                    scaling = "AMD FSR (90%) • $aaStr",
+
+                    gpuAccuracy = (if (profile.isDimensity9400) (if (isRussian) "Нормальная" else "Normal") else (if (isRussian) "Высокая" else "High")) + " • Safe DMA",
+
+                    astc = astcStr,
+
+                    cpuBackend = "NCE (" + (if (isRussian) "нативное" else "native") + ")",
+
+                    cpuAccuracy = if (profile.isDimensity9400) (if (isRussian) "Автоматическая" else "Auto") else (if (isRussian) "Высокая точность" else "Accurate"),
+
+                    dram = dramStr,
+
+                    asyncShaders = if (isRussian) "Включены (без фризов)" else "Enabled (Smooth)",
+
+                    reactiveFlushing = if (isRussian) "Включена (точность)" else "Enabled (Accurate)",
+
+                    thermals = if (isRussian) "Полный термопакет" else "Full Thermal Budget"
+
+                )
+
+            }
+
+            StormPreset.BATTERY -> {
+
+                val resStr = if (profile.totalRamGb < 6.5) "0.75X (540p / 810p)" else "1.0X (720p / 1080p)"
+
+                val astcStr = if (profile.totalRamGb < 5.5) {
+
+                    if (isRussian) "GPU • BC3 сжатие" else "GPU • BC3 Compression"
+
+                } else {
+
+                    if (isRussian) "GPU (аппаратное)" else "GPU (Hardware)"
+
+                }
+
+                AutoOptPreviewData(
+
+                    resolution = resStr,
+
+                    scaling = "AMD FSR (80%) • " + (if (isRussian) "Без AA" else "No AA"),
+
+                    gpuAccuracy = (if (isRussian) "Нормальная" else "Normal") + " • " + (if (isRussian) "Эко VRAM" else "Eco VRAM"),
+
+                    astc = astcStr,
+
+                    cpuBackend = "NCE (" + (if (isRussian) "нативное" else "native") + ")",
+
+                    cpuAccuracy = if (isRussian) "Энергосбережение" else "Power Saver",
+
+                    dram = if (isRussian) "4 ГБ (Стандарт)" else "4 GB (Standard)",
+
+                    asyncShaders = if (isRussian) "Включены (без фризов)" else "Enabled (Smooth)",
+
+                    reactiveFlushing = if (isRussian) "Отключена (холод)" else "Disabled (Cool)",
+
+                    thermals = if (isRussian) "Эко-термопакет (холод)" else "Eco Thermals (Cool)"
+
+                )
+
+            }
+
+            StormPreset.DEFAULT -> {
+
+                AutoOptPreviewData(
+
+                    resolution = "1.0X (720p / 1080p)",
+
+                    scaling = "AMD FSR (80%)",
+
+                    gpuAccuracy = if (isRussian) "Нормальная" else "Normal",
+
+                    astc = if (isRussian) "GPU (аппаратное)" else "GPU (Hardware)",
+
+                    cpuBackend = "NCE",
+
+                    cpuAccuracy = if (isRussian) "Автоматическая" else "Auto",
+
+                    dram = if (isRussian) "4 ГБ (Стандарт)" else "4 GB (Standard)",
+
+                    asyncShaders = if (isRussian) "Включены" else "Enabled",
+
+                    reactiveFlushing = if (isRussian) "Отключена" else "Disabled",
+
+                    thermals = if (isRussian) "По умолчанию" else "Default"
+
+                )
+
+            }
+
+        }
+
+    }
+
+
+
 }

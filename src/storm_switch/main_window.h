@@ -294,6 +294,7 @@ private:
     };
     GameFixDialogResult ShowGameFixDialog(u64 title_id, const QString& game_path, bool force_show = false);
     void OnResetGameFixSuppression();
+    void OnOpenSettingsProfiles();
     void OnOpenStormGamesWorld();
     void OnOpenStormSaveSync(u64 target_program_id = 0);
     void OnOpenLogViewer();
@@ -777,6 +778,7 @@ private:
     QAction* log_viewer_action{nullptr};
     QAction* reset_gamefix_action{nullptr};
     QAction* user_profiles_action{nullptr};
+    QAction* settings_profiles_action{nullptr};
     QAction* auto_opt_action{nullptr};
     QAction* clear_shader_cache_action{nullptr};
     QAction* quick_save_action{nullptr};

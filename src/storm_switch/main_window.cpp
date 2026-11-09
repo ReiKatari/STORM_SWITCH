@@ -122,6 +122,7 @@
 #include "nand_manager_dialog.h"
 #include "first_run_wizard.h"
 #include "game_fix_dialog.h"
+#include "storm_switch/settings_profiles_dialog.h"
 
 #include "data_dialog.h"
 
@@ -4972,11 +4973,11 @@ void MainWindow::InitializeWidgets() {
 
         const QString header_text = profile != nullptr
 
-            ? StormLang(QStringLiteral("🛡️ Профиль: %1"), QStringLiteral("🛡️ Profile: %1"),
+            ? StormLang(QStringLiteral("Профиль: %1"), QStringLiteral("Profile: %1"),
 
-                        QStringLiteral("🛡️ Profil: %1"), QStringLiteral("🛡️ Profil : %1"),
+                        QStringLiteral("Profil: %1"), QStringLiteral("Profil : %1"),
 
-                        QStringLiteral("🛡️ 配置文件: %1"), QStringLiteral("🛡️ プロファイル: %1"))
+                        QStringLiteral("配置文件: %1"), QStringLiteral("プロファイル: %1"))
 
                   .arg(QString::fromStdString(profile->game_name))
 
@@ -5004,17 +5005,17 @@ void MainWindow::InitializeWidgets() {
 
             context_menu.addAction(StormLang(
 
-                QStringLiteral("🛡️ Открыть диалог авто-исправления игры..."),
+                QStringLiteral("Открыть диалог авто-исправления игры..."),
 
-                QStringLiteral("🛡️ Open Game Auto-Fix Dialog..."),
+                QStringLiteral("Open Game Auto-Fix Dialog..."),
 
-                QStringLiteral("🛡️ Spiel-Auto-Fix-Dialog öffnen..."),
+                QStringLiteral("Spiel-Auto-Fix-Dialog öffnen..."),
 
-                QStringLiteral("🛡️ Ouvrir le dialogue d'auto-correction..."),
+                QStringLiteral("Ouvrir le dialogue d'auto-correction..."),
 
-                QStringLiteral("🛡️ 打开游戏自动修复对话框..."),
+                QStringLiteral("打开游戏自动修复对话框..."),
 
-                QStringLiteral("🛡️ ゲーム自動修正ダイアログを開く...")
+                QStringLiteral("ゲーム自動修正ダイアログを開く...")
 
             ), [this] {
 
@@ -7443,6 +7444,19 @@ void MainWindow::SetupMenuIcons() {
         });
     }
 
+        if (!settings_profiles_action) {
+        settings_profiles_action = new QAction(StormLang(
+            QStringLiteral("Профили настроек..."),
+            QStringLiteral("Settings Profiles..."),
+            QStringLiteral("Einstellungen-Profile..."),
+            QStringLiteral("Profils des paramètres..."),
+            QStringLiteral("设置配置文件..."),
+            QStringLiteral("設定プロファイル...")
+        ), this);
+        settings_profiles_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+P")));
+        connect(settings_profiles_action, &QAction::triggered, this, &MainWindow::OnOpenSettingsProfiles);
+    }
+
     if (!auto_opt_action) {
         auto_opt_action = new QAction(StormLang(
             QStringLiteral("Авто-настройка и оптимизация (STORM GameFix)..."),
@@ -7507,6 +7521,7 @@ void MainWindow::SetupMenuIcons() {
     apply_action(storm_games_world_action, QStringLiteral("download"), col_green);
     apply_action(ui->action_Install_File_NAND, QStringLiteral("nand"), col_blue);
     apply_action(user_profiles_action, QStringLiteral("users"), col_amber);
+    apply_action(settings_profiles_action, QStringLiteral("sliders"), col_cyan);
     apply_action(auto_opt_action, QStringLiteral("shield"), col_cyan);
     apply_action(clear_shader_cache_action, QStringLiteral("trash"), col_red);
     apply_action(ui->action_Configure, QStringLiteral("config"), col_yellow);
@@ -7520,6 +7535,7 @@ void MainWindow::SetupMenuIcons() {
 
     // Group 2: User Profiles & Optimization
     ui->menu_Tools->addAction(user_profiles_action);
+    ui->menu_Tools->addAction(settings_profiles_action);
     ui->menu_Tools->addAction(auto_opt_action);
     ui->menu_Tools->addAction(clear_shader_cache_action);
     if (!storm_save_sync_action) {
@@ -7572,6 +7588,11 @@ void MainWindow::SetupMenuIcons() {
 
     // Group 5: Emulator Parameters
     ui->menu_Tools->addAction(ui->action_Configure);
+
+    if (ui->menu_Emulation) {
+        ui->menu_Emulation->addAction(settings_profiles_action);
+        ui->menu_Emulation->addAction(auto_opt_action);
+    }
 
     // Multiplayer Menu
 
@@ -9637,33 +9658,38 @@ void MainWindow::CheckFirstRunWizard() {
 
 
 
+void MainWindow::OnOpenSettingsProfiles() {
+    SettingsProfilesDialog dialog(this, QtCommon::system.get());
+    dialog.exec();
+}
+
 void MainWindow::OnResetGameFixSuppression() {
 
     const int count = Core::GameFixDatabase::ResetAllDontAskAgain();
 
     const QString rst_title = StormLang11(
 
-        QStringLiteral("🛡️ АВТО-ИСПРАВЛЕНИЯ STORM SWITCH"),
+        QStringLiteral("АВТО-ИСПРАВЛЕНИЯ STORM SWITCH"),
 
-        QStringLiteral("🛡️ STORM SWITCH AUTO-FIXES"),
+        QStringLiteral("STORM SWITCH AUTO-FIXES"),
 
-        QStringLiteral("🛡️ STORM SWITCH AUTO-FIXES"),
+        QStringLiteral("STORM SWITCH AUTO-FIXES"),
 
-        QStringLiteral("🛡️ AUTO-CORRECTIONS STORM SWITCH"),
+        QStringLiteral("AUTO-CORRECTIONS STORM SWITCH"),
 
-        QStringLiteral("🛡️ AUTOCORRECCIONES STORM SWITCH"),
+        QStringLiteral("AUTOCORRECCIONES STORM SWITCH"),
 
-        QStringLiteral("🛡️ AUTO-CORREZIONI STORM SWITCH"),
+        QStringLiteral("AUTO-CORREZIONI STORM SWITCH"),
 
-        QStringLiteral("🛡️ CORREÇÕES AUTOMÁTICAS STORM SWITCH"),
+        QStringLiteral("CORREÇÕES AUTOMÁTICAS STORM SWITCH"),
 
-        QStringLiteral("🛡️ STORM SWITCH 自动修复"),
+        QStringLiteral("STORM SWITCH 自动修复"),
 
-        QStringLiteral("🛡️ STORM SWITCH 自動修復"),
+        QStringLiteral("STORM SWITCH 自動修復"),
 
-        QStringLiteral("🛡️ STORM SWITCH 자동 수정"),
+        QStringLiteral("STORM SWITCH 자동 수정"),
 
-        QStringLiteral("🛡️ الإصلاحات التلقائية لـ STORM SWITCH"));
+        QStringLiteral("الإصلاحات التلقائية لـ STORM SWITCH"));
 
     const QString rst_msg = (count > 0)
 
@@ -9719,7 +9745,7 @@ void MainWindow::OnResetGameFixSuppression() {
 
     if (in_game_notification) {
 
-        in_game_notification->ShowNotification(rst_title, rst_msg, QColor(0, 229, 255), QStringLiteral("🛡️"), 3200);
+        in_game_notification->ShowNotification(rst_title, rst_msg, QColor(0, 229, 255), QStringLiteral(""), 3200);
 
     }
 
@@ -10068,27 +10094,27 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
 
             const QString boot_af_title = StormLang11(
 
-                QStringLiteral("🛡️ АВТО-ИСПРАВЛЕНИЕ АКТИВНО"),
+                QStringLiteral("АВТО-ИСПРАВЛЕНИЕ АКТИВНО"),
 
-                QStringLiteral("🛡️ AUTO-FIX PROFILE ACTIVE"),
+                QStringLiteral("AUTO-FIX PROFILE ACTIVE"),
 
-                QStringLiteral("🛡️ AUTO-FIX-PROFIL AKTIV"),
+                QStringLiteral("AUTO-FIX-PROFIL AKTIV"),
 
-                QStringLiteral("🛡️ PROFIL D'AUTO-CORRECTION ACTIF"),
+                QStringLiteral("PROFIL D'AUTO-CORRECTION ACTIF"),
 
-                QStringLiteral("🛡️ PERFIL DE AUTOCORRECCIÓN ACTIVO"),
+                QStringLiteral("PERFIL DE AUTOCORRECCIÓN ACTIVO"),
 
-                QStringLiteral("🛡️ PROFILO AUTO-CORREZIONE ATTIVO"),
+                QStringLiteral("PROFILO AUTO-CORREZIONE ATTIVO"),
 
-                QStringLiteral("🛡️ PERFIL DE CORREÇÃO AUTOMÁTICA ATIVO"),
+                QStringLiteral("PERFIL DE CORREÇÃO AUTOMÁTICA ATIVO"),
 
-                QStringLiteral("🛡️ 自动修复配置已启用"),
+                QStringLiteral("自动修复配置已启用"),
 
-                QStringLiteral("🛡️ 自動修復プロファイル有効"),
+                QStringLiteral("自動修復プロファイル有効"),
 
-                QStringLiteral("🛡️ 자동 수정 프로필 활성"),
+                QStringLiteral("자동 수정 프로필 활성"),
 
-                QStringLiteral("🛡️ ملف الإصلاح التلقائي نشط"));
+                QStringLiteral("ملف الإصلاح التلقائي نشط"));
 
             const QString boot_af_sub = StormLang11(
 
@@ -10118,7 +10144,7 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
 
             if (in_game_notification) {
 
-                in_game_notification->ShowNotification(boot_af_title, boot_af_sub, QColor(16, 185, 129), QStringLiteral("🛡️"), 3000);
+                in_game_notification->ShowNotification(boot_af_title, boot_af_sub, QColor(16, 185, 129), QStringLiteral(""), 3000);
 
             }
 
@@ -22980,9 +23006,9 @@ void MainWindow::UpdateGameFixStatusButton() {
 
         gamefix_status_button->setToolTip(StormLang(
 
-            QStringLiteral("🛡️ Доступен профиль авто-исправления: %1\nНажмите для применения или вызова быстрых настроек"),
+            QStringLiteral("Доступен профиль авто-исправления: %1\nНажмите для применения или вызова быстрых настроек"),
 
-            QStringLiteral("🛡️ Auto-Fix profile available: %1\nClick to apply or open Quick Settings"),
+            QStringLiteral("Auto-Fix profile available: %1\nClick to apply or open Quick Settings"),
 
             QStringLiteral("[!] Auto-Fix-Profil verfügbar: %1\nKlicken zum Anwenden oder für Schnelleinstellungen"),
 
@@ -24340,17 +24366,17 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         auto* fence_menu = context_menu.addMenu(StormLang(
 
-            QStringLiteral("🛡️ Поведение барьеров ГПУ"),
+            QStringLiteral("Поведение барьеров ГПУ"),
 
-            QStringLiteral("🛡️ GPU Fence Behavior"),
+            QStringLiteral("GPU Fence Behavior"),
 
-            QStringLiteral("🛡️ GPU-Fence-Verhalten"),
+            QStringLiteral("GPU-Fence-Verhalten"),
 
-            QStringLiteral("🛡️ Comportement des barrières GPU"),
+            QStringLiteral("Comportement des barrières GPU"),
 
-            QStringLiteral("🛡️ GPU 栅栏行为"),
+            QStringLiteral("GPU 栅栏行为"),
 
-            QStringLiteral("🛡️ GPU フェンス動作")
+            QStringLiteral("GPU フェンス動作")
 
         ));
 

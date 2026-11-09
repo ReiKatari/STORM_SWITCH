@@ -49,6 +49,8 @@ add_executable(yuzu
     first_run_wizard.h
     game_fix_dialog.cpp
     game_fix_dialog.h
+    settings_profiles_dialog.cpp
+    settings_profiles_dialog.h
     nand_manager_dialog.cpp
     nand_manager_dialog.h
     configuration/configuration_shared.cpp

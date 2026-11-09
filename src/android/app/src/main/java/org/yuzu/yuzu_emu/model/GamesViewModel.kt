@@ -42,6 +42,7 @@ class GamesViewModel : ViewModel() {
     val refreshFinished: SharedFlow<Unit> get() = _refreshFinished.asSharedFlow()
     private val _refreshFinished = MutableSharedFlow<Unit>(extraBufferCapacity = 4)
 
+    private val pendingReload = AtomicBoolean(false)
     private val reloading = AtomicBoolean(false)
 
     val shouldSwapData: StateFlow<Boolean> get() = _shouldSwapData
@@ -87,8 +88,13 @@ class GamesViewModel : ViewModel() {
         }
 
         viewModelScope.launch(Dispatchers.IO) {
-            while (!DirectoryInitialization.areDirectoriesReady) {
+            if (!DirectoryInitialization.areDirectoriesReady) {
+                runCatching { DirectoryInitialization.start() }
+            }
+            var waitCount = 0
+            while (!DirectoryInitialization.areDirectoriesReady && waitCount < 100) {
                 delay(50)
+                waitCount++
             }
             NativeLibrary.reloadKeys()
             getGameDirsAndExternalContent()
@@ -133,10 +139,8 @@ class GamesViewModel : ViewModel() {
     }
 
     fun reloadGames(directoriesChanged: Boolean, firstStartup: Boolean = false) {
+        pendingReload.set(true)
         if (!reloading.compareAndSet(false, true)) {
-            if (!firstStartup) {
-                _isReloading.value = true
-            }
             return
         }
         if (!firstStartup || _games.value.isEmpty()) {
@@ -145,30 +149,36 @@ class GamesViewModel : ViewModel() {
 
         viewModelScope.launch {
             try {
-                withContext(Dispatchers.IO) {
-                    while (!DirectoryInitialization.areDirectoriesReady) {
-                        delay(50)
-                    }
-                    NativeLibrary.reloadKeys()
-                    getGameDirsAndExternalContent()
-                    val newGames = GameHelper.getGames()
-                    val hasExistingGames = _games.value.isNotEmpty()
-                    val changed = if (newGames.isNotEmpty() || !hasExistingGames) {
-                        setGames(newGames)
-                    } else {
-                        false
-                    }
-                    if (changed) {
-                        _shouldScrollAfterReload.value = true
-                        setShouldSwapData(true)
+                while (pendingReload.getAndSet(false)) {
+                    withContext(Dispatchers.IO) {
+                        if (!DirectoryInitialization.areDirectoriesReady) {
+                            runCatching { DirectoryInitialization.start() }
+                        }
+                        var waitCount = 0
+                        while (!DirectoryInitialization.areDirectoriesReady && waitCount < 100) {
+                            delay(50)
+                            waitCount++
+                        }
+                        NativeLibrary.reloadKeys()
+                        getGameDirsAndExternalContent()
+                        val newGames = GameHelper.getGames()
+                        val changed = setGames(newGames)
+                        if (changed) {
+                            _shouldScrollAfterReload.value = true
+                            setShouldSwapData(true)
+                        }
                     }
                 }
             } catch (e: Throwable) {
                 org.yuzu.yuzu_emu.utils.Log.error("[GamesViewModel] Error reloading games: ${e.message}")
             } finally {
                 reloading.set(false)
-                _isReloading.value = false
-                _refreshFinished.tryEmit(Unit)
+                if (pendingReload.get()) {
+                    reloadGames(true, false)
+                } else {
+                    _isReloading.value = false
+                    _refreshFinished.tryEmit(Unit)
+                }
             }
         }
     }

@@ -7,20 +7,19 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="2dp"
-    android:layout_marginVertical="5dp"
-    app:cardCornerRadius="14dp"
+    android:layout_marginVertical="6dp"
+    app:cardCornerRadius="16dp"
     app:cardElevation="2dp"
     app:strokeWidth="0dp"
-    app:strokeColor="?attr/colorOutline"
     app:cardBackgroundColor="?attr/colorSurfaceVariant">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="12dp">
+        android:padding="14dp">
 
-        <!-- Top Row: Icon + Name & Desc + Active Badge -->
+        <!-- Top Row: Icon Tile + Title/Desc Column + Badge -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -28,10 +27,11 @@
             android:orientation="horizontal">
 
             <FrameLayout
-                android:layout_width="38dp"
-                android:layout_height="38dp"
+                android:id="@+id/frame_profile_icon"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:background="@drawable/storm_tile_3d_recessed"
-                android:layout_marginEnd="10dp">
+                android:layout_marginEnd="12dp">
 
                 <ImageView
                     android:id="@+id/image_profile_icon"
@@ -39,7 +39,8 @@
                     android:layout_height="22dp"
                     android:layout_gravity="center"
                     android:src="@drawable/ic_settings"
-                    app:tint="?attr/colorPrimary" />
+                    app:tint="?attr/colorPrimary"
+                    tools:ignore="ContentDescription" />
             </FrameLayout>
 
             <LinearLayout
@@ -61,11 +62,27 @@
                         android:layout_weight="1"
                         android:text="Profile Name"
                         android:textColor="?attr/colorOnSurface"
-                        android:textSize="14sp"
+                        android:textSize="15sp"
                         android:textStyle="bold"
+                        android:breakStrategy="simple"
+                        android:hyphenationFrequency="none"
+                        android:maxLines="1"
+                        android:ellipsize="end" />
 
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                    <TextView
+                        android:id="@+id/text_profile_badge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/bg_storm_badge_capsule"
+                        android:paddingHorizontal="8dp"
+                        android:paddingVertical="3dp"
+                        android:text="@string/storm_prof_badge_preset"
+                        android:textColor="?attr/colorPrimary"
+                        android:textSize="10.5sp"
+                        android:textStyle="bold"
+                        android:breakStrategy="simple"
+                        android:hyphenationFrequency="none" />
 
                     <TextView
                         android:id="@+id/text_profile_active_badge"
@@ -74,14 +91,14 @@
                         android:layout_marginStart="6dp"
                         android:background="@drawable/bg_storm_badge_capsule"
                         android:paddingHorizontal="7dp"
-                        android:paddingVertical="2dp"
+                        android:paddingVertical="3dp"
                         android:text="@string/profile_active_badge"
                         android:textColor="?attr/colorPrimary"
-                        android:textSize="10sp"
+                        android:textSize="10.5sp"
                         android:textStyle="bold"
                         android:visibility="gone"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                        android:breakStrategy="simple"
+                        android:hyphenationFrequency="none" />
 
                 </LinearLayout>
 
@@ -89,118 +106,229 @@
                     android:id="@+id/text_profile_desc"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
+                    android:layout_marginTop="3dp"
                     android:text="Profile Description"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="11sp"
-
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                    android:textSize="12sp"
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none" />
 
             </LinearLayout>
 
         </LinearLayout>
 
-        <!-- Profile Actions: Row 1 [Применить] + [Поделиться] -->
+        <!-- Grouped Parameter Tags Row (Summary Pills) -->
         <LinearLayout
+            android:id="@+id/layout_profile_tags"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:orientation="horizontal">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_profile_apply"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="0dp"
-                android:layout_height="36dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="4dp"
-                android:paddingHorizontal="6dp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                app:strokeWidth="0dp"
-                app:strokeColor="?attr/colorPrimary"
-                android:text="@string/profile_btn_apply"
-                android:textColor="?attr/colorPrimary"
-                android:textSize="11.5sp"
-                app:cornerRadius="8dp"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"
-    android:maxLines="1"
-    android:ellipsize="none"/>
+            <TextView
+                android:id="@+id/tag_profile_1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:background="@drawable/bg_storm_badge_capsule"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
+                android:text="1.0X"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="10.5sp"
+                android:textStyle="bold"
+                android:breakStrategy="simple"
+                android:hyphenationFrequency="none" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_profile_share"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="0dp"
-                android:layout_height="36dp"
-                android:layout_weight="1"
-                android:layout_marginStart="4dp"
-                android:paddingHorizontal="6dp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                app:strokeWidth="0dp"
-                app:strokeColor="?attr/colorOutline"
-                android:text="@string/profile_btn_share"
-                android:textColor="?attr/colorOnSurface"
-                android:textSize="11.5sp"
-                app:cornerRadius="8dp"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"
-    android:maxLines="1"
-    android:ellipsize="none"/>
+            <TextView
+                android:id="@+id/tag_profile_2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:background="@drawable/bg_storm_badge_capsule"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
+                android:text="Асинхр. шейдеры"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="10.5sp"
+                android:textStyle="bold"
+                android:breakStrategy="simple"
+                android:hyphenationFrequency="none" />
+
+            <TextView
+                android:id="@+id/tag_profile_3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:background="@drawable/bg_storm_badge_capsule"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
+                android:text="GPU: Нормально"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="10.5sp"
+                android:textStyle="bold"
+                android:breakStrategy="simple"
+                android:hyphenationFrequency="none" />
+
+            <TextView
+                android:id="@+id/tag_profile_4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_storm_badge_capsule"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
+                android:text="ОЗУ: 4 ГБ"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="10.5sp"
+                android:textStyle="bold"
+                android:breakStrategy="simple"
+                android:hyphenationFrequency="none" />
 
         </LinearLayout>
 
-        <!-- Profile Actions: Row 2 [Переименовать] + [Удалить] -->
+        <!-- Profile Actions Row -->
         <LinearLayout
-            android:id="@+id/layout_custom_actions"
+            android:id="@+id/layout_profile_actions"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:orientation="horizontal">
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
+            <!-- Primary 3D Apply Button -->
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_profile_rename"
-                style="@style/Widget.Material3.Button.TonalButton"
+                android:id="@+id/btn_profile_apply"
+                style="@style/Widget.Material3.Button"
                 android:layout_width="0dp"
-                android:layout_height="36dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="4dp"
-                android:paddingHorizontal="6dp"
+                android:layout_height="40dp"
+                android:layout_weight="1.2"
+                android:layout_marginEnd="8dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
+                android:background="@drawable/storm_btn_3d_primary"
+                app:backgroundTint="@null"
                 app:strokeWidth="0dp"
-                app:strokeColor="?attr/colorOutline"
-                android:text="@string/profile_btn_rename"
-                android:textColor="?attr/colorOnSurface"
-                android:textSize="11.5sp"
-                app:cornerRadius="8dp"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"
-    android:maxLines="1"
-    android:ellipsize="none"/>
+                android:text="@string/storm_prof_btn_apply"
+                android:textColor="#FFFFFF"
+                android:textSize="12.5sp"
+                android:textStyle="bold"
+                app:icon="@drawable/ic_check"
+                app:iconSize="16dp"
+                app:iconTint="#FFFFFF"
+                android:breakStrategy="simple"
+                android:hyphenationFrequency="none"
+                android:maxLines="1"
+                android:ellipsize="none" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_profile_delete"
-                style="@style/Widget.Material3.Button.TonalButton"
+            <!-- Preset Action: Duplicate Button -->
+            <LinearLayout
+                android:id="@+id/layout_preset_actions"
                 android:layout_width="0dp"
-                android:layout_height="36dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginStart="4dp"
-                android:paddingHorizontal="6dp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                app:strokeWidth="0dp"
-                app:strokeColor="#EF4444"
-                android:text="@string/profile_btn_delete"
-                android:textColor="#EF4444"
-                android:textSize="11.5sp"
-                app:cornerRadius="8dp"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"
-    android:maxLines="1"
-    android:ellipsize="none"/>
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_profile_duplicate"
+                    style="@style/Widget.Material3.Button"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:background="@drawable/storm_btn_3d_secondary"
+                    app:backgroundTint="@null"
+                    app:strokeWidth="0dp"
+                    android:text="@string/storm_prof_btn_duplicate"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="12sp"
+                    app:icon="@drawable/ic_copy"
+                    app:iconSize="16dp"
+                    app:iconTint="?attr/colorPrimary"
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none"
+                    android:maxLines="1"
+                    android:ellipsize="none" />
+
+            </LinearLayout>
+
+            <!-- Custom Actions: Share, Rename, Delete Buttons -->
+            <LinearLayout
+                android:id="@+id/layout_custom_actions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:visibility="visible">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_profile_share"
+                    style="@style/Widget.Material3.Button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:layout_marginEnd="6dp"
+                    android:paddingHorizontal="10dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:background="@drawable/storm_btn_3d_secondary"
+                    app:backgroundTint="@null"
+                    app:strokeWidth="0dp"
+                    android:text="@string/storm_prof_btn_share"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="11.5sp"
+                    app:icon="@drawable/ic_share"
+                    app:iconSize="15dp"
+                    app:iconTint="?attr/colorPrimary"
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none"
+                    android:maxLines="1"
+                    android:ellipsize="none" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_profile_rename"
+                    style="@style/Widget.Material3.Button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:layout_marginEnd="6dp"
+                    android:paddingHorizontal="10dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:background="@drawable/storm_btn_3d_secondary"
+                    app:backgroundTint="@null"
+                    app:strokeWidth="0dp"
+                    android:text="@string/storm_prof_btn_rename"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="11.5sp"
+                    app:icon="@drawable/ic_edit"
+                    app:iconSize="15dp"
+                    app:iconTint="?attr/colorPrimary"
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none"
+                    android:maxLines="1"
+                    android:ellipsize="none" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_profile_delete"
+                    style="@style/Widget.Material3.Button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:paddingHorizontal="10dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:background="@drawable/storm_btn_3d_secondary"
+                    app:backgroundTint="@null"
+                    app:strokeWidth="0dp"
+                    android:text="@string/storm_prof_btn_delete"
+                    android:textColor="#EF4444"
+                    android:textSize="11.5sp"
+                    app:icon="@drawable/ic_delete"
+                    app:iconSize="15dp"
+                    app:iconTint="#EF4444"
+                    android:breakStrategy="simple"
+                    android:hyphenationFrequency="none"
+                    android:maxLines="1"
+                    android:ellipsize="none" />
+
+            </LinearLayout>
 
         </LinearLayout>
 

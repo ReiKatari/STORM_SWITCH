@@ -36,12 +36,29 @@ object GameHelper {
 
     private val ignoredDirectoryNames: Set<String> = setOf(
         "work", "romfs", "exefs", "cheats", "mods", "load", "atmosphere",
-        ".git", "cache", "shaders", "screenshots", "backup", "textures"
+        ".git", "cache", "shaders", "screenshots", "backup", "textures",
+        "android", "dcim", "pictures", "movies", "music", "podcasts",
+        "ringtones", "alarms", "notifications", "whatsapp", "telegram",
+        ".thumbnails", ".trash", "\$recycle.bin", "system volume information",
+        "lost.dir"
     )
 
     fun isIgnoredDirectory(name: String): Boolean {
         val clean = name.trim().lowercase(Locale.ROOT)
         return ignoredDirectoryNames.contains(clean) || clean.startsWith(".")
+    }
+
+    private fun getDirectoryKey(uri: Uri): String {
+        return try {
+            if (uri.scheme == "file" || !uri.toString().startsWith("content://")) {
+                val path = if (uri.scheme == "file") uri.path ?: "" else uri.toString()
+                File(path).canonicalPath
+            } else {
+                uri.toString()
+            }
+        } catch (_: Exception) {
+            uri.toString()
+        }
     }
 
     var cachedGameList = mutableListOf<Game>()
@@ -169,13 +186,15 @@ object GameHelper {
         // Pass 1: Mount all external content containers (.nsp, .nsz, .xci, .xcz) across all gameDirs FIRST
         // so ContentProvider knows about 100% of Updates and DLCs before Pass 2 queries GameMetadata!
         val dirFilesCache = mutableListOf<Pair<Array<MinimalDocumentFile>, Int>>()
+        val visitedDirsPass1 = mutableSetOf<String>()
         gameDirs.forEach { gameDir ->
             val gameDirUri = gameDir.uriString.toUri()
             if (FileUtil.isTreeUriValid(gameDirUri)) {
                 val scanDepth = if (gameDir.deepScan) 7 else 5
                 val topFiles = FileUtil.listFiles(gameDirUri)
                 dirFilesCache.add(Pair(topFiles, scanDepth))
-                scanContentContainersRecursive(topFiles, scanDepth) { containerFile ->
+                visitedDirsPass1.add(getDirectoryKey(gameDirUri))
+                scanContentContainersRecursive(topFiles, scanDepth, visitedDirsPass1) { containerFile ->
                     val containerUri = containerFile.uri.toString()
                     recordDiscoveredVersion(containerFile.filename, containerUri)
                     if (mountedContainerUris.add(containerUri)) {
@@ -194,21 +213,22 @@ object GameHelper {
         }.filter { it.key.isNotEmpty() && it.value.size == 1 }
          .mapValues { it.value.first() }
 
-        // Pass 2: Discover bootable base games in parallel bounded coroutines on Dispatchers.IO
-        val threadSafeGames = Collections.synchronizedList(games)
-        runBlocking(Dispatchers.IO) {
-            dirFilesCache.map { (topFiles, scanDepth) ->
-                async {
-                    scanAndAddGamesRecursive(
-                        threadSafeGames,
-                        topFiles,
-                        scanDepth,
-                        mountedContainerUris,
-                        cachedMapByPath,
-                        cachedMapByName
-                    )
-                }
-            }.awaitAll()
+        // Pass 2: Discover bootable base games sequentially on the caller's Dispatchers.IO thread
+        val visitedDirsPass2 = mutableSetOf<String>()
+        dirFilesCache.forEach { (topFiles, scanDepth) ->
+            runCatching {
+                scanAndAddGamesRecursive(
+                    games,
+                    topFiles,
+                    scanDepth,
+                    mountedContainerUris,
+                    cachedMapByPath,
+                    cachedMapByName,
+                    visitedDirsPass2
+                )
+            }.onFailure { e ->
+                Log.error("[GameHelper] Error scanning directory for games: ${e.message}")
+            }
         }
 
         val finalGames = deduplicateGames(games)
@@ -475,35 +495,44 @@ object GameHelper {
     private fun scanContentContainersRecursive(
         files: Array<MinimalDocumentFile>,
         depth: Int,
+        visitedDirs: MutableSet<String> = mutableSetOf(),
         onContainerFound: (MinimalDocumentFile) -> Unit
     ) {
         if (depth <= 0) {
             return
         }
 
-        files.forEach {
-            if (it.isDirectory) {
-                if (isIgnoredDirectory(it.filename)) {
-                    return@forEach
-                }
-                scanContentContainersRecursive(
-                    FileUtil.listFiles(it.uri),
-                    depth - 1,
-                    onContainerFound
-                )
-            } else {
-                val extension = if (it.filename.isNotEmpty() && it.filename.contains('.')) {
-                    it.filename.substringAfterLast('.').lowercase()
+        files.forEach { item ->
+            runCatching {
+                if (item.isDirectory) {
+                    if (isIgnoredDirectory(item.filename)) {
+                        return@runCatching
+                    }
+                    val dirKey = getDirectoryKey(item.uri)
+                    if (visitedDirs.add(dirKey)) {
+                        scanContentContainersRecursive(
+                            FileUtil.listFiles(item.uri),
+                            depth - 1,
+                            visitedDirs,
+                            onContainerFound
+                        )
+                    }
                 } else {
-                    FileUtil.getExtension(it.uri).lowercase()
-                }
-                if (externalContentExtensions.contains(extension)) {
-                    try {
-                        onContainerFound(it)
-                    } catch (e: Throwable) {
-                        Log.error("[GameHelper] Failed to mount container ${it.filename}: ${e.message}")
+                    val extension = if (item.filename.isNotEmpty() && item.filename.contains('.')) {
+                        item.filename.substringAfterLast('.').lowercase()
+                    } else {
+                        FileUtil.getExtension(item.uri).lowercase()
+                    }
+                    if (externalContentExtensions.contains(extension)) {
+                        try {
+                            onContainerFound(item)
+                        } catch (e: Throwable) {
+                            Log.error("[GameHelper] Failed to mount container ${item.filename}: ${e.message}")
+                        }
                     }
                 }
+            }.onFailure { e ->
+                Log.error("[GameHelper] Failed to inspect container entry ${item.filename}: ${e.message}")
             }
         }
     }
@@ -514,94 +543,103 @@ object GameHelper {
         depth: Int,
         mountedContainerUris: MutableSet<String>,
         cachedMapByPath: Map<String, Game>,
-        cachedMapByName: Map<String, Game>
+        cachedMapByName: Map<String, Game>,
+        visitedDirs: MutableSet<String> = mutableSetOf()
     ) {
         if (depth <= 0) {
             return
         }
 
         for (it in files) {
-            if (it.isDirectory) {
-                if (isIgnoredDirectory(it.filename)) {
-                    continue
-                }
-                scanAndAddGamesRecursive(
-                    games,
-                    FileUtil.listFiles(it.uri),
-                    depth - 1,
-                    mountedContainerUris,
-                    cachedMapByPath,
-                    cachedMapByName
-                )
-            } else {
-                val extension = if (it.filename.isNotEmpty() && it.filename.contains('.')) {
-                    it.filename.substringAfterLast('.').lowercase()
+            runCatching {
+                if (it.isDirectory) {
+                    if (isIgnoredDirectory(it.filename)) {
+                        return@runCatching
+                    }
+                    val dirKey = getDirectoryKey(it.uri)
+                    if (visitedDirs.add(dirKey)) {
+                        scanAndAddGamesRecursive(
+                            games,
+                            FileUtil.listFiles(it.uri),
+                            depth - 1,
+                            mountedContainerUris,
+                            cachedMapByPath,
+                            cachedMapByName,
+                            visitedDirs
+                        )
+                    }
                 } else {
-                    FileUtil.getExtension(it.uri).lowercase()
-                }
-                val filePath = it.uri.toString()
+                    val extension = if (it.filename.isNotEmpty() && it.filename.contains('.')) {
+                        it.filename.substringAfterLast('.').lowercase()
+                    } else {
+                        FileUtil.getExtension(it.uri).lowercase()
+                    }
+                    val filePath = it.uri.toString()
 
-                if (externalContentExtensions.contains(extension)) {
-                    if (mountedContainerUris.add(filePath)) {
-                        try {
-                            NativeLibrary.addGameFolderFileToFilesystemProvider(filePath)
-                        } catch (e: Throwable) {
-                            Log.error("[GameHelper] Failed to mount container ${it.filename}: ${e.message}")
+                    if (externalContentExtensions.contains(extension)) {
+                        if (mountedContainerUris.add(filePath)) {
+                            try {
+                                NativeLibrary.addGameFolderFileToFilesystemProvider(filePath)
+                            } catch (e: Throwable) {
+                                Log.error("[GameHelper] Failed to mount container ${it.filename}: ${e.message}")
+                            }
                         }
                     }
-                }
 
-                if (Game.extensions.contains(extension)) {
-                    try {
-                        val cached = cachedMapByPath[filePath] ?: cachedMapByName[it.filename]?.let { old ->
-                            if (old.path != filePath) {
-                                Game(
-                                    title = old.title,
-                                    path = filePath,
-                                    programId = old.programId,
-                                    developer = old.developer,
-                                    version = old.version,
-                                    internalVersion = old.internalVersion,
-                                    isHomebrew = old.isHomebrew,
-                                    addonCount = old.addonCount,
-                                    lastModified = old.lastModified,
-                                    fileSize = old.fileSize
-                                )
-                            } else old
-                        }
-                        val isCartridge = extension == "xci" || extension == "xcz"
-                        if (cached != null) {
-                            val matchesSize = cached.fileSize <= 0L || it.fileSize <= 0L || cached.fileSize == it.fileSize
-                            val matchesMtime = cached.lastModified <= 0L || it.lastModified <= 0L || cached.lastModified == it.lastModified
+                    if (Game.extensions.contains(extension)) {
+                        try {
+                            val cached = cachedMapByPath[filePath] ?: cachedMapByName[it.filename]?.let { old ->
+                                if (old.path != filePath) {
+                                    Game(
+                                        title = old.title,
+                                        path = filePath,
+                                        programId = old.programId,
+                                        developer = old.developer,
+                                        version = old.version,
+                                        internalVersion = old.internalVersion,
+                                        isHomebrew = old.isHomebrew,
+                                        addonCount = old.addonCount,
+                                        lastModified = old.lastModified,
+                                        fileSize = old.fileSize
+                                    )
+                                } else old
+                            }
+                            val isCartridge = extension == "xci" || extension == "xcz"
+                            if (cached != null) {
+                                val matchesSize = cached.fileSize <= 0L || it.fileSize <= 0L || cached.fileSize == it.fileSize
+                                val matchesMtime = cached.lastModified <= 0L || it.lastModified <= 0L || cached.lastModified == it.lastModified
 
-                            if (matchesSize && matchesMtime) {
-                                // Fast Cache Hit in O(1): reuse cached Game directly without JNI GameMetadata or DocumentFile.exists()!
-                                if (cached.fileSize <= 0L && it.fileSize > 0L) {
-                                    cached.fileSize = it.fileSize
-                                }
-                                if (cached.lastModified <= 0L && it.lastModified > 0L) {
-                                    cached.lastModified = it.lastModified
-                                }
-                                if (isCartridge || (!isUpdateOrDlcPath(filePath) && !isUpdateOrDlcPath(it.filename))) {
-                                    games.add(cached)
+                                if (matchesSize && matchesMtime) {
+                                    // Fast Cache Hit in O(1): reuse cached Game directly without JNI GameMetadata or DocumentFile.exists()!
+                                    if (cached.fileSize <= 0L && it.fileSize > 0L) {
+                                        cached.fileSize = it.fileSize
+                                    }
+                                    if (cached.lastModified <= 0L && it.lastModified > 0L) {
+                                        cached.lastModified = it.lastModified
+                                    }
+                                    if (isCartridge || (!isUpdateOrDlcPath(filePath) && !isUpdateOrDlcPath(it.filename))) {
+                                        games.add(cached)
+                                    }
+                                } else {
+                                    // File changed on disk! Re-query metadata
+                                    val game = getGame(it.uri, true, false, lastModified = it.lastModified, fileSize = it.fileSize)
+                                    if (game != null) {
+                                        games.add(game)
+                                    }
                                 }
                             } else {
-                                // File changed on disk! Re-query metadata
                                 val game = getGame(it.uri, true, false, lastModified = it.lastModified, fileSize = it.fileSize)
                                 if (game != null) {
                                     games.add(game)
                                 }
                             }
-                        } else {
-                            val game = getGame(it.uri, true, false, lastModified = it.lastModified, fileSize = it.fileSize)
-                            if (game != null) {
-                                games.add(game)
-                            }
+                        } catch (e: Throwable) {
+                            Log.error("[GameHelper] Failed to parse game ${it.filename}: ${e.message}")
                         }
-                    } catch (e: Throwable) {
-                        Log.error("[GameHelper] Failed to parse game ${it.filename}: ${e.message}")
                     }
                 }
+            }.onFailure { e ->
+                Log.error("[GameHelper] Failed to inspect entry ${it.filename}: ${e.message}")
             }
         }
     }
@@ -610,46 +648,58 @@ object GameHelper {
         games: MutableList<Game>,
         files: Array<MinimalDocumentFile>,
         depth: Int,
-        cachedMapByPath: Map<String, Game> = emptyMap()
+        cachedMapByPath: Map<String, Game> = emptyMap(),
+        visitedDirs: MutableSet<String> = mutableSetOf()
     ) {
         if (depth <= 0) {
             return
         }
 
         files.forEach {
-            if (it.isDirectory) {
-                if (isIgnoredDirectory(it.filename)) {
-                    return@forEach
-                }
-                addGamesRecursive(
-                    games,
-                    FileUtil.listFiles(it.uri),
-                    depth - 1,
-                    cachedMapByPath
-                )
-            } else {
-                val extension = if (it.filename.isNotEmpty() && it.filename.contains('.')) {
-                    it.filename.substringAfterLast('.').lowercase()
+            runCatching {
+                if (it.isDirectory) {
+                    if (isIgnoredDirectory(it.filename)) {
+                        return@runCatching
+                    }
+                    val dirKey = getDirectoryKey(it.uri)
+                    if (visitedDirs.add(dirKey)) {
+                        addGamesRecursive(
+                            games,
+                            FileUtil.listFiles(it.uri),
+                            depth - 1,
+                            cachedMapByPath,
+                            visitedDirs
+                        )
+                    }
                 } else {
-                    FileUtil.getExtension(it.uri).lowercase()
-                }
-                if (Game.extensions.contains(extension)) {
-                    try {
-                        val filePath = it.uri.toString()
-                        val cached = cachedMapByPath[filePath]
-                        val isCartridge = extension == "xci" || extension == "xcz"
-                        if (cached != null) {
-                            val matchesSize = cached.fileSize <= 0L || it.fileSize <= 0L || cached.fileSize == it.fileSize
-                            val matchesMtime = cached.lastModified <= 0L || it.lastModified <= 0L || cached.lastModified == it.lastModified
-                            if (matchesSize && matchesMtime) {
-                                if (cached.fileSize <= 0L && it.fileSize > 0L) {
-                                    cached.fileSize = it.fileSize
-                                }
-                                if (cached.lastModified <= 0L && it.lastModified > 0L) {
-                                    cached.lastModified = it.lastModified
-                                }
-                                if (isCartridge || (!isUpdateOrDlcPath(filePath) && !isUpdateOrDlcPath(it.filename))) {
-                                    games.add(cached)
+                    val extension = if (it.filename.isNotEmpty() && it.filename.contains('.')) {
+                        it.filename.substringAfterLast('.').lowercase()
+                    } else {
+                        FileUtil.getExtension(it.uri).lowercase()
+                    }
+                    if (Game.extensions.contains(extension)) {
+                        try {
+                            val filePath = it.uri.toString()
+                            val cached = cachedMapByPath[filePath]
+                            val isCartridge = extension == "xci" || extension == "xcz"
+                            if (cached != null) {
+                                val matchesSize = cached.fileSize <= 0L || it.fileSize <= 0L || cached.fileSize == it.fileSize
+                                val matchesMtime = cached.lastModified <= 0L || it.lastModified <= 0L || cached.lastModified == it.lastModified
+                                if (matchesSize && matchesMtime) {
+                                    if (cached.fileSize <= 0L && it.fileSize > 0L) {
+                                        cached.fileSize = it.fileSize
+                                    }
+                                    if (cached.lastModified <= 0L && it.lastModified > 0L) {
+                                        cached.lastModified = it.lastModified
+                                    }
+                                    if (isCartridge || (!isUpdateOrDlcPath(filePath) && !isUpdateOrDlcPath(it.filename))) {
+                                        games.add(cached)
+                                    }
+                                } else {
+                                    val game = getGame(it.uri, true, false, lastModified = it.lastModified, fileSize = it.fileSize)
+                                    if (game != null) {
+                                        games.add(game)
+                                    }
                                 }
                             } else {
                                 val game = getGame(it.uri, true, false, lastModified = it.lastModified, fileSize = it.fileSize)
@@ -657,16 +707,13 @@ object GameHelper {
                                     games.add(game)
                                 }
                             }
-                        } else {
-                            val game = getGame(it.uri, true, false, lastModified = it.lastModified, fileSize = it.fileSize)
-                            if (game != null) {
-                                games.add(game)
-                            }
+                        } catch (e: Throwable) {
+                            Log.error("[GameHelper] Failed to parse game ${it.filename}: ${e.message}")
                         }
-                    } catch (e: Throwable) {
-                        Log.error("[GameHelper] Failed to parse game ${it.filename}: ${e.message}")
                     }
                 }
+            }.onFailure { e ->
+                Log.error("[GameHelper] Failed to inspect entry ${it.filename}: ${e.message}")
             }
         }
     }
