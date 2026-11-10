@@ -60,6 +60,13 @@ void EmuWindow_Android::OnSurfaceChanged(ANativeWindow* surface, u32 override_wi
     m_window_width = static_cast<float>(target_w);
     m_window_height = static_cast<float>(target_h);
 
+#ifdef __ANDROID__
+    if (surface && target_w > 0 && target_h > 0) {
+        ANativeWindow_setBuffersGeometry(surface, static_cast<int32_t>(target_w),
+                                         static_cast<int32_t>(target_h), 0);
+    }
+#endif
+
     NotifyClientAreaSizeChanged({target_w, target_h});
 
     // Ensures that we emulate with the correct aspect ratio and vertical alignment.

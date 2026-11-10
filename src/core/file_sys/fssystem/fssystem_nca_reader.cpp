@@ -84,17 +84,52 @@ Result NcaReader::Initialize(VirtualFile base_storage, const NcaCryptoConfigurat
 
     // Validate the magic.
     if (const Result magic_result = CheckNcaMagic(m_header.magic); R_FAILED(magic_result)) {
-        // Try to use a plaintext header.
-        base_storage->ReadObject(std::addressof(m_header), 0);
-        R_UNLESS(R_SUCCEEDED(CheckNcaMagic(m_header.magic)), magic_result);
+        bool fallback_success = false;
+        struct FallbackHeaderKey {
+            std::array<u8, 16> key1;
+            std::array<u8, 16> key2;
+        };
+        static constexpr std::array<FallbackHeaderKey, 2> FallbackHeaderKeys = {{
+            // Standard retail header key fallback (if prod.keys lacked header_key)
+            {
+                {0xAE, 0xAA, 0xB1, 0xCA, 0x08, 0xAD, 0xF9, 0xBE, 0xF1, 0x29, 0x91, 0xF3, 0x69, 0xE3, 0xC5, 0x67},
+                {0xD6, 0x88, 0x1E, 0x4E, 0x4A, 0x6A, 0x47, 0xA5, 0x1F, 0x6E, 0x48, 0x77, 0x06, 0x2D, 0x54, 0x2D},
+            },
+            // Legacy STORM Switch 2 compiler header key fallback
+            {
+                {0xAE, 0xA6, 0x82, 0xD2, 0x3F, 0x20, 0x21, 0x1E, 0x8F, 0x99, 0xB8, 0xD3, 0x24, 0x9D, 0x8E, 0xFC},
+                {0x02, 0x45, 0xA0, 0xFB, 0x16, 0x3A, 0x39, 0x6A, 0x98, 0xAC, 0xCA, 0x6E, 0x07, 0xF3, 0xBF, 0x18},
+            },
+        }};
 
-        // Configure to use the plaintext header.
-        auto base_storage_size = base_storage->GetSize();
-        work_header_storage = std::make_shared<OffsetVfsFile>(base_storage, base_storage_size, 0);
-        R_UNLESS(work_header_storage != nullptr, ResultAllocationMemoryFailedInNcaReaderA);
+        for (const auto& fallback : FallbackHeaderKeys) {
+            auto candidate_storage = std::make_shared<AesXtsStorageForNcaHeader>(
+                base_storage, fallback.key1.data(), fallback.key2.data(),
+                AesXtsStorageForNcaHeader::KeySize, header_iv.data(), AesXtsStorageForNcaHeader::IvSize,
+                NcaHeader::XtsBlockSize);
+            if (candidate_storage != nullptr) {
+                candidate_storage->ReadObject(std::addressof(m_header), 0);
+                if (R_SUCCEEDED(CheckNcaMagic(m_header.magic))) {
+                    work_header_storage = std::move(candidate_storage);
+                    fallback_success = true;
+                    break;
+                }
+            }
+        }
 
-        // Set encryption type as plaintext.
-        m_header_encryption_type = NcaHeader::EncryptionType::None;
+        if (!fallback_success) {
+            // Try to use a plaintext header.
+            base_storage->ReadObject(std::addressof(m_header), 0);
+            R_UNLESS(R_SUCCEEDED(CheckNcaMagic(m_header.magic)), magic_result);
+
+            // Configure to use the plaintext header.
+            auto base_storage_size = base_storage->GetSize();
+            work_header_storage = std::make_shared<OffsetVfsFile>(base_storage, base_storage_size, 0);
+            R_UNLESS(work_header_storage != nullptr, ResultAllocationMemoryFailedInNcaReaderA);
+
+            // Set encryption type as plaintext.
+            m_header_encryption_type = NcaHeader::EncryptionType::None;
+        }
     }
 
     // Verify the header sign1.

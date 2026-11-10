@@ -83,6 +83,69 @@ class GameFixDialogFragment : DialogFragment() {
         return binding.root
     }
 
+    
+    private fun localizeFixesText(rawText: String): String {
+        var text = rawText
+        val keyMap = mapOf(
+            "Airplane mode" to "Режим полёта (офлайн)",
+            "airplane_mode" to "Режим полёта (офлайн)",
+            "Vram garbage collection" to "Сборка мусора видеопамяти (VRAM)",
+            "vram_garbage_collection" to "Сборка мусора видеопамяти (VRAM)",
+            "Vram budget governor" to "Контроллер бюджета VRAM",
+            "vram_budget_governor" to "Контроллер бюджета VRAM",
+            "Vram usage mode" to "Режим использования видеопамяти",
+            "vram_usage_mode" to "Режим использования видеопамяти",
+            "Cpu clock" to "Тактовая частота ЦП",
+            "Gpu clock" to "Тактовая частота ГПУ",
+            "Anisotropy" to "Анизотропная фильтрация",
+            "Backend" to "Графический бэкенд (Vulkan)",
+            "Dyna state" to "Динамическое состояние Vulkan (EDS)",
+            "Vertex input dynamic state" to "Динамический ввод вершин",
+            "Drs resolution lock" to "Фиксация разрешения (DRS)",
+            "Dynamic performance scaler" to "Динамическое масштабирование производительности",
+            "Emulate bgr565" to "Эмуляция формата BGR565",
+            "Enable frame skipping" to "Пропуск кадров для стабильности",
+            "Fix bloom effects" to "Коррекция эффектов свечения (Bloom)",
+            "Force max clock" to "Принудительная максимальная частота ГПУ",
+            "Frame pacing mode" to "Режим синхронизации кадров (Pacing)",
+            "Fsr sharpening slider" to "Резкость фильтра AMD FSR",
+            "Rescale hack" to "Коррекция масштаба 2D-спрайтов",
+            "Smart shader throttle" to "Умное дросселирование шейдеров",
+            "Sync core speed" to "Синхронизация скорости ядер",
+            "Use auto stub" to "Автоматические заглушки сервисов",
+            "Use storm tier2 compiler" to "JIT-компилятор STORM Tier-2",
+            "Use video framerate" to "Синхронизация частоты видео",
+            "Cpuopt recompile exclusives" to "Перекомпиляция эксклюзивных инструкций",
+            "Cpuopt unsafe host mmu" to "Прямой доступ Host MMU",
+            "Cpuopt unsafe ignore standard fpcr" to "Игнорирование стандартного FPCR",
+            "Cpuopt unsafe reduce fp error" to "Уменьшение погрешности плавающей точки",
+            "Cpuopt unsafe unfuse fma" to "Разделение операций FMA",
+            "Disable macro hle" to "Отключение HLE макросов",
+            "Disable macro jit" to "Отключение JIT макросов",
+            "Disable web applet" to "Отключение веб-апплета",
+            "Language index" to "Язык системы Switch",
+            "Region index" to "Регион системы Switch",
+            "Custom" to "Пользовательский профиль",
+            "Default" to "Значение по умолчанию",
+            "Use global" to "Использовать глобальные настройки",
+            "Driver path" to "Пользовательский драйвер GPU"
+        )
+        for ((k, v) in keyMap) {
+            text = text.replace(k, v)
+        }
+        val valMap = mapOf(
+            "Disabled" to "Выключено",
+            "Enabled" to "Включено",
+            "disabled" to "Выключено",
+            "enabled" to "Включено"
+        )
+        for ((k, v) in valMap) {
+            text = text.replace("<b>$k</b>", "<b>$v</b>")
+            text = text.replace("→ $k", "→ $v")
+        }
+        return text
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -131,9 +194,10 @@ class GameFixDialogFragment : DialogFragment() {
             val isRu = currentLang.equals("ru", ignoreCase = true) || currentLang.equals("uk", ignoreCase = true) || currentLang.equals("be", ignoreCase = true)
             val issues = if (isRu && profile.issuesRu.isNotEmpty()) profile.issuesRu else profile.issuesEn
             val fixes = GameFixDatabase.getFormattedFixes(profile, isRu)
+            val localizedFixes = if (isRu) localizeFixesText(fixes) else fixes
             val issuesClean = sanitizeText(issues)
             val fixesHtml = androidx.core.text.HtmlCompat.fromHtml(
-                sanitizeText(fixes).replace("\n", "<br>"),
+                sanitizeText(localizedFixes).replace("\n", "<br>"),
                 androidx.core.text.HtmlCompat.FROM_HTML_MODE_LEGACY
             )
             binding.textGameFixIssues.text = issuesClean

@@ -692,7 +692,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\enable_compute_pipelines", "true"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
-            {"Renderer\\fix_bloom_effects", "true"}
+            {"Renderer\\fix_bloom_effects", "false"}
         },
         {0x0100B5B0112F8000ULL, 0x0100D1801648E000ULL}
     },
@@ -5156,6 +5156,7 @@ static const std::vector<GameFixProfile> s_profiles = {
         "",
         "",
         {
+            {"Cpu\\cpu_backend", "0"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\use_asynchronous_shaders", "false"},
             {"Renderer\\use_reactive_flushing", "true"},
@@ -6044,17 +6045,18 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Ys X - Nordics",
         "• Зависание вступительных аниме-роликов при аппаратном NVDEC\n• Просадки FPS при морских боях на корабле и спецэффектах воды\n• Вылеты по нехватке памяти при 13 DLC",
         "• Anime cutscene freezes on GPU NVDEC\n• Framerate drops during naval ship battles and water particle effects\n• Memory exhaustion with 13 DLCs",
-        "",
-        "",
+        "✓ Расширенная память 6 ГБ (DRAM 6GB: устранение вылетов с 13 DLC)\n✓ Программный NVDEC CPU\n✓ Асинхронные шейдеры\n✓ Точность ГПу: Normal",
+        "✓ 6GB Extended DRAM Memory (Prevents memory exhaustion crashes with 13 DLCs)\n✓ CPU NVDEC Video Decoding\n✓ Asynchronous Shaders\n✓ GPU Accuracy: Normal",
         {
-            {"System\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "1"},
             {"Renderer\\gpu_accuracy", "1"},
             {"Renderer\\nvdec_emulation", "1"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_fast_gpu_time", "true"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"}
-        }
+        },
+        {0x010012F01B514000ULL, 0x0100F66017AA2000ULL, 0x0100999019A4E000ULL}
     },
     {
         0x010090C022978000ULL,
@@ -7901,6 +7903,14 @@ bool GameFixDatabase::ReapplyVendorOverrides(u64 title_id) {
         const auto& vendor_map = profile->vendor_overrides.at(s_detected_vendor);
         ApplySettingsMap(vendor_map);
 
+        // Explicit safety overrides for problematic games
+        const u64 base_tid = profile->title_id & ~0x1FFFULL;
+        if (profile->title_id == 0x010067300059A000ULL || profile->title_id == 0x0100760012E4A000ULL ||
+            base_tid == 0x010067300059A000ULL || base_tid == 0x0100760012E4A000ULL) {
+            Settings::values.fix_bloom_effects.SetGlobal(false);
+            Settings::values.fix_bloom_effects.SetValue(false);
+        }
+
         SanitizeSettingsForHostHardware();
         Settings::UpdateGPUAccuracy();
         Settings::UpdateRescalingInfo();
@@ -7965,6 +7975,14 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id, const std::string& name
             ApplySettingsMap(vendor_map);
             LOG_INFO(Frontend, "[GameFixDatabase] Applied {} vendor overrides for '{}' on {:#016x}",
                      vendor_map.size(), s_detected_vendor, profile->title_id);
+        }
+
+        // Explicit safety overrides for problematic games
+        const u64 base_tid = profile->title_id & ~0x1FFFULL;
+        if (profile->title_id == 0x010067300059A000ULL || profile->title_id == 0x0100760012E4A000ULL ||
+            base_tid == 0x010067300059A000ULL || base_tid == 0x0100760012E4A000ULL) {
+            Settings::values.fix_bloom_effects.SetGlobal(false);
+            Settings::values.fix_bloom_effects.SetValue(false);
         }
 
         SanitizeSettingsForHostHardware();

@@ -463,9 +463,11 @@ static void ApplyGameSpecificSafetyOverrides(u64 title_id, u64 host_ram_bytes,
         Settings::values.dyna_state.SetValue(Settings::ExtendedDynamicState::Disabled);
         Settings::values.barrier_feedback_loops.SetGlobal(false);
         Settings::values.barrier_feedback_loops.SetValue(true);
+        Settings::values.use_asynchronous_shaders.SetGlobal(false);
+        Settings::values.use_asynchronous_shaders.SetValue(false);
         Settings::values.airplane_mode.SetGlobal(false);
         Settings::values.airplane_mode.SetValue(true);
-        LOG_INFO(Frontend, "Guaranteed Diablo II: Resurrected safety overrides (8GB/6GB DRAM, GPU High, Reactive Flush, airplane mode)");
+        LOG_INFO(Frontend, "Guaranteed Diablo II: Resurrected safety overrides (8GB/6GB DRAM, GPU High, Async Shaders OFF, Reactive Flush, airplane mode)");
     }
 
     // 3) Unravel Two
@@ -480,7 +482,31 @@ static void ApplyGameSpecificSafetyOverrides(u64 title_id, u64 host_ram_bytes,
         LOG_INFO(Frontend, "Guaranteed Unravel Two safety overrides (GPU/MediaCodec NVDEC preserved, fences & fast_gpu_time disabled, ignore aborts)");
     }
 
-    // 4) Switch 2 games
+    // 4) Mario + Rabbids: Kingdom Battle
+    if (title_id == 0x010067300059A000ULL || title_id == 0x0100760012E4A000ULL ||
+        base_tid == 0x010067300059A000ULL || base_tid == 0x0100760012E4A000ULL ||
+        lower_hint.find("010067300059a") != std::string::npos ||
+        (lower_hint.find("rabbids") != std::string::npos && lower_hint.find("kingdom") != std::string::npos)) {
+        Settings::values.fix_bloom_effects.SetGlobal(false);
+        Settings::values.fix_bloom_effects.SetValue(false);
+        Settings::values.gpu_accuracy.SetGlobal(false);
+        Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::High);
+        Settings::values.dma_accuracy.SetGlobal(false);
+        Settings::values.dma_accuracy.SetValue(Settings::DmaAccuracy::Safe);
+        Settings::values.barrier_feedback_loops.SetGlobal(false);
+        Settings::values.barrier_feedback_loops.SetValue(true);
+        Settings::values.use_reactive_flushing.SetGlobal(false);
+        Settings::values.use_reactive_flushing.SetValue(true);
+        Settings::values.astc_recompression.SetGlobal(false);
+        Settings::values.astc_recompression.SetValue(Settings::AstcRecompression::Uncompressed);
+        Settings::values.dyna_state.SetGlobal(false);
+        Settings::values.dyna_state.SetValue(Settings::ExtendedDynamicState::Disabled);
+        Settings::values.early_release_fences.SetGlobal(false);
+        Settings::values.early_release_fences.SetValue(false);
+        LOG_INFO(Frontend, "Guaranteed Mario + Rabbids: Kingdom Battle safety overrides (fix_bloom OFF, GPU High, BFL ON, Reactive Flush ON, dyna_state OFF)");
+    }
+
+    // 5) Switch 2 games
     if ((title_id >> 48) == 0x0400 || Settings::IsCurrentProgramSwitch2()) {
         Settings::values.cpu_backend.SetGlobal(false);
         Settings::values.cpu_backend.SetValue(Settings::CpuBackend::Dynarmic);

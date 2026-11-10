@@ -19,6 +19,40 @@
 #include <zstd.h>
 
 namespace {
+Core::Crypto::Key128 ResolveNczSectionKey(const FileSys::NCZVirtualFile::NCZSection& sec, const FileSys::NcaHeader& nca_hdr) {
+    bool has_direct_key = false;
+    for (u8 b : sec.crypto_key) {
+        if (b != 0) {
+            has_direct_key = true;
+            break;
+        }
+    }
+    if (has_direct_key) {
+        Core::Crypto::Key128 key{};
+        std::memcpy(key.data(), sec.crypto_key.data(), 16);
+        return key;
+    }
+
+    constexpr std::array<u8, FileSys::NcaHeader::RightsIdSize> ZeroRightsId{};
+    if (std::memcmp(ZeroRightsId.data(), nca_hdr.rights_id.data(), FileSys::NcaHeader::RightsIdSize) != 0) {
+        u128 rights_id_u128{};
+        std::memcpy(rights_id_u128.data(), nca_hdr.rights_id.data(), 16);
+        auto titlekey = Core::Crypto::KeyManager::Instance().GetKey(Core::Crypto::S128KeyType::Titlekey, rights_id_u128[1], rights_id_u128[0]);
+        if (titlekey == Core::Crypto::Key128{}) {
+            std::memcpy(titlekey.data(), nca_hdr.rights_id.data(), 16);
+        }
+        return titlekey;
+    } else {
+        u8 key_gen = nca_hdr.GetProperKeyGeneration();
+        u8 key_idx = nca_hdr.key_index;
+        auto kak = Core::Crypto::KeyManager::Instance().GetKey(Core::Crypto::S128KeyType::KeyArea, key_idx, key_gen);
+        Core::Crypto::Key128 key{};
+        Core::Crypto::AESCipher<Core::Crypto::Key128> cipher(kak, Core::Crypto::Mode::ECB);
+        cipher.Transcode(nca_hdr.encrypted_key_area.data() + FileSys::NcaHeader::DecryptionKey_AesCtr * 16, 16, key.data(), Core::Crypto::Op::Decrypt);
+        return key;
+    }
+}
+
 class DiskVfsFile : public FileSys::VfsFile {
 public:
     DiskVfsFile(std::filesystem::path path_, std::string name_,
@@ -59,6 +93,8 @@ private:
     mutable Common::FS::IOFile file;
     mutable std::mutex io_mutex;
 };
+
+static std::mutex s_global_solid_mutex;
 
 class ZstdContextPool {
 private:
@@ -528,7 +564,33 @@ std::size_t NCZVirtualFile::Read(u8* data, std::size_t length, std::size_t offse
                 : virtual_offset_in_nca;
         }
 
-        if (is_solid_stream && !solid_decompressed) {
+        if (is_solid_stream) {
+            if (disk_cache_file) {
+                std::size_t r = disk_cache_file->Read(data + bytes_read, copy_size, virtual_offset_in_nca);
+                if (r < copy_size) {
+                    std::memset(data + bytes_read + r, 0, copy_size - r);
+                    r = copy_size;
+                }
+                bytes_read += r;
+                current_offset += r;
+                remaining -= r;
+                continue;
+            }
+
+            // Fast in-memory prefix cache for Section 0 / ExeFS metadata reads (<= 64 MiB)
+            if (virtual_offset_in_nca + copy_size <= SOLID_PREFIX_MAX_SIZE) {
+                if (EnsureSolidPrefixCached(virtual_offset_in_nca + copy_size)) {
+                    if (virtual_offset_in_nca + copy_size <= solid_prefix_cached_size) {
+                        std::memcpy(data + bytes_read, solid_prefix_buffer.data() + virtual_offset_in_nca, copy_size);
+                        bytes_read += copy_size;
+                        current_offset += copy_size;
+                        remaining -= copy_size;
+                        continue;
+                    }
+                }
+            }
+
+            std::lock_guard<std::mutex> global_solid_lock(s_global_solid_mutex);
             std::lock_guard<std::mutex> solid_lock(solid_mutex);
             if (!disk_cache_file) {
                 std::filesystem::path temp_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::CacheDir);
@@ -541,10 +603,11 @@ std::size_t NCZVirtualFile::Read(u8* data, std::size_t length, std::size_t offse
                                    std::filesystem::file_size(cache_path, ec) >= decompressed_size &&
                                    std::filesystem::exists(completed_path, ec);
                 
-                if (!cache_valid && !disk_cache_checked) {
-                    // Enforce 24GB ring LRU cache budget before decompressing
+                if (!cache_valid) {
+                    // Enforce 80GB ring LRU cache budget before decompressing, maintaining 15GB disk headroom
                     {
-                        constexpr u64 MAX_CACHE_BUDGET = 24ULL * 1024 * 1024 * 1024; // 24 GB
+                        constexpr u64 MAX_CACHE_BUDGET = 80ULL * 1024 * 1024 * 1024; // 80 GB
+                        constexpr u64 MIN_FREE_DISK_HEADROOM = 15ULL * 1024 * 1024 * 1024; // 15 GB
                         struct CacheEntry {
                             std::filesystem::path path;
                             std::filesystem::path marker;
@@ -566,15 +629,23 @@ std::size_t NCZVirtualFile::Read(u8* data, std::size_t length, std::size_t offse
                                 total_cache_size += sz;
                             }
                         }
-                        if (total_cache_size + decompressed_size > MAX_CACHE_BUDGET) {
+
+                        const auto space_info = std::filesystem::space(temp_dir, ec);
+                        const u64 available_space = (!ec) ? space_info.available : 0;
+                        const bool space_critical = (available_space > 0 && available_space < decompressed_size + MIN_FREE_DISK_HEADROOM);
+
+                        if (total_cache_size + decompressed_size > MAX_CACHE_BUDGET || space_critical) {
                             std::sort(entries.begin(), entries.end(), [](const CacheEntry& a, const CacheEntry& b) {
                                 return a.mtime < b.mtime;
                             });
                             for (const auto& entry : entries) {
-                                if (total_cache_size + decompressed_size <= MAX_CACHE_BUDGET) {
+                                const auto cur_space = std::filesystem::space(temp_dir, ec);
+                                const u64 cur_avail = (!ec) ? cur_space.available : 0;
+                                if (total_cache_size + decompressed_size <= MAX_CACHE_BUDGET &&
+                                    (cur_avail == 0 || cur_avail >= decompressed_size + MIN_FREE_DISK_HEADROOM)) {
                                     break;
                                 }
-                                LOG_INFO(Service_FS, "NCZ LRU Cache: Evicting {} ({:.2f} GB) to maintain 24 GB cache budget",
+                                LOG_INFO(Service_FS, "NCZ LRU Cache: Evicting {} ({:.2f} GB) to maintain 80 GB cache budget / 15 GB headroom",
                                          entry.path.filename().string(), (double)entry.size / (1024.0 * 1024.0 * 1024.0));
                                 std::filesystem::remove(entry.path, ec);
                                 std::filesystem::remove(entry.marker, ec);
@@ -761,6 +832,179 @@ bool NCZVirtualFile::Rename(std::string_view name) {
     return file->Rename(name);
 }
 
+bool NCZVirtualFile::EnsureSolidPrefixCached(std::size_t needed_end) const {
+    if (!is_solid_stream || solid_decompressed) {
+        return false;
+    }
+
+    std::lock_guard<std::mutex> lock(solid_mutex);
+
+    if (solid_prefix_cached_size >= needed_end) {
+        return true;
+    }
+
+    if (needed_end > SOLID_PREFIX_MAX_SIZE) {
+        return false;
+    }
+
+    // Determine target size: cache Section 0 completely (up to 64 MiB)
+    std::size_t target_size = SOLID_PREFIX_MAX_SIZE;
+    if (!sections.empty()) {
+        u64 sec0_end = static_cast<u64>(sections[0].offset) + static_cast<u64>(sections[0].size);
+        target_size = std::min<std::size_t>(SOLID_PREFIX_MAX_SIZE, static_cast<std::size_t>(sec0_end));
+    }
+    target_size = std::max<std::size_t>(target_size, needed_end);
+    target_size = std::min<std::size_t>(target_size, decompressed_size);
+
+    if (solid_prefix_cached_size >= target_size) {
+        return true;
+    }
+
+    // Ensure 0x4000 header in solid_prefix_buffer
+    if (solid_prefix_buffer.empty()) {
+        solid_prefix_buffer.resize(0x4000, 0);
+        {
+            std::unique_lock<std::mutex> hlock(header_mutex);
+            if (!decrypted_header.empty()) {
+                std::memcpy(solid_prefix_buffer.data(), decrypted_header.data(),
+                            std::min(solid_prefix_buffer.size(), decrypted_header.size()));
+            } else {
+                try {
+                    std::lock_guard<std::mutex> rlock(raw_io_mutex);
+                    file->Read(solid_prefix_buffer.data(), 0x4000, 0);
+                } catch (...) {}
+            }
+        }
+        solid_prefix_cached_size = 0x4000;
+    }
+
+    if (solid_prefix_cached_size >= target_size) {
+        return true;
+    }
+
+    NcaHeader nca_hdr{};
+    std::memcpy(&nca_hdr, solid_prefix_buffer.data(), sizeof(NcaHeader));
+
+    std::unique_ptr<ZSTD_DCtx, decltype(&ZSTD_freeDCtx)> dctx(ZSTD_createDCtx(), &ZSTD_freeDCtx);
+    if (!dctx) {
+        return false;
+    }
+
+    std::size_t comp_offset = solid_compressed_offset;
+    std::size_t remaining_comp = solid_compressed_size;
+    std::vector<u8> comp_chunk(2 * 1024 * 1024);
+    std::vector<u8> decomp_buffer(2 * 1024 * 1024);
+    std::size_t carry_over = 0;
+
+    auto SafeRead = [this](u8* d, std::size_t l, std::size_t o) -> std::size_t {
+        try {
+            std::lock_guard<std::mutex> lock(raw_io_mutex);
+            return file->Read(d, l, o);
+        } catch (...) {
+            return 0;
+        }
+    };
+
+    for (std::size_t i = 0; i < sections.size(); i++) {
+        if (solid_prefix_cached_size >= target_size) {
+            break;
+        }
+
+        const auto& sec = sections[i];
+        u64 sec_offset = static_cast<u64>(sec.offset);
+        u64 sec_size = static_cast<u64>(sec.size);
+
+        u64 zstd_sec_start = is_header_uncompressed
+            ? std::max<u64>(sec_offset, 0x4000)
+            : sec_offset;
+
+        u64 remaining_in_sec = (sec_offset + sec_size) > zstd_sec_start
+            ? (sec_offset + sec_size) - zstd_sec_start
+            : 0;
+
+        if (remaining_in_sec == 0) {
+            continue;
+        }
+
+        const bool needs_re_encrypt = (sec.crypto_type == 3 || sec.crypto_type == 4);
+        Core::Crypto::Key128 sec_key{};
+        if (needs_re_encrypt) {
+            sec_key = ResolveNczSectionKey(sec, nca_hdr);
+        }
+
+        u64 current_nca_pos = zstd_sec_start;
+
+        while (remaining_in_sec > 0 && solid_prefix_cached_size < target_size) {
+            std::size_t to_read = std::min<std::size_t>(comp_chunk.size() - carry_over, remaining_comp);
+            if (to_read > 0) {
+                std::size_t r = SafeRead(comp_chunk.data() + carry_over, to_read, comp_offset);
+                if (r > 0) {
+                    comp_offset += r;
+                    remaining_comp -= r;
+                    carry_over += r;
+                }
+            }
+
+            u64 needed_now = target_size - solid_prefix_cached_size;
+            ZSTD_inBuffer input = { comp_chunk.data(), carry_over, 0 };
+            ZSTD_outBuffer output = { decomp_buffer.data(),
+                                      std::min<std::size_t>({decomp_buffer.size(),
+                                                             static_cast<std::size_t>(remaining_in_sec),
+                                                             static_cast<std::size_t>(needed_now)}),
+                                      0 };
+
+            std::size_t ret = ZSTD_decompressStream(dctx.get(), &output, &input);
+            if (ZSTD_isError(ret)) {
+                LOG_ERROR(Service_FS, "EnsureSolidPrefixCached: ZSTD Error: {}", ZSTD_getErrorName(ret));
+                return false;
+            }
+
+            std::size_t consumed = input.pos;
+            std::size_t produced = output.pos;
+
+            if (produced > 0) {
+                if (needs_re_encrypt) {
+                    u64 block_index = current_nca_pos / 16;
+                    std::array<u8, 16> iv{};
+                    std::memcpy(iv.data(), sec.crypto_counter.data(), 8);
+                    for (std::size_t b = 0; b < 8; ++b) {
+                        iv[16 - b - 1] = block_index & 0xFF;
+                        block_index >>= 8;
+                    }
+
+                    Core::Crypto::AESCipher<Core::Crypto::Key128> cipher(sec_key, Core::Crypto::Mode::CTR);
+                    cipher.SetIV(iv);
+                    cipher.Transcode(decomp_buffer.data(), produced, decomp_buffer.data(), Core::Crypto::Op::Encrypt);
+                }
+
+                if (solid_prefix_buffer.size() < current_nca_pos + produced) {
+                    solid_prefix_buffer.resize(current_nca_pos + produced);
+                }
+                std::memcpy(solid_prefix_buffer.data() + current_nca_pos, decomp_buffer.data(), produced);
+
+                remaining_in_sec -= produced;
+                current_nca_pos += produced;
+                solid_prefix_cached_size = current_nca_pos;
+            }
+
+            if (consumed > 0) {
+                carry_over -= consumed;
+                if (carry_over > 0) {
+                    std::memmove(comp_chunk.data(), comp_chunk.data() + consumed, carry_over);
+                }
+            }
+
+            if (consumed == 0 && produced == 0 && to_read == 0) {
+                break;
+            }
+        }
+    }
+
+    LOG_DEBUG(Service_FS, "EnsureSolidPrefixCached: Cached {} KB in memory for {}",
+              solid_prefix_cached_size / 1024, GetName());
+    return solid_prefix_cached_size >= needed_end;
+}
+
 bool NCZVirtualFile::DecompressSolidTo(const std::filesystem::path& dest_path) const {
     if (!is_solid_stream) return false;
 
@@ -818,39 +1062,7 @@ bool NCZVirtualFile::DecompressSolidTo(const std::filesystem::path& dest_path) c
     std::memcpy(&nca_hdr, header_data.data(), sizeof(NcaHeader));
 
     auto GetSectionKey = [&](const NCZSection& sec) -> Core::Crypto::Key128 {
-        // 1. Direct key stored in NCZSection
-        bool has_direct_key = false;
-        for (u8 b : sec.crypto_key) {
-            if (b != 0) {
-                has_direct_key = true;
-                break;
-            }
-        }
-        if (has_direct_key) {
-            Core::Crypto::Key128 key{};
-            std::memcpy(key.data(), sec.crypto_key.data(), 16);
-            return key;
-        }
-
-        // 2. Derive from NCA header and KeyManager
-        constexpr std::array<u8, NcaHeader::RightsIdSize> ZeroRightsId{};
-        if (std::memcmp(ZeroRightsId.data(), nca_hdr.rights_id.data(), NcaHeader::RightsIdSize) != 0) {
-            u128 rights_id_u128{};
-            std::memcpy(rights_id_u128.data(), nca_hdr.rights_id.data(), 16);
-            auto titlekey = Core::Crypto::KeyManager::Instance().GetKey(Core::Crypto::S128KeyType::Titlekey, rights_id_u128[1], rights_id_u128[0]);
-            if (titlekey == Core::Crypto::Key128{}) {
-                std::memcpy(titlekey.data(), nca_hdr.rights_id.data(), 16);
-            }
-            return titlekey;
-        } else {
-            u8 key_gen = nca_hdr.GetProperKeyGeneration();
-            u8 key_idx = nca_hdr.key_index;
-            auto kak = Core::Crypto::KeyManager::Instance().GetKey(Core::Crypto::S128KeyType::KeyArea, key_idx, key_gen);
-            Core::Crypto::Key128 key{};
-            Core::Crypto::AESCipher<Core::Crypto::Key128> cipher(kak, Core::Crypto::Mode::ECB);
-            cipher.Transcode(nca_hdr.encrypted_key_area.data() + NcaHeader::DecryptionKey_AesCtr * 16, 16, key.data(), Core::Crypto::Op::Decrypt);
-            return key;
-        }
+        return ResolveNczSectionKey(sec, nca_hdr);
     };
 
     // Decompress each section sequentially

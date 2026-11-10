@@ -260,21 +260,28 @@ static bool LoadNroImpl(Core::System& system, Kernel::KProcess& process,
 
     // Create NCE patcher
     Core::NCE::Patcher patch{};
+    bool nce_applied = false;
 
     if (Settings::IsNceEnabled()) {
         // Patch SVCs and MRS calls in the guest code
         patch.PatchText(program_image, code);
 
         // We only support PostData patching for NROs.
-        ASSERT(patch.GetPatchMode() == Core::NCE::PatchMode::PostData);
+        if (patch.GetPatchMode() == Core::NCE::PatchMode::PostData) {
+            // Update patch section.
+            auto& patch_segment = codeset.PatchSegment();
+            patch_segment.addr = image_size;
+            patch_segment.size = static_cast<u32>(patch.GetSectionSize());
 
-        // Update patch section.
-        auto& patch_segment = codeset.PatchSegment();
-        patch_segment.addr = image_size;
-        patch_segment.size = static_cast<u32>(patch.GetSectionSize());
-
-        // Add patch section size to the module size.
-        image_size += patch_segment.size;
+            // Add patch section size to the module size.
+            image_size += patch_segment.size;
+            nce_applied = true;
+        } else {
+            LOG_WARNING(Loader,
+                        "Homebrew NRO requires patch mode {} which is unsupported under NCE; falling back to Dynarmic JIT",
+                        static_cast<u32>(patch.GetPatchMode()));
+            Settings::values.cpu_backend.SetValue(Settings::CpuBackend::Dynarmic);
+        }
     }
 #endif
 
@@ -306,7 +313,7 @@ static bool LoadNroImpl(Core::System& system, Kernel::KProcess& process,
     // Relocate code patch and copy to the program_image if running under NCE.
     // This needs to be after LoadFromMetadata so we can use the process entry point.
 #ifdef HAS_NCE
-    if (Settings::IsNceEnabled()) {
+    if (Settings::IsNceEnabled() && nce_applied) {
         patch.RelocateAndCopy(process.GetEntryPoint(), code, program_image,
                               &process.GetPostHandlers());
     }

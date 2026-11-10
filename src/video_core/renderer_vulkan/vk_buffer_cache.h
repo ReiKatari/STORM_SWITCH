@@ -97,6 +97,18 @@ public:
 
     void TickFrame(Common::SlotVector<Buffer>& slot_buffers) noexcept;
 
+    u32 SetVertexRepackLayout(const Tegra::Engines::Maxwell3D::Regs& regs, bool dynamic_input);
+
+    bool IsVertexRepacked(u32 binding) const {
+        return (vertex_repack_mask & (1U << binding)) != 0;
+    }
+
+    /// A binding that could not be repacked keeps its 69-byte layout for this draw. Buffers are bound
+    /// before the vertex input is built, so the input then matches the buffer actually bound.
+    void KeepVertexLayout(u32 binding) {
+        vertex_repack_mask &= ~(1U << binding);
+    }
+
     u64 CurrentTick();
 
     u64 KnownGpuTick();
@@ -216,6 +228,7 @@ private:
 
     std::unique_ptr<Uint8Pass> uint8_pass;
     std::unique_ptr<VertexRepackPass> vertex_repack_pass;
+    u32 vertex_repack_mask{};
     QuadIndexedPass quad_index_pass;
 
     bool limit_dynamic_storage_buffers = false;

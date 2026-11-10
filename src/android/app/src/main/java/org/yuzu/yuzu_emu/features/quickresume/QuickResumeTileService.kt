@@ -24,7 +24,8 @@ import org.yuzu.yuzu_emu.ui.main.MainActivity
 class QuickResumeTileService : TileService() {
 
     companion object {
-        const val TILE_LABEL = "STORM SWITCH — Quick Resume"
+        private val isRu get() = java.util.Locale.getDefault().language == "ru"
+        val TILE_LABEL get() = if (isRu) "STORM SWITCH — Быстрый запуск" else "STORM SWITCH — Quick Resume"
 
         fun requestTileUpdate(context: Context) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -90,7 +91,7 @@ class QuickResumeTileService : TileService() {
             tile.state = Tile.STATE_INACTIVE
             tile.label = TILE_LABEL
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                tile.subtitle = "Запустить последнюю игру"
+                tile.subtitle = if (isRu) "Запустить последнюю игру" else "Launch last played game"
             }
         }
         tile.updateTile()

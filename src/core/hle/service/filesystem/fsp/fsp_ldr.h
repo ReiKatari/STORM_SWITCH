@@ -15,6 +15,11 @@ class FSP_LDR final : public ServiceFramework<FSP_LDR> {
 public:
     explicit FSP_LDR(Core::System& system_);
     ~FSP_LDR() override;
+
+private:
+    void OpenCodeFileSystem(HLERequestContext& ctx);
+    void IsArchivedProgram(HLERequestContext& ctx);
+    void SetCurrentProcess(HLERequestContext& ctx);
 };
 
 } // namespace Service::FileSystem

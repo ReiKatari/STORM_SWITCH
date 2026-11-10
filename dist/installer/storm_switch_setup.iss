@@ -1,5 +1,5 @@
 #define MyAppName "STORM SWITCH"
-#define MyAppVersion "17.3.3"
+#define MyAppVersion "17.4.0"
 #define MyAppPublisher "STORM TEAM"
 #define MyAppURL "https://github.com/ReiKatari/STORM_SWITCH"
 #define MyAppExeName "storm_switch.exe"

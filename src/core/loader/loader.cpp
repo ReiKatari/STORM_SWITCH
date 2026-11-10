@@ -80,6 +80,17 @@ bool HasApplicationProgramContent(const std::shared_ptr<FileSys::NSP>& nsp) {
     }
 
     // A bootable game container must contain at least one base application title (ending in 000).
+    // Fast path: if program IDs are discovered from CNMT, return true without touching Program NCAs!
+    if (!nsp->GetProgramTitleIDs().empty()) {
+        for (const auto tid : nsp->GetProgramTitleIDs()) {
+            if (tid != 0 && (tid & 0xFFFULL) == 0) {
+                return true;
+            }
+        }
+    }
+    if (nsp->GetProgramTitleID() != 0 && (nsp->GetProgramTitleID() & 0xFFFULL) == 0) {
+        return true;
+    }
     // Standalone update containers (0x800) and DLC containers (0x001+) must not be treated as games.
     const auto& ncas = nsp->GetNCAs();
     for (const auto& [tid, nca_map] : ncas) {
@@ -182,10 +193,8 @@ FileType GuessFromFilename(const std::string& name) {
         return FileType::XCI;
     else if (extension == "xcz")
         return FileType::XCZ;
-    else if (extension == "nsp")
+    else if (extension == "nsp" || extension == "nup")
         return FileType::NSP;
-    else if (extension == "nup")
-        return FileType::NUP;
     else if (extension == "nsz")
         return FileType::NSZ;
     else if (extension == "kip")
@@ -358,7 +367,12 @@ static std::unique_ptr<AppLoader> GetFileLoader(Core::System& system, FileSys::V
 
     // NUP (NX Package) container format.
     case FileType::NUP:
-        return std::make_unique<AppLoader_NUP>(std::move(file));
+        if (file && FileSys::NupContainer::IsNupFile(file)) {
+            return std::make_unique<AppLoader_NUP>(std::move(file));
+        }
+        return std::make_unique<AppLoader_NSP>(std::move(file), system.GetFileSystemController(),
+                                               system.GetContentProvider(), program_id,
+                                               program_index);
 
     // NX deconstructed ROM directory.
     case FileType::DeconstructedRomDirectory:

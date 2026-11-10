@@ -1,3 +1,4 @@
+#include "core/hle/service/nvdrv/devices/nx2_stub_device.h"
 // SPDX-FileCopyrightText: 2022 yuzu Emulator Project
 // SPDX-FileCopyrightText: 2022 Skyline Team and Contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
@@ -130,6 +131,7 @@ void Container::CloseSession(SessionId session_id) {
         session.has_preallocated_area = false;
     }
     session.is_active = false;
+    Devices::Nx2GpuMemoryRegistry::Get().ForgetDeviceRanges(session.asid.id);
     smmu.UnregisterProcess(impl->sessions[session_id.id].asid);
     impl->id_pool.emplace_front(session_id.id);
 }

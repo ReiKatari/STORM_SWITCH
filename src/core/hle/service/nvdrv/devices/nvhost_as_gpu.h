@@ -249,7 +249,7 @@ private:
         bool initialised{};
         bool absolute_big_page_limit{}; //!< Switch 2 layout: big-page limit is va_range_end
     } vm;
-    std::shared_ptr<Tegra::MemoryManager> gmmu;
+    std::unique_ptr<Tegra::MemoryManager> gmmu;
 
     struct IoctlNx2SyncpointShimInfo {
         u64_le address;
@@ -267,6 +267,8 @@ private:
     struct Nx2DeviceRange {
         DAddr address;
         bool heap; ///< Mapped through the session's heap mapper (else an SMMU allocation)
+        bool shared{}; ///< A reference to the process's range in Nx2GpuMemoryRegistry
+        size_t asid{};
     };
     std::map<std::pair<u64, u64>, Nx2DeviceRange> nx2_device_ranges;
     void Nx2Release(u64 cpu_address, u64 size);
@@ -275,6 +277,8 @@ private:
     // blocks get memory behind their device pages as the GPU writes them.
     void Nx2Sparse(u64 gpu_address, u64 size, bool create);
     void Nx2BackSparse(u64 gpu_address, u64 cpu_address, u64 size);
+    // A tile of a sparse region (nx2:gpu 216): its device pages show process memory, or nothing.
+    void Nx2SparseTile(u64 gpu_address, u64 cpu_address, u64 size);
     std::map<u64, std::pair<u64, DAddr>> nx2_sparse_ranges; ///< GPU address -> (size, device)
 };
 

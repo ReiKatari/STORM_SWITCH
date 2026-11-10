@@ -1,3 +1,4 @@
+#include <atomic>
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -33,6 +34,9 @@ class RasterizerInterface;
 }
 
 namespace Tegra::Engines {
+
+/// Draws left to trace after an upscale fallback (debug aid).
+extern std::atomic<u32> g_nx2_trace_draws_after_upscale;
 
 /**
  * This Engine is known as GK104_Compute. Documentation can be found in:
@@ -234,6 +238,15 @@ public:
 
 private:
     bool DispatchNativeCompute(const NativeQmdScheduler::Descriptor& descriptor);
+    void DescribeNativeResources(const NativeQmdScheduler::Descriptor& qmd);
+    bool UpscaleInsteadOfNativeProgram();
+    struct NativeImageReference {
+        u32 binding; ///< Constant buffer holding the handle
+        u32 offset;  ///< Handle's word offset in it
+        bool store;
+    };
+    const std::vector<NativeImageReference>& NativeImageReferences(GPUVAddr program);
+    std::unordered_map<GPUVAddr, std::vector<NativeImageReference>> native_image_references;
     bool ProcessNativeMethod(Core::System& system, u32 method, u32 argument, bool is_last_call);
     NativeQmdScheduler native_qmd;
     bool native_mode{};

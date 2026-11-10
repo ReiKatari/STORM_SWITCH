@@ -35,7 +35,7 @@ object GameHelper {
     const val KEY_GAMES = "Games"
 
     private val ignoredDirectoryNames: Set<String> = setOf(
-        "work", "romfs", "exefs", "cheats", "mods", "load", "atmosphere",
+        "work", "romfs", "cheats", "mods", "load", "atmosphere",
         ".git", "cache", "shaders", "screenshots", "backup", "textures",
         "android", "dcim", "pictures", "movies", "music", "podcasts",
         "ringtones", "alarms", "notifications", "whatsapp", "telegram",
@@ -490,7 +490,7 @@ object GameHelper {
 
     // File extensions considered as external content, buuut should
     // be done better imo.
-    private val externalContentExtensions = setOf("nsp", "xci", "nsz", "xcz")
+    private val externalContentExtensions = setOf("nsp", "xci", "nsz", "xcz", "nup")
 
     private fun scanContentContainersRecursive(
         files: Array<MinimalDocumentFile>,
@@ -587,6 +587,9 @@ object GameHelper {
                     }
 
                     if (Game.extensions.contains(extension)) {
+                        if (extension == "npdm" && !it.filename.equals("main.npdm", ignoreCase = true)) {
+                            return@runCatching
+                        }
                         try {
                             val cached = cachedMapByPath[filePath] ?: cachedMapByName[it.filename]?.let { old ->
                                 if (old.path != filePath) {
@@ -801,8 +804,8 @@ object GameHelper {
 
     fun isUpdateOrDlcPath(str: String): Boolean {
         val lower = str.lowercase(Locale.ROOT)
-        // Cartridge dumps (.xci, .xcz) are always full games, never standalone updates/DLCs
-        if (lower.endsWith(".xci") || lower.endsWith(".xcz")) {
+        // Cartridge dumps (.xci, .xcz) and Switch 2 / ExeFS packages (.nup, .npdm) are always full games, never standalone updates/DLCs
+        if (lower.endsWith(".xci") || lower.endsWith(".xcz") || lower.endsWith(".nup") || lower.endsWith(".npdm") || lower.endsWith("main.npdm")) {
             return false
         }
         val leaf = lower.substringAfterLast('/').substringAfterLast('\\')
@@ -832,7 +835,7 @@ object GameHelper {
     ): Game? {
         val filePath = if (uri.scheme == "file") (android.net.Uri.decode(uri.path ?: uri.toString())) else uri.toString()
         val filename = FileUtil.getFilename(uri)
-        val isCartridge = filename.endsWith(".xci", ignoreCase = true) || filename.endsWith(".xcz", ignoreCase = true)
+        val isCartridge = filename.endsWith(".xci", ignoreCase = true) || filename.endsWith(".xcz", ignoreCase = true) || filename.endsWith(".nup", ignoreCase = true) || filename.equals("main.npdm", ignoreCase = true)
 
         if (addedToLibrary && isUpdateOrDlcPath(filename)) {
             // If the filename clearly designates an update/DLC, double-check if it has base content

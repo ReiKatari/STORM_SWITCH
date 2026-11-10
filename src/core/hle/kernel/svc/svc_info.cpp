@@ -77,11 +77,7 @@ Result GetInfo(Core::System& system, u64* result, InfoType info_id_type, Handle 
 
         switch (info_id_type) {
         case InfoType::CoreMask:
-            if (process->IsSwitch2() || Settings::IsCurrentProgramSwitch2()) {
-                *result = 0xFFULL; // 8 cores on Switch 2 (T239)
-            } else {
-                *result = process->GetCoreMask();
-            }
+            *result = process->GetCoreMask();
             R_SUCCEED();
         case InfoType::PriorityMask:
             *result = process->GetPriorityMask();

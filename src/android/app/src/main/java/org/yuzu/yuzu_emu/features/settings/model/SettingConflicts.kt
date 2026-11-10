@@ -11,8 +11,15 @@ data class AndroidSettingConflict(
     val messageEn: String,
     val applyFix: () -> Unit
 ) {
-    fun localizedTitle(isRu: Boolean): String = if (isRu) titleRu else titleEn
-    fun localizedMessage(isRu: Boolean): String = if (isRu) messageRu else messageEn
+    val title: String
+        get() = if (java.util.Locale.getDefault().language == "ru") titleRu else titleEn
+    val message: String
+        get() = if (java.util.Locale.getDefault().language == "ru") messageRu else messageEn
+
+    fun localizedTitle(isRu: Boolean = java.util.Locale.getDefault().language == "ru"): String =
+        if (isRu) titleRu else titleEn
+    fun localizedMessage(isRu: Boolean = java.util.Locale.getDefault().language == "ru"): String =
+        if (isRu) messageRu else messageEn
 }
 
 object SettingConflicts {

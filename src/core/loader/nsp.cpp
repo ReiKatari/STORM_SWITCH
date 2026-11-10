@@ -37,9 +37,7 @@ AppLoader_NSP::AppLoader_NSP(FileSys::VirtualFile file_,
         return;
     }
 
-    if (nsp->IsExtractedType()) {
-        secondary_loader = std::make_unique<AppLoader_DeconstructedRomDirectory>(nsp->GetExeFS(), false);
-    } else {
+    if (!nsp->IsExtractedType()) {
         // In multi-content / 1G+1U containers, prefer the Update Control NCA (TitleID with bit 0x800)
         // so that the title, version (e.g. 1.0.10 / 655360), and icon reflect the latest content.
         u64 base_tid = FileSys::GetBaseTitleID(nsp->GetProgramTitleID());
@@ -92,39 +90,51 @@ AppLoader_NSP::AppLoader_NSP(FileSys::VirtualFile file_,
                 return pm.ParseControlNCA(*control_nca);
             }();
         }
+    }
+}
 
-        std::shared_ptr<FileSys::NCA> base_program_nca = nullptr;
-        if (base_tid != 0) {
-            auto cand = nsp->GetNCA(base_tid, FileSys::ContentRecordType::Program);
-            if (cand && cand->GetStatus() == ResultStatus::Success) {
-                base_program_nca = cand;
+void AppLoader_NSP::EnsureSecondaryLoader() {
+    if (secondary_loader != nullptr || nsp == nullptr) {
+        return;
+    }
+
+    if (nsp->IsExtractedType()) {
+        secondary_loader = std::make_unique<AppLoader_DeconstructedRomDirectory>(nsp->GetExeFS(), false);
+        return;
+    }
+
+    u64 base_tid = FileSys::GetBaseTitleID(nsp->GetProgramTitleID());
+    std::shared_ptr<FileSys::NCA> base_program_nca = nullptr;
+    if (base_tid != 0) {
+        auto cand = nsp->GetNCA(base_tid, FileSys::ContentRecordType::Program);
+        if (cand && cand->GetStatus() == ResultStatus::Success) {
+            base_program_nca = cand;
+        }
+    }
+    if (!base_program_nca) {
+        for (const auto& nca_item : nsp->GetNCAsCollapsed()) {
+            if (nca_item && nca_item->GetType() == FileSys::NCAContentType::Program &&
+                (nca_item->GetTitleId() & 0x800) == 0 &&
+                nca_item->GetStatus() == ResultStatus::Success) {
+                base_program_nca = nca_item;
+                break;
             }
         }
-        if (!base_program_nca) {
-            for (const auto& nca_item : nsp->GetNCAsCollapsed()) {
-                if (nca_item && nca_item->GetType() == FileSys::NCAContentType::Program &&
-                    (nca_item->GetTitleId() & 0x800) == 0 &&
-                    nca_item->GetStatus() == ResultStatus::Success) {
-                    base_program_nca = nca_item;
-                    break;
-                }
+    }
+    if (!base_program_nca) {
+        for (const auto& nca_item : nsp->GetNCAsCollapsed()) {
+            if (nca_item && nca_item->GetType() == FileSys::NCAContentType::Program &&
+                nca_item->GetStatus() == ResultStatus::Success) {
+                base_program_nca = nca_item;
+                break;
             }
         }
-        if (!base_program_nca) {
-            for (const auto& nca_item : nsp->GetNCAsCollapsed()) {
-                if (nca_item && nca_item->GetType() == FileSys::NCAContentType::Program &&
-                    nca_item->GetStatus() == ResultStatus::Success) {
-                    base_program_nca = nca_item;
-                    break;
-                }
-            }
-        }
-        if (!base_program_nca) {
-            base_program_nca = nsp->GetNCA(nsp->GetProgramTitleID(), FileSys::ContentRecordType::Program);
-        }
-        if (base_program_nca != nullptr && base_program_nca->GetBaseFile() != nullptr) {
-            secondary_loader = std::make_unique<AppLoader_NCA>(base_program_nca->GetBaseFile());
-        }
+    }
+    if (!base_program_nca) {
+        base_program_nca = nsp->GetNCA(nsp->GetProgramTitleID(), FileSys::ContentRecordType::Program);
+    }
+    if (base_program_nca != nullptr && base_program_nca->GetBaseFile() != nullptr) {
+        secondary_loader = std::make_unique<AppLoader_NCA>(base_program_nca->GetBaseFile());
     }
 }
 
@@ -161,6 +171,7 @@ FileType AppLoader_NSP::IdentifyType(const FileSys::VirtualFile& nsp_file) {
 }
 
 AppLoader_NSP::LoadResult AppLoader_NSP::Load(Kernel::KProcess& process, Core::System& system) {
+    EnsureSecondaryLoader();
     if (is_loaded) {
         return {ResultStatus::ErrorAlreadyLoaded, {}};
     }
@@ -317,6 +328,8 @@ AppLoader_NSP::LoadResult AppLoader_NSP::Load(Kernel::KProcess& process, Core::S
                         u32 ver = versions.count(update_nca_tid) ? versions[update_nca_tid] : (versions.count(nca_tid) ? versions[nca_tid] : 0);
                         const std::string& ver_str = version_strings.count(update_nca_tid) ? version_strings[update_nca_tid] : (version_strings.count(nca_tid) ? version_strings[nca_tid] : "");
                         manual->AddEntryWithVersion(t_type, rec_type, update_nca_tid, ver, ver_str, nca_item->GetBaseFile());
+                    } else if (t_type == FileSys::TitleType::AOC) {
+                        manual->AddEntry(t_type, rec_type, nca_tid, nca_item->GetBaseFile());
                     } else {
                         const u64 base_nca_tid = nca_tid & 0xFFFFFFFFFFFFF000ULL;
                         manual->AddEntry(t_type, rec_type, base_nca_tid, nca_item->GetBaseFile());
@@ -454,6 +467,7 @@ ResultStatus AppLoader_NSP::ReadRomFS(FileSys::VirtualFile& out_file) {
         }
     }
     // 4. Fallback to secondary loader
+    EnsureSecondaryLoader();
     if (secondary_loader) {
         return secondary_loader->ReadRomFS(out_file);
     }
@@ -598,14 +612,20 @@ ResultStatus AppLoader_NSP::ReadManualRomFS(FileSys::VirtualFile& out_file) {
 }
 
 ResultStatus AppLoader_NSP::ReadBanner(std::vector<u8>& buffer) {
+    EnsureSecondaryLoader();
+    if (!secondary_loader) return ResultStatus::ErrorNotImplemented;
     return secondary_loader->ReadBanner(buffer);
 }
 
 ResultStatus AppLoader_NSP::ReadLogo(std::vector<u8>& buffer) {
+    EnsureSecondaryLoader();
+    if (!secondary_loader) return ResultStatus::ErrorNotImplemented;
     return secondary_loader->ReadLogo(buffer);
 }
 
 ResultStatus AppLoader_NSP::ReadNSOModules(Modules& modules) {
+    EnsureSecondaryLoader();
+    if (!secondary_loader) return ResultStatus::ErrorNotImplemented;
     return secondary_loader->ReadNSOModules(modules);
 }
 

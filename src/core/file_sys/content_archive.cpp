@@ -164,9 +164,22 @@ NCA::NCA(VirtualFile file_, const NCA* base_nca)
     // Only NCAs without a rights ID use Key Area Keys!
     if (rights_id == RightsId{}) {
         if (!keys.HasKey(Core::Crypto::S128KeyType::KeyArea, master_key_id, reader->GetKeyIndex())) {
-            LOG_ERROR(Loader, "Cannot decrypt {}: keys for gen 0x{:02X}+ required.", file->GetName(), reader->GetKeyGeneration());
-            status = Loader::ResultStatus::ErrorMissingKeyAreaKey;
-            return;
+            bool all_no_crypto = (reader->GetFsCount() > 0);
+            for (s32 i = 0; i < reader->GetFsCount(); ++i) {
+                NcaFsHeader fs_header{};
+                if (R_FAILED(reader->ReadHeader(&fs_header, i)) ||
+                    fs_header.encryption_type != NcaFsHeader::EncryptionType::None) {
+                    all_no_crypto = false;
+                    break;
+                }
+            }
+            if (!all_no_crypto) {
+                LOG_ERROR(Loader, "Cannot decrypt {}: keys for gen 0x{:02X}+ required.", file->GetName(), reader->GetKeyGeneration());
+                status = Loader::ResultStatus::ErrorMissingKeyAreaKey;
+                return;
+            }
+            LOG_INFO(Loader, "NCA {} has no KeyAreaKey for gen 0x{:02X}, but all sections are unencrypted (NoCrypto). Proceeding.",
+                     file->GetName(), reader->GetKeyGeneration());
         }
     }
 

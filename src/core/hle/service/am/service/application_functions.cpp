@@ -239,8 +239,14 @@ Result IApplicationFunctions::GetDisplayVersion(Out<DisplayVersion> out_display_
     std::string version;
     if (res.first != nullptr) {
         version = res.first->GetVersionString();
-    } else if (!LooseDumpDisplayVersion(version)) {
-        version = "1.0.0";
+    } else {
+        FileSys::NACP app_nacp{};
+        if (system.GetAppLoader().ReadControlData(app_nacp) == Loader::ResultStatus::Success) {
+            version = app_nacp.GetVersionString();
+        }
+        if (version.empty() && !LooseDumpDisplayVersion(version)) {
+            version = "1.0.0";
+        }
     }
     std::memcpy(out_display_version->string.data(), version.data(),
                 (std::min)(version.size(), out_display_version->string.size()));

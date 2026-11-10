@@ -84,6 +84,17 @@ class AboutFragment : Fragment() {
             binding.root.findNavController().navigate(action)
         }
 
+        var isSpecialThanksExpanded = false
+        binding.textSpecialThanksContent.text = getString(R.string.special_thanks_description)
+        binding.buttonSpecialThanks.setOnClickListener {
+            isSpecialThanksExpanded = !isSpecialThanksExpanded
+            binding.textSpecialThanksContent.visibility = if (isSpecialThanksExpanded) View.VISIBLE else View.GONE
+            binding.iconSpecialThanksExpand.animate()
+                .rotation(if (isSpecialThanksExpanded) 180f else 0f)
+                .setDuration(200)
+                .start()
+        }
+
         val buildName = getString(R.string.app_name_suffixed)
         val buildVersion = org.yuzu.yuzu_emu.BuildConfig.VERSION_NAME
         val fullVersionText = "$buildName ($buildVersion)"

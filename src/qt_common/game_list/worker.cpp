@@ -276,6 +276,8 @@ QList<QStandardItem*> MakeGameListEntry(const std::string& path, const std::stri
         file_type_string = QStringLiteral("NSZ");
     } else if (ext == "xcz") {
         file_type_string = QStringLiteral("XCZ");
+    } else if (ext == "nup") {
+        file_type_string = QStringLiteral("NSP");
     }
 
     const u64 file_path_hash = Common::CityHash64(path.data(), path.size());
@@ -812,7 +814,7 @@ static bool ShouldPruneDirectory(const std::filesystem::path& p) {
     }
     const std::string_view s(ascii_lower, name.size());
     static const std::unordered_set<std::string_view> prune_dirs = {
-        "work", "romfs", "exefs", "cheats", "mods", "load", "atmosphere", "layeredfs",
+        "work", "romfs", "cheats", "mods", "load", "atmosphere", "layeredfs",
         ".git", ".svn", ".hg", ".vs", ".vscode", ".idea", ".cxx", ".gradle",
         "node_modules", "__pycache__", "venv", ".venv", "build", "build_ninja",
         "out", "obj", "temp", "tmp", "cache", "shaders", "screenshots",
@@ -835,7 +837,8 @@ static bool HasSupportedFileExtensionFast(const std::filesystem::path& p) {
     }
     const std::string_view sv(buf, 4);
     return (sv == ".nsp" || sv == ".nsz" || sv == ".xci" || sv == ".xcz" ||
-            sv == ".nca" || sv == ".ncz" || sv == ".nro" || sv == ".nso" || sv == ".kip");
+            sv == ".nca" || sv == ".ncz" || sv == ".nro" || sv == ".nso" ||
+            sv == ".kip" || sv == ".nup");
 }
 
 static bool IsSupportedRomFileFast(const std::filesystem::path& p) {
@@ -843,6 +846,17 @@ static bool IsSupportedRomFileFast(const std::filesystem::path& p) {
         return true;
     }
     const auto fn = p.filename().native();
+    if (fn.size() == 9) {
+        char buf[9];
+        for (int i = 0; i < 9; ++i) {
+            auto c = fn[i];
+            if (c > 127) return false;
+            buf[i] = static_cast<char>(std::tolower(static_cast<int>(c)));
+        }
+        if (std::string_view(buf, 9) == "main.npdm") {
+            return true;
+        }
+    }
     if (fn.size() == 4) {
         char buf[4];
         for (int i = 0; i < 4; ++i) {
@@ -851,6 +865,11 @@ static bool IsSupportedRomFileFast(const std::filesystem::path& p) {
             buf[i] = static_cast<char>(std::tolower(static_cast<int>(c)));
         }
         if (std::string_view(buf, 4) == "main") {
+            // Avoid duplicate entry if main.npdm exists in the same directory
+            std::error_code check_ec;
+            if (std::filesystem::exists(p.parent_path() / "main.npdm", check_ec)) {
+                return false;
+            }
             return true;
         }
     }
@@ -1123,7 +1142,7 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
                 return;
             }
             const auto ext = Common::ToLower(std::string(Common::FS::GetExtensionFromFilename(file_info.physical_name)));
-            if (ext == "nsp" || ext == "nsz" || ext == "xci" || ext == "xcz") {
+            if (ext == "nsp" || ext == "nsz" || ext == "xci" || ext == "xcz" || ext == "nup") {
                 const auto file = vfs->OpenFile(file_info.physical_name, FileSys::OpenMode::Read);
                 if (file && file->GetSize() > 0) {
                     provider->AddEntriesFromContainer(file, true);

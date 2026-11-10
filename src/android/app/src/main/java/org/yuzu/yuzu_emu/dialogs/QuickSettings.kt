@@ -42,13 +42,12 @@ class QuickSettings(val emulationFragment: EmulationFragment) {
 
     private fun saveSettings() {
         val currentGame = emulationFragment.game
-        CoroutineScope(Dispatchers.IO).launch {
-            if (currentGame != null) {
-                NativeConfig.savePerGameConfig()
-                org.yuzu.yuzu_emu.model.GameFixDatabase.markConfigAsUserCustom(currentGame)
-            }
-            NativeConfig.saveGlobalConfig()
+        // Persist configs synchronously before calling applySettings() to prevent async race
+        if (currentGame != null) {
+            NativeConfig.savePerGameConfig()
+            org.yuzu.yuzu_emu.model.GameFixDatabase.markConfigAsUserCustom(currentGame)
         }
+        NativeConfig.saveGlobalConfig()
         try {
             NativeLibrary.applySettings()
         } catch (_: Throwable) {}

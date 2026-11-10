@@ -31,7 +31,25 @@ data class GameFixProfile(
     val settingsMap: Map<String, String>,
     val altTitleIds: List<Long> = emptyList(),
     val vendorOverrides: Map<String, Map<String, String>> = emptyMap()
-)
+) {
+    val isRussian: Boolean
+        get() {
+            val lang = java.util.Locale.getDefault().language
+            return lang.equals("ru", ignoreCase = true) || lang.equals("uk", ignoreCase = true) || lang.equals("be", ignoreCase = true)
+        }
+
+    val knownIssues: String
+        get() = if (isRussian && issuesRu.isNotEmpty()) issuesRu else (if (issuesEn.isNotEmpty()) issuesEn else issuesRu)
+
+    val notes: String
+        get() = if (isRussian && fixesRu.isNotEmpty()) fixesRu else (if (fixesEn.isNotEmpty()) fixesEn else fixesRu)
+
+    val issues: String
+        get() = knownIssues
+
+    val fixes: String
+        get() = notes
+}
 
 object GameFixSessionState {
     val temporaryFixGames: MutableSet<String> = java.util.Collections.synchronizedSet(mutableSetOf<String>())
@@ -834,7 +852,7 @@ GameFixProfile(
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\dyna_state" to "1",
-                "Renderer\\fix_bloom_effects" to "true"
+                "Renderer\\fix_bloom_effects" to "false"
             )
         ),
 
@@ -1055,9 +1073,10 @@ GameFixProfile(
             "Castlevania: Belmont's Curse",
             "• Зависание и чёрный экран при запуске на Adreno 6xx / Snapdragon 870\n• Сбои декодирования вступительных видеороликов NVDEC\n• Сбои кастомных ASTC текстур",
             "• Black screen / boot hang on Adreno 6xx / Snapdragon 870\n• NVDEC boot video playback glitches\n• Custom ASTC texture decoding issues",
-            "✓ Рекомендуется драйвер Turnip (Vulkan 1.3+)\n✓ Точность ГПУ: Высокая (High)\n✓ Асинхронные шейдеры: Отключено\n✓ Реактивная очистка: Включено\n✓ NVDEC: Эмуляция ЦП (CPU)\n✓ Раннее освобождение заборов: Отключено",
-            "✓ Turnip Driver Recommended (Vulkan 1.3+)\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Disabled\n✓ Reactive Flushing: Enabled\n✓ NVDEC: CPU Emulation\n✓ Early Release Fences: Disabled",
+            "✓ Рекомендуется драйвер Turnip (Vulkan 1.3+)\n✓ Бэкенд ЦП: Dynarmic (JIT)\n✓ Точность ГПУ: Высокая (High)\n✓ Асинхронные шейдеры: Отключено\n✓ Реактивная очистка: Включено\n✓ NVDEC: Эмуляция ЦП (CPU)\n✓ Раннее освобождение заборов: Отключено",
+            "✓ Turnip Driver Recommended (Vulkan 1.3+)\n✓ CPU Backend: Dynarmic (JIT)\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Disabled\n✓ Reactive Flushing: Enabled\n✓ NVDEC: CPU Emulation\n✓ Early Release Fences: Disabled",
             mapOf(
+                "Cpu\\cpu_backend" to "0",
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\use_asynchronous_shaders" to "false",
                 "Renderer\\use_reactive_flushing" to "true",
@@ -6627,14 +6646,15 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "System\\memory_layout_mode" to "0",
+                "System\\memory_layout_mode" to "1",
                 "Renderer\\gpu_accuracy" to "1",
                 "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true"
-            )
+            ),
+            altTitleIds = listOf(0x010012F01B514000L, 0x0100F66017AA2000L, 0x0100999019A4E000L)
         ),
         GameFixProfile(
             0x010090C022978000L,
@@ -8049,7 +8069,7 @@ GameFixProfile(
                     } else if (isRabbids && isCustomFile && trimmed.startsWith("fix_bloom_effects", ignoreCase = true) && trimmed.contains("=")) {
                         val key = trimmed.substringBefore("=").trim()
                         val curVal = trimmed.substringAfter("=").trim()
-                        val targetVal = if (key.contains("\\")) "false" else "true"
+                        val targetVal = "false"
                         if (!curVal.equals(targetVal, ignoreCase = true)) {
                             modified = true
                             "$key=$targetVal"
@@ -8080,7 +8100,7 @@ GameFixProfile(
                 IntSetting.RENDERER_ACCURACY.setInt(2)
                 IntSetting.DMA_ACCURACY.setInt(3)
                 if (isRabbids) {
-                    BooleanSetting.FIX_BLOOM_EFFECTS.setBoolean(true)
+                    BooleanSetting.FIX_BLOOM_EFFECTS.setBoolean(false)
                     IntSetting.RENDERER_DYNA_STATE.setInt(0)
                 }
             }

@@ -600,7 +600,11 @@ Id EmitImageSampleExplicitLod(EmitContext& ctx, IR::Inst* inst, const IR::Value&
         const Id min_vec = ctx.ConstantComposite(ctx.F32[4], min_f32, min_f32, min_f32, min_f32);
         const Id max_f32 = ctx.Const(65000.0f);
         const Id max_vec = ctx.ConstantComposite(ctx.F32[4], max_f32, max_f32, max_f32, max_f32);
-        result = ctx.OpFClamp(ctx.F32[4], clamped, min_vec, max_vec);
+        if (ctx.profile.has_broken_spirv_clamp) {
+            result = ctx.OpFMin(ctx.F32[4], max_vec, ctx.OpFMax(ctx.F32[4], min_vec, clamped));
+        } else {
+            result = ctx.OpFClamp(ctx.F32[4], clamped, min_vec, max_vec);
+        }
     }
     return is_integer ? ctx.OpBitcast(ctx.F32[4], result) : result;
 }

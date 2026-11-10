@@ -120,43 +120,6 @@
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/button_special_thanks"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:clickable="false"
-                    android:focusable="false"
-                    app:cardCornerRadius="16dp"
-                    app:cardBackgroundColor="?attr/colorSurface"
-                    app:strokeColor="?attr/colorOutline"
-                    app:strokeWidth="1dp"
-                    app:cardElevation="0dp">
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:paddingHorizontal="24dp"
-                        android:paddingVertical="16dp">
-
-                        <com.google.android.material.textview.MaterialTextView
-                            style="@style/TextAppearance.Material3.TitleMedium"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/special_thanks_title"
-                            android:textAlignment="viewStart" />
-
-                        <com.google.android.material.textview.MaterialTextView
-                            style="@style/SynthwaveText.Body"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
-                            android:text="@string/special_thanks_description"
-                            android:textAlignment="viewStart" />
-
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <com.google.android.material.card.MaterialCardView
                     android:id="@+id/button_contributors"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -226,6 +189,87 @@
                             android:layout_marginTop="6dp"
                             android:text="@string/licenses_description"
                             android:textAlignment="viewStart" />
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/button_special_thanks"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardCornerRadius="16dp"
+                    app:cardBackgroundColor="?attr/colorSurface"
+                    app:strokeColor="?attr/colorOutline"
+                    app:strokeWidth="1dp"
+                    app:cardElevation="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingHorizontal="24dp"
+                        android:paddingVertical="18dp"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:layout_marginEnd="12dp"
+                                android:src="@drawable/ic_two_users"
+                                app:tint="?attr/colorPrimary" />
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/text_special_thanks_title"
+                                style="@style/TextAppearance.Material3.TitleMedium"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:textAlignment="viewStart"
+                                android:textColor="?attr/colorPrimary"
+                                android:textStyle="bold"
+                                android:text="@string/special_thanks_title"
+                                android:breakStrategy="simple"
+                                android:hyphenationFrequency="none"/>
+
+                            <ImageView
+                                android:id="@+id/icon_special_thanks_expand"
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@drawable/ic_dropdown_arrow"
+                                app:tint="?attr/colorOnSurfaceVariant" />
+
+                        </LinearLayout>
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/text_special_thanks_summary"
+                            style="@style/TextAppearance.Material3.BodyMedium"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:textAlignment="viewStart"
+                            android:text="@string/contributors_description"
+                            android:breakStrategy="simple"
+                            android:hyphenationFrequency="none"/>
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/text_special_thanks_content"
+                            style="@style/TextAppearance.Material3.BodySmall"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:visibility="gone"
+                            android:textColor="?attr/colorOnSurface"
+                            android:lineSpacingExtra="3dp"
+                            android:breakStrategy="simple"
+                            android:hyphenationFrequency="none"/>
 
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>

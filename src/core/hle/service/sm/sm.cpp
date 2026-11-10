@@ -254,7 +254,7 @@ Result SM::GetServiceImpl(Kernel::KClientSession** out_client_session, HLEReques
         // waiting would hang them for good: hand out a placeholder whose commands are all
         // auto-stubbed, like their unknown commands on existing services.
         const auto* const caller = ctx.GetThread().GetOwnerProcess();
-        if ((caller != nullptr && caller->IsSwitch2()) || Settings::values.use_auto_stub.GetValue()) {
+        if ((caller != nullptr && caller->IsSwitch2()) || Settings::IsCurrentProgramSwitch2() || Settings::values.use_auto_stub.GetValue()) {
             LOG_WARNING(Service_SM, "(STUBBED) service {} does not exist, returning a stub",
                         name);
             *out_client_session = CreateStubSession(system, ctx, name);

@@ -289,6 +289,7 @@ void GameFixDialog::DetectHardwareInfo() {
 
 QString GameFixDialog::GetLocalizedSettingLabel(const std::string& raw_key) const {
     const std::string k = raw_key;
+
     // GPU & Graphics
     if (k.find("gpu_accuracy") != std::string::npos)
         return StormLang(QStringLiteral("Точность эмуляции GPU"), QStringLiteral("GPU Accuracy"));
@@ -320,9 +321,11 @@ QString GameFixDialog::GetLocalizedSettingLabel(const std::string& raw_key) cons
         return StormLang(QStringLiteral("Масштаб разрешения"), QStringLiteral("Resolution Scale"));
     if (k.find("scaling_filter") != std::string::npos)
         return StormLang(QStringLiteral("Фильтр масштабирования (FSR)"), QStringLiteral("Scaling Filter (FSR)"));
+    if (k.find("fsr_sharpening_slider") != std::string::npos)
+        return StormLang(QStringLiteral("Резкость фильтра AMD FSR"), QStringLiteral("AMD FSR Sharpness"));
     if (k.find("anti_aliasing") != std::string::npos)
         return StormLang(QStringLiteral("Сглаживание (SMAA / FXAA)"), QStringLiteral("Anti-Aliasing"));
-    if (k.find("max_anisotropy") != std::string::npos || k.find("anisotropic_filtering") != std::string::npos)
+    if (k.find("max_anisotropy") != std::string::npos || k.find("anisotropic_filtering") != std::string::npos || k.find("anisotropy") != std::string::npos)
         return StormLang(QStringLiteral("Анизотропная фильтрация"), QStringLiteral("Anisotropic Filtering"));
     if (k.find("vsync_mode") != std::string::npos || k.find("use_vsync") != std::string::npos)
         return StormLang(QStringLiteral("Вертикальная синхронизация (VSync)"), QStringLiteral("Vertical Sync (VSync)"));
@@ -336,24 +339,76 @@ QString GameFixDialog::GetLocalizedSettingLabel(const std::string& raw_key) cons
         return StormLang(QStringLiteral("Кэш конвейеров драйвера Vulkan"), QStringLiteral("Vulkan Pipeline Cache"));
     if (k.find("eco_frame_pacing") != std::string::npos)
         return StormLang(QStringLiteral("Эко-кадрирование"), QStringLiteral("Eco Frame Pacing"));
+    if (k.find("frame_pacing_mode") != std::string::npos)
+        return StormLang(QStringLiteral("Режим синхронизации кадров (Pacing)"), QStringLiteral("Frame Pacing Mode"));
+    if (k.find("backend") != std::string::npos)
+        return StormLang(QStringLiteral("Графический бэкенд (Vulkan)"), QStringLiteral("Graphics Backend (Vulkan)"));
+    if (k.find("vram_garbage_collection") != std::string::npos)
+        return StormLang(QStringLiteral("Сборка мусора видеопамяти (VRAM)"), QStringLiteral("VRAM Garbage Collection"));
+    if (k.find("vram_budget_governor") != std::string::npos)
+        return StormLang(QStringLiteral("Контроллер бюджета VRAM"), QStringLiteral("VRAM Budget Governor"));
+    if (k.find("vram_usage_mode") != std::string::npos)
+        return StormLang(QStringLiteral("Режим использования видеопамяти"), QStringLiteral("VRAM Usage Mode"));
+    if (k.find("dyna_state") != std::string::npos || k.find("extended_dynamic_state") != std::string::npos)
+        return StormLang(QStringLiteral("Динамическое состояние Vulkan (EDS)"), QStringLiteral("Extended Dynamic State (EDS)"));
+    if (k.find("vertex_input_dynamic_state") != std::string::npos)
+        return StormLang(QStringLiteral("Динамический ввод вершин"), QStringLiteral("Vertex Input Dynamic State"));
+    if (k.find("drs_resolution_lock") != std::string::npos)
+        return StormLang(QStringLiteral("Фиксация динамического разрешения (DRS)"), QStringLiteral("DRS Resolution Lock"));
+    if (k.find("dynamic_performance_scaler") != std::string::npos)
+        return StormLang(QStringLiteral("Динамическое масштабирование производительности"), QStringLiteral("Dynamic Performance Scaler"));
+    if (k.find("emulate_bgr565") != std::string::npos)
+        return StormLang(QStringLiteral("Эмуляция цветового формата BGR565"), QStringLiteral("BGR565 Color Format Emulation"));
+    if (k.find("enable_frame_skipping") != std::string::npos)
+        return StormLang(QStringLiteral("Пропуск кадров для стабильности"), QStringLiteral("Enable Frame Skipping"));
+    if (k.find("fix_bloom_effects") != std::string::npos)
+        return StormLang(QStringLiteral("Коррекция эффектов свечения (Bloom)"), QStringLiteral("Fix Bloom Effects"));
+    if (k.find("force_max_clock") != std::string::npos || k.find("force_max_gpu_clocks") != std::string::npos)
+        return StormLang(QStringLiteral("Принудительная максимальная частота ГПУ"), QStringLiteral("Force Maximum GPU Clocks"));
+    if (k.find("gpu_clock") != std::string::npos)
+        return StormLang(QStringLiteral("Тактовая частота ГПУ"), QStringLiteral("GPU Clock"));
+    if (k.find("rescale_hack") != std::string::npos)
+        return StormLang(QStringLiteral("Коррекция масштаба 2D-спрайтов"), QStringLiteral("2D Sprite Rescale Correction"));
+    if (k.find("smart_shader_throttle") != std::string::npos)
+        return StormLang(QStringLiteral("Умное дросселирование шейдеров"), QStringLiteral("Smart Shader Throttle"));
+    if (k.find("use_video_framerate") != std::string::npos)
+        return StormLang(QStringLiteral("Синхронизация частоты видео"), QStringLiteral("Use Video Framerate"));
 
     // CPU & Memory
     if (k.find("cpu_accuracy") != std::string::npos)
         return StormLang(QStringLiteral("Точность эмуляции ЦП"), QStringLiteral("CPU Accuracy"));
     if (k.find("cpu_backend") != std::string::npos)
-        return StormLang(QStringLiteral("Бэкенд ЦП (JIT/NCE)"), QStringLiteral("CPU Backend"));
-    if (k.find("cpuopt_fastmem") != std::string::npos || k.find("fastmem") != std::string::npos)
-        return StormLang(QStringLiteral("Быстрая память ЦП (Fastmem)"), QStringLiteral("Fastmem"));
+        return StormLang(QStringLiteral("Движок JIT/NCE ЦП"), QStringLiteral("CPU JIT/NCE Engine"));
+    if (k.find("cpu_clock") != std::string::npos)
+        return StormLang(QStringLiteral("Тактовая частота ЦП"), QStringLiteral("CPU Clock"));
+    if (k.find("sync_core_speed") != std::string::npos)
+        return StormLang(QStringLiteral("Синхронизация скорости ядер"), QStringLiteral("Sync Core Speed"));
     if (k.find("cpuopt_fastmem_exclusives") != std::string::npos)
-        return StormLang(QStringLiteral("Эксклюзивный доступ Fastmem"), QStringLiteral("Fastmem Exclusives"));
+        return StormLang(QStringLiteral("Эксклюзивы быстрой памяти (Fastmem)"), QStringLiteral("Fastmem Exclusives"));
+    if (k.find("cpuopt_fastmem") != std::string::npos || k.find("fastmem") != std::string::npos)
+        return StormLang(QStringLiteral("Быстрая память (Fastmem JIT)"), QStringLiteral("Fastmem JIT"));
     if (k.find("cpuopt_ignore_memory_aborts") != std::string::npos)
         return StormLang(QStringLiteral("Игнорирование сбоев памяти ЦП"), QStringLiteral("Ignore Memory Aborts"));
+    if (k.find("cpuopt_recompile_exclusives") != std::string::npos)
+        return StormLang(QStringLiteral("Перекомпиляция эксклюзивных инструкций"), QStringLiteral("Recompile Exclusive Instructions"));
+    if (k.find("cpuopt_unsafe_host_mmu") != std::string::npos)
+        return StormLang(QStringLiteral("Прямой доступ Host MMU"), QStringLiteral("Host MMU Direct Access"));
+    if (k.find("cpuopt_unsafe_ignore_standard_fpcr") != std::string::npos)
+        return StormLang(QStringLiteral("Игнорирование стандартного регистра FPCR"), QStringLiteral("Ignore Standard FPCR"));
+    if (k.find("cpuopt_unsafe_reduce_fp_error") != std::string::npos)
+        return StormLang(QStringLiteral("Уменьшение погрешности плавающей точки"), QStringLiteral("Reduce Floating-Point Error"));
+    if (k.find("cpuopt_unsafe_unfuse_fma") != std::string::npos)
+        return StormLang(QStringLiteral("Разделение операций умножения-сложения (FMA)"), QStringLiteral("Unfuse FMA Operations"));
+    if (k.find("use_storm_tier2_compiler") != std::string::npos)
+        return StormLang(QStringLiteral("JIT-компилятор STORM Tier-2"), QStringLiteral("STORM Tier-2 JIT Compiler"));
     if (k.find("use_multi_core") != std::string::npos)
         return StormLang(QStringLiteral("Многопоточная эмуляция ЦП"), QStringLiteral("Multicore CPU Emulation"));
     if (k.find("memory_layout_mode") != std::string::npos)
         return StormLang(QStringLiteral("Конфигурация памяти DRAM"), QStringLiteral("Memory Layout (DRAM)"));
 
-    // Sync & Engine Stability
+    // Sync & System Settings
+    if (k.find("airplane_mode") != std::string::npos)
+        return StormLang(QStringLiteral("Режим полёта (офлайн)"), QStringLiteral("Airplane Mode"));
     if (k.find("gpu_fence_behavior") != std::string::npos)
         return StormLang(QStringLiteral("Поведение барьеров GPU"), QStringLiteral("GPU Fence Behavior"));
     if (k.find("dma_accuracy") != std::string::npos)
@@ -364,6 +419,26 @@ QString GameFixDialog::GetLocalizedSettingLabel(const std::string& raw_key) cons
         return StormLang(QStringLiteral("Ограничение скорости 100%"), QStringLiteral("Speed Limit 100%"));
     if (k.find("use_docked_mode") != std::string::npos)
         return StormLang(QStringLiteral("Режим док-станции (Docked)"), QStringLiteral("Docked Mode"));
+    if (k.find("disable_macro_hle") != std::string::npos)
+        return StormLang(QStringLiteral("Отключение HLE макросов"), QStringLiteral("Disable Macro HLE"));
+    if (k.find("disable_macro_jit") != std::string::npos)
+        return StormLang(QStringLiteral("Отключение JIT макросов"), QStringLiteral("Disable Macro JIT"));
+    if (k.find("disable_web_applet") != std::string::npos)
+        return StormLang(QStringLiteral("Отключение веб-апплета"), QStringLiteral("Disable Web Applet"));
+    if (k.find("use_auto_stub") != std::string::npos)
+        return StormLang(QStringLiteral("Автоматические заглушки сервисов"), QStringLiteral("Automatic Service Stubs"));
+    if (k.find("language_index") != std::string::npos)
+        return StormLang(QStringLiteral("Язык системы Switch"), QStringLiteral("System Language"));
+    if (k.find("region_index") != std::string::npos)
+        return StormLang(QStringLiteral("Регион системы Switch"), QStringLiteral("System Region"));
+    if (k.find("driver_path") != std::string::npos)
+        return StormLang(QStringLiteral("Пользовательский драйвер GPU"), QStringLiteral("Custom GPU Driver"));
+    if (k.find("custom") != std::string::npos)
+        return StormLang(QStringLiteral("Пользовательский профиль"), QStringLiteral("Custom Profile"));
+    if (k.find("use_global") != std::string::npos)
+        return StormLang(QStringLiteral("Использовать глобальные настройки"), QStringLiteral("Use Global Settings"));
+    if (k.find("default") != std::string::npos)
+        return StormLang(QStringLiteral("Значение по умолчанию"), QStringLiteral("Default Value"));
 
     // Fallback formatting
     std::string clean = raw_key;
@@ -391,6 +466,7 @@ QString GameFixDialog::FormatSettingValue(const std::string& raw_key, const std:
         if (val == "0") return StormLang(QStringLiteral("Авто"), QStringLiteral("Auto"));
         if (val == "1") return StormLang(QStringLiteral("Точная"), QStringLiteral("Accurate"));
         if (val == "2") return StormLang(QStringLiteral("Небезопасная"), QStringLiteral("Unsafe"));
+        if (val == "3") return StormLang(QStringLiteral("Параноидальная"), QStringLiteral("Paranoid"));
     }
     if (k.find("cpu_backend") != std::string::npos) {
         if (val == "0") return QStringLiteral("Dynarmic (JIT)");
@@ -413,7 +489,9 @@ QString GameFixDialog::FormatSettingValue(const std::string& raw_key, const std:
         if (val == "0") return QStringLiteral("Nearest");
         if (val == "1") return QStringLiteral("Bilinear");
         if (val == "2") return QStringLiteral("Bicubic");
-        if (val == "4") return QStringLiteral("AMD FSR");
+        if (val == "3") return QStringLiteral("Gaussian");
+        if (val == "4") return QStringLiteral("ScaleForce");
+        if (val == "5") return QStringLiteral("AMD FSR");
     }
     if (k.find("anti_aliasing") != std::string::npos) {
         if (val == "0") return StormLang(QStringLiteral("Выкл"), QStringLiteral("None"));
@@ -429,6 +507,78 @@ QString GameFixDialog::FormatSettingValue(const std::string& raw_key, const std:
         if (val == "0") return StormLang(QStringLiteral("Автоматически"), QStringLiteral("Auto"));
         if (val == "1") return StormLang(QStringLiteral("Точно"), QStringLiteral("Accurate"));
         if (val == "3") return StormLang(QStringLiteral("Быстро"), QStringLiteral("Fast"));
+    }
+    if (k.find("nvdec_emulation") != std::string::npos) {
+        if (val == "0") return StormLang(QStringLiteral("Выключено"), QStringLiteral("Disabled"));
+        if (val == "1") return StormLang(QStringLiteral("Программное (ЦП)"), QStringLiteral("CPU (FFmpeg)"));
+        if (val == "2") return StormLang(QStringLiteral("Аппаратное (ГПУ)"), QStringLiteral("GPU (Hardware)"));
+        if (val == "3") return StormLang(QStringLiteral("Гибридное"), QStringLiteral("Hybrid"));
+    }
+    if (k.find("astc_recompression") != std::string::npos) {
+        if (val == "0") return StormLang(QStringLiteral("Без сжатия"), QStringLiteral("Uncompressed"));
+        if (val == "1") return StormLang(QStringLiteral("BC1 (Макс. экономия)"), QStringLiteral("BC1 (Max RAM savings)"));
+        if (val == "2") return StormLang(QStringLiteral("BC3 (Экономия 50%)"), QStringLiteral("BC3 (Medium 50% savings)"));
+        if (val == "3") return StormLang(QStringLiteral("BC5 (Высокое качество)"), QStringLiteral("BC5 (High quality normals)"));
+    }
+    if (k.find("vram_usage_mode") != std::string::npos) {
+        if (val == "0") return StormLang(QStringLiteral("Консервативный"), QStringLiteral("Conservative"));
+        if (val == "1") return StormLang(QStringLiteral("Агрессивный"), QStringLiteral("Aggressive"));
+    }
+    if (k.find("max_anisotropy") != std::string::npos || k.find("anisotropic_filtering") != std::string::npos || k.find("anisotropy") != std::string::npos) {
+        if (val == "0") return StormLang(QStringLiteral("По умолчанию"), QStringLiteral("Default"));
+        if (val == "1") return QStringLiteral("2x");
+        if (val == "2") return QStringLiteral("4x");
+        if (val == "3") return QStringLiteral("8x");
+        if (val == "4") return QStringLiteral("16x");
+    }
+    if (k.find("memory_layout_mode") != std::string::npos) {
+        if (val == "0") return StormLang(QStringLiteral("4 ГБ (Стандартный Switch)"), QStringLiteral("4 GB (Standard Switch)"));
+        if (val == "1") return StormLang(QStringLiteral("6 ГБ (Расширенный)"), QStringLiteral("6 GB (Expanded)"));
+        if (val == "2") return StormLang(QStringLiteral("8 ГБ (Максимум)"), QStringLiteral("8 GB (Maximum)"));
+        if (val == "3") return StormLang(QStringLiteral("12 ГБ (Switch 2 Pro)"), QStringLiteral("12 GB (Switch 2 Pro)"));
+    }
+    if (k.find("dyna_state") != std::string::npos || k.find("extended_dynamic_state") != std::string::npos) {
+        if (val == "0") return StormLang(QStringLiteral("Выкл"), QStringLiteral("Off"));
+        if (val == "1") return QStringLiteral("Dynamic State 1");
+        if (val == "2") return QStringLiteral("Dynamic State 2");
+        if (val == "3") return QStringLiteral("Dynamic State 3 (Вкл)");
+    }
+    if (k.find("backend") != std::string::npos) {
+        if (val == "0") return QStringLiteral("OpenGL");
+        if (val == "1") return QStringLiteral("Vulkan");
+        if (val == "2") return QStringLiteral("Null");
+    }
+    if (k.find("frame_pacing_mode") != std::string::npos) {
+        if (val == "0") return StormLang(QStringLiteral("Автоматически"), QStringLiteral("Auto"));
+        if (val == "1") return QStringLiteral("FIFO");
+        if (val == "2") return QStringLiteral("Mailbox");
+        if (val == "3") return QStringLiteral("Immediate");
+    }
+    if (k.find("language_index") != std::string::npos) {
+        const char* langs[] = {
+            "Японский", "Английский (США)", "Французский", "Немецкий", "Итальянский",
+            "Испанский", "Китайский (упрощ.)", "Корейский", "Голландский", "Португальский",
+            "Русский", "Тайваньский", "Английский (Британия)"
+        };
+        const char* langs_en[] = {
+            "Japanese", "English (US)", "French", "German", "Italian",
+            "Spanish", "Chinese (Simplified)", "Korean", "Dutch", "Portuguese",
+            "Russian", "Taiwanese", "English (UK)"
+        };
+        bool ok = false;
+        const int idx = QString::fromStdString(val).toInt(&ok);
+        if (ok && idx >= 0 && idx < 13) {
+            return StormLang(QString::fromUtf8(langs[idx]), QString::fromUtf8(langs_en[idx]));
+        }
+    }
+    if (k.find("region_index") != std::string::npos) {
+        const char* regs[] = {"Япония", "США", "Европа", "Австралия", "Китай", "Корея", "Тайвань"};
+        const char* regs_en[] = {"Japan", "USA", "Europe", "Australia", "China", "Korea", "Taiwan"};
+        bool ok = false;
+        const int idx = QString::fromStdString(val).toInt(&ok);
+        if (ok && idx >= 0 && idx < 7) {
+            return StormLang(QString::fromUtf8(regs[idx]), QString::fromUtf8(regs_en[idx]));
+        }
     }
 
     if (val == "true" || val == "True" || val == "1")
@@ -737,8 +887,11 @@ void GameFixDialog::SetupUI() {
         auto* btn = new QPushButton(grp2);
         btn->setCheckable(true);
         btn->setCursor(Qt::PointingHandCursor);
+        btn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
+        btn->setMinimumHeight(116);
 
         auto* b_lay = new QVBoxLayout(btn);
+        b_lay->setSizeConstraint(QLayout::SetMinimumSize);
         b_lay->setContentsMargins(12, 12, 12, 12);
         b_lay->setSpacing(4);
 

@@ -1,3 +1,4 @@
+#include "video_core/renderer_vulkan/vertex_repack.h"
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -353,6 +354,14 @@ BufferCacheRuntime::BufferCacheRuntime(const Device& device_, MemoryAllocator& m
       quad_index_pass(device, scheduler, descriptor_pool, staging_pool,
                       compute_pass_descriptor_queue) {
     const VkDriverIdKHR driver_id = device.GetDriverID();
+    const bool enable_vertex_repack = VertexRepackEnabled();
+    LOG_INFO(Render_Vulkan, "69-byte vertex layout repacking {} ({})",
+             enable_vertex_repack ? "enabled" : "disabled",
+             "portable Vulkan layout fallback");
+    if (enable_vertex_repack) {
+        vertex_repack_pass = std::make_unique<VertexRepackPass>(
+            device, scheduler, descriptor_pool, staging_pool, compute_pass_descriptor_queue);
+    }
     limit_dynamic_storage_buffers = driver_id == VK_DRIVER_ID_QUALCOMM_PROPRIETARY ||
                                     driver_id == VK_DRIVER_ID_ARM_PROPRIETARY;
     if (limit_dynamic_storage_buffers) {
@@ -366,6 +375,19 @@ BufferCacheRuntime::BufferCacheRuntime(const Device& device_, MemoryAllocator& m
                                                                      scheduler_, staging_pool_);
     quad_strip_index_buffer = std::make_shared<QuadStripIndexBuffer>(device_, memory_allocator_,
                                                                      scheduler_, staging_pool_);
+}
+
+u32 BufferCacheRuntime::SetVertexRepackLayout(const Tegra::Engines::Maxwell3D::Regs& regs,
+                                            bool dynamic_input) {
+    const u32 old_mask = vertex_repack_mask;
+    const bool input_supported = VertexRepackInputSupported(
+        dynamic_input, ExperimentalStaticVertexRepackEnabled());
+    vertex_repack_mask = vertex_repack_pass && input_supported ? VertexRepackMask(regs) : 0;
+    if (vertex_repack_mask != old_mask) {
+        LOG_DEBUG(Render_Vulkan, "Vertex repack selection: mask={:#x}, dynamic_input={}",
+                  vertex_repack_mask, dynamic_input);
+    }
+    return old_mask | vertex_repack_mask;
 }
 
 StagingBufferRef BufferCacheRuntime::UploadStagingBuffer(size_t size) {
@@ -604,29 +626,32 @@ void BufferCacheRuntime::BindVertexBuffer(u32 index, VkBuffer buffer, u32 offset
     if (index >= device.GetMaxVertexInputBindings()) {
         return;
     }
-    if (stride == 69 && vertex_repack_pass && size >= 69 && buffer != VK_NULL_HANDLE) {
-        const u32 vertex_count = size / 69;
-        const auto [repack_buf, repack_offset] = vertex_repack_pass->Repack(vertex_count, buffer, offset, size);
-        if (repack_buf != VK_NULL_HANDLE) {
-            buffer = repack_buf;
-            offset = static_cast<u32>(repack_offset);
+    if (IsVertexRepacked(index)) {
+        const auto repacked = buffer != VK_NULL_HANDLE && size != 0 && stride == 69
+                                  ? vertex_repack_pass->Assemble(buffer, offset, size)
+                                  : std::nullopt;
+        if (repacked) {
+            buffer = repacked->first;
+            offset = static_cast<u32>(repacked->second);
+            size = static_cast<u32>((u64{size} + 68) / 69 * 72);
             stride = 72;
-            size = vertex_count * 72;
+        } else {
+            KeepVertexLayout(index);
         }
-    }
-    if (buffer == VK_NULL_HANDLE && !device.HasNullDescriptor()) {
-        ReserveNullBuffer();
-        buffer = *null_buffer;
-        offset = 0;
     }
     if (device.IsExtExtendedDynamicStateSupported()) {
         scheduler.Record([index, buffer, offset, size, stride](vk::CommandBuffer cmdbuf) {
             const VkDeviceSize vk_offset = buffer != VK_NULL_HANDLE ? offset : 0;
-            const VkDeviceSize vk_size = (buffer != VK_NULL_HANDLE && size != 0) ? size : VK_WHOLE_SIZE;
+            const VkDeviceSize vk_size = buffer != VK_NULL_HANDLE ? size : VK_WHOLE_SIZE;
             const VkDeviceSize vk_stride = stride;
             cmdbuf.BindVertexBuffers2EXT(index, 1, &buffer, &vk_offset, &vk_size, &vk_stride);
         });
     } else {
+        if (!device.HasNullDescriptor() && buffer == VK_NULL_HANDLE) {
+            ReserveNullBuffer();
+            buffer = *null_buffer;
+            offset = 0;
+        }
         scheduler.Record([index, buffer, offset](vk::CommandBuffer cmdbuf) {
             cmdbuf.BindVertexBuffer(index, buffer, offset);
         });
@@ -637,23 +662,7 @@ void BufferCacheRuntime::BindVertexBuffers(VideoCommon::HostBindings<Buffer>& bi
     boost::container::static_vector<VkBuffer, VideoCommon::NUM_VERTEX_BUFFERS> buffer_handles(bindings.buffers.size());
     for (u32 i = 0; i < bindings.buffers.size(); ++i) {
         auto handle = bindings.buffers[i]->Handle();
-        VkDeviceSize offset = bindings.offsets[i];
-        VkDeviceSize size = bindings.sizes[i];
-        VkDeviceSize stride = bindings.strides[i];
-        if (stride == 69 && vertex_repack_pass && size >= 69 && handle != VK_NULL_HANDLE) {
-            const u32 vertex_count = static_cast<u32>(size / 69);
-            const auto [repack_buf, repack_offset] =
-                vertex_repack_pass->Repack(vertex_count, handle, static_cast<u32>(offset), static_cast<u32>(size));
-            if (repack_buf != VK_NULL_HANDLE) {
-                handle = repack_buf;
-                offset = repack_offset;
-                stride = 72;
-                size = static_cast<VkDeviceSize>(vertex_count) * 72;
-                bindings.offsets[i] = offset;
-                bindings.strides[i] = stride;
-                bindings.sizes[i] = size;
-            }
-        }
+        const bool unbound = handle == VK_NULL_HANDLE;
         if (handle == VK_NULL_HANDLE) {
             bindings.offsets[i] = 0;
             bindings.sizes[i] = VK_WHOLE_SIZE;
@@ -661,10 +670,31 @@ void BufferCacheRuntime::BindVertexBuffers(VideoCommon::HostBindings<Buffer>& bi
                 ReserveNullBuffer();
                 handle = *null_buffer;
             }
-        } else if (bindings.sizes[i] == 0) {
-            bindings.sizes[i] = VK_WHOLE_SIZE;
         }
         buffer_handles[i] = handle;
+        const u32 binding = bindings.min_index + i;
+        if (IsVertexRepacked(binding)) {
+            // A null binding reads nothing worth moving and its size is VK_WHOLE_SIZE.
+            const auto repacked = !unbound && bindings.strides[i] == 69 && bindings.sizes[i] > 0 &&
+                                          bindings.sizes[i] <= std::numeric_limits<u32>::max()
+                                      ? vertex_repack_pass->Assemble(
+                                            handle, static_cast<u32>(bindings.offsets[i]),
+                                            static_cast<u32>(bindings.sizes[i]))
+                                      : std::nullopt;
+            if (!repacked) {
+                KeepVertexLayout(binding);
+                continue;
+            }
+            buffer_handles[i] = repacked->first;
+            bindings.offsets[i] = repacked->second;
+            bindings.sizes[i] = (bindings.sizes[i] + 68) / 69 * 72;
+            bindings.strides[i] = 72;
+            static bool reported = false;
+            if (!reported) {
+                LOG_WARNING(Render_Vulkan, "Experimental GPU vertex repacking active: 69 -> 72 bytes");
+                reported = true;
+            }
+        }
     }
     const u32 device_max = device.GetMaxVertexInputBindings();
     const u32 min_binding = (std::min)(bindings.min_index, device_max);

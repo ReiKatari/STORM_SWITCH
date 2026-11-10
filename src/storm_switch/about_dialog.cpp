@@ -41,6 +41,12 @@ AboutDialog::AboutDialog(QWidget* parent)
     setStyleSheet(StormTheme::GetDialogStyle(pal) + QLatin1Char('\n') +
                   StormDesign::BuildDialogStylesheet(pal));
 
+    std::string lang = UISettings::values.language.GetValue();
+    if (lang.empty()) {
+        lang = QLocale::system().name().toStdString();
+    }
+    const bool is_ru = (lang.rfind("ru", 0) == 0 || lang.rfind("be", 0) == 0 || lang.rfind("uk", 0) == 0);
+
     setWindowTitle(StormLangStorm11(
         QStringLiteral("О программе — STORM SWITCH"),
         QStringLiteral("About — STORM SWITCH"),
@@ -246,7 +252,7 @@ AboutDialog::AboutDialog(QWidget* parent)
         "<li><b>Community Testers &amp; Bug Reporters across 4PDA, GitHub, Discord, and Forums</b> — testing hundreds of games across diverse PC and mobile hardware and providing detailed logs and feedback.</li></ul>"
         "</div>").arg(pal.textPrimary, pal.accent);
 
-    credits_browser->setHtml(StormLang(credits_ru, credits_en));
+    credits_browser->setHtml(is_ru ? credits_ru : credits_en);
 
     const QString tab_about_title = StormLangStorm11(
         QStringLiteral("О программе"), QStringLiteral("About"), QStringLiteral("Über"),

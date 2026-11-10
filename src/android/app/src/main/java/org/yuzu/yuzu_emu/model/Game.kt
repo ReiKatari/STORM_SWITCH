@@ -42,7 +42,11 @@ class Game(
     val extension: String
         get() {
             val ext = FileUtil.getExtension(Uri.parse(path)).uppercase()
-            return if (ext.isNotEmpty()) ext else "NSP"
+            return when (ext) {
+                "NPDM" -> "EXEFS"
+                "" -> "NSP"
+                else -> ext
+            }
         }
 
     val settingsName: String
@@ -124,7 +128,7 @@ class Game(
 
     companion object {
         val extensions: Set<String> = HashSet(
-            listOf("xci", "nsp", "nca", "nro", "nsz", "xcz")
+            listOf("xci", "nsp", "nca", "nro", "nsz", "xcz", "nup", "npdm")
         )
     }
 }

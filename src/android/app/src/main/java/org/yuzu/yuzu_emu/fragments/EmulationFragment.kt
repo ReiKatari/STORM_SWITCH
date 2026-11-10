@@ -3166,7 +3166,24 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
     }
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-        Log.debug("[EmulationFragment] Surface changed. Resolution: " + width + "x" + height)
+        val isLandscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+        val displayMetrics = resources.displayMetrics
+        val screenW = if (isLandscape) maxOf(displayMetrics.widthPixels, displayMetrics.heightPixels) else minOf(displayMetrics.widthPixels, displayMetrics.heightPixels)
+        val screenH = if (isLandscape) minOf(displayMetrics.widthPixels, displayMetrics.heightPixels) else maxOf(displayMetrics.widthPixels, displayMetrics.heightPixels)
+        val viewW = runCatching { binding.surfaceEmulation.width }.getOrDefault(0)
+        val viewH = runCatching { binding.surfaceEmulation.height }.getOrDefault(0)
+        val effW = maxOf(width, viewW, screenW)
+        val effH = maxOf(height, viewH, screenH)
+
+        if ((effW > width || effH > height) && effW > 0 && effH > 0) {
+            try {
+                holder.setFixedSize(effW, effH)
+            } catch (e: Exception) {
+                Log.warning("[EmulationFragment] Failed to setFixedSize on surface holder: ${e.message}")
+            }
+        }
+
+        Log.debug("[EmulationFragment] Surface changed. Resolution: " + effW + "x" + effH + " (raw: " + width + "x" + height + ")")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && holder.surface.isValid) {
             try {
                 val targetRate = if (BooleanSetting.RENDERER_FRAME_GEN.getBoolean()) {
@@ -3189,16 +3206,16 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         lifecycleScope.launch {
             driverViewModel.isInteractionAllowed.first { it }
             if (holder.surface.isValid && this@EmulationFragment::emulationState.isInitialized) {
-                emulationState.newSurface(holder.surface, width, height)
+                emulationState.newSurface(holder.surface, effW, effH)
             }
         }
         if (holder.surface.isValid) {
             if (this::emulationState.isInitialized) {
                 synchronized(emulationState) {
-                    emulationState.updateSurfaceReference(holder.surface, width, height)
+                    emulationState.updateSurfaceReference(holder.surface, effW, effH)
                 }
             }
-            NativeLibrary.surfaceChanged(holder.surface, width, height)
+            NativeLibrary.surfaceChanged(holder.surface, effW, effH)
         }
         updatePausedFrameVisibility()
     }

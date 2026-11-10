@@ -17,13 +17,9 @@ CircularBufferSinkInfo::CircularBufferSinkInfo() {
 }
 
 void CircularBufferSinkInfo::CleanUp() {
-    auto state_{reinterpret_cast<DeviceState*>(state.data())};
-
-    if (state_->upsampler_info) {
-        state_->upsampler_info->manager->Free(state_->upsampler_info);
-        state_->upsampler_info = nullptr;
-    }
-
+    // The state holds a CircularBufferState, not a DeviceState: there is no upsampler here, and
+    // reading it as one turned current_pos into a pointer (Mario Tennis Fever crashed on it).
+    state.fill(0);
     parameter.fill(0);
     type = Type::Invalid;
 }

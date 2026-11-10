@@ -35,6 +35,10 @@ public:
     NCZVirtualFile* GetNczFilePointer() override { return this; }
 
     bool DecompressSolidTo(const std::filesystem::path& dest_path) const;
+    bool EnsureSolidPrefixCached(std::size_t needed_end) const;
+    static constexpr std::size_t SOLID_PREFIX_MAX_SIZE = 64ULL * 1024 * 1024; // 64 MB
+    mutable std::vector<u8> solid_prefix_buffer;
+    mutable std::size_t solid_prefix_cached_size = 0;
     
     struct PartitionInfo {
         s32 fs_index;
