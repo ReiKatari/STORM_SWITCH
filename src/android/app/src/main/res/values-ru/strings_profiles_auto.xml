@@ -9,7 +9,7 @@
     <string name="storm_prof_filter_custom">Мои профили</string>
     <string name="storm_prof_section_presets">БАЗОВЫЕ ПРЕСЕТЫ STORM</string>
     <string name="storm_prof_section_custom">МОИ СОХРАНЁННЫЕ ПРОФИЛИ</string>
-    <string name="storm_prof_btn_save">+ Сохранить</string>
+    <string name="storm_prof_btn_save">Сохранить</string>
     <string name="storm_prof_btn_import">Импорт</string>
     <string name="storm_prof_badge_preset">Базовый</string>
     <string name="storm_prof_badge_custom_fmt">Пользовательский • %s</string>
@@ -19,7 +19,7 @@
     <string name="storm_prof_btn_rename">Имя</string>
     <string name="storm_prof_btn_delete">Удалить</string>
     <string name="storm_prof_empty_custom_title">Нет сохранённых профилей</string>
-    <string name="storm_prof_empty_custom_desc">Нажмите «+ Сохранить», чтобы создать профиль из текущих настроек эмулятора, или импортируйте файл .stormprofile.</string>
+    <string name="storm_prof_empty_custom_desc">Нажмите «Сохранить», чтобы создать профиль из текущих настроек эмулятора, или импортируйте файл .stormprofile.</string>
     <string name="storm_prof_empty_search">Профили по запросу не найдены</string>
     <string name="storm_prof_preset_fast_name">Скорость и 60 FPS</string>
     <string name="storm_prof_preset_fast_desc">Максимальная частота кадров, пониженное разрешение и агрессивные оптимизации рендеринга.</string>

@@ -428,10 +428,6 @@ private:
     bool ScaleDown(Image& image);
     u64 GetScaledImageSizeBytes(const ImageBase& image);
 
-    /// Device memory an image holds, as the collector counts it (an unbacked image only what its
-    /// sparse binds gave it).
-    u64 ImageMemoryBytes(const Image& image) const;
-
     void QueueAsyncDecode(Image& image, ImageId image_id);
     void TickAsyncDecode();
 

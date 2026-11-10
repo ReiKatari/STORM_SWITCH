@@ -1,26 +1,49 @@
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #version 450
-layout(local_size_x = 128) in;
-layout(std430, set = 0, binding = 0) readonly buffer Source { uint source_words[]; };
-layout(std430, set = 0, binding = 1) writeonly buffer Destination { uint dest_words[]; };
-layout(push_constant) uniform Parameters { uint source_bias; uint source_size; uint total_words; };
+layout(local_size_x = 64) in;
 
-// Diagnostic conversion of the captured 69-byte layout: insert three bytes before offset 65.
+layout(push_constant) uniform PushConstants {
+    uint src_offset_bytes;
+    uint dst_offset_bytes;
+    uint vertex_count;
+};
+
+layout(std430, binding = 0) readonly buffer SourceBuffer {
+    uint src_data[];
+};
+
+layout(std430, binding = 1) writeonly buffer DestBuffer {
+    uint dst_data[];
+};
+
 void main() {
-    uint word = gl_GlobalInvocationID.x;
-    if (word >= total_words) return;
-    uint vertex = word / 18;
-    uint offset = (word % 18) * 4;
-    uint value = 0;
-    for (uint i = 0; i < 4; ++i) {
-        uint dest_byte = offset + i;
-        if (dest_byte >= 65 && dest_byte < 68) continue;
-        uint src_byte = vertex * 69 + dest_byte - (dest_byte >= 68 ? 3 : 0);
-        if (src_byte >= source_size) continue;
-        uint address = source_bias + src_byte;
-        uint byte_value = (source_words[address / 4] >> ((address % 4) * 8)) & 255;
-        value |= byte_value << (i * 8);
+    uint idx = gl_GlobalInvocationID.x;
+    if (idx >= vertex_count) return;
+
+    // Repack 69-byte stride into 72-byte stride (aligned 4-byte boundaries)
+    // 69 bytes = 16 words (64B) + tail word (4B) = 72B
+    uint src_byte = src_offset_bytes + idx * 69u;
+    uint dst_byte = dst_offset_bytes + idx * 72u;
+
+    uint src_word = src_byte >> 2;
+    uint dst_word = dst_byte >> 2;
+
+    // Copy first 64 bytes (16 32-bit words) directly
+    for (uint i = 0u; i < 16u; ++i) {
+        dst_data[dst_word + i] = src_data[src_word + i];
     }
-    dest_words[word] = value;
+
+    // Read byte 64 (1 byte padding/misc) and bytes 65..68 (4-byte packed attribute)
+    // Repack moves the 4-byte packed attribute to aligned destination offset 68..71
+    uint tail_val = 0u;
+    uint b0 = (src_data[src_word + 16u] >> 8) & 0xffu;
+    uint b1 = (src_data[src_word + 16u] >> 16) & 0xffu;
+    uint b2 = (src_data[src_word + 16u] >> 24) & 0xffu;
+    uint b3 = src_data[src_word + 17u] & 0xffu;
+    tail_val = b0 | (b1 << 8) | (b2 << 16) | (b3 << 24);
+
+    dst_data[dst_word + 16u] = 0u; // Aligned spacer at byte 64
+    dst_data[dst_word + 17u] = tail_val; // Repacked 4-byte attribute at byte 68
 }

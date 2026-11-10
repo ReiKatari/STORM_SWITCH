@@ -76,7 +76,7 @@ private:
     mutable std::mutex io_mutex;
 };
 
-static VirtualFile DecompressIfNCZ(VirtualFile file) {
+[[maybe_unused]] static VirtualFile DecompressIfNCZ(VirtualFile file) {
     if (file == nullptr) return nullptr;
     auto ncz_file = file->IsNczFile() ? std::static_pointer_cast<NCZVirtualFile>(file) : nullptr;
     if (ncz_file && ncz_file->is_solid_stream) {
@@ -145,7 +145,7 @@ NcaHeaderSummary NCA::PeekHeaderSummary(const VirtualFile& file_) {
 }
 
 NCA::NCA(VirtualFile file_, const NCA* base_nca)
-    : file(DecompressIfNCZ(std::move(file_))), keys{Core::Crypto::KeyManager::Instance()} {
+    : file(std::move(file_)), keys{Core::Crypto::KeyManager::Instance()} {
     if (file == nullptr) {
         status = Loader::ResultStatus::ErrorNullFile;
         return;

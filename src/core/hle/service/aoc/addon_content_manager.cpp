@@ -65,6 +65,9 @@ static u64 GetCallerAOCBaseTitleID(Core::System& system, const ClientProcessId& 
     if (metadata.first && metadata.first->GetDLCBaseTitleId() != 0) {
         return metadata.first->GetDLCBaseTitleId();
     }
+    if ((program_id & 0xFF00000000000000ULL) == 0x0400000000000000ULL) {
+        return (program_id & 0x00FFFFFFFFFFFFFFULL) | 0x0100000000000000ULL;
+    }
     return FileSys::GetAOCBaseTitleID(program_id);
 }
 
@@ -222,7 +225,7 @@ Result IAddOnContentManager::ListAddOnContentByApplicationId(
     const auto& disabled = Settings::values.disabled_addons[base_id];
     if (std::find(disabled.begin(), disabled.end(), "DLC") == disabled.end()) {
         for (u64 content_id : add_on_content) {
-            if (!CheckAOCTitleIDMatchesBase(content_id, base_id)) {
+            if (FileSys::GetBaseTitleID(content_id) != base_id) {
                 continue;
             }
 

@@ -152,14 +152,10 @@ VirtualDir NSP::GetExeFS() const {
 std::vector<std::shared_ptr<NCA>> NSP::GetNCAsCollapsed() const {
     if (extracted)
         LOG_WARNING(Service_FS, "called on an NSP that is of type extracted.");
-    std::scoped_lock lock(nca_mutex);
     std::vector<std::shared_ptr<NCA>> out;
     for (const auto& map : ncas) {
-        for (const auto& inner_map : map.second) {
-            if (inner_map.second != nullptr) {
-                out.push_back(inner_map.second);
-            }
-        }
+        for (const auto& inner_map : map.second)
+            out.push_back(inner_map.second);
     }
     return out;
 }
@@ -167,21 +163,16 @@ std::vector<std::shared_ptr<NCA>> NSP::GetNCAsCollapsed() const {
 std::multimap<u64, std::shared_ptr<NCA>> NSP::GetNCAsByTitleID() const {
     if (extracted)
         LOG_WARNING(Service_FS, "called on an NSP that is of type extracted.");
-    std::scoped_lock lock(nca_mutex);
     std::multimap<u64, std::shared_ptr<NCA>> out;
     for (const auto& map : ncas) {
-        for (const auto& inner_map : map.second) {
-            if (inner_map.second != nullptr) {
-                out.emplace(map.first, inner_map.second);
-            }
-        }
+        for (const auto& inner_map : map.second)
+            out.emplace(map.first, inner_map.second);
     }
     return out;
 }
 
 std::map<u64, std::map<std::pair<TitleType, ContentRecordType>, std::shared_ptr<NCA>>>
 NSP::GetNCAs() const {
-    std::scoped_lock lock(nca_mutex);
     return ncas;
 }
 
@@ -189,49 +180,18 @@ std::shared_ptr<NCA> NSP::GetNCA(u64 title_id, ContentRecordType type, TitleType
     if (extracted)
         LOG_WARNING(Service_FS, "called on an NSP that is of type extracted.");
 
-    std::scoped_lock lock(nca_mutex);
-
-    // 1. Check already instantiated in ncas
     const auto title_id_iter = ncas.find(title_id);
-    if (title_id_iter != ncas.end()) {
-        const auto type_iter = title_id_iter->second.find({title_type, type});
-        if (type_iter != title_id_iter->second.end() && type_iter->second != nullptr) {
-            return type_iter->second;
-        }
-    }
+    if (title_id_iter == ncas.end())
+        return nullptr;
 
-    // 2. Check pending_ncas for exact match and lazily materialize
-    const auto pending_tid_iter = pending_ncas.find(title_id);
-    if (pending_tid_iter != pending_ncas.end()) {
-        const auto pending_type_iter = pending_tid_iter->second.find({title_type, type});
-        if (pending_type_iter != pending_tid_iter->second.end() && pending_type_iter->second != nullptr) {
-            auto vfile = pending_type_iter->second;
-            auto instantiated = std::make_shared<NCA>(vfile);
-            ncas[title_id][{title_type, type}] = instantiated;
-            pending_tid_iter->second.erase(pending_type_iter);
-            return instantiated;
-        }
-    }
+    const auto type_iter = title_id_iter->second.find({title_type, type});
+    if (type_iter != title_id_iter->second.end())
+        return type_iter->second;
 
-    // 3. Fallback in ncas across title types
-    if (title_id_iter != ncas.end()) {
-        for (const auto& [tt_pair, nca_ptr] : title_id_iter->second) {
-            if (tt_pair.second == type && nca_ptr != nullptr) {
-                return nca_ptr;
-            }
-        }
-    }
-
-    // 4. Fallback in pending_ncas across title types
-    if (pending_tid_iter != pending_ncas.end()) {
-        for (auto it = pending_tid_iter->second.begin(); it != pending_tid_iter->second.end(); ++it) {
-            if (it->first.second == type && it->second != nullptr) {
-                auto vfile = it->second;
-                auto instantiated = std::make_shared<NCA>(vfile);
-                ncas[title_id][it->first] = instantiated;
-                pending_tid_iter->second.erase(it);
-                return instantiated;
-            }
+    // Fallback: search across all title types registered for this title_id
+    for (const auto& [tt_pair, nca_ptr] : title_id_iter->second) {
+        if (tt_pair.second == type && nca_ptr != nullptr) {
+            return nca_ptr;
         }
     }
 
@@ -241,43 +201,9 @@ std::shared_ptr<NCA> NSP::GetNCA(u64 title_id, ContentRecordType type, TitleType
 VirtualFile NSP::GetNCAFile(u64 title_id, ContentRecordType type, TitleType title_type) const {
     if (extracted)
         LOG_WARNING(Service_FS, "called on an NSP that is of type extracted.");
-
-    std::scoped_lock lock(nca_mutex);
-
-    // 1. Check pending_ncas first - return VirtualFile directly without instantiating NCA!
-    const auto pending_tid_iter = pending_ncas.find(title_id);
-    if (pending_tid_iter != pending_ncas.end()) {
-        const auto pending_type_iter = pending_tid_iter->second.find({title_type, type});
-        if (pending_type_iter != pending_tid_iter->second.end() && pending_type_iter->second != nullptr) {
-            return pending_type_iter->second;
-        }
-    }
-
-    // 2. Check ncas
-    const auto title_id_iter = ncas.find(title_id);
-    if (title_id_iter != ncas.end()) {
-        const auto type_iter = title_id_iter->second.find({title_type, type});
-        if (type_iter != title_id_iter->second.end() && type_iter->second != nullptr) {
-            return type_iter->second->GetBaseFile();
-        }
-    }
-
-    // 3. Fallbacks
-    if (pending_tid_iter != pending_ncas.end()) {
-        for (const auto& [tt_pair, file_ptr] : pending_tid_iter->second) {
-            if (tt_pair.second == type && file_ptr != nullptr) {
-                return file_ptr;
-            }
-        }
-    }
-    if (title_id_iter != ncas.end()) {
-        for (const auto& [tt_pair, nca_ptr] : title_id_iter->second) {
-            if (tt_pair.second == type && nca_ptr != nullptr) {
-                return nca_ptr->GetBaseFile();
-            }
-        }
-    }
-
+    const auto nca = GetNCA(title_id, type, title_type);
+    if (nca != nullptr)
+        return nca->GetBaseFile();
     return nullptr;
 }
 
@@ -652,13 +578,93 @@ void NSP::ReadNCAs(const std::vector<VirtualFile>& files) {
                     if (best_cand != nullptr) {
                         matched_file = best_cand->v_file;
                         matched_cand_name = best_cand->name;
-                        if (!matched_cand_name.empty()) {
-                            used_files.insert(matched_cand_name);
+                        if (!best_cand->nca && matched_file != nullptr) {
+                            const auto ncz_cast = matched_file->IsNczFile()
+                                                      ? std::static_pointer_cast<NCZVirtualFile>(matched_file)
+                                                      : nullptr;
+                            if (!ncz_cast || !ncz_cast->is_solid_stream) {
+                                best_cand->nca = std::make_shared<NCA>(matched_file);
+                            }
                         }
-                        if (is_base_program_record) {
-                            repacked_base_program_tids.insert(FileSys::GetBaseTitleID(cnmt.GetTitleID()));
+                        matched_cand_nca = best_cand->nca;
+                    }
+
+                    if (!matched_cand_name.empty()) {
+                        used_files.insert(matched_cand_name);
+                    }
+
+                    // Lazily instantiate NCA only for the selected matched file
+                    if (matched_file != nullptr && matched_cand_nca == nullptr) {
+                        matched_cand_nca = std::make_shared<NCA>(matched_file);
+                    }
+
+                    next_file = matched_file;
+                    if (matched_cand_nca != nullptr) {
+                        auto next_nca = matched_cand_nca;
+                        if (next_nca->GetType() == NCAContentType::Program) {
+                            const u64 prog_tid = (next_nca->GetTitleId() != 0)
+                                                     ? next_nca->GetTitleId()
+                                                     : cnmt.GetTitleID();
+                            if (program_status.find(prog_tid) == program_status.end() ||
+                                next_nca->GetStatus() == Loader::ResultStatus::Success) {
+                                program_status[prog_tid] = next_nca->GetStatus();
+                            }
+                            if ((prog_tid & 0xFFFULL) == 0) {
+                                program_ids.insert(prog_tid);
+                                if (is_base_program_record &&
+                                    next_nca->GetStatus() == Loader::ResultStatus::Success) {
+                                    repacked_base_program_tids.insert(prog_tid);
+                                }
+                            }
                         }
-                        next_file = matched_file;
+
+                        if (next_nca->GetStatus() != Loader::ResultStatus::Success &&
+                            next_nca->GetStatus() != Loader::ResultStatus::ErrorMissingBKTRBaseRomFS) {
+                            continue;
+                        }
+
+                        if ((cnmt.GetTitleID() & 0x800) != 0 ||
+                            next_nca->GetStatus() == Loader::ResultStatus::ErrorMissingBKTRBaseRomFS) {
+                            if ((next_nca->GetTitleId() & 0x7FF) != 0 &&
+                                (next_nca->GetTitleId() & 0x800) == 0) {
+                                ncas[next_nca->GetTitleId()][{cnmt.GetType(), rec.type}] =
+                                    std::move(next_nca);
+                            } else {
+                                const u64 update_tid =
+                                    ((cnmt.GetTitleID() & 0x800) != 0)
+                                        ? cnmt.GetTitleID()
+                                        : (FileSys::GetBaseTitleID(
+                                               next_nca->GetTitleId() != 0 ? next_nca->GetTitleId()
+                                                                           : cnmt.GetTitleID()) |
+                                           0x800ULL);
+                                auto& target_map = ncas[update_tid];
+                                const TitleType eff_type = TitleType::Update;
+                                auto existing = target_map.find({eff_type, rec.type});
+
+                                if (existing != target_map.end() && rec.type == ContentRecordType::Program) {
+                                    continue;
+                                }
+                                target_map[{eff_type, rec.type}] = std::move(next_nca);
+                            }
+                        } else {
+                            const u64 target_tid = (next_nca->GetTitleId() != 0)
+                                                       ? next_nca->GetTitleId()
+                                                       : cnmt.GetTitleID();
+                            auto& target_map = ncas[target_tid];
+                            auto existing = target_map.find({cnmt.GetType(), rec.type});
+                            if (existing != target_map.end() && rec.type == ContentRecordType::Program) {
+                                const bool old_ok =
+                                    existing->second &&
+                                    existing->second->GetStatus() == Loader::ResultStatus::Success;
+                                const bool new_ok =
+                                    next_nca->GetStatus() == Loader::ResultStatus::Success;
+                                if (old_ok && !new_ok) {
+                                    continue;
+                                }
+                            }
+                            target_map[{cnmt.GetType(), rec.type}] = std::move(next_nca);
+                        }
+                        continue;
                     }
                 }
 
@@ -667,40 +673,6 @@ void NSP::ReadNCAs(const std::vector<VirtualFile>& files) {
                         LOG_DEBUG(Service_FS,
                                   "NCA with ID {}.nca is listed in content metadata, but not present in this package.",
                                   id_string);
-                    }
-                    continue;
-                }
-
-                // Lazy Solid NCZ check: for large solid streams (Program, AOC Data, Manuals), do NOT instantiate full NCA!
-                const bool is_solid_content = (rec.type == ContentRecordType::Program ||
-                                               rec.type == ContentRecordType::Data ||
-                                               rec.type == ContentRecordType::HtmlDocument ||
-                                               rec.type == ContentRecordType::LegalInformation);
-                const auto ncz_check = (next_file && next_file->IsNczFile())
-                                           ? std::static_pointer_cast<NCZVirtualFile>(next_file)
-                                           : nullptr;
-                const bool is_solid = (ncz_check && ncz_check->is_solid_stream);
-
-                if (is_solid && is_solid_content) {
-                    const NcaHeaderSummary summary = NCA::PeekHeaderSummary(next_file);
-                    const u64 nca_tid = (summary.title_id != 0) ? summary.title_id : cnmt.GetTitleID();
-                    if (rec.type == ContentRecordType::Program) {
-                        if (program_status.find(nca_tid) == program_status.end()) {
-                            program_status[nca_tid] = Loader::ResultStatus::Success;
-                        }
-                        if ((nca_tid & 0xFFFULL) == 0) {
-                            program_ids.insert(nca_tid);
-                        }
-                    }
-
-                    const bool is_update_record = ((cnmt.GetTitleID() & 0x800) != 0 || summary.is_update);
-                    if (is_update_record) {
-                        const u64 update_tid = ((cnmt.GetTitleID() & 0x800) != 0)
-                            ? cnmt.GetTitleID()
-                            : (FileSys::GetBaseTitleID(nca_tid) | 0x800ULL);
-                        pending_ncas[update_tid][{TitleType::Update, rec.type}] = next_file;
-                    } else {
-                        pending_ncas[nca_tid][{cnmt.GetType(), rec.type}] = next_file;
                     }
                     continue;
                 }

@@ -57,17 +57,19 @@ private:
 
 class VertexRepackPass final : public ComputePass {
 public:
-    VertexRepackPass(const Device& device, Scheduler& scheduler, DescriptorPool& descriptor_pool,
-                     StagingBufferPool& staging_pool, ComputePassDescriptorQueue& descriptor_queue);
-    /// Splits a range over the device limits into several dispatches. Returns nothing only when
-    /// not even one vertex fits them; the caller then keeps the 69-byte layout.
-    std::optional<std::pair<VkBuffer, VkDeviceSize>> Assemble(VkBuffer source, u32 offset,
-                                                              u32 size);
+    explicit VertexRepackPass(const Device& device_, Scheduler& scheduler_,
+                              DescriptorPool& descriptor_pool_,
+                              StagingBufferPool& staging_buffer_pool_,
+                              ComputePassDescriptorQueue& compute_pass_descriptor_queue_);
+    ~VertexRepackPass();
+
+    std::pair<VkBuffer, VkDeviceSize> Repack(u32 vertex_count, VkBuffer src_buffer,
+                                             u32 src_offset, u64 src_size);
 
 private:
     Scheduler& scheduler;
-    StagingBufferPool& staging_pool;
-    ComputePassDescriptorQueue& descriptor_queue;
+    StagingBufferPool& staging_buffer_pool;
+    ComputePassDescriptorQueue& compute_pass_descriptor_queue;
 };
 
 class Uint8Pass final : public ComputePass {

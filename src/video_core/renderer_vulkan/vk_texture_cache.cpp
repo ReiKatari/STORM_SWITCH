@@ -75,10 +75,6 @@ constexpr VkBorderColor ConvertBorderColor(const std::array<float, 4>& color) {
     } else if (color == std::array<float, 4>{1, 1, 1, 1}) {
         return VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
     }
-    // Single-channel depth border (e.g. {1.0f, 0.0f, 0.0f, 0.0f} or {1.0f, 0.0f, 0.0f, 1.0f} for shadow maps)
-    if (color[0] >= 0.5f && color[1] < 0.05f && color[2] < 0.05f) {
-        return VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-    }
     if (color[0] + color[1] + color[2] > 1.35f) {
         // If color elements are brighter than roughly 0.5 average, use white border
         return VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
@@ -1882,16 +1878,9 @@ Image::Image(TextureCacheRuntime& runtime_, const ImageInfo& info_, GPUVAddr gpu
         flags |= VideoCommon::ImageFlagBits::Converted;
         flags |= VideoCommon::ImageFlagBits::CostlyLoad;
     }
-    if (IsPixelFormatBCn(info.format)) {
-        const VkFormat vk_fmt =
-            MaxwellToVK::SurfaceFormat(runtime->device, FormatType::Optimal, false, info.format)
-                .format;
-        const bool is_native_vk_bcn =
-            vk_fmt >= VK_FORMAT_BC1_RGB_UNORM_BLOCK && vk_fmt <= VK_FORMAT_BC7_SRGB_BLOCK;
-        if (!is_native_vk_bcn) {
-            flags |= VideoCommon::ImageFlagBits::Converted;
-            flags |= VideoCommon::ImageFlagBits::CostlyLoad;
-        }
+    if (IsPixelFormatBCn(info.format) && !runtime->device.IsOptimalBcnSupported()) {
+        flags |= VideoCommon::ImageFlagBits::Converted;
+        flags |= VideoCommon::ImageFlagBits::CostlyLoad;
     }
     if (runtime->device.HasDebuggingToolAttached()) {
         original_image.SetObjectNameEXT(VideoCommon::Name(*this).c_str());
@@ -2676,37 +2665,16 @@ ImageView::ImageView(TextureCacheRuntime& runtime, const VideoCommon::NullImageV
     for (u32 i = 0; i < Shader::NUM_TEXTURE_TYPES; i++) {
         image_views[i] = MakeView(VK_FORMAT_A8B8G8R8_UNORM_PACK32, VK_IMAGE_ASPECT_COLOR_BIT);
     }
-
-    ImageInfo depth_info{};
-    depth_info.format = PixelFormat::D32_FLOAT;
-    null_depth_image = MakeImage(*device, runtime.memory_allocator, depth_info, {});
-    const VkImageSubresourceRange depth_range{
-        .aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT,
-        .baseMipLevel = 0,
-        .levelCount = 1,
-        .baseArrayLayer = 0,
-        .layerCount = 1,
-    };
-    depth_view = device->GetLogical().CreateImageView(VkImageViewCreateInfo{
-        .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-        .pNext = nullptr,
-        .flags = 0,
-        .image = *null_depth_image,
-        .viewType = VK_IMAGE_VIEW_TYPE_2D,
-        .format = VK_FORMAT_D32_SFLOAT,
-        .components = {},
-        .subresourceRange = depth_range,
-    });
 }
 
 ImageView::~ImageView() = default;
 
 VkImageView ImageView::DepthView() {
-    if (depth_view) {
-        return *depth_view;
-    }
     if (!image_handle) {
         return VK_NULL_HANDLE;
+    }
+    if (depth_view) {
+        return *depth_view;
     }
     const auto& info = MaxwellToVK::SurfaceFormat(*device, FormatType::Optimal, true, format);
     depth_view = MakeView(info.format, VK_IMAGE_ASPECT_DEPTH_BIT);

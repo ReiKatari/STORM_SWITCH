@@ -555,6 +555,24 @@ Id EmitBoundImageWrite(EmitContext&) {
     throw LogicError("Unreachable instruction");
 }
 
+static Id SanitizeBloomSample(EmitContext& ctx, Id result, bool is_integer) {
+    if (!Settings::values.fix_bloom_effects.GetValue() || is_integer) {
+        return result;
+    }
+    const Id bvec4 = ctx.TypeVector(ctx.U1, 4);
+    const Id is_not_nan = ctx.OpFOrdEqual(bvec4, result, result);
+    const Id zero_f32 = ctx.Const(0.0f);
+    const Id zero_vec = ctx.ConstantComposite(ctx.F32[4], zero_f32, zero_f32, zero_f32, zero_f32);
+    const Id clamped = ctx.OpSelect(ctx.F32[4], is_not_nan, result, zero_vec);
+    const Id min_f32 = ctx.Const(-65000.0f);
+    const Id min_vec = ctx.ConstantComposite(ctx.F32[4], min_f32, min_f32, min_f32, min_f32);
+    const Id max_f32 = ctx.Const(65000.0f);
+    const Id max_vec = ctx.ConstantComposite(ctx.F32[4], max_f32, max_f32, max_f32, max_f32);
+    return ctx.profile.has_broken_spirv_clamp
+               ? ctx.OpFMin(ctx.F32[4], max_vec, ctx.OpFMax(ctx.F32[4], min_vec, clamped))
+               : ctx.OpFClamp(ctx.F32[4], clamped, min_vec, max_vec);
+}
+
 Id EmitImageSampleImplicitLod(EmitContext& ctx, IR::Inst* inst, const IR::Value& index, Id coords,
                               Id bias_lc, const IR::Value& offset) {
     const auto info{inst->Flags<IR::TextureInstInfo>()};
@@ -577,6 +595,7 @@ Id EmitImageSampleImplicitLod(EmitContext& ctx, IR::Inst* inst, const IR::Value&
                     &EmitContext::OpImageSampleExplicitLod, ctx, inst, result_type,
                     Texture(ctx, info, index), coords, operands.Mask(), operands.Span());
     }
+    color = SanitizeBloomSample(ctx, color, is_integer);
     return is_integer ? ctx.OpBitcast(ctx.F32[4], color) : color;
 }
 
@@ -590,22 +609,7 @@ Id EmitImageSampleExplicitLod(EmitContext& ctx, IR::Inst* inst, const IR::Value&
     Id result = Emit(&EmitContext::OpImageSparseSampleExplicitLod,
                      &EmitContext::OpImageSampleExplicitLod, ctx, inst, result_type,
                      Texture(ctx, info, index), coords, operands.Mask(), operands.Span());
-    if (Settings::values.fix_bloom_effects.GetValue() && !is_integer) {
-        const Id bvec4 = ctx.TypeVector(ctx.U1, 4);
-        const Id is_not_nan = ctx.OpFOrdEqual(bvec4, result, result);
-        const Id zero_f32 = ctx.Const(0.0f);
-        const Id zero_vec = ctx.ConstantComposite(ctx.F32[4], zero_f32, zero_f32, zero_f32, zero_f32);
-        const Id clamped = ctx.OpSelect(ctx.F32[4], is_not_nan, result, zero_vec);
-        const Id min_f32 = ctx.Const(-65000.0f);
-        const Id min_vec = ctx.ConstantComposite(ctx.F32[4], min_f32, min_f32, min_f32, min_f32);
-        const Id max_f32 = ctx.Const(65000.0f);
-        const Id max_vec = ctx.ConstantComposite(ctx.F32[4], max_f32, max_f32, max_f32, max_f32);
-        if (ctx.profile.has_broken_spirv_clamp) {
-            result = ctx.OpFMin(ctx.F32[4], max_vec, ctx.OpFMax(ctx.F32[4], min_vec, clamped));
-        } else {
-            result = ctx.OpFClamp(ctx.F32[4], clamped, min_vec, max_vec);
-        }
-    }
+    result = SanitizeBloomSample(ctx, result, is_integer);
     return is_integer ? ctx.OpBitcast(ctx.F32[4], result) : result;
 }
 

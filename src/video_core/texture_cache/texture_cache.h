@@ -2428,32 +2428,18 @@ ImageViewId TextureCache<P>::FindOrEmplaceImageView(ImageId image_id, const Imag
 }
 
 template <class P>
-u64 TextureCache<P>::ImageMemoryBytes(const Image& image) const {
-    if (True(image.flags & ImageFlagBits::Unbacked)) {
-        // No device memory but what BindLayers gave a SparseLayers image: at its full size (GBs
-        // for title 1's sparse terrain images), deleting it would look to the collector like
-        // freeing that much.
-        if constexpr (requires { image.SparseBoundBytes(); }) {
-            return image.SparseBoundBytes();
-        }
-        return 0;
-    }
+void TextureCache<P>::RegisterImage(ImageId image_id) {
+    ImageBase& image = slot_images[image_id];
+    ASSERT_MSG(False(image.flags & ImageFlagBits::Registered),
+               "Trying to register an already registered image");
+    image.flags |= ImageFlagBits::Registered;
     u64 tentative_size = (std::max)(image.guest_size_bytes, image.unswizzled_size_bytes);
     if ((IsPixelFormatASTC(image.info.format) &&
          True(image.flags & ImageFlagBits::AcceleratedUpload)) ||
         True(image.flags & ImageFlagBits::Converted)) {
         tentative_size = TranscodedAstcSize(tentative_size, image.info.format);
     }
-    return Common::AlignUp(tentative_size, 1024);
-}
-
-template <class P>
-void TextureCache<P>::RegisterImage(ImageId image_id) {
-    ImageBase& image = slot_images[image_id];
-    ASSERT_MSG(False(image.flags & ImageFlagBits::Registered),
-               "Trying to register an already registered image");
-    image.flags |= ImageFlagBits::Registered;
-    total_used_memory += ImageMemoryBytes(slot_images[image_id]);
+    total_used_memory += Common::AlignUp(tentative_size, 1024);
     image.lru_index = lru_cache.Insert(image_id, frame_tick);
     image.last_frame_tick = frame_tick;
 
@@ -2620,7 +2606,13 @@ void TextureCache<P>::DeleteImage(ImageId image_id, bool immediate_delete) {
     if (image.HasScaled()) {
         total_used_memory -= GetScaledImageSizeBytes(image);
     }
-    total_used_memory -= (std::min)(total_used_memory, ImageMemoryBytes(slot_images[image_id]));
+    u64 tentative_size = (std::max)(image.guest_size_bytes, image.unswizzled_size_bytes);
+    if ((IsPixelFormatASTC(image.info.format) &&
+         True(image.flags & ImageFlagBits::AcceleratedUpload)) ||
+        True(image.flags & ImageFlagBits::Converted)) {
+        tentative_size = TranscodedAstcSize(tentative_size, image.info.format);
+    }
+    total_used_memory -= Common::AlignUp(tentative_size, 1024);
     const GPUVAddr gpu_addr = image.gpu_addr;
     const auto alloc_it = image_allocs_table.find(gpu_addr);
     if (alloc_it == image_allocs_table.end()) {

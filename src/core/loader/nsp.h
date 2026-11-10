@@ -64,8 +64,6 @@ public:
     std::shared_ptr<FileSys::NCA> GetNCA() const override;
 
 private:
-    void EnsureSecondaryLoader();
-
     std::unique_ptr<FileSys::NSP> nsp;
     std::unique_ptr<AppLoader> secondary_loader;
 

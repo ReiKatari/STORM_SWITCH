@@ -9,7 +9,7 @@
     <string name="storm_prof_filter_custom">My Profiles</string>
     <string name="storm_prof_section_presets">STORM BUILT-IN PRESETS</string>
     <string name="storm_prof_section_custom">MY SAVED PROFILES</string>
-    <string name="storm_prof_btn_save">+ Save Current</string>
+    <string name="storm_prof_btn_save">Save</string>
     <string name="storm_prof_btn_import">Import</string>
     <string name="storm_prof_badge_preset">Built-in</string>
     <string name="storm_prof_badge_custom_fmt">Custom • %s</string>

@@ -852,7 +852,7 @@ GameFixProfile(
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\dyna_state" to "1",
-                "Renderer\\fix_bloom_effects" to "false"
+                "Renderer\\fix_bloom_effects" to "true"
             )
         ),
 
@@ -8069,7 +8069,7 @@ GameFixProfile(
                     } else if (isRabbids && isCustomFile && trimmed.startsWith("fix_bloom_effects", ignoreCase = true) && trimmed.contains("=")) {
                         val key = trimmed.substringBefore("=").trim()
                         val curVal = trimmed.substringAfter("=").trim()
-                        val targetVal = "false"
+                        val targetVal = if (key.contains("\\")) "false" else "true"
                         if (!curVal.equals(targetVal, ignoreCase = true)) {
                             modified = true
                             "$key=$targetVal"
@@ -8100,7 +8100,7 @@ GameFixProfile(
                 IntSetting.RENDERER_ACCURACY.setInt(2)
                 IntSetting.DMA_ACCURACY.setInt(3)
                 if (isRabbids) {
-                    BooleanSetting.FIX_BLOOM_EFFECTS.setBoolean(false)
+                    BooleanSetting.FIX_BLOOM_EFFECTS.setBoolean(true)
                     IntSetting.RENDERER_DYNA_STATE.setInt(0)
                 }
             }

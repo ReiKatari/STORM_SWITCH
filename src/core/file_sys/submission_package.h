@@ -4,7 +4,6 @@
 #pragma once
 
 #include <map>
-#include <mutex>
 #include <memory>
 #include <set>
 #include <vector>
@@ -79,9 +78,7 @@ private:
 
     std::shared_ptr<PartitionFilesystem> pfs;
     // Map title id -> {map type -> NCA}
-    mutable std::mutex nca_mutex;
-    mutable std::map<u64, std::map<std::pair<TitleType, ContentRecordType>, VirtualFile>> pending_ncas;
-    mutable std::map<u64, std::map<std::pair<TitleType, ContentRecordType>, std::shared_ptr<NCA>>> ncas;
+    std::map<u64, std::map<std::pair<TitleType, ContentRecordType>, std::shared_ptr<NCA>>> ncas;
     std::set<u64> program_ids;
     std::vector<VirtualFile> ticket_files;
 

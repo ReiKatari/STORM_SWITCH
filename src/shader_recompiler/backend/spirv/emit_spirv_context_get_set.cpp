@@ -494,7 +494,7 @@ void EmitSetFragColor(EmitContext& ctx, u32 index, u32 component, Id value) {
         if (Settings::values.fix_bloom_effects.GetValue()) {
             const Id is_not_nan = ctx.OpFOrdEqual(ctx.U1, value, value);
             value = ctx.OpSelect(ctx.F32[1], is_not_nan, value, ctx.Const(0.0f));
-            value = ctx.OpFClamp(ctx.F32[1], value, ctx.Const(-65000.0f), ctx.Const(65000.0f));
+            value = (ctx.profile.has_broken_spirv_clamp ? ctx.OpFMin(ctx.F32[1], ctx.Const(65000.0f), ctx.OpFMax(ctx.F32[1], ctx.Const(-65000.0f), value)) : ctx.OpFClamp(ctx.F32[1], value, ctx.Const(-65000.0f), ctx.Const(65000.0f)));
         }
         const Id pointer{ctx.OpAccessChain(ctx.output_f32, ctx.frag_color.at(index), component_id)};
         ctx.OpStore(pointer, value);
@@ -510,7 +510,7 @@ void EmitSetFragColor(EmitContext& ctx, u32 index, u32 component, Id value) {
         if (Settings::values.fix_bloom_effects.GetValue()) {
             const Id is_not_nan = ctx.OpFOrdEqual(ctx.U1, value, value);
             value = ctx.OpSelect(ctx.F32[1], is_not_nan, value, ctx.Const(0.0f));
-            value = ctx.OpFClamp(ctx.F32[1], value, ctx.Const(-65000.0f), ctx.Const(65000.0f));
+            value = (ctx.profile.has_broken_spirv_clamp ? ctx.OpFMin(ctx.F32[1], ctx.Const(65000.0f), ctx.OpFMax(ctx.F32[1], ctx.Const(-65000.0f), value)) : ctx.OpFClamp(ctx.F32[1], value, ctx.Const(-65000.0f), ctx.Const(65000.0f)));
         }
         const Id pointer{ctx.OpAccessChain(ctx.output_f32, ctx.frag_color.at(index), component_id)};
         ctx.OpStore(pointer, value);

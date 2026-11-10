@@ -692,7 +692,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\enable_compute_pipelines", "true"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
-            {"Renderer\\fix_bloom_effects", "false"}
+            {"Renderer\\fix_bloom_effects", "true"}
         },
         {0x0100B5B0112F8000ULL, 0x0100D1801648E000ULL}
     },
@@ -7903,14 +7903,6 @@ bool GameFixDatabase::ReapplyVendorOverrides(u64 title_id) {
         const auto& vendor_map = profile->vendor_overrides.at(s_detected_vendor);
         ApplySettingsMap(vendor_map);
 
-        // Explicit safety overrides for problematic games
-        const u64 base_tid = profile->title_id & ~0x1FFFULL;
-        if (profile->title_id == 0x010067300059A000ULL || profile->title_id == 0x0100760012E4A000ULL ||
-            base_tid == 0x010067300059A000ULL || base_tid == 0x0100760012E4A000ULL) {
-            Settings::values.fix_bloom_effects.SetGlobal(false);
-            Settings::values.fix_bloom_effects.SetValue(false);
-        }
-
         SanitizeSettingsForHostHardware();
         Settings::UpdateGPUAccuracy();
         Settings::UpdateRescalingInfo();
@@ -7975,14 +7967,6 @@ bool GameFixDatabase::ApplyProfileDirectly(u64 title_id, const std::string& name
             ApplySettingsMap(vendor_map);
             LOG_INFO(Frontend, "[GameFixDatabase] Applied {} vendor overrides for '{}' on {:#016x}",
                      vendor_map.size(), s_detected_vendor, profile->title_id);
-        }
-
-        // Explicit safety overrides for problematic games
-        const u64 base_tid = profile->title_id & ~0x1FFFULL;
-        if (profile->title_id == 0x010067300059A000ULL || profile->title_id == 0x0100760012E4A000ULL ||
-            base_tid == 0x010067300059A000ULL || base_tid == 0x0100760012E4A000ULL) {
-            Settings::values.fix_bloom_effects.SetGlobal(false);
-            Settings::values.fix_bloom_effects.SetValue(false);
         }
 
         SanitizeSettingsForHostHardware();

@@ -687,14 +687,7 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
                 VK_FORMAT_BC1_RGBA_SRGB_BLOCK,
                 VK_FORMAT_BC2_UNORM_BLOCK,
                 VK_FORMAT_BC3_UNORM_BLOCK,
-                VK_FORMAT_BC4_UNORM_BLOCK,
-                VK_FORMAT_BC4_SNORM_BLOCK,
-                VK_FORMAT_BC5_UNORM_BLOCK,
-                VK_FORMAT_BC5_SNORM_BLOCK,
-                VK_FORMAT_BC6H_UFLOAT_BLOCK,
-                VK_FORMAT_BC6H_SFLOAT_BLOCK,
                 VK_FORMAT_BC7_UNORM_BLOCK,
-                VK_FORMAT_BC7_SRGB_BLOCK,
             };
             for (const auto format : bcn_check_formats) {
                 const auto it = format_properties.find(format);

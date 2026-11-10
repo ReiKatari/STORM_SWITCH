@@ -43,7 +43,6 @@ enum class ImageFlagBits : u32 {
     AsynchronousDecode = 1 << 16,
     IsDecoding = 1 << 17, ///< Is currently being decoded asynchronously.
     EverGpuModified = 1 << 18, ///< Has been modified by the GPU at least once (persistent RT tracking).
-    Unbacked = 1 << 19,        ///< Host image has no memory (too big to back); never upload/download.
 };
 DECLARE_ENUM_FLAG_OPERATORS(ImageFlagBits)
 

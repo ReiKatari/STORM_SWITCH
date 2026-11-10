@@ -88,69 +88,75 @@
                 android:hyphenationFrequency="none" />
         </LinearLayout>
 
-        <!-- Top Header Action Buttons: Save & Import & Close -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_save_current_profile"
-            style="@style/Widget.Material3.Button"
+        <!-- Top Header Action Buttons: Save & Import (Stacked Vertically) & Close -->
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="38dp"
-            android:layout_marginEnd="6dp"
-            android:paddingHorizontal="10dp"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            android:background="@drawable/storm_btn_3d_secondary"
-            app:backgroundTint="@null"
-            app:strokeWidth="0dp"
-            android:text="@string/storm_prof_btn_save"
-            android:textColor="?attr/colorOnSurface"
-            android:textSize="12sp"
-            app:icon="@drawable/ic_add"
-            app:iconSize="16dp"
-            app:iconTint="?attr/colorPrimary"
-            android:breakStrategy="simple"
-            android:hyphenationFrequency="none"
-            android:maxLines="1"
-            android:ellipsize="none" />
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:orientation="vertical">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_import_profile"
-            style="@style/Widget.Material3.Button"
-            android:layout_width="wrap_content"
-            android:layout_height="38dp"
-            android:layout_marginEnd="6dp"
-            android:paddingHorizontal="10dp"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            android:background="@drawable/storm_btn_3d_secondary"
-            app:backgroundTint="@null"
-            app:strokeWidth="0dp"
-            android:text="@string/storm_prof_btn_import"
-            android:textColor="?attr/colorOnSurface"
-            android:textSize="12sp"
-            app:icon="@drawable/ic_import"
-            app:iconSize="16dp"
-            app:iconTint="?attr/colorPrimary"
-            android:breakStrategy="simple"
-            android:hyphenationFrequency="none"
-            android:maxLines="1"
-            android:ellipsize="none" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_save_current_profile"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="match_parent"
+                android:layout_height="32dp"
+                android:layout_marginBottom="4dp"
+                android:minHeight="0dp"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="0dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:background="@drawable/storm_btn_3d_secondary"
+                app:backgroundTint="@null"
+                app:strokeWidth="0dp"
+                android:text="@string/storm_prof_btn_save"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="11.5sp"
+                app:icon="@drawable/ic_add"
+                app:iconSize="14dp"
+                app:iconPadding="4dp"
+                app:iconTint="?attr/colorPrimary"
+                android:breakStrategy="simple"
+                android:hyphenationFrequency="none"
+                android:maxLines="1"
+                android:ellipsize="none" />
 
-        <com.google.android.material.button.MaterialButton
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_import_profile"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="match_parent"
+                android:layout_height="32dp"
+                android:minHeight="0dp"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="0dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:background="@drawable/storm_btn_3d_secondary"
+                app:backgroundTint="@null"
+                app:strokeWidth="0dp"
+                android:text="@string/storm_prof_btn_import"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="11.5sp"
+                app:icon="@drawable/ic_import"
+                app:iconSize="14dp"
+                app:iconPadding="4dp"
+                app:iconTint="?attr/colorPrimary"
+                android:breakStrategy="simple"
+                android:hyphenationFrequency="none"
+                android:maxLines="1"
+                android:ellipsize="none" />
+        </LinearLayout>
+
+        <ImageButton
             android:id="@+id/btn_close_profiles"
-            style="@style/Widget.Material3.Button"
             android:layout_width="38dp"
             android:layout_height="38dp"
-            android:padding="0dp"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
             android:background="@drawable/storm_btn_3d_secondary"
-            app:backgroundTint="@null"
-            app:strokeWidth="0dp"
-            app:icon="@drawable/ic_x"
-            app:iconSize="16dp"
-            app:iconTint="?attr/colorOnSurfaceVariant"
-            app:iconGravity="textStart"
-            android:contentDescription="@string/close" />
+            android:contentDescription="@string/close"
+            android:padding="10dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_clear"
+            app:tint="?attr/colorOnSurface" />
 
     </LinearLayout>
 

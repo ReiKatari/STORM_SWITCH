@@ -1376,9 +1376,8 @@ bool MacroEngine::HandleNativeDmaMethod(MemoryManager& memory_manager,
         if (addr == 0 || bytes == 0 || rasterizer == nullptr) {
             return;
         }
-        constexpr auto flush_caches = VideoCommon::CacheType::BufferCache | VideoCommon::CacheType::QueryCache;
-        if (memory_manager.IsMemoryDirty(addr, bytes, flush_caches)) {
-            memory_manager.FlushRegion(addr, bytes, flush_caches);
+        if (memory_manager.IsMemoryDirty(addr, bytes, VideoCommon::CacheType::BufferCache)) {
+            memory_manager.FlushRegion(addr, bytes, VideoCommon::CacheType::BufferCache);
         }
     };
     const auto write_gpu_bytes = [&](GPUVAddr addr, const void* src, std::size_t bytes) {
