@@ -153,14 +153,14 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
             checkForNewControls(overlayControlData)
         }
 
-        // Migrate shoulder/trigger and stick click buttons for existing 17.3.3 users
+        // Migrate shoulder/trigger and stick click buttons for existing users
         val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
         val migrationVersion = prefs.getInt(OVERLAY_SHOULDER_FIX_KEY, 0)
-        if (migrationVersion < OVERLAY_LAYOUT_VERSION || !prefs.getBoolean("storm_overlay_shoulder_y_v20_5", false)) {
+        if (migrationVersion < OVERLAY_LAYOUT_VERSION || !prefs.getBoolean("storm_overlay_shoulder_y_v20_6", false)) {
             migrateShoulderAndStickControls()
             prefs.edit()
                 .putInt(OVERLAY_SHOULDER_FIX_KEY, OVERLAY_LAYOUT_VERSION)
-                .putBoolean("storm_overlay_shoulder_y_v20_5", true)
+                .putBoolean("storm_overlay_shoulder_y_v20_6", true)
                 .apply()
         }
 
@@ -1415,7 +1415,7 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
 
     companion object {
 
-        const val OVERLAY_LAYOUT_VERSION = 5
+        const val OVERLAY_LAYOUT_VERSION = 6
         private const val OVERLAY_SHOULDER_FIX_KEY = "overlay_shoulder_fix_version"
 
         // Increase this number every time there is a breaking change to every overlay layout

@@ -85,6 +85,7 @@ installer/Output/
 *.obj
 *.apk
 *.zip
+!src/android/app/src/main/assets/drivers/*.zip
 *.7z
 *.rar
 Assembling/

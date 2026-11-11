@@ -40,5 +40,5 @@ vec3 CasFilter(sampler2D tex, vec2 uv) {
 }
 
 void main() {
-    color = vec4(CasFilter(color_texture, frag_tex_coord), 1.0);
+    color = vec4(CasFilter(color_texture, frag_tex_coord), texture(color_texture, frag_tex_coord).a);
 }

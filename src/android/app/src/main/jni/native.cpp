@@ -20,6 +20,8 @@
 #include <thread>
 #include <vector>
 #include <filesystem>
+#include <fstream>
+#include "video_core/vulkan_common/vulkan_device.h"
 #include <dlfcn.h>
 #include <unistd.h>
 
@@ -209,35 +211,101 @@ void EmulationSession::InitializeGpuDriver(const std::string& hook_lib_dir,
     const char* file_redirect_dir_{};
     int featureFlags{};
 
-    std::string clean_driver_dir = custom_driver_dir;
-    while (!clean_driver_dir.empty() && (clean_driver_dir.back() == '/' || clean_driver_dir.back() == '\\')) {
-        clean_driver_dir.pop_back();
+    std::string safe_custom_driver_dir = custom_driver_dir;
+    if (!safe_custom_driver_dir.empty() && safe_custom_driver_dir.back() != '/') {
+        safe_custom_driver_dir.push_back('/');
+    }
+    std::string safe_hook_lib_dir = hook_lib_dir;
+    if (!safe_hook_lib_dir.empty() && safe_hook_lib_dir.back() != '/') {
+        safe_hook_lib_dir.push_back('/');
+    }
+    std::string safe_file_redirect_dir = file_redirect_dir;
+    if (!safe_file_redirect_dir.empty() && safe_file_redirect_dir.back() != '/') {
+        safe_file_redirect_dir.push_back('/');
+    }
+    std::string effective_custom_driver_name = custom_driver_name;
+
+    std::string gpu_model;
+    {
+        std::ifstream f("/sys/class/kgsl/kgsl-3d0/gpu_model");
+        if (f.is_open()) {
+            std::getline(f, gpu_model);
+            while (!gpu_model.empty() && (std::isspace(static_cast<unsigned char>(gpu_model.back())) ||
+                                          gpu_model.back() == '\r' || gpu_model.back() == '\n' ||
+                                          gpu_model.back() == '\0')) {
+                gpu_model.pop_back();
+            }
+            size_t start = 0;
+            while (start < gpu_model.size() && std::isspace(static_cast<unsigned char>(gpu_model[start]))) {
+                start++;
+            }
+            if (start > 0) {
+                gpu_model = gpu_model.substr(start);
+            }
+        }
     }
 
     // Only attempt adrenotools custom/hooked driver loading on Adreno hardware where KGSL is available
     if (SupportsCustomDriver()) {
         // Enable driver file redirection whenever file_redirect_dir is provided
-        if (file_redirect_dir.size()) {
+        if (!safe_file_redirect_dir.empty()) {
             featureFlags |= ADRENOTOOLS_DRIVER_FILE_REDIRECT;
-            file_redirect_dir_ = file_redirect_dir.c_str();
+            file_redirect_dir_ = safe_file_redirect_dir.c_str();
+        }
+
+        if (!safe_custom_driver_dir.empty() && !effective_custom_driver_name.empty()) {
+            bool is_gen8 = false;
+            static const char* const gen8_subs[] = {"810", "812", "825", "829", "830", "840", "845", "850"};
+            for (const auto* sub : gen8_subs) {
+                if (gpu_model.find(sub) != std::string::npos) {
+                    is_gen8 = true;
+                    break;
+                }
+            }
+            if (gpu_model.starts_with("Adreno8") || gpu_model.starts_with("Adreno (TM) 8")) {
+                is_gen8 = true;
+            }
+
+            if (is_gen8 && access((safe_custom_driver_dir + "vulkan.adreno_gen8.so").c_str(), R_OK) == 0) {
+                effective_custom_driver_name = "vulkan.adreno_gen8.so";
+            } else if ((gpu_model.find("Adreno6") != std::string::npos ||
+                        gpu_model.find("Adreno7") != std::string::npos ||
+                        gpu_model.find("Adreno (TM) 6") != std::string::npos ||
+                        gpu_model.find("Adreno (TM) 7") != std::string::npos) &&
+                       access((safe_custom_driver_dir + "vulkan.adreno_a7xx.so").c_str(), R_OK) == 0) {
+                effective_custom_driver_name = "vulkan.adreno_a7xx.so";
+            } else if (access((safe_custom_driver_dir + effective_custom_driver_name).c_str(), R_OK) != 0) {
+                if (access((safe_custom_driver_dir + "vulkan.freedreno.so").c_str(), R_OK) == 0) {
+                    effective_custom_driver_name = "vulkan.freedreno.so";
+                } else if (access((safe_custom_driver_dir + "libvulkan_freedreno.so").c_str(), R_OK) == 0) {
+                    effective_custom_driver_name = "libvulkan_freedreno.so";
+                }
+            }
         }
 
         // Try to load a custom driver.
-        if (custom_driver_name.size()) {
+        if (!effective_custom_driver_name.empty()) {
             handle = adrenotools_open_libvulkan(
-                RTLD_NOW, featureFlags | ADRENOTOOLS_DRIVER_CUSTOM, nullptr, hook_lib_dir.c_str(),
-                clean_driver_dir.c_str(), custom_driver_name.c_str(), file_redirect_dir_, nullptr);
+                RTLD_NOW, featureFlags | ADRENOTOOLS_DRIVER_CUSTOM, nullptr,
+                safe_hook_lib_dir.empty() ? nullptr : safe_hook_lib_dir.c_str(),
+                safe_custom_driver_dir.c_str(), effective_custom_driver_name.c_str(),
+                file_redirect_dir_, nullptr);
         }
 
         // Try to load the system driver via adrenotools.
-        if (!handle && hook_lib_dir.size()) {
-            handle = adrenotools_open_libvulkan(RTLD_NOW, featureFlags, nullptr, hook_lib_dir.c_str(),
-                                                nullptr, nullptr, file_redirect_dir_, nullptr);
+        if (!handle && !safe_hook_lib_dir.empty()) {
+            handle = adrenotools_open_libvulkan(
+                RTLD_NOW, featureFlags, nullptr, safe_hook_lib_dir.c_str(),
+                nullptr, nullptr, file_redirect_dir_, nullptr);
         }
+
+        LOG_INFO(Frontend, "[GpuDriver] adrenotools_open_libvulkan dir='{}' lib='{}' gpu='{}' -> {}",
+                 safe_custom_driver_dir, effective_custom_driver_name, gpu_model,
+                 handle ? "SUCCESS" : "FAILED (fallback to system Vulkan)");
     }
 
-    const std::string lower_custom_name = Common::ToLower(custom_driver_name);
-    const std::string lower_custom_dir = Common::ToLower(clean_driver_dir);
+    const std::string lower_custom_name = Common::ToLower(effective_custom_driver_name);
+    const std::string lower_custom_dir = Common::ToLower(safe_custom_driver_dir);
     const bool is_panvk_driver = lower_custom_name.find("panvk") != std::string::npos ||
                                  lower_custom_name.find("panfrost") != std::string::npos ||
                                  lower_custom_dir.find("panvk") != std::string::npos ||
@@ -249,8 +317,8 @@ void EmulationSession::InitializeGpuDriver(const std::string& hook_lib_dir,
     }
 
     // Try to load a custom driver directly if adrenotools failed or on non-KGSL hardware (e.g. Mali PanVK)
-    if (!handle && custom_driver_name.size() && clean_driver_dir.size()) {
-        std::string full_custom_driver_path = clean_driver_dir + "/" + custom_driver_name;
+    if (!handle && !effective_custom_driver_name.empty() && !safe_custom_driver_dir.empty()) {
+        std::string full_custom_driver_path = safe_custom_driver_dir + effective_custom_driver_name;
         handle = dlopen(full_custom_driver_path.c_str(), RTLD_NOW | RTLD_LOCAL);
         if (handle) {
             LOG_INFO(Frontend, "Loaded custom Vulkan driver directly via dlopen: {}", full_custom_driver_path);
@@ -1163,19 +1231,31 @@ void JNICALL Java_org_yuzu_yuzu_1emu_NativeLibrary_initializeGpuDriver(JNIEnv* e
 
     const auto custom_driver_name_str = Common::Android::GetJString(env, custom_driver_name);
     const auto custom_driver_dir_str = Common::Android::GetJString(env, custom_driver_dir);
+    const auto hook_lib_dir_str = Common::Android::GetJString(env, hook_lib_dir);
+    const auto file_redirect_dir_str = Common::Android::GetJString(env, file_redirect_dir);
 
-    std::string clean_driver_dir = custom_driver_dir_str;
-    while (!clean_driver_dir.empty() && (clean_driver_dir.back() == '/' || clean_driver_dir.back() == '\\')) {
-        clean_driver_dir.pop_back();
+    std::string safe_driver_dir = custom_driver_dir_str;
+    if (!safe_driver_dir.empty() && safe_driver_dir.back() != '/') {
+        safe_driver_dir.push_back('/');
+    }
+
+    std::string safe_hook_dir = hook_lib_dir_str;
+    if (!safe_hook_dir.empty() && safe_hook_dir.back() != '/') {
+        safe_hook_dir.push_back('/');
+    }
+
+    std::string safe_redirect_dir = file_redirect_dir_str;
+    if (!safe_redirect_dir.empty() && safe_redirect_dir.back() != '/') {
+        safe_redirect_dir.push_back('/');
     }
 
     std::string full_custom_driver_path;
-    if (!clean_driver_dir.empty() && !custom_driver_name_str.empty()) {
-        full_custom_driver_path = clean_driver_dir + "/" + custom_driver_name_str;
+    if (!safe_driver_dir.empty() && !custom_driver_name_str.empty()) {
+        full_custom_driver_path = safe_driver_dir + custom_driver_name_str;
     }
 
     const std::string lower_driver_name = Common::ToLower(custom_driver_name_str);
-    const std::string lower_driver_dir = Common::ToLower(clean_driver_dir);
+    const std::string lower_driver_dir = Common::ToLower(safe_driver_dir);
     const bool is_panvk = lower_driver_name.find("panvk") != std::string::npos ||
                           lower_driver_name.find("panfrost") != std::string::npos ||
                           lower_driver_dir.find("panvk") != std::string::npos ||
@@ -1196,10 +1276,10 @@ void JNICALL Java_org_yuzu_yuzu_1emu_NativeLibrary_initializeGpuDriver(JNIEnv* e
     }
 
     EmulationSession::GetInstance().InitializeGpuDriver(
-        Common::Android::GetJString(env, hook_lib_dir),
-        clean_driver_dir,
+        safe_hook_dir,
+        safe_driver_dir,
         custom_driver_name_str,
-        Common::Android::GetJString(env, file_redirect_dir));
+        safe_redirect_dir);
 }
 
 jboolean JNICALL Java_org_yuzu_yuzu_1emu_utils_GpuDriverHelper_supportsCustomDriverLoading(
@@ -1221,6 +1301,9 @@ jobjectArray Java_org_yuzu_yuzu_1emu_utils_GpuDriverHelper_getSystemDriverInfo(
         const char* file_redirect_dir_{};
         int featureFlags{};
         std::string hook_lib_dir = Common::Android::GetJString(env, j_hook_lib_dir);
+        if (!hook_lib_dir.empty() && hook_lib_dir.back() != '/') {
+            hook_lib_dir.push_back('/');
+        }
         void* handle = nullptr;
         if (SupportsCustomDriver() && hook_lib_dir.size()) {
             handle = adrenotools_open_libvulkan(RTLD_NOW, featureFlags, nullptr, hook_lib_dir.c_str(),
@@ -1286,6 +1369,9 @@ jstring Java_org_yuzu_yuzu_1emu_utils_GpuDriverHelper_getGpuModel(JNIEnv *env, j
         const char* file_redirect_dir_{};
         int featureFlags{};
         std::string hook_lib_dir = Common::Android::GetJString(env, j_hook_lib_dir);
+        if (!hook_lib_dir.empty() && hook_lib_dir.back() != '/') {
+            hook_lib_dir.push_back('/');
+        }
         void* handle = nullptr;
         if (SupportsCustomDriver() && hook_lib_dir.size()) {
             handle = adrenotools_open_libvulkan(RTLD_NOW, featureFlags, nullptr, hook_lib_dir.c_str(),
@@ -2445,6 +2531,12 @@ JNIEXPORT jobject JNICALL Java_org_yuzu_yuzu_1emu_NativeLibrary_checkForUpdate(
 }
 
 #endif
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_org_yuzu_yuzu_1emu_NativeLibrary_getActiveVulkanDriverSummary(JNIEnv* env, [[maybe_unused]] jclass clazz) {
+    std::string summary = Vulkan::GetActiveVulkanDriverSummary();
+    return env->NewStringUTF(summary.c_str());
+}
 
 JNIEXPORT jstring JNICALL Java_org_yuzu_yuzu_1emu_NativeLibrary_getBuildVersion(
         JNIEnv* env,

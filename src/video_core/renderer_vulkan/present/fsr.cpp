@@ -15,7 +15,6 @@
 #include "video_core/host_shaders/vulkan_fidelityfx_fsr_rcas_fp32_frag_spv.h"
 #include "video_core/host_shaders/vulkan_fidelityfx_fsr_vert_spv.h"
 #include "video_core/renderer_vulkan/present/fsr.h"
-#include "video_core/renderer_vulkan/present/fsr2.h"
 #include "video_core/renderer_vulkan/present/util.h"
 #include "video_core/renderer_vulkan/vk_scheduler.h"
 #include "video_core/renderer_vulkan/vk_shader_util.h"
@@ -40,7 +39,6 @@ FSR::FSR(const Device& device, MemoryAllocator& memory_allocator, size_t image_c
     CreateDescriptorSets(device);
     CreatePipelineLayouts(device);
     CreatePipelines(device);
-    m_fsr2 = std::make_unique<FSR2::Pipeline>(device, memory_allocator, image_count, extent);
 }
 
 void FSR::CreateImages(const Device& device) {
@@ -54,9 +52,7 @@ void FSR::CreateImages(const Device& device) {
 }
 
 void FSR::CreateRenderPasses(const Device& device) {
-    m_renderpass = CreateWrappedRenderPass(device, VK_FORMAT_R16G16B16A16_SFLOAT,
-                                           VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                                           VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    m_renderpass = CreateWrappedRenderPass(device, VK_FORMAT_R16G16B16A16_SFLOAT);
     for (auto& images : m_dynamic_images) {
         images.framebuffers[Easu] = CreateWrappedFramebuffer(device, m_renderpass, images.image_views[Easu], m_extent);
         images.framebuffers[Rcas] = CreateWrappedFramebuffer(device, m_renderpass, images.image_views[Rcas], m_extent);
@@ -149,11 +145,6 @@ void FSR::UploadImages(const Device& device, Scheduler& scheduler) {
 VkImageView FSR::Draw(const Device& device, Scheduler& scheduler, size_t image_index, VkImage source_image,
                       VkImageView source_image_view, VkExtent2D input_image_extent,
                       const Common::Rectangle<f32>& crop_rect) {
-    if (m_fsr2) {
-        return m_fsr2->Draw(device, scheduler, image_index, source_image, source_image_view,
-                            input_image_extent, crop_rect);
-    }
-
     Images& images = m_dynamic_images[image_index];
 
     VkImage easu_image = *images.images[Easu];
@@ -184,10 +175,8 @@ VkImageView FSR::Draw(const Device& device, Scheduler& scheduler, size_t image_i
                      input_image_height, output_image_width, output_image_height, viewport_x,
                      viewport_y);
 
-    const auto fsr2_config = FSR2::GetQualityConfig(Settings::values.fsr2_quality_mode.GetValue());
-    const float raw_sharpening =
-        (static_cast<float>(Settings::values.fsr_sharpening_slider.GetValue()) / 100.0f) + fsr2_config.sharpness_bias;
-    const float sharpening = std::clamp(raw_sharpening, 0.0f, 1.0f);
+    const float sharpening =
+        static_cast<float>(Settings::values.fsr_sharpening_slider.GetValue()) / 100.0f;
     FsrRcasCon(rcas_con.data(), sharpening);
 
     UploadImages(device, scheduler);
@@ -195,10 +184,8 @@ VkImageView FSR::Draw(const Device& device, Scheduler& scheduler, size_t image_i
 
     scheduler.RequestOutsideRenderPassOperationContext();
     scheduler.Record([=](vk::CommandBuffer cmdbuf) {
-        TransitionImageLayout(cmdbuf, source_image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                              VK_IMAGE_LAYOUT_GENERAL);
-        TransitionImageLayout(cmdbuf, easu_image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                              VK_IMAGE_LAYOUT_UNDEFINED);
+        TransitionImageLayout(cmdbuf, source_image, VK_IMAGE_LAYOUT_GENERAL);
+        TransitionImageLayout(cmdbuf, easu_image, VK_IMAGE_LAYOUT_GENERAL);
         BeginRenderPass(cmdbuf, renderpass, easu_framebuffer, extent);
         cmdbuf.BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, easu_pipeline);
         cmdbuf.BindDescriptorSets(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout, 0,
@@ -207,10 +194,8 @@ VkImageView FSR::Draw(const Device& device, Scheduler& scheduler, size_t image_i
         cmdbuf.Draw(3, 1, 0, 0);
         cmdbuf.EndRenderPass();
 
-        TransitionImageLayout(cmdbuf, easu_image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                              VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-        TransitionImageLayout(cmdbuf, rcas_image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                              VK_IMAGE_LAYOUT_UNDEFINED);
+        TransitionImageLayout(cmdbuf, easu_image, VK_IMAGE_LAYOUT_GENERAL);
+        TransitionImageLayout(cmdbuf, rcas_image, VK_IMAGE_LAYOUT_GENERAL);
         BeginRenderPass(cmdbuf, renderpass, rcas_framebuffer, extent);
         cmdbuf.BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, rcas_pipeline);
         cmdbuf.BindDescriptorSets(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout, 0,
@@ -219,8 +204,7 @@ VkImageView FSR::Draw(const Device& device, Scheduler& scheduler, size_t image_i
         cmdbuf.Draw(3, 1, 0, 0);
         cmdbuf.EndRenderPass();
 
-        TransitionImageLayout(cmdbuf, rcas_image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                              VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        TransitionImageLayout(cmdbuf, rcas_image, VK_IMAGE_LAYOUT_GENERAL);
     });
 
     return *images.image_views[Rcas];

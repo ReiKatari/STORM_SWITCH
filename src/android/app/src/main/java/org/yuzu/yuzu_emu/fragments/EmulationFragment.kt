@@ -763,8 +763,10 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
 
         val buildVersion = NativeLibrary.getBuildVersion()
         buildId = "STORM SWITCH $buildVersion"
+        val activeSummary = runCatching { NativeLibrary.getActiveVulkanDriverSummary() }.getOrDefault("")
         val driverTitle = driverViewModel.selectedDriverTitle.value
-        driverInUse = if (driverTitle.isNotEmpty()) driverTitle else driverViewModel.selectedDriverVersion.value
+        val fallbackDriver = if (driverTitle.isNotEmpty()) driverTitle else driverViewModel.selectedDriverVersion.value
+        driverInUse = if (activeSummary.isNotBlank()) activeSummary else fallbackDriver
 
         updateQuickOverlayMenuEntry(BooleanSetting.SHOW_INPUT_OVERLAY.getBoolean())
         onPhysicalControllerStateChanged(InputHandler.androidControllers.isNotEmpty())
@@ -2903,7 +2905,9 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                     }
 
                     if (BooleanSetting.SHOW_DRIVER_VERSION.getBoolean()) {
-                        appendWithPipe(driverInUse)
+                        val activeSummary = runCatching { NativeLibrary.getActiveVulkanDriverSummary() }.getOrDefault("")
+                        val effectiveDriver = if (activeSummary.isNotBlank()) activeSummary else driverInUse
+                        appendWithPipe(effectiveDriver)
                     }
 
                     if (BooleanSetting.SHOW_DEVICE_MODEL.getBoolean()) {
@@ -3057,15 +3061,9 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                         } catch (e: Exception) {}
                     }
 
-                    // 4. Device Temperature & 5 Thermal States
+                    // 4. Device Temperature
                     val temp = getBatteryTemperature()
-                    val tempIcon = when {
-                        temp < 35.0f -> "❄️"       // 1. Cold (< 35°C)
-                        temp < 42.0f -> "🟢"       // 2. Normal (35-41.9°C)
-                        temp < 48.0f -> "🟡"       // 3. Warm (42-47.9°C)
-                        temp < 54.0f -> "🟠"       // 4. Hot (48-53.9°C)
-                        else -> "🔥"               // 5. Critical (>= 54°C)
-                    }
+                    val tempStr = String.format(java.util.Locale.US, "%.1f°C", temp)
 
                     // 5. Game Resolution
                     val isDocked = BooleanSetting.USE_DOCKED_MODE.getBoolean()
@@ -3086,22 +3084,23 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                     val actualW = (baseW * scale).toInt()
                     val actualH = (baseH * scale).toInt()
 
-                    // Build formatted string
-                    sb.append("📺\u00A0${actualW}x${actualH}\u00A0|\u00A0⚙️\u00A0${getString(R.string.emulation_hud_cpu)}\u00A0$cpuUsagePercent%")
+                    // Build formatted string without emojis per STORM Single Icon / Zero Emoji Mandate
+                    sb.append("${actualW}x${actualH}\u00A0|\u00A0${getString(R.string.emulation_hud_cpu)}\u00A0$cpuUsagePercent%")
                     if (gpuUsagePercent >= 0) {
-                        sb.append("\u00A0|\u00A0🎮\u00A0${getString(R.string.emulation_hud_gpu)}\u00A0$gpuUsagePercent%")
+                        sb.append("\u00A0|\u00A0${getString(R.string.emulation_hud_gpu)}\u00A0$gpuUsagePercent%")
                     }
                     if (ramText.isNotEmpty()) {
-                        sb.append("\u00A0|\u00A0💾\u00A0${getString(R.string.emulation_hud_ram)}\u00A0${ramText.replace(' ', '\u00A0')}")
+                        sb.append("\u00A0|\u00A0${getString(R.string.emulation_hud_ram)}\u00A0${ramText.replace(' ', '\u00A0')}")
                     }
-                    sb.append("\u00A0|\u00A0$tempIcon\u00A0${String.format(java.util.Locale.US, "%.1f°C", temp)}")
+                    sb.append("\u00A0|\u00A0$tempStr")
 
                     // Position layout params: under SOC overlay if enabled, else Top-Right
                     val showSoc = BooleanSetting.SHOW_SOC_OVERLAY.getBoolean()
                     val params = binding.showLoadOverlayText.layoutParams as FrameLayout.LayoutParams
                     params.gravity = Gravity.TOP or Gravity.END
+                    val socHeight = binding.showSocOverlayText.height.takeIf { it > 0 } ?: (resources.getDimensionPixelSize(R.dimen.spacing_large) + 16)
                     val topMargin = if (showSoc) {
-                        resources.getDimensionPixelSize(R.dimen.spacing_large) + 26
+                        resources.getDimensionPixelSize(R.dimen.spacing_large) + socHeight + 4
                     } else {
                         resources.getDimensionPixelSize(R.dimen.spacing_large)
                     }

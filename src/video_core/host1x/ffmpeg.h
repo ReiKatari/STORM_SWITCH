@@ -134,6 +134,7 @@ public:
     YUZU_NON_MOVEABLE(Decoder);
 
     explicit Decoder(Tegra::Host1x::NvdecCommon::VideoCodec codec);
+    explicit Decoder(const AVCodec* codec);
     ~Decoder() = default;
 
     bool SupportsDecodingOnDevice(AVPixelFormat* out_pix_fmt, AVHWDeviceType type) const;
@@ -241,6 +242,7 @@ private:
     bool m_opened{};
     bool m_defer_android_mediacodec_open{};
     bool m_needs_h264_extradata{};
+    std::vector<u8> m_cached_extradata;
     s64 m_next_pts{};
     std::queue<FrameOffsets> m_pending_offsets;
     FrameOffsets m_last_offsets{};

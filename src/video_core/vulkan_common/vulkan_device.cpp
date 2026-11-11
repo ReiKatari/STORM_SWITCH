@@ -27,6 +27,7 @@
 #include "common/settings_enums.h"
 #include "video_core/vulkan_common/nsight_aftermath_tracker.h"
 #include "video_core/vulkan_common/vma.h"
+#include <mutex>
 #include "video_core/vulkan_common/vulkan_device.h"
 #include "video_core/vulkan_common/vulkan_wrapper.h"
 #include "video_core/gpu_logging/gpu_logging.h"
@@ -35,6 +36,23 @@
 #include <adrenotools/bcenabler.h>
 #include <android/api-level.h>
 #endif
+
+namespace Vulkan {
+
+static std::mutex s_active_driver_mutex;
+static std::string s_active_driver_summary = "System Vulkan";
+
+std::string GetActiveVulkanDriverSummary() {
+    std::lock_guard lock(s_active_driver_mutex);
+    return s_active_driver_summary;
+}
+
+void SetActiveVulkanDriverSummary(std::string summary) {
+    std::lock_guard lock(s_active_driver_mutex);
+    s_active_driver_summary = std::move(summary);
+}
+
+} // namespace Vulkan
 
 #ifdef _WIN32
 #include <windows.h>
@@ -456,7 +474,7 @@ std::vector<const char*> ExtensionListForVulkan(
 }
 
 constexpr std::array<char, 8> STATIC_CACHE_MAGIC_NUMBER{'e', 'd', 'e', 'n', 's', 't', 'p', 'c'};
-constexpr u32 STATIC_CACHE_VERSION = 1;
+constexpr u32 STATIC_CACHE_VERSION = 2;
 
 std::filesystem::path StaticPipelineCacheFilename() {
     const auto shader_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::ShaderDir);
@@ -776,9 +794,7 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
     }
 
     if (features.shader_float16_int8.shaderFloat16 &&
-        (is_qualcomm || is_adreno_5xx || is_adreno_8xx || is_adreno_x1 || is_mali || is_xclipse || is_powervr ||
-         (is_turnip && Settings::values.fix_bloom_effects.GetValue()))) {
-        // Mobile GPU FP16 rounding/denormals cause UE4 lighting & post-processing artifacts when fix_bloom_effects is requested
+        !is_turnip && (is_qualcomm || is_adreno_5xx || is_adreno_8xx || is_adreno_x1 || is_mali || is_xclipse || is_powervr)) {
         LOG_WARNING(Render_Vulkan, "Mobile GPU auto-optimization: Disabling shaderFloat16 to prevent UE4 lighting and post-process artifacts");
         features.shader_float16_int8.shaderFloat16 = false;
     }
@@ -810,8 +826,8 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
 
     // Adreno 6xx/7xx/8xx detection already performed above
 
-    // Enforce 64-byte UBO/SSBO alignment floor for Adreno 8xx, Adreno X1, and ARM Mali
-    if (is_adreno_8xx || is_adreno_x1 || is_mali) {
+    // Enforce 64-byte UBO/SSBO alignment floor for proprietary Adreno 8xx, Adreno X1, and ARM Mali
+    if (!is_turnip && (is_adreno_8xx || is_adreno_x1 || is_mali)) {
         properties.properties.limits.minUniformBufferOffsetAlignment =
             (std::max)(properties.properties.limits.minUniformBufferOffsetAlignment, VkDeviceSize{64});
         properties.properties.limits.minStorageBufferOffsetAlignment =
@@ -833,12 +849,12 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
     const auto dyna_state = Settings::values.dyna_state.GetValue();
     auto effective_dyna_state = dyna_state;
 
-    if (is_adreno_5xx || is_adreno_6xx || is_adreno_8xx || is_adreno_x1 || is_qualcomm || is_mali || is_xclipse || is_powervr) {
+    if (!is_turnip && (is_adreno_5xx || is_qualcomm || is_mali || is_xclipse || is_powervr)) {
         LOG_INFO(Render_Vulkan, "Mobile GPU / driver auto-optimization: ExtendedDynamicState disabled for hardware pipeline stability");
         effective_dyna_state = Settings::ExtendedDynamicState::Disabled;
-    } else if ((is_turnip || (is_intel_windows && is_integrated)) &&
+    } else if (is_intel_windows && is_integrated &&
                effective_dyna_state > Settings::ExtendedDynamicState::EDS1) {
-        LOG_INFO(Render_Vulkan, "Turnip/Intel iGPU auto-optimization: Clamping ExtendedDynamicState to EDS1 to ensure pipeline stability");
+        LOG_INFO(Render_Vulkan, "Intel iGPU auto-optimization: Clamping ExtendedDynamicState to EDS1 to ensure pipeline stability");
         effective_dyna_state = Settings::ExtendedDynamicState::EDS1;
     }
 

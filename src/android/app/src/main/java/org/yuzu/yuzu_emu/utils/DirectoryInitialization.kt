@@ -40,6 +40,8 @@ object DirectoryInitialization {
             initializeInternalStorage()
             try {
                 NativeConfig.initializeGlobalConfig()
+                org.yuzu.yuzu_emu.features.settings.utils.SettingsFile.sanitizePoisonedConfigs(YuzuApplication.appContext)
+                GpuDriverHelper.checkAndAutoUpgradeStormDriver(YuzuApplication.appContext)
                 val stormExternalDir = File(Environment.getExternalStorageDirectory(), "STORM SWITCH").canonicalPath
                 val defaultNand = "$stormExternalDir/nand"
                 val defaultSdmc = "$stormExternalDir/sdmc"
@@ -126,6 +128,8 @@ object DirectoryInitialization {
                 NativeLibrary.setAppDirectory(userPath!!)
                 areDirectoriesReady = true
                 NativeConfig.initializeGlobalConfig()
+                org.yuzu.yuzu_emu.features.settings.utils.SettingsFile.sanitizePoisonedConfigs(YuzuApplication.appContext)
+                GpuDriverHelper.checkAndAutoUpgradeStormDriver(YuzuApplication.appContext)
 
                 val defaultNand = "${userPath}/nand"
                 val defaultSdmc = "${userPath}/sdmc"

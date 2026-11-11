@@ -8,7 +8,6 @@
 #include <tuple>
 #include <utility>
 
-#include "common/settings.h"
 #include "shader_recompiler/backend/spirv/emit_spirv_instructions.h"
 #include "shader_recompiler/backend/spirv/spirv_emit_context.h"
 
@@ -491,11 +490,6 @@ void EmitSetFragColor(EmitContext& ctx, u32 index, u32 component, Id value) {
     const Id component_id{ctx.Const(component)};
     const AttributeType type{ctx.runtime_info.color_output_types[index]};
     if (type == AttributeType::Float) {
-        if (Settings::values.fix_bloom_effects.GetValue()) {
-            const Id is_not_nan = ctx.OpFOrdEqual(ctx.U1, value, value);
-            value = ctx.OpSelect(ctx.F32[1], is_not_nan, value, ctx.Const(0.0f));
-            value = (ctx.profile.has_broken_spirv_clamp ? ctx.OpFMin(ctx.F32[1], ctx.Const(65000.0f), ctx.OpFMax(ctx.F32[1], ctx.Const(-65000.0f), value)) : ctx.OpFClamp(ctx.F32[1], value, ctx.Const(-65000.0f), ctx.Const(65000.0f)));
-        }
         const Id pointer{ctx.OpAccessChain(ctx.output_f32, ctx.frag_color.at(index), component_id)};
         ctx.OpStore(pointer, value);
     } else if (type == AttributeType::UnsignedInt) {
@@ -507,11 +501,6 @@ void EmitSetFragColor(EmitContext& ctx, u32 index, u32 component, Id value) {
         ctx.OpStore(pointer, ctx.OpBitcast(ctx.S32[1], value));
     } else {
         // Disabled or unknown, treat as float
-        if (Settings::values.fix_bloom_effects.GetValue()) {
-            const Id is_not_nan = ctx.OpFOrdEqual(ctx.U1, value, value);
-            value = ctx.OpSelect(ctx.F32[1], is_not_nan, value, ctx.Const(0.0f));
-            value = (ctx.profile.has_broken_spirv_clamp ? ctx.OpFMin(ctx.F32[1], ctx.Const(65000.0f), ctx.OpFMax(ctx.F32[1], ctx.Const(-65000.0f), value)) : ctx.OpFClamp(ctx.F32[1], value, ctx.Const(-65000.0f), ctx.Const(65000.0f)));
-        }
         const Id pointer{ctx.OpAccessChain(ctx.output_f32, ctx.frag_color.at(index), component_id)};
         ctx.OpStore(pointer, value);
     }

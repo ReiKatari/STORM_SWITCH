@@ -2274,8 +2274,8 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="save_state_restore_slot_title">恢复槽位 %1$d</string>
     <string name="save_state_restore_slot_message">是否从备份 (.undo.bak) 恢复槽位 %1$d 的存档？</string>
     <string name="save_state_restore_button">恢复</string>
-    <string name="storm_driver_10_active">STORM DRIVER 11.0.0 (已激活)</string>
-    <string name="storm_driver_already_active">STORM DRIVER 11.0.0 已经处于激活状态！</string>
+    <string name="storm_driver_10_active">STORM DRIVER 12.0.0 (已激活)</string>
+    <string name="storm_driver_already_active">STORM DRIVER 12.0.0 已经处于激活状态！</string>
     <string name="added">已添加</string>
     <string name="pagination_first">&lt;&lt;</string>
     <string name="pagination_prev">&lt;</string>

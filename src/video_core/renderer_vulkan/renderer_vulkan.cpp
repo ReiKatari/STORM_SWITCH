@@ -341,6 +341,17 @@ void RendererVulkan::Report() const {
     const std::string driver_version = GetDriverVersion(device);
     const std::string driver_name = fmt::format("{} {}", vendor_name, driver_version);
 
+    const VkDriverId driver_id = device.GetDriverID();
+    std::string driver_summary;
+    if (driver_id == VK_DRIVER_ID_MESA_TURNIP) {
+        driver_summary = fmt::format("STORM DRIVER {} (Turnip)", driver_version);
+    } else if (driver_id == VK_DRIVER_ID_QUALCOMM_PROPRIETARY) {
+        driver_summary = fmt::format("Qualcomm {}", driver_version);
+    } else {
+        driver_summary = fmt::format("{} {}", vendor_name, driver_version);
+    }
+    Vulkan::SetActiveVulkanDriverSummary(driver_summary);
+
     const std::string api_version = GetReadableVersion(device.ApiVersion());
 
     const std::string extensions = BuildCommaSeparatedExtensions(device.GetAvailableExtensions());

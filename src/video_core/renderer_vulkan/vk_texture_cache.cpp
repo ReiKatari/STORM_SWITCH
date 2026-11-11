@@ -1451,9 +1451,7 @@ void TextureCacheRuntime::ConvertImage(Framebuffer* dst, ImageView& dst_view, Im
     case PixelFormat::R32G32_FLOAT:
     case PixelFormat::R32G32_SINT:
     case PixelFormat::R32_FLOAT:
-        if (src_view.format == PixelFormat::D32_FLOAT &&
-            (dst_view.format == PixelFormat::B5G6R5_UNORM ||
-             Settings::values.fix_bloom_effects.GetValue())) {
+        if (dst_view.format == PixelFormat::B5G6R5_UNORM && src_view.format == PixelFormat::D32_FLOAT) {
             const Region2D region{
                 .start = {0, 0},
                 .end = {static_cast<s32>(dst->RenderArea().width),

@@ -70,6 +70,7 @@ class DriverViewModel : ViewModel() {
     val shouldShowDriverShaderDialog: StateFlow<Boolean> get() = _shouldShowDriverShaderDialog
 
     init {
+        GpuDriverHelper.checkAndAutoUpgradeStormDriver()
         updateDriverList()
         updateDriverNameForGame(null)
         previousDriverPath = StringSetting.DRIVER_PATH.getString()

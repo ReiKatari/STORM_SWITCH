@@ -1001,10 +1001,10 @@ GameFixProfile(
             "Diablo II: Resurrected",
             "• Вылет при продолжении игры / загрузке персонажа (OOM)\n• Пропадание букв и текста интерфейса (включая переход во II Акт)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя и графические артефакты\n• Просадки кадровой частоты (4 FPS / 200 ms)",
             "• Character load / continue game crash (OOM)\n• Missing UI text and font glyphs (including after Act I)\n• Battle.net server handshake hang\n• Character flickering on selection screen and graphical artifacts\n• Frame drops (4 FPS / 200 ms)",
-            "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Точность ГПУ: Высокая (High / синхронизация буферов шрифта)\n✓ Быстрое время ГПУ: Отключено (100% отрисовка динамических глифов и букв шрифта)\n✓ Асинхронные шейдеры: Отключено (100% отрисовка всех букв и глифов без пропусков)\n✓ Реактивная очистка: Включено (синхронизация атласов шрифта во всех Актах)\n✓ Сборка мусора VRAM: Отключено (защита атласа букв от выгрузки после I Акта)\n✓ Точность ЦП: Авто (устранение задержек)\n✓ Обратное чтение буферов ГПУ: Включено (стабильные 60 FPS)\n✓ Сжатие текстур ASTC: Отключено (устраняет полосы и квадраты)\n✓ Обратная связь барьеров: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание)",
-            "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ GPU Accuracy: High (Buffer synchronization)\n✓ Fast GPU Time: Disabled (100% font glyph rendering and timing guarantee)\n✓ Asynchronous Shaders: Disabled (100% font glyph render guarantee)\n✓ Reactive Flushing: Enabled (Syncs font atlases across all Acts)\n✓ VRAM Garbage Collection: Disabled (Protects font atlas after Act I)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ GPU Buffer Readback: Enabled (Stable 60 FPS)\n✓ ASTC Recompression: Uncompressed (Fixes decals and square artifacts)\n✓ Barrier Feedback Loops: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes flickering)",
+            "✓ Память: 4GB DRAM (предотвращение вылета 1A80A)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Точность ГПУ: Высокая (High / синхронизация буферов шрифта)\n✓ Быстрое время ГПУ: Отключено (100% отрисовка динамических глифов и букв шрифта)\n✓ Асинхронные шейдеры: Отключено (100% отрисовка всех букв и глифов без пропусков)\n✓ Реактивная очистка: Включено (синхронизация атласов шрифта во всех Актах)\n✓ Сборка мусора VRAM: Отключено (защита атласа букв от выгрузки после I Акта)\n✓ Точность ЦП: Авто (устранение задержек)\n✓ Обратное чтение буферов ГПУ: Включено (стабильные 60 FPS)\n✓ Сжатие текстур ASTC: Отключено (устраняет полосы и квадраты)\n✓ Обратная связь барьеров: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание)",
+            "✓ Memory Layout: 4GB DRAM (Prevents 1A80A crash)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ GPU Accuracy: High (Buffer synchronization)\n✓ Fast GPU Time: Disabled (100% font glyph rendering and timing guarantee)\n✓ Asynchronous Shaders: Disabled (100% font glyph render guarantee)\n✓ Reactive Flushing: Enabled (Syncs font atlases across all Acts)\n✓ VRAM Garbage Collection: Disabled (Protects font atlas after Act I)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ GPU Buffer Readback: Enabled (Stable 60 FPS)\n✓ ASTC Recompression: Uncompressed (Fixes decals and square artifacts)\n✓ Barrier Feedback Loops: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes flickering)",
             mapOf(
-                "System\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "0",
                 "System\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
@@ -1069,10 +1069,10 @@ GameFixProfile(
             "Diablo II: Resurrected",
             "• Вылет при продолжении игры / загрузке персонажа (OOM)\n• Пропадание букв и текста интерфейса (включая переход во II Акт)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя и графические артефакты\n• Просадки кадровой частоты (4 FPS / 200 ms)",
             "• Character load / continue game crash (OOM)\n• Missing UI text and font glyphs (including after Act I)\n• Battle.net server handshake hang\n• Character flickering on selection screen and graphical artifacts\n• Frame drops (4 FPS / 200 ms)",
-            "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Точность ГПУ: Высокая (High / синхронизация буферов шрифта)\n✓ Быстрое время ГПУ: Отключено (100% отрисовка динамических глифов и букв шрифта)\n✓ Асинхронные шейдеры: Отключено (100% отрисовка всех букв и глифов без пропусков)\n✓ Реактивная очистка: Включено (синхронизация атласов шрифта во всех Актах)\n✓ Сборка мусора VRAM: Отключено (защита атласа букв от выгрузки после I Акта)\n✓ Точность ЦП: Авто (устранение задержек)\n✓ Обратное чтение буферов ГПУ: Включено (стабильные 60 FPS)\n✓ Сжатие текстур ASTC: Отключено (устраняет полосы и квадраты)\n✓ Обратная связь барьеров: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание)",
-            "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ GPU Accuracy: High (Buffer synchronization)\n✓ Fast GPU Time: Disabled (100% font glyph rendering and timing guarantee)\n✓ Asynchronous Shaders: Disabled (100% font glyph render guarantee)\n✓ Reactive Flushing: Enabled (Syncs font atlases across all Acts)\n✓ VRAM Garbage Collection: Disabled (Protects font atlas after Act I)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ GPU Buffer Readback: Enabled (Stable 60 FPS)\n✓ ASTC Recompression: Uncompressed (Fixes decals and square artifacts)\n✓ Barrier Feedback Loops: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes flickering)",
+            "✓ Память: 4GB DRAM (предотвращение вылета 1A80A)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Точность ГПУ: Высокая (High / синхронизация буферов шрифта)\n✓ Быстрое время ГПУ: Отключено (100% отрисовка динамических глифов и букв шрифта)\n✓ Асинхронные шейдеры: Отключено (100% отрисовка всех букв и глифов без пропусков)\n✓ Реактивная очистка: Включено (синхронизация атласов шрифта во всех Актах)\n✓ Сборка мусора VRAM: Отключено (защита атласа букв от выгрузки после I Акта)\n✓ Точность ЦП: Авто (устранение задержек)\n✓ Обратное чтение буферов ГПУ: Включено (стабильные 60 FPS)\n✓ Сжатие текстур ASTC: Отключено (устраняет полосы и квадраты)\n✓ Обратная связь барьеров: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание)",
+            "✓ Memory Layout: 4GB DRAM (Prevents 1A80A crash)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ GPU Accuracy: High (Buffer synchronization)\n✓ Fast GPU Time: Disabled (100% font glyph rendering and timing guarantee)\n✓ Asynchronous Shaders: Disabled (100% font glyph render guarantee)\n✓ Reactive Flushing: Enabled (Syncs font atlases across all Acts)\n✓ VRAM Garbage Collection: Disabled (Protects font atlas after Act I)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ GPU Buffer Readback: Enabled (Stable 60 FPS)\n✓ ASTC Recompression: Uncompressed (Fixes decals and square artifacts)\n✓ Barrier Feedback Loops: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes flickering)",
             mapOf(
-                "System\\memory_layout_mode" to "2",
+                "System\\memory_layout_mode" to "0",
                 "System\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
                 "Renderer\\gpu_accuracy" to "2",
@@ -1867,7 +1867,7 @@ GameFixProfile(
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\fix_bloom_effects" to "true",
+                "Renderer\\fix_bloom_effects" to "false",
                 "Renderer\\early_release_fences" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -1885,7 +1885,7 @@ GameFixProfile(
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\fix_bloom_effects" to "true",
+                "Renderer\\fix_bloom_effects" to "false",
                 "Renderer\\early_release_fences" to "false",
                 "System\\memory_layout_mode" to "0"
             )

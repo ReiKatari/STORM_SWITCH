@@ -203,6 +203,8 @@ Decoder::Decoder(Tegra::Host1x::NvdecCommon::VideoCodec codec) {
     }
 }
 
+Decoder::Decoder(const AVCodec* codec) : m_codec{codec} {}
+
 bool Decoder::SupportsDecodingOnDevice(AVPixelFormat* out_pix_fmt, AVHWDeviceType type) const {
     for (int i = 0;; i++) {
         const AVCodecHWConfig* config = avcodec_get_hw_config(m_codec, i);
@@ -315,6 +317,9 @@ void DecoderContext::InitializeHardwareDecoder(const HardwareContext& context, A
 }
 
 bool DecoderContext::OpenContext(const Decoder& decoder, std::span<const u8> extradata) {
+    if (decoder.GetCodec()->id == AV_CODEC_ID_H264 && !m_codec_context->hw_device_ctx) {
+        m_codec_context->thread_type = FF_THREAD_SLICE;
+    }
     if (!extradata.empty()) {
         av_freep(&m_codec_context->extradata);
         m_codec_context->extradata = static_cast<u8*>(
@@ -355,16 +360,7 @@ bool DecoderContext::SendPacket(const Packet& packet) {
 
 std::shared_ptr<Frame> DecoderContext::ReceiveFrame() {
     auto ReceiveImpl = [&](AVFrame* frame) -> int {
-        int ret = avcodec_receive_frame(m_codec_context, frame);
-#if defined(__ANDROID__)
-        if (ret == AVERROR(EAGAIN) && m_decoder.GetCodec() && m_decoder.GetCodec()->name &&
-            std::string_view{m_decoder.GetCodec()->name}.find("mediacodec") != std::string_view::npos) {
-            for (int attempt = 0; attempt < 40 && ret == AVERROR(EAGAIN); ++attempt) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
-                ret = avcodec_receive_frame(m_codec_context, frame);
-            }
-        }
-#endif
+        const int ret = avcodec_receive_frame(m_codec_context, frame);
         if (ret < 0 && ret != AVERROR_EOF && ret != AVERROR(EAGAIN)) {
             LOG_ERROR(HW_GPU, "avcodec_receive_frame error: {}", AVError(ret));
         }
@@ -400,6 +396,7 @@ std::shared_ptr<Frame> DecoderContext::ReceiveFrame() {
 }
 
 void DecodeApi::Reset() {
+    m_cached_extradata.clear();
     m_hardware_context.reset();
     m_decoder_context.reset();
     m_decoder.reset();
@@ -462,8 +459,14 @@ bool DecodeApi::Initialize(Tegra::Host1x::NvdecCommon::VideoCodec codec) {
 bool DecodeApi::SendPacket(std::span<const u8> packet_data, const FrameOffsets& offsets,
                            std::optional<FrameDimensions> dimensions) {
     if (!m_opened) {
-        std::vector<u8> extradata;
 #if defined(__ANDROID__)
+        if (m_needs_h264_extradata) {
+            auto extracted = ExtractH264ParameterSetExtradata(packet_data);
+            if (!extracted.empty()) {
+                m_cached_extradata = std::move(extracted);
+            }
+        }
+
         if (m_defer_android_mediacodec_open) {
             if (!dimensions) {
                 return true;
@@ -476,18 +479,41 @@ bool DecodeApi::SendPacket(std::span<const u8> packet_data, const FrameOffsets& 
             ctx->coded_height = dimensions->height;
         }
 
-        if (m_needs_h264_extradata) {
-            extradata = ExtractH264ParameterSetExtradata(packet_data);
-            if (extradata.empty()) {
-                return true;
-            }
-        }
+        const std::span<const u8> extradata_span = m_cached_extradata;
+#else
+        const std::span<const u8> extradata_span{};
 #endif
-        if (!m_decoder_context->OpenContext(*m_decoder, extradata)) {
+        if (!m_decoder_context->OpenContext(*m_decoder, extradata_span)) {
+#if defined(__ANDROID__)
+            if (m_defer_android_mediacodec_open) {
+                LOG_WARNING(HW_GPU, "MediaCodec OpenContext failed, falling back to software H264 decoder");
+                const AVCodec* sw_codec = avcodec_find_decoder(AV_CODEC_ID_H264);
+                if (sw_codec) {
+                    m_decoder.emplace(sw_codec);
+                    m_decoder_context.emplace(*m_decoder);
+                    m_defer_android_mediacodec_open = false;
+                    m_needs_h264_extradata = false;
+                    if (m_decoder_context->OpenContext(*m_decoder, extradata_span)) {
+                        m_opened = true;
+                    } else {
+                        this->Reset();
+                        return false;
+                    }
+                } else {
+                    this->Reset();
+                    return false;
+                }
+            } else {
+                this->Reset();
+                return false;
+            }
+#else
             this->Reset();
             return false;
+#endif
+        } else {
+            m_opened = true;
         }
-        m_opened = true;
     }
     if (packet_data.empty()) {
         return false;

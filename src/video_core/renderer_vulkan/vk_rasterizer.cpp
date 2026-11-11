@@ -1015,11 +1015,12 @@ bool RasterizerVulkan::MustFlushRegion(DAddr addr, u64 size, VideoCommon::CacheT
             return true;
         }
     }
+    if (!Settings::IsGPULevelHigh() && !Settings::values.use_reactive_flushing.GetValue()) {
+        return false;
+    }
     if (True(which & VideoCommon::CacheType::TextureCache)) {
-        if (Settings::IsGPULevelNormal() || Settings::IsGPULevelHigh() || Settings::values.use_reactive_flushing.GetValue()) {
-            std::scoped_lock lock{texture_cache.mutex};
-            return texture_cache.IsRegionGpuModified(addr, size);
-        }
+        std::scoped_lock lock{texture_cache.mutex};
+        return texture_cache.IsRegionGpuModified(addr, size);
     }
     return false;
 }
@@ -1171,7 +1172,7 @@ void RasterizerVulkan::ReleaseFences(bool force) {
 
 void RasterizerVulkan::FlushAndInvalidateRegion(DAddr addr, u64 size,
                                                 VideoCommon::CacheType which) {
-    if (Settings::IsGPULevelNormal() || Settings::IsGPULevelHigh() || Settings::values.use_reactive_flushing.GetValue()) {
+    if (Settings::IsGPULevelHigh() || Settings::values.use_reactive_flushing.GetValue()) {
         FlushRegion(addr, size, which);
     }
     InvalidateRegion(addr, size, which);

@@ -1308,4 +1308,7 @@ private:
     std::unique_ptr<NsightAftermathTracker> nsight_aftermath_tracker;
 };
 
+std::string GetActiveVulkanDriverSummary();
+void SetActiveVulkanDriverSummary(std::string summary);
+
 } // namespace Vulkan

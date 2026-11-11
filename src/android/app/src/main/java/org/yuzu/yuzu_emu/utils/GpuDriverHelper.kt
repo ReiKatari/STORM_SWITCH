@@ -6,6 +6,7 @@
 
 package org.yuzu.yuzu_emu.utils
 
+import android.content.Context
 import android.graphics.SurfaceTexture
 import android.net.Uri
 import android.os.Build
@@ -84,6 +85,18 @@ object GpuDriverHelper {
         val verNum = regex.find(ver)?.value ?: regex.find(name)?.value ?: "0"
         val major = verNum.split(".").firstOrNull()?.toIntOrNull() ?: 0
         return major >= 10
+    }
+
+    fun isStormDriver12OrNewer(): Boolean {
+        val meta = installedCustomDriverData
+        val name = meta.name ?: ""
+        val ver = meta.version ?: ""
+        val isStorm = name.contains("STORM", ignoreCase = true) || ver.contains("STORM", ignoreCase = true)
+        if (!isStorm) return false
+        val regex = Regex("""\d+(\.\d+)*""")
+        val verNum = regex.find(ver)?.value ?: regex.find(name)?.value ?: "0"
+        val major = verNum.split(".").firstOrNull()?.toIntOrNull() ?: 0
+        return major >= 12
     }
 
     fun isAdreno8xx(): Boolean {
@@ -276,6 +289,7 @@ object GpuDriverHelper {
                             activeDriverFile.path,
                             File(driverInstallationPath!!)
                         )
+                        extractAllDriverFiles(activeDriverFile, File(driverInstallationPath!!))
                     } catch (_: Exception) {
                     }
                 }
@@ -600,6 +614,7 @@ object GpuDriverHelper {
                 copiedFile.path,
                 File(driverInstallationPath!!)
             )
+            extractAllDriverFiles(copiedFile, File(driverInstallationPath!!))
         } catch (e: SecurityException) {
             return false
         }
@@ -633,6 +648,7 @@ object GpuDriverHelper {
                 driver.path,
                 File(driverInstallationPath!!)
             )
+            extractAllDriverFiles(driver, File(driverInstallationPath!!))
         } catch (e: SecurityException) {
             return false
         }
@@ -641,6 +657,202 @@ object GpuDriverHelper {
         initializeDriverParameters()
 
         return true
+    }
+
+    /**
+     * Extracts all .so libraries (including vulkan.adreno_gen8.so, vulkan.adreno_a7xx.so,
+     * vulkan.freedreno.so) and driver config files directly into destDir.
+     */
+    fun extractAllDriverFiles(zipFile: File, destDir: File) {
+        if (!destDir.exists()) destDir.mkdirs()
+        try {
+            // 1. Flatten any .so and config files that might be in subfolders of destDir
+            destDir.walkTopDown().forEach { file ->
+                if (file.isFile && file.parentFile != destDir) {
+                    val baseName = file.name
+                    if (baseName.endsWith(".so", ignoreCase = true) ||
+                        baseName.endsWith(".conf", ignoreCase = true) ||
+                        baseName.endsWith(".xml", ignoreCase = true) ||
+                        baseName.equals("meta.json", ignoreCase = true) ||
+                        baseName.startsWith("drirc", ignoreCase = true)
+                    ) {
+                        val outFile = File(destDir, baseName)
+                        if (!outFile.exists() || outFile.length() != file.length()) {
+                            try { file.copyTo(outFile, overwrite = true) } catch (_: Throwable) {}
+                        }
+                    }
+                }
+            }
+
+            // 2. Scan zip entries directly to ensure all .so files and configs are placed directly in destDir
+            ZipFile(zipFile).use { zf ->
+                val entries = zf.entries()
+                while (entries.hasMoreElements()) {
+                    val entry = entries.nextElement()
+                    if (entry.isDirectory) continue
+                    val baseName = entry.name.substringAfterLast('/').substringAfterLast('\\')
+                    if (baseName.endsWith(".so", ignoreCase = true) ||
+                        baseName.endsWith(".conf", ignoreCase = true) ||
+                        baseName.endsWith(".xml", ignoreCase = true) ||
+                        baseName.equals("meta.json", ignoreCase = true) ||
+                        baseName.startsWith("drirc", ignoreCase = true)
+                    ) {
+                        val outFile = File(destDir, baseName)
+                        if (!outFile.exists() || outFile.length() != entry.size) {
+                            zf.getInputStream(entry).use { inStream ->
+                                java.io.FileOutputStream(outFile).use { outStream ->
+                                    inStream.copyTo(outStream)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (_: Throwable) {}
+    }
+
+    /**
+     * Checks if STORM_DRIVER_12.0.0.zip is present or if user had 10.0.0/11.0.0 selected,
+     * automatically upgrading and refreshing custom driver files.
+     */
+    fun checkAndAutoUpgradeStormDriver(context: Context = YuzuApplication.appContext) {
+        try {
+            // Guard against Mali / Samsung Xclipse devices - never activate Turnip custom drivers
+            if (isMaliGpu() || isXclipseGpu()) {
+                Log.info("[GpuDriverHelper] Mali or Samsung Xclipse GPU detected; skipping Turnip custom driver auto-upgrade.")
+                return
+            }
+
+            initializeDirectories()
+            val storagePathStr = driverStoragePath
+            val storageDir = File(storagePathStr)
+            val driver12FileName = "STORM_DRIVER_12.0.0.zip"
+            val targetDriver12 = File(storageDir, driver12FileName)
+
+            val currentSelectedPath = try { StringSetting.DRIVER_PATH.getString() } catch (_: Throwable) { "" }
+            val hadOlderStormSelected = currentSelectedPath.contains("10.0.0", ignoreCase = true) ||
+                currentSelectedPath.contains("11.0.0", ignoreCase = true) ||
+                currentSelectedPath.contains("STORM_DRIVER_10", ignoreCase = true) ||
+                currentSelectedPath.contains("STORM_DRIVER_11", ignoreCase = true)
+
+            // Check if device is Qualcomm / Adreno OR user previously had a STORM_DRIVER_*.zip installed
+            val kgslExists = File("/sys/class/kgsl/kgsl-3d0/gpu_model").exists()
+            val hardwareQcom = Build.HARDWARE.contains("qcom", ignoreCase = true) ||
+                Build.BOARD.contains("qcom", ignoreCase = true) ||
+                Build.MANUFACTURER.contains("qualcomm", ignoreCase = true)
+            val socQcom = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                try { Build.SOC_MANUFACTURER.contains("qualcomm", ignoreCase = true) } catch (_: Throwable) { false }
+            } else false
+            val adrenoGpu = try { isAdrenoGpu() } catch (_: Throwable) { false }
+            val hadStormInstalled = hadOlderStormSelected ||
+                currentSelectedPath.contains("STORM_DRIVER", ignoreCase = true) ||
+                try {
+                    val meta = installedCustomDriverData
+                    meta.name?.contains("STORM", ignoreCase = true) == true || meta.version?.contains("STORM", ignoreCase = true) == true
+                } catch (_: Throwable) { false }
+
+            val isEligible = kgslExists || hardwareQcom || socQcom || adrenoGpu || hadStormInstalled
+            if (!isEligible) {
+                return
+            }
+
+            // Ensure /storage/emulated/0/STORM SWITCH/gpu_drivers/ exists and copy from assets if missing
+            val primaryExternalDir = File("/storage/emulated/0/STORM SWITCH/gpu_drivers")
+            val primaryDriver12 = File(primaryExternalDir, driver12FileName)
+            if (!primaryDriver12.exists() || primaryDriver12.length() < 1024L) {
+                try {
+                    if (!primaryExternalDir.exists()) {
+                        primaryExternalDir.mkdirs()
+                    }
+                    context.assets.open("drivers/$driver12FileName").use { inStream ->
+                        java.io.FileOutputStream(primaryDriver12).use { outStream ->
+                            inStream.copyTo(outStream)
+                        }
+                    }
+                    Log.info("[GpuDriverHelper] Copied bundled $driver12FileName from APK assets to ${primaryDriver12.absolutePath}")
+                } catch (e: Throwable) {
+                    Log.warning("[GpuDriverHelper] Could not copy $driver12FileName to external storage: ${e.message}")
+                }
+            }
+
+            // Also copy to app internal driver storage if not yet present
+            if (!targetDriver12.exists() || targetDriver12.length() < 1024L) {
+                if (primaryDriver12.exists() && primaryDriver12.length() > 1024L) {
+                    try {
+                        primaryDriver12.copyTo(targetDriver12, overwrite = true)
+                    } catch (_: Throwable) {}
+                } else {
+                    try {
+                        if (!storageDir.exists()) storageDir.mkdirs()
+                        context.assets.open("drivers/$driver12FileName").use { inStream ->
+                            java.io.FileOutputStream(targetDriver12).use { outStream ->
+                                inStream.copyTo(outStream)
+                            }
+                        }
+                    } catch (_: Throwable) {}
+                }
+            }
+
+            val candidateDirs = listOfNotNull(
+                storageDir,
+                DirectoryInitialization.userDirectory?.let { File(it, "gpu_drivers") },
+                primaryExternalDir,
+                File("/sdcard/STORM SWITCH/gpu_drivers")
+            ).distinct()
+
+            var foundDriver12: File? = null
+            for (dir in candidateDirs) {
+                if (!dir.exists() || !dir.isDirectory) continue
+                val candidate = File(dir, driver12FileName)
+                if (candidate.exists() && candidate.length() > 1024L) {
+                    foundDriver12 = candidate
+                    break
+                }
+                val any12 = dir.listFiles { f -> f.isFile && f.name.startsWith("STORM_DRIVER_12", ignoreCase = true) && f.name.endsWith(".zip", ignoreCase = true) }
+                if (!any12.isNullOrEmpty()) {
+                    foundDriver12 = any12.first()
+                    break
+                }
+            }
+
+            val isSystemDefault = currentSelectedPath.isEmpty() || !File(currentSelectedPath).exists()
+            val installedMeta = installedCustomDriverData
+            val is12Installed = (installedMeta.version?.contains("12.0") == true || installedMeta.name?.contains("12.0") == true) &&
+                File(driverInstallationPath!!, "meta.json").exists()
+
+            if (foundDriver12 != null) {
+                val shouldActivate = hadOlderStormSelected || isSystemDefault || !is12Installed
+                if (shouldActivate) {
+                    val finalDriverFile = if (foundDriver12.canonicalPath == targetDriver12.canonicalPath) {
+                        foundDriver12
+                    } else {
+                        try {
+                            foundDriver12.copyTo(targetDriver12, overwrite = true)
+                            targetDriver12
+                        } catch (_: Throwable) {
+                            foundDriver12
+                        }
+                    }
+
+                    if (installCustomDriver(finalDriverFile)) {
+                        val destDir = File(driverInstallationPath!!)
+                        extractAllDriverFiles(finalDriverFile, destDir)
+                        StringSetting.DRIVER_PATH.setString(finalDriverFile.absolutePath)
+                        NativeConfig.saveGlobalConfig()
+                        try {
+                            androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
+                                .edit()
+                                .putString("driver_path", finalDriverFile.absolutePath)
+                                .putString("driver_data", finalDriverFile.absolutePath)
+                                .apply()
+                        } catch (_: Throwable) {}
+                        Log.info("[GpuDriverHelper] Auto-upgraded to STORM DRIVER 12.0.0 at ${finalDriverFile.absolutePath}")
+                    }
+                }
+            }
+        } catch (e: Throwable) {
+            Log.warning("[GpuDriverHelper] checkAndAutoUpgradeStormDriver failed: ${e.message}")
+        }
     }
 
     /**

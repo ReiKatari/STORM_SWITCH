@@ -151,18 +151,6 @@ public:
                                                             VAddr framebuffer_addr,
                                                             u32 pixel_stride);
 
-    [[nodiscard]] bool IsDiablo2Resurrected(u64 title_id = 0) const noexcept {
-        if (title_id == 0) {
-            title_id = current_title_id != 0 ? current_title_id : Settings::GetCurrentProgramID();
-            if (title_id == 0) {
-                title_id = Settings::values.current_program_id.GetValue();
-            }
-        }
-        const u64 base_tid = title_id & ~0x1FFFULL;
-        return (base_tid == 0x0100726014352000ULL ||
-                base_tid == 0x01002A801458A000ULL ||
-                base_tid == 0x0100916014D8C000ULL);
-    }
 
     [[nodiscard]] bool NeedsD24DepthFormat(u64 title_id = 0) const noexcept {
         if (title_id == 0) {

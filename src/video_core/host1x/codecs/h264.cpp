@@ -57,6 +57,7 @@ std::span<const u8> H264::ComposeFrame() {
                        static_cast<s32>(params.frame_height_in_mbs) * 16);
 
     if (current_context.stream_len == 0) {
+        is_first_frame = true;
         return {};
     }
 

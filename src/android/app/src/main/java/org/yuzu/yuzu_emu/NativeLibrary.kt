@@ -412,6 +412,7 @@ object NativeLibrary {
     external fun getVulkanDriverVersion(): String
     external fun getVulkanApiVersion(): String
     external fun getGpuModel(): String
+    @JvmStatic external fun getActiveVulkanDriverSummary(): String
 
     /**
      * Returns a summary of detailed information about the CPU.

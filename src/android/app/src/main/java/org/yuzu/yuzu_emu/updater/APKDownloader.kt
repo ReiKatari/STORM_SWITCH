@@ -16,7 +16,17 @@ class APKDownloader(
 ) {
     constructor(url: String, outputFile: File) : this(listOf(url), outputFile)
 
-    fun download(onProgress: (Int) -> Unit, onComplete: (Boolean) -> Unit) {
+    @Volatile
+    private var isCancelled = false
+
+    fun cancel() {
+        isCancelled = true
+    }
+
+    fun download(
+        onProgress: (progress: Int, currentBytes: Long, totalBytes: Long) -> Unit,
+        onComplete: (Boolean) -> Unit
+    ) {
         Thread {
             val client = OkHttpClient.Builder()
                 .dns(SmartDns)
@@ -28,6 +38,7 @@ class APKDownloader(
                 .build()
 
             for (candidateUrl in urls.distinct()) {
+                if (isCancelled) break
                 if (candidateUrl.isBlank()) continue
                 try {
                     if (outputFile.exists()) {
@@ -40,16 +51,16 @@ class APKDownloader(
 
                     var succeeded = false
                     client.newCall(request).execute().use { response ->
-                        if (response.isSuccessful) {
+                        if (response.isSuccessful && !isCancelled) {
                             val body = response.body
                             if (body != null) {
                                 val contentLength = body.contentLength()
                                 body.byteStream().use { inputStream ->
                                     FileOutputStream(outputFile).use { outputStream ->
                                         val buffer = ByteArray(32768)
-                                        var bytesRead: Int
+                                        var bytesRead = 0
                                         var totalBytesRead: Long = 0L
-                                        while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                                        while (!isCancelled && inputStream.read(buffer).also { bytesRead = it } != -1) {
                                             outputStream.write(buffer, 0, bytesRead)
                                             totalBytesRead += bytesRead
                                             val progress = if (contentLength > 0) {
@@ -57,19 +68,25 @@ class APKDownloader(
                                             } else {
                                                 ((totalBytesRead / (350L * 1024L)).toInt()).coerceIn(0, 99)
                                             }
-                                            onProgress(progress)
+                                            onProgress(progress, totalBytesRead, contentLength)
                                         }
                                         outputStream.flush()
                                     }
                                 }
-                                if (isValidApkFile(outputFile)) {
+                                if (!isCancelled && isValidApkFile(outputFile)) {
                                     succeeded = true
                                 }
                             }
                         }
                     }
+                    if (isCancelled) {
+                        try { if (outputFile.exists()) outputFile.delete() } catch (_: Throwable) {}
+                        onComplete(false)
+                        return@Thread
+                    }
                     if (succeeded) {
-                        onProgress(100)
+                        val finalLen = outputFile.length()
+                        onProgress(100, finalLen, finalLen)
                         onComplete(true)
                         return@Thread
                     }
@@ -81,6 +98,13 @@ class APKDownloader(
             }
             onComplete(false)
         }.start()
+    }
+
+    fun download(onProgress: (Int) -> Unit, onComplete: (Boolean) -> Unit) {
+        download(
+            onProgress = { percent, _, _ -> onProgress(percent) },
+            onComplete = onComplete
+        )
     }
 
     companion object {

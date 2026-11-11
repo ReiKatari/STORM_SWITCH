@@ -342,6 +342,8 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
             }
         }
         APKInstaller.resumePendingInstall(this)
+        org.yuzu.yuzu_emu.features.settings.utils.SettingsFile.sanitizePoisonedConfigs(this)
+        org.yuzu.yuzu_emu.utils.GpuDriverHelper.checkAndAutoUpgradeStormDriver(this)
         val isFirstLaunch = PreferenceManager.getDefaultSharedPreferences(applicationContext)
             .getBoolean(Settings.PREF_FIRST_APP_LAUNCH, true)
         if (!isFirstLaunch) {

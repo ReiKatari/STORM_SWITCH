@@ -19,7 +19,9 @@ import org.json.JSONObject
 import org.yuzu.yuzu_emu.BuildConfig
 import org.yuzu.yuzu_emu.NativeLibrary
 import org.yuzu.yuzu_emu.R
+import org.yuzu.yuzu_emu.databinding.DialogDownloadProgressBinding
 import org.yuzu.yuzu_emu.features.settings.model.BooleanSetting
+import org.yuzu.yuzu_emu.utils.Log
 import org.yuzu.yuzu_emu.utils.NativeConfig
 import org.yuzu.yuzu_emu.utils.SmartDns
 import java.io.File
@@ -338,9 +340,7 @@ object StormUpdateManager {
             .setTitle(R.string.update_available)
             .setMessage(fullMsg)
             .setPositiveButton(R.string.update) { _, _ ->
-                val matchingUrls = selectMatchingApkUrls(release)
-                val targetUrl = matchingUrls.firstOrNull() ?: release.url.ifBlank { "https://github.com/ReiKatari/STORM_SWITCH/releases/latest" }
-                openLink(activity, targetUrl)
+                downloadAndInstallUpdate(activity, release)
             }
             .setNegativeButton(R.string.cancel) { dialog, _ ->
                 dismissedTagInSession = cleanTag
@@ -377,8 +377,98 @@ object StormUpdateManager {
 
     private fun downloadAndInstallUpdate(activity: Activity, release: NativeLibrary.UpdateResult) {
         val matchingUrls = selectMatchingApkUrls(release)
-        val targetUrl = matchingUrls.firstOrNull() ?: release.url.ifBlank { "https://github.com/ReiKatari/STORM_SWITCH/releases/latest" }
-        openLink(activity, targetUrl)
+        if (matchingUrls.isEmpty()) {
+            val targetUrl = release.url.ifBlank { "https://github.com/ReiKatari/STORM_SWITCH/releases/latest" }
+            openLink(activity, targetUrl)
+            return
+        }
+
+        val updatesDir = File(activity.cacheDir, "updates")
+        if (!updatesDir.exists()) updatesDir.mkdirs()
+        val targetApk = File(updatesDir, "storm_switch_update.apk")
+
+        val dialogBinding = DialogDownloadProgressBinding.inflate(activity.layoutInflater)
+        dialogBinding.downloadProgressBar.isIndeterminate = false
+        dialogBinding.downloadProgressBar.progress = 0
+        dialogBinding.downloadProgressMessage.text = "0% (0.0 MB / 0.0 MB)"
+
+        var downloader: APKDownloader? = null
+
+        val progressDialog = MaterialAlertDialogBuilder(activity)
+            .setTitle(R.string.downloading_update)
+            .setView(dialogBinding.root)
+            .setNegativeButton(R.string.cancel) { dialog, _ ->
+                downloader?.cancel()
+                try { if (targetApk.exists()) targetApk.delete() } catch (_: Throwable) {}
+                dialog.dismiss()
+            }
+            .setCancelable(false)
+            .create()
+
+        progressDialog.show()
+
+        downloader = APKDownloader(matchingUrls, targetApk)
+        downloader.download(
+            onProgress = { percent, currentBytes, totalBytes ->
+                activity.runOnUiThread {
+                    if (activity.isFinishing || activity.isDestroyed) return@runOnUiThread
+                    dialogBinding.downloadProgressBar.progress = percent
+                    val curMb = currentBytes / (1024.0 * 1024.0)
+                    if (totalBytes > 0) {
+                        val totalMb = totalBytes / (1024.0 * 1024.0)
+                        dialogBinding.downloadProgressMessage.text = String.format(
+                            java.util.Locale.US,
+                            "%d%% (%.1f MB / %.1f MB)",
+                            percent,
+                            curMb,
+                            totalMb
+                        )
+                    } else {
+                        dialogBinding.downloadProgressMessage.text = String.format(
+                            java.util.Locale.US,
+                            "%d%% (%.1f MB)",
+                            percent,
+                            curMb
+                        )
+                    }
+                }
+            },
+            onComplete = { success ->
+                activity.runOnUiThread {
+                    if (activity.isFinishing || activity.isDestroyed) return@runOnUiThread
+                    progressDialog.dismiss()
+                    if (success && targetApk.exists() && APKDownloader.isValidApkFile(targetApk)) {
+                        APKInstaller.installApk(
+                            context = activity,
+                            apkFile = targetApk,
+                            onComplete = {
+                                Log.info("[StormUpdateManager] Install initiated successfully")
+                            },
+                            onFailure = { err ->
+                                Toast.makeText(
+                                    activity,
+                                    activity.getString(R.string.update_install_failed, err.localizedMessage ?: ""),
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        )
+                    } else {
+                        MaterialAlertDialogBuilder(activity)
+                            .setTitle(R.string.update_download_failed)
+                            .setMessage(R.string.online_tools_err_all_sources)
+                            .setPositiveButton(R.string.retry) { _, _ ->
+                                downloadAndInstallUpdate(activity, release)
+                            }
+                            .setNeutralButton(R.string.open_in_browser) { _, _ ->
+                                val targetUrl = release.url.ifBlank { "https://github.com/ReiKatari/STORM_SWITCH/releases/latest" }
+                                openLink(activity, targetUrl)
+                            }
+                            .setNegativeButton(R.string.cancel, null)
+                            .show()
+                    }
+                }
+            }
+        )
     }
 
     private fun openLink(activity: Activity, link: String) {
