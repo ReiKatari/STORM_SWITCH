@@ -120,13 +120,15 @@ TextureCache<P>::TextureCache(Runtime& runtime_, Tegra::MaxwellDeviceMemoryManag
 template <class P>
 void TextureCache<P>::RunGarbageCollector() {
     const bool is_s2 = Settings::IsCurrentProgramSwitch2();
-    constexpr u64 WonderSwitch2ProgramId = 0x010015100B514000ULL;
-    const bool is_wonder_s2 = is_s2 && (Settings::GetCurrentProgramID() & ~0x1FFFULL) == (WonderSwitch2ProgramId & ~0x1FFFULL);
-    const auto limits = ClampTextureCacheThresholds(
-        {expected_memory, critical_memory, minimum_memory}, is_wonder_s2 || is_s2, 4_GiB);
-    expected_memory = limits.expected;
-    critical_memory = limits.critical;
-    minimum_memory = limits.minimum;
+    if (is_s2) {
+        constexpr u64 WonderSwitch2ProgramId = 0x010015100B514000ULL;
+        const bool is_wonder_s2 = (Settings::GetCurrentProgramID() & ~0x1FFFULL) == (WonderSwitch2ProgramId & ~0x1FFFULL);
+        const auto limits = ClampTextureCacheThresholds(
+            {expected_memory, critical_memory, minimum_memory}, is_wonder_s2 || is_s2, 4_GiB);
+        expected_memory = limits.expected;
+        critical_memory = limits.critical;
+        minimum_memory = limits.minimum;
+    }
 
     const bool vram_gc = Settings::values.vram_garbage_collection.GetValue();
     bool high_priority_mode = false;
@@ -148,54 +150,12 @@ void TextureCache<P>::RunGarbageCollector() {
         if (num_iterations == 0) {
             return true;
         }
+        --num_iterations;
         auto& image = slot_images[image_id];
         if (True(image.flags & ImageFlagBits::IsDecoding)) {
             lru_cache.Touch(image.lru_index, frame_tick);
             return false;
         }
-        // Protect active recently-used 2D Color Render Targets / dynamic font atlases from GC eviction
-        const bool is_font_glyph_format =
-            image.info.format == PixelFormat::R8_UNORM ||
-            image.info.format == PixelFormat::R8_SNORM ||
-            image.info.format == PixelFormat::R8_UINT ||
-            image.info.format == PixelFormat::R8_SINT ||
-            image.info.format == PixelFormat::R8G8_UNORM ||
-            image.info.format == PixelFormat::R8G8_SNORM ||
-            image.info.format == PixelFormat::R8G8_UINT ||
-            image.info.format == PixelFormat::R8G8_SINT ||
-            image.info.format == PixelFormat::BC4_UNORM ||
-            image.info.format == PixelFormat::BC4_SNORM ||
-            image.info.format == PixelFormat::BC5_UNORM ||
-            image.info.format == PixelFormat::BC5_SNORM;
-        const bool is_atlas_or_glyph = image.info.type == ImageType::e2D && is_font_glyph_format;
-        const bool is_color_2d = image.info.type == ImageType::e2D &&
-                                 image.info.num_samples == 1 &&
-                                 image.info.format < PixelFormat::MaxColorFormat;
-        const u64 cur_pid = Settings::GetCurrentProgramID() & ~0x1FFFULL;
-        const u64 val_pid = Settings::values.current_program_id.GetValue() & ~0x1FFFULL;
-        const bool is_d2r_game = (cur_pid == 0x0100726014352000ULL ||
-                                  cur_pid == 0x01002A801458A000ULL ||
-                                  cur_pid == 0x0100916014D8C000ULL ||
-                                  val_pid == 0x0100726014352000ULL ||
-                                  val_pid == 0x01002A801458A000ULL ||
-                                  val_pid == 0x0100916014D8C000ULL);
-        if (is_atlas_or_glyph || (is_color_2d && is_d2r_game)) {
-            lru_cache.Touch(image.lru_index, frame_tick);
-            return false;
-        }
-        --num_iterations;
-        constexpr u64 RT_PROTECTION_WINDOW = 720;
-        const bool is_modified = True(image.flags & (ImageFlagBits::GpuModified | ImageFlagBits::CpuModified));
-        const bool is_recent_rt = is_color_2d &&
-                                  image.info.size.width <= 4096 &&
-                                  image.info.size.height <= 4096 &&
-                                  is_modified &&
-                                  (frame_tick < image.last_frame_tick + RT_PROTECTION_WINDOW);
-        if (is_recent_rt) {
-            lru_cache.Touch(image.lru_index, frame_tick);
-            return false;
-        }
-
         // Generational VRAM Recycling: Active (0) -> Standby (1) -> Eviction Candidate (2)
         // In normal load, transition images through a hysteresis Standby grace period
         // before destroying them, preventing expensive asset reloading hitches.
@@ -209,9 +169,8 @@ void TextureCache<P>::RunGarbageCollector() {
             lru_cache.Touch(image.lru_index, frame_tick);
             return false;
         }
-        if (!must_download && is_modified) {
-            const bool is_stale_rt = is_color_2d && (frame_tick >= image.last_frame_tick + RT_PROTECTION_WINDOW);
-            if (!aggressive_mode && !is_stale_rt) {
+        if (!must_download && True(image.flags & ImageFlagBits::GpuModified)) {
+            if (!aggressive_mode) {
                 lru_cache.Touch(image.lru_index, frame_tick);
                 return false;
             }
@@ -360,24 +319,32 @@ void TextureCache<P>::CheckFeedbackLoop(std::span<const ImageViewInOut> views) {
                 continue;
             }
 
-            for (size_t i = 0; i < 8; ++i) {
-                if ((rt_active_mask & (1u << i)) && view.id == render_targets.color_buffer_ids[i]) {
-                    return true;
+            {
+                bool is_continue = false;
+                for (size_t i = 0; i < 8; ++i) {
+                    is_continue |= (rt_active_mask & (1u << i)) && view.id == render_targets.color_buffer_ids[i];
+                }
+                if (is_continue) {
+                    continue;
                 }
             }
 
             if (depth_active && view.id == render_targets.depth_buffer_id) {
-                return true;
+                continue;
             }
 
             const ImageId view_image_id = slot_image_views[view.id].image_id;
-            for (size_t i = 0; i < 8; ++i) {
-                if ((rt_active_mask & (1u << i)) && view_image_id == rt_image_id[i] && rt_image_id[i] != ImageId{}) {
-                    return true;
+            {
+                bool is_continue = false;
+                for (size_t i = 0; i < 8; ++i) {
+                    is_continue |= (rt_active_mask & (1u << i)) && view_image_id == rt_image_id[i];
+                }
+                if (is_continue) {
+                    continue;
                 }
             }
 
-            if (depth_active && view_image_id == rt_depth_image_id && rt_depth_image_id != ImageId{}) {
+            if (depth_active && view_image_id == rt_depth_image_id) {
                 return true;
             }
         }

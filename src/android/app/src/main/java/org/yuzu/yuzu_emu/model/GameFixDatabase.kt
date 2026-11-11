@@ -122,7 +122,7 @@ GameFixProfile(
             mapOf(
                 "System\\memory_layout_mode" to "0",
                 "System\\airplane_mode" to "true",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\astc_recompression" to "0",
@@ -146,7 +146,7 @@ GameFixProfile(
             "✓ Точность ГПУ: Обычная\n✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Режим «В самолете»: Включено",
             "✓ GPU Accuracy: Normal\n✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Airplane Mode: Enabled",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
@@ -171,7 +171,7 @@ GameFixProfile(
             "✓ Точность ГПУ: Обычная\n✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Режим «В самолете»: Включено",
             "✓ GPU Accuracy: Normal\n✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Airplane Mode: Enabled",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
@@ -197,7 +197,7 @@ GameFixProfile(
             "✓ NVDEC Video Emulation: Hybrid (Hybrid 3) - stable video playback\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Airplane Mode: Enabled\n✓ GPU Accuracy: Normal",
             mapOf(
                 "Renderer\\nvdec_emulation" to "3",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
@@ -221,7 +221,7 @@ GameFixProfile(
             "✓ NVDEC Video Emulation: Hybrid (Hybrid 3) - stable video playback\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Airplane Mode: Enabled\n✓ GPU Accuracy: Normal",
             mapOf(
                 "Renderer\\nvdec_emulation" to "3",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
@@ -245,7 +245,7 @@ GameFixProfile(
             "✓ NVDEC Video Emulation: Hybrid (Hybrid 3) - stable video playback\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Airplane Mode: Enabled\n✓ GPU Accuracy: Normal",
             mapOf(
                 "Renderer\\nvdec_emulation" to "3",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
@@ -268,7 +268,7 @@ GameFixProfile(
             "✓ Точность ГПУ: Обычная (плавные 60 FPS, устранение задержек 200 ms)\n✓ Фиксация разрешения DRS: Отключено (устранение смещения и обрезки экрана 320x180)\n✓ Реактивная очистка: Отключено (устранение просадок кадровой частоты 4 FPS и задержек 200 ms)\n✓ Асинхронный вывод: Включено (плавные 60 FPS)\n✓ Барьеры ГПУ: По умолчанию\n✓ Точность DMA: По умолчанию (Безопасно)\n✓ Барьеры обратной связи: Отключено (устранение черных тайлов)\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Сглаживание: Отключено (сохранение пиксель-арта)\n✓ Фильтр масштабирования: Билинейный\n✓ Асинхронные шейдеры: Включено (плавный геймплей)\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Вычислительные конвейеры: Включено\n✓ Синхронизация памяти ГПУ: Отключено\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Сжатие ASTC: Без сжатия\n✓ Очистка VRAM: Отключено\n✓ Декодирование видео NVDEC: Гибридное\n✓ Быстрая память Fastmem: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Точность ЦП: Авто\n✓ Режим «В самолете»: Включено\n✓ Конфигурация памяти: 4 ГБ DRAM",
             "✓ GPU Accuracy: Normal (Smooth 60 FPS, eliminates 200 ms latency)\n✓ DRS Resolution Lock: Disabled (Fixes 320x180 viewport offset and clipping)\n✓ Reactive Flushing: Disabled (Eliminates 4 FPS / 200 ms latency stalls)\n✓ Async Presentation: Enabled (Smooth 60 FPS)\n✓ GPU Fence Behavior: Default\n✓ DMA Accuracy: Default (Safe)\n✓ Barrier Feedback Loops: Disabled (Eliminates black tiles)\n✓ Dynamic State: Basic (EDS 1)\n✓ Anti-Aliasing: None (Pixel-art preservation)\n✓ Scaling Filter: Bilinear\n✓ Async Shaders: Enabled (Smooth gameplay)\n✓ GPU Buffer Readback: Disabled\n✓ Compute Pipelines: Enabled\n✓ Sync Memory Operations: Disabled\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ VRAM Garbage Collection: Disabled\n✓ NVDEC Video Emulation: Hybrid\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ CPU Accuracy: Auto\n✓ Airplane Mode: Enabled\n✓ Memory Layout: 4GB DRAM",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
@@ -282,7 +282,6 @@ GameFixProfile(
                 "Renderer\\dyna_state" to "1",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
@@ -302,7 +301,7 @@ GameFixProfile(
             "✓ Точность ГПУ: Обычная (стабильные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Очистка VRAM: Отключено (устраняет микрофризы анимаций)\n✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Игнорирование сбоев памяти: Включено",
             "✓ GPU Accuracy: Normal (Stable 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ VRAM Garbage Collection: Disabled (Prevents animation stutter)\n✓ Memory Layout: 6GB DRAM\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
@@ -316,7 +315,6 @@ GameFixProfile(
                 "Renderer\\dyna_state" to "1",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
@@ -335,7 +333,7 @@ GameFixProfile(
             "✓ Точность ГПУ: Обычная (идеальные 60 FPS)\n✓ Раннее освобождение барьеров: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Циклы обратной связи: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Сжатие ASTC: Без сжатия",
             "✓ GPU Accuracy: Normal (Perfect 60 FPS)\n✓ Early Release Fences: Enabled\n✓ Fast GPU Time: Enabled\n✓ Barrier Feedback Loops: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ ASTC Recompression: Uncompressed",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
@@ -349,7 +347,6 @@ GameFixProfile(
                 "Renderer\\dyna_state" to "1",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
@@ -368,7 +365,7 @@ GameFixProfile(
             "✓ Точность ГПУ: Обычная (устраняет мерцание и графические артефакты)\n✓ Точность DMA: Безопасно (0)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Циклы обратной связи: Включено (корректные тени Unreal Engine)\n✓ Синхронизация памяти ГПУ: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Конфигурация памяти: 6 ГБ DRAM",
             "✓ GPU Accuracy: Normal (Eliminates flickering and visual glitches)\n✓ DMA Accuracy: Safe (0)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Barrier Feedback Loops: Enabled (Correct Unreal Engine shadows)\n✓ Sync Memory Operations: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 6GB DRAM",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
@@ -382,7 +379,6 @@ GameFixProfile(
                 "Renderer\\dyna_state" to "1",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
@@ -418,7 +414,6 @@ GameFixProfile(
                 "Renderer\\nvdec_emulation" to "2",
                 "Renderer\\dma_accuracy" to "3",
                 "Renderer\\gpu_fence_behavior" to "0",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\async_presentation" to "true",
                 "Cpu\\cpu_accuracy" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
@@ -444,7 +439,6 @@ GameFixProfile(
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "3",
                 "Renderer\\accelerate_astc" to "1",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\dyna_state" to "1",
                 "Renderer\\barrier_feedback_loops" to "true",
@@ -480,7 +474,6 @@ GameFixProfile(
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\dyna_state" to "2",
                 "Renderer\\nvdec_emulation" to "2",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\async_presentation" to "true",
                 "Renderer\\use_disk_shader_cache" to "true",
                 "Cpu\\cpu_accuracy" to "0",
@@ -505,11 +498,10 @@ GameFixProfile(
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_fast_gpu_time" to "false",
-                "Renderer\\accelerate_astc" to "0",
+                "Renderer\\accelerate_astc" to "1",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\nvdec_emulation" to "2",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\async_presentation" to "true",
                 "Renderer\\use_disk_shader_cache" to "true",
                 "Cpu\\cpu_accuracy" to "0",
@@ -532,7 +524,7 @@ GameFixProfile(
                 "System\\airplane_mode" to "false",
                 "Network\\airplane_mode" to "false",
                 "Services\\airplane_mode" to "false",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_fast_gpu_time" to "false",
@@ -540,8 +532,6 @@ GameFixProfile(
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
-                "Renderer\\nvdec_emulation" to "1",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\async_presentation" to "true",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\enable_compute_pipelines" to "false",
@@ -567,7 +557,7 @@ GameFixProfile(
                     "Renderer\\use_fast_gpu_time" to "false"
                 ),
                 "adreno" to mapOf(
-                    "Renderer\\gpu_accuracy" to "1",
+                    "Renderer\\gpu_accuracy" to "2",
                     "Renderer\\use_reactive_flushing" to "true",
                     "Renderer\\barrier_feedback_loops" to "true",
                     "Renderer\\astc_recompression" to "0"
@@ -584,14 +574,11 @@ GameFixProfile(
                 "System\\airplane_mode" to "true",
                 "Network\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
-                "Renderer\\rescale_hack" to "true",
-                "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\async_presentation" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_disk_shader_cache" to "true",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\use_vulkan_driver_pipeline_cache" to "true",
@@ -600,7 +587,7 @@ GameFixProfile(
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\accelerate_astc" to "1",
                 "Renderer\\gpu_fence_behavior" to "0",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
@@ -618,14 +605,11 @@ GameFixProfile(
                 "System\\airplane_mode" to "true",
                 "Network\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
-                "Renderer\\rescale_hack" to "true",
-                "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\async_presentation" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_disk_shader_cache" to "true",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\use_vulkan_driver_pipeline_cache" to "true",
@@ -634,7 +618,7 @@ GameFixProfile(
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\accelerate_astc" to "1",
                 "Renderer\\gpu_fence_behavior" to "0",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
@@ -652,13 +636,11 @@ GameFixProfile(
                 "System\\airplane_mode" to "true",
                 "Network\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
-                "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\async_presentation" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_disk_shader_cache" to "true",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\use_vulkan_driver_pipeline_cache" to "true",
@@ -667,7 +649,7 @@ GameFixProfile(
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\accelerate_astc" to "1",
                 "Renderer\\gpu_fence_behavior" to "0",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
@@ -685,13 +667,11 @@ GameFixProfile(
                 "System\\airplane_mode" to "false",
                 "Network\\airplane_mode" to "false",
                 "Services\\airplane_mode" to "false",
-                "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\async_presentation" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_disk_shader_cache" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\use_vulkan_driver_pipeline_cache" to "true",
@@ -700,7 +680,7 @@ GameFixProfile(
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\accelerate_astc" to "1",
                 "Renderer\\gpu_fence_behavior" to "0",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
@@ -821,7 +801,6 @@ GameFixProfile(
                 "Renderer\\dma_accuracy" to "3",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\early_release_fences" to "false",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\async_presentation" to "true",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
@@ -879,7 +858,6 @@ GameFixProfile(
                 "Renderer\\dma_accuracy" to "3",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\early_release_fences" to "false",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\async_presentation" to "true",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
@@ -894,7 +872,7 @@ GameFixProfile(
             listOf(0x0100F2C0115B6800L),
             mapOf(
                 "adreno" to mapOf(
-                    "Renderer\\gpu_accuracy" to "1",
+                    "Renderer\\gpu_accuracy" to "2",
                     "Renderer\\barrier_feedback_loops" to "true",
                     "Renderer\\use_reactive_flushing" to "true",
                     "Renderer\\astc_recompression" to "0"
@@ -967,8 +945,8 @@ GameFixProfile(
             "Diablo II: Resurrected",
             "• Вылет при продолжении игры / загрузке персонажа (OOM)\n• Пропадание букв и текста интерфейса (включая переход во II Акт)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя и графические артефакты\n• Просадки кадровой частоты (4 FPS / 200 ms)",
             "• Character load / continue game crash (OOM)\n• Missing UI text and font glyphs (including after Act I)\n• Battle.net server handshake hang\n• Character flickering on selection screen and graphical artifacts\n• Frame drops (4 FPS / 200 ms)",
-            "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Точность ГПУ: Высокая (High / синхронизация буферов шрифта)\n✓ Быстрое время ГПУ: Отключено (100% отрисовка динамических глифов и букв шрифта)\n✓ Асинхронные шейдеры: Отключено (100% отрисовка всех букв и глифов без пропусков)\n✓ Реактивная очистка: Включено (синхронизация атласов шрифта во всех Актах)\n✓ Сборка мусора VRAM: Отключено (защита атласа букв от выгрузки после I Акта)\n✓ Точность ЦП: Авто (устранение задержек)\n✓ Обратное чтение буферов ГПУ: Отключено (устраняет просадки 4 FPS)\n✓ Сжатие текстур ASTC: Отключено (устраняет полосы и квадраты)\n✓ Динамическое состояние: Отключено (исправляет артефакты декалей)\n✓ Обратная связь барьеров: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание)",
-            "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ GPU Accuracy: High (Buffer synchronization)\n✓ Fast GPU Time: Disabled (100% font glyph rendering and timing guarantee)\n✓ Asynchronous Shaders: Disabled (100% font glyph render guarantee)\n✓ Reactive Flushing: Enabled (Syncs font atlases across all Acts)\n✓ VRAM Garbage Collection: Disabled (Protects font atlas after Act I)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ GPU Buffer Readback: Disabled (Fixes 4 FPS drops)\n✓ ASTC Recompression: Uncompressed (Fixes decals and square artifacts)\n✓ Dynamic State: Disabled\n✓ Barrier Feedback Loops: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes flickering)",
+            "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Точность ГПУ: Высокая (High / синхронизация буферов шрифта)\n✓ Быстрое время ГПУ: Отключено (100% отрисовка динамических глифов и букв шрифта)\n✓ Асинхронные шейдеры: Отключено (100% отрисовка всех букв и глифов без пропусков)\n✓ Реактивная очистка: Включено (синхронизация атласов шрифта во всех Актах)\n✓ Сборка мусора VRAM: Отключено (защита атласа букв от выгрузки после I Акта)\n✓ Точность ЦП: Авто (устранение задержек)\n✓ Обратное чтение буферов ГПУ: Включено (стабильные 60 FPS)\n✓ Сжатие текстур ASTC: Отключено (устраняет полосы и квадраты)\n✓ Обратная связь барьеров: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание)",
+            "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ GPU Accuracy: High (Buffer synchronization)\n✓ Fast GPU Time: Disabled (100% font glyph rendering and timing guarantee)\n✓ Asynchronous Shaders: Disabled (100% font glyph render guarantee)\n✓ Reactive Flushing: Enabled (Syncs font atlases across all Acts)\n✓ VRAM Garbage Collection: Disabled (Protects font atlas after Act I)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ GPU Buffer Readback: Disabled (Fixes 4 FPS drops)\n✓ ASTC Recompression: Uncompressed (Fixes decals and square artifacts)\n✓ Barrier Feedback Loops: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes flickering)",
             mapOf(
                 "System\\memory_layout_mode" to "2",
                 "System\\airplane_mode" to "true",
@@ -980,9 +958,7 @@ GameFixProfile(
                 "Renderer\\accelerate_astc" to "1",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\barrier_feedback_loops" to "true",
-                "Renderer\\enable_gpu_buffer_readback" to "false",
-                "Renderer\\vertex_input_dynamic_state" to "false",
-                "Renderer\\dyna_state" to "0",
+                "Renderer\\enable_gpu_buffer_readback" to "true",
                 "Renderer\\dma_accuracy" to "3",
                 "Renderer\\early_release_fences" to "false",
                 "Renderer\\async_presentation" to "true",
@@ -999,25 +975,25 @@ GameFixProfile(
                     "Renderer\\gpu_accuracy" to "2",
                     "Renderer\\use_fast_gpu_time" to "false",
                     "Renderer\\astc_recompression" to "0",
-                    "Renderer\\accelerate_astc" to "0",
+                    "Renderer\\accelerate_astc" to "1",
                     "Renderer\\use_reactive_flushing" to "true",
-                    "Renderer\\enable_gpu_buffer_readback" to "false",
+                    "Renderer\\enable_gpu_buffer_readback" to "true",
                     "Renderer\\early_release_fences" to "false",
                     "Renderer\\vram_budget_governor" to "false"
                 ),
                 "intel" to mapOf(
-                    "Renderer\\gpu_accuracy" to "1",
+                    "Renderer\\gpu_accuracy" to "2",
                     "Renderer\\use_reactive_flushing" to "true",
                     "Renderer\\use_fast_gpu_time" to "false",
                     "Renderer\\astc_recompression" to "0",
-                    "Renderer\\enable_gpu_buffer_readback" to "false"
+                    "Renderer\\enable_gpu_buffer_readback" to "true"
                 ),
                 "amd" to mapOf(
-                    "Renderer\\gpu_accuracy" to "1",
+                    "Renderer\\gpu_accuracy" to "2",
                     "Renderer\\use_reactive_flushing" to "true",
                     "Renderer\\use_fast_gpu_time" to "false",
                     "Renderer\\astc_recompression" to "0",
-                    "Renderer\\enable_gpu_buffer_readback" to "false"
+                    "Renderer\\enable_gpu_buffer_readback" to "true"
                 )
             )        ),
         GameFixProfile(
@@ -1025,8 +1001,8 @@ GameFixProfile(
             "Diablo II: Resurrected",
             "• Вылет при продолжении игры / загрузке персонажа (OOM)\n• Пропадание букв и текста интерфейса (включая переход во II Акт)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя и графические артефакты\n• Просадки кадровой частоты (4 FPS / 200 ms)",
             "• Character load / continue game crash (OOM)\n• Missing UI text and font glyphs (including after Act I)\n• Battle.net server handshake hang\n• Character flickering on selection screen and graphical artifacts\n• Frame drops (4 FPS / 200 ms)",
-            "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Точность ГПУ: Высокая (High / синхронизация буферов шрифта)\n✓ Быстрое время ГПУ: Отключено (100% отрисовка динамических глифов и букв шрифта)\n✓ Асинхронные шейдеры: Отключено (100% отрисовка всех букв и глифов без пропусков)\n✓ Реактивная очистка: Включено (синхронизация атласов шрифта во всех Актах)\n✓ Сборка мусора VRAM: Отключено (защита атласа букв от выгрузки после I Акта)\n✓ Точность ЦП: Авто (устранение задержек)\n✓ Обратное чтение буферов ГПУ: Отключено (устраняет просадки 4 FPS)\n✓ Сжатие текстур ASTC: Отключено (устраняет полосы и квадраты)\n✓ Динамическое состояние: Отключено (исправляет артефакты декалей)\n✓ Обратная связь барьеров: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание)",
-            "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ GPU Accuracy: High (Buffer synchronization)\n✓ Fast GPU Time: Disabled (100% font glyph rendering and timing guarantee)\n✓ Asynchronous Shaders: Disabled (100% font glyph render guarantee)\n✓ Reactive Flushing: Enabled (Syncs font atlases across all Acts)\n✓ VRAM Garbage Collection: Disabled (Protects font atlas after Act I)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ GPU Buffer Readback: Disabled (Fixes 4 FPS drops)\n✓ ASTC Recompression: Uncompressed (Fixes decals and square artifacts)\n✓ Dynamic State: Disabled\n✓ Barrier Feedback Loops: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes flickering)",
+            "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Точность ГПУ: Высокая (High / синхронизация буферов шрифта)\n✓ Быстрое время ГПУ: Отключено (100% отрисовка динамических глифов и букв шрифта)\n✓ Асинхронные шейдеры: Отключено (100% отрисовка всех букв и глифов без пропусков)\n✓ Реактивная очистка: Включено (синхронизация атласов шрифта во всех Актах)\n✓ Сборка мусора VRAM: Отключено (защита атласа букв от выгрузки после I Акта)\n✓ Точность ЦП: Авто (устранение задержек)\n✓ Обратное чтение буферов ГПУ: Включено (стабильные 60 FPS)\n✓ Сжатие текстур ASTC: Отключено (устраняет полосы и квадраты)\n✓ Обратная связь барьеров: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание)",
+            "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ GPU Accuracy: High (Buffer synchronization)\n✓ Fast GPU Time: Disabled (100% font glyph rendering and timing guarantee)\n✓ Asynchronous Shaders: Disabled (100% font glyph render guarantee)\n✓ Reactive Flushing: Enabled (Syncs font atlases across all Acts)\n✓ VRAM Garbage Collection: Disabled (Protects font atlas after Act I)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ GPU Buffer Readback: Enabled (Stable 60 FPS)\n✓ ASTC Recompression: Uncompressed (Fixes decals and square artifacts)\n✓ Barrier Feedback Loops: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes flickering)",
             mapOf(
                 "System\\memory_layout_mode" to "2",
                 "System\\airplane_mode" to "true",
@@ -1035,10 +1011,9 @@ GameFixProfile(
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\dma_accuracy" to "3",
                 "Cpu\\cpu_accuracy" to "0",
-                "Renderer\\enable_gpu_buffer_readback" to "false",
+                "Renderer\\enable_gpu_buffer_readback" to "true",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\accelerate_astc" to "1",
-                "Renderer\\dyna_state" to "0",
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\vram_garbage_collection" to "false",
@@ -1060,7 +1035,7 @@ GameFixProfile(
             mapOf(
                 "Cpu\\cpu_backend" to "1",
                 "Renderer\\nvdec_emulation" to "2",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\barrier_feedback_loops" to "false",
                 "Renderer\\early_release_fences" to "false",
@@ -1077,7 +1052,7 @@ GameFixProfile(
             "✓ Turnip Driver Recommended (Vulkan 1.3+)\n✓ CPU Backend: Dynarmic (JIT)\n✓ GPU Accuracy: High\n✓ Asynchronous Shaders: Disabled\n✓ Reactive Flushing: Enabled\n✓ NVDEC: CPU Emulation\n✓ Early Release Fences: Disabled",
             mapOf(
                 "Cpu\\cpu_backend" to "0",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "false",
                 "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\nvdec_emulation" to "2",
@@ -1094,8 +1069,8 @@ GameFixProfile(
             "Diablo II: Resurrected",
             "• Вылет при продолжении игры / загрузке персонажа (OOM)\n• Пропадание букв и текста интерфейса (включая переход во II Акт)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя и графические артефакты\n• Просадки кадровой частоты (4 FPS / 200 ms)",
             "• Character load / continue game crash (OOM)\n• Missing UI text and font glyphs (including after Act I)\n• Battle.net server handshake hang\n• Character flickering on selection screen and graphical artifacts\n• Frame drops (4 FPS / 200 ms)",
-            "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Точность ГПУ: Высокая (High / синхронизация буферов шрифта)\n✓ Быстрое время ГПУ: Отключено (100% отрисовка динамических глифов и букв шрифта)\n✓ Асинхронные шейдеры: Отключено (100% отрисовка всех букв и глифов без пропусков)\n✓ Реактивная очистка: Включено (синхронизация атласов шрифта во всех Актах)\n✓ Сборка мусора VRAM: Отключено (защита атласа букв от выгрузки после I Акта)\n✓ Точность ЦП: Авто (устранение задержек)\n✓ Обратное чтение буферов ГПУ: Отключено (устраняет просадки 4 FPS)\n✓ Сжатие текстур ASTC: Отключено (устраняет полосы и квадраты)\n✓ Динамическое состояние: Отключено (исправляет артефакты декалей)\n✓ Обратная связь барьеров: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание)",
-            "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ GPU Accuracy: High (Buffer synchronization)\n✓ Fast GPU Time: Disabled (100% font glyph rendering and timing guarantee)\n✓ Asynchronous Shaders: Disabled (100% font glyph render guarantee)\n✓ Reactive Flushing: Enabled (Syncs font atlases across all Acts)\n✓ VRAM Garbage Collection: Disabled (Protects font atlas after Act I)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ GPU Buffer Readback: Disabled (Fixes 4 FPS drops)\n✓ ASTC Recompression: Uncompressed (Fixes decals and square artifacts)\n✓ Dynamic State: Disabled\n✓ Barrier Feedback Loops: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes flickering)",
+            "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Точность ГПУ: Высокая (High / синхронизация буферов шрифта)\n✓ Быстрое время ГПУ: Отключено (100% отрисовка динамических глифов и букв шрифта)\n✓ Асинхронные шейдеры: Отключено (100% отрисовка всех букв и глифов без пропусков)\n✓ Реактивная очистка: Включено (синхронизация атласов шрифта во всех Актах)\n✓ Сборка мусора VRAM: Отключено (защита атласа букв от выгрузки после I Акта)\n✓ Точность ЦП: Авто (устранение задержек)\n✓ Обратное чтение буферов ГПУ: Включено (стабильные 60 FPS)\n✓ Сжатие текстур ASTC: Отключено (устраняет полосы и квадраты)\n✓ Обратная связь барьеров: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание)",
+            "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ GPU Accuracy: High (Buffer synchronization)\n✓ Fast GPU Time: Disabled (100% font glyph rendering and timing guarantee)\n✓ Asynchronous Shaders: Disabled (100% font glyph render guarantee)\n✓ Reactive Flushing: Enabled (Syncs font atlases across all Acts)\n✓ VRAM Garbage Collection: Disabled (Protects font atlas after Act I)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ GPU Buffer Readback: Enabled (Stable 60 FPS)\n✓ ASTC Recompression: Uncompressed (Fixes decals and square artifacts)\n✓ Barrier Feedback Loops: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes flickering)",
             mapOf(
                 "System\\memory_layout_mode" to "2",
                 "System\\airplane_mode" to "true",
@@ -1107,8 +1082,7 @@ GameFixProfile(
                 "Renderer\\accelerate_astc" to "1",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\barrier_feedback_loops" to "true",
-                "Renderer\\enable_gpu_buffer_readback" to "false",
-                "Renderer\\dyna_state" to "0",
+                "Renderer\\enable_gpu_buffer_readback" to "true",
                 "Renderer\\dma_accuracy" to "3",
                 "Renderer\\early_release_fences" to "false",
                 "Renderer\\async_presentation" to "true",
@@ -1133,7 +1107,6 @@ GameFixProfile(
                 "Cpu\\cpuopt_fastmem" to "false",
                 "Cpu\\cpuopt_fastmem_exclusives" to "false",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\dyna_state" to "0",
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_reactive_flushing" to "true"
             )
@@ -1161,7 +1134,6 @@ GameFixProfile(
                 "System\\airplane_mode" to "true",
                 "System\\memory_layout_mode" to "0",
                 "Renderer\\use_fast_gpu_time" to "false",
-                "Renderer\\dyna_state" to "0",
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\astc_recompression" to "0",
@@ -1178,10 +1150,9 @@ GameFixProfile(
             "✓ Точность ЦП: Точная\n✓ Аудио-буфер Cubeb: 80 ms\n✓ Синхронизация памяти: Отключено",
             "✓ CPU Accuracy: Accurate\n✓ Cubeb Audio Buffer: 80 ms\n✓ Sync Memory Ops: Disabled",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\sync_memory_operations" to "false",
                 "Cpu\\cpu_accuracy" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true"
@@ -1306,7 +1277,7 @@ GameFixProfile(
             "✓ Эмуляция цвета BGR565: Включено\n✓ Коррекция эффектов свечения: Включено",
             "✓ Emulate BGR565: Enabled\n✓ Fix Bloom Effects: Enabled",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "false",
                 "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
@@ -1325,7 +1296,7 @@ GameFixProfile(
             "✓ Отключение веб-апплета: Включено\n✓ Mii Applet: LLE",
             "✓ Disable Web Applet: Enabled\n✓ Mii Applet: LLE",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\dyna_state" to "2",
                 "Debugging\\disable_web_applet" to "true"
@@ -1340,7 +1311,7 @@ GameFixProfile(
             "✓ Требуется Firmware 18.0.0+ и системные файлы Mii\n✓ Сжатие текстур ASTC: Отключено",
             "✓ Firmware 18.0.0+ and Mii system files required\n✓ ASTC Recompression: Uncompressed",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
@@ -1429,7 +1400,7 @@ GameFixProfile(
                 "Renderer\\use_asynchronous_shaders" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_fast_gpu_time" to "false",
-                "Renderer\\accelerate_astc" to "0",
+                "Renderer\\accelerate_astc" to "1",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\barrier_feedback_loops" to "true"
             )
@@ -1462,7 +1433,7 @@ GameFixProfile(
             mapOf(
                 "System\\memory_layout_mode" to "0",
                 "System\\airplane_mode" to "true",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_fast_gpu_time" to "false",
@@ -1568,7 +1539,7 @@ GameFixProfile(
             "✓ Точность ГПУ: Обычная (плавные 60 FPS, устранение задержек 200 ms)\n✓ Фиксация разрешения DRS: Отключено (устранение смещения и обрезки экрана 320x180)\n✓ Реактивная очистка: Отключено (устранение просадок кадровой частоты 4 FPS и задержек 200 ms)\n✓ Асинхронный вывод: Включено (плавные 60 FPS)\n✓ Барьеры ГПУ: По умолчанию\n✓ Точность DMA: По умолчанию\n✓ Барьеры обратной связи: Отключено (устранение черных тайлов)\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Сглаживание: Отключено (сохранение пиксель-арта)\n✓ Фильтр масштабирования: Билинейный\n✓ Асинхронные шейдеры: Включено (плавный геймплей)\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Вычислительные конвейеры: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Сжатие ASTC: Без сжатия",
             "✓ GPU Accuracy: Normal (Smooth 60 FPS, eliminates 200 ms latency)\n✓ DRS Resolution Lock: Disabled (Fixes 320x180 viewport offset and clipping)\n✓ Reactive Flushing: Disabled (Eliminates 4 FPS / 200 ms latency stalls)\n✓ Async Presentation: Enabled (Smooth 60 FPS)\n✓ GPU Fence Behavior: Default\n✓ DMA Accuracy: Default\n✓ Barrier Feedback Loops: Disabled (Eliminates black tiles)\n✓ Dynamic State: Basic (EDS 1)\n✓ Anti-Aliasing: None (Pixel-art preservation)\n✓ Scaling Filter: Bilinear\n✓ Async Shaders: Enabled (Smooth gameplay)\n✓ GPU Buffer Readback: Disabled\n✓ Compute Pipelines: Enabled\n✓ Fastmem: Enabled\n✓ Fast GPU Time: Enabled\n✓ ASTC Recompression: Uncompressed",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
@@ -1582,7 +1553,6 @@ GameFixProfile(
                 "Renderer\\dyna_state" to "1",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\early_release_fences" to "false",
@@ -1601,7 +1571,7 @@ GameFixProfile(
             "✓ Точность ГПУ: Обычная (плавные 60 FPS, устранение задержек 200 ms)\n✓ Фиксация разрешения DRS: Отключено (устранение смещения и обрезки экрана 320x180)\n✓ Реактивная очистка: Отключено (устранение просадок кадровой частоты 4 FPS и задержек 200 ms)\n✓ Асинхронный вывод: Включено (плавные 60 FPS)\n✓ Барьеры ГПУ: По умолчанию\n✓ Точность DMA: По умолчанию\n✓ Барьеры обратной связи: Отключено (устранение черных тайлов)\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Сглаживание: Отключено (сохранение пиксель-арта)\n✓ Фильтр масштабирования: Билинейный\n✓ Асинхронные шейдеры: Включено (плавный геймплей)\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Вычислительные конвейеры: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Сжатие ASTC: Без сжатия",
             "✓ GPU Accuracy: Normal (Smooth 60 FPS, eliminates 200 ms latency)\n✓ DRS Resolution Lock: Disabled (Fixes 320x180 viewport offset and clipping)\n✓ Reactive Flushing: Disabled (Eliminates 4 FPS / 200 ms latency stalls)\n✓ Async Presentation: Enabled (Smooth 60 FPS)\n✓ GPU Fence Behavior: Default\n✓ DMA Accuracy: Default\n✓ Barrier Feedback Loops: Disabled (Eliminates black tiles)\n✓ Dynamic State: Basic (EDS 1)\n✓ Anti-Aliasing: None (Pixel-art preservation)\n✓ Scaling Filter: Bilinear\n✓ Async Shaders: Enabled (Smooth gameplay)\n✓ GPU Buffer Readback: Disabled\n✓ Compute Pipelines: Enabled\n✓ Fastmem: Enabled\n✓ Fast GPU Time: Enabled\n✓ ASTC Recompression: Uncompressed",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
@@ -1615,7 +1585,6 @@ GameFixProfile(
                 "Renderer\\dyna_state" to "1",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\early_release_fences" to "false",
@@ -1634,7 +1603,7 @@ GameFixProfile(
             "✓ Точность ГПУ: Обычная (плавные 60 FPS, устранение задержек 200 ms)\n✓ Фиксация разрешения DRS: Отключено (устранение смещения и обрезки экрана 320x180)\n✓ Реактивная очистка: Отключено (устранение просадок кадровой частоты 4 FPS и задержек 200 ms)\n✓ Асинхронный вывод: Включено (плавные 60 FPS)\n✓ Барьеры ГПУ: По умолчанию\n✓ Точность DMA: По умолчанию\n✓ Барьеры обратной связи: Отключено (устранение черных тайлов)\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Сглаживание: Отключено (сохранение пиксель-арта)\n✓ Фильтр масштабирования: Билинейный\n✓ Асинхронные шейдеры: Включено (плавный геймплей)\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Вычислительные конвейеры: Включено\n✓ Быстрая память Fastmem: Включено\n✓ Быстрое время ГПУ: Включено\n✓ Сжатие ASTC: Без сжатия",
             "✓ GPU Accuracy: Normal (Smooth 60 FPS, eliminates 200 ms latency)\n✓ DRS Resolution Lock: Disabled (Fixes 320x180 viewport offset and clipping)\n✓ Reactive Flushing: Disabled (Eliminates 4 FPS / 200 ms latency stalls)\n✓ Async Presentation: Enabled (Smooth 60 FPS)\n✓ GPU Fence Behavior: Default\n✓ DMA Accuracy: Default\n✓ Barrier Feedback Loops: Disabled (Eliminates black tiles)\n✓ Dynamic State: Basic (EDS 1)\n✓ Anti-Aliasing: None (Pixel-art preservation)\n✓ Scaling Filter: Bilinear\n✓ Async Shaders: Enabled (Smooth gameplay)\n✓ GPU Buffer Readback: Disabled\n✓ Compute Pipelines: Enabled\n✓ Fastmem: Enabled\n✓ Fast GPU Time: Enabled\n✓ ASTC Recompression: Uncompressed",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
@@ -1648,7 +1617,6 @@ GameFixProfile(
                 "Renderer\\dyna_state" to "1",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\early_release_fences" to "false",
@@ -1668,7 +1636,7 @@ GameFixProfile(
             "✓ Memory Layout: 4GB DRAM\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "System\\memory_layout_mode" to "0",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Cpu\\cpuopt_fastmem" to "true"
@@ -1713,7 +1681,6 @@ GameFixProfile(
                 "Cpu\\cpuopt_fastmem" to "false",
                 "Cpu\\cpuopt_fastmem_exclusives" to "false",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\dyna_state" to "0",
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_reactive_flushing" to "true"
             )
@@ -1732,7 +1699,6 @@ GameFixProfile(
                 "Cpu\\cpuopt_fastmem" to "false",
                 "Cpu\\cpuopt_fastmem_exclusives" to "false",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\dyna_state" to "0",
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_reactive_flushing" to "true"
             )
@@ -1746,8 +1712,7 @@ GameFixProfile(
             "✓ CPU Accuracy: Accurate\n✓ Memory Layout: 6GB DRAM\n✓ Dynamic State: EDS1",
             mapOf(
                 "Cpu\\cpu_accuracy" to "0",
-                "System\\memory_layout_mode" to "0",
-                "Renderer\\dyna_state" to "0"
+                "System\\memory_layout_mode" to "0"
             )
         ),
                 // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/2389
@@ -1820,7 +1785,7 @@ GameFixProfile(
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_fastmem_exclusives" to "false",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_fast_gpu_time" to "false",
@@ -1836,9 +1801,8 @@ GameFixProfile(
                 "Renderer\\anti_aliasing" to "0",
                 "Renderer\\dyna_state" to "1",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
-                "Renderer\\sync_memory_operations" to "false",
                 "Cpu\\cpu_accuracy" to "0",
-                "System\\airplane_mode" to "true",
+                "System\\airplane_mode" to "true"
             )
         ),
                 // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/334
@@ -1852,7 +1816,7 @@ GameFixProfile(
             mapOf(
                 "System\\memory_layout_mode" to "0",
                 "System\\airplane_mode" to "true",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_fast_gpu_time" to "false",
@@ -1864,7 +1828,6 @@ GameFixProfile(
                 "Renderer\\dma_accuracy" to "0",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\early_release_fences" to "false",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\async_presentation" to "true",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
@@ -1896,15 +1859,14 @@ GameFixProfile(
             "Mario + Rabbids: Kingdom Battle",
             "• Диагональная полоса при запуске на полноэкранном кваде\n• Сильный пересвет и черные тени Snowdrop Engine\n• Мерцание текстур персонажей",
             "• Diagonal line across fullscreen quad on startup\n• Severe overexposure and pitch-black shadows (Snowdrop Engine)\n• Character model flickering",
-            "✓ Точность ГПУ: Высокая (устранение пересвета и черных теней)\n✓ Обратные циклы барьеров: Включено\n✓ Реактивная очистка: Включено\n✓ Сжатие текстур ASTC: Отключено\n✓ Динамическое состояние: Отключено\n✓ Асинхронные шейдеры: Включено",
-            "✓ GPU Accuracy: High (Fixes bloom & black shadows)\n✓ Barrier Feedback Loops: Enabled\n✓ Reactive Flushing: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Dynamic State: Disabled\n✓ Asynchronous Shaders: Enabled",
+            "✓ Точность ГПУ: Высокая (устранение пересвета и черных теней)\n✓ Обратные циклы барьеров: Включено\n✓ Реактивная очистка: Включено\n✓ Сжатие текстур ASTC: Отключено\n✓ Асинхронные шейдеры: Включено",
+            "✓ GPU Accuracy: High (Fixes bloom & black shadows)\n✓ Barrier Feedback Loops: Enabled\n✓ Reactive Flushing: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\dma_accuracy" to "3",
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\dyna_state" to "0",
                 "Renderer\\fix_bloom_effects" to "true",
                 "Renderer\\early_release_fences" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true"
@@ -1970,7 +1932,7 @@ GameFixProfile(
             "✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Сжатие текстур ASTC: Отключено",
             "✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ ASTC Recompression: Uncompressed",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_fast_gpu_time" to "false",
@@ -1993,7 +1955,7 @@ GameFixProfile(
                 "Renderer\\use_asynchronous_shaders" to "false",
                 "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
-                "Renderer\\accelerate_astc" to "0",
+                "Renderer\\accelerate_astc" to "1",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\barrier_feedback_loops" to "true"
             )
@@ -2041,7 +2003,7 @@ GameFixProfile(
             "✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
             "✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\dyna_state" to "2",
@@ -2224,7 +2186,7 @@ GameFixProfile(
             "✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Анизотропная фильтрация: 16x",
             "✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Anisotropic Filtering: 16x",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\astc_recompression" to "0",
@@ -2405,7 +2367,7 @@ GameFixProfile(
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
-                "Renderer\\accelerate_astc" to "0",
+                "Renderer\\accelerate_astc" to "1",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
@@ -2574,7 +2536,7 @@ GameFixProfile(
             "✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Сжатие текстур ASTC: Отключено",
             "✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ ASTC Recompression: Uncompressed",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\astc_recompression" to "0",
@@ -2724,7 +2686,7 @@ GameFixProfile(
             "✓ Точность ГПУ: Обычная (стабильные 60 FPS на Snapdragon 8 Gen 3 / Adreno 750)\n✓ Реактивная очистка: Отключено\n✓ Быстрое время ГПУ: Включено\n✓ Обратные циклы барьеров: Включено\n✓ Сжатие текстур ASTC: Отключено",
             "✓ GPU Accuracy: Normal (Stable 60 FPS on Snapdragon 8 Gen 3 / Adreno 750)\n✓ Reactive Flushing: Disabled\n✓ Fast GPU Time: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ ASTC Recompression: Uncompressed",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
@@ -2737,7 +2699,6 @@ GameFixProfile(
                 "Renderer\\dyna_state" to "1",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\early_release_fences" to "false",
@@ -2756,7 +2717,7 @@ GameFixProfile(
             "✓ Точность ГПУ: Обычная (стабильные 60 FPS на Snapdragon 8 Gen 3 / Adreno 750)\n✓ Реактивная очистка: Отключено\n✓ Быстрое время ГПУ: Включено\n✓ Обратные циклы барьеров: Включено\n✓ Сжатие текстур ASTC: Отключено",
             "✓ GPU Accuracy: Normal (Stable 60 FPS on Snapdragon 8 Gen 3 / Adreno 750)\n✓ Reactive Flushing: Disabled\n✓ Fast GPU Time: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ ASTC Recompression: Uncompressed",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
@@ -2769,7 +2730,6 @@ GameFixProfile(
                 "Renderer\\dyna_state" to "1",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\early_release_fences" to "false",
@@ -3022,7 +2982,7 @@ GameFixProfile(
             "✓ Memory Layout: 4GB DRAM\n✓ GPU Accuracy: Normal\n✓ Asynchronous Shaders: Enabled\n✓ Reactive Flushing: Disabled",
             mapOf(
                 "System\\memory_layout_mode" to "0",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "false"
             )
@@ -3361,7 +3321,7 @@ GameFixProfile(
                 "Renderer\\nvdec_emulation" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
-                "Renderer\\gpu_accuracy" to "1"
+                "Renderer\\gpu_accuracy" to "2"
             )
         ),
                 // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/186
@@ -3911,7 +3871,7 @@ GameFixProfile(
             "✓ CPU Accuracy: Auto / Unsafe (Maximum CPU throughput for 200+ mobs)\n✓ GPU Accuracy: Normal (Locked 60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Reactive Flushing: Disabled",
             mapOf(
                 "Cpu\\cpu_accuracy" to "1",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "false",
@@ -3927,7 +3887,7 @@ GameFixProfile(
             "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "Cpu\\cpu_accuracy" to "1",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "false"
@@ -3943,7 +3903,7 @@ GameFixProfile(
             "✓ GPU Accuracy: Normal (Smooth performance)\n✓ ASTC Recompression: Uncompressed\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 8GB DRAM",
             mapOf(
                 "System\\memory_layout_mode" to "0",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
@@ -3963,7 +3923,7 @@ GameFixProfile(
             "✓ GPU Accuracy: Normal\n✓ ASTC Recompression: Uncompressed\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 8GB DRAM",
             mapOf(
                 "System\\memory_layout_mode" to "0",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
@@ -3981,7 +3941,7 @@ GameFixProfile(
             "✓ Точность ГПУ: Обычная\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
             "✓ GPU Accuracy: Normal\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -3994,7 +3954,7 @@ GameFixProfile(
             "✓ Точность ГПУ: Обычная\n✓ Память: 8GB DRAM\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
             "✓ GPU Accuracy: Normal\n✓ Memory Layout: 8GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "System\\memory_layout_mode" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
@@ -4008,7 +3968,7 @@ GameFixProfile(
             "✓ Точность ГПУ: Обычная\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 8GB DRAM",
             "✓ GPU Accuracy: Normal\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 8GB DRAM",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "System\\memory_layout_mode" to "0"
@@ -4024,7 +3984,7 @@ GameFixProfile(
             mapOf(
                 "System\\airplane_mode" to "true",
                 "Cpu\\cpu_accuracy" to "1",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
@@ -4037,7 +3997,7 @@ GameFixProfile(
             "✓ CPU Accuracy: Auto / Unsafe (Maximum JIT performance)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "Cpu\\cpu_accuracy" to "1",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -4052,7 +4012,7 @@ GameFixProfile(
             "✓ GPU Accuracy: Normal (Smooth 30 FPS)\n✓ Memory Layout: 8GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "System\\memory_layout_mode" to "0",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\use_fast_gpu_time" to "true",
@@ -4071,7 +4031,7 @@ GameFixProfile(
             "✓ GPU Accuracy: Normal\n✓ Reactive Flushing: Disabled\n✓ Memory Layout: 8GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "System\\memory_layout_mode" to "0",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
@@ -4090,7 +4050,7 @@ GameFixProfile(
             "✓ GPU Accuracy: Normal\n✓ Reactive Flushing: Disabled\n✓ Memory Layout: 8GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "System\\memory_layout_mode" to "0",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
@@ -4108,7 +4068,7 @@ GameFixProfile(
             "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "Cpu\\cpu_accuracy" to "1",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "false"
@@ -4124,7 +4084,7 @@ GameFixProfile(
             mapOf(
                 "System\\memory_layout_mode" to "0",
                 "Cpu\\cpu_accuracy" to "1",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\gpu_fence_behavior" to "2",
@@ -4141,7 +4101,7 @@ GameFixProfile(
             "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "Cpu\\cpu_accuracy" to "1",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -4155,7 +4115,7 @@ GameFixProfile(
             "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "Cpu\\cpu_accuracy" to "1",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -4169,7 +4129,7 @@ GameFixProfile(
             "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "Cpu\\cpu_accuracy" to "1",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -4183,7 +4143,7 @@ GameFixProfile(
             "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "Cpu\\cpu_accuracy" to "1",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -4197,7 +4157,7 @@ GameFixProfile(
             "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "Cpu\\cpu_accuracy" to "1",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -4212,7 +4172,7 @@ GameFixProfile(
             mapOf(
                 "System\\memory_layout_mode" to "0",
                 "Cpu\\cpu_accuracy" to "1",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -4226,7 +4186,7 @@ GameFixProfile(
             "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "Cpu\\cpu_accuracy" to "1",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -4240,7 +4200,7 @@ GameFixProfile(
             "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "Cpu\\cpu_accuracy" to "1",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -4254,7 +4214,7 @@ GameFixProfile(
             "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "Cpu\\cpu_accuracy" to "1",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -4268,7 +4228,7 @@ GameFixProfile(
             "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "Cpu\\cpu_accuracy" to "1",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -4282,7 +4242,7 @@ GameFixProfile(
             "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "Cpu\\cpu_accuracy" to "1",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -4296,7 +4256,7 @@ GameFixProfile(
             "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "Cpu\\cpu_accuracy" to "1",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -4311,7 +4271,7 @@ GameFixProfile(
             mapOf(
                 "System\\memory_layout_mode" to "0",
                 "Cpu\\cpu_accuracy" to "1",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -4325,7 +4285,7 @@ GameFixProfile(
             "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "Cpu\\cpu_accuracy" to "1",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -4340,7 +4300,7 @@ GameFixProfile(
             mapOf(
                 "System\\memory_layout_mode" to "0",
                 "Cpu\\cpu_accuracy" to "1",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -4354,7 +4314,7 @@ GameFixProfile(
             "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "Cpu\\cpu_accuracy" to "1",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -4368,7 +4328,7 @@ GameFixProfile(
             "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "Cpu\\cpu_accuracy" to "1",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -4382,7 +4342,7 @@ GameFixProfile(
             "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "Cpu\\cpu_accuracy" to "1",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -4396,7 +4356,7 @@ GameFixProfile(
             "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "Cpu\\cpu_accuracy" to "1",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -4410,7 +4370,7 @@ GameFixProfile(
             "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "Cpu\\cpu_accuracy" to "1",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -4424,7 +4384,7 @@ GameFixProfile(
             "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "Cpu\\cpu_accuracy" to "1",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -4439,7 +4399,7 @@ GameFixProfile(
             mapOf(
                 "System\\memory_layout_mode" to "0",
                 "Cpu\\cpu_accuracy" to "1",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -4453,7 +4413,7 @@ GameFixProfile(
             "✓ CPU Accuracy: Auto / Unsafe (Unsafe JIT)\n✓ GPU Accuracy: Normal (60 FPS)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "Cpu\\cpu_accuracy" to "1",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -4470,7 +4430,7 @@ GameFixProfile(
                 "Cpu\\cpu_accuracy" to "1",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\astc_recompression" to "0",
                 "System\\airplane_mode" to "true",
                 "Debugging\\use_auto_stub" to "true"
@@ -4488,7 +4448,7 @@ GameFixProfile(
                 "Cpu\\cpu_accuracy" to "1",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\astc_recompression" to "0"
             )
         ),
@@ -4500,7 +4460,7 @@ GameFixProfile(
             "✓ Точность ГПУ: Обычная (идеальные 60 FPS)\n✓ Фиксация разрешения DRS: Отключено\n✓ Реактивная очистка: Отключено\n✓ Асинхронный вывод: Включено\n✓ Барьеры ГПУ: По умолчанию\n✓ Точность DMA: По умолчанию (Безопасно)\n✓ Барьеры обратной связи: Отключено\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Сглаживание: Отключено\n✓ Фильтр масштабирования: Билинейный\n✓ Асинхронные шейдеры: Включено (плавный геймплей)\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Вычислительные конвейеры: Включено\n✓ Синхронизация памяти ГПУ: Отключено\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Сжатие ASTC: Без сжатия\n✓ Очистка VRAM: Отключено\n✓ Декодирование видео NVDEC: Гибридное\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Точность ЦП: Авто\n✓ Режим «В самолете»: Включено\n✓ Конфигурация памяти: 6 ГБ DRAM",
             "✓ GPU Accuracy: Normal (Perfect 60 FPS)\n✓ DRS Resolution Lock: Disabled\n✓ Reactive Flushing: Disabled\n✓ Async Presentation: Enabled\n✓ GPU Fence Behavior: Default\n✓ DMA Accuracy: Default (Safe)\n✓ Barrier Feedback Loops: Disabled\n✓ Dynamic State: Basic (EDS 1)\n✓ Anti-Aliasing: None\n✓ Scaling Filter: Bilinear\n✓ Async Shaders: Enabled (Smooth gameplay)\n✓ GPU Buffer Readback: Disabled\n✓ Compute Pipelines: Enabled\n✓ Sync Memory Operations: Disabled\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ VRAM Garbage Collection: Disabled\n✓ NVDEC Video Emulation: Hybrid\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ CPU Accuracy: Auto\n✓ Airplane Mode: Enabled\n✓ Memory Layout: 6GB DRAM",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
@@ -4514,7 +4474,6 @@ GameFixProfile(
                 "Renderer\\dyna_state" to "1",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
@@ -4534,7 +4493,7 @@ GameFixProfile(
             "✓ Точность ГПУ: Обычная (стабильные 60 FPS)\n✓ Фиксация разрешения DRS: Отключено\n✓ Реактивная очистка: Отключено\n✓ Асинхронный вывод: Включено\n✓ Барьеры ГПУ: По умолчанию\n✓ Точность DMA: По умолчанию (Безопасно)\n✓ Барьеры обратной связи: Отключено\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Сглаживание: Отключено\n✓ Фильтр масштабирования: Билинейный\n✓ Асинхронные шейдеры: Включено\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Вычислительные конвейеры: Включено\n✓ Синхронизация памяти ГПУ: Отключено\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Сжатие ASTC: Без сжатия\n✓ Очистка VRAM: Отключено\n✓ Декодирование видео NVDEC: Гибридное\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Точность ЦП: Авто\n✓ Режим «В самолете»: Включено\n✓ Конфигурация памяти: 6 ГБ DRAM",
             "✓ GPU Accuracy: Normal (Stable 60 FPS)\n✓ DRS Resolution Lock: Disabled\n✓ Reactive Flushing: Disabled\n✓ Async Presentation: Enabled\n✓ GPU Fence Behavior: Default\n✓ DMA Accuracy: Default (Safe)\n✓ Barrier Feedback Loops: Disabled\n✓ Dynamic State: Basic (EDS 1)\n✓ Anti-Aliasing: None\n✓ Scaling Filter: Bilinear\n✓ Async Shaders: Enabled\n✓ GPU Buffer Readback: Disabled\n✓ Compute Pipelines: Enabled\n✓ Sync Memory Operations: Disabled\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ VRAM Garbage Collection: Disabled\n✓ NVDEC Video Emulation: Hybrid\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ CPU Accuracy: Auto\n✓ Airplane Mode: Enabled\n✓ Memory Layout: 6GB DRAM",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
@@ -4548,7 +4507,6 @@ GameFixProfile(
                 "Renderer\\dyna_state" to "1",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
@@ -4582,7 +4540,6 @@ GameFixProfile(
                 "Renderer\\dyna_state" to "1",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
@@ -4605,20 +4562,18 @@ GameFixProfile(
             mapOf(
                 "System\\memory_layout_mode" to "0",
                 "System\\airplane_mode" to "true",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
-                "Renderer\\accelerate_astc" to "0",
+                "Renderer\\accelerate_astc" to "1",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\dyna_state" to "1",
-                "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\dma_accuracy" to "0",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\early_release_fences" to "false",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\async_presentation" to "true",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
@@ -4637,7 +4592,7 @@ GameFixProfile(
             "✓ Точность ГПУ: Обычная (стабильные 60 FPS на Snapdragon 8 Gen 3 / Adreno 750)\n✓ Реактивная очистка: Отключено\n✓ Быстрое время ГПУ: Включено\n✓ Обратные циклы барьеров: Включено\n✓ Асинхронные шейдеры: Включено",
             "✓ GPU Accuracy: Normal (Stable 60 FPS on Snapdragon 8 Gen 3 / Adreno 750)\n✓ Reactive Flushing: Disabled\n✓ Fast GPU Time: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
@@ -4650,7 +4605,6 @@ GameFixProfile(
                 "Renderer\\dyna_state" to "1",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\early_release_fences" to "false",
@@ -4670,7 +4624,7 @@ GameFixProfile(
             "✓ Memory Layout: 8GB DRAM\n✓ GPU Accuracy: Normal\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "System\\memory_layout_mode" to "0",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -4698,7 +4652,7 @@ GameFixProfile(
             mapOf(
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\gpu_accuracy" to "1"
+                "Renderer\\gpu_accuracy" to "2"
             )
         ),
         GameFixProfile(
@@ -4709,7 +4663,7 @@ GameFixProfile(
             "✓ Конфигурация памяти: 6 ГБ DRAM (устранение вылетов UE4)\n✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Циклы обратной связи: Включено (тени и освещение UE4)\n✓ Реактивная очистка: Отключено\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Быстрая память: Включено",
             "✓ Memory Layout: 6GB DRAM (Fixes UE4 crashes)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Barrier Feedback Loops: Enabled (UE4 lighting and shadows)\n✓ Reactive Flushing: Disabled\n✓ Dynamic State: Basic (EDS 1)\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
@@ -4723,7 +4677,6 @@ GameFixProfile(
                 "Renderer\\dyna_state" to "1",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
@@ -4742,7 +4695,7 @@ GameFixProfile(
             "✓ Конфигурация памяти: 6 ГБ DRAM (устранение вылетов памяти)\n✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Циклы обратной связи: Включено\n✓ Реактивная очистка: Отключено\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Быстрая память: Включено",
             "✓ Memory Layout: 6GB DRAM (Fixes memory exhaustion crashes)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Reactive Flushing: Disabled\n✓ Dynamic State: Basic (EDS 1)\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
@@ -4756,7 +4709,6 @@ GameFixProfile(
                 "Renderer\\dyna_state" to "1",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
@@ -4775,7 +4727,7 @@ GameFixProfile(
             "✓ Конфигурация памяти: 6 ГБ DRAM (устранение сбоев UE5)\n✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Циклы обратной связи: Включено\n✓ Реактивная очистка: Отключено\n✓ Динамическое состояние: Базовое (EDS 1)\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Быстрая память: Включено",
             "✓ Memory Layout: 6GB DRAM (Fixes UE5 crashes)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Barrier Feedback Loops: Enabled\n✓ Reactive Flushing: Disabled\n✓ Dynamic State: Basic (EDS 1)\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
@@ -4789,7 +4741,6 @@ GameFixProfile(
                 "Renderer\\dyna_state" to "1",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
@@ -4808,7 +4759,7 @@ GameFixProfile(
             "✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Реактивная очистка: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Точность ЦП: Авто\n✓ Игнорирование сбоев памяти: Включено",
             "✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Reactive Flushing: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ CPU Accuracy: Auto\n✓ Ignore Memory Aborts: Enabled",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
@@ -4822,7 +4773,6 @@ GameFixProfile(
                 "Renderer\\dyna_state" to "1",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
@@ -4841,7 +4791,7 @@ GameFixProfile(
             "✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Реактивная очистка: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено\n✓ Точность ЦП: Авто\n✓ Игнорирование сбоев памяти: Включено",
             "✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Reactive Flushing: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ CPU Accuracy: Auto\n✓ Ignore Memory Aborts: Enabled",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
@@ -4855,7 +4805,6 @@ GameFixProfile(
                 "Renderer\\dyna_state" to "1",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
@@ -4874,7 +4823,7 @@ GameFixProfile(
             "✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Реактивная очистка: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
             "✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Reactive Flushing: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
@@ -4888,7 +4837,6 @@ GameFixProfile(
                 "Renderer\\dyna_state" to "1",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
@@ -4907,7 +4855,7 @@ GameFixProfile(
             "✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Реактивная очистка: Отключено\n✓ Режим полёта: Включено (пропуск Ubisoft Connect)\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
             "✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Reactive Flushing: Disabled\n✓ Airplane Mode: Enabled (Bypasses Ubisoft Connect)\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
@@ -4921,7 +4869,6 @@ GameFixProfile(
                 "Renderer\\dyna_state" to "1",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
@@ -4940,7 +4887,7 @@ GameFixProfile(
             "✓ Конфигурация памяти: 6 ГБ DRAM (устранение краша виртуальной машины)\n✓ Игнорирование сбоев памяти: Включено (устранение Userspace PANIC)\n✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Реактивная очистка: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память: Включено",
             "✓ Memory Layout: 6GB DRAM (Eliminates VM crash)\n✓ Ignore Memory Aborts: Enabled (Fixes Userspace PANIC)\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Reactive Flushing: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
@@ -4954,7 +4901,6 @@ GameFixProfile(
                 "Renderer\\dyna_state" to "1",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
@@ -4973,7 +4919,7 @@ GameFixProfile(
             "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Реактивная очистка: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Быстрая память: Включено",
             "✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Reactive Flushing: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
@@ -4987,7 +4933,6 @@ GameFixProfile(
                 "Renderer\\dyna_state" to "1",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
@@ -5006,7 +4951,7 @@ GameFixProfile(
             "✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Точность ГПУ: Обычная (плавные 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Раннее освобождение барьеров: Включено\n✓ Реактивная очистка: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Игнорирование сбоев памяти: Включено\n✓ Быстрая память: Включено",
             "✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Early Release Fences: Enabled\n✓ Reactive Flushing: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\dma_accuracy" to "0",
@@ -5020,7 +4965,6 @@ GameFixProfile(
                 "Renderer\\dyna_state" to "1",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\early_release_fences" to "false",
                 "Renderer\\astc_recompression" to "0",
@@ -5058,13 +5002,11 @@ GameFixProfile(
                 "System\\airplane_mode" to "true",
                 "Network\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
-                "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\async_presentation" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_disk_shader_cache" to "true",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\use_vulkan_driver_pipeline_cache" to "true",
@@ -5073,7 +5015,7 @@ GameFixProfile(
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\accelerate_astc" to "1",
                 "Renderer\\gpu_fence_behavior" to "0",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpu_accuracy" to "0",
@@ -5123,7 +5065,7 @@ GameFixProfile(
                 "System\\memory_layout_mode" to "0",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\dma_accuracy" to "1",
                 "Renderer\\dyna_state" to "1",
                 "Renderer\\barrier_feedback_loops" to "true",
@@ -5139,9 +5081,8 @@ GameFixProfile(
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
-                "Renderer\\sync_memory_operations" to "false",
                 "Cpu\\cpu_accuracy" to "0",
-                "System\\airplane_mode" to "true",
+                "System\\airplane_mode" to "true"
             )
         ),
                 // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/3233
@@ -5155,7 +5096,7 @@ GameFixProfile(
             mapOf(
                 "System\\memory_layout_mode" to "0",
                 "System\\airplane_mode" to "true",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_fast_gpu_time" to "false",
@@ -5167,7 +5108,6 @@ GameFixProfile(
                 "Renderer\\dma_accuracy" to "1",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\early_release_fences" to "false",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\async_presentation" to "true",
                 "Renderer\\vram_garbage_collection" to "false",
                 "Renderer\\enable_compute_pipelines" to "true",
@@ -5283,7 +5223,7 @@ GameFixProfile(
             "✓ Firmware 18.0.0+ and Mii system files required\n✓ ASTC Recompression: Uncompressed\n✓ Reactive Flushing: Enabled\n✓ Memory Layout: 6GB DRAM",
             mapOf(
                 "System\\memory_layout_mode" to "0",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\use_fast_gpu_time" to "true",
@@ -5301,7 +5241,7 @@ GameFixProfile(
             "",
             mapOf(
                 "System\\memory_layout_mode" to "0",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\astc_recompression" to "0"
             )
@@ -5390,7 +5330,6 @@ GameFixProfile(
                 "Renderer\\use_disk_shader_cache" to "true",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
-                "Renderer\\dyna_state" to "0",
                 "System\\airplane_mode" to "true",
                 "Network\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true"
@@ -5426,7 +5365,6 @@ GameFixProfile(
                 "Renderer\\use_disk_shader_cache" to "true",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
-                "Renderer\\dyna_state" to "0",
                 "System\\airplane_mode" to "true",
                 "Network\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true"
@@ -5462,7 +5400,6 @@ GameFixProfile(
                 "Renderer\\use_disk_shader_cache" to "true",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0",
-                "Renderer\\dyna_state" to "0",
                 "System\\airplane_mode" to "true",
                 "Network\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true"
@@ -5476,7 +5413,7 @@ GameFixProfile(
             "✓ Барьеры ГПУ: Стандартный режим (ликвидация мерцания объектов)\n✓ Обратное чтение буферов ГПУ: Включено\n✓ Синхронизация операций памяти: Включено\n✓ Реактивный сброс памяти: Включено\n✓ Асинхронный вывод кадров: Включено\n✓ Сборщик мусора VRAM: Отключено\n✓ Точность ГПУ: Обычная\n✓ Конфигурация памяти: 6 ГБ DRAM\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
             "✓ GPU Fences: Standard mode (fixes flickering objects)\n✓ GPU Buffer Readback: Enabled\n✓ Sync Memory Operations: Enabled\n✓ Reactive Flushing: Enabled\n✓ Async Presentation: Enabled\n✓ VRAM Garbage Collection: Disabled\n✓ GPU Accuracy: Normal\n✓ Memory Layout: 6GB DRAM\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\enable_gpu_buffer_readback" to "true",
                 "Renderer\\async_presentation" to "true",
                 "Renderer\\vram_garbage_collection" to "false",
@@ -5504,7 +5441,7 @@ GameFixProfile(
             "✓ Барьеры ГПУ: Стандартный режим (устранение мерцания моделей)\n✓ Обратное чтение буферов ГПУ: Включено\n✓ Синхронизация операций памяти: Включено\n✓ Реактивный сброс памяти: Включено\n✓ Асинхронный вывод кадров: Включено (стабильные 60 FPS)\n✓ Сборщик мусора VRAM: Отключено\n✓ Точность ГПУ: Обычная\n✓ Игнорировать прерывания памяти: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено",
             "✓ GPU Fences: Standard mode (fixes mesh flickering)\n✓ GPU Buffer Readback: Enabled\n✓ Sync Memory Operations: Enabled\n✓ Reactive Flushing: Enabled\n✓ Async Presentation: Enabled (Stable 60 FPS)\n✓ VRAM Garbage Collection: Disabled\n✓ GPU Accuracy: Normal\n✓ Ignore Memory Aborts: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\enable_gpu_buffer_readback" to "true",
                 "Renderer\\async_presentation" to "true",
                 "Renderer\\vram_garbage_collection" to "false",
@@ -5530,12 +5467,12 @@ GameFixProfile(
             "Alan Wake Remastered",
             "• Искажение луча света фонарика и артефакты теней\n• Размытие и нечеткость шрифтов субтитров и интерфейса",
             "• Flashlight cone illumination artifacts and shadow glitch\n• Blurry subtitle fonts and distorted UI text rendering",
-            "✓ Динамическое состояние: Базовое (EDS 1 - корректный луч фонарика)\n✓ Сжатие ASTC: Отключено (четкие шрифты и интерфейс)\n✓ Обратное чтение буферов ГПУ: Включено\n✓ Быстрое время ГПУ: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 6 ГБ DRAM",
-            "✓ Dynamic State: Basic (EDS 1 - correct flashlight cone)\n✓ ASTC Recompression: Uncompressed (sharp text and UI)\n✓ GPU Buffer Readback: Enabled\n✓ Fast GPU Time: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 6GB DRAM",
+            "✓ Точность ГПУ: Высокая\n✓ Сжатие ASTC: Отключено (четкие шрифты и интерфейс)\n✓ Обратное чтение буферов ГПУ: Включено\n✓ Быстрое время ГПУ: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Память: 6 ГБ DRAM",
+            "✓ GPU Accuracy: High\n✓ ASTC Recompression: Uncompressed (sharp text and UI)\n✓ GPU Buffer Readback: Enabled\n✓ Fast GPU Time: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Memory Layout: 6GB DRAM",
             mapOf(
                 "System\\memory_layout_mode" to "0",
                 "System\\airplane_mode" to "true",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
@@ -5543,7 +5480,6 @@ GameFixProfile(
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\enable_gpu_buffer_readback" to "true",
-                "Renderer\\dyna_state" to "1",
                 "Renderer\\dma_accuracy" to "0",
                 "Renderer\\gpu_fence_behavior" to "0",
                 "Renderer\\early_release_fences" to "false",
@@ -5556,7 +5492,8 @@ GameFixProfile(
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Renderer\\scaling_filter" to "1",
                 "Renderer\\anti_aliasing" to "0"
-            )
+            ),
+            listOf(0x0100F830138E6000L, 0x010074B01456A000L, 0x010065F014C5E000L, 0x0100AD6014FB8000L, 0x0100328014FB8000L)
         ),
         GameFixProfile(
             0x0100646009FBE000L,
@@ -5579,12 +5516,11 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\async_presentation" to "false",
                 "Renderer\\sync_memory_operations" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\early_release_fences" to "false",
-                "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_disk_shader_cache" to "true",
@@ -5604,16 +5540,15 @@ GameFixProfile(
                 "Network\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
                 "Renderer\\gpu_accuracy" to "2",
-                "Renderer\\rescale_hack" to "true",
-                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\nvdec_emulation" to "2",
                 "Renderer\\async_presentation" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_disk_shader_cache" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
-                "Renderer\\enable_gpu_buffer_readback" to "false",
-                "Renderer\\sync_memory_operations" to "false",
+                "Renderer\\enable_gpu_buffer_readback" to "true",
+                "Renderer\\sync_memory_operations" to "true",
                 "Renderer\\use_reactive_flushing" to "true",
-                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\vram_garbage_collection" to "true",
                 "Renderer\\use_vulkan_driver_pipeline_cache" to "true",
                 "Renderer\\early_release_fences" to "false",
                 "Renderer\\dma_accuracy" to "3",
@@ -5631,12 +5566,11 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\async_presentation" to "false",
                 "Renderer\\sync_memory_operations" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\early_release_fences" to "false",
-                "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_disk_shader_cache" to "true",
@@ -5652,9 +5586,8 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\nvdec_emulation" to "1",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "System\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true"
@@ -5669,7 +5602,7 @@ GameFixProfile(
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Cpu\\cpuopt_fastmem" to "true"
             )
@@ -5683,7 +5616,7 @@ GameFixProfile(
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
                 "Renderer\\async_presentation" to "false",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\astc_recompression" to "0",
                 "System\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true"
@@ -5697,8 +5630,7 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\async_presentation" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
@@ -5709,7 +5641,6 @@ GameFixProfile(
                 "Renderer\\sync_memory_operations" to "true",
                 "Renderer\\dyna_state" to "1",
                 "Renderer\\drs_resolution_lock" to "false",
-                "Renderer\\rescale_hack" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "System\\memory_layout_mode" to "0"
@@ -5723,8 +5654,7 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\async_presentation" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
@@ -5735,7 +5665,6 @@ GameFixProfile(
                 "Renderer\\sync_memory_operations" to "true",
                 "Renderer\\dyna_state" to "1",
                 "Renderer\\drs_resolution_lock" to "false",
-                "Renderer\\rescale_hack" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "System\\memory_layout_mode" to "0"
@@ -5751,9 +5680,8 @@ GameFixProfile(
             mapOf(
                 "Renderer\\async_presentation" to "false",
                 "Renderer\\sync_memory_operations" to "true",
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\astc_recompression" to "0",
-                "Renderer\\nvdec_emulation" to "1"
+                "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\astc_recompression" to "0"
             )
         ),
         GameFixProfile(
@@ -5764,7 +5692,7 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\async_presentation" to "false",
                 "Renderer\\astc_recompression" to "0"
             )
@@ -5781,11 +5709,9 @@ GameFixProfile(
                 "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\early_release_fences" to "false",
-                "Renderer\\sync_memory_operations" to "false",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\gpu_fence_behavior" to "2",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\drs_resolution_lock" to "false",
                 "Renderer\\dynamic_performance_scaler" to "false",
@@ -5807,11 +5733,9 @@ GameFixProfile(
                 "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\early_release_fences" to "false",
-                "Renderer\\sync_memory_operations" to "false",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\gpu_fence_behavior" to "2",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\drs_resolution_lock" to "false",
                 "Renderer\\dynamic_performance_scaler" to "false",
@@ -5829,7 +5753,7 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Cpu\\cpuopt_fastmem" to "true"
@@ -5844,7 +5768,7 @@ GameFixProfile(
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
                 "Renderer\\async_presentation" to "false",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\astc_recompression" to "0"
             )
         ),
@@ -5857,7 +5781,7 @@ GameFixProfile(
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
                 "System\\memory_layout_mode" to "0",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true"
@@ -5872,7 +5796,7 @@ GameFixProfile(
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
                 "System\\memory_layout_mode" to "0",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
@@ -5887,9 +5811,8 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "System\\memory_layout_mode" to "0"
             )
@@ -5903,7 +5826,7 @@ GameFixProfile(
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
                 "Renderer\\async_presentation" to "false",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\astc_recompression" to "0"
             )
         ),
@@ -5915,9 +5838,8 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\nvdec_emulation" to "1"
+                "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\use_asynchronous_shaders" to "true"
             )
         ),
         GameFixProfile(
@@ -5928,7 +5850,7 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\astc_recompression" to "0"
             )
@@ -5942,7 +5864,7 @@ GameFixProfile(
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
                 "System\\memory_layout_mode" to "0",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "System\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true"
@@ -5957,9 +5879,8 @@ GameFixProfile(
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
                 "Renderer\\nvdec_emulation" to "3",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\async_presentation" to "true",
-                "Renderer\\sync_memory_operations" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "System\\memory_layout_mode" to "0"
@@ -5974,7 +5895,7 @@ GameFixProfile(
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
                 "System\\memory_layout_mode" to "0",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
@@ -5989,7 +5910,7 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\async_presentation" to "false"
             )
@@ -6002,10 +5923,9 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "System\\memory_layout_mode" to "0",
-                "Renderer\\nvdec_emulation" to "1"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -6017,8 +5937,7 @@ GameFixProfile(
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
                 "Renderer\\async_presentation" to "false",
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
         ),
@@ -6031,7 +5950,7 @@ GameFixProfile(
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
                 "System\\memory_layout_mode" to "0",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "System\\airplane_mode" to "true",
@@ -6046,7 +5965,7 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Cpu\\cpuopt_fastmem" to "true"
@@ -6061,7 +5980,7 @@ GameFixProfile(
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
                 "Renderer\\nvdec_emulation" to "2",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\astc_recompression" to "0"
@@ -6075,10 +5994,9 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\astc_recompression" to "0",
-                "Renderer\\nvdec_emulation" to "1"
+                "Renderer\\astc_recompression" to "0"
             )
         ),
         GameFixProfile(
@@ -6089,10 +6007,9 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\nvdec_emulation" to "1",
                 "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
@@ -6104,10 +6021,9 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "System\\memory_layout_mode" to "0",
-                "Renderer\\nvdec_emulation" to "1"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -6118,10 +6034,9 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "System\\memory_layout_mode" to "0",
-                "Renderer\\nvdec_emulation" to "1"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -6132,10 +6047,9 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "System\\memory_layout_mode" to "0",
-                "Renderer\\nvdec_emulation" to "1"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -6146,10 +6060,9 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "System\\memory_layout_mode" to "0",
-                "Renderer\\nvdec_emulation" to "1"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -6160,10 +6073,9 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "System\\memory_layout_mode" to "0",
-                "Renderer\\nvdec_emulation" to "1"
+                "System\\memory_layout_mode" to "0"
             )
         ),
         GameFixProfile(
@@ -6174,7 +6086,7 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\astc_recompression" to "0"
             )
@@ -6187,9 +6099,8 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\nvdec_emulation" to "1",
                 "System\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true"
             )
@@ -6202,7 +6113,7 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "System\\memory_layout_mode" to "0"
@@ -6217,7 +6128,7 @@ GameFixProfile(
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
                 "Renderer\\nvdec_emulation" to "2",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -6230,7 +6141,7 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Cpu\\cpuopt_fastmem" to "true"
@@ -6244,9 +6155,8 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\nvdec_emulation" to "1",
                 "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
@@ -6260,7 +6170,7 @@ GameFixProfile(
             mapOf(
                 "System\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -6274,8 +6184,7 @@ GameFixProfile(
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
                 "System\\memory_layout_mode" to "0",
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -6289,8 +6198,7 @@ GameFixProfile(
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
                 "System\\memory_layout_mode" to "0",
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -6304,8 +6212,7 @@ GameFixProfile(
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
                 "System\\memory_layout_mode" to "0",
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -6319,8 +6226,7 @@ GameFixProfile(
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
                 "System\\memory_layout_mode" to "0",
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -6334,8 +6240,7 @@ GameFixProfile(
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
                 "System\\memory_layout_mode" to "0",
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
@@ -6349,8 +6254,7 @@ GameFixProfile(
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
                 "System\\memory_layout_mode" to "0",
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Cpu\\cpuopt_fastmem" to "true"
             )
@@ -6364,8 +6268,7 @@ GameFixProfile(
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
                 "System\\memory_layout_mode" to "0",
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Cpu\\cpuopt_fastmem" to "true"
             )
@@ -6378,8 +6281,7 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Cpu\\cpuopt_fastmem" to "true"
             )
@@ -6392,8 +6294,7 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "System\\memory_layout_mode" to "0"
             )
@@ -6407,8 +6308,7 @@ GameFixProfile(
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
                 "System\\memory_layout_mode" to "0",
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Cpu\\cpuopt_fastmem" to "true"
             )
@@ -6422,7 +6322,7 @@ GameFixProfile(
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
                 "Renderer\\async_presentation" to "false",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\astc_recompression" to "0"
             )
         ),
@@ -6436,7 +6336,7 @@ GameFixProfile(
             mapOf(
                 "Renderer\\async_presentation" to "false",
                 "Renderer\\sync_memory_operations" to "true",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\astc_recompression" to "0"
             )
         ),
@@ -6449,7 +6349,7 @@ GameFixProfile(
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )
         ),
@@ -6462,9 +6362,8 @@ GameFixProfile(
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
                 "Renderer\\async_presentation" to "false",
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\astc_recompression" to "0",
-                "Renderer\\nvdec_emulation" to "1"
+                "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\astc_recompression" to "0"
             )
         ),
         GameFixProfile(
@@ -6476,9 +6375,8 @@ GameFixProfile(
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
                 "Renderer\\async_presentation" to "false",
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\astc_recompression" to "0",
-                "Renderer\\nvdec_emulation" to "1"
+                "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\astc_recompression" to "0"
             )
         ),
         GameFixProfile(
@@ -6490,9 +6388,8 @@ GameFixProfile(
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
                 "Renderer\\async_presentation" to "false",
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\astc_recompression" to "0",
-                "Renderer\\nvdec_emulation" to "1"
+                "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\astc_recompression" to "0"
             )
         ),
         GameFixProfile(
@@ -6504,9 +6401,8 @@ GameFixProfile(
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
                 "Renderer\\async_presentation" to "false",
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\astc_recompression" to "0",
-                "Renderer\\nvdec_emulation" to "1"
+                "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\astc_recompression" to "0"
             )
         ),
         GameFixProfile(
@@ -6518,7 +6414,7 @@ GameFixProfile(
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
                 "System\\memory_layout_mode" to "0",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Cpu\\cpuopt_fastmem" to "true"
@@ -6533,8 +6429,7 @@ GameFixProfile(
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
                 "System\\memory_layout_mode" to "0",
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Cpu\\cpuopt_fastmem" to "true"
@@ -6548,8 +6443,7 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Cpu\\cpuopt_fastmem" to "true"
@@ -6563,7 +6457,7 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\astc_recompression" to "0"
             )
@@ -6576,7 +6470,7 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Cpu\\cpuopt_fastmem" to "true"
             )
@@ -6589,7 +6483,7 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
@@ -6605,7 +6499,7 @@ GameFixProfile(
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
                 "Renderer\\async_presentation" to "false",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\astc_recompression" to "0"
             )
         ),
@@ -6617,7 +6511,7 @@ GameFixProfile(
             "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS",
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "System\\memory_layout_mode" to "0"
@@ -6633,7 +6527,7 @@ GameFixProfile(
             mapOf(
                 "Renderer\\async_presentation" to "false",
                 "Renderer\\sync_memory_operations" to "true",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\astc_recompression" to "0"
             )
         ),
@@ -6646,8 +6540,7 @@ GameFixProfile(
             "✓ STORM SOFT recommended profile settings for stability and maximum FPS",
             mapOf(
                 "System\\memory_layout_mode" to "1",
-                "Renderer\\gpu_accuracy" to "1",
-                "Renderer\\nvdec_emulation" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
@@ -6665,7 +6558,7 @@ GameFixProfile(
             mapOf(
                 "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_reactive_flushing" to "true"
             ),
             listOf(0x010067B01CD68000L, 0x0100826003994000L, 0x01001B301CD6A000L, 0x010045801CD6C000L)
@@ -6678,7 +6571,7 @@ GameFixProfile(
             "✓ Точность ГПУ: Обычная (Normal / устранение задержек)\n✓ Сжатие ASTC: Отключено (Uncompressed / исправление текстур на Mali)\n✓ Быстрое время ГПУ: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено",
             "✓ GPU Accuracy: Normal (Eliminates sync stalls)\n✓ ASTC Recompression: Uncompressed (Fixes textures on Mali)\n✓ Fast GPU Time: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
@@ -6696,7 +6589,7 @@ GameFixProfile(
             "✓ Точность ГПУ: Обычная (Normal / устранение задержек выборки глубины)\n✓ Быстрое время ГПУ: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено",
             "✓ GPU Accuracy: Normal (Eliminates depth readback latency)\n✓ Fast GPU Time: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
@@ -6713,7 +6606,7 @@ GameFixProfile(
             "✓ Точность ГПУ: Обычная (Normal / неблокирующая синхронизация)\n✓ Быстрое время ГПУ: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено",
             "✓ GPU Accuracy: Normal (Non-blocking fence pacing)\n✓ Fast GPU Time: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
@@ -6730,7 +6623,7 @@ GameFixProfile(
             "✓ Точность ГПУ: Обычная (Normal / оптимизированный конвейер)\n✓ Быстрое время ГПУ: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено",
             "✓ GPU Accuracy: Normal (Optimized pipeline throughput)\n✓ Fast GPU Time: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Cpu\\cpuopt_fastmem" to "true",
@@ -6747,7 +6640,7 @@ GameFixProfile(
             "✓ Точность ГПУ: Обычная (Normal / устранение зависаний очереди)\n✓ Сжатие ASTC: Отключено (Uncompressed / исправление текстур на Mali)\n✓ Асинхронные шейдеры: Отключено (устранение черного экрана на Mali)\n✓ Реактивная очистка: Отключено (стабильный FPS на Mali)\n✓ Масштабирование: Bilinear\n✓ Разрешение: 1X (720p/1080p)",
             "✓ GPU Accuracy: Normal (Eliminates queue stalls)\n✓ ASTC Recompression: Uncompressed (Fixes textures on Mali)\n✓ Asynchronous Shaders: Disabled (Fixes black screen on Mali)\n✓ Reactive Flushing: Disabled (Stable FPS on Mali)\n✓ Scaling: Bilinear\n✓ Resolution: 1X (720p/1080p)",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
@@ -6763,7 +6656,7 @@ GameFixProfile(
             "✓ Точность ГПУ: Обычная (Normal / синхронизация очередей)\n✓ Сжатие ASTC: Отключено (Uncompressed / устранение битых текстур)\n✓ Асинхронные шейдеры: Отключено (синхронная сборка пайплайнов)\n✓ Быстрая память (Fastmem): Включено\n✓ Игнорирование сбоев памяти: Включено",
             "✓ GPU Accuracy: Normal (Sync queue pacing)\n✓ ASTC Recompression: Uncompressed (Fixes texture corruption)\n✓ Asynchronous Shaders: Disabled (Synchronous pipeline build)\n✓ Fastmem: Enabled\n✓ Ignore Memory Aborts: Enabled",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
@@ -6782,7 +6675,7 @@ GameFixProfile(
             "✓ Буфер индексов: Адаптивная выборка подсеток (устранение пропажи лиц)\n✓ Точность ГПУ: Обычная (Normal)\n✓ Реактивная очистка: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Масштабирование: Bilinear",
             "✓ Index Buffer: Adaptive submesh bounds (Restores facial meshes)\n✓ GPU Accuracy: Normal\n✓ Reactive Flushing: Disabled\n✓ Asynchronous Shaders: Enabled\n✓ Scaling: Bilinear",
             mapOf(
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\resolution_setup" to "2",
@@ -6799,7 +6692,7 @@ GameFixProfile(
             mapOf(
                 "Core\\memory_layout_mode" to "1",
                 "System\\memory_layout_mode" to "1",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\barrier_feedback_loops" to "true",
@@ -6847,7 +6740,7 @@ GameFixProfile(
             "✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "System\\memory_layout_mode" to "1",
-                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\use_fast_gpu_time" to "true",
                 "Renderer\\use_asynchronous_shaders" to "true"
             ),
@@ -7723,7 +7616,7 @@ GameFixProfile(
         val defaultDynaState = if (canUseEds1) "1" else "0"
 
         val fullMap = mutableMapOf(
-            "Renderer\\gpu_accuracy" to "1",
+            "Renderer\\gpu_accuracy" to "2",
             "Renderer\\vram_garbage_collection" to "false",
             "Renderer\\gpu_fence_behavior" to "0",
             "Renderer\\dma_accuracy" to "0",
@@ -7737,7 +7630,6 @@ GameFixProfile(
             "Renderer\\dyna_state" to defaultDynaState,
             "Renderer\\enable_gpu_buffer_readback" to "false",
             "Renderer\\enable_compute_pipelines" to "true",
-            "Renderer\\sync_memory_operations" to "false",
             "Renderer\\use_fast_gpu_time" to "false",
             "Renderer\\early_release_fences" to "false",
             "Renderer\\astc_recompression" to "0",
@@ -7870,9 +7762,10 @@ GameFixProfile(
         val v = rawVal.trim().lowercase(java.util.Locale.ROOT)
         return when (cleanK) {
             "gpu_accuracy" -> when (v) {
-                "0" -> if (isRu) "Обычная" else "Normal"
-                "1" -> if (isRu) "Высокая" else "High"
-                "2" -> if (isRu) "Экстремальная" else "Extreme"
+                "0" -> if (isRu) "Низкая" else "Low"
+                "1" -> if (isRu) "Обычная" else "Normal"
+                "2" -> if (isRu) "Высокая" else "High"
+                "3" -> if (isRu) "Экстремальная" else "Extreme"
                 else -> rawVal
             }
             "nvdec_emulation" -> when (v) {
@@ -8003,113 +7896,7 @@ GameFixProfile(
         return lines.joinToString("<br/>")
     }
 
-
-    fun sanitizePoisonedSettings(game: Game?) {
-        try {
-            val pid = game?.programIdHex?.uppercase() ?: ""
-            val titleLower = game?.title?.lowercase() ?: ""
-            val isRabbids = pid == "010067300059A000" || pid == "0100760012E4A000" || pid == "010032C00AC58000" || pid == "01005CA00F966000" || titleLower.contains("rabbids")
-            val isDiablo = pid == "01002A801458A000" || pid == "0100726014352000" || pid == "0100916014D8C000" || titleLower.contains("diablo")
-
-            val globalConfigFile = java.io.File(DirectoryInitialization.userDirectory, "config/config.ini")
-            val globalConfigSdcard = java.io.File("/sdcard/STORM SWITCH/config/config.ini")
-            val customFile = if (game != null) SettingsFile.getCustomSettingsFile(game) else null
-
-            val targets = listOfNotNull(globalConfigFile, globalConfigSdcard, customFile)
-            for (file in targets) {
-                if (!file.exists() || file.length() == 0L) continue
-                var modified = false
-                val isCustomFile = (file == customFile)
-                val lines = file.readLines()
-                val newLines = lines.map { line ->
-                    val trimmed = line.trim()
-                    if (trimmed.startsWith("early_release_fences", ignoreCase = true) && trimmed.contains("=")) {
-                        val key = trimmed.substringBefore("=").trim()
-                        if (trimmed.substringAfter("=").trim().equals("true", ignoreCase = true)) {
-                            modified = true
-                            "$key=false"
-                        } else line
-                    } else if (trimmed.startsWith("enable_frame_skipping", ignoreCase = true) && trimmed.contains("=")) {
-                        val key = trimmed.substringBefore("=").trim()
-                        if (trimmed.substringAfter("=").trim().equals("true", ignoreCase = true)) {
-                            modified = true
-                            "$key=false"
-                        } else line
-                    } else if (trimmed.startsWith("eco_thermal_mode", ignoreCase = true) && trimmed.contains("=")) {
-                        val key = trimmed.substringBefore("=").trim()
-                        if (trimmed.substringAfter("=").trim().equals("true", ignoreCase = true)) {
-                            modified = true
-                            "$key=false"
-                        } else line
-                    } else if ((isRabbids || isDiablo) && isCustomFile && trimmed.startsWith("gpu_accuracy", ignoreCase = true) && trimmed.contains("=")) {
-                        val key = trimmed.substringBefore("=").trim()
-                        val curVal = trimmed.substringAfter("=").trim()
-                        val targetVal = if (key.contains("\\")) "false" else "2"
-                        if (!curVal.equals(targetVal, ignoreCase = true)) {
-                            modified = true
-                            "$key=$targetVal"
-                        } else line
-                    } else if ((isRabbids || isDiablo) && isCustomFile && trimmed.startsWith("dma_accuracy", ignoreCase = true) && trimmed.contains("=")) {
-                        val key = trimmed.substringBefore("=").trim()
-                        val curVal = trimmed.substringAfter("=").trim()
-                        val targetVal = if (key.contains("\\")) "false" else "3"
-                        if (!curVal.equals(targetVal, ignoreCase = true)) {
-                            modified = true
-                            "$key=$targetVal"
-                        } else line
-                    } else if ((isRabbids || isDiablo) && isCustomFile && (trimmed.startsWith("use_reactive_flushing", ignoreCase = true) || trimmed.startsWith("barrier_feedback_loops", ignoreCase = true)) && trimmed.contains("=")) {
-                        val key = trimmed.substringBefore("=").trim()
-                        val curVal = trimmed.substringAfter("=").trim()
-                        val targetVal = if (key.contains("\\")) "false" else "true"
-                        if (!curVal.equals(targetVal, ignoreCase = true)) {
-                            modified = true
-                            "$key=$targetVal"
-                        } else line
-                    } else if (isRabbids && isCustomFile && trimmed.startsWith("fix_bloom_effects", ignoreCase = true) && trimmed.contains("=")) {
-                        val key = trimmed.substringBefore("=").trim()
-                        val curVal = trimmed.substringAfter("=").trim()
-                        val targetVal = if (key.contains("\\")) "false" else "true"
-                        if (!curVal.equals(targetVal, ignoreCase = true)) {
-                            modified = true
-                            "$key=$targetVal"
-                        } else line
-                    } else if (isRabbids && isCustomFile && trimmed.startsWith("dyna_state", ignoreCase = true) && trimmed.contains("=")) {
-                        val key = trimmed.substringBefore("=").trim()
-                        val curVal = trimmed.substringAfter("=").trim()
-                        val targetVal = if (key.contains("\\")) "false" else "0"
-                        if (!curVal.equals(targetVal, ignoreCase = true)) {
-                            modified = true
-                            "$key=$targetVal"
-                        } else line
-                    } else {
-                        line
-                    }
-                }
-                if (modified) {
-                    file.writeText(newLines.joinToString("\n"))
-                    Log.info("[GameFixDatabase] Repaired poisoned settings in ${file.name}")
-                }
-            }
-
-            BooleanSetting.RENDERER_EARLY_RELEASE_FENCES.setBoolean(false)
-            BooleanSetting.ENABLE_FRAME_SKIPPING.setBoolean(false)
-            BooleanSetting.ECO_THERMAL_MODE.setBoolean(false)
-            if (isDiablo || isRabbids) {
-                BooleanSetting.RENDERER_REACTIVE_FLUSHING.setBoolean(true)
-                IntSetting.RENDERER_ACCURACY.setInt(2)
-                IntSetting.DMA_ACCURACY.setInt(3)
-                if (isRabbids) {
-                    BooleanSetting.FIX_BLOOM_EFFECTS.setBoolean(true)
-                    IntSetting.RENDERER_DYNA_STATE.setInt(0)
-                }
-            }
-        } catch (e: Exception) {
-            Log.error("[GameFixDatabase] Error sanitizing poisoned settings: ${e.message}")
-        }
-    }
-
     fun applyCleanFix(game: Game): Boolean {
-        sanitizePoisonedSettings(game)
         val fix = getFix(game)
         activateSessionFix(game)
 

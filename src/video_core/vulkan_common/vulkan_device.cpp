@@ -1502,26 +1502,24 @@ bool Device::GetSuitability(bool requires_swapchain) {
 
     // VK_EXT_extended_dynamic_state3 below this will appear drivers that need workarounds.
 
-    // Samsung, Qualcomm, Adreno 5xx/8xx/X1 (Turnip & proprietary), Mali, and PowerVR: Broken extendedDynamicState3ColorBlendEquation / ColorBlendEnable
+    // Samsung, Qualcomm, Mali, and PowerVR: Broken extendedDynamicState3ColorBlendEquation / ColorBlendEnable
     // Disable blend equation dynamic state, force static pipeline state
     if (extensions.extended_dynamic_state3 &&
-        (is_xclipse_suit || is_qualcomm_suit || is_adreno_5xx_suit ||
-         is_adreno_8xx_suit || is_adreno_x1_suit || is_mali_suitability || is_powervr_suit)) {
+        (is_xclipse_suit || is_qualcomm_suit || is_mali_suitability || is_powervr_suit)) {
         LOG_WARNING(Render_Vulkan,
                     "Mobile GPU Matrix: Disabling broken extendedDynamicState3ColorBlendEquation and ColorBlendEnable");
         features.extended_dynamic_state3.extendedDynamicState3ColorBlendEnable = false;
         features.extended_dynamic_state3.extendedDynamicState3ColorBlendEquation = false;
     }
 
-    // Disable VertexInputDynamicState on Intel (< 27.20.100.0), all NVIDIA Windows drivers, Qualcomm, Adreno 5xx/8xx/X1, Mali, Xclipse, PowerVR
+    // Disable VertexInputDynamicState on Intel (< 27.20.100.0), all NVIDIA Windows drivers, Qualcomm, Mali, Xclipse, PowerVR
     if (extensions.vertex_input_dynamic_state) {
         bool is_broken = false;
         if (driver_id == VK_DRIVER_ID_INTEL_PROPRIETARY_WINDOWS) {
             const u32 version = (properties.properties.driverVersion << 3) >> 3;
             is_broken = version < VK_MAKE_API_VERSION(0, 27, 20, 100);
         } else if (driver_id == VK_DRIVER_ID_NVIDIA_PROPRIETARY ||
-                   is_qualcomm_suit || is_adreno_5xx_suit || is_adreno_8xx_suit || is_adreno_x1_suit ||
-                   is_xclipse_suit || is_mali_suitability || is_powervr_suit) {
+                   is_qualcomm_suit || is_xclipse_suit || is_mali_suitability || is_powervr_suit) {
             is_broken = true;
         }
         if (is_broken) {
@@ -1781,7 +1779,7 @@ void Device::RemoveUnsuitableExtensions() {
     extensions.transform_feedback =
         features.transform_feedback.transformFeedback &&
         properties.transform_feedback.maxTransformFeedbackBuffers > 0;
-    if (is_qualcomm || is_adreno_5xx || is_adreno_8xx || is_adreno_x1 || is_mali || is_powervr) {
+    if (is_qualcomm || is_mali || is_powervr) {
         LOG_INFO(Render_Vulkan, "Mobile GPU Matrix: Disabling transform feedback to prevent multi-stream XFB driver crashes");
         extensions.transform_feedback = false;
         features.transform_feedback.transformFeedback = false;

@@ -88,12 +88,7 @@ VkViewport GetViewportState(const Device& device, const Maxwell& regs, size_t in
 
     if (lower_left) {
         // Flip by surface clip height
-        const float clip_height = conv(static_cast<f32>(regs.surface_clip.height));
-        if (src.scale_y < 0.0f && y >= clip_height) {
-            y = clip_height - y;
-        } else {
-            y += clip_height;
-        }
+        y += conv(static_cast<f32>(regs.surface_clip.height));
         height = -height;
     }
 
@@ -956,8 +951,18 @@ void RasterizerVulkan::FlushAndSnapshotForSaveState(
 void RasterizerVulkan::WaitIdleForLoadState() {
     draw_counter = 0;
     scheduler.Finish();
-    fence_manager.WaitPendingFences(true);
+    std::mutex wait_mutex;
+    std::condition_variable wait_cv;
+    bool wait_done = false;
+    fence_manager.SyncOperation([&]() {
+        std::scoped_lock lk(wait_mutex);
+        wait_done = true;
+        wait_cv.notify_all();
+    });
+    fence_manager.SignalReference();
     scheduler.Finish();
+    std::unique_lock lk(wait_mutex);
+    wait_cv.wait(lk, [&]() { return wait_done; });
 }
 
 void RasterizerVulkan::InvalidateForLoadState(
@@ -1011,10 +1016,7 @@ bool RasterizerVulkan::MustFlushRegion(DAddr addr, u64 size, VideoCommon::CacheT
         }
     }
     if (True(which & VideoCommon::CacheType::TextureCache)) {
-        // Diablo II: Resurrected requires texture flushes even on Normal accuracy / without reactive flushing,
-        // but only for regions that are actually GPU-modified to prevent severe 4 FPS stalls.
-        if (Settings::IsGPULevelHigh() || Settings::values.use_reactive_flushing.GetValue() ||
-            IsDiablo2Resurrected()) {
+        if (Settings::IsGPULevelNormal() || Settings::IsGPULevelHigh() || Settings::values.use_reactive_flushing.GetValue()) {
             std::scoped_lock lock{texture_cache.mutex};
             return texture_cache.IsRegionGpuModified(addr, size);
         }
@@ -1169,10 +1171,7 @@ void RasterizerVulkan::ReleaseFences(bool force) {
 
 void RasterizerVulkan::FlushAndInvalidateRegion(DAddr addr, u64 size,
                                                 VideoCommon::CacheType which) {
-    const bool is_high_gpu = Settings::IsGPULevelHigh() || Settings::IsGPULevelExtreme();
-    const bool is_reactive = Settings::values.use_reactive_flushing.GetValue();
-    const bool is_d2r_quirk = IsDiablo2Resurrected();
-    if (is_high_gpu || is_reactive || is_d2r_quirk) {
+    if (Settings::IsGPULevelNormal() || Settings::IsGPULevelHigh() || Settings::values.use_reactive_flushing.GetValue()) {
         FlushRegion(addr, size, which);
     }
     InvalidateRegion(addr, size, which);
@@ -1665,11 +1664,7 @@ void RasterizerVulkan::UpdateDepthBias(Tegra::Engines::Maxwell3D::Regs& regs) {
         if (device.IsExtDepthBiasControlSupported()) {
             return true;
         }
-        // Base formulas from Direct3D 10 / Vulkan specification:
-        // https://docs.microsoft.com/en-us/windows/win32/direct3d11/d3d10-graphics-programming-guide-output-merger-stage-depth-bias
-        const double rescale_factor =
-            static_cast<double>(1ULL << (32 - 24)) / (static_cast<double>(0x1.ep+127));
-        units = static_cast<float>(static_cast<double>(units) * rescale_factor);
+        units /= 256.0f;
         return false;
     })();
 
@@ -2020,8 +2015,6 @@ void RasterizerVulkan::UpdateDepthClampEnable(Tegra::Engines::Maxwell3D::Regs& r
         return;
     }
     const bool is_enabled = !(regs.viewport_clip_control.geometry_clip ==
-                                  Maxwell::ViewportClipControl::GeometryClip::Passthrough ||
-                              regs.viewport_clip_control.geometry_clip ==
                                   Maxwell::ViewportClipControl::GeometryClip::FrustumXYZ ||
                               regs.viewport_clip_control.geometry_clip ==
                                   Maxwell::ViewportClipControl::GeometryClip::FrustumZ);

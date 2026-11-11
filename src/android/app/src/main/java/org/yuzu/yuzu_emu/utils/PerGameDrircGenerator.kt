@@ -41,6 +41,7 @@ object PerGameDrircGenerator {
         LITTLE_NIGHTMARES,
         DISCO_ELYSIUM,
         MARIO_RABBIDS,
+        ABSOLUM,
         MARIO_WONDER_JAMBOREE,
         UNIVERSAL_DEFAULT
     }
@@ -111,11 +112,17 @@ object PerGameDrircGenerator {
             return GameProfileType.MARIO_RABBIDS
         }
 
+        // 2b. Absolum (Clean 2D Rendering & Video Sync)
+        if (cleanId.startsWith("0100A83022A22") ||
+            cleanTitle.contains("absolum")
+        ) {
+            return GameProfileType.ABSOLUM
+        }
+
         // 3. Streets of Rage 4 & 2D Action Sprites (Pristine Pixel Art & Video Cutscenes)
         if (cleanId.startsWith("0100EC9010258") || // Streets of Rage 4
             cleanId.startsWith("010085800E33E") || // Streets of Rage 4 Main
             cleanId.startsWith("0100BA700E340") || // Streets of Rage 4 Alt
-            cleanId.startsWith("0100A83022A22") || // Absolum
             cleanId.startsWith("010063B0077F6") || // Hollow Knight
             cleanId.startsWith("01008EB00B32E") || // Cuphead
             cleanId.startsWith("010006200A526") || // Dead Cells
@@ -136,7 +143,6 @@ object PerGameDrircGenerator {
             cleanId.startsWith("010067901A51A") || // Blasphemous 2
             cleanId.startsWith("010004D00A9C0") || // Aggelos
             cleanId.startsWith("010040F01EC60") || // Aggelos 2
-            cleanTitle.contains("absolum") ||
             cleanTitle.contains("aggelos") ||
             cleanTitle.contains("streets of rage") ||
             cleanTitle.contains("hollow knight") ||
@@ -368,10 +374,13 @@ object PerGameDrircGenerator {
             return GameProfileType.EA_SPORTS
         }
 
-        // 20. Alan Wake Remastered (Font and Subtitle Color Fix)
-        if (cleanId.startsWith("0100F830138E6") || // Alan Wake Remastered
-            cleanId.startsWith("010074B01456A") || // Alan Wake USA
-            cleanId.startsWith("010065F014C5E") || // Alan Wake EUR
+        // 20. Alan Wake Remastered (Northlight Engine - All 6 Regional Title IDs)
+        if (cleanId.startsWith("0100236015B7A") || // Alan Wake Remastered
+            cleanId.startsWith("0100F830138E6") || // Alan Wake USA
+            cleanId.startsWith("010074B01456A") || // Alan Wake EUR
+            cleanId.startsWith("010065F014C5E") || // Alan Wake JPN
+            cleanId.startsWith("0100AD6014FB8") || // Alan Wake Regional 1
+            cleanId.startsWith("0100328014FB8") || // Alan Wake Regional 2
             cleanTitle.contains("alan wake")
         ) {
             return GameProfileType.ALAN_WAKE
@@ -459,88 +468,37 @@ object PerGameDrircGenerator {
     fun generateXmlContent(profileType: GameProfileType, programIdHex: String, title: String): String {
         val optionsBuilder = StringBuilder()
 
-        // 100% Real Compiled Mesa Turnip 26.2.0 (STORM DRIVER 8.0.0) Driconf Options:
+        // Clean 14.4.0-parity Mesa Turnip driconf baseline:
+        // Strictly valid Mesa Turnip dri_options ONLY; zero cache-coherency bypasses
+        // (tu_override_uncached_as_cache_coherent forbidden), zero forced garbage GMEM loads
+        // (tu_dont_care_as_load forbidden), and zero frag-depth LRZ corruption (tu_ignore_frag_depth_direction forbidden).
         when (profileType) {
-            GameProfileType.DIABLO -> {
-                optionsBuilder.append("            <!-- TIER 1 / ISOMETRIC ARPGs (Diablo II: Resurrected - tu_dont_care_as_load omitted to preserve UI text & font glyphs) -->\n")
-                optionsBuilder.append("            <option name=\"tu_allow_concurrent_binning\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"disable_cb\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"disable_conservative_lrz\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"enable_lrz_fast_clear\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_override_uncached_as_cache_coherent\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"ubwc_coherency_quirk\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_use_tex_coord_round_nearest_even_mode\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_enable_d24s8_border_color_workaround\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_enable_fast_border_color_for_undefined_formats\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_ignore_frag_depth_direction\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"dual_color_blend_by_location\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_allow_oob_indirect_ubo_loads\" value=\"true\" />\n")
-            }
-            GameProfileType.MARIO_RABBIDS -> {
-                optionsBuilder.append("            <!-- TIER 1 / SNOWDROP (100% Real Compiled Mesa Turnip 26.2.0 Options) -->\n")
-                optionsBuilder.append("            <option name=\"tu_allow_concurrent_binning\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"disable_cb\" value=\"true\" />\n")
-                                optionsBuilder.append("            <option name=\"disable_conservative_lrz\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"enable_lrz_fast_clear\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_override_uncached_as_cache_coherent\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"ubwc_coherency_quirk\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_use_tex_coord_round_nearest_even_mode\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_enable_d24s8_border_color_workaround\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_enable_fast_border_color_for_undefined_formats\" value=\"false\" />\n")
-                                optionsBuilder.append("            <option name=\"dual_color_blend_by_location\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_allow_oob_indirect_ubo_loads\" value=\"true\" />\n")
-            }
-            GameProfileType.STREETS_OF_RAGE_4,
-            GameProfileType.DISCO_ELYSIUM -> {
-                optionsBuilder.append("            <!-- TIER 6: 2D, INDIE, DOTEMU & SPRITE PRECISION -->\n")
-                optionsBuilder.append("            <option name=\"tu_allow_concurrent_binning\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"disable_cb\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_use_tex_coord_round_nearest_even_mode\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_dont_care_as_load\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"dual_color_blend_by_location\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_allow_oob_indirect_ubo_loads\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"ubwc_coherency_quirk\" value=\"true\" />\n")
-            }
-            GameProfileType.ZELDA,
-            GameProfileType.XENOBLADE,
-            GameProfileType.POKEMON -> {
-                optionsBuilder.append("            <!-- TIER 2: NINTENDO KINGSYSTEM / LUNCHPACK & MONOLITH SOFT -->\n")
-                optionsBuilder.append("            <option name=\"tu_dont_care_as_load\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_allow_concurrent_binning\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"disable_conservative_lrz\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"enable_lrz_fast_clear\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"tu_enable_d24s8_border_color_workaround\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_ignore_frag_depth_direction\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_allow_oob_indirect_ubo_loads\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"ubwc_coherency_quirk\" value=\"true\" />\n")
-            }
-            GameProfileType.MARIO_WONDER_JAMBOREE -> {
-                optionsBuilder.append("            <!-- TIER 2b: MARIO WONDER & JAMBOREE (Anti-Flicker & Stable LRZ) -->\n")
-                optionsBuilder.append("            <option name=\"tu_dont_care_as_load\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_allow_concurrent_binning\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"disable_conservative_lrz\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"enable_lrz_fast_clear\" value=\"false\" />\n")
-                optionsBuilder.append("            <option name=\"ubwc_coherency_quirk\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_allow_oob_indirect_ubo_loads\" value=\"true\" />\n")
-            }
             GameProfileType.SUPER_MARIO_ODYSSEY,
             GameProfileType.SUPER_SMASH_BROS,
             GameProfileType.SONIC -> {
-                optionsBuilder.append("            <!-- TIER 5: PURE 3D FIRST-PARTY HIGH-THROUGHPUT ENGINES -->\n")
                 optionsBuilder.append("            <option name=\"tu_allow_concurrent_binning\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_allow_oob_indirect_ubo_loads\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"ubwc_coherency_quirk\" value=\"true\" />\n")
             }
-            else -> {
-                optionsBuilder.append("            <!-- TIER 3/4/7/0: UNIVERSAL SAFE BASELINE & DEFERRED RENDERERS -->\n")
-                optionsBuilder.append("            <option name=\"tu_dont_care_as_load\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_enable_d24s8_border_color_workaround\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"tu_override_uncached_as_cache_coherent\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"disable_conservative_lrz\" value=\"true\" />\n")
+            GameProfileType.DIABLO,
+            GameProfileType.ABSOLUM,
+            GameProfileType.STREETS_OF_RAGE_4,
+            GameProfileType.DISCO_ELYSIUM -> {
                 optionsBuilder.append("            <option name=\"tu_allow_concurrent_binning\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_use_tex_coord_round_nearest_even_mode\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"dual_color_blend_by_location\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_allow_oob_indirect_ubo_loads\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"ubwc_coherency_quirk\" value=\"true\" />\n")
+            }
+            GameProfileType.ZELDA,
+            GameProfileType.XENOBLADE,
+            GameProfileType.POKEMON,
+            GameProfileType.ALAN_WAKE,
+            GameProfileType.MARIO_RABBIDS -> {
+                optionsBuilder.append("            <option name=\"tu_allow_concurrent_binning\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_enable_d24s8_border_color_workaround\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_allow_oob_indirect_ubo_loads\" value=\"true\" />\n")
+            }
+            else -> {
+                optionsBuilder.append("            <option name=\"tu_allow_oob_indirect_ubo_loads\" value=\"true\" />\n")
             }
         }
 
@@ -548,27 +506,7 @@ object PerGameDrircGenerator {
 <driconf>
     <device driver="turnip">
         <application name="all">
-$optionsBuilder
-        </application>
-    </device>
-    <device driver="panfrost">
-        <application name="all">
-            <option name="pan_early_z" value="true" />
-            <option name="pan_afbc_lossless" value="true" />
-        </application>
-    </device>
-    <device driver="panvk">
-        <application name="all">
-            <option name="pan_early_z" value="true" />
-            <option name="pan_forward_pixel_kill" value="true" />
-            <option name="pan_fp16_arithmetic" value="true" />
-            <option name="pan_thread_group_clamp" value="true" />
-            <option name="pan_tile_buffer_coherency" value="true" />
-            <option name="pan_afbc_lossless" value="true" />
-            <option name="pan_shader_cache_multithreaded" value="true" />
-            <option name="mesa_disk_cache_single_file" value="true" />
-            <option name="mesa_shader_cache_max_size" value="4294967296" />
-        </application>
+$optionsBuilder        </application>
     </device>
 </driconf>
 """.trimIndent()

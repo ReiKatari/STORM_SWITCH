@@ -136,8 +136,6 @@ void LoadOverrides(std::uint64_t program_id, const VideoCore::RendererBase& rend
         Settings::values.enable_frame_skipping.SetValue(false);
         Settings::values.drs_resolution_lock.SetGlobal(false);
         Settings::values.drs_resolution_lock.SetValue(false);
-        Settings::values.sync_memory_operations.SetGlobal(false);
-        Settings::values.sync_memory_operations.SetValue(false);
         Settings::values.vram_budget_governor.SetGlobal(false);
         Settings::values.vram_budget_governor.SetValue(false);
         Settings::values.dynamic_performance_scaler.SetGlobal(false);
@@ -171,8 +169,6 @@ void LoadOverrides(std::uint64_t program_id, const VideoCore::RendererBase& rend
         Settings::values.enable_frame_skipping.SetValue(false);
         Settings::values.drs_resolution_lock.SetGlobal(false);
         Settings::values.drs_resolution_lock.SetValue(false);
-        Settings::values.sync_memory_operations.SetGlobal(false);
-        Settings::values.sync_memory_operations.SetValue(false);
         Settings::values.use_fast_gpu_time.SetGlobal(false);
         Settings::values.use_fast_gpu_time.SetValue(false);
         Settings::values.dynamic_performance_scaler.SetGlobal(false);

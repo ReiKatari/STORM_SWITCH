@@ -308,7 +308,7 @@ object StormHardwareCalibrator {
             combined.contains("8855") || combined.contains("8845") -> "Samsung Exynos 1480 / 1580 (AMD Xclipse 530/540)"
             isExynosOrXclipse -> "Samsung Exynos (AMD Xclipse RDNA GPU)"
             isExynosMali -> "Samsung Exynos (ARM Mali GPU)"
-            isTensor -> "Google Tensor G1–G4 (ARM Mali GPU)"
+            isTensor -> "Google Tensor G1-G4 (ARM Mali GPU)"
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && Build.SOC_MODEL.isNotBlank() -> Build.SOC_MODEL
             else -> Build.HARDWARE
         }
@@ -531,7 +531,7 @@ object StormHardwareCalibrator {
 
         // 1. Renderer / Video Defaults
         IntSetting.RENDERER_BACKEND.setInt(1) // Vulkan
-        IntSetting.RENDERER_ACCURACY.setInt(0) // Normal
+        IntSetting.RENDERER_ACCURACY.setInt(1) // Normal
 
         // Resolution: 1.0X (3) for Flagships & High-Midrange with >=8GB RAM, 0.75X (2) for Midrange/Adreno 6xx, 0.5X (1) for <5GB Budget
         val defaultRes = when {
@@ -632,7 +632,7 @@ object StormHardwareCalibrator {
         IntSetting.RENDERER_BACKEND.setInt(1)
         val res = if (profile.isAdreno830) 3 else if (profile.tier >= HardwareTier.MIDRANGE && !profile.isAdreno6xx && profile.totalRamGb >= 6.0) 2 else 1
         IntSetting.RENDERER_RESOLUTION.setInt(res)
-        IntSetting.RENDERER_ACCURACY.setInt(0)
+        IntSetting.RENDERER_ACCURACY.setInt(if (profile.totalRamGb < 4.5) 0 else 1)
         IntSetting.DMA_ACCURACY.setInt(1)
         IntSetting.RENDERER_VSYNC.setInt(if (profile.isAdreno && profile.tier >= HardwareTier.FLAGSHIP) 1 else 2)
         IntSetting.RENDERER_VRAM_USAGE_MODE.setInt(0) // Conservative
@@ -689,7 +689,7 @@ object StormHardwareCalibrator {
         IntSetting.RENDERER_BACKEND.setInt(1)
         val res = if (profile.totalRamGb < 5.0) 1 else if (profile.isDimensity9400 || profile.isDimensity9300Or9200 || profile.isAdreno6xx || (profile.tier <= HardwareTier.MIDRANGE)) 2 else 3
         IntSetting.RENDERER_RESOLUTION.setInt(res)
-        IntSetting.RENDERER_ACCURACY.setInt(0)
+        IntSetting.RENDERER_ACCURACY.setInt(1) // Normal
         IntSetting.DMA_ACCURACY.setInt(1)
         IntSetting.RENDERER_VSYNC.setInt(if (profile.isAdreno && profile.tier >= HardwareTier.FLAGSHIP) 1 else 2)
         IntSetting.RENDERER_VRAM_USAGE_MODE.setInt(if (profile.totalRamGb < 8.0 || !profile.isAdreno || profile.isAdreno6xx) 0 else 1)
@@ -743,7 +743,7 @@ object StormHardwareCalibrator {
         IntSetting.RENDERER_BACKEND.setInt(1)
         val res = if (profile.totalRamGb < 6.5) 2 else 3
         IntSetting.RENDERER_RESOLUTION.setInt(res)
-        IntSetting.RENDERER_ACCURACY.setInt(0)
+        IntSetting.RENDERER_ACCURACY.setInt(1) // Normal
         IntSetting.DMA_ACCURACY.setInt(1)
         IntSetting.RENDERER_VRAM_USAGE_MODE.setInt(0)
         IntSetting.GPU_FENCE_BEHAVIOR.setInt(1)
@@ -797,7 +797,7 @@ object StormHardwareCalibrator {
         // 1.5X for Flagship Adreno 7xx+ with >=12GB RAM, 0.75X for Adreno 6xx/Low-RAM, 1X for others
         val res = if (profile.isAdreno6xx || profile.totalRamGb < 6.5) 2 else if (profile.tier >= HardwareTier.FLAGSHIP && profile.isAdreno && profile.totalRamGb >= 11.0) 5 else 3
         IntSetting.RENDERER_RESOLUTION.setInt(res)
-        IntSetting.RENDERER_ACCURACY.setInt(if (profile.isDimensity9400) 0 else 1)
+        IntSetting.RENDERER_ACCURACY.setInt(if (profile.isDimensity9400) 1 else 2)
         IntSetting.DMA_ACCURACY.setInt(3) // Safe
         IntSetting.RENDERER_VRAM_USAGE_MODE.setInt(if (profile.isAdreno6xx || profile.totalRamGb < 8.0) 0 else if (profile.tier >= HardwareTier.FLAGSHIP && !profile.isDimensity9400 && profile.isAdreno) 2 else 1)
         IntSetting.GPU_FENCE_BEHAVIOR.setInt(0) // Strict

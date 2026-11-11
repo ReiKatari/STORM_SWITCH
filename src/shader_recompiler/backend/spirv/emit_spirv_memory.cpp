@@ -83,7 +83,7 @@ bool VectorViewIsExact(EmitContext& ctx, const IR::Value& offset, u32 size) {
     if (offset.IsImmediate()) {
         return offset.U32() % size == 0;
     }
-    return ctx.profile.min_ssbo_alignment >= size;
+    return false;
 }
 
 } // Anonymous namespace

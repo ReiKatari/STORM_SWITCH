@@ -236,8 +236,7 @@ void FixedPipelineState::Refresh(Tegra::Engines::Maxwell3D& maxwell3d, DynamicFe
     if (!extended_dynamic_state) {
         dynamic_state.Refresh(regs);
         std::ranges::transform(regs.vertex_streams, vertex_strides.begin(), [](const auto& array) {
-            const u16 stride = static_cast<u16>(array.stride.Value());
-            return stride == 69 ? static_cast<u16>(72) : stride;
+            return static_cast<u16>(array.stride.Value());
         });
     }
     if (!extended_dynamic_state_2_logic_op) {
@@ -368,17 +367,12 @@ void FixedPipelineState::DynamicState::Refresh3(const Maxwell& regs,
     if (!features.has_dynamic_state3_logic_op_enable) {
         logic_op_enable.Assign(regs.logic_op.enable != 0 ? 1 : 0);
     }
-    // Baked into the pipeline even when the clamp is dynamic state (EDS3): without
-    // VK_EXT_depth_clip_enable, depth clipping follows depth clamp, and some drivers take it from
-    // the pipeline's value rather than the dynamic one. A pipeline always created with clamp on
-    // lost near/far clipping on every draw (Tears of the Kingdom's sky with EDS3 on Windows,
-    // NVIDIA and AMD). Baking the same per-draw value keeps both in agreement.
-    depth_clamp_disabled.Assign(regs.viewport_clip_control.geometry_clip ==
-                                    Maxwell::ViewportClipControl::GeometryClip::Passthrough ||
-                                regs.viewport_clip_control.geometry_clip ==
-                                    Maxwell::ViewportClipControl::GeometryClip::FrustumXYZ ||
-                                regs.viewport_clip_control.geometry_clip ==
-                                    Maxwell::ViewportClipControl::GeometryClip::FrustumZ);
+    if (!features.has_dynamic_state3_depth_clamp_enable) {
+        depth_clamp_disabled.Assign(regs.viewport_clip_control.geometry_clip ==
+                                        Maxwell::ViewportClipControl::GeometryClip::FrustumXYZ ||
+                                    regs.viewport_clip_control.geometry_clip ==
+                                        Maxwell::ViewportClipControl::GeometryClip::FrustumZ);
+    }
     if (!features.has_dynamic_state3_line_stipple_enable) {
         line_stipple_enable.Assign(regs.line_stipple_enable);
     }

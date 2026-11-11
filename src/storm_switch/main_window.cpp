@@ -3762,13 +3762,13 @@ void MainWindow::InitializeWidgets() {
 
             const std::vector<std::pair<Settings::Fsr2QualityMode, QString>> quality_options = {
 
-                {Settings::Fsr2QualityMode::Quality, StormLang(QStringLiteral("Качество (Quality — 1.5x)"), QStringLiteral("Quality (1.5x)"))},
+                {Settings::Fsr2QualityMode::Quality, StormLang(QStringLiteral("Качество (Quality - 1.5x)"), QStringLiteral("Quality (1.5x)"))},
 
-                {Settings::Fsr2QualityMode::Balanced, StormLang(QStringLiteral("Баланс (Balanced — 1.7x)"), QStringLiteral("Balanced (1.7x)"))},
+                {Settings::Fsr2QualityMode::Balanced, StormLang(QStringLiteral("Баланс (Balanced - 1.7x)"), QStringLiteral("Balanced (1.7x)"))},
 
-                {Settings::Fsr2QualityMode::Performance, StormLang(QStringLiteral("Производительность (Performance — 2.0x)"), QStringLiteral("Performance (2.0x)"))},
+                {Settings::Fsr2QualityMode::Performance, StormLang(QStringLiteral("Производительность (Performance - 2.0x)"), QStringLiteral("Performance (2.0x)"))},
 
-                {Settings::Fsr2QualityMode::UltraPerformance, StormLang(QStringLiteral("Ультра-производительность (Ultra Performance — 3.0x)"), QStringLiteral("Ultra Performance (3.0x)"))},
+                {Settings::Fsr2QualityMode::UltraPerformance, StormLang(QStringLiteral("Ультра-производительность (Ultra Performance - 3.0x)"), QStringLiteral("Ultra Performance (3.0x)"))},
 
             };
 
@@ -3898,7 +3898,7 @@ void MainWindow::InitializeWidgets() {
 
                     QStringLiteral("ملف المظلل النشط: %1")).arg(sname);
 
-                statusBar()->showMessage(sh_title + QStringLiteral(" — ") + sh_msg, 4000);
+                statusBar()->showMessage(sh_title + QStringLiteral(" - ") + sh_msg, 4000);
 
                 if (in_game_notification) {
 
@@ -9843,7 +9843,7 @@ void MainWindow::OnResetGameFixSuppression() {
 
               QStringLiteral("لا توجد نوافذ إصلاح تلقائي مخفية. جميع الملفات نشطة."));
 
-    statusBar()->showMessage(rst_title + QStringLiteral(" — ") + rst_msg, 5000);
+    statusBar()->showMessage(rst_title + QStringLiteral(" - ") + rst_msg, 5000);
 
     if (in_game_notification) {
 
@@ -10136,8 +10136,6 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
                 Settings::values.drs_resolution_lock.SetValue(false);
                 Settings::values.enable_frame_skipping.SetGlobal(false);
                 Settings::values.enable_frame_skipping.SetValue(false);
-                Settings::values.sync_memory_operations.SetGlobal(false);
-                Settings::values.sync_memory_operations.SetValue(false);
                 Settings::values.vram_budget_governor.SetGlobal(false);
                 Settings::values.vram_budget_governor.SetValue(false);
                 Settings::values.dynamic_performance_scaler.SetGlobal(false);
@@ -10156,28 +10154,27 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
             const u64 desktop_base_tid = title_id & ~0x1FFFULL;
             if (title_id == 0x0100726014352000ULL || title_id == 0x01002A801458A000ULL || title_id == 0x0100916014D8C000ULL ||
                 desktop_base_tid == 0x0100726014352000ULL || desktop_base_tid == 0x01002A801458A000ULL || desktop_base_tid == 0x0100916014D8C000ULL) {
-                Settings::values.memory_layout_mode.SetGlobal(false);
-                Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_8Gb);
-                Settings::values.gpu_accuracy.SetGlobal(false);
-                Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::High);
-                Settings::values.use_reactive_flushing.SetGlobal(false);
-                Settings::values.use_reactive_flushing.SetValue(true);
-                Settings::values.use_fast_gpu_time.SetGlobal(false);
-                Settings::values.use_fast_gpu_time.SetValue(false);
-                Settings::values.vram_budget_governor.SetGlobal(false);
-                Settings::values.vram_budget_governor.SetValue(false);
-                Settings::values.vram_garbage_collection.SetGlobal(false);
-                Settings::values.vram_garbage_collection.SetValue(false);
-                Settings::values.early_release_fences.SetGlobal(false);
-                Settings::values.early_release_fences.SetValue(false);
-                Settings::values.enable_frame_skipping.SetGlobal(false);
-                Settings::values.enable_frame_skipping.SetValue(false);
-                Settings::values.dyna_state.SetGlobal(false);
-                Settings::values.dyna_state.SetValue(Settings::ExtendedDynamicState::Disabled);
-                Settings::values.barrier_feedback_loops.SetGlobal(false);
-                Settings::values.barrier_feedback_loops.SetValue(true);
-                Settings::values.airplane_mode.SetGlobal(false);
-                Settings::values.airplane_mode.SetValue(true);
+                if (Settings::values.memory_layout_mode.GetValue() == Settings::MemoryLayout::Memory_4Gb) {
+                    Settings::values.memory_layout_mode.SetGlobal(false);
+                    Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_8Gb);
+                }
+                auto apply_desktop_safe = [](auto& setting, auto val) {
+                    if (setting.UsingGlobal()) {
+                        setting.SetGlobal(false);
+                        setting.SetValue(val);
+                    }
+                };
+                apply_desktop_safe(Settings::values.gpu_accuracy, Settings::GpuAccuracy::High);
+                apply_desktop_safe(Settings::values.use_reactive_flushing, true);
+                apply_desktop_safe(Settings::values.use_fast_gpu_time, false);
+                apply_desktop_safe(Settings::values.vram_budget_governor, false);
+                apply_desktop_safe(Settings::values.vram_garbage_collection, false);
+                apply_desktop_safe(Settings::values.early_release_fences, false);
+                apply_desktop_safe(Settings::values.enable_frame_skipping, false);
+                apply_desktop_safe(Settings::values.barrier_feedback_loops, true);
+                apply_desktop_safe(Settings::values.airplane_mode, true);
+                apply_desktop_safe(Settings::values.sync_memory_operations, true);
+                apply_desktop_safe(Settings::values.enable_gpu_buffer_readback, true);
                 LOG_INFO(Frontend, "Guaranteed Diablo II: Resurrected safety overrides on Desktop");
             }
 
@@ -10242,7 +10239,7 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
 
                 QStringLiteral("تم تطبيق تحسينات اللعبة (الإعدادات العامة محمية)"));
 
-            statusBar()->showMessage(boot_af_title + QStringLiteral(" — ") + boot_af_sub, 8000);
+            statusBar()->showMessage(boot_af_title + QStringLiteral(" - ") + boot_af_sub, 8000);
 
             if (in_game_notification) {
 
@@ -14323,7 +14320,7 @@ void MainWindow::OnToggleDockedMode() {
 
         ? StormLang11(
 
-              QStringLiteral("Активирован стационарный режим (Docked — полная частота GPU)"),
+              QStringLiteral("Активирован стационарный режим (Docked - полная частота GPU)"),
 
               QStringLiteral("Docked Mode enabled (Full GPU clock & resolution)"),
 
@@ -14337,17 +14334,17 @@ void MainWindow::OnToggleDockedMode() {
 
               QStringLiteral("Modo Docked ativado (Frequência máxima da GPU)"),
 
-              QStringLiteral("已切换至底座模式 (Docked — 完整 GPU 频率与分辨率)"),
+              QStringLiteral("已切换至底座模式 (Docked - 完整 GPU 频率与分辨率)"),
 
               QStringLiteral("TVモード (Docked) を有効化しました"),
 
               QStringLiteral("독 모드 (Docked) 활성화됨"),
 
-              QStringLiteral("تم تفعيل وضع القاعدة (Docked — السرعة الكاملة)"))
+              QStringLiteral("تم تفعيل وضع القاعدة (Docked - السرعة الكاملة)"))
 
         : StormLang11(
 
-              QStringLiteral("Активирован портативный режим (Handheld — энергосбережение)"),
+              QStringLiteral("Активирован портативный режим (Handheld - энергосбережение)"),
 
               QStringLiteral("Handheld Mode enabled (Portable profile)"),
 
@@ -14361,7 +14358,7 @@ void MainWindow::OnToggleDockedMode() {
 
               QStringLiteral("Modo portátil (Handheld) ativado"),
 
-              QStringLiteral("已切换至掌机模式 (Handheld — 便携配置)"),
+              QStringLiteral("已切换至掌机模式 (Handheld - 便携配置)"),
 
               QStringLiteral("携帯モード (Handheld) を有効化しました"),
 
@@ -14369,7 +14366,7 @@ void MainWindow::OnToggleDockedMode() {
 
               QStringLiteral("تم تفعيل الوضع المحمول (Handheld)"));
 
-    statusBar()->showMessage(dock_title + QStringLiteral(" — ") + dock_sub, 3500);
+    statusBar()->showMessage(dock_title + QStringLiteral(" - ") + dock_sub, 3500);
 
     if (in_game_notification) {
 
@@ -14457,7 +14454,7 @@ void MainWindow::OnToggleGpuAccuracy() {
 
         ? StormLang11(
 
-              QStringLiteral("Высокая точность (High — точный рендеринг эффектов и буферов)"),
+              QStringLiteral("Высокая точность (High - точный рендеринг эффектов и буферов)"),
 
               QStringLiteral("High Accuracy (Accurate rendering of effects & buffers)"),
 
@@ -14481,7 +14478,7 @@ void MainWindow::OnToggleGpuAccuracy() {
 
         : StormLang11(
 
-              QStringLiteral("Обычная точность (Low/Normal — максимальный FPS)"),
+              QStringLiteral("Обычная точность (Low/Normal - максимальный FPS)"),
 
               QStringLiteral("Normal Accuracy (Maximum FPS performance)"),
 
@@ -14503,7 +14500,7 @@ void MainWindow::OnToggleGpuAccuracy() {
 
               QStringLiteral("دقة قياسية (أقصى أداء للإطارات)"));
 
-    statusBar()->showMessage(gpu_title + QStringLiteral(" — ") + gpu_sub, 3500);
+    statusBar()->showMessage(gpu_title + QStringLiteral(" - ") + gpu_sub, 3500);
 
     if (in_game_notification) {
 
@@ -14593,7 +14590,7 @@ void MainWindow::OnHealGraphicsArtifacts() {
 
         QStringLiteral("تم تفعيل الدقة العالية وحواجز المزامنة الدقيقة"));
 
-    statusBar()->showMessage(heal_title + QStringLiteral(" — ") + heal_msg, 5000);
+    statusBar()->showMessage(heal_title + QStringLiteral(" - ") + heal_msg, 5000);
 
     if (in_game_notification) {
 
@@ -14669,27 +14666,27 @@ void MainWindow::OnMute() {
 
         : StormLang11(
 
-              QStringLiteral("Звук включён — Громкость: %1%"),
+              QStringLiteral("Звук включён - Громкость: %1%"),
 
-              QStringLiteral("Audio unmuted — Volume: %1%"),
+              QStringLiteral("Audio unmuted - Volume: %1%"),
 
-              QStringLiteral("Ton eingeschaltet — Lautstärke: %1%"),
+              QStringLiteral("Ton eingeschaltet - Lautstärke: %1%"),
 
-              QStringLiteral("Son activé — Volume : %1 %"),
+              QStringLiteral("Son activé - Volume : %1 %"),
 
-              QStringLiteral("Audio activado — Volumen: %1%"),
+              QStringLiteral("Audio activado - Volumen: %1%"),
 
-              QStringLiteral("Audio attivato — Volume: %1%"),
+              QStringLiteral("Audio attivato - Volume: %1%"),
 
-              QStringLiteral("Áudio ativado — Volume: %1%"),
+              QStringLiteral("Áudio ativado - Volume: %1%"),
 
-              QStringLiteral("已取消静音 — 当前音量：%1%"),
+              QStringLiteral("已取消静音 - 当前音量：%1%"),
 
-              QStringLiteral("ミュート解除 — 音量: %1%"),
+              QStringLiteral("ミュート解除 - 音量: %1%"),
 
-              QStringLiteral("음소거 해제 — 볼륨: %1%"),
+              QStringLiteral("음소거 해제 - 볼륨: %1%"),
 
-              QStringLiteral("تم إلغاء كتم الصوت — مستوى الصوت: %1%")).arg(Settings::values.volume.GetValue());
+              QStringLiteral("تم إلغاء كتم الصوت - مستوى الصوت: %1%")).arg(Settings::values.volume.GetValue());
 
     if (in_game_notification) {
 
@@ -16063,7 +16060,7 @@ void MainWindow::OnCheckUpdates(bool manual_check) {
 
                 }
 
-                QMessageBox::information(this, tr("STORM SWITCH — Обновления"),
+                QMessageBox::information(this, tr("STORM SWITCH - Обновления"),
 
                                          tr("У вас установлена последняя актуальная версия STORM SWITCH (%1).\nОбновлений не найдено.").arg(clean_cur));
 
@@ -17146,27 +17143,27 @@ void MainWindow::OnSaveStateSlot(int slot) {
 
     const QString notif_title = StormLang11(
 
-        QStringLiteral("БЫСТРОЕ СОХРАНЕНИЕ — СЛОТ %1"),
+        QStringLiteral("БЫСТРОЕ СОХРАНЕНИЕ - СЛОТ %1"),
 
-        QStringLiteral("QUICK SAVE COMPLETE — SLOT %1"),
+        QStringLiteral("QUICK SAVE COMPLETE - SLOT %1"),
 
-        QStringLiteral("SCHNELLSPEICHERN — SLOT %1"),
+        QStringLiteral("SCHNELLSPEICHERN - SLOT %1"),
 
-        QStringLiteral("SAUVEGARDE RAPIDE — EMPLACEMENT %1"),
+        QStringLiteral("SAUVEGARDE RAPIDE - EMPLACEMENT %1"),
 
-        QStringLiteral("GUARDADO RÁPIDO — RANURA %1"),
+        QStringLiteral("GUARDADO RÁPIDO - RANURA %1"),
 
-        QStringLiteral("SALVATAGGIO RAPIDO — SLOT %1"),
+        QStringLiteral("SALVATAGGIO RAPIDO - SLOT %1"),
 
-        QStringLiteral("GRAVAÇÃO RÁPIDA — ESPAÇO %1"),
+        QStringLiteral("GRAVAÇÃO RÁPIDA - ESPAÇO %1"),
 
-        QStringLiteral("快速保存成功 — 槽位 %1"),
+        QStringLiteral("快速保存成功 - 槽位 %1"),
 
-        QStringLiteral("クイックセーブ完了 — スロット %1"),
+        QStringLiteral("クイックセーブ完了 - スロット %1"),
 
-        QStringLiteral("빠른 저장 완료 — 슬롯 %1"),
+        QStringLiteral("빠른 저장 완료 - 슬롯 %1"),
 
-        QStringLiteral("اكتمل الحفظ السريع — الفتحة %1")).arg(slot);
+        QStringLiteral("اكتمل الحفظ السريع - الفتحة %1")).arg(slot);
 
     const QString notif_sub = StormLang11(
 
@@ -17192,7 +17189,7 @@ void MainWindow::OnSaveStateSlot(int slot) {
 
         QStringLiteral("تم حفظ لقطة الذاكرة الفورية SESS v2 بنجاح"));
 
-    statusBar()->showMessage(notif_title + QStringLiteral(" — ") + notif_sub, 4000);
+    statusBar()->showMessage(notif_title + QStringLiteral(" - ") + notif_sub, 4000);
 
     if (in_game_notification) {
 
@@ -17382,7 +17379,7 @@ void MainWindow::OnLoadStateSlot(int slot) {
 
             QStringLiteral("يرجى إنشاء حفظ سريع أولاً بالضغط على F5"));
 
-        statusBar()->showMessage(empty_title + QStringLiteral(" — ") + empty_msg, 4000);
+        statusBar()->showMessage(empty_title + QStringLiteral(" - ") + empty_msg, 4000);
 
         if (in_game_notification) {
 
@@ -17466,27 +17463,27 @@ void MainWindow::OnLoadStateSlot(int slot) {
 
     const QString notif_title = StormLang11(
 
-        QStringLiteral("БЫСТРАЯ ЗАГРУЗКА — СЛОТ %1"),
+        QStringLiteral("БЫСТРАЯ ЗАГРУЗКА - СЛОТ %1"),
 
-        QStringLiteral("QUICK LOAD COMPLETE — SLOT %1"),
+        QStringLiteral("QUICK LOAD COMPLETE - SLOT %1"),
 
-        QStringLiteral("SCHNELLLADEN — SLOT %1"),
+        QStringLiteral("SCHNELLLADEN - SLOT %1"),
 
-        QStringLiteral("CHARGEMENT RAPIDE — EMPLACEMENT %1"),
+        QStringLiteral("CHARGEMENT RAPIDE - EMPLACEMENT %1"),
 
-        QStringLiteral("CARGA RÁPIDA — RANURA %1"),
+        QStringLiteral("CARGA RÁPIDA - RANURA %1"),
 
-        QStringLiteral("CARICAMENTO RAPIDO — SLOT %1"),
+        QStringLiteral("CARICAMENTO RAPIDO - SLOT %1"),
 
-        QStringLiteral("CARREGAMENTO RÁPIDO — ESPAÇO %1"),
+        QStringLiteral("CARREGAMENTO RÁPIDO - ESPAÇO %1"),
 
-        QStringLiteral("快速读取成功 — 槽位 %1"),
+        QStringLiteral("快速读取成功 - 槽位 %1"),
 
-        QStringLiteral("クイックロード完了 — スロット %1"),
+        QStringLiteral("クイックロード完了 - スロット %1"),
 
-        QStringLiteral("빠른 불러오기 완료 — 슬롯 %1"),
+        QStringLiteral("빠른 불러오기 완료 - 슬롯 %1"),
 
-        QStringLiteral("اكتمل التحميل السريع — الفتحة %1")).arg(slot);
+        QStringLiteral("اكتمل التحميل السريع - الفتحة %1")).arg(slot);
 
     const QString notif_sub = StormLang11(
 
@@ -17512,7 +17509,7 @@ void MainWindow::OnLoadStateSlot(int slot) {
 
         QStringLiteral("تمت استعادة حالة اللعبة SESS v2 فوراً"));
 
-    statusBar()->showMessage(notif_title + QStringLiteral(" — ") + notif_sub, 4000);
+    statusBar()->showMessage(notif_title + QStringLiteral(" - ") + notif_sub, 4000);
 
     if (render_window) {
 
@@ -20910,7 +20907,7 @@ void MainWindow::UpdateWindowTitle(std::string_view filename, std::string_view d
                 QStringLiteral("Prêt"), QStringLiteral("就绪"), QStringLiteral("준비 완료"),
                 QStringLiteral("準備完了"), QStringLiteral("Listo"), QStringLiteral("Pronto"),
                 QStringLiteral("Pronto"), QStringLiteral("तैयार"));
-            m_tray_header_action->setText(QStringLiteral("STORM SWITCH %1 — %2").arg(build_ver, ready_str));
+            m_tray_header_action->setText(QStringLiteral("STORM SWITCH %1 - %2").arg(build_ver, ready_str));
         }
 
     } else {
@@ -20957,7 +20954,7 @@ void MainWindow::UpdateWindowTitle(std::string_view filename, std::string_view d
                 QStringLiteral("En jeu"), QStringLiteral("游戏中"), QStringLiteral("게임 중"),
                 QStringLiteral("ゲーム中"), QStringLiteral("En juego"), QStringLiteral("In gioco"),
                 QStringLiteral("No jogo"), QStringLiteral("खेल में"));
-            m_tray_header_action->setText(QStringLiteral("STORM SWITCH %1 — %2: %3").arg(
+            m_tray_header_action->setText(QStringLiteral("STORM SWITCH %1 - %2: %3").arg(
                 build_ver, in_game_str, QString::fromUtf8(filename.data(), static_cast<int>(filename.size()))));
         }
 
@@ -21561,7 +21558,7 @@ void MainWindow::UpdateGPUAccuracyButton() {
 
     gpu_accuracy_button->setChecked(gpu_accuracy != Settings::GpuAccuracy::Low);
     gpu_accuracy_button->setToolTip(StormLang(
-        QStringLiteral("Точность вычислений GPU (в Ryujinx: GPU Buffer Reads).\n«Быстрый/Нормальный» — расслабленная синхронизация буферов для максимального FPS.\n«Высокая» — попиксельная точность FP32 и строгие барьеры обратной связи буферов, исправляет темные текстуры и графические артефакты."),
+        QStringLiteral("Точность вычислений GPU (в Ryujinx: GPU Buffer Reads).\n«Быстрый/Нормальный» - расслабленная синхронизация буферов для максимального FPS.\n«Высокая» - попиксельная точность FP32 и строгие барьеры обратной связи буферов, исправляет темные текстуры и графические артефакты."),
         QStringLiteral("GPU Calculation Accuracy (Ryujinx equivalent: GPU Buffer Reads).\n'Normal/Fast' uses relaxed buffer sync for higher FPS.\n'High' enforces strict FP32 precision and memory feedback barriers, fixing missing lighting and black textures."),
         QStringLiteral("GPU-Berechnungsgenauigkeit (in Ryujinx: GPU Buffer Reads).\n'Schnell' für maximale FPS.\n'Hoch' erzwingt strikte FP32-Präzision und Barrieren."),
         QStringLiteral("Précision de calcul du GPU (équivalent Ryujinx : GPU Buffer Reads).\n'Rapide' pour FPS maximal.\n'Élevée' applique la précision stricte FP32."),
@@ -25056,13 +25053,13 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
             const std::vector<std::pair<Settings::Fsr2QualityMode, QString>> quality_options = {
 
-                {Settings::Fsr2QualityMode::Quality, StormLang(QStringLiteral("Качество (Quality — 1.5x)"), QStringLiteral("Quality (1.5x)"))},
+                {Settings::Fsr2QualityMode::Quality, StormLang(QStringLiteral("Качество (Quality - 1.5x)"), QStringLiteral("Quality (1.5x)"))},
 
-                {Settings::Fsr2QualityMode::Balanced, StormLang(QStringLiteral("Баланс (Balanced — 1.7x)"), QStringLiteral("Balanced (1.7x)"))},
+                {Settings::Fsr2QualityMode::Balanced, StormLang(QStringLiteral("Баланс (Balanced - 1.7x)"), QStringLiteral("Balanced (1.7x)"))},
 
-                {Settings::Fsr2QualityMode::Performance, StormLang(QStringLiteral("Производительность (Performance — 2.0x)"), QStringLiteral("Performance (2.0x)"))},
+                {Settings::Fsr2QualityMode::Performance, StormLang(QStringLiteral("Производительность (Performance - 2.0x)"), QStringLiteral("Performance (2.0x)"))},
 
-                {Settings::Fsr2QualityMode::UltraPerformance, StormLang(QStringLiteral("Ультра-производительность (Ultra Performance — 3.0x)"), QStringLiteral("Ultra Performance (3.0x)"))},
+                {Settings::Fsr2QualityMode::UltraPerformance, StormLang(QStringLiteral("Ультра-производительность (Ultra Performance - 3.0x)"), QStringLiteral("Ultra Performance (3.0x)"))},
 
             };
 
@@ -25862,7 +25859,7 @@ void MainWindow::InitializeSystemTray() {
         QStringLiteral("Prêt"), QStringLiteral("就绪"), QStringLiteral("준비 완료"),
         QStringLiteral("準備完了"), QStringLiteral("Listo"), QStringLiteral("Pronto"),
         QStringLiteral("Pronto"), QStringLiteral("तैयार"));
-    m_tray_header_action = m_tray_menu->addAction(QStringLiteral("STORM SWITCH %1 — %2").arg(build_ver, init_ready));
+    m_tray_header_action = m_tray_menu->addAction(QStringLiteral("STORM SWITCH %1 - %2").arg(build_ver, init_ready));
 
     m_tray_header_action->setEnabled(false);
 
@@ -26065,7 +26062,7 @@ void MainWindow::UpdateSystemTrayStrings() {
             QStringLiteral("Prêt"), QStringLiteral("就绪"), QStringLiteral("준비 완료"),
             QStringLiteral("準備完了"), QStringLiteral("Listo"), QStringLiteral("Pronto"),
             QStringLiteral("Pronto"), QStringLiteral("तैयार"));
-        m_tray_header_action->setText(QStringLiteral("STORM SWITCH %1 — %2").arg(build_ver, ready_str));
+        m_tray_header_action->setText(QStringLiteral("STORM SWITCH %1 - %2").arg(build_ver, ready_str));
     }
 
     if (m_tray_restore_action) {
@@ -27237,17 +27234,17 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
 
     dlg.setWindowTitle(StormLang(
 
-        QStringLiteral("STORM SWITCH — Менеджер дополнений"),
+        QStringLiteral("STORM SWITCH - Менеджер дополнений"),
 
-        QStringLiteral("STORM SWITCH — Add-ons Manager"),
+        QStringLiteral("STORM SWITCH - Add-ons Manager"),
 
-        QStringLiteral("STORM SWITCH — Add-ons-Manager"),
+        QStringLiteral("STORM SWITCH - Add-ons-Manager"),
 
-        QStringLiteral("STORM SWITCH — Gestionnaire d'extensions"),
+        QStringLiteral("STORM SWITCH - Gestionnaire d'extensions"),
 
-        QStringLiteral("STORM SWITCH — 附加组件管理器"),
+        QStringLiteral("STORM SWITCH - 附加组件管理器"),
 
-        QStringLiteral("STORM SWITCH — アドオンマネージャー")
+        QStringLiteral("STORM SWITCH - アドオンマネージャー")
 
     ));
 
@@ -27353,7 +27350,7 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
 
             } else {
 
-                const QStringList parts = base_clean_name.split(QRegularExpression(QStringLiteral("[:—–\\-]")), Qt::SkipEmptyParts);
+                const QStringList parts = base_clean_name.split(QRegularExpression(QStringLiteral("[:--\\-]")), Qt::SkipEmptyParts);
 
                 for (const auto& part : parts) {
 
@@ -27393,9 +27390,9 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
 
                                        raw_name.startsWith(QLatin1Char('-')) ||
 
-                                       raw_name.startsWith(QStringLiteral("—")) ||
+                                       raw_name.startsWith(QStringLiteral("-")) ||
 
-                                       raw_name.startsWith(QStringLiteral("–")) ||
+                                       raw_name.startsWith(QStringLiteral("-")) ||
 
                                        raw_name.startsWith(QLatin1Char('|')) ||
 
@@ -28202,9 +28199,9 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
 
                 desc_str,
 
-                QStringLiteral("—"),
+                QStringLiteral("-"),
 
-                QStringLiteral("—"),
+                QStringLiteral("-"),
 
                 tr("Отсутствует"),
 
@@ -28383,7 +28380,7 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
 
     copy_lines << QStringLiteral("============================================================");
 
-    copy_lines << tr("STORM SWITCH — Список дополнений и обновлений");
+    copy_lines << tr("STORM SWITCH - Список дополнений и обновлений");
 
     copy_lines << tr("Игра: %1 (ID: %2)").arg(full_display_name, tid_str);
 
@@ -28537,7 +28534,7 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
 
 
 
-        copy_lines << tr("%1. [%2] %3 — %4 | %5 | Версия: %6 (Внутр: %7) | %8")
+        copy_lines << tr("%1. [%2] %3 - %4 | %5 | Версия: %6 (Внутр: %7) | %8")
 
             .arg(QString::number(row_idx + 1), r.type, r.tid, r.name, r.desc, r.ver, r.internal_ver, r.status);
 

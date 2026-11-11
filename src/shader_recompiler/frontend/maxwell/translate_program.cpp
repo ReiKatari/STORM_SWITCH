@@ -328,27 +328,8 @@ void LowerGeometryPassthrough(const IR::Program& program, const HostTranslateInf
     }
 }
 
-void TightenOutputVertices(IR::Program& program) {
-    if (program.stage != Stage::Geometry || program.is_geometry_passthrough) {
-        return;
-    }
-    const bool has_loops = std::ranges::any_of(program.syntax_list, [](const auto& node) {
-        return node.type == IR::AbstractSyntaxNode::Type::Loop;
-    });
-    if (has_loops) {
-        return;
-    }
-    u32 num_emits = 0;
-    for (IR::Block* const block : program.blocks) {
-        for (const IR::Inst& inst : block->Instructions()) {
-            if (inst.GetOpcode() == IR::Opcode::EmitVertex) {
-                ++num_emits;
-            }
-        }
-    }
-    if (num_emits != 0) {
-        program.output_vertices = (std::min)(program.output_vertices, num_emits);
-    }
+void TightenOutputVertices([[maybe_unused]] IR::Program& program) {
+    return;
 }
 } // Anonymous namespace
 

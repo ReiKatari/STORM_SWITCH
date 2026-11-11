@@ -92,20 +92,9 @@ void ThreadManager::InvalidateRegion(DAddr addr, u64 size) {
     rasterizer->OnCacheInvalidation(addr, size);
 }
 
-[[nodiscard]] static bool IsDiablo2Resurrected() noexcept {
-    u64 title_id = Settings::GetCurrentProgramID();
-    if (title_id == 0) {
-        title_id = Settings::values.current_program_id.GetValue();
-    }
-    const u64 base_tid = title_id & ~0x1FFFULL;
-    return (base_tid == 0x0100726014352000ULL ||
-            base_tid == 0x01002A801458A000ULL ||
-            base_tid == 0x0100916014D8C000ULL);
-}
 
 void ThreadManager::FlushAndInvalidateRegion(DAddr addr, u64 size, bool is_async) {
-    if ((Settings::IsGPULevelHigh() || Settings::values.use_reactive_flushing.GetValue() ||
-         IsDiablo2Resurrected()) &&
+    if ((Settings::IsGPULevelNormal() || Settings::IsGPULevelHigh() || Settings::values.use_reactive_flushing.GetValue()) &&
         rasterizer && rasterizer->MustFlushRegion(addr, size)) {
         PushCommand(FlushRegionCommand(addr, size), true, is_async);
     }

@@ -87,10 +87,12 @@ void nvhost_nvdec::OnClose(DeviceFD fd) {
     LOG_INFO(Service_NVDRV, "NVDEC video stream ended");
     host1x.StopDevice(fd, Tegra::Host1x::ChannelType::NvDec);
     syncpoint_manager.FlushSyncpoint(channel_syncpoint);
-    system.SetNVDECActive(false);
     auto it = sessions.find(fd);
     if (it != sessions.end()) {
         sessions.erase(it);
+    }
+    if (sessions.empty()) {
+        system.SetNVDECActive(false);
     }
 }
 

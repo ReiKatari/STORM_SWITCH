@@ -420,8 +420,6 @@ static void ApplyGameSpecificSafetyOverrides(u64 title_id, u64 host_ram_bytes,
         Settings::values.drs_resolution_lock.SetValue(false);
         Settings::values.enable_frame_skipping.SetGlobal(false);
         Settings::values.enable_frame_skipping.SetValue(false);
-        Settings::values.sync_memory_operations.SetGlobal(false);
-        Settings::values.sync_memory_operations.SetValue(false);
         Settings::values.vram_budget_governor.SetGlobal(false);
         Settings::values.vram_budget_governor.SetValue(false);
         Settings::values.dynamic_performance_scaler.SetGlobal(false);
@@ -440,32 +438,31 @@ static void ApplyGameSpecificSafetyOverrides(u64 title_id, u64 host_ram_bytes,
     // 2) Diablo II: Resurrected
     if (title_id == 0x0100726014352000ULL || title_id == 0x01002A801458A000ULL || title_id == 0x0100916014D8C000ULL ||
         base_tid == 0x0100726014352000ULL || base_tid == 0x01002A801458A000ULL || base_tid == 0x0100916014D8C000ULL) {
-        Settings::values.memory_layout_mode.SetGlobal(false);
-        if (host_ram_bytes > 0 && host_ram_bytes < 7ULL * 1024ULL * 1024ULL * 1024ULL) {
-            Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_6Gb);
-        } else {
-            Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_8Gb);
+        if (Settings::values.memory_layout_mode.GetValue() == Settings::MemoryLayout::Memory_4Gb) {
+            Settings::values.memory_layout_mode.SetGlobal(false);
+            if (host_ram_bytes > 0 && host_ram_bytes < 7ULL * 1024ULL * 1024ULL * 1024ULL) {
+                Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_6Gb);
+            } else {
+                Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_8Gb);
+            }
         }
-        Settings::values.gpu_accuracy.SetGlobal(false);
-        Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::High);
-        Settings::values.use_reactive_flushing.SetGlobal(false);
-        Settings::values.use_reactive_flushing.SetValue(true);
-        Settings::values.use_fast_gpu_time.SetGlobal(false);
-        Settings::values.use_fast_gpu_time.SetValue(false);
-        Settings::values.vram_budget_governor.SetGlobal(false);
-        Settings::values.vram_budget_governor.SetValue(false);
-        Settings::values.vram_garbage_collection.SetGlobal(false);
-        Settings::values.vram_garbage_collection.SetValue(false);
-        Settings::values.early_release_fences.SetGlobal(false);
-        Settings::values.early_release_fences.SetValue(false);
-        Settings::values.enable_frame_skipping.SetGlobal(false);
-        Settings::values.enable_frame_skipping.SetValue(false);
-        Settings::values.dyna_state.SetGlobal(false);
-        Settings::values.dyna_state.SetValue(Settings::ExtendedDynamicState::Disabled);
-        Settings::values.barrier_feedback_loops.SetGlobal(false);
-        Settings::values.barrier_feedback_loops.SetValue(true);
-        Settings::values.airplane_mode.SetGlobal(false);
-        Settings::values.airplane_mode.SetValue(true);
+        auto apply_android_safe = [](auto& setting, auto val) {
+            if (setting.UsingGlobal()) {
+                setting.SetGlobal(false);
+                setting.SetValue(val);
+            }
+        };
+        apply_android_safe(Settings::values.gpu_accuracy, Settings::GpuAccuracy::High);
+        apply_android_safe(Settings::values.use_reactive_flushing, true);
+        apply_android_safe(Settings::values.use_fast_gpu_time, false);
+        apply_android_safe(Settings::values.vram_budget_governor, false);
+        apply_android_safe(Settings::values.vram_garbage_collection, false);
+        apply_android_safe(Settings::values.early_release_fences, false);
+        apply_android_safe(Settings::values.enable_frame_skipping, false);
+        apply_android_safe(Settings::values.barrier_feedback_loops, true);
+        apply_android_safe(Settings::values.airplane_mode, true);
+        apply_android_safe(Settings::values.sync_memory_operations, true);
+        apply_android_safe(Settings::values.enable_gpu_buffer_readback, true);
         LOG_INFO(Frontend, "Guaranteed Diablo II: Resurrected safety overrides (8GB/6GB DRAM, GPU High, Reactive Flush, airplane mode)");
     }
 

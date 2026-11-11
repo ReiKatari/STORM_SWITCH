@@ -235,7 +235,6 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
         super.onCreate(savedInstanceState)
 
         val startupGame = getLaunchGame()
-        org.yuzu.yuzu_emu.model.GameFixDatabase.sanitizePoisonedSettings(startupGame)
         NativeConfig.reloadGlobalConfig()
 
         InputHandler.updateControllerData()

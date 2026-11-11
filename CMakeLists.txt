@@ -3,8 +3,8 @@
 
 cmake_minimum_required(VERSION 3.22)
 
-project(yuzu VERSION 17.6.0)
-set(STORM_SWITCH_VERSION "17.6.0")
+project(yuzu VERSION 17.7.0)
+set(STORM_SWITCH_VERSION "17.7.0")
 add_compile_definitions(ZBIC_ZBIC_SUPPORT=1)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
@@ -204,9 +204,9 @@ if(MSVC)
     endif()
 
     # Force all projects (including external dependencies) to use the same runtime and full Release optimizations
-    set(CMAKE_CXX_FLAGS_RELEASE "/${libflag} /O2 /Ob3 /Oi /Ot /Gw /Gy /fp:fast /Zc:inline /DNDEBUG")
+    set(CMAKE_CXX_FLAGS_RELEASE "/${libflag} /O2 /Ob3 /Oi /Ot /Gw /Gy /Zc:inline /DNDEBUG")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /${libflag}d")
-    set(CMAKE_C_FLAGS_RELEASE "/${libflag} /O2 /Ob3 /Oi /Ot /Gw /Gy /fp:fast /Zc:inline /DNDEBUG")
+    set(CMAKE_C_FLAGS_RELEASE "/${libflag} /O2 /Ob3 /Oi /Ot /Gw /Gy /Zc:inline /DNDEBUG")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /${libflag}d")
 
     # Add this to ensure Cubeb uses the same runtime

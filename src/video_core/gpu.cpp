@@ -257,7 +257,7 @@ struct GPU::Impl {
             VideoCore::RasterizerInterface* rasterizer = renderer->ReadRasterizer();
             if (!rasterizer->TryCacheInvalidation(addr, size)) {
                 const u64 fence = RequestSyncOperation([rasterizer, addr, size] {
-                    rasterizer->FlushRegion(addr, size, VideoCommon::CacheType::BufferCache);
+                    rasterizer->FlushRegion(addr, size, VideoCommon::CacheType::BufferCache | VideoCommon::CacheType::TextureCache);
                     rasterizer->OnCacheInvalidation(addr, size);
                 });
                 gpu_thread.TickGPU(is_async);

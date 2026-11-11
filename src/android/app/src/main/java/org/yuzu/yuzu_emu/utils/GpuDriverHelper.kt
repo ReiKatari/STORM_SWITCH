@@ -383,32 +383,7 @@ object GpuDriverHelper {
     }
 
     // Per-TID Turnip driver hints (verified real TU_DEBUG flags only: nolrz, sysmem, gmem, nobin, noubwc, flushall, syncdraw)
-    val PER_TID_TURNIP_DEBUG_HINTS: Map<String, List<String>> = mapOf(
-        // Diablo II: Resurrected - 'nolrz' disables broken LRZ ('nobin' removed to preserve 3D depth/geometry on Adreno 830)
-        "0100726014352000" to listOf("nolrz"),
-        "01002A801458A000" to listOf("nolrz"),
-        "0100916014D8C000" to listOf("nolrz"),
-        // The Legend of Zelda: Tears of the Kingdom - 'nolrz' resolves depth/stencil bias artifacts
-        "0100F2C0115B6000" to listOf("nolrz"),
-        // The Legend of Zelda: Breath of the Wild
-        "01007EF00011E000" to listOf("nolrz"),
-        // The Legend of Zelda: Echoes of Wisdom
-        "01008CF01BAAC000" to listOf("nolrz"),
-        // Super Mario Bros. Wonder
-        // Mario + Rabbids Kingdom Battle & Sparks of Hope
-        "010067300059A000" to listOf("nolrz"),
-        "0100760012E4A000" to listOf("nolrz"),
-        // Red Dead Redemption
-        "01007820196A6000" to listOf("nolrz"),
-        // Xenoblade Chronicles 3, DE, 2
-        "010074F013262000" to listOf("nolrz"),
-        "0100FF500E34A000" to listOf("nolrz"),
-        "0100E95004038000" to listOf("nolrz"),
-        // Pokemon Legends Arceus, Scarlet, Violet
-        "01001F5010DFA000" to listOf("nolrz"),
-        "0100A3D008C5C000" to listOf("nolrz"),
-        "01008F6008C5E000" to listOf("nolrz")
-    )
+    val PER_TID_TURNIP_DEBUG_HINTS: Map<String, List<String>> = emptyMap()
 
     fun applyPerGameDriverConfig(programIdHex: String, gameTitle: String) {
         val customLib = installedCustomDriverData.libraryName
@@ -480,7 +455,7 @@ object GpuDriverHelper {
                 NativeFreedrenoConfig.setFreedrenoEnv("HOME", YuzuApplication.appContext.filesDir.absolutePath)
 
                 if (isDiablo || isMarioRabbids) {
-                    NativeFreedrenoConfig.setFreedrenoEnv("MESA_VK_DYNAMIC_ATTACHMENT_FEEDBACK_LOOP_ENABLE", "1")
+                    NativeFreedrenoConfig.clearFreedrenoEnv("MESA_VK_DYNAMIC_ATTACHMENT_FEEDBACK_LOOP_ENABLE")
                 } else {
                     if (NativeFreedrenoConfig.isFreedrenoEnvSet("MESA_VK_DYNAMIC_ATTACHMENT_FEEDBACK_LOOP_ENABLE")) {
                         NativeFreedrenoConfig.clearFreedrenoEnv("MESA_VK_DYNAMIC_ATTACHMENT_FEEDBACK_LOOP_ENABLE")
