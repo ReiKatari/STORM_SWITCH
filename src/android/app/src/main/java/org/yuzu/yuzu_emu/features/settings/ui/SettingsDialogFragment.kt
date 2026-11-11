@@ -88,7 +88,13 @@ class SettingsDialogFragment : DialogFragment(), DialogInterface.OnClickListener
             isSmoothScrollbarEnabled = false
             isScrollbarFadingEnabled = false
             overScrollMode = android.view.View.OVER_SCROLL_NEVER
-            scrollIndicators = 0
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                setScrollIndicators(0, android.view.View.SCROLL_INDICATOR_TOP or android.view.View.SCROLL_INDICATOR_BOTTOM)
+            }
+        }
+        dialog?.let { d ->
+            d.findViewById<android.view.View>(androidx.appcompat.R.id.scrollIndicatorUp)?.visibility = android.view.View.GONE
+            d.findViewById<android.view.View>(androidx.appcompat.R.id.scrollIndicatorDown)?.visibility = android.view.View.GONE
         }
         dialog?.window?.let { window ->
             org.yuzu.yuzu_emu.utils.ThemeHelper.applySystemBarsTheme(window, requireContext())

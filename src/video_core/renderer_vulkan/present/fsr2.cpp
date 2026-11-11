@@ -24,6 +24,7 @@ struct TemporalPushConstants {
     std::array<f32, 4> render_size;   // xy: current input size, zw: 1.0 / input size
     std::array<f32, 4> display_size;  // xy: output size, zw: 1.0 / output size
     std::array<f32, 4> jitter_params; // xy: subpixel jitter offset in UV, z: alpha, w: gamma
+    std::array<f32, 4> crop_params;   // xy: crop offset (left, top), zw: crop scale (width, height)
 };
 
 using RcasPushConstants = std::array<u32, 4 * 4>;
@@ -255,6 +256,15 @@ VkImageView Pipeline::Draw(const Device& device, Scheduler& scheduler, size_t im
     temporal_con.jitter_params = {jitter.first * inv_input_w,
                                   jitter.second * inv_input_h,
                                   0.88f, 1.25f};
+
+    const f32 crop_w = crop_rect.right - crop_rect.left;
+    const f32 crop_h = crop_rect.bottom - crop_rect.top;
+    temporal_con.crop_params = {
+        crop_rect.left,
+        crop_rect.top,
+        crop_w > 0.0f ? crop_w : 1.0f,
+        crop_h > 0.0f ? crop_h : 1.0f,
+    };
 
     // Calculate RCAS sharpening configuration
     const auto fsr2_config = GetQualityConfig(Settings::values.fsr2_quality_mode.GetValue());

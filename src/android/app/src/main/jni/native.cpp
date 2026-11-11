@@ -911,7 +911,7 @@ const char* find_cpu_name(u32 vendor, u32 part) {
             return cpu.name;
         }
     }
-    return nullptr;
+    return "Unknown";
 }
 
 u64 read_midr_sysfs(u32 cpu_id) {
@@ -954,7 +954,7 @@ std::pair<u32, std::string> get_pretty_cpus() {
 
             if (!cpus.empty()) cpus += " + ";
             const char* cpu_name = find_cpu_name(vendor, part);
-            if (cpu_name) {
+            if (cpu_name && std::strcmp(cpu_name, "Unknown") != 0) {
                 cpus += fmt::format("{}x {}", count, cpu_name);
             } else {
                 cpus += fmt::format("{}x Core (0x{:X}:0x{:03X})", count, vendor, part);

@@ -218,7 +218,8 @@ class DriverFetcherFragment : Fragment() {
 
         DriverRepo("The412Banner Nightly Turnip", "The412Banner/Banners-Turnip", 11, true, SortMode.PublishTime),
 
-        DriverRepo("Vauzi-17 Adreno 710 / 720 / 722 Turnip", "Vauzi-17/710", 12, true, SortMode.PublishTime),
+                DriverRepo("Vauzi-17 Adreno 710 / 720 / 722 Turnip", "Vauzi-17/710", 12, true, SortMode.PublishTime),
+        DriverRepo("StevenMXZ Adreno Tools", "StevenMXZ/Adreno-Tools-Drivers", 13, true, SortMode.PublishTime),
 
     )
 

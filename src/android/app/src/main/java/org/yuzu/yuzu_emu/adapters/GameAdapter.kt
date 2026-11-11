@@ -161,15 +161,7 @@ class GameAdapter(private val activity: AppCompatActivity) :
         }
 
         private fun formatVersion(model: Game): String {
-            var v = model.version.trim().removePrefix("v").removePrefix("V")
-            if (v.isEmpty() || v == "1.0.0") {
-                try {
-                    val catGame = org.yuzu.yuzu_emu.fragments.StormGamesWorldDialogFragment.getCachedCatalogItem(binding.root.context, model.programIdHex)
-                    if (catGame != null && catGame.version.isNotEmpty() && catGame.version != "1.0.0") {
-                        v = catGame.version.trim().removePrefix("v").removePrefix("V")
-                    }
-                } catch (_: Exception) {}
-            }
+            val v = model.version.trim().removePrefix("v").removePrefix("V")
             return if (v.isNotEmpty()) v else "1.0.0"
         }
 
@@ -204,6 +196,8 @@ class GameAdapter(private val activity: AppCompatActivity) :
                 badge.setTypeface(null, android.graphics.Typeface.BOLD)
             } else {
                 badge.text = ver
+                badge.setTextColor(com.google.android.material.color.MaterialColors.getColor(badge, com.google.android.material.R.attr.colorOnSurface))
+                badge.setTypeface(null, android.graphics.Typeface.NORMAL)
             }
         }
 

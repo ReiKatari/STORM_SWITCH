@@ -44,6 +44,7 @@
 #include "storm_switch/game/carousel.h"
 #include "storm_switch/game/game_grid.h"
 #include "storm_switch/game/game_list.h"
+#include "storm_switch/storm_catalog_cache.h"
 #include "storm_switch/game/game_tree.h"
 #include "storm_switch/game/search_field.h"
 #include "storm_switch/main_window.h"
@@ -247,6 +248,18 @@ void GameList::SetupViews() {
     tree_view->SetModel(item_model);
     grid_view->SetModel(item_model);
     carousel_view->SetModel(item_model);
+
+    connect(&StormCatalogCache::Instance(), &StormCatalogCache::CacheLoaded, this, [this]() {
+        if (tree_view && tree_view->viewport()) {
+            tree_view->viewport()->update();
+        }
+        if (grid_view && grid_view->viewport()) {
+            grid_view->viewport()->update();
+        }
+        if (carousel_view && carousel_view->viewport()) {
+            carousel_view->viewport()->update();
+        }
+    }, Qt::QueuedConnection);
 
     auto connect_selection = [this](QAbstractItemView* view) {
         if (!view) return;

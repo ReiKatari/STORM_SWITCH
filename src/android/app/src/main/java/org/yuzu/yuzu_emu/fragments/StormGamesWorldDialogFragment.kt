@@ -2479,12 +2479,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                 } catch (_: Exception) {}
 
                 val file = File(context.filesDir, CATALOG_CACHE_FILE)
-                val pkgInfo = try {
-                    context.packageManager.getPackageInfo(context.packageName, 0)
-                } catch (_: Exception) { null }
-                if (file.exists() && pkgInfo != null && file.lastModified() < pkgInfo.lastUpdateTime) {
-                    file.delete()
-                }
+                // Preserve catalog cache across app updates so update badges appear immediately
 
                 val jsonStr = if (file.exists() && file.length() > 0) {
                     file.readText()

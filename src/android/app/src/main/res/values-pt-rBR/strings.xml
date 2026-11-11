@@ -2164,8 +2164,8 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="save_state_restore_slot_title">Restaurar Slot %1$d</string>
     <string name="save_state_restore_slot_message">Restaurar o estado do slot %1$d a partir do backup (.undo.bak)?</string>
     <string name="save_state_restore_button">Restaurar</string>
-    <string name="storm_driver_10_active">STORM DRIVER 10.0.0 (Ativo)</string>
-    <string name="storm_driver_already_active">STORM DRIVER 10.0.0 já está ativo!</string>
+    <string name="storm_driver_10_active">STORM DRIVER 11.0.0 (Ativo)</string>
+    <string name="storm_driver_already_active">STORM DRIVER 11.0.0 já está ativo!</string>
     <string name="added">Adicionado</string>
     <string name="pagination_first">&lt;&lt;</string>
     <string name="pagination_prev">&lt;</string>

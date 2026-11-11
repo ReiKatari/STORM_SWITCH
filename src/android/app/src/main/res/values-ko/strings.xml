@@ -2135,8 +2135,8 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="save_state_restore_slot_title">슬롯 %1$d 복원</string>
     <string name="save_state_restore_slot_message">슬롯 %1$d 세이브 상태를 백업 (.undo.bak)에서 복원하시겠습니까?</string>
     <string name="save_state_restore_button">복원</string>
-    <string name="storm_driver_10_active">STORM DRIVER 10.0.0 (활성)</string>
-    <string name="storm_driver_already_active">STORM DRIVER 10.0.0이 이미 활성화되어 있습니다!</string>
+    <string name="storm_driver_10_active">STORM DRIVER 11.0.0 (활성)</string>
+    <string name="storm_driver_already_active">STORM DRIVER 11.0.0이 이미 활성화되어 있습니다!</string>
     <string name="added">추가됨</string>
     <string name="pagination_first">&lt;&lt;</string>
     <string name="pagination_prev">&lt;</string>

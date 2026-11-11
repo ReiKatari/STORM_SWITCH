@@ -332,7 +332,8 @@ void TextureCache<P>::FillImageViews(std::span<ImageViewInOut> views, bool compu
 
 template <class P>
 void TextureCache<P>::CheckFeedbackLoop(std::span<const ImageViewInOut> views) {
-    if (!has_barrier_feedback_loops) {
+    const bool barrier_feedback_loops = has_barrier_feedback_loops || Settings::values.barrier_feedback_loops.GetValue();
+    if (!barrier_feedback_loops) {
         return;
     }
 

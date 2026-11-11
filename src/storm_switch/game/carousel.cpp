@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "qt_common/config/uisettings.h"
@@ -6,6 +6,7 @@
 #include "storm_switch/game/common.h"
 #include "storm_switch/game/game_card.h"
 #include "storm_switch/game/carousel.h"
+#include "storm_switch/storm_catalog_cache.h"
 
 GameCarousel::GameCarousel(QWidget* parent) : QListView{parent} {
     m_gameCard = new GameCard(this);
@@ -29,6 +30,12 @@ GameCarousel::GameCarousel(QWidget* parent) : QListView{parent} {
     setTextElideMode(Qt::ElideNone);
     setFlow(QListView::LeftToRight);
     setWrapping(false);
+
+    connect(&StormCatalogCache::Instance(), &StormCatalogCache::CacheLoaded, this, [this]() {
+        if (viewport()) {
+            viewport()->update();
+        }
+    }, Qt::QueuedConnection);
 }
 
 void GameCarousel::SetModel(GameListModel* model) {

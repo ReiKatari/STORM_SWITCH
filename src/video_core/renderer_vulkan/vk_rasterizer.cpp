@@ -1116,6 +1116,7 @@ bool RasterizerVulkan::TryCacheInvalidation(DAddr addr, u64 size) {
     {
         std::scoped_lock lock{buffer_cache.mutex, texture_cache.mutex};
         if (buffer_cache.IsRegionGpuModified(addr, size)) return false;
+        if (texture_cache.IsRegionGpuModified(addr, size)) return false;
         texture_cache.WriteMemory(addr, size);
         buffer_cache.WriteMemory(addr, size);
     }

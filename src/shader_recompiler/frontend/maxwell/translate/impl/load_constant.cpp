@@ -13,8 +13,10 @@ std::pair<IR::U32, IR::U32> Slot(IR::IREmitter& ir, Mode mode, const IR::U32& im
                                  const IR::U32& reg, const IR::U32& imm_offset) {
     switch (mode) {
     case Mode::Default:
+    case Mode::IL:
         return {imm_index, ir.IAdd(reg, imm_offset)};
-    case Mode::IS: {
+    case Mode::IS:
+    case Mode::ISL: {
         // Segmented addressing mode
         // Ra+imm_offset points into a flat mapping of const buffer
         // address space

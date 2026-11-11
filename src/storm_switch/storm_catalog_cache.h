@@ -8,10 +8,12 @@
 #include <tuple>
 #include <vector>
 #include <QMap>
+#include <QObject>
 #include <QString>
 #include "common/common_types.h"
 
-class StormCatalogCache {
+class StormCatalogCache : public QObject {
+    Q_OBJECT
 public:
     static StormCatalogCache& Instance();
 
@@ -23,6 +25,9 @@ public:
     QString GetLatestVersion(u64 title_id) const;
 
     static int CompareVersions(const QString& v1, const QString& v2);
+
+signals:
+    void CacheLoaded();
 
 private:
     StormCatalogCache();

@@ -19,7 +19,7 @@ StormCatalogCache& StormCatalogCache::Instance() {
     return instance;
 }
 
-StormCatalogCache::StormCatalogCache() {
+StormCatalogCache::StormCatalogCache() : QObject(nullptr) {
     std::thread(&StormCatalogCache::LoadCache, this).detach();
 }
 
@@ -45,6 +45,7 @@ void StormCatalogCache::LoadCache() {
     ParseCatalogJson(data);
     m_loaded = true;
     m_loading = false;
+    emit CacheLoaded();
 }
 
 void StormCatalogCache::SaveCache(const QByteArray& json_data) {
@@ -59,6 +60,7 @@ void StormCatalogCache::SaveCache(const QByteArray& json_data) {
     }
     ParseCatalogJson(json_data);
     m_loaded = true;
+    emit CacheLoaded();
 }
 
 QByteArray StormCatalogCache::GetRawCacheData() const {
@@ -95,48 +97,51 @@ void StormCatalogCache::ParseCatalogJson(const QByteArray& data) {
         if (!val.isObject()) continue;
         const QJsonObject obj = val.toObject();
 
-        const QString platform = obj[QStringLiteral("platformName")].toString();
-        const QString platform_type = obj[QStringLiteral("platformTypeName")].toString();
-        const bool file_exists = parse_bool_val(obj[QStringLiteral("fileExists")]);
-        const bool has_file = parse_bool_val(obj[QStringLiteral("hasFile")]);
+        const QString platform = obj[QStringLiteral("platformName")].toString().trimmed();
+        const QString platform_type = obj[QStringLiteral("platformTypeName")].toString().trimmed();
+        const bool file_exists = obj.contains(QStringLiteral("fileExists")) ? parse_bool_val(obj[QStringLiteral("fileExists")]) : true;
+        const bool has_file = obj.contains(QStringLiteral("hasFile")) ? parse_bool_val(obj[QStringLiteral("hasFile")]) : true;
         const QString size_str = obj[QStringLiteral("size")].toString().trimmed();
 
-        const bool size_valid = !size_str.isEmpty() and
-                                size_str != QStringLiteral("—") and
-                                size_str != QStringLiteral("null") and
-                                size_str != QStringLiteral("0") and
-                                size_str != QStringLiteral("0 B") and
-                                size_str != QStringLiteral("0,00 B") and
-                                size_str != QStringLiteral("0.00 B") and
-                                size_str != QStringLiteral("0,00 MB") and
-                                size_str != QStringLiteral("0.00 MB") and
-                                !size_str.startsWith(QStringLiteral("0 B")) and
-                                !size_str.startsWith(QStringLiteral("0.00")) and
-                                !size_str.startsWith(QStringLiteral("0,00"));
+        const bool size_valid = size_str.isEmpty() ||
+                                (!size_str.isEmpty() &&
+                                 size_str != QStringLiteral("-") &&
+                                 size_str != QStringLiteral("null") &&
+                                 size_str != QStringLiteral("0") &&
+                                 size_str != QStringLiteral("0 B") &&
+                                 size_str != QStringLiteral("0,00 B") &&
+                                 size_str != QStringLiteral("0.00 B") &&
+                                 size_str != QStringLiteral("0,00 MB") &&
+                                 size_str != QStringLiteral("0.00 MB") &&
+                                 !size_str.startsWith(QStringLiteral("0 B")) &&
+                                 !size_str.startsWith(QStringLiteral("0.00")) &&
+                                 !size_str.startsWith(QStringLiteral("0,00")));
 
         bool has_positive_bytes = true;
-        if (obj.contains(QStringLiteral("fileSizeBytes")) and !obj[QStringLiteral("fileSizeBytes")].isNull()) {
+        if (obj.contains(QStringLiteral("fileSizeBytes")) && !obj[QStringLiteral("fileSizeBytes")].isNull()) {
             has_positive_bytes = (obj[QStringLiteral("fileSizeBytes")].toVariant().toLongLong() > 0);
         }
 
-        if (platform == QStringLiteral("Nintendo Switch") and
-            platform_type == QStringLiteral("CONSOLES") and
-            file_exists and has_file and
-            size_valid and has_positive_bytes) {
+        const bool platform_ok = platform.isEmpty() || platform.compare(QStringLiteral("Nintendo Switch"), Qt::CaseInsensitive) == 0;
+        const bool platform_type_ok = platform_type.isEmpty() || platform_type.compare(QStringLiteral("CONSOLES"), Qt::CaseInsensitive) == 0;
+
+        if (platform_ok && platform_type_ok &&
+            file_exists && has_file &&
+            size_valid && has_positive_bytes) {
 
             const QString serial_id = obj[QStringLiteral("serialId")].toString().trimmed();
             const QString ver = obj[QStringLiteral("version")].toString().trimmed();
 
-            if (!serial_id.isEmpty() and !ver.isEmpty()) {
+            if (!serial_id.isEmpty() && !ver.isEmpty()) {
                 bool ok = false;
-                const u64 tid = serial_id.toULongLong(bitand ok, 16);
-                if (ok and tid != 0) {
-                    const u64 base_tid = (tid bitand ~0x800ULL);
-                    if (!temp_versions.contains(base_tid) or
+                const u64 tid = serial_id.toULongLong(&ok, 16);
+                if (ok && tid != 0) {
+                    const u64 base_tid = (tid & ~0x800ULL);
+                    if (!temp_versions.contains(base_tid) ||
                         CompareVersions(ver, temp_versions[base_tid]) > 0) {
                         temp_versions[base_tid] = ver;
                     }
-                    if (!temp_versions.contains(tid) or
+                    if (!temp_versions.contains(tid) ||
                         CompareVersions(ver, temp_versions[tid]) > 0) {
                         temp_versions[tid] = ver;
                     }

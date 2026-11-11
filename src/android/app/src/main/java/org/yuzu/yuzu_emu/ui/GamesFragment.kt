@@ -22,6 +22,10 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
@@ -191,6 +195,27 @@ class GamesFragment : Fragment() {
         setupTopView()
 
         updateButtonsVisibility()
+
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val cached = org.yuzu.yuzu_emu.fragments.StormGamesWorldDialogFragment.getCachedCatalog(requireContext().applicationContext)
+                if (cached.isNotEmpty()) {
+                    withContext(Dispatchers.Main) {
+                        if (_binding != null) {
+                            gameAdapter.notifyDataSetChanged()
+                        }
+                    }
+                }
+                val fresh = org.yuzu.yuzu_emu.fragments.StormGamesWorldDialogFragment.syncCatalogInBackground(requireContext().applicationContext)
+                if (fresh.isNotEmpty()) {
+                    withContext(Dispatchers.Main) {
+                        if (_binding != null) {
+                            gameAdapter.notifyDataSetChanged()
+                        }
+                    }
+                }
+            } catch (_: Throwable) {}
+        }
 
         binding.addDirectory.setOnClickListener {
             org.yuzu.yuzu_emu.fragments.StormFolderPickerDialog.showMulti(

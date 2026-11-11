@@ -9,6 +9,7 @@ import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.LinearGradient
 import android.graphics.RadialGradient
 import android.graphics.Rect
 import android.graphics.RectF
@@ -655,6 +656,168 @@ object OverlayControlIconRenderer {
         val canvas = Canvas(bitmap)
         val bounds = Rect(0, 0, safeSize, safeSize)
         renderButton(canvas, bounds, controlId, theme, isPressed, isRightSide)
+        return bitmap
+    }
+
+    /**
+     * Renders wide 3D sculpted Nintendo Switch 2 / Pro triggers (ZL, ZR) and shoulder bumpers (L, R)
+     * matching the active OverlayTheme colors, 3D volumetric lighting, and crisp typography.
+     */
+    fun createShoulderOrTriggerBitmap(
+        controlId: String,
+        widthPx: Int,
+        heightPx: Int,
+        theme: OverlayTheme,
+        isPressed: Boolean,
+        isRightSide: Boolean
+    ): Bitmap {
+        val w = widthPx.coerceAtLeast(48)
+        val h = heightPx.coerceAtLeast(24)
+        val bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        val wf = w.toFloat()
+        val hf = h.toFloat()
+
+        val isTrigger = (controlId == OverlayControl.BUTTON_ZL.id || controlId == OverlayControl.BUTTON_ZR.id)
+        val label = when (controlId) {
+            OverlayControl.BUTTON_ZL.id -> "ZL"
+            OverlayControl.BUTTON_ZR.id -> "ZR"
+            OverlayControl.BUTTON_L.id -> "L"
+            OverlayControl.BUTTON_R.id -> "R"
+            else -> controlId.uppercase()
+        }
+
+        val accentColor = if (theme == OverlayTheme.CLASSIC_SWITCH || theme == OverlayTheme.SWITCH_2_PRO_MAGNETIC) {
+            if (isPressed) {
+                if (isRightSide) 0xFFFF6B5B.toInt() else 0xFF4DE8FF.toInt()
+            } else {
+                if (isRightSide) 0xFFFF4B3A.toInt() else 0xFF00C3E3.toInt()
+            }
+        } else {
+            if (isPressed) theme.colorPressed else theme.colorDefault
+        }
+
+        canvas.save()
+        if (isPressed) {
+            canvas.translate(0f, hf * 0.045f)
+            canvas.scale(0.95f, 0.95f, wf * 0.5f, hf * 0.5f)
+        }
+
+        val padX = wf * 0.035f
+        val padY = hf * 0.07f
+        val bodyLeft = padX
+        val bodyTop = padY
+        val bodyRight = wf - padX
+        val bodyBottom = hf - padY * 1.35f
+        val bw = bodyRight - bodyLeft
+        val bh = bodyBottom - bodyTop
+
+        fun buildShape(outPath: Path, dyOffset: Float = 0f) {
+            outPath.reset()
+            val top = bodyTop + dyOffset
+            val bottom = bodyBottom + dyOffset
+            if (isTrigger) {
+                // Authentic sculpted Switch trigger silhouette (swept outer curve + ergonomic inner lip)
+                val outerR = bh * 0.82f
+                val innerTopR = bh * 0.20f
+                val innerBotR = bh * 0.32f
+                val outerBotR = bh * 0.18f
+                outPath.moveTo(bodyLeft + outerR, top)
+                outPath.lineTo(bodyRight - innerTopR, top)
+                rectF1.set(bodyRight - innerTopR * 2f, top, bodyRight, top + innerTopR * 2f)
+                outPath.arcTo(rectF1, -90f, 90f, false)
+                outPath.lineTo(bodyRight, bottom - innerBotR)
+                rectF1.set(bodyRight - innerBotR * 2f, bottom - innerBotR * 2f, bodyRight, bottom)
+                outPath.arcTo(rectF1, 0f, 90f, false)
+                outPath.lineTo(bodyLeft + outerBotR, bottom)
+                rectF1.set(bodyLeft, bottom - outerBotR * 2f, bodyLeft + outerBotR * 2f, bottom)
+                outPath.arcTo(rectF1, 90f, 90f, false)
+                rectF1.set(bodyLeft, top, bodyLeft + outerR * 2f, top + outerR * 2f)
+                outPath.arcTo(rectF1, 180f, 90f, false)
+                outPath.close()
+                if (isRightSide) {
+                    val mirror = Matrix()
+                    mirror.setScale(-1f, 1f, wf * 0.5f, (top + bottom) * 0.5f)
+                    outPath.transform(mirror)
+                }
+            } else {
+                // Authentic wide Switch shoulder bumper capsule
+                val r = bh * 0.42f
+                rectF1.set(bodyLeft, top, bodyRight, bottom)
+                outPath.addRoundRect(rectF1, r, r, Path.Direction.CW)
+            }
+        }
+
+        // 1. Soft 3D elevation drop shadow
+        buildShape(path1, hf * 0.055f)
+        shadowPaint.color = 0x52000000
+        canvas.drawPath(path1, shadowPaint)
+
+        // 2. Volumetric 3D body gradient tinted by active theme
+        buildShape(path1, 0f)
+        val rAcc = Color.red(accentColor)
+        val gAcc = Color.green(accentColor)
+        val bAcc = Color.blue(accentColor)
+        val topAlpha = if (isPressed) 0xEE else 0xCA
+        val midAlpha = if (isPressed) 0xE2 else 0xB8
+        val botAlpha = if (isPressed) 0xF2 else 0xD4
+        val topCol = Color.argb(topAlpha, (rAcc * 0.45f + 42f).toInt().coerceIn(0, 255), (gAcc * 0.45f + 50f).toInt().coerceIn(0, 255), (bAcc * 0.45f + 68f).toInt().coerceIn(0, 255))
+        val midCol = Color.argb(midAlpha, (rAcc * 0.24f + 22f).toInt().coerceIn(0, 255), (gAcc * 0.24f + 27f).toInt().coerceIn(0, 255), (bAcc * 0.24f + 38f).toInt().coerceIn(0, 255))
+        val botCol = Color.argb(botAlpha, 12, 16, 26)
+        fillPaint.shader = LinearGradient(
+            0f, bodyTop, 0f, bodyBottom,
+            intArrayOf(topCol, midCol, botCol),
+            floatArrayOf(0f, 0.52f, 1f),
+            Shader.TileMode.CLAMP
+        )
+        canvas.drawPath(path1, fillPaint)
+        fillPaint.shader = null
+
+        // 3. Top specular 3D glass lip highlight
+        canvas.save()
+        canvas.clipPath(path1)
+        rectF2.set(bodyLeft, bodyTop, bodyRight, bodyTop + bh * 0.36f)
+        fillPaint.shader = LinearGradient(
+            0f, bodyTop, 0f, bodyTop + bh * 0.36f,
+            intArrayOf(if (isPressed) 0x55FFFFFF else 0x3DFFFFFF, 0x00FFFFFF),
+            null,
+            Shader.TileMode.CLAMP
+        )
+        canvas.drawRect(rectF2, fillPaint)
+        fillPaint.shader = null
+        canvas.restore()
+
+        // 4. Crisp glowing 3D rim border
+        strokePaint.strokeWidth = max(2.2f, hf * 0.042f)
+        strokePaint.color = if (isPressed) {
+            Color.argb(255, min(255, rAcc + 45), min(255, gAcc + 45), min(255, bAcc + 45))
+        } else {
+            Color.argb(215, rAcc, gAcc, bAcc)
+        }
+        canvas.drawPath(path1, strokePaint)
+
+        // 5. Crisp centered typography with subtle contrast shadow
+        val textCenterX = if (isTrigger) {
+            if (isRightSide) wf * 0.46f else wf * 0.54f
+        } else {
+            wf * 0.5f
+        }
+        val textCenterY = (bodyTop + bodyBottom) * 0.5f
+        textPaint.textSize = bh * (if (isTrigger) 0.47f else 0.50f)
+        val metrics = textPaint.fontMetrics
+        val baselineY = textCenterY - (metrics.ascent + metrics.descent) * 0.5f
+
+        textPaint.color = 0x88000000.toInt()
+        canvas.drawText(label, textCenterX, baselineY + max(1.5f, hf * 0.025f), textPaint)
+
+        textPaint.color = if (isPressed) {
+            0xFFFFFFFF.toInt()
+        } else {
+            Color.argb(248, min(255, (rAcc * 0.35f + 175f).toInt()), min(255, (gAcc * 0.35f + 180f).toInt()), min(255, (bAcc * 0.35f + 185f).toInt()))
+        }
+        canvas.drawText(label, textCenterX, baselineY, textPaint)
+
+        canvas.restore()
         return bitmap
     }
 }

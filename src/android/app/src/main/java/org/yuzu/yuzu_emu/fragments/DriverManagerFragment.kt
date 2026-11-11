@@ -407,38 +407,38 @@ class DriverManagerFragment : Fragment() {
         val (vendor, rec) = when {
             modelLower.contains("mali") || modelLower.contains("immortalis") -> {
                 val name = if (model.isNotEmpty()) model else "Arm Mali"
-                name to "PanVK / STORM DRIVER 10.0.0"
+                name to "PanVK / STORM DRIVER 11.0.0"
             }
             modelLower.contains("xclipse") -> {
                 val name = if (model.isNotEmpty()) model else "Samsung Xclipse"
-                name to "STORM DRIVER 10.0.0 / System Xclipse RDNA"
+                name to "STORM DRIVER 11.0.0 / System Xclipse RDNA"
             }
             modelLower.contains("adreno") -> {
                 val name = if (model.isNotEmpty()) model else "Qualcomm Adreno"
-                name to "Turnip / STORM DRIVER 10.0.0"
+                name to "Turnip / STORM DRIVER 11.0.0"
             }
             else -> {
                 val name = if (model.isNotEmpty()) model else "Universal GPU"
-                name to "STORM DRIVER 10.0.0"
+                name to "STORM DRIVER 11.0.0"
             }
         }
         binding.textGpuVendorRecommendation.text = getString(R.string.storm_driver_10_recommendation, vendor, rec)
 
         val activePath = StringSetting.DRIVER_PATH.getString()
         val customMeta = GpuDriverHelper.customDriverSettingData
-        val is10Active = customMeta.version?.contains("10.0") == true ||
-                         customMeta.name?.contains("10.0") == true ||
-                         activePath.contains("10.0", ignoreCase = true)
+        val is11Active = customMeta.version?.contains("11.0") == true ||
+                         customMeta.name?.contains("11.0") == true ||
+                         activePath.contains("11.0", ignoreCase = true)
 
-        if (is10Active) {
-            binding.buttonInstallStormDriver.text = "STORM DRIVER 10.0.0 (Активен)"
+        if (is11Active) {
+            binding.buttonInstallStormDriver.text = "STORM DRIVER 11.0.0 (Активен)"
         } else {
             binding.buttonInstallStormDriver.text = getString(R.string.install_storm_driver_10)
         }
     }
 
     private fun installStormDriver10() {
-        val fileName = "STORM_DRIVER_10.0.0.zip"
+        val fileName = "STORM_DRIVER_11.0.0.zip"
         val storagePath = "${GpuDriverHelper.driverStoragePath}$fileName"
         val existingFile = File(storagePath)
 
@@ -447,7 +447,7 @@ class DriverManagerFragment : Fragment() {
             if (meta.name != null) {
                 val currentPath = StringSetting.DRIVER_PATH.getString()
                 if (currentPath.equals(storagePath, ignoreCase = true)) {
-                    android.widget.Toast.makeText(requireContext(), "STORM DRIVER 10.0.0 уже активен!", android.widget.Toast.LENGTH_SHORT).show()
+                    android.widget.Toast.makeText(requireContext(), "STORM DRIVER 11.0.0 уже активен!", android.widget.Toast.LENGTH_SHORT).show()
                     return
                 }
                 promptDriverApplication(storagePath, 1)
@@ -469,9 +469,9 @@ class DriverManagerFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
             val downloadMirrors = listOf(
-                "https://github.com/ReiKatari/STORM_SWITCH/releases/download/16.2.4/STORM_DRIVER_10.0.0.zip",
-                "https://github.com/ReiKatari/STORM_SWITCH/releases/download/16.2.3/STORM_DRIVER_10.0.0.zip",
-                "https://github.com/ReiKatari/STORM_DRIVER/releases/download/10.0.0/STORM_DRIVER_10.0.0.zip"
+                "https://github.com/ReiKatari/STORM_DRIVER/releases/download/11.0.0/STORM_DRIVER_11.0.0.zip",
+                "https://media.githubusercontent.com/media/ReiKatari/STORM_GAMES_WORLD/main/Files/STORM_DRIVER_11.0.0.zip",
+                "https://github.com/ReiKatari/STORM_GAMES_WORLD/raw/main/Files/STORM_DRIVER_11.0.0.zip"
             )
 
             var downloadedFile: File? = null

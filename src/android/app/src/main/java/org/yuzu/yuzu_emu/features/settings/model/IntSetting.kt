@@ -73,7 +73,21 @@ enum class IntSetting(override val key: String) : AbstractIntSetting {
     RENDERER_FRAME_GEN_QUEUE_TARGET("frame_gen_queue_target"),
     RENDERER_FRAME_GEN_FLOW_SCALE("frame_gen_flow_scale"),
     RENDERER_VSYNC("use_vsync"),
-    RENDERER_SCALING_FILTER("scaling_filter"),
+    RENDERER_SCALING_FILTER("scaling_filter") {
+        override fun getInt(needsGlobal: Boolean): Int {
+            val v = super.getInt(needsGlobal)
+            // Bilinear is 1; never fall back or default to AMD FSR (6) when unset
+            return if (v == 6 && !NativeConfig.isPerGameConfigLoaded()) {
+                val pref = try {
+                    androidx.preference.PreferenceManager.getDefaultSharedPreferences(org.yuzu.yuzu_emu.YuzuApplication.appContext)
+                } catch (_: Throwable) { null }
+                val explicitlySet = pref?.contains("scaling_filter") == true || pref?.contains("Renderer\\scaling_filter") == true
+                if (!explicitlySet) 1 else v
+            } else {
+                v
+            }
+        }
+    },
     RENDERER_FSR2_QUALITY_MODE("fsr2_quality_mode"),
     RENDERER_ANTI_ALIASING("anti_aliasing"),
     RENDERER_POST_PROCESSING_SHADER("post_processing_shader"),
@@ -181,10 +195,10 @@ enum class IntSetting(override val key: String) : AbstractIntSetting {
     }
 
     override val defaultValue: Int by lazy {
-        if (this == OVERLAY_SKIN_THEME) {
-            15
-        } else {
-            NativeConfig.getDefaultToString(key).toInt()
+        when (this) {
+            OVERLAY_SKIN_THEME -> 15
+            RENDERER_SCALING_FILTER -> 1
+            else -> NativeConfig.getDefaultToString(key).toInt()
         }
     }
 

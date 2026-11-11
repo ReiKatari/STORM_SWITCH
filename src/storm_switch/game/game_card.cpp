@@ -148,6 +148,7 @@ void GameCard::paint(QPainter* painter, const QStyleOptionViewItem& option,
     if (ver_badge.isEmpty() || ver_badge == QStringLiteral("0")) {
         ver_badge = QStringLiteral("1.0.0");
     }
+    const QString clean_ver = ver_badge;
     const u64 int_ver = index.data(GameListItemPath::InternalVersionRole).toULongLong();
     if (int_ver > 0) {
         ver_badge.append(QStringLiteral(" · %1").arg(int_ver));
@@ -163,7 +164,7 @@ void GameCard::paint(QPainter* painter, const QStyleOptionViewItem& option,
     // Update Available Badge (top-right)
     bool has_update = index.data(GameListItemPath::HasUpdateBadgeRole).toBool();
     if (!has_update && program_id != 0) {
-        has_update = StormCatalogCache::Instance().HasUpdate(program_id, ver_badge);
+        has_update = StormCatalogCache::Instance().HasUpdate(program_id, clean_ver);
     }
     if (has_update) {
         DrawUpdateBadge(painter, iconRect);

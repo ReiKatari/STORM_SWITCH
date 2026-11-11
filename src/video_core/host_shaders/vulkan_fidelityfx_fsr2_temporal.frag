@@ -14,6 +14,7 @@ layout (push_constant) uniform PushConstants {
     vec4 render_size;   // xy: current input size, zw: 1.0 / input size
     vec4 display_size;  // xy: output size, zw: 1.0 / output size
     vec4 jitter_params; // xy: subpixel jitter offset in UV, z: alpha (default 0.88), w: gamma (default 1.25)
+    vec4 crop_params;   // xy: crop offset (left, top), zw: crop scale (width, height)
 };
 
 // RGB <-> YCoCg conversion for perceptually uniform temporal bounding boxes
@@ -60,11 +61,12 @@ vec3 SampleCatmullRom(sampler2D tex, vec2 uv, vec2 inv_size) {
 }
 
 void main() {
-    vec2 uv = texcoord;
+    // Map output texcoord to cropped region of current frame
+    vec2 crop_uv = crop_params.xy + texcoord * crop_params.zw;
     vec2 inv_render_size = render_size.zw;
 
     // Apply subpixel phase offset for current frame sampling
-    vec2 uv_curr = uv + jitter_params.xy;
+    vec2 uv_curr = crop_uv + jitter_params.xy;
 
     // Sample current frame using Catmull-Rom filtering
     vec3 curr_rgb = SampleCatmullRom(current_frame, uv_curr, inv_render_size);
@@ -107,7 +109,8 @@ void main() {
     float grad_y = (sample_S.x - sample_N.x) * 0.5;
     vec2 grad = vec2(grad_x, grad_y);
 
-    vec3 hist_raw_rgb = texture(history_frame, uv).rgb;
+    // History frame is in output display space [0.0, 1.0]
+    vec3 hist_raw_rgb = texture(history_frame, texcoord).rgb;
     vec3 hist_raw_ycocg = RGBToYCoCg(hist_raw_rgb);
     float luma_diff = abs(curr_ycocg.x - hist_raw_ycocg.x);
 
@@ -119,7 +122,7 @@ void main() {
     }
 
     // Reprojected history sampling & variance clipping
-    vec3 reprojected_hist_rgb = texture(history_frame, uv + flow).rgb;
+    vec3 reprojected_hist_rgb = texture(history_frame, texcoord + flow).rgb;
     vec3 reprojected_hist_ycocg = RGBToYCoCg(reprojected_hist_rgb);
     vec3 clamped_hist_ycocg = clamp(reprojected_hist_ycocg, box_min, box_max);
 

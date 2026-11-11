@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
 $baseDir = Split-Path -Parent $PSScriptRoot
-$version = '17.5.0'
+$version = '17.6.0'
 if (Test-Path "$PSScriptRoot\GIT-RELEASE") {
     $v = (Get-Content "$PSScriptRoot\GIT-RELEASE" -Raw).Trim()
     if ($v) { $version = $v }
@@ -27,6 +27,25 @@ $apksignerItem = Get-ChildItem "C:\Users\ReiKa\AppData\Local\Android\Sdk\build-t
 
 function Sign-ApkWithRotation([string]$apkPath) {
     if (-not (Test-Path $apkPath)) { return }
+    $zipalignItem = Get-ChildItem "C:\Users\ReiKa\AppData\Local\Android\Sdk\build-tools\*\zipalign.exe" | Sort-Object FullName -Descending | Select-Object -First 1
+    if ($null -ne $zipalignItem) {
+        # Strip legacy intermediate signatures (SF, RSA, DSA) to guarantee clean v2+v3 signature
+        try {
+            Add-Type -AssemblyName System.IO.Compression.FileSystem -ErrorAction SilentlyContinue
+            $zip = [System.IO.Compression.ZipFile]::Open($apkPath, [System.IO.Compression.ZipArchiveMode]::Update)
+            $entriesToRemove = @($zip.Entries | Where-Object { $_.FullName -match '^META-INF/.*\.(SF|RSA|DSA)$' })
+            foreach ($entry in $entriesToRemove) {
+                $entry.Delete()
+            }
+            $zip.Dispose()
+        } catch {}
+        $tmpAligned = "$apkPath.aligned"
+        & $zipalignItem.FullName -p -f 4 $apkPath $tmpAligned
+        if ($LASTEXITCODE -eq 0 -and (Test-Path $tmpAligned)) {
+            Move-Item $tmpAligned $apkPath -Force
+        }
+    }
+    if (-not (Test-Path $apkPath)) { return }
     if ((Test-Path $propsFile) -and (Test-Path $oldKs) -and (Test-Path $lineage) -and ($null -ne $apksignerItem)) {
         $props = @{}
         foreach ($line in (Get-Content $propsFile -Encoding UTF8)) {
@@ -43,7 +62,7 @@ function Sign-ApkWithRotation([string]$apkPath) {
 
         Write-Host "Applying STORM SERTIFICATE + V3 Key Rotation Lineage to $(Split-Path $apkPath -Leaf)..."
         & $apksignerItem.FullName sign `
-            --v1-signing-enabled true `
+            --v1-signing-enabled false `
             --v2-signing-enabled true `
             --v3-signing-enabled true `
             --v4-signing-enabled false `
@@ -56,7 +75,7 @@ function Sign-ApkWithRotation([string]$apkPath) {
         if ($LASTEXITCODE -ne 0) {
             throw "apksigner sign failed for $apkPath"
         }
-        & $apksignerItem.FullName verify $apkPath
+        & $apksignerItem.FullName verify --verbose $apkPath
         if ($LASTEXITCODE -ne 0) {
             throw "apksigner verify failed for $apkPath"
         }
@@ -66,8 +85,8 @@ function Sign-ApkWithRotation([string]$apkPath) {
             if ($badging -match "versionCode='(\d+)'") {
                 $vc = [int64]$matches[1]
                 Write-Host "Verified $(Split-Path $apkPath -Leaf) versionCode=$vc"
-                if ($vc -le 34290090) {
-                    throw "FATAL UPGRADE GUARD: versionCode ($vc) is not strictly greater than 34290090! In-place upgrade would fail with INSTALL_FAILED_VERSION_DOWNGRADE."
+                if ($vc -le 34300180) {
+                    throw "FATAL UPGRADE GUARD: versionCode ($vc) is not strictly greater than 34300180! In-place upgrade would fail with INSTALL_FAILED_VERSION_DOWNGRADE."
                 }
             }
         }

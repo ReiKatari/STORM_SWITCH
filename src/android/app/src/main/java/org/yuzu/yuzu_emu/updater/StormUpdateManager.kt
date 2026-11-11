@@ -338,11 +338,9 @@ object StormUpdateManager {
             .setTitle(R.string.update_available)
             .setMessage(fullMsg)
             .setPositiveButton(R.string.update) { _, _ ->
-                if (release.assets.isEmpty()) {
-                    openLink(activity, release.url)
-                } else {
-                    downloadAndInstallUpdate(activity, release)
-                }
+                val matchingUrls = selectMatchingApkUrls(release)
+                val targetUrl = matchingUrls.firstOrNull() ?: release.url.ifBlank { "https://github.com/ReiKatari/STORM_SWITCH/releases/latest" }
+                openLink(activity, targetUrl)
             }
             .setNegativeButton(R.string.cancel) { dialog, _ ->
                 dismissedTagInSession = cleanTag
@@ -379,77 +377,8 @@ object StormUpdateManager {
 
     private fun downloadAndInstallUpdate(activity: Activity, release: NativeLibrary.UpdateResult) {
         val matchingUrls = selectMatchingApkUrls(release)
-        if (matchingUrls.isEmpty()) {
-            openLink(activity, release.url)
-            return
-        }
-
-        val artifactName = matchingUrls.first().substringAfterLast("/").removeSuffix(".apk")
-        val apkFile = File(activity.cacheDir, "update-$artifactName.apk")
-
-        val progressView = activity.layoutInflater.inflate(R.layout.dialog_download_progress, null)
-        val progressBar = progressView.findViewById<LinearProgressIndicator>(R.id.download_progress_bar)
-        val progressMessage = progressView.findViewById<MaterialTextView>(R.id.download_progress_message)
-        progressBar?.max = 100
-        progressBar?.progress = 0
-        progressMessage?.text = "0%"
-
-        val progressDialog: AlertDialog = MaterialAlertDialogBuilder(activity)
-            .setTitle(R.string.downloading_update)
-            .setView(progressView)
-            .setCancelable(false)
-            .create()
-        progressDialog.show()
-
-        val downloader = APKDownloader(matchingUrls, apkFile)
-        downloader.download(
-            onProgress = { pct ->
-                activity.runOnUiThread {
-                    if (!activity.isFinishing && !activity.isDestroyed) {
-                        progressBar?.progress = pct
-                        progressMessage?.text = "$pct%"
-                    }
-                }
-            },
-            onComplete = { success ->
-                activity.runOnUiThread {
-                    try {
-                        if (progressDialog.isShowing) progressDialog.dismiss()
-                    } catch (_: Throwable) {}
-
-                    if (activity.isFinishing || activity.isDestroyed) return@runOnUiThread
-
-                    if (success && APKDownloader.isValidApkFile(apkFile)) {
-                        APKInstaller(activity).install(
-                            apkFile,
-                            onComplete = {
-                                Toast.makeText(
-                                    activity.applicationContext,
-                                    R.string.update_installed_successfully,
-                                    Toast.LENGTH_LONG
-                                ).show()
-                            },
-                            onFailure = { e ->
-                                Toast.makeText(
-                                    activity.applicationContext,
-                                    activity.getString(R.string.update_install_failed, e.message ?: ""),
-                                    Toast.LENGTH_LONG
-                                ).show()
-                            }
-                        )
-                    } else {
-                        try {
-                            if (apkFile.exists()) apkFile.delete()
-                        } catch (_: Throwable) {}
-                        Toast.makeText(
-                            activity,
-                            activity.getString(R.string.update_download_failed),
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
-                }
-            }
-        )
+        val targetUrl = matchingUrls.firstOrNull() ?: release.url.ifBlank { "https://github.com/ReiKatari/STORM_SWITCH/releases/latest" }
+        openLink(activity, targetUrl)
     }
 
     private fun openLink(activity: Activity, link: String) {

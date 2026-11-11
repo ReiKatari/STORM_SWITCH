@@ -11,6 +11,7 @@
 #include "storm_switch/game/common.h"
 #include "storm_switch/game/game_card.h"
 #include "storm_switch/game/game_grid.h"
+#include "storm_switch/storm_catalog_cache.h"
 
 GameGrid::GameGrid(QWidget* parent) : QListView{parent} {
     m_gameCard = new GameCard(this);
@@ -45,6 +46,12 @@ GameGrid::GameGrid(QWidget* parent) : QListView{parent} {
     if (viewport()) {
         viewport()->setMouseTracking(true);
     }
+
+    connect(&StormCatalogCache::Instance(), &StormCatalogCache::CacheLoaded, this, [this]() {
+        if (viewport()) {
+            viewport()->update();
+        }
+    }, Qt::QueuedConnection);
 }
 
 void GameGrid::SetModel(GameListModel* model) {

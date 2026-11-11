@@ -2412,15 +2412,15 @@
     <string name="freedreno_reset_recommended">Сбросить к рекомендуемым</string>
     <string name="freedreno_reset_recommended_desc">Сбросить все отладочные переменные Freedreno к настройкам максимальной производительности</string>
     <string name="freedreno_reset_done_toast">Настройки Freedreno сброшены к рекомендуемым</string>
-    <!-- PanVK & STORM DRIVER 10.0.0 additions -->
+    <!-- PanVK & STORM DRIVER 11.0.0 additions -->
     <string name="tab_driver_all">Все драйверы</string>
     <string name="tab_driver_storm">STORM DRIVER</string>
     <string name="tab_driver_turnip">Turnip (Adreno)</string>
     <string name="tab_driver_panvk">PanVK (Mali / Immortalis)</string>
     <string name="tab_driver_qualcomm">Qualcomm Proprietary</string>
-    <string name="install_storm_driver_10">Скачать STORM DRIVER 10.0.0</string>
+    <string name="install_storm_driver_10">Скачать STORM DRIVER 11.0.0</string>
     <string name="storm_driver_10_recommendation">ГПУ: %1$s • Рекомендуется: %2$s</string>
-    <string name="storm_driver_downloading">Загрузка STORM DRIVER 10.0.0…</string>
+    <string name="storm_driver_downloading">Загрузка STORM DRIVER 11.0.0…</string>
 
     <!-- UI Design Styles -->
     <string name="ui_design_style">Дизайн интерфейса</string>
@@ -2469,8 +2469,8 @@
     <string name="save_state_restore_slot_title">Восстановление слота %1$d</string>
     <string name="save_state_restore_slot_message">Восстановить сохранение слота %1$d из резервной копии (.undo.bak)?</string>
     <string name="save_state_restore_button">Восстановить</string>
-    <string name="storm_driver_10_active">STORM DRIVER 10.0.0 (Активен)</string>
-    <string name="storm_driver_already_active">STORM DRIVER 10.0.0 уже активен!</string>
+    <string name="storm_driver_10_active">STORM DRIVER 11.0.0 (Активен)</string>
+    <string name="storm_driver_already_active">STORM DRIVER 11.0.0 уже активен!</string>
     <string name="added">Добавлено</string>
     <string name="pagination_first">&lt;&lt;</string>
     <string name="pagination_prev">&lt;</string>

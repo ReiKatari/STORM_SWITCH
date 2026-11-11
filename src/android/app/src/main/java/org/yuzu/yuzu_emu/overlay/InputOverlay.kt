@@ -156,9 +156,12 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
         // Migrate shoulder/trigger and stick click buttons for existing 17.3.3 users
         val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
         val migrationVersion = prefs.getInt(OVERLAY_SHOULDER_FIX_KEY, 0)
-        if (migrationVersion < OVERLAY_LAYOUT_VERSION) {
+        if (migrationVersion < OVERLAY_LAYOUT_VERSION || !prefs.getBoolean("storm_overlay_shoulder_y_v20_5", false)) {
             migrateShoulderAndStickControls()
-            prefs.edit().putInt(OVERLAY_SHOULDER_FIX_KEY, OVERLAY_LAYOUT_VERSION).apply()
+            prefs.edit()
+                .putInt(OVERLAY_SHOULDER_FIX_KEY, OVERLAY_LAYOUT_VERSION)
+                .putBoolean("storm_overlay_shoulder_y_v20_5", true)
+                .apply()
         }
 
         // Load the controls.
@@ -633,62 +636,14 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
         return super.onTouchEvent(event)
     }
 
-    private fun addOverlayControls(layout: OverlayLayout) {
+        private fun addOverlayControls(layout: OverlayLayout) {
         val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
-        if (!prefs.getBoolean("storm_overlay_shoulder_y_v20_3", false)) {
-            try {
-                val overlayControlData = NativeConfig.getOverlayControlData()
-                var modified = false
-                for (data in overlayControlData) {
-                    if (data.id == OverlayControl.BUTTON_ZL.id || data.id == OverlayControl.BUTTON_ZR.id) {
-                        if (data.landscapePosition.second < 0.14) {
-                            data.landscapePosition = Pair(data.landscapePosition.first, 0.16)
-                            modified = true
-                        }
-                        if (data.portraitPosition.second < 0.22) {
-                            data.portraitPosition = Pair(data.portraitPosition.first, 0.235)
-                            modified = true
-                        }
-                        if (data.foldablePosition.second < 0.12) {
-                            data.foldablePosition = Pair(data.foldablePosition.first, 0.14)
-                            modified = true
-                        }
-                    } else if (data.id == OverlayControl.BUTTON_L.id || data.id == OverlayControl.BUTTON_R.id) {
-                        if (data.landscapePosition.second < 0.25) {
-                            data.landscapePosition = Pair(data.landscapePosition.first, 0.28)
-                            modified = true
-                        }
-                        if (data.portraitPosition.second < 0.28) {
-                            data.portraitPosition = Pair(data.portraitPosition.first, 0.30)
-                            modified = true
-                        }
-                        if (data.foldablePosition.second < 0.18) {
-                            data.foldablePosition = Pair(data.foldablePosition.first, 0.205)
-                            modified = true
-                        }
-                    } else if (data.id == OverlayControl.BUTTON_STICK_L.id || data.id == OverlayControl.BUTTON_STICK_R.id) {
-                        if (data.landscapePosition.second < 0.40) {
-                            data.landscapePosition = Pair(data.landscapePosition.first, 0.415)
-                            modified = true
-                        }
-                        if (data.portraitPosition.second < 0.38) {
-                            data.portraitPosition = Pair(data.portraitPosition.first, 0.40)
-                            modified = true
-                        }
-                        if (data.foldablePosition.second < 0.25) {
-                            data.foldablePosition = Pair(data.foldablePosition.first, 0.28)
-                            modified = true
-                        }
-                    }
-                }
-                if (modified) {
-                    NativeConfig.setOverlayControlData(overlayControlData)
-                    NativeConfig.saveGlobalConfig()
-                }
-            } catch (e: Throwable) {
-                e.printStackTrace()
-            }
-            prefs.edit().putBoolean("storm_overlay_shoulder_y_v20_2", true).apply()
+        if (prefs.getInt(OVERLAY_SHOULDER_FIX_KEY, 0) < OVERLAY_LAYOUT_VERSION || !prefs.getBoolean("storm_overlay_shoulder_y_v20_5", false)) {
+            migrateShoulderAndStickControls()
+            prefs.edit()
+                .putInt(OVERLAY_SHOULDER_FIX_KEY, OVERLAY_LAYOUT_VERSION)
+                .putBoolean("storm_overlay_shoulder_y_v20_5", true)
+                .apply()
         }
         val windowSize = getSafeScreenSize(context, Pair(measuredWidth, measuredHeight))
         val overlayControlData = NativeConfig.getOverlayControlData()
@@ -1460,7 +1415,7 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
 
     companion object {
 
-        const val OVERLAY_LAYOUT_VERSION = 2
+        const val OVERLAY_LAYOUT_VERSION = 5
         private const val OVERLAY_SHOULDER_FIX_KEY = "overlay_shoulder_fix_version"
 
         // Increase this number every time there is a breaking change to every overlay layout
@@ -1538,6 +1493,13 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
             val cy = h / 2f
 
             val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
+
+            if (w > h * 1.3f) {
+                vectorDrawable.setBounds(0, 0, canvas.width, canvas.height)
+                vectorDrawable.alpha = if (isPressed) 255 else 225
+                vectorDrawable.draw(canvas)
+                return scaledBitmap
+            }
 
             when (currentTheme.renderStyle) {
                 org.yuzu.yuzu_emu.overlay.model.OverlayRenderStyle.ARCADE_CANDY_3D -> {
@@ -1888,14 +1850,15 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
                 OverlayControl.BUTTON_PAUSE_COOLING.id -> 0.08f
 
                 OverlayControl.BUTTON_GL.id,
-                OverlayControl.BUTTON_GR.id,
+                OverlayControl.BUTTON_GR.id -> 0.125f
+
                 OverlayControl.BUTTON_L.id,
                 OverlayControl.BUTTON_R.id,
                 OverlayControl.BUTTON_ZL.id,
-                OverlayControl.BUTTON_ZR.id -> 0.125f
+                OverlayControl.BUTTON_ZR.id -> 0.235f
 
                 OverlayControl.BUTTON_STICK_L.id,
-                OverlayControl.BUTTON_STICK_R.id -> 0.105f
+                OverlayControl.BUTTON_STICK_R.id -> 0.160f
 
                 else -> 0.11f
             }
@@ -1927,9 +1890,37 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
 
             // Initialize the InputOverlayDrawableButton.
             val currentTheme = org.yuzu.yuzu_emu.overlay.model.OverlayTheme.fromId(IntSetting.OVERLAY_SKIN_THEME.getInt())
-            val (defaultStateBitmap, pressedStateBitmap) = if (currentTheme.isProceduralV20) {
-                val dm = context.resources.displayMetrics
-                val minScreenDimension = min(dm.widthPixels, dm.heightPixels)
+            val isShoulderOrTrigger = when (overlayControlData.id) {
+                OverlayControl.BUTTON_ZL.id,
+                OverlayControl.BUTTON_ZR.id,
+                OverlayControl.BUTTON_L.id,
+                OverlayControl.BUTTON_R.id -> true
+                else -> false
+            }
+            val dm = context.resources.displayMetrics
+            val minScreenDimension = min(dm.widthPixels, dm.heightPixels)
+            val (defaultStateBitmap, pressedStateBitmap) = if (isShoulderOrTrigger) {
+                val trigWidth = (scale * minScreenDimension).toInt().coerceIn(84, 640)
+                val trigHeight = (trigWidth * 0.41f).toInt().coerceIn(36, 280)
+                Pair(
+                    OverlayControlIconRenderer.createShoulderOrTriggerBitmap(
+                        overlayControlData.id,
+                        trigWidth,
+                        trigHeight,
+                        currentTheme,
+                        isPressed = false,
+                        isRightSide = isRightSide
+                    ),
+                    OverlayControlIconRenderer.createShoulderOrTriggerBitmap(
+                        overlayControlData.id,
+                        trigWidth,
+                        trigHeight,
+                        currentTheme,
+                        isPressed = true,
+                        isRightSide = isRightSide
+                    )
+                )
+            } else if (currentTheme.isProceduralV20) {
                 val btnPixelSize = (scale * minScreenDimension).toInt().coerceIn(48, 512)
                 Pair(
                     OverlayControlIconRenderer.createBitmapForControl(

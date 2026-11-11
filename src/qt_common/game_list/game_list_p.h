@@ -29,6 +29,7 @@
 
 #include "common/common_types.h"
 #include "storm_switch/common/storm_design_engine.h"
+#include "storm_switch/storm_catalog_cache.h"
 #include "common/fs/fs.h"
 #include "common/fs/path_util.h"
 #include "common/logging.h"
@@ -294,6 +295,19 @@ public:
         }
 
         setData(version_num, VersionRole);
+        if (program_id != 0) {
+            QString clean_ver = version_num.trimmed();
+            while (clean_ver.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
+                clean_ver.remove(0, 1);
+            }
+            clean_ver = clean_ver.trimmed();
+            if (clean_ver.isEmpty() || clean_ver == QStringLiteral("0")) {
+                clean_ver = QStringLiteral("1.0.0");
+            }
+            setData(StormCatalogCache::Instance().HasUpdate(program_id, clean_ver), HasUpdateBadgeRole);
+        } else {
+            setData(false, HasUpdateBadgeRole);
+        }
         setData(addon_count, AddonCountRole);
         setData(qulonglong(internal_ver), InternalVersionRole);
         setData(addon_summary, AddonSummaryRole);
@@ -363,6 +377,26 @@ public:
 
     QVariant data(int role) const override {
         const u32 target_size = UISettings::values.game_icon_size.GetValue();
+        if (role == HasUpdateBadgeRole) {
+            const QVariant cached = GameListItem::data(HasUpdateBadgeRole);
+            if (cached.isValid()) {
+                return cached;
+            }
+            const u64 pid = data(ProgramIdRole).toULongLong();
+            if (pid != 0) {
+                QString ver = data(VersionRole).toString().trimmed();
+                while (ver.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
+                    ver.remove(0, 1);
+                }
+                ver = ver.trimmed();
+                if (ver.isEmpty() || ver == QStringLiteral("0")) {
+                    ver = QStringLiteral("1.0.0");
+                }
+                return StormCatalogCache::Instance().HasUpdate(pid, ver);
+            }
+            return false;
+        }
+
         if (role == ScaledPixmapRole) {
             if (!m_pixmap.isNull() && (m_cached_icon_size == 0 || m_cached_icon_size >= static_cast<int>(target_size))) {
                 return m_pixmap;
