@@ -72,6 +72,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="8dp"
+            app:boxBackgroundColor="?attr/colorSurfaceVariant"
+            app:boxStrokeColor="?attr/colorPrimary"
+            app:hintTextColor="?attr/colorPrimary"
+            android:textColorHint="?attr/colorOnSurfaceVariant"
             android:hint="@string/multiplayer_preferred_game_name">
 
             <com.google.android.material.textfield.MaterialAutoCompleteTextView
@@ -140,6 +144,10 @@
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            app:boxBackgroundColor="?attr/colorSurfaceVariant"
+            app:boxStrokeColor="?attr/colorPrimary"
+            app:hintTextColor="?attr/colorPrimary"
+            android:textColorHint="?attr/colorOnSurfaceVariant"
             android:hint="@string/multiplayer_lobby_type"
             android:padding="8dp">
 

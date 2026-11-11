@@ -299,33 +299,52 @@ object GpuDriverHelper {
         val customLib = installedCustomDriverData.libraryName
         if (!customLib.isNullOrEmpty() && (isTurnipDriverActive() || isPanVkDriverActive())) {
             val installDir = File(driverInstallationPath!!)
-            val drircFile = File(installDir, "drirc.xml")
-            val drircConfFile = File(installDir, "00-storm.conf")
-            val fallbackConf = if (drircConfFile.exists()) drircConfFile else if (drircFile.exists()) drircFile else null
+            val isStorm8 = isStormDriver8OrNewer()
+            val panVkActive = isPanVkDriverActive()
+            val turnipActive = isTurnipDriverActive()
 
-            if (fallbackConf != null && fallbackConf.exists()) {
-                val configBytes = fallbackConf.readBytes()
-                try {
-                    val redirDir = File(fileRedirectionPath!!)
-                    if (!redirDir.exists()) redirDir.mkdirs()
-                    File(redirDir, "drirc.xml").writeBytes(configBytes)
-                    File(redirDir, "drirc").writeBytes(configBytes)
-                    File(redirDir, "00-storm.conf").writeBytes(configBytes)
-                    File(redirDir, "drirc.conf").writeBytes(configBytes)
+            if (isStorm8 || panVkActive) {
+                val drircFile = File(installDir, "drirc.xml")
+                val drircConfFile = File(installDir, "00-storm.conf")
+                val fallbackConf = if (drircConfFile.exists()) drircConfFile else if (drircFile.exists()) drircFile else null
 
-                    File(installDir, "00-storm.conf").writeBytes(configBytes)
-                    File(installDir, "drirc.conf").writeBytes(configBytes)
-                    File(installDir, "drirc").writeBytes(configBytes)
+                if (fallbackConf != null && fallbackConf.exists()) {
+                    val configBytes = fallbackConf.readBytes()
+                    try {
+                        val redirDir = File(fileRedirectionPath!!)
+                        if (!redirDir.exists()) redirDir.mkdirs()
+                        File(redirDir, "drirc.xml").writeBytes(configBytes)
+                        File(redirDir, "drirc").writeBytes(configBytes)
+                        File(redirDir, "00-storm.conf").writeBytes(configBytes)
+                        File(redirDir, "drirc.conf").writeBytes(configBytes)
 
-                    // Also write to $HOME/.drirc for Mesa driconf loader
-                    val homeDir = YuzuApplication.appContext.filesDir
-                    File(homeDir, ".drirc").writeBytes(configBytes)
-                } catch (_: Throwable) {}
+                        File(installDir, "00-storm.conf").writeBytes(configBytes)
+                        File(installDir, "drirc.conf").writeBytes(configBytes)
+                        File(installDir, "drirc").writeBytes(configBytes)
 
-                NativeFreedrenoConfig.setFreedrenoEnv("DRIRC_CONFIGDIR", driverInstallationPath!!)
-                NativeFreedrenoConfig.setFreedrenoEnv("MESA_DRIRC_DIR", driverInstallationPath!!)
-                NativeFreedrenoConfig.setFreedrenoEnv("MESA_DRIRC_FILE", fallbackConf.absolutePath)
+                        // Also write to $HOME/.drirc for Mesa driconf loader
+                        val homeDir = YuzuApplication.appContext.filesDir
+                        File(homeDir, ".drirc").writeBytes(configBytes)
+                    } catch (_: Throwable) {}
+
+                    NativeFreedrenoConfig.setFreedrenoEnv("DRIRC_CONFIGDIR", driverInstallationPath!!)
+                    NativeFreedrenoConfig.setFreedrenoEnv("MESA_DRIRC_DIR", driverInstallationPath!!)
+                    NativeFreedrenoConfig.setFreedrenoEnv("MESA_DRIRC_FILE", fallbackConf.absolutePath)
+                    NativeFreedrenoConfig.setFreedrenoEnv("HOME", YuzuApplication.appContext.filesDir.absolutePath)
+                }
+            } else if (turnipActive) {
+                // Issue #94: Third-party Turnip driver (e.g. MrPurple T30, Kimchi, Weab-chan)
+                // Set DRIRC_CONFIGDIR and MESA_DRIRC_DIR to installDir (preserving bundled .conf / sysmem config),
+                // clear MESA_DRIRC_FILE, and delete any stale .drirc in filesDir
+                NativeFreedrenoConfig.setFreedrenoEnv("DRIRC_CONFIGDIR", installDir.absolutePath)
+                NativeFreedrenoConfig.setFreedrenoEnv("MESA_DRIRC_DIR", installDir.absolutePath)
+                NativeFreedrenoConfig.clearFreedrenoEnv("MESA_DRIRC_FILE")
                 NativeFreedrenoConfig.setFreedrenoEnv("HOME", YuzuApplication.appContext.filesDir.absolutePath)
+
+                val staleDrirc = File(YuzuApplication.appContext.filesDir, ".drirc")
+                if (staleDrirc.exists()) {
+                    try { staleDrirc.delete() } catch (_: Throwable) {}
+                }
             }
 
             // 4GB Monolithic Shader Cache for Mesa Turnip and PanVK
@@ -403,61 +422,89 @@ object GpuDriverHelper {
         }
 
         try {
-            val profileType = PerGameDrircGenerator.detectProfileType(programIdHex, gameTitle)
-            val generatedConfigFile = PerGameDrircGenerator.generateForGame(programIdHex, gameTitle)
-            val configBytes = generatedConfigFile.readBytes()
-
             val installDir = File(driverInstallationPath!!)
             val isStorm8 = isStormDriver8OrNewer()
-            val stormConfFile = File(installDir, "00-storm.conf")
-            val isDiablo = profileType == PerGameDrircGenerator.GameProfileType.DIABLO ||
-                programIdHex.equals("0100726014352000", ignoreCase = true) ||
-                gameTitle.contains("diablo", ignoreCase = true)
-            val isMarioRabbids = profileType == PerGameDrircGenerator.GameProfileType.MARIO_RABBIDS ||
-                programIdHex.equals("010067300059A000", ignoreCase = true) ||
-                programIdHex.equals("0100760012E4A000", ignoreCase = true) ||
-                programIdHex.equals("010032C00AC58000", ignoreCase = true) ||
-                programIdHex.equals("01005CA00F966000", ignoreCase = true) ||
-                gameTitle.contains("rabbids", ignoreCase = true)
 
-            val selectedDriverPath = try { StringSetting.DRIVER_PATH.getString() } catch (_: Exception) { "" }
+            if (isStorm8 || panVkActive) {
+                val profileType = PerGameDrircGenerator.detectProfileType(programIdHex, gameTitle)
+                val generatedConfigFile = PerGameDrircGenerator.generateForGame(programIdHex, gameTitle)
+                val configBytes = generatedConfigFile.readBytes()
+                val stormConfFile = File(installDir, "00-storm.conf")
+                val isDiablo = profileType == PerGameDrircGenerator.GameProfileType.DIABLO ||
+                    programIdHex.equals("0100726014352000", ignoreCase = true) ||
+                    gameTitle.contains("diablo", ignoreCase = true)
+                val isMarioRabbids = profileType == PerGameDrircGenerator.GameProfileType.MARIO_RABBIDS ||
+                    programIdHex.equals("010067300059A000", ignoreCase = true) ||
+                    programIdHex.equals("0100760012E4A000", ignoreCase = true) ||
+                    programIdHex.equals("010032C00AC58000", ignoreCase = true) ||
+                    programIdHex.equals("01005CA00F966000", ignoreCase = true) ||
+                    gameTitle.contains("rabbids", ignoreCase = true)
 
-            if (isStorm8 && stormConfFile.exists()) {
-                val currentConf = try { stormConfFile.readText() } catch (_: Exception) { "" }
-                if (!currentConf.contains("<application name=\"Tier ")) {
-                    if (selectedDriverPath.isNotEmpty()) {
-                        val activeZip = File(selectedDriverPath)
-                        if (activeZip.exists()) {
-                            try {
-                                java.util.zip.ZipFile(activeZip).use { zf ->
-                                    val entry = zf.getEntry("00-storm.conf") ?: zf.entries().asSequence().firstOrNull { it.name.endsWith("00-storm.conf") }
-                                    if (entry != null) {
-                                        zf.getInputStream(entry).use { input ->
-                                            stormConfFile.writeBytes(input.readBytes())
+                val selectedDriverPath = try { StringSetting.DRIVER_PATH.getString() } catch (_: Exception) { "" }
+
+                if (isStorm8 && stormConfFile.exists()) {
+                    val currentConf = try { stormConfFile.readText() } catch (_: Exception) { "" }
+                    if (!currentConf.contains("<application name=\"Tier ")) {
+                        if (selectedDriverPath.isNotEmpty()) {
+                            val activeZip = File(selectedDriverPath)
+                            if (activeZip.exists()) {
+                                try {
+                                    java.util.zip.ZipFile(activeZip).use { zf ->
+                                        val entry = zf.getEntry("00-storm.conf") ?: zf.entries().asSequence().firstOrNull { it.name.endsWith("00-storm.conf") }
+                                        if (entry != null) {
+                                            zf.getInputStream(entry).use { input ->
+                                                stormConfFile.writeBytes(input.readBytes())
+                                            }
+                                            Log.info("[GpuDriverHelper] Self-healed 00-storm.conf from ${activeZip.name}")
                                         }
-                                        Log.info("[GpuDriverHelper] Self-healed 00-storm.conf from ${activeZip.name}")
                                     }
+                                } catch (e: Exception) {
+                                    Log.error("[GpuDriverHelper] Failed to self-heal 00-storm.conf: ${e.message}")
                                 }
-                            } catch (e: Exception) {
-                                Log.error("[GpuDriverHelper] Failed to self-heal 00-storm.conf: ${e.message}")
                             }
                         }
                     }
                 }
+
+                val perGameDir = File(installDir, "per_game_drirc")
+                if (!perGameDir.exists()) perGameDir.mkdirs()
+                val perGameDrircFile = File(perGameDir, "drirc.xml")
+                perGameDrircFile.writeBytes(configBytes)
+
+                val homeDir = YuzuApplication.appContext.filesDir
+                File(homeDir, ".drirc").writeBytes(configBytes)
+
+                NativeFreedrenoConfig.setFreedrenoEnv("DRIRC_CONFIGDIR", perGameDir.absolutePath)
+                NativeFreedrenoConfig.setFreedrenoEnv("MESA_DRIRC_DIR", perGameDir.absolutePath)
+                NativeFreedrenoConfig.setFreedrenoEnv("MESA_DRIRC_FILE", perGameDrircFile.absolutePath)
+                NativeFreedrenoConfig.setFreedrenoEnv("HOME", YuzuApplication.appContext.filesDir.absolutePath)
+
+                if (isDiablo || isMarioRabbids) {
+                    NativeFreedrenoConfig.setFreedrenoEnv("MESA_VK_DYNAMIC_ATTACHMENT_FEEDBACK_LOOP_ENABLE", "1")
+                } else {
+                    if (NativeFreedrenoConfig.isFreedrenoEnvSet("MESA_VK_DYNAMIC_ATTACHMENT_FEEDBACK_LOOP_ENABLE")) {
+                        NativeFreedrenoConfig.clearFreedrenoEnv("MESA_VK_DYNAMIC_ATTACHMENT_FEEDBACK_LOOP_ENABLE")
+                    }
+                }
+                Log.info("[GpuDriverHelper] Successfully applied per-game driver config for $gameTitle ($programIdHex) -> ${generatedConfigFile.absolutePath}")
+            } else {
+                // Issue #94: Third-party Turnip driver (turnipActive && !isStorm8, e.g. MrPurple T30, Kimchi, Weab-chan)
+                // Set DRIRC_CONFIGDIR and MESA_DRIRC_DIR to installDir (preserving bundled .conf / sysmem config),
+                // clear MESA_DRIRC_FILE, and delete any stale .drirc in filesDir
+                NativeFreedrenoConfig.setFreedrenoEnv("DRIRC_CONFIGDIR", installDir.absolutePath)
+                NativeFreedrenoConfig.setFreedrenoEnv("MESA_DRIRC_DIR", installDir.absolutePath)
+                NativeFreedrenoConfig.clearFreedrenoEnv("MESA_DRIRC_FILE")
+                NativeFreedrenoConfig.setFreedrenoEnv("HOME", YuzuApplication.appContext.filesDir.absolutePath)
+
+                val staleDrirc = File(YuzuApplication.appContext.filesDir, ".drirc")
+                if (staleDrirc.exists()) {
+                    try { staleDrirc.delete() } catch (_: Throwable) {}
+                }
+                if (NativeFreedrenoConfig.isFreedrenoEnvSet("MESA_VK_DYNAMIC_ATTACHMENT_FEEDBACK_LOOP_ENABLE")) {
+                    NativeFreedrenoConfig.clearFreedrenoEnv("MESA_VK_DYNAMIC_ATTACHMENT_FEEDBACK_LOOP_ENABLE")
+                }
+                Log.info("[GpuDriverHelper] Preserved third-party Turnip driver native config for $gameTitle ($programIdHex) in ${installDir.absolutePath}")
             }
-
-            val perGameDir = File(installDir, "per_game_drirc")
-            if (!perGameDir.exists()) perGameDir.mkdirs()
-            val perGameDrircFile = File(perGameDir, "drirc.xml")
-            perGameDrircFile.writeBytes(configBytes)
-
-            val homeDir = YuzuApplication.appContext.filesDir
-            File(homeDir, ".drirc").writeBytes(configBytes)
-
-            NativeFreedrenoConfig.setFreedrenoEnv("DRIRC_CONFIGDIR", perGameDir.absolutePath)
-            NativeFreedrenoConfig.setFreedrenoEnv("MESA_DRIRC_DIR", perGameDir.absolutePath)
-            NativeFreedrenoConfig.setFreedrenoEnv("MESA_DRIRC_FILE", perGameDrircFile.absolutePath)
-            NativeFreedrenoConfig.setFreedrenoEnv("HOME", YuzuApplication.appContext.filesDir.absolutePath)
 
             // Synchronize detected vendor with GameFixDatabase
             val isMaliOrPanVk = panVkActive || isMaliGpu()
@@ -466,16 +513,14 @@ object GpuDriverHelper {
                 return
             }
 
-            if (isDiablo || isMarioRabbids) {
-                NativeFreedrenoConfig.setFreedrenoEnv("MESA_VK_DYNAMIC_ATTACHMENT_FEEDBACK_LOOP_ENABLE", "1")
+            val normalizedTid = programIdHex.uppercase()
+            // On third-party Turnip drivers for BOTW (01007EF00011E000), let the driver's native 00-mesa-defaults.conf / user sysmem config run cleanly without forced nolrz
+            val perTidHints = if (!isStorm8 && normalizedTid == "01007EF00011E000") {
+                null
             } else {
-                if (NativeFreedrenoConfig.isFreedrenoEnvSet("MESA_VK_DYNAMIC_ATTACHMENT_FEEDBACK_LOOP_ENABLE")) {
-                    NativeFreedrenoConfig.clearFreedrenoEnv("MESA_VK_DYNAMIC_ATTACHMENT_FEEDBACK_LOOP_ENABLE")
-                }
+                PER_TID_TURNIP_DEBUG_HINTS[normalizedTid]
             }
 
-            val normalizedTid = programIdHex.uppercase()
-            val perTidHints = PER_TID_TURNIP_DEBUG_HINTS[normalizedTid]
             val existingTuDebug = if (NativeFreedrenoConfig.isFreedrenoEnvSet("TU_DEBUG")) NativeFreedrenoConfig.getFreedrenoEnv("TU_DEBUG") else ""
             val flags = existingTuDebug.split(",").map { it.trim() }.filter { it.isNotEmpty() && it != "noconcurrentunresolves" }.toMutableSet()
             if (isAdreno840OrNewer()) {
@@ -487,7 +532,12 @@ object GpuDriverHelper {
                 NativeFreedrenoConfig.setFreedrenoEnv("TU_DEBUG", flags.joinToString(","))
                 Log.info("[GpuDriverHelper] Applied verified per-TID Turnip driver hints for $normalizedTid ($gameTitle): TU_DEBUG=${flags.joinToString(",")}")
             } else {
-                val specialFlags = setOf("nobin", "nolrz", "noubwc", "sysmem", "gmem", "flushall", "syncdraw")
+                // Do NOT overwrite or strip sysmem / gmem from TU_DEBUG!
+                // Only clean transient per-game flags: nobin, nolrz, noubwc (if not A840+), flushall, syncdraw
+                val specialFlags = mutableSetOf("nobin", "nolrz", "flushall", "syncdraw")
+                if (!isAdreno840OrNewer()) {
+                    specialFlags.add("noubwc")
+                }
                 val cleanedFlags = flags.filter { !specialFlags.contains(it) }
                 if (cleanedFlags.isEmpty()) {
                     NativeFreedrenoConfig.clearFreedrenoEnv("TU_DEBUG")
@@ -495,8 +545,6 @@ object GpuDriverHelper {
                     NativeFreedrenoConfig.setFreedrenoEnv("TU_DEBUG", cleanedFlags.joinToString(","))
                 }
             }
-
-            Log.info("[GpuDriverHelper] Successfully applied per-game driver config for $gameTitle ($programIdHex) -> ${generatedConfigFile.absolutePath}")
         } catch (t: Throwable) {
             Log.error("[GpuDriverHelper] Failed to apply per-game driver config: ${t.message}")
         }

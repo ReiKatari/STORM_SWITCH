@@ -1,3 +1,4 @@
+#include <chrono>
 #pragma once
 
 #include "core/file_sys/fs_operate_range.h"
@@ -19,6 +20,10 @@ public:
 
 private:
     FileSys::VirtualFile backend;
+
+    static constexpr s64 ReadBytesPerSecond = 40'000'000;
+    static constexpr s64 MaxChargedReadSize = 64 * 1024;
+    std::chrono::steady_clock::time_point next_read_tick{};
 
     Result Read(
         OutBuffer<BufferAttr_HipcMapAlias | BufferAttr_HipcMapTransferAllowsNonSecure | BufferAttr_HipcAutoSelect | BufferAttr_HipcPointer> out_bytes,

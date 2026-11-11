@@ -240,7 +240,7 @@ StormSaveConflictDialog::StormSaveConflictDialog(QWidget* parent, const StormSav
                                                  const QString& local_path,
                                                  const QString& remote_path)
     : QDialog(parent) {
-    setWindowTitle(tr("STORM SAVE SYNC — Разрешение конфликта сохранений"));
+    setWindowTitle(tr("STORM SAVE SYNC - Разрешение конфликта сохранений"));
     resize(840, 500);
     setMinimumSize(780, 440);
 
@@ -331,7 +331,7 @@ StormSaveConflictDialog::StormSaveConflictDialog(QWidget* parent, const StormSav
            "Сравните данные создания и выберите действие.")
             .arg(item.title_name.isEmpty() ? item.title_id : item.title_name, item.title_id),
         this);
-    desc_lbl->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 12px;"));
+    desc_lbl->setStyleSheet(QStringLiteral("color: %1; font-size: 12px;").arg(pal.textSecondary));
     desc_lbl->setWordWrap(true);
     main_layout->addWidget(desc_lbl);
 
@@ -371,7 +371,7 @@ StormSaveConflictDialog::StormSaveConflictDialog(QWidget* parent, const StormSav
     if (!local_path.isEmpty()) {
         auto* local_path_lbl = new QLabel(local_card);
         local_path_lbl->setObjectName(QStringLiteral("CardDetail"));
-        local_path_lbl->setText(tr("Путь: %1").arg(fontMetrics().elidedText(local_path, Qt::ElideMiddle, 360)));
+        local_path_lbl->setText(tr("Путь: %1").arg(fontMetrics().elidedText(local_path, Qt::ElideMiddle, 560)));
         local_path_lbl->setToolTip(local_path);
         local_layout->addWidget(local_path_lbl);
     }
@@ -411,7 +411,7 @@ StormSaveConflictDialog::StormSaveConflictDialog(QWidget* parent, const StormSav
     if (!remote_path.isEmpty()) {
         auto* remote_path_lbl = new QLabel(remote_card);
         remote_path_lbl->setObjectName(QStringLiteral("CardDetail"));
-        remote_path_lbl->setText(tr("Путь: %1").arg(fontMetrics().elidedText(remote_path, Qt::ElideMiddle, 360)));
+        remote_path_lbl->setText(tr("Путь: %1").arg(fontMetrics().elidedText(remote_path, Qt::ElideMiddle, 560)));
         remote_path_lbl->setToolTip(remote_path);
         remote_layout->addWidget(remote_path_lbl);
     }
@@ -480,7 +480,7 @@ StormSaveConflictDialog::StormSaveConflictDialog(QWidget* parent, const StormSav
 
 StormSaveSyncDialog::StormSaveSyncDialog(QWidget* parent, u64 target_program_id)
     : QDialog(parent), m_target_program_id(target_program_id) {
-    setWindowTitle(tr("STORM SAVE SYNC — Кроссплатформенная синхронизация сохранений"));
+    setWindowTitle(tr("STORM SAVE SYNC - Кроссплатформенная синхронизация сохранений"));
     resize(1160, 700);
     setMinimumSize(680, 460);
 
@@ -1072,16 +1072,11 @@ void StormSaveSyncDialog::SetupUI() {
         tr("Действие")
     });
     m_saves_table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
-    m_saves_table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Fixed);
-    m_saves_table->setColumnWidth(1, 160);
-    m_saves_table->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Fixed);
-    m_saves_table->setColumnWidth(2, 180);
-    m_saves_table->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Fixed);
-    m_saves_table->setColumnWidth(3, 180);
-    m_saves_table->horizontalHeader()->setSectionResizeMode(4, QHeaderView::Fixed);
-    m_saves_table->setColumnWidth(4, 180);
-    m_saves_table->horizontalHeader()->setSectionResizeMode(5, QHeaderView::Fixed);
-    m_saves_table->setColumnWidth(5, 190);
+    m_saves_table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    m_saves_table->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+    m_saves_table->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
+    m_saves_table->horizontalHeader()->setSectionResizeMode(4, QHeaderView::ResizeToContents);
+    m_saves_table->horizontalHeader()->setSectionResizeMode(5, QHeaderView::ResizeToContents);
     m_saves_table->verticalHeader()->setDefaultSectionSize(38);
     m_saves_table->verticalHeader()->setVisible(false);
     m_saves_table->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -1102,7 +1097,7 @@ void StormSaveSyncDialog::SetupUI() {
     bottom_layout->setSpacing(10);
 
     m_status_label = new QLabel(tr("Готово"), this);
-    m_status_label->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 11px;"));
+    m_status_label->setStyleSheet(QStringLiteral("color: %1; font-size: 11px;").arg(pal.textSecondary));
     bottom_layout->addWidget(m_status_label);
     bottom_layout->addStretch();
 
@@ -1286,7 +1281,8 @@ void StormSaveSyncDialog::ApplyStormStyles() {
         pal.accentHover
     );
 
-    setStyleSheet(base_style + QStringLiteral("\n") + custom_style);
+    setProperty("_stormDialogThemed", true);
+    setStyleSheet(StormDesign::BuildDialogStylesheet(pal) + QStringLiteral("\n") + custom_style);
 }
 
 void StormSaveSyncDialog::StartHostServer() {
@@ -1624,7 +1620,7 @@ void StormSaveSyncDialog::OnUdpSocketReadyRead() {
                     const QString dev_name = tokens.size() >= 2 ? tokens[1].trimmed() : tr("Устройство");
                     const QString platform = tokens.size() >= 3 ? tokens[2].trimmed() : QStringLiteral("Node");
 
-                    const QString label = QStringLiteral("%1 (%2) — %3").arg(dev_name, platform, remote_key);
+                    const QString label = QStringLiteral("%1 (%2) - %3").arg(dev_name, platform, remote_key);
                     if (!m_discovered_devices.contains(remote_key)) {
                         m_discovered_devices.insert(remote_key, dev_name);
                         m_discovered_combo->addItem(label, remote_key);
@@ -2474,7 +2470,7 @@ void StormSaveSyncDialog::OnTimeMachineClicked() {
 
     const auto pal = StormTheme::GetThemePalette();
     QDialog dlg(this);
-    dlg.setWindowTitle(tr("Тайм-машина сохранений — Локальные снимки и бэкапы"));
+    dlg.setWindowTitle(tr("Тайм-машина сохранений - Локальные снимки и бэкапы"));
     dlg.resize(760, 480);
     dlg.setMinimumSize(720, 420);
     dlg.setStyleSheet(styleSheet());
@@ -2487,7 +2483,7 @@ void StormSaveSyncDialog::OnTimeMachineClicked() {
         tr("Автоматические снимки сохранений создаются при каждом запуске и выходе из игры (хранится до 5 последних копий на игру). Вы также можете создать снимок вручную или откатить сохранение к любой точке."),
         &dlg);
     info_lbl->setWordWrap(true);
-    info_lbl->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 12px;"));
+    info_lbl->setStyleSheet(QStringLiteral("color: %1; font-size: 12px;").arg(pal.textPrimary));
     vbox->addWidget(info_lbl);
 
     auto* table = new QTableWidget(&dlg);
@@ -2552,7 +2548,7 @@ void StormSaveSyncDialog::OnTimeMachineClicked() {
     auto* btn_restore = new QPushButton(tr("Восстановить выбранный снимок"), &dlg);
     btn_restore->setIcon(MakeDialogVectorIcon(DialogIcon::Restore, Qt::white, 16));
     btn_restore->setMinimumHeight(30);
-    btn_restore->setStyleSheet(QStringLiteral("background: #0284C7; color: #FFFFFF; font-weight: bold;"));
+    btn_restore->setStyleSheet(QStringLiteral("background: %1; color: #FFFFFF; font-weight: bold;").arg(pal.accent));
     connect(btn_restore, &QPushButton::clicked, &dlg, [&]() {
         const int r = table->currentRow();
         if (r < 0) return;

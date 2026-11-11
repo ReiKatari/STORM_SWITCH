@@ -21,7 +21,7 @@
 
         <!-- Header Card -->
         <com.google.android.material.card.MaterialCardView
-            style="@style/EdenCard"
+            style="@style/StormCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
@@ -95,7 +95,7 @@
 
         <!-- SECTION 1: Engine & Languages -->
         <com.google.android.material.card.MaterialCardView
-            style="@style/EdenCard"
+            style="@style/StormCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
@@ -218,7 +218,7 @@
 
         <!-- SECTION 2: Subtitle Display & Style -->
         <com.google.android.material.card.MaterialCardView
-            style="@style/EdenCard"
+            style="@style/StormCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
@@ -284,7 +284,7 @@
 
         <!-- SECTION 3: Scan Regions (ROI) -->
         <com.google.android.material.card.MaterialCardView
-            style="@style/EdenCard"
+            style="@style/StormCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
@@ -346,7 +346,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_configure_regions"
-                    style="@style/EdenButton.Outlined"
+                    style="@style/StormButton.Faceted.Secondary"
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
                     android:layout_marginTop="10dp"
@@ -365,7 +365,7 @@
 
         <!-- SECTION 4: Voice / TTS -->
         <com.google.android.material.card.MaterialCardView
-            style="@style/EdenCard"
+            style="@style/StormCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
@@ -492,7 +492,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_test_tts"
-                    style="@style/EdenButton.Outlined"
+                    style="@style/StormButton.Faceted.Secondary"
                     android:layout_width="wrap_content"
                     android:layout_height="40dp"
                     android:layout_marginTop="4dp"
@@ -511,7 +511,7 @@
 
         <!-- SECTION 5: Floating Button -->
         <com.google.android.material.card.MaterialCardView
-            style="@style/EdenCard"
+            style="@style/StormCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
@@ -612,7 +612,7 @@
         <!-- Close / Save Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_close_settings"
-            style="@style/EdenButton.Filled"
+            style="@style/StormButton.Faceted.Primary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"

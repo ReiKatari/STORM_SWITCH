@@ -2095,7 +2095,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="add_cheat">Add Cheat</string>
     <string name="cheat_name">Cheat Name</string>
     <string name="cheat_code">Atmosphere Cheat Code</string>
-    <string name="cheat_status_active">⚡ Active in Game</string>
+    <string name="cheat_status_active">Active in Game</string>
     <string name="cheat_status_enabled">✅ Enabled</string>
     <string name="cheat_status_disabled">⚪ Disabled</string>
     <string name="select_all">Select All</string>
@@ -2121,14 +2121,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="auto_optimization_wizard_title">Auto-Configuration</string>
     <string name="auto_optimization_wizard_description">Analyzes CPU, GPU, and RAM to automatically apply ideal settings for your device</string>
     <string name="auto_optimization_device_info">Device Hardware Info</string>
-    <string name="auto_optimization_mode_fast">⚡ Fast</string>
+    <string name="auto_optimization_mode_fast">Fast</string>
     <string name="auto_optimization_mode_fast_desc">Maximum FPS, lowest heat, and battery saving. 0.75X resolution, conservative VRAM, fast GPU fences, NCE.</string>
-    <string name="auto_optimization_mode_normal">⚖️ Normal (Recommended)</string>
+    <string name="auto_optimization_mode_normal">Normal (Recommended)</string>
     <string name="auto_optimization_mode_normal_desc" formatted="false">Optimal balance of visual fidelity, smoothness, and stability. 1X (720p/1080p), FSR 85%, FXAA, balanced fences.</string>
-    <string name="auto_optimization_mode_accurate">💎 Accurate</string>
+    <string name="auto_optimization_mode_accurate">Accurate</string>
     <string name="auto_optimization_mode_accurate_desc">Maximum graphical accuracy, 1.5X/1X resolution, safe DMA, strict GPU fences, SMAA, 16x Anisotropy.</string>
     <string name="auto_optimization_apply">Apply Mode</string>
-    <string name="auto_optimization_applied_toast">⚡ Auto-Configuration applied: \"%1$s\" profile!</string>
+    <string name="auto_optimization_applied_toast">Auto-Configuration applied: \"%1$s\" profile!</string>
     <string name="auto_optimization_summary_title">Applied Settings</string>
     <string name="auto_optimization_mode_default">🔄 Default Settings</string>
     <string name="auto_optimization_mode_default_desc">Disable auto-optimization profiles and restore all emulator settings to factory defaults.</string>
@@ -2157,18 +2157,18 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="apply_global_to_all_games_confirm_title">Apply to all games?</string>
     <string name="apply_global_to_all_games_confirm_message">Do you want to reset custom profiles for all games? Current global settings will be applied across your entire game library.</string>
     <string name="apply_global_to_all_games_positive">Apply to all</string>
-    <string name="apply_global_to_all_games_success">⚡ Global settings successfully applied to all games (%d profiles reset)</string>
+    <string name="apply_global_to_all_games_success">Global settings successfully applied to all games (%d profiles reset)</string>
 
     <!-- Settings Profiles -->
     <string name="settings_profiles_title">Settings Profiles</string>
     <string name="settings_profiles_description">Create, save, quickly load, rename, export and share settings profiles.</string>
-    <string name="profile_preset_fast_title">⚡ Fast (Maximum FPS and Low Temp)</string>
+    <string name="profile_preset_fast_title">Fast (Maximum FPS and Low Temp)</string>
     <string name="profile_preset_fast_desc">0.75X resolution, fast JIT, async shaders, disabled reactive flushing, 6GB DRAM, cool SoC.</string>
-    <string name="profile_preset_balanced_title">⚖️ Balanced (Recommended)</string>
+    <string name="profile_preset_balanced_title">Balanced (Recommended)</string>
     <string name="profile_preset_balanced_desc" formatted="false">1.0X (720p/1080p), FSR 85%, fast JIT, async shaders, EDS1 dynamic state, 6GB DRAM.</string>
-    <string name="profile_preset_accurate_title">💎 High Quality (Accurate)</string>
+    <string name="profile_preset_accurate_title">High Quality (Accurate)</string>
     <string name="profile_preset_accurate_desc">1.0X-1.5X, high GPU accuracy, strict sync, FXAA/SMAA, 8GB DRAM.</string>
-    <string name="profile_preset_saver_title">🔋 Battery Saver and Cool SoC</string>
+    <string name="profile_preset_saver_title">Battery Saver and Cool SoC</string>
     <string name="profile_preset_saver_desc" formatted="false">0.75X resolution, 100% speed limit, battery-efficient VRAM, minimum thermal output.</string>
     <string name="profile_btn_apply">Apply</string>
     <string name="profile_btn_share">Share</string>
@@ -2182,7 +2182,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="profile_rename_title">Rename Profile</string>
     <string name="profile_delete_title">Delete Profile</string>
     <string name="profile_delete_confirmation">Are you sure you want to delete profile \"%1$s\"?</string>
-    <string name="profile_applied_toast">⚡ Profile \"%1$s\" applied successfully!</string>
+    <string name="profile_applied_toast">Profile \"%1$s\" applied successfully!</string>
     <string name="profile_apply_failed">Failed to apply settings profile.</string>
     <string name="profile_saved_toast">Profile \"%1$s\" saved!</string>
     <string name="profile_share_title">Share Settings Profile</string>
@@ -2197,8 +2197,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="storm_save_replace_current">Replace current</string>
     <string name="storm_save_replace_remote">Replace remote</string>
     <string name="storm_save_keep_both">Keep both variants</string>
-    <string name="gamebanana_tab_online">🌐 GameBanana catalog</string>
-    <string name="gamebanana_tab_installed">💾 Installed</string>
+    <string name="gamebanana_tab_online">GameBanana catalog</string>
+    <string name="gamebanana_tab_installed">Installed</string>
     <string name="gamebanana_no_installed_mods">No mods installed for this game</string>
     <string name="gamebanana_installed_stats">Total: %1$d | Enabled: %2$d | Disabled: %3$d</string>
     <string name="gamebanana_mod_deleted">Mod "%1$s" deleted</string>
@@ -2455,12 +2455,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="cheat_item_desc_placeholder">Description</string>
     <string name="cheat_btn_edit_qty">✏️ Value</string>
     <string name="cheat_header_version_prefix"> | Version: </string>
-    <string name="cheat_header_in_game"> | ⚡ In Game</string>
+    <string name="cheat_header_in_game"> | In Game</string>
     <string name="cheat_header_offline"> | ⚪ Offline</string>
     <string name="cheat_header_dmnt_active">
-⚡ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
+Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="cheat_build_all_versions">All versions</string>
-    <string name="cheat_toast_activated_ingame">⚡ Cheat codes activated in game!</string>
+    <string name="cheat_toast_activated_ingame">Cheat codes activated in game!</string>
     <string name="cheat_toast_saved">✅ Cheat codes saved successfully</string>
     <string name="cheat_add_name_hint">Cheat name (e.g. Infinite Lives)</string>
     <string name="cheat_add_code_hint">Atmosphere format code (04000000 12345678 ...)</string>
@@ -2518,7 +2518,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="log_viewer_chip_errors">🚨 Errors</string>
     <string name="log_viewer_chip_warnings">⚠️ Warnings</string>
     <string name="log_viewer_chip_info">ℹ️ Info</string>
-    <string name="log_viewer_status_ingame">⚡ In Game</string>
+    <string name="log_viewer_status_ingame">In Game</string>
     <string name="log_viewer_status_offline">⚪ Offline</string>
     <string name="log_viewer_toast_refreshing">🔄 Refreshing log...</string>
     <string name="log_viewer_stats_total_fmt">Total lines: %1$d | Size: %2$d KB</string>
@@ -2642,11 +2642,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="translator_toast_no_text_screen">No text detected on screen</string>
     <string name="translator_overlay_region_fmt">Region %1$d</string>
     <string name="translator_overlay_btn_add">+ Add region</string>
-    <string name="translator_overlay_btn_clear">🧹 Clear</string>
+    <string name="translator_overlay_btn_clear">Clear</string>
     <string name="translator_overlay_btn_save">Save</string>
-    <string name="translator_overlay_btn_close">✕ Close</string>
-    <string name="translator_snack_auto_on">⚡ Auto-translation enabled</string>
-    <string name="translator_snack_auto_off">⚡ Auto-translation disabled</string>
+    <string name="translator_overlay_btn_close">Close</string>
+    <string name="translator_snack_auto_on">Auto-translation enabled</string>
+    <string name="translator_snack_auto_off">Auto-translation disabled</string>
     <string name="translator_snack_tts_on">🔊 TTS voice readout enabled</string>
     <string name="translator_snack_tts_off">🔇 TTS voice readout disabled</string>
     <string name="translator_snack_float_on">👁️ Floating button shown</string>
@@ -2654,7 +2654,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="translator_dialog_select_model">🤖 Select translation model</string>
     <string name="translator_toast_model_selected_fmt">Translation model: %1$s</string>
     <string name="sysinfo_sec_device">📱  DEVICE &amp; SYSTEM</string>
-    <string name="sysinfo_sec_cpu">⚡  PROCESSOR (CPU / SOC)</string>
+    <string name="sysinfo_sec_cpu"> PROCESSOR (CPU / SOC)</string>
     <string name="sysinfo_sec_gpu">🎮  GRAPHICS (GPU &amp; VULKAN)</string>
     <string name="sysinfo_sec_ram">💾  SYSTEM MEMORY (RAM)</string>
     <string name="sysinfo_lbl_manufacturer">• Manufacturer: </string>
@@ -2678,7 +2678,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="sysinfo_lbl_low_mem_thresh">• Low Memory Threshold: </string>
     <string name="emulation_cooling_paused_title">❄️ Game paused — cooling down device</string>
     <string name="emulation_cooling_temp_default">🌡️ Temperature: --°C ➔ Target: 36.5°C</string>
-    <string name="emulation_cooling_chipset_unloaded">⚡ Chipset load removed (&lt; 1 W)</string>
+    <string name="emulation_cooling_chipset_unloaded">Chipset load removed (&lt; 1 W)</string>
     <string name="emulation_cooling_done_fmt">✅ Cooling complete: %1$s°C</string>
     <string name="emulation_cooling_temp_fmt">🌡️ Temperature: %1$s°C ➔ Target: %2$s°C</string>
     <string name="emulation_cooling_in_progress">🌡️ Cooling down chipset</string>
@@ -2920,8 +2920,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="save_states_mode_disabled_toast">Save states are disabled in Settings → System.</string>
     <string name="performance_preset">Performance Preset</string>
     <string name="performance_preset_description">Select an optimization profile to balance performance, battery life, and visual quality</string>
-    <string name="performance_preset_battery">🔋 Battery Saver</string>
-    <string name="performance_preset_balanced">⚖️ Balanced (Recommended)</string>
+    <string name="performance_preset_battery">Battery Saver</string>
+    <string name="performance_preset_balanced">Balanced (Recommended)</string>
     <string name="performance_preset_quality">🚀 Maximum Quality</string>
     <string name="performance_preset_custom">⚙️ Custom</string>
     <string name="performance_preset_applied">Performance preset applied</string>
@@ -2954,7 +2954,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="apply_driver_msg">Apply selected GPU driver?</string>
     <string name="apply_driver_negative">Cancel</string>
     <string name="apply_driver_positive">Apply</string>
-    <string name="game_fix_launch_method">@string/launch_method_title</string>
+    <string name="game_fix_launch_method">Launch method</string>
 
     <!-- UI Design Styles -->
     <string name="ui_design_style">UI Design</string>
@@ -2981,4 +2981,33 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="storm_folder_picker_deep_scan">Scan subfolders automatically</string>
     <string name="storm_folder_picker_added_count">Game folders added: %1$d</string>
     <string name="storm_setup_games_multi_status">Games (folders: %1$d)</string>
+
+    <string name="enable_all_cheats">Enable All Cheats</string>
+    <string name="disable_all_cheats">Disable All Cheats</string>
+    <string name="unnamed_cheat">Unnamed Cheat</string>
+    <string name="enable_cheats_by_default">Enable cheats by default</string>
+    <string name="enable_cheats_by_default_description">Enable regular cheats when a game starts</string>
+    <string name="storm_thermal_governor">STORM Thermal Governor</string>
+    <string name="storm_thermal_governor_description">Intelligent thermal protection maintaining maximum sustainable clocks without frame spikes</string>
+    <string name="storm_lowend_turbo">STORM Low-End Turbo</string>
+    <string name="storm_lowend_turbo_description">Optimized thread scheduling and buffer management for budget devices</string>
+    <string name="auto_60fps_unlock">Auto 60 FPS Unlock</string>
+    <string name="auto_60fps_unlock_description">Automatically unlock 60 FPS in supported games</string>
+    <string name="auto_aspect_ratio_patch">Auto Aspect Ratio Patch</string>
+    <string name="auto_aspect_ratio_patch_description">Automatically adapt rendering geometry to wide and ultra-wide screens</string>
+    <string name="storm_prof_presets_count_default">Ready presets: 4 • Custom: 0</string>
+    <string name="save_state_slot_restored_success">Slot %1$d successfully restored from backup!</string>
+    <string name="save_state_slot_restore_error">Error restoring slot: %1$s</string>
+    <string name="save_state_undo_action">UNDO</string>
+    <string name="save_state_slot_empty_undo_available">Empty • Undo available (hold card)</string>
+    <string name="save_state_restore_slot_title">Restore Slot %1$d</string>
+    <string name="save_state_restore_slot_message">Restore save state for slot %1$d from backup (.undo.bak)?</string>
+    <string name="save_state_restore_button">Restore</string>
+    <string name="storm_driver_10_active">STORM DRIVER 10.0.0 (Active)</string>
+    <string name="storm_driver_already_active">STORM DRIVER 10.0.0 is already active!</string>
+    <string name="added">Added</string>
+    <string name="pagination_first">&lt;&lt;</string>
+    <string name="pagination_prev">&lt;</string>
+    <string name="pagination_next">&gt;</string>
+    <string name="copy">Copy</string>
 </resources>

@@ -76,13 +76,11 @@ Result GetInfo(Core::System& system, u64* result, InfoType info_id_type, Handle 
         R_UNLESS(process.IsNotNull(), ResultInvalidHandle);
 
         switch (info_id_type) {
-        case InfoType::CoreMask:
-            if (process->IsSwitch2() || Settings::IsCurrentProgramSwitch2()) {
-                *result = 0xFFULL; // 8 cores on Switch 2 (T239)
-            } else {
-                *result = process->GetCoreMask();
-            }
+        case InfoType::CoreMask: {
+            const u64 proc_mask = process->GetCoreMask();
+            *result = proc_mask != 0 ? proc_mask : ((process->IsSwitch2() || Settings::IsCurrentProgramSwitch2()) ? 0x3FULL : 0xFULL);
             R_SUCCEED();
+        }
         case InfoType::PriorityMask:
             *result = process->GetPriorityMask();
             R_SUCCEED();

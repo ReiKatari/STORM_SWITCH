@@ -211,7 +211,7 @@ class OnlineToolsDialogFragment : DialogFragment() {
         binding.root.requestApplyInsets()
 
         val isFirmware = toolType == TYPE_FIRMWARE
-        binding.headerIcon.text = if (isFirmware) "🌐" else "🔑"
+        binding.headerIcon.setImageResource(if (isFirmware) R.drawable.ic_system else R.drawable.ic_lock)
         binding.textHeaderTitle.text = if (isFirmware) {
             getString(R.string.online_install_firmware)
         } else {
@@ -371,12 +371,14 @@ class OnlineToolsDialogFragment : DialogFragment() {
         currentInstalledInfo = detectInstalledInfo()
         binding.textInstalledStatus.text = currentInstalledInfo.displayText
         if (currentInstalledInfo.isInstalled) {
-            binding.textInstalledStatusIcon.text = "🟢"
+            binding.textInstalledStatusIcon.setImageResource(R.drawable.ic_check)
+            binding.textInstalledStatusIcon.imageTintList = android.content.res.ColorStateList.valueOf(0xFF10B981.toInt())
             binding.badgeInstalledHeader.text = getString(R.string.online_tools_badge_active)
             binding.badgeInstalledHeader.setTextColor(0xFF10B981.toInt())
             binding.badgeInstalledHeader.setBackgroundResource(R.drawable.badge_pill_emerald)
         } else {
-            binding.textInstalledStatusIcon.text = "⚪"
+            binding.textInstalledStatusIcon.setImageResource(R.drawable.ic_clear)
+            binding.textInstalledStatusIcon.imageTintList = android.content.res.ColorStateList.valueOf(0xFFF59E0B.toInt())
             binding.badgeInstalledHeader.text = getString(R.string.online_tools_badge_not_installed)
             binding.badgeInstalledHeader.setTextColor(0xFFF59E0B.toInt())
             binding.badgeInstalledHeader.setBackgroundResource(R.drawable.badge_pill_amber)
@@ -900,7 +902,7 @@ class OnlineToolsDialogFragment : DialogFragment() {
             val isInstalled = isVersionMatching(asset.version, currentInstalledInfo.version)
 
             holder.itemBinding.apply {
-                iconToolType.text = if (toolType == TYPE_FIRMWARE) "📦" else "🔑"
+                iconToolType.setImageResource(if (toolType == TYPE_FIRMWARE) R.drawable.ic_system else R.drawable.ic_lock)
                 textToolTitle.text = asset.displayTitle
                 textToolSubtitle.text = root.context.getString(R.string.online_tools_item_subtitle_fmt, asset.name, asset.displaySize)
 

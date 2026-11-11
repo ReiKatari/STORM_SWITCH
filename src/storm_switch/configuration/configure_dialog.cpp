@@ -1265,8 +1265,9 @@ void ConfigureDialog::SetupConflictBanner() {
     m_conflict_fix_btn = new QPushButton(StormLang(QStringLiteral("Исправить"), QStringLiteral("Fix")), m_conflict_banner);
     m_conflict_fix_btn->setCursor(Qt::PointingHandCursor);
     m_conflict_fix_btn->setStyleSheet(QStringLiteral(
-        "QPushButton { background: #ffaa00; color: #1a1a1a; font-weight: bold; padding: 4px 12px; border-radius: 4px; border: none; font-size: 8.5pt; }"
-        "QPushButton:hover { background: #ffbb22; }"));
+        "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #fbbf24, stop:1 #d97706); color: #1e1e2e; font-weight: bold; padding: 4px 14px; border-radius: 5px; border: 1px solid #b45309; border-top: 1px solid rgba(255,255,255,0.4); font-size: 8.5pt; }"
+        "QPushButton:hover { background: #f59e0b; }"
+        "QPushButton:pressed { background: #d97706; }"));
 
     banner_layout->addWidget(m_conflict_label, 1);
     banner_layout->addWidget(m_conflict_fix_btn);

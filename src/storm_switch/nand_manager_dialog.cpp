@@ -22,6 +22,7 @@
 #include "core/core.h"
 #include "qt_common/config/uisettings.h"
 #include "storm_switch/nand_manager_dialog.h"
+#include "storm_switch/common/storm_design_engine.h"
 #include "storm_switch/common/storm_theme.h"
 #include "storm_switch/configuration/storm_ui_structure_helper.h"
 
@@ -50,23 +51,15 @@ void SetActiveNandProfileName(const std::string& name) {
 
 NandManagerDialog::NandManagerDialog(QWidget* parent, Core::System& system_)
     : QDialog(parent), system{system_} {
-    setWindowTitle(tr("💾 STORM SWITCH — Менеджер профилей NAND"));
+    setWindowTitle(tr("STORM SWITCH - Менеджер профилей NAND"));
     resize(1160, 700);
     setMinimumSize(680, 460);
 
+    setProperty("_stormDialogThemed", true);
     const StormTheme::Palette pal = StormTheme::GetThemePalette();
-    setStyleSheet(QStringLiteral(
-        "QDialog { background-color: %1; color: %2; font-family: 'Segoe UI', sans-serif; font-size: 12px; }"
-        "QTableWidget { background-color: %6; border: 1px solid %3; border-radius: 6px; gridline-color: %3; selection-background-color: %3; selection-color: %5; color: %2; }"
-        "QHeaderView::section { background-color: %4; color: %2; padding: 6px; font-weight: bold; border: 1px solid %3; }"
-        "QPushButton, QDialogButtonBox QPushButton, QToolButton { background-color: %7; border: 1px solid %3; border-radius: 6px; padding: 6px 16px; color: %2; font-weight: 600; min-height: 22px; }"
-        "QPushButton:hover, QDialogButtonBox QPushButton:hover, QToolButton:hover { background-color: %3; border: 1px solid %5; color: %5; }"
-        "QPushButton:pressed, QDialogButtonBox QPushButton:pressed, QToolButton:pressed { background-color: %4; border: 1px solid %5; padding: 6px 16px; color: %2; }"
-        "QPushButton:disabled { background: %6; border: 1px solid %3; color: %8; }"
+    setStyleSheet(StormDesign::BuildDialogStylesheet(pal) + QStringLiteral(
         "QCheckBox::indicator:unchecked { border: 1px solid #EF4444; background-color: rgba(239, 68, 68, 0.18); border-radius: 4px; width: 15px; height: 15px; }"
         "QCheckBox::indicator:checked { border: 1px solid #10B981; background-color: #10B981; border-radius: 4px; width: 15px; height: 15px; }"
-    ).arg(
-        pal.bg, pal.textPrimary, pal.border, pal.surface, pal.accent, pal.inputBg, pal.buttonBg, pal.textSecondary
     ));
 
     auto* main_layout = new QVBoxLayout(this);
@@ -75,7 +68,7 @@ NandManagerDialog::NandManagerDialog(QWidget* parent, Core::System& system_)
 
     // Header info banner
     auto* banner = new QLabel(
-        tr("💡 <b>Менеджер виртуальных профилей NAND</b> позволяет разделять системную память Switch, "
+        tr("<b>Менеджер виртуальных профилей NAND</b> позволяет разделять системную память Switch, "
            "установленные игры, прошивки и сохранения по независимым изолированным контейнерам.<br>"
            "Переключение профилей применяется мгновенно при перезапуске эмуляции."),
         this);
@@ -114,35 +107,35 @@ NandManagerDialog::NandManagerDialog(QWidget* parent, Core::System& system_)
     auto* side_layout = new QVBoxLayout();
     side_layout->setSpacing(8);
 
-    btn_set_active = new QPushButton(tr("✅ Сделать активным"), this);
+    btn_set_active = new QPushButton(tr("Сделать активным"), this);
     btn_set_active->setStyleSheet(QStringLiteral("background: #0284C7; color: #FFFFFF; font-weight: bold; border-color: #00D2FF;"));
     connect(btn_set_active, &QPushButton::clicked, this, &NandManagerDialog::OnSetActive);
     side_layout->addWidget(btn_set_active);
 
-    btn_create = new QPushButton(tr("➕ Создать профиль..."), this);
+    btn_create = new QPushButton(tr("Создать профиль..."), this);
     connect(btn_create, &QPushButton::clicked, this, &NandManagerDialog::OnCreateProfile);
     side_layout->addWidget(btn_create);
 
-    btn_clone = new QPushButton(tr("📋 Клонировать профиль..."), this);
+    btn_clone = new QPushButton(tr("Клонировать профиль..."), this);
     connect(btn_clone, &QPushButton::clicked, this, &NandManagerDialog::OnCloneProfile);
     side_layout->addWidget(btn_clone);
 
-    btn_delete = new QPushButton(tr("🗑️ Удалить профиль"), this);
+    btn_delete = new QPushButton(tr("Удалить профиль"), this);
     btn_delete->setStyleSheet(QStringLiteral("color: #EF4444;"));
     connect(btn_delete, &QPushButton::clicked, this, &NandManagerDialog::OnDeleteProfile);
     side_layout->addWidget(btn_delete);
 
     side_layout->addSpacing(10);
 
-    btn_open_folder = new QPushButton(tr("📂 Открыть папку"), this);
+    btn_open_folder = new QPushButton(tr("Открыть папку"), this);
     connect(btn_open_folder, &QPushButton::clicked, this, &NandManagerDialog::OnOpenFolder);
     side_layout->addWidget(btn_open_folder);
 
-    btn_export = new QPushButton(tr("📦 Экспорт копии..."), this);
+    btn_export = new QPushButton(tr("Экспорт копии..."), this);
     connect(btn_export, &QPushButton::clicked, this, &NandManagerDialog::OnExportBackup);
     side_layout->addWidget(btn_export);
 
-    btn_import = new QPushButton(tr("📥 Импорт копии..."), this);
+    btn_import = new QPushButton(tr("Импорт копии..."), this);
     connect(btn_import, &QPushButton::clicked, this, &NandManagerDialog::OnImportBackup);
     side_layout->addWidget(btn_import);
 
@@ -153,7 +146,7 @@ NandManagerDialog::NandManagerDialog(QWidget* parent, Core::System& system_)
 
     // Details label
     lbl_details = new QLabel(this);
-    lbl_details->setStyleSheet(QStringLiteral("font-size: 11px; color: #FFFFFF;"));
+    lbl_details->setStyleSheet(QStringLiteral("font-size: 11px; color: %1;").arg(pal.textPrimary));
     main_layout->addWidget(lbl_details);
 
     // Bottom close button
@@ -244,7 +237,7 @@ void NandManagerDialog::RefreshProfiles() {
         table->setItem(row, 0, name_item);
 
         // Status
-        auto* status_item = new QTableWidgetItem(p.is_active ? tr("🟢 Активен") : tr("⚪ Доступен"));
+        auto* status_item = new QTableWidgetItem(p.is_active ? tr("Активен") : tr("Доступен"));
         status_item->setTextAlignment(Qt::AlignCenter);
         status_item->setFlags(status_item->flags() & ~Qt::ItemIsEditable);
         if (p.is_active) status_item->setForeground(QColor(52, 211, 153));

@@ -72,7 +72,7 @@
 
                 <!-- Device & OS Card -->
                 <com.google.android.material.card.MaterialCardView
-                    style="@style/EdenCard"
+                    style="@style/StormCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="10dp"
@@ -118,7 +118,7 @@
 
                 <!-- CPU & SoC Card -->
                 <com.google.android.material.card.MaterialCardView
-                    style="@style/EdenCard"
+                    style="@style/StormCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="10dp"
@@ -164,7 +164,7 @@
 
                 <!-- GPU & Graphics Card -->
                 <com.google.android.material.card.MaterialCardView
-                    style="@style/EdenCard"
+                    style="@style/StormCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="10dp"
@@ -210,7 +210,7 @@
 
                 <!-- RAM Memory Card -->
                 <com.google.android.material.card.MaterialCardView
-                    style="@style/EdenCard"
+                    style="@style/StormCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="10dp"
@@ -268,7 +268,7 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_copy_info"
 
-                style="@style/EdenButton.Outlined"
+                style="@style/StormButton.Faceted.Secondary"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -286,7 +286,7 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_close_dialog"
 
-                style="@style/EdenButton.Filled"
+                style="@style/StormButton.Faceted.Primary"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"

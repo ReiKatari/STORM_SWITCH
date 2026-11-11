@@ -203,7 +203,7 @@
                               </size>
                              </property>
                              <property name="styleSheet">
-                              <string notr="true">min-width: 68px;</string>
+                              <string notr="true">min-width: 76px;</string>
                              </property>
                              <property name="text">
                               <string/>
@@ -258,7 +258,7 @@
                               </size>
                              </property>
                              <property name="styleSheet">
-                              <string notr="true">min-width: 68px;</string>
+                              <string notr="true">min-width: 76px;</string>
                              </property>
                              <property name="text">
                               <string/>
@@ -334,7 +334,7 @@
                               </size>
                              </property>
                              <property name="styleSheet">
-                              <string notr="true">min-width: 68px;</string>
+                              <string notr="true">min-width: 76px;</string>
                              </property>
                              <property name="text">
                               <string/>
@@ -389,7 +389,7 @@
                               </size>
                              </property>
                              <property name="styleSheet">
-                              <string notr="true">min-width: 68px;</string>
+                              <string notr="true">min-width: 76px;</string>
                              </property>
                              <property name="text">
                               <string/>
@@ -489,7 +489,7 @@
                               </size>
                              </property>
                              <property name="styleSheet">
-                              <string notr="true">min-width: 68px;</string>
+                              <string notr="true">min-width: 76px;</string>
                              </property>
                              <property name="text">
                               <string/>
@@ -544,7 +544,7 @@
                               </size>
                              </property>
                              <property name="styleSheet">
-                              <string notr="true">min-width: 68px;</string>
+                              <string notr="true">min-width: 76px;</string>
                              </property>
                              <property name="text">
                               <string/>
@@ -620,7 +620,7 @@
                               </size>
                              </property>
                              <property name="styleSheet">
-                              <string notr="true">min-width: 68px;</string>
+                              <string notr="true">min-width: 76px;</string>
                              </property>
                              <property name="text">
                               <string/>
@@ -675,7 +675,7 @@
                               </size>
                              </property>
                              <property name="styleSheet">
-                              <string notr="true">min-width: 68px;</string>
+                              <string notr="true">min-width: 76px;</string>
                              </property>
                              <property name="text">
                               <string/>
@@ -793,7 +793,7 @@
                               </size>
                              </property>
                              <property name="styleSheet">
-                              <string notr="true">min-width: 68px;</string>
+                              <string notr="true">min-width: 76px;</string>
                              </property>
                              <property name="text">
                               <string/>
@@ -848,7 +848,7 @@
                               </size>
                              </property>
                              <property name="styleSheet">
-                              <string notr="true">min-width: 68px;</string>
+                              <string notr="true">min-width: 76px;</string>
                              </property>
                              <property name="text">
                               <string/>
@@ -924,7 +924,7 @@
                               </size>
                              </property>
                              <property name="styleSheet">
-                              <string notr="true">min-width: 68px;</string>
+                              <string notr="true">min-width: 76px;</string>
                              </property>
                              <property name="text">
                               <string/>
@@ -979,7 +979,7 @@
                               </size>
                              </property>
                              <property name="styleSheet">
-                              <string notr="true">min-width: 68px;</string>
+                              <string notr="true">min-width: 76px;</string>
                              </property>
                              <property name="text">
                               <string/>
@@ -1079,7 +1079,7 @@
                               </size>
                              </property>
                              <property name="styleSheet">
-                              <string notr="true">min-width: 68px;</string>
+                              <string notr="true">min-width: 76px;</string>
                              </property>
                              <property name="text">
                               <string/>
@@ -1134,7 +1134,7 @@
                               </size>
                              </property>
                              <property name="styleSheet">
-                              <string notr="true">min-width: 68px;</string>
+                              <string notr="true">min-width: 76px;</string>
                              </property>
                              <property name="text">
                               <string/>
@@ -1210,7 +1210,7 @@
                               </size>
                              </property>
                              <property name="styleSheet">
-                              <string notr="true">min-width: 68px;</string>
+                              <string notr="true">min-width: 76px;</string>
                              </property>
                              <property name="text">
                               <string/>
@@ -1265,7 +1265,7 @@
                               </size>
                              </property>
                              <property name="styleSheet">
-                              <string notr="true">min-width: 68px;</string>
+                              <string notr="true">min-width: 76px;</string>
                              </property>
                              <property name="text">
                               <string/>
@@ -1404,7 +1404,7 @@
                               </size>
                              </property>
                              <property name="styleSheet">
-                              <string notr="true">min-width: 68px;</string>
+                              <string notr="true">min-width: 76px;</string>
                              </property>
                              <property name="text">
                               <string/>
@@ -1459,7 +1459,7 @@
                               </size>
                              </property>
                              <property name="styleSheet">
-                              <string notr="true">min-width: 68px;</string>
+                              <string notr="true">min-width: 76px;</string>
                              </property>
                              <property name="text">
                               <string/>
@@ -1535,7 +1535,7 @@
                               </size>
                              </property>
                              <property name="styleSheet">
-                              <string notr="true">min-width: 68px;</string>
+                              <string notr="true">min-width: 76px;</string>
                              </property>
                              <property name="text">
                               <string/>
@@ -1590,7 +1590,7 @@
                               </size>
                              </property>
                              <property name="styleSheet">
-                              <string notr="true">min-width: 68px;</string>
+                              <string notr="true">min-width: 76px;</string>
                              </property>
                              <property name="text">
                               <string/>
@@ -1690,7 +1690,7 @@
                               </size>
                              </property>
                              <property name="styleSheet">
-                              <string notr="true">min-width: 68px;</string>
+                              <string notr="true">min-width: 76px;</string>
                              </property>
                              <property name="text">
                               <string/>
@@ -1745,7 +1745,7 @@
                               </size>
                              </property>
                              <property name="styleSheet">
-                              <string notr="true">min-width: 68px;</string>
+                              <string notr="true">min-width: 76px;</string>
                              </property>
                              <property name="text">
                               <string/>
@@ -1821,7 +1821,7 @@
                               </size>
                              </property>
                              <property name="styleSheet">
-                              <string notr="true">min-width: 68px;</string>
+                              <string notr="true">min-width: 76px;</string>
                              </property>
                              <property name="text">
                               <string/>
@@ -1876,7 +1876,7 @@
                               </size>
                              </property>
                              <property name="styleSheet">
-                              <string notr="true">min-width: 68px;</string>
+                              <string notr="true">min-width: 76px;</string>
                              </property>
                              <property name="text">
                               <string/>
@@ -1994,7 +1994,7 @@
                               </size>
                              </property>
                              <property name="styleSheet">
-                              <string notr="true">min-width: 68px;</string>
+                              <string notr="true">min-width: 76px;</string>
                              </property>
                              <property name="text">
                               <string/>
@@ -2049,7 +2049,7 @@
                               </size>
                              </property>
                              <property name="styleSheet">
-                              <string notr="true">min-width: 68px;</string>
+                              <string notr="true">min-width: 76px;</string>
                              </property>
                              <property name="text">
                               <string/>
@@ -2125,7 +2125,7 @@
                               </size>
                              </property>
                              <property name="styleSheet">
-                              <string notr="true">min-width: 68px;</string>
+                              <string notr="true">min-width: 76px;</string>
                              </property>
                              <property name="text">
                               <string/>
@@ -2180,7 +2180,7 @@
                               </size>
                              </property>
                              <property name="styleSheet">
-                              <string notr="true">min-width: 68px;</string>
+                              <string notr="true">min-width: 76px;</string>
                              </property>
                              <property name="text">
                               <string/>
@@ -2280,7 +2280,7 @@
                               </size>
                              </property>
                              <property name="styleSheet">
-                              <string notr="true">min-width: 68px;</string>
+                              <string notr="true">min-width: 76px;</string>
                              </property>
                              <property name="text">
                               <string/>
@@ -2335,7 +2335,7 @@
                               </size>
                              </property>
                              <property name="styleSheet">
-                              <string notr="true">min-width: 68px;</string>
+                              <string notr="true">min-width: 76px;</string>
                              </property>
                              <property name="text">
                               <string/>
@@ -2411,7 +2411,7 @@
                               </size>
                              </property>
                              <property name="styleSheet">
-                              <string notr="true">min-width: 68px;</string>
+                              <string notr="true">min-width: 76px;</string>
                              </property>
                              <property name="text">
                               <string/>
@@ -2466,7 +2466,7 @@
                               </size>
                              </property>
                              <property name="styleSheet">
-                              <string notr="true">min-width: 68px;</string>
+                              <string notr="true">min-width: 76px;</string>
                              </property>
                              <property name="text">
                               <string/>

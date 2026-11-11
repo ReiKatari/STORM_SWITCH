@@ -221,7 +221,9 @@
                                 android:paddingHorizontal="8dp"
                                 android:paddingVertical="0dp"
                                 android:fontFamily="monospace"
-                                android:singleLine="true"
+                                android:maxLines="1"
+    android:ellipsize="end"
+    android:scrollHorizontally="true"
                                 android:background="?attr/colorSurfaceVariant" />
 
                             <com.google.android.material.button.MaterialButton
@@ -360,7 +362,9 @@
                 android:textSize="11sp"
                 android:paddingHorizontal="8dp"
                 android:paddingVertical="0dp"
-                android:singleLine="true"
+                android:maxLines="1"
+    android:ellipsize="end"
+    android:scrollHorizontally="true"
                 android:layout_marginBottom="6dp"
                 android:background="?attr/colorSurfaceVariant" />
 

@@ -38,7 +38,7 @@
        </property>
        <property name="maximumSize">
         <size>
-         <width>320</width>
+         <width>16777215</width>
          <height>16777215</height>
         </size>
        </property>
@@ -402,6 +402,9 @@
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QLabel" name="label_8">
+       <property name="wordWrap">
+        <bool>true</bool>
+       </property>
        <property name="text">
         <string>Some settings are only available when a game is not running.</string>
        </property>

@@ -80,7 +80,7 @@
                 android:id="@+id/text_profiles_subtitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Готовых пресетов: 4 • Пользовательских: 0"
+                android:text="@string/storm_prof_presets_count_default"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="11.5sp"
                 android:breakStrategy="simple"
@@ -210,7 +210,8 @@
                     android:paddingBottom="0dp"
                     android:inputType="text"
                     android:maxLines="1"
-                    android:singleLine="true"
+                    android:ellipsize="end"
+                    android:scrollHorizontally="true"
                     android:textColor="?attr/colorOnSurface"
                     android:textColorHint="?attr/colorOnSurfaceVariant"
                     android:textSize="12.5sp" />

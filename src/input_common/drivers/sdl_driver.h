@@ -77,7 +77,6 @@ private:
     void CloseJoysticks();
 
     /// Takes all vibrations from the queue and sends the command to the controller
-    void SendVibrations();
 
     Common::ParamPackage BuildAnalogParamPackageForButton(int port, const Common::UUID& guid,
                                                           s32 axis, float value = 0.1f) const;
@@ -113,16 +112,13 @@ private:
     /// Returns true if the button is on the left joycon
     bool IsButtonOnLeftSide(Settings::NativeButton::Values button) const;
 
-    /// Queue of vibration request to controllers
-    Common::SPSCQueue<VibrationRequest> vibration_queue;
+
 
     /// Map of GUID of a list of corresponding virtual Joysticks
     ankerl::unordered_dense::map<Common::UUID, std::vector<std::shared_ptr<SDLJoystick>>> joystick_map;
     std::mutex joystick_map_mutex;
 
-    bool start_thread = false;
     std::atomic<bool> initialized = false;
-
-    std::thread vibration_thread;
+    bool start_thread = false;
 };
 } // namespace InputCommon

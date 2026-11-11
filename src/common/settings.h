@@ -253,6 +253,8 @@ struct Values {
     SwitchableSetting<bool> sync_core_speed{linkage, false, "sync_core_speed", Category::Core,
                                             Specialization::Default, true, true};
 
+    SwitchableSetting<bool> enable_cheats_by_default{linkage, true, "enable_cheats_by_default", Category::Core, Specialization::Default, true, true};
+
     // Cpu
     SwitchableSetting<CpuBackend, true> cpu_backend{linkage,
 #ifdef HAS_NCE
@@ -727,6 +729,13 @@ struct Values {
                                                   Specialization::Default,
                                                   true,
                                                   true};
+    SwitchableSetting<bool> low_latency_display{linkage,
+                                                false,
+                                                "low_latency_display",
+                                                Category::RendererAdvanced,
+                                                Specialization::Default,
+                                                true,
+                                                true};
 
     // Renderer Hacks //
     SwitchableSetting<GpuClock, true> gpu_clock{linkage,

@@ -523,7 +523,7 @@ class StormFolderPickerDialog : DialogFragment() {
         val normCur = currentDir.absolutePath.trimEnd('/').ifEmpty { "/" }
         val curChecked = existingUriMap.containsKey(normCur) || selectedPaths.contains(normCur)
         addCurrentBtn?.apply {
-            text = if (curChecked) "✓" else getString(R.string.storm_folder_picker_add_current)
+            text = if (curChecked) getString(R.string.added) else getString(R.string.storm_folder_picker_add_current)
             setTextColor(if (curChecked) emeraldColor else primaryColor)
         }
 

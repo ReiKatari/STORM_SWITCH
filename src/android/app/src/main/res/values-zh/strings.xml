@@ -1203,7 +1203,7 @@
     <string name="auto_optimization_mode_normal_desc" formatted="false">画质、流畅度与稳定性的完美平衡。1X（720p/1080p）、FSR 85%、FXAA、均衡栅栏。</string>
     <string name="download_cheats">下载在线金手指</string>
     <string name="auto_optimization_mode_accurate_desc">顶级画质表现，1.5X/1X 分辨率、安全 DMA、严格 GPU 栅栏、SMAA、16x 各向异性过滤。</string>
-    <string name="auto_optimization_mode_normal">⚖️ 均衡（推荐）</string>
+    <string name="auto_optimization_mode_normal">均衡（推荐）</string>
     <string name="auto_optimization_apply">应用此配置</string>
     <string name="cheats_not_found">数据库中未找到该游戏的金手指，您可以手动添加。</string>
     <string name="vram_garbage_collection">显存垃圾回收</string>
@@ -1212,15 +1212,15 @@
     <string name="cpu_affinity_pinning_description">将关键 JIT 和 GPU 模拟线程绑定至超大核/大核，辅助任务调度至能效核。</string>
     <string name="cheats_manager_title">金手指管理器</string>
     <string name="amiibo_database_description">浏览、生成并快速向游戏中注入虚拟 Amiibo</string>
-    <string name="auto_optimization_mode_accurate">💎 画质 / 精确</string>
+    <string name="auto_optimization_mode_accurate">画质 / 精确</string>
     <string name="add_cheat">添加金手指</string>
     <string name="translator_translate_screen">屏幕实时翻译（OCR + 语音朗读）</string>
     <string name="overlay_skin_theme_description">选择虚拟按键与摇杆的配色方案与光影质感</string>
-    <string name="cheat_status_active">⚡ 游戏中生效</string>
+    <string name="cheat_status_active">游戏中生效</string>
     <string name="translator_disable_floating_button">隐藏悬浮翻译按钮</string>
     <string name="overlay_skin_theme">虚拟手柄皮肤主题</string>
     <string name="eco_frame_pacing_description">消除帧呈现间隙中的 CPU 空转，在稳定 60 FPS 的同时显著降低设备温度与功耗。</string>
-    <string name="auto_optimization_applied_toast">⚡ 自动配置已生效：「%1$s」配置方案！</string>
+    <string name="auto_optimization_applied_toast">自动配置已生效：「%1$s」配置方案！</string>
     <string name="dma_accuracy_normal">正常（推荐）</string>
     <string name="cheat_name">作弊码名称</string>
     <string name="auto_optimization_wizard_title">自动配置</string>
@@ -1230,15 +1230,15 @@
     <string name="dma_accuracy_high">高</string>
     <string name="eco_thermal_mode_description">控制突发峰值频率，防止设备过热与发热降频。</string>
     <string name="cheats">金手指 / 作弊码</string>
-    <string name="auto_optimization_mode_fast">⚡ 极速 / 节能</string>
+    <string name="auto_optimization_mode_fast">极速 / 节能</string>
     <string name="vulkan_pipeline_cache">Vulkan 管线缓存</string>
     <string name="cheats_count_summary">金手指总数：%1$d | 已启用：%2$d</string>
     <string name="eco_thermal_mode">节能温控模式</string>
 
     <string name="memory_12gb_not_enough_ram">12GB DRAM 模式需要至少 12GB 物理内存的设备。</string>
-    <string name="game_fix_apply_and_launch">⚡ 应用修复并启动</string>
+    <string name="game_fix_apply_and_launch">应用修复并启动</string>
     <string name="game_fix_dont_ask_again">对此游戏不再提示</string>
-    <string name="game_fix_recommended_header">⚡ STORM SWITCH 推荐设置</string>
+    <string name="game_fix_recommended_header">STORM SWITCH 推荐设置</string>
     <string name="game_fix_skip_and_launch">直接启动（不修改）</string>
     <string name="game_fix_issues_header">⚠️ 已知问题与错误</string>
 
@@ -1257,7 +1257,7 @@
     <string name="apply_global_to_all_games_confirm_title">应用到所有游戏？</string>
     <string name="apply_global_to_all_games_confirm_message">确定要重置所有游戏的独立配置吗？当前全局设置将立即应用到库中所有游戏。</string>
     <string name="apply_global_to_all_games_positive">全部应用</string>
-    <string name="apply_global_to_all_games_success">⚡ 全局设置已成功应用到所有游戏（重置了 %d 个配置）</string>
+    <string name="apply_global_to_all_games_success">全局设置已成功应用到所有游戏（重置了 %d 个配置）</string>
     <string name="memory_12gb">12GB (极高风险)</string>
     <!-- 100% Full Localization -->
     <string name="copy_to_clipboard">复制信息</string>
@@ -1404,13 +1404,13 @@
     <string name="show_device_load_overlay_description">实时显示 CPU、GPU、内存占用率及 5 级温度指标。</string>
     <string name="settings_profiles_title">配置预设档案</string>
     <string name="settings_profiles_description">创建、保存、快速加载、重命名及导出配置预设。</string>
-    <string name="profile_preset_fast_title">⚡ 极速 (高帧率与低温)</string>
+    <string name="profile_preset_fast_title">极速 (高帧率与低温)</string>
     <string name="profile_preset_fast_desc">0.75X 分辨率，高速 JIT，异步着色器，6GB 内存，芯片凉爽。</string>
-    <string name="profile_preset_balanced_title">⚖️ 均衡 (推荐)</string>
+    <string name="profile_preset_balanced_title">均衡 (推荐)</string>
     <string name="profile_preset_balanced_desc" formatted="false">1.0X (720p/1080p)，FSR 85%，高速 JIT，EDS1 动态状态，6GB 内存。</string>
-    <string name="profile_preset_accurate_title">💎 高画质 (精准)</string>
+    <string name="profile_preset_accurate_title">高画质 (精准)</string>
     <string name="profile_preset_accurate_desc">1.0X-1.5X，高精度 GPU，严格同步，FXAA/SMAA，8GB 内存。</string>
-    <string name="profile_preset_saver_title">🔋 节能与芯片降温</string>
+    <string name="profile_preset_saver_title">节能与芯片降温</string>
     <string name="profile_preset_saver_desc" formatted="false">0.75X 分辨率，100% 速度限制，省电显存策略，最低发热。</string>
     <string name="profile_btn_apply">应用</string>
     <string name="profile_btn_share">分享</string>
@@ -1424,7 +1424,7 @@
     <string name="profile_rename_title">重命名预设</string>
     <string name="profile_delete_title">删除预设</string>
     <string name="profile_delete_confirmation">确定要删除预设 “%1$s” 吗？</string>
-    <string name="profile_applied_toast">⚡ 预设 “%1$s” 应用成功！</string>
+    <string name="profile_applied_toast">预设 “%1$s” 应用成功！</string>
     <string name="profile_apply_failed">应用预设失败。</string>
     <string name="profile_saved_toast">预设 “%1$s” 已保存！</string>
     <string name="profile_share_title">分享配置预设</string>
@@ -1469,7 +1469,7 @@
     <string name="storm_save_replace_current">覆盖本地存档</string>
     <string name="storm_save_replace_remote">覆盖远程存档</string>
     <string name="storm_save_keep_both">保留双向版本</string>
-    <string name="gamebanana_tab_online">🌐 GameBanana 目录</string>
+    <string name="gamebanana_tab_online">GameBanana 目录</string>
     <string name="gamebanana_tab_installed">💾 已安装</string>
     <string name="gamebanana_no_installed_mods">此游戏尚未安装任何模组</string>
     <string name="gamebanana_installed_stats">总计：%1$d | 已启用：%2$d | 已禁用：%3$d</string>
@@ -1619,7 +1619,7 @@
     <string name="storm_sync_saves_count_zero">含存档的游戏 (0)</string>
     <string name="storm_sync_saves_count_fmt">含存档的游戏 (%1$d)</string>
     <string name="storm_sync_saves_filtered_fmt">含存档的游戏 (%1$d / %2$d)</string>
-    <string name="storm_sync_btn_sync_all">⚡ 全部同步</string>
+    <string name="storm_sync_btn_sync_all">全部同步</string>
     <string name="storm_sync_search_hint">按游戏名称或 Title ID 搜索…</string>
     <string name="storm_sync_empty_saves">暂无可显示的存档。
 请先运行游戏或连接到其他设备。</string>
@@ -1757,12 +1757,12 @@
     <string name="cheat_item_desc_placeholder">Description</string>
     <string name="cheat_btn_edit_qty">✏️ Value</string>
     <string name="cheat_header_version_prefix"> | Version: </string>
-    <string name="cheat_header_in_game"> | ⚡ In Game</string>
+    <string name="cheat_header_in_game"> | In Game</string>
     <string name="cheat_header_offline"> | ⚪ Offline</string>
     <string name="cheat_header_dmnt_active">
-⚡ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
+Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="cheat_build_all_versions">All versions</string>
-    <string name="cheat_toast_activated_ingame">⚡ Cheat codes activated in game!</string>
+    <string name="cheat_toast_activated_ingame">Cheat codes activated in game!</string>
     <string name="cheat_toast_saved">✅ Cheat codes saved successfully</string>
     <string name="cheat_add_name_hint">Cheat name (e.g. Infinite Lives)</string>
     <string name="cheat_add_code_hint">Atmosphere format code (04000000 12345678 ...)</string>
@@ -1820,7 +1820,7 @@
     <string name="log_viewer_chip_errors">🚨 Errors</string>
     <string name="log_viewer_chip_warnings">⚠️ Warnings</string>
     <string name="log_viewer_chip_info">ℹ️ Info</string>
-    <string name="log_viewer_status_ingame">⚡ In Game</string>
+    <string name="log_viewer_status_ingame">In Game</string>
     <string name="log_viewer_status_offline">⚪ Offline</string>
     <string name="log_viewer_toast_refreshing">🔄 Refreshing log...</string>
     <string name="log_viewer_stats_total_fmt">Total lines: %1$d | Size: %2$d KB</string>
@@ -1943,11 +1943,11 @@
     <string name="translator_toast_no_text_screen">No text detected on screen</string>
     <string name="translator_overlay_region_fmt">Region %1$d</string>
     <string name="translator_overlay_btn_add">+ Add region</string>
-    <string name="translator_overlay_btn_clear">🧹 Clear</string>
+    <string name="translator_overlay_btn_clear">Clear</string>
     <string name="translator_overlay_btn_save">💾 Save</string>
-    <string name="translator_overlay_btn_close">✕ Close</string>
-    <string name="translator_snack_auto_on">⚡ Auto-translation enabled</string>
-    <string name="translator_snack_auto_off">⚡ Auto-translation disabled</string>
+    <string name="translator_overlay_btn_close">Close</string>
+    <string name="translator_snack_auto_on">Auto-translation enabled</string>
+    <string name="translator_snack_auto_off">Auto-translation disabled</string>
     <string name="translator_snack_tts_on">🔊 TTS voice readout enabled</string>
     <string name="translator_snack_tts_off">🔇 TTS voice readout disabled</string>
     <string name="translator_snack_float_on">👁️ Floating button shown</string>
@@ -1955,7 +1955,7 @@
     <string name="translator_dialog_select_model">🤖 Select translation model</string>
     <string name="translator_toast_model_selected_fmt">Translation model: %1$s</string>
     <string name="sysinfo_sec_device">📱  DEVICE &amp; SYSTEM</string>
-    <string name="sysinfo_sec_cpu">⚡  PROCESSOR (CPU / SOC)</string>
+    <string name="sysinfo_sec_cpu"> PROCESSOR (CPU / SOC)</string>
     <string name="sysinfo_sec_gpu">🎮  GRAPHICS (GPU &amp; VULKAN)</string>
     <string name="sysinfo_sec_ram">💾  SYSTEM MEMORY (RAM)</string>
     <string name="sysinfo_lbl_manufacturer">• Manufacturer: </string>
@@ -1979,7 +1979,7 @@
     <string name="sysinfo_lbl_low_mem_thresh">• Low Memory Threshold: </string>
     <string name="emulation_cooling_paused_title">❄️ Game paused — cooling down device</string>
     <string name="emulation_cooling_temp_default">🌡️ Temperature: --°C ➔ Target: 36.5°C</string>
-    <string name="emulation_cooling_chipset_unloaded">⚡ Chipset load removed (&lt; 1 W)</string>
+    <string name="emulation_cooling_chipset_unloaded">Chipset load removed (&lt; 1 W)</string>
     <string name="emulation_cooling_done_fmt">✅ Cooling complete: %1$s°C</string>
     <string name="emulation_cooling_temp_fmt">🌡️ Temperature: %1$s°C ➔ Target: %2$s°C</string>
     <string name="emulation_cooling_in_progress">🌡️ Cooling down chipset</string>
@@ -2006,9 +2006,9 @@
     <string name="gamebanana_no_mod_desc">No mod description available.</string>
     <string name="gamebanana_avail_files_header">
 📦 Available files for download:</string>
-    <string name="game_fix_toast_autofix_custom">⚡ Auto-Fix: Applied with your custom settings preserved</string>
-    <string name="game_fix_toast_autofix_clean">⚡ Auto-Fix: Clean reference profile applied</string>
-    <string name="game_fix_toast_custom_saved">⚡ Auto-Fix: Custom settings preserved</string>
+    <string name="game_fix_toast_autofix_custom">Auto-Fix: Applied with your custom settings preserved</string>
+    <string name="game_fix_toast_autofix_clean">Auto-Fix: Clean reference profile applied</string>
+    <string name="game_fix_toast_custom_saved">Auto-Fix: Custom settings preserved</string>
     <string name="game_fix_toast_launch_custom">🎮 Custom Settings: Launching with your profile</string>
     <string name="game_fix_toast_launch_global">🌐 Global Settings: Launching with global settings</string>
     <string name="overlay_style_neon_glow">Neon Cyber Glow (3D)</string>
@@ -2231,8 +2231,8 @@
 
     <string name="performance_preset">性能预设</string>
     <string name="performance_preset_description">选择优化配置预设，平衡性能、发热与画质</string>
-    <string name="performance_preset_battery">🔋 节省电池</string>
-    <string name="performance_preset_balanced">⚖️ 平衡（推荐）</string>
+    <string name="performance_preset_battery">节省电池</string>
+    <string name="performance_preset_balanced">平衡（推荐）</string>
     <string name="performance_preset_quality">🚀 极高质量</string>
     <string name="performance_preset_custom">⚙️ 自定义</string>
     <string name="performance_preset_applied">已应用性能预设</string>

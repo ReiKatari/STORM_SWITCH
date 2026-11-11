@@ -43,7 +43,7 @@
             <!-- Hero Game Header Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_game_header"
-                style="@style/EdenCard"
+                style="@style/StormCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
@@ -161,7 +161,7 @@
             <!-- Card: Path -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/path"
-                style="@style/EdenCard"
+                style="@style/StormCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
@@ -231,7 +231,7 @@
             <!-- Card: Program ID (TID) -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/program_id"
-                style="@style/EdenCard"
+                style="@style/StormCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
@@ -303,7 +303,7 @@
             <!-- Card: Build ID (BID) -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_build_id"
-                style="@style/EdenCard"
+                style="@style/StormCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
@@ -375,7 +375,7 @@
             <!-- Card: Developer -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/developer"
-                style="@style/EdenCard"
+                style="@style/StormCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
@@ -445,7 +445,7 @@
             <!-- Card: Version -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/version"
-                style="@style/EdenCard"
+                style="@style/StormCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
@@ -515,7 +515,7 @@
             <!-- Card: File Size -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_file_size"
-                style="@style/EdenCard"
+                style="@style/StormCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="14dp"
@@ -586,7 +586,7 @@
             <!-- Action Buttons -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_copy"
-                style="@style/EdenButton.Primary"
+                style="@style/StormButton.Faceted.Primary"
                 android:layout_width="match_parent"
                 android:layout_height="46dp"
                 android:text="@string/copy_details"
@@ -602,7 +602,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_verify_integrity"
-                style="@style/EdenButton.Outlined"
+                style="@style/StormButton.Faceted.Secondary"
                 android:layout_width="match_parent"
                 android:layout_height="46dp"
                 android:layout_marginTop="8dp"

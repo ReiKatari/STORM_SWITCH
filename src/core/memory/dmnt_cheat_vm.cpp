@@ -233,7 +233,7 @@ bool DmntCheatVm::DecodeNextOpcode(CheatVmOpcode& out) {
 
     // Helper function for getting instruction dwords.
     const auto GetNextDword = [&] {
-        if (instruction_ptr >= num_opcodes) {
+        if (instruction_ptr >= program.size()) {
             valid = false;
             return static_cast<u32>(0);
         }
@@ -706,19 +706,20 @@ void DmntCheatVm::ResetState() {
 }
 
 bool DmntCheatVm::LoadProgram(const std::vector<CheatEntry>& entries) {
-    // Reset opcode count.
-    num_opcodes = 0;
+    program.clear();
 
-    for (std::size_t i = 0; i < entries.size(); i++) {
-        if (entries[i].enabled) {
-            // Bounds check.
-            if (entries[i].definition.num_opcodes + num_opcodes > MaximumProgramOpcodeCount) {
-                break;
-            }
+    std::size_t program_size{};
+    for (const auto& entry : entries) {
+        if (entry.enabled || entry.is_master) {
+            program_size += entry.definition.opcodes.size();
+        }
+    }
+    program.reserve(program_size);
 
-            for (std::size_t n = 0; n < entries[i].definition.num_opcodes; n++) {
-                program[num_opcodes++] = entries[i].definition.opcodes[n];
-            }
+    for (const auto& entry : entries) {
+        if (entry.enabled || entry.is_master) {
+            program.insert(program.end(), entry.definition.opcodes.begin(),
+                           entry.definition.opcodes.end());
         }
     }
 

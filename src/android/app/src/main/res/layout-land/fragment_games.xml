@@ -45,7 +45,7 @@
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/search_background"
-                style="@style/EdenCard"
+                style="@style/StormCard"
                 android:layout_width="match_parent"
                 android:layout_height="38dp"
                 app:cardCornerRadius="19dp"
@@ -105,7 +105,7 @@
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/view_button"
-            style="@style/EdenCard"
+            style="@style/StormCard"
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:background="@android:color/transparent"
@@ -131,7 +131,7 @@
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/filter_button"
-            style="@style/EdenCard"
+            style="@style/StormCard"
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:background="@android:color/transparent"
@@ -157,7 +157,7 @@
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/storm_world_button"
-            style="@style/EdenCard"
+            style="@style/StormCard"
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:background="@android:color/transparent"
@@ -184,7 +184,7 @@
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/settings_button"
-            style="@style/EdenCard"
+            style="@style/StormCard"
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:background="@android:color/transparent"

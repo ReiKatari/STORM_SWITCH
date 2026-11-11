@@ -102,7 +102,12 @@ void StandardVmCallbacks::DebugLog(u8 id, u64 value) {
 
 void StandardVmCallbacks::CommandLog(std::string_view data) {
     LOG_DEBUG(CheatEngine, "[DmntCheatVm]: {}",
-              data.back() == '\n' ? data.substr(0, data.size() - 1) : data);
+              !data.empty() && data.back() == '\n' ? data.substr(0, data.size() - 1) : data);
+}
+
+bool StandardVmCallbacks::IsCommandLogEnabled() const {
+    return Common::Log::IsMessageEnabled(Common::Log::Class::CheatEngine,
+                                         Common::Log::Level::Debug);
 }
 
 bool StandardVmCallbacks::IsAddressInRange(VAddr in) const {
@@ -167,13 +172,16 @@ std::vector<CheatEntry> TextCheatParser::Parse(std::string_view data) const {
         // Section header: [Cheat Name] or {Cheat Name}
         if ((line.front() == '[' && line.find(']') != std::string_view::npos) ||
             (line.front() == '{' && line.find('}') != std::string_view::npos)) {
-            if (in_entry && current.definition.num_opcodes > 0) {
+            if (in_entry && !current.definition.opcodes.empty()) {
                 current.enabled = true;
                 current.cheat_id = static_cast<u32>(result.size());
                 result.push_back(current);
             }
 
             current = CheatEntry{};
+            if (line.front() == '{') {
+                current.is_master = true;
+            }
             char close_char = (line.front() == '[') ? ']' : '}';
             std::size_t close_idx = line.find(close_char);
             std::string_view name = line.substr(1, close_idx - 1);
@@ -243,15 +251,13 @@ std::vector<CheatEntry> TextCheatParser::Parse(std::string_view data) const {
                 std::string hex_str(hex_token.substr(0, word_len));
                 hex_token.remove_prefix(word_len);
 
-                if (current.definition.num_opcodes < current.definition.opcodes.size()) {
-                    u32 val = static_cast<u32>(std::strtoul(hex_str.c_str(), nullptr, 16));
-                    current.definition.opcodes[current.definition.num_opcodes++] = val;
-                }
+                u32 val = static_cast<u32>(std::strtoul(hex_str.c_str(), nullptr, 16));
+                current.definition.opcodes.push_back(val);
             }
         }
     }
 
-    if (in_entry && current.definition.num_opcodes > 0) {
+    if (in_entry && !current.definition.opcodes.empty()) {
         current.enabled = true;
         current.cheat_id = static_cast<u32>(result.size());
         result.push_back(current);
@@ -267,6 +273,11 @@ CheatEngine::CheatEngine(System& system_, std::vector<CheatEntry> cheats_,
     metadata.main_nso_build_id = build_id_;
     metadata.process_id = 0;
     metadata.title_id = 0;
+
+    for (u32 i = 0; i < cheats.size(); ++i) {
+        cheats[i].cheat_id = i;
+        cheats[i].enabled = cheats[i].is_master || cheats[i].enabled;
+    }
 
     vm.LoadProgram(cheats);
 }
@@ -303,17 +314,65 @@ void CheatEngine::SetMainMemoryParameters(VAddr main_region_begin, u64 main_regi
 }
 
 void CheatEngine::Reload(std::vector<CheatEntry> reload_cheats) {
-    cheats = std::move(reload_cheats);
-    vm.LoadProgram(cheats);
-    is_pending_reload.exchange(false);
+    {
+        std::scoped_lock lock{cheats_mutex};
+        cheats = std::move(reload_cheats);
+        for (u32 i = 0; i < cheats.size(); ++i) {
+            cheats[i].cheat_id = i;
+            cheats[i].enabled = cheats[i].is_master || cheats[i].enabled;
+        }
+        vm.LoadProgram(cheats);
+    }
+    is_pending_reload.store(false);
 
     if (!cheats.empty() && event == nullptr && system.IsPoweredOn() && system.ApplicationProcess()) {
         Initialize();
     }
 }
 
+std::vector<RuntimeCheatInfo> CheatEngine::GetCheats() const {
+    std::scoped_lock lock{cheats_mutex};
+    std::vector<RuntimeCheatInfo> result;
+    result.reserve(cheats.size());
+    for (const auto& cheat : cheats) {
+        if (cheat.definition.opcodes.empty()) {
+            continue;
+        }
+        result.push_back({
+            .id = cheat.cheat_id,
+            .name = cheat.definition.readable_name.data(),
+            .enabled = cheat.enabled || cheat.is_master,
+            .is_master = cheat.is_master,
+        });
+    }
+    return result;
+}
+
+bool CheatEngine::SetCheatEnabled(u32 cheat_id, bool enabled) {
+    std::scoped_lock lock{cheats_mutex};
+    const auto entry = std::find_if(cheats.begin(), cheats.end(), [cheat_id](const auto& cheat) {
+        return cheat.cheat_id == cheat_id && !cheat.definition.opcodes.empty();
+    });
+    if (entry == cheats.end()) {
+        return false;
+    }
+    if (entry->is_master) {
+        return enabled;
+    }
+    if (entry->enabled != enabled) {
+        entry->enabled = enabled;
+        is_pending_reload.store(true);
+    }
+    return true;
+}
+
 void CheatEngine::FrameCallback(std::chrono::nanoseconds ns_late) {
-    if (cheats.empty() || is_pending_reload.load()) {
+    if (is_pending_reload.exchange(false)) {
+        std::scoped_lock lock{cheats_mutex};
+        vm.LoadProgram(cheats);
+    }
+
+    if (cheats.empty()) {
         return;
     }
 

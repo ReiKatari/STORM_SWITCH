@@ -17,14 +17,13 @@
             android:paddingHorizontal="16dp"
             android:paddingVertical="14dp">
 
-            <TextView
+            <ImageView
                 android:id="@+id/header_icon"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🌐"
-                android:textSize="26sp"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_gravity="center_vertical"
+                app:tint="?attr/colorPrimary"
+                tools:src="@drawable/ic_system" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -83,14 +82,13 @@
             android:paddingHorizontal="16dp"
             android:paddingVertical="9dp">
 
-            <TextView
+            <ImageView
                 android:id="@+id/text_installed_status_icon"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🟢"
-                android:textSize="14sp"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_gravity="center_vertical"
+                app:tint="?attr/colorPrimary"
+                tools:src="@drawable/ic_check" />
 
             <TextView
                 android:id="@+id/text_installed_status"
@@ -238,7 +236,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_install"
-                style="@style/EdenButton.Primary"
+                style="@style/StormButton.Faceted.Primary"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_marginTop="10dp"

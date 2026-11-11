@@ -83,7 +83,7 @@ class GameFixDialogFragment : DialogFragment() {
         return binding.root
     }
 
-    
+
     private fun localizeFixesText(rawText: String): String {
         var text = rawText
         val keyMap = mapOf(
@@ -212,7 +212,7 @@ class GameFixDialogFragment : DialogFragment() {
         val hasUserCustom = GameFixDatabase.isUserCustomConfig(currentGame)
         if (hasUserCustom) {
             binding.cardLaunchCustom.strokeWidth = (2.2f * resources.displayMetrics.density).toInt()
-            binding.cardLaunchCustom.strokeColor = android.graphics.Color.parseColor("#00E5FF")
+            binding.cardLaunchCustom.strokeColor = org.yuzu.yuzu_emu.utils.ThemeHelper.getColorFromAttr(requireContext(), com.google.android.material.R.attr.colorPrimary)
         }
 
         binding.cardLaunchAutoFix.setOnClickListener {

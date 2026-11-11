@@ -337,6 +337,13 @@ abstract class SettingsItem(
                 )
             )
             put(
+                SwitchSetting(
+                    BooleanSetting.ENABLE_CHEATS_BY_DEFAULT,
+                    titleId = R.string.enable_cheats_by_default,
+                    descriptionId = R.string.enable_cheats_by_default_description
+                )
+            )
+            put(
                 SingleChoiceSetting(
                     IntSetting.REGION_INDEX,
                     titleId = R.string.emulated_region,
@@ -1290,6 +1297,34 @@ abstract class SettingsItem(
                     BooleanSetting.ECO_FRAME_PACING,
                     titleId = R.string.eco_frame_pacing,
                     descriptionId = R.string.eco_frame_pacing_description
+                )
+            )
+            put(
+                SwitchSetting(
+                    BooleanSetting.STORM_THERMAL_GOVERNOR,
+                    titleId = R.string.storm_thermal_governor,
+                    descriptionId = R.string.storm_thermal_governor_description
+                )
+            )
+            put(
+                SwitchSetting(
+                    BooleanSetting.STORM_LOWEND_TURBO,
+                    titleId = R.string.storm_lowend_turbo,
+                    descriptionId = R.string.storm_lowend_turbo_description
+                )
+            )
+            put(
+                SwitchSetting(
+                    BooleanSetting.AUTO_60FPS_UNLOCK,
+                    titleId = R.string.auto_60fps_unlock,
+                    descriptionId = R.string.auto_60fps_unlock_description
+                )
+            )
+            put(
+                SwitchSetting(
+                    BooleanSetting.AUTO_ASPECT_RATIO_PATCH,
+                    titleId = R.string.auto_aspect_ratio_patch,
+                    descriptionId = R.string.auto_aspect_ratio_patch_description
                 )
             )
             put(

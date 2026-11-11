@@ -180,23 +180,23 @@ class SaveStateManagerDialogFragment : DialogFragment() {
             }
             Toast.makeText(
                 requireContext(),
-                "Слот ${backup.slot} успешно восстановлен из резервной копии!",
+                getString(R.string.save_state_slot_restored_success, backup.slot),
                 Toast.LENGTH_SHORT
             ).show()
             lastUndoBackup = null
             refreshAllSlots()
         }.onFailure {
-            Toast.makeText(requireContext(), "Ошибка восстановления слота: ${it.message}", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.save_state_slot_restore_error, it.message ?: ""), Toast.LENGTH_SHORT).show()
         }
     }
 
     private fun showUndoSnackbar(slot: Int, message: String) {
         val backup = lastUndoBackup ?: return
         Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG)
-            .setAction("ОТМЕНИТЬ") {
+            .setAction(getString(R.string.save_state_undo_action)) {
                 restoreUndoBackup(backup)
             }
-            .setActionTextColor(Color.parseColor("#00F0FF"))
+            .setActionTextColor(org.yuzu.yuzu_emu.utils.ThemeHelper.getColorFromAttr(requireContext(), com.google.android.material.R.attr.colorPrimary))
             .show()
     }
 
@@ -237,8 +237,8 @@ class SaveStateManagerDialogFragment : DialogFragment() {
         } else {
             val backup = lastUndoBackup
             if (backup != null && backup.slot == slot && backup.stateBackupFile.exists()) {
-                slotBinding.slotMetadata.text = "Пусто • Доступна отмена (удерживайте карточку)"
-                slotBinding.slotMetadata.setTextColor(Color.parseColor("#38BDF8"))
+                slotBinding.slotMetadata.text = getString(R.string.save_state_slot_empty_undo_available)
+                slotBinding.slotMetadata.setTextColor(org.yuzu.yuzu_emu.utils.ThemeHelper.getColorFromAttr(requireContext(), com.google.android.material.R.attr.colorOnSurfaceVariant))
             } else {
                 slotBinding.slotMetadata.text = getString(R.string.save_state_empty)
                 slotBinding.slotMetadata.setTextColor(org.yuzu.yuzu_emu.utils.ThemeHelper.getColorFromAttr(requireContext(), com.google.android.material.R.attr.colorOutline))
@@ -254,9 +254,9 @@ class SaveStateManagerDialogFragment : DialogFragment() {
             val backup = lastUndoBackup
             if (backup != null && backup.slot == slot && backup.stateBackupFile.exists()) {
                 MaterialAlertDialogBuilder(requireContext())
-                    .setTitle("Восстановление слота $slot")
-                    .setMessage("Восстановить сохранение слота $slot из резервной копии (.undo.bak)?")
-                    .setPositiveButton("Восстановить") { _, _ ->
+                    .setTitle(getString(R.string.save_state_restore_slot_title, slot))
+                    .setMessage(getString(R.string.save_state_restore_slot_message, slot))
+                    .setPositiveButton(getString(R.string.save_state_restore_button)) { _, _ ->
                         restoreUndoBackup(backup)
                     }
                     .setNegativeButton(R.string.cancel, null)

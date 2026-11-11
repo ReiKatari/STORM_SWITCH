@@ -2088,7 +2088,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="add_cheat">Add Cheat</string>
     <string name="cheat_name">Cheat Name</string>
     <string name="cheat_code">Atmosphere Cheat Code</string>
-    <string name="cheat_status_active">⚡ Active in Game</string>
+    <string name="cheat_status_active">Active in Game</string>
     <string name="cheat_status_enabled">✅ सक्षम</string>
     <string name="cheat_status_disabled">⚪ अक्षम</string>
     <string name="select_all">Select सभी</string>
@@ -2114,14 +2114,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="auto_optimization_wizard_title">स्वतः कॉन्फ़िगरेशन</string>
     <string name="auto_optimization_wizard_description">आपके डिवाइस के लिए आदर्श सेटिंग्स लागू करने के लिए CPU, GPU और RAM का विश्लेषण करता है</string>
     <string name="auto_optimization_device_info">डिवाइस हार्डवेयर जानकारी</string>
-    <string name="auto_optimization_mode_fast">⚡ तेज़</string>
+    <string name="auto_optimization_mode_fast">तेज़</string>
     <string name="auto_optimization_mode_fast_desc">अधिकतम FPS, सबसे कम गर्मी और बैटरी बचत। 0.75X रिज़ॉल्यूशन, रूढ़िवादी VRAM, तेज़ GPU फ़ेंस, NCE।</string>
-    <string name="auto_optimization_mode_normal">⚖️ सामान्य (अनुशंसित)</string>
+    <string name="auto_optimization_mode_normal">सामान्य (अनुशंसित)</string>
     <string name="auto_optimization_mode_normal_desc" formatted="false">दृश्य निष्ठा, सहजता और स्थिरता का इष्टतम संतुलन। 1X (720p/1080p), FSR 85%, FXAA, संतुलित फ़ेंस।</string>
-    <string name="auto_optimization_mode_accurate">💎 सटीक</string>
+    <string name="auto_optimization_mode_accurate">सटीक</string>
     <string name="auto_optimization_mode_accurate_desc">अधिकतम ग्राफ़िकल सटीकता, 1.5X/1X रिज़ॉल्यूशन, सुरक्षित DMA, सख्त GPU फ़ेंस, SMAA, 16x Anisotropy।</string>
     <string name="auto_optimization_apply">मोड लागू करें</string>
-    <string name="auto_optimization_applied_toast">⚡ स्वतः कॉन्फ़िगरेशन लागू: «%1$s» प्रोफाइल!</string>
+    <string name="auto_optimization_applied_toast">स्वतः कॉन्फ़िगरेशन लागू: «%1$s» प्रोफाइल!</string>
     <string name="auto_optimization_summary_title">लागू सेटिंग्स</string>
     <string name="auto_optimization_mode_default">🔄 डिफ़ॉल्ट सेटिंग्स</string>
     <string name="auto_optimization_mode_default_desc">स्वतः-अनुकूलन प्रोफाइल को अक्षम करें और सभी एम्यूलेटर सेटिंग्स को फ़ैक्टरी डिफ़ॉल्ट पर पुनर्स्थापित करें।</string>
@@ -2130,9 +2130,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="show_device_load_overlay">Show Device लोड करें Overlay</string>
     <string name="show_device_load_overlay_description">Displays real-time CPU, GPU, RAM utilization and 5-stage device temperature indicators.</string>
     <string name="game_fix_issues_header">⚠️ Known Issues and Bugs</string>
-    <string name="game_fix_recommended_header">⚡ Recommended Fixes and Settings</string>
+    <string name="game_fix_recommended_header">Recommended Fixes and Settings</string>
     <string name="game_fix_dont_ask_again">Don\'t ask again for this game</string>
-    <string name="game_fix_apply_and_launch">⚡ Apply Fixes and Launch</string>
+    <string name="game_fix_apply_and_launch">Apply Fixes and Launch</string>
     <string name="game_fix_skip_and_launch">Launch Without Changes</string>
 
     <!-- Launch Modes and Global Settings -->
@@ -2150,18 +2150,18 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="apply_global_to_all_games_confirm_title">Apply to सभी games?</string>
     <string name="apply_global_to_all_games_confirm_message">Do you want to reset कस्टम profiles for सभी games? Current global settings will be applied across your entire game library.</string>
     <string name="apply_global_to_all_games_positive">Apply to सभी</string>
-    <string name="apply_global_to_all_games_success">⚡ सभी गेम्स पर ग्लोबल सेटिंग्स लागू की गईं (%d प्रोफाइल रीसेट किए गए)</string>
+    <string name="apply_global_to_all_games_success">सभी गेम्स पर ग्लोबल सेटिंग्स लागू की गईं (%d प्रोफाइल रीसेट किए गए)</string>
 
     <!-- Settings Profiles -->
     <string name="settings_profiles_title">Settings Profiles</string>
     <string name="settings_profiles_description">Create, सहेजें, quickly लोड करें, rename, निर्यात करें and share settings profiles.</string>
-    <string name="profile_preset_fast_title">⚡ तेज़ (Maximum FPS and निम्न Temp)</string>
+    <string name="profile_preset_fast_title">तेज़ (Maximum FPS and निम्न Temp)</string>
     <string name="profile_preset_fast_desc">0.75X रिज़ॉल्यूशन, तेज़ JIT, असिंक्रोनस शेडर्स, अक्षम reactive flushing, 6GB DRAM, cool SoC.</string>
-    <string name="profile_preset_balanced_title">⚖️ Balanced (Recommended)</string>
+    <string name="profile_preset_balanced_title">Balanced (Recommended)</string>
     <string name="profile_preset_balanced_desc" formatted="false">1.0X (720p/1080p), FSR 85%, fast JIT, async shaders, EDS1 dynamic state, 6GB DRAM.</string>
-    <string name="profile_preset_accurate_title">💎 उच्च Quality (सटीक)</string>
+    <string name="profile_preset_accurate_title">उच्च Quality (सटीक)</string>
     <string name="profile_preset_accurate_desc">1.0X-1.5X, उच्च GPU सटीकता, strict sync, FXAA/SMAA, 8GB DRAM.</string>
-    <string name="profile_preset_saver_title">🔋 Battery Saver and Cool SoC</string>
+    <string name="profile_preset_saver_title">Battery Saver and Cool SoC</string>
     <string name="profile_preset_saver_desc" formatted="false">0.75X resolution, 100% speed limit, battery-efficient VRAM, minimum thermal output.</string>
     <string name="profile_btn_apply">Apply</string>
     <string name="profile_btn_share">Share</string>
@@ -2175,7 +2175,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="profile_rename_title">Rename Profile</string>
     <string name="profile_delete_title">हटाएं Profile</string>
     <string name="profile_delete_confirmation">क्या आप वाकई चाहते हैं you want to हटाएं profile \"%1$s\"?</string>
-    <string name="profile_applied_toast">⚡ Profile \"%1$s\" applied सफलतापूर्वक!</string>
+    <string name="profile_applied_toast">Profile \"%1$s\" applied सफलतापूर्वक!</string>
     <string name="profile_apply_failed">करने में विफल: सेटिंग्स लागू करें profile.</string>
     <string name="profile_saved_toast">Profile \"%1$s\" saved!</string>
     <string name="profile_share_title">Share Settings Profile</string>
@@ -2190,8 +2190,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="storm_save_replace_current">Replace current</string>
     <string name="storm_save_replace_remote">Replace remote</string>
     <string name="storm_save_keep_both">Keep both variants</string>
-    <string name="gamebanana_tab_online">🌐 GameBanana catalog</string>
-    <string name="gamebanana_tab_installed">💾 Installed</string>
+    <string name="gamebanana_tab_online">GameBanana catalog</string>
+    <string name="gamebanana_tab_installed">Installed</string>
     <string name="gamebanana_no_installed_mods">नहीं mods installed for this game</string>
     <string name="gamebanana_installed_stats">Total: %1$d | सक्षम: %2$d | अक्षम: %3$d</string>
     <string name="gamebanana_mod_deleted">Mod "%1$s" deleted</string>
@@ -2448,12 +2448,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="cheat_item_desc_placeholder">Description</string>
     <string name="cheat_btn_edit_qty">✏️ Value</string>
     <string name="cheat_header_version_prefix"> | Version: </string>
-    <string name="cheat_header_in_game"> | ⚡ In Game</string>
+    <string name="cheat_header_in_game"> | In Game</string>
     <string name="cheat_header_offline"> | ⚪ Offline</string>
     <string name="cheat_header_dmnt_active">
-⚡ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
+Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="cheat_build_all_versions">सभी versions</string>
-    <string name="cheat_toast_activated_ingame">⚡ Cheat codes activated in game!</string>
+    <string name="cheat_toast_activated_ingame">Cheat codes activated in game!</string>
     <string name="cheat_toast_saved">✅ Cheat codes saved सफलतापूर्वक</string>
     <string name="cheat_add_name_hint">Cheat name (e.g. Infinite Lives)</string>
     <string name="cheat_add_code_hint">Atmosphere format code (04000000 12345678 ...)</string>
@@ -2511,7 +2511,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="log_viewer_chip_errors">🚨 Errors</string>
     <string name="log_viewer_chip_warnings">⚠️ Warnings</string>
     <string name="log_viewer_chip_info">ℹ️ Info</string>
-    <string name="log_viewer_status_ingame">⚡ In Game</string>
+    <string name="log_viewer_status_ingame">In Game</string>
     <string name="log_viewer_status_offline">⚪ Offline</string>
     <string name="log_viewer_toast_refreshing">🔄 Refreshing log...</string>
     <string name="log_viewer_stats_total_fmt">Total lines: %1$d | Size: %2$d KB</string>
@@ -2638,8 +2638,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="translator_overlay_btn_clear">🧹 साफ़ करें</string>
     <string name="translator_overlay_btn_save">💾 सहेजें</string>
     <string name="translator_overlay_btn_close">✕ बंद करें</string>
-    <string name="translator_snack_auto_on">⚡ स्वतः-translation सक्षम</string>
-    <string name="translator_snack_auto_off">⚡ स्वतः-translation अक्षम</string>
+    <string name="translator_snack_auto_on">स्वतः-translation सक्षम</string>
+    <string name="translator_snack_auto_off">स्वतः-translation अक्षम</string>
     <string name="translator_snack_tts_on">🔊 TTS voice readout सक्षम</string>
     <string name="translator_snack_tts_off">🔇 TTS voice readout अक्षम</string>
     <string name="translator_snack_float_on">👁️ Floating button shown</string>
@@ -2647,7 +2647,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="translator_dialog_select_model">🤖 Select translation model</string>
     <string name="translator_toast_model_selected_fmt">Translation model: %1$s</string>
     <string name="sysinfo_sec_device">📱  DEVICE &amp; SYSTEM</string>
-    <string name="sysinfo_sec_cpu">⚡  PROCESSOR (CPU / SOC)</string>
+    <string name="sysinfo_sec_cpu"> PROCESSOR (CPU / SOC)</string>
     <string name="sysinfo_sec_gpu">🎮  GRAPHICS (GPU &amp; Vulkan)</string>
     <string name="sysinfo_sec_ram">💾  SYSTEM मेमोरी (RAM)</string>
     <string name="sysinfo_lbl_manufacturer">• Manufacturer: </string>
@@ -2671,7 +2671,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="sysinfo_lbl_low_mem_thresh">• निम्न मेमोरी Threshold: </string>
     <string name="emulation_cooling_paused_title">❄️ Game paused — cooling down device</string>
     <string name="emulation_cooling_temp_default">🌡️ Temperature: --°C ➔ Target: 36.5°C</string>
-    <string name="emulation_cooling_chipset_unloaded">⚡ Chipset लोड करें removed (&lt; 1 W)</string>
+    <string name="emulation_cooling_chipset_unloaded">Chipset लोड करें removed (&lt; 1 W)</string>
     <string name="emulation_cooling_done_fmt">✅ Cooling complete: %1$s°C</string>
     <string name="emulation_cooling_temp_fmt">🌡️ Temperature: %1$s°C ➔ Target: %2$s°C</string>
     <string name="emulation_cooling_in_progress">🌡️ Cooling down chipset</string>
@@ -2698,9 +2698,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="gamebanana_no_mod_desc">नहीं mod description available.</string>
     <string name="gamebanana_avail_files_header">
 📦 Available files for डाउनलोड करें:</string>
-    <string name="game_fix_toast_autofix_custom">⚡ स्वतः-Fix: Applied with your कस्टम settings preserved</string>
-    <string name="game_fix_toast_autofix_clean">⚡ स्वतः-Fix: Clean reference profile applied</string>
-    <string name="game_fix_toast_custom_saved">⚡ स्वतः-Fix: कस्टम settings preserved</string>
+    <string name="game_fix_toast_autofix_custom">स्वतः-Fix: Applied with your कस्टम settings preserved</string>
+    <string name="game_fix_toast_autofix_clean">स्वतः-Fix: Clean reference profile applied</string>
+    <string name="game_fix_toast_custom_saved">स्वतः-Fix: कस्टम settings preserved</string>
     <string name="game_fix_toast_launch_custom">🎮 कस्टम Settings: Launching with your profile</string>
     <string name="game_fix_toast_launch_global">🌐 Global Settings: Launching with global settings</string>
     <string name="overlay_style_neon_glow">Neon Cyber Glow (3D)</string>
@@ -2913,8 +2913,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
     <string name="performance_preset">प्रदर्शन प्रीसेट</string>
     <string name="performance_preset_description">प्रदर्शन, बैटरी और दृश्य गुणवत्ता को संतुलित करने के लिए अनुकूलित प्रीसेट चुनें</string>
-    <string name="performance_preset_battery">🔋 बैटरी सेवर</string>
-    <string name="performance_preset_balanced">⚖️ संतुलित (अनुशंसित)</string>
+    <string name="performance_preset_battery">बैटरी सेवर</string>
+    <string name="performance_preset_balanced">संतुलित (अनुशंसित)</string>
     <string name="performance_preset_quality">🚀 अधिकतम गुणवत्ता</string>
     <string name="performance_preset_custom">⚙️ कस्टम</string>
     <string name="performance_preset_applied">प्रदर्शन प्रीसेट लागू किया गया</string>

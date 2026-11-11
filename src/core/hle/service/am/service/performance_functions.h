@@ -11,6 +11,10 @@ class IPerformanceFunctions final : public ServiceFramework<IPerformanceFunction
 public:
     explicit IPerformanceFunctions(Core::System& system);
     ~IPerformanceFunctions() override;
+
+private:
+    void IsCpuOverclockEnabled(HLERequestContext& ctx);
+    void SetCpuOverclockEnabled(HLERequestContext& ctx);
 };
 
 } // namespace Service::AM

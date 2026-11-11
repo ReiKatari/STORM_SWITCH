@@ -116,7 +116,7 @@
 
             <!-- Manual Variable Input Card -->
             <com.google.android.material.card.MaterialCardView
-                style="@style/EdenCard"
+                style="@style/StormCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
@@ -172,7 +172,7 @@
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/button_add_variable"
-                        style="@style/EdenButton.Filled"
+                        style="@style/StormButton.Faceted.Primary"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/freedreno_add_variable"
@@ -197,7 +197,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_clear_all"
-                    style="@style/EdenButton.Outlined"
+                    style="@style/StormButton.Faceted.Secondary"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="6dp"
@@ -213,7 +213,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_save"
-                    style="@style/EdenButton.Filled"
+                    style="@style/StormButton.Faceted.Primary"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="6dp"
@@ -231,7 +231,7 @@
 
             <!-- Info Section -->
             <com.google.android.material.card.MaterialCardView
-                style="@style/EdenCard"
+                style="@style/StormCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"

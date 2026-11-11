@@ -6,6 +6,8 @@
 #endif
 
 #include "storm_switch/game_fix_dialog.h"
+#include "storm_switch/common/storm_design_engine.h"
+#include "storm_switch/common/storm_design_engine.h"
 
 #include <cctype>
 #include <filesystem>
@@ -233,10 +235,10 @@ GameFixDialog::GameFixDialog(QWidget* parent, u64 title_id_, const QString& game
     }
 
     setWindowTitle(StormLang(
-        QStringLiteral("STORM SWITCH — Авто-настройка и оптимизация"),
-        QStringLiteral("STORM SWITCH — Auto-Configuration & Optimization"),
-        QStringLiteral("STORM SWITCH — Auto-Konfiguration & Optimierung"),
-        QStringLiteral("STORM SWITCH — Auto-configuration et optimisation")));
+        QStringLiteral("STORM SWITCH - Авто-настройка и оптимизация"),
+        QStringLiteral("STORM SWITCH - Auto-Configuration & Optimization"),
+        QStringLiteral("STORM SWITCH - Auto-Konfiguration & Optimierung"),
+        QStringLiteral("STORM SWITCH - Auto-configuration et optimisation")));
 
     resize(860, 680);
     setMinimumSize(720, 540);
@@ -347,6 +349,12 @@ QString GameFixDialog::GetLocalizedSettingLabel(const std::string& raw_key) cons
         return StormLang(QStringLiteral("Сборка мусора видеопамяти (VRAM)"), QStringLiteral("VRAM Garbage Collection"));
     if (k.find("vram_budget_governor") != std::string::npos)
         return StormLang(QStringLiteral("Контроллер бюджета VRAM"), QStringLiteral("VRAM Budget Governor"));
+    if (k.find("storm_thermal_governor") != std::string::npos)
+        return StormLang(QStringLiteral("Контроллер троттлинга STORM Thermal"), QStringLiteral("STORM Thermal Governor"));
+    if (k.find("storm_lowend_turbo") != std::string::npos)
+        return StormLang(QStringLiteral("Турбо-режим для слабых ПК"), QStringLiteral("Low-End Turbo Mode"));
+    if (k.find("enable_cheats_by_default") != std::string::npos)
+        return StormLang(QStringLiteral("Включение читов по умолчанию"), QStringLiteral("Enable Cheats by Default"));
     if (k.find("vram_usage_mode") != std::string::npos)
         return StormLang(QStringLiteral("Режим использования видеопамяти"), QStringLiteral("VRAM Usage Mode"));
     if (k.find("dyna_state") != std::string::npos || k.find("extended_dynamic_state") != std::string::npos)
@@ -592,94 +600,11 @@ QString GameFixDialog::FormatSettingValue(const std::string& raw_key, const std:
 void GameFixDialog::SetupUI() {
     const auto pal = StormTheme::GetThemePalette();
     const QColor acc(pal.accent);
-
-    setStyleSheet(QStringLiteral(
-        "QDialog {"
-        "  background-color: %1;"
-        "  color: %2;"
-        "  font-family: 'Segoe UI', -apple-system, sans-serif;"
-        "}"
-        "QGroupBox {"
-        "  background-color: %3;"
-        "  border: none;"
-        "  border-radius: 10px;"
-        "  padding-top: 14px;"
-        "  margin-top: 6px;"
-        "}"
-        "QGroupBox::title {"
-        "  subcontrol-origin: margin;"
-        "  subcontrol-position: top left;"
-        "  padding: 0 10px;"
-        "  color: %4;"
-        "  font-weight: 800;"
-        "  font-size: 11px;"
-        "  letter-spacing: 0.6px;"
-        "}"
-        "QScrollArea {"
-        "  background: transparent;"
-        "  border: none;"
-        "}"
-        "QScrollBar:vertical {"
-        "  background: %1;"
-        "  width: 8px;"
-        "  margin: 2px 0px;"
-        "  border: none;"
-        "  border-radius: 4px;"
-        "}"
-        "QScrollBar::handle:vertical {"
-        "  background: %5;"
-        "  min-height: 28px;"
-        "  border-radius: 4px;"
-        "}"
-        "QScrollBar::handle:vertical:hover {"
-        "  background: %4;"
-        "}"
-        "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {"
-        "  height: 0px;"
-        "  background: none;"
-        "  border: none;"
-        "}"
-        "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {"
-        "  background: transparent;"
-        "  border: none;"
-        "}"
-        "QCheckBox {"
-        "  color: %2;"
-        "  font-size: 11.5px;"
-        "  spacing: 8px;"
-        "  background: transparent;"
-        "  border: none;"
-        "}"
-        "QCheckBox::indicator {"
-        "  width: 18px;"
-        "  height: 18px;"
-        "  border-radius: 4px;"
-        "  border: none;"
-        "  background-color: %5;"
-        "}"
-        "QCheckBox::indicator:checked {"
-        "  background-color: %4;"
-        "}"
-        "QPushButton {"
-        "  background: %5;"
-        "  color: %2;"
-        "  border: none;"
-        "  border-radius: 8px;"
-        "  padding: 8px 16px;"
-        "  font-weight: 700;"
-        "  font-size: 12px;"
-        "  min-height: 24px;"
-        "}"
-        "QPushButton:hover {"
-        "  background: %3;"
-        "  color: %4;"
-        "  border: none;"
-        "}"
-        "QPushButton:pressed {"
-        "  background: %1;"
-        "  border: none;"
-        "}"
-    ).arg(pal.bg, pal.textPrimary, pal.card, pal.accent, pal.cardAlt));
+    setProperty("_stormDialogThemed", true);
+    setStyleSheet(StormDesign::BuildDialogStylesheet(pal) + QStringLiteral(
+        "QScrollArea { background: transparent; border: none; }"
+        "QWidget#ScrollContent { background: transparent; }"
+    ));
 
     auto* root_lay = new QVBoxLayout(this);
     root_lay->setContentsMargins(18, 18, 18, 18);

@@ -168,29 +168,17 @@ ModManagerDialog::ModManagerDialog(QWidget* parent, Core::System& system_, u64 t
     const QString display_title = game_name.isEmpty()
         ? QStringLiteral("0x%1").arg(title_id, 16, 16, QLatin1Char('0')).toUpper()
         : game_name;
-    setWindowTitle(tr("STORM SWITCH — Менеджер модов: %1").arg(display_title));
+    setWindowTitle(tr("STORM SWITCH - Менеджер модов: %1").arg(display_title));
     resize(980, 640);
     setMinimumSize(820, 520);
     setMinimumSize(680, 460);
     setAcceptDrops(true);
 
+    setProperty("_stormDialogThemed", true);
     const StormTheme::Palette pal = StormTheme::GetThemePalette();
-    setStyleSheet(QStringLiteral(
-        "QDialog { background-color: %1; color: %2; font-family: 'Segoe UI', sans-serif; font-size: 12px; }"
-        "QTabWidget::pane { border: none; background: %4; border-radius: 8px; }"
-        "QTabBar::tab { background: %1; color: %2; padding: 8px 18px; border: none; "
-        "border-top-left-radius: 6px; border-top-right-radius: 6px; margin-right: 2px; font-weight: bold; }"
-        "QTabBar::tab:selected { background: %3; color: %5; border-bottom: 2px solid %5; }"
-        "QTableWidget { background-color: %6; border: none; border-radius: 6px; gridline-color: %3; selection-background-color: %3; selection-color: %5; color: %2; }"
-        "QHeaderView::section { background-color: %4; color: %2; padding: 6px; font-weight: bold; border: none; }"
-        "QPushButton, QDialogButtonBox QPushButton, QToolButton { background-color: %7; border: none; border-radius: 6px; padding: 6px 16px; color: %2; font-weight: 600; min-height: 22px; }"
-        "QPushButton:hover, QDialogButtonBox QPushButton:hover, QToolButton:hover { background-color: %3; border: none; color: %5; }"
-        "QPushButton:pressed, QDialogButtonBox QPushButton:pressed, QToolButton:pressed { background-color: %4; border: none; padding: 6px 16px; color: %2; }"
-        "QPushButton:disabled { background: %6; border: none; color: %8; }"
-        "QCheckBox::indicator:unchecked { border: none; background-color: rgba(239, 68, 68, 0.18); border-radius: 4px; width: 15px; height: 15px; }"
-        "QCheckBox::indicator:checked { border: none; background-color: #10B981; border-radius: 4px; width: 15px; height: 15px; }"
-    ).arg(
-        pal.bg, pal.textPrimary, pal.border, pal.surface, pal.accent, pal.inputBg, pal.buttonBg, pal.textSecondary
+    setStyleSheet(StormDesign::BuildDialogStylesheet(pal) + QStringLiteral(
+        "QCheckBox::indicator:unchecked { border: 1px solid #EF4444; background-color: rgba(239, 68, 68, 0.18); border-radius: 4px; width: 15px; height: 15px; }"
+        "QCheckBox::indicator:checked { border: 1px solid #10B981; background-color: #10B981; border-radius: 4px; width: 15px; height: 15px; }"
     ));
     StormUI::StructureEngine::InstallEscDismiss(this);
 
@@ -248,7 +236,7 @@ ModManagerDialog::ModManagerDialog(QWidget* parent, Core::System& system_, u64 t
 
     auto* apply_btn = new QPushButton(StormLang(QStringLiteral("Сохранить приоритеты и применить"), QStringLiteral("Save & Apply Priorities")), this);
     apply_btn->setIcon(MakeModIcon(ModIconType::Check, QColor(QStringLiteral("#FFFFFF"))));
-    apply_btn->setStyleSheet(QStringLiteral("background: #0284C7; color: #FFFFFF; font-weight: bold; border: none;"));
+    apply_btn->setStyleSheet(QStringLiteral("background: %1; color: #FFFFFF; font-weight: bold; border: none;").arg(pal.accent));
     connect(apply_btn, &QPushButton::clicked, this, &ModManagerDialog::OnApplyAndClose);
     bottom_layout->addWidget(apply_btn);
 
@@ -283,12 +271,12 @@ void ModManagerDialog::SetupPriorityTab(QWidget* tab) {
     mod_table->setColumnCount(6);
     mod_table->verticalHeader()->setDefaultSectionSize(36);
     mod_table->setHorizontalHeaderLabels({
-        StormLang(QStringLiteral("Приоритет"), QStringLiteral("Priority")),
-        StormLang(QStringLiteral("Включен"), QStringLiteral("Enabled")),
-        StormLang(QStringLiteral("Название мода"), QStringLiteral("Mod Name")),
-        StormLang(QStringLiteral("Размер"), QStringLiteral("Size")),
-        StormLang(QStringLiteral("Тип"), QStringLiteral("Type")),
-        StormLang(QStringLiteral("Конфликты файлов LayeredFS"), QStringLiteral("LayeredFS Conflicts"))
+        StormLangStorm11(QStringLiteral("Приоритет"), QStringLiteral("Priority"), QStringLiteral("Priorität"), QStringLiteral("Priorité"), QStringLiteral("优先级"), QStringLiteral("우선순위"), QStringLiteral("優先度"), QStringLiteral("Prioridad"), QStringLiteral("Priorità"), QStringLiteral("Prioridade"), QStringLiteral("प्राथमिकता")),
+        StormLangStorm11(QStringLiteral("Включен"), QStringLiteral("Enabled"), QStringLiteral("Aktiviert"), QStringLiteral("Activé"), QStringLiteral("已启用"), QStringLiteral("활성화됨"), QStringLiteral("有効"), QStringLiteral("Activado"), QStringLiteral("Abilitato"), QStringLiteral("Ativado"), QStringLiteral("सक्षम")),
+        StormLangStorm11(QStringLiteral("Название мода"), QStringLiteral("Mod Name"), QStringLiteral("Mod-Name"), QStringLiteral("Nom du mod"), QStringLiteral("模组名称"), QStringLiteral("모드 이름"), QStringLiteral("Mod 名"), QStringLiteral("Nombre del mod"), QStringLiteral("Nome mod"), QStringLiteral("Nome do mod"), QStringLiteral("मॉड का नाम")),
+        StormLangStorm11(QStringLiteral("Размер"), QStringLiteral("Size"), QStringLiteral("Größe"), QStringLiteral("Taille"), QStringLiteral("大小"), QStringLiteral("크기"), QStringLiteral("サイズ"), QStringLiteral("Tamaño"), QStringLiteral("Dimensione"), QStringLiteral("Tamanho"), QStringLiteral("आकार")),
+        StormLangStorm11(QStringLiteral("Тип"), QStringLiteral("Type"), QStringLiteral("Typ"), QStringLiteral("Type"), QStringLiteral("类型"), QStringLiteral("유형"), QStringLiteral("タイプ"), QStringLiteral("Tipo"), QStringLiteral("Tipo"), QStringLiteral("Tipo"), QStringLiteral("प्रकार")),
+        StormLangStorm11(QStringLiteral("Конфликты файлов LayeredFS"), QStringLiteral("LayeredFS Conflicts"), QStringLiteral("LayeredFS-Dateikonflikte"), QStringLiteral("Conflits de fichiers LayeredFS"), QStringLiteral("LayeredFS 文件冲突"), QStringLiteral("LayeredFS 파일 충돌"), QStringLiteral("LayeredFS ファイル競合"), QStringLiteral("Conflictos de LayeredFS"), QStringLiteral("Conflitti LayeredFS"), QStringLiteral("Conflitos de LayeredFS"), QStringLiteral("LayeredFS फ़ाइल विरोध"))
     });
     mod_table->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
     mod_table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
@@ -351,7 +339,7 @@ void ModManagerDialog::SetupPriorityTab(QWidget* tab) {
     layout->addLayout(content_layout);
 
     conflict_summary_lbl = new QLabel(tab);
-    conflict_summary_lbl->setStyleSheet(QStringLiteral("font-size: 11px; color: #FFFFFF;"));
+    conflict_summary_lbl->setStyleSheet(QStringLiteral("font-size: 11px; color: %1;").arg(pal.textPrimary));
     layout->addWidget(conflict_summary_lbl);
 }
 
@@ -702,15 +690,14 @@ void ModManagerDialog::OnApplyAndClose() {
 }
 
 void ModManagerDialog::OnGenerateAutoPatch() {
+    const auto pal = StormTheme::GetThemePalette();
     QDialog dlg(this);
     dlg.setWindowTitle(StormLang(QStringLiteral("Генератор патчей 60/120 FPS и формата экрана"), QStringLiteral("60/120 FPS & Aspect Ratio Patch Generator")));
     dlg.setMinimumWidth(560);
-    dlg.setStyleSheet(styleSheet() + QStringLiteral(
-        "QGroupBox { border: none; border-radius: 8px; margin-top: 10px; padding-top: 12px; color: #00D2FF; font-weight: bold; }"
+    dlg.setStyleSheet(StormDesign::BuildDialogStylesheet(pal) + QStringLiteral(
+        "QGroupBox { border: 1px solid %1; border-radius: 8px; margin-top: 10px; padding-top: 12px; color: %2; font-weight: bold; }"
         "QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 5px; }"
-        "QComboBox { background: #0F172A; border: none; border-radius: 6px; padding: 6px 10px; color: #FFFFFF; }"
-        "QCheckBox { color: #FFFFFF; spacing: 8px; }"
-    ));
+    ).arg(pal.border, pal.accent));
 
     auto* vbox = new QVBoxLayout(&dlg);
     vbox->setContentsMargins(14, 14, 14, 14);
@@ -735,22 +722,22 @@ void ModManagerDialog::OnGenerateAutoPatch() {
         QString label;
     };
     const std::vector<AspectOption> aspect_options = {
-        {Settings::AspectRatio::R16_9,       QStringLiteral("16x9"),     tr("16:9 — Стандартный экран (FullHD / QHD / 4K)")},
-        {Settings::AspectRatio::R16_10,      QStringLiteral("16x10"),    tr("16:10 — Steam Deck / Ноутбуки WUXGA")},
-        {Settings::AspectRatio::R21_9,       QStringLiteral("21x9"),     tr("21:9 — Ультраширокий UltraWide (2560x1080 / 3440x1440)")},
-        {Settings::AspectRatio::R32_9,       QStringLiteral("32x9"),     tr("32:9 — Супер-ультраширокий Super UltraWide (5120x1440)")},
-        {Settings::AspectRatio::R4_3,        QStringLiteral("4x3"),      tr("4:3 — Классический экран")},
-        {Settings::AspectRatio::R18_9,       QStringLiteral("18x9"),     tr("18:9 — Univisium (2:1)")},
-        {Settings::AspectRatio::R19_5_9,     QStringLiteral("19_5x9"),   tr("19.5:9 — Современные смартфоны / OLED")},
-        {Settings::AspectRatio::R20_9,       QStringLiteral("20x9"),     tr("20:9 — Широкий киноформат / Смартфоны")},
-        {Settings::AspectRatio::R21_10,      QStringLiteral("21x10"),    tr("21:10 — Широкий 16:10")},
-        {Settings::AspectRatio::R24_10,      QStringLiteral("24x10"),    tr("24:10 — UltraWide+ (3840x1600)")},
-        {Settings::AspectRatio::R32_10,      QStringLiteral("32x10"),    tr("32:10 — Super UltraWide (3840x1200)")},
-        {Settings::AspectRatio::R48_9,       QStringLiteral("48x9"),     tr("48:9 — Три монитора Surround (3x 16:9)")},
-        {Settings::AspectRatio::R3_2,        QStringLiteral("3x2"),      tr("3:2 — Портативные дисплеи / Surface")},
-        {Settings::AspectRatio::R5_4,        QStringLiteral("5x4"),      tr("5:4 — Мониторы SXGA (1280x1024)")},
-        {Settings::AspectRatio::R1_1,        QStringLiteral("1x1"),      tr("1:1 — Квадратный формат")},
-        {Settings::AspectRatio::Auto_Window, QStringLiteral("AutoWin"),  tr("Авто по размеру окна — Честный 3D-формат")},
+        {Settings::AspectRatio::R16_9,       QStringLiteral("16x9"),     tr("16:9 - Стандартный экран (FullHD / QHD / 4K)")},
+        {Settings::AspectRatio::R16_10,      QStringLiteral("16x10"),    tr("16:10 - Steam Deck / Ноутбуки WUXGA")},
+        {Settings::AspectRatio::R21_9,       QStringLiteral("21x9"),     tr("21:9 - Ультраширокий UltraWide (2560x1080 / 3440x1440)")},
+        {Settings::AspectRatio::R32_9,       QStringLiteral("32x9"),     tr("32:9 - Супер-ультраширокий Super UltraWide (5120x1440)")},
+        {Settings::AspectRatio::R4_3,        QStringLiteral("4x3"),      tr("4:3 - Классический экран")},
+        {Settings::AspectRatio::R18_9,       QStringLiteral("18x9"),     tr("18:9 - Univisium (2:1)")},
+        {Settings::AspectRatio::R19_5_9,     QStringLiteral("19_5x9"),   tr("19.5:9 - Современные смартфоны / OLED")},
+        {Settings::AspectRatio::R20_9,       QStringLiteral("20x9"),     tr("20:9 - Широкий киноформат / Смартфоны")},
+        {Settings::AspectRatio::R21_10,      QStringLiteral("21x10"),    tr("21:10 - Широкий 16:10")},
+        {Settings::AspectRatio::R24_10,      QStringLiteral("24x10"),    tr("24:10 - UltraWide+ (3840x1600)")},
+        {Settings::AspectRatio::R32_10,      QStringLiteral("32x10"),    tr("32:10 - Super UltraWide (3840x1200)")},
+        {Settings::AspectRatio::R48_9,       QStringLiteral("48x9"),     tr("48:9 - Три монитора Surround (3x 16:9)")},
+        {Settings::AspectRatio::R3_2,        QStringLiteral("3x2"),      tr("3:2 - Портативные дисплеи / Surface")},
+        {Settings::AspectRatio::R5_4,        QStringLiteral("5x4"),      tr("5:4 - Мониторы SXGA (1280x1024)")},
+        {Settings::AspectRatio::R1_1,        QStringLiteral("1x1"),      tr("1:1 - Квадратный формат")},
+        {Settings::AspectRatio::Auto_Window, QStringLiteral("AutoWin"),  tr("Авто по размеру окна - Честный 3D-формат")},
         {Settings::AspectRatio::Stretch,     QStringLiteral("Stretch"),  tr("Растянуть во всё окно (Stretch)")},
     };
 
@@ -775,10 +762,10 @@ void ModManagerDialog::OnGenerateAutoPatch() {
     auto* fps_group = new QGroupBox(StormLang(QStringLiteral("Разблокировка частоты кадров (FPS Unlock)"), QStringLiteral("Frame Rate Unlock (FPS Unlock)")), &dlg);
     auto* fps_layout = new QVBoxLayout(fps_group);
     auto* fps_combo = new QComboBox(fps_group);
-    fps_combo->addItem(tr("60 FPS — Разблокировка VSync и лимита 30 FPS"), 60);
-    fps_combo->addItem(tr("90 FPS — Разблокировка 60 FPS + ускорение 150%"), 90);
-    fps_combo->addItem(tr("120 FPS — Разблокировка 60 FPS + Генерация кадров LSFG x2"), 120);
-    fps_combo->addItem(tr("240 FPS — Разблокировка 60 FPS + Генерация кадров LSFG x4"), 240);
+    fps_combo->addItem(tr("60 FPS - Разблокировка VSync и лимита 30 FPS"), 60);
+    fps_combo->addItem(tr("90 FPS - Разблокировка 60 FPS + ускорение 150%"), 90);
+    fps_combo->addItem(tr("120 FPS - Разблокировка 60 FPS + Генерация кадров LSFG x2"), 120);
+    fps_combo->addItem(tr("240 FPS - Разблокировка 60 FPS + Генерация кадров LSFG x4"), 240);
     fps_combo->addItem(tr("Без изменения FPS (только патч формата экрана)"), 0);
     fps_combo->setCurrentIndex(0);
     fps_layout->addWidget(fps_combo);
@@ -794,7 +781,7 @@ void ModManagerDialog::OnGenerateAutoPatch() {
     btn_row->addWidget(cancel_b);
 
     auto* create_b = new QPushButton(StormLang(QStringLiteral("Сгенерировать и активировать патч"), QStringLiteral("Generate & Apply Patch")), &dlg);
-    create_b->setStyleSheet(QStringLiteral("background: #0284C7; color: #FFFFFF; font-weight: bold; border: none;"));
+    create_b->setStyleSheet(QStringLiteral("background: %1; color: #FFFFFF; font-weight: bold; border: none;").arg(pal.accent));
     connect(create_b, &QPushButton::clicked, &dlg, &QDialog::accept);
     btn_row->addWidget(create_b);
     vbox->addLayout(btn_row);
@@ -996,8 +983,8 @@ void ModManagerDialog::SetupCnxBuilderTab(QWidget* tab) {
 
     auto* form_group = new QGroupBox(tr("Параметры пакета и метаданных NACP"), tab);
     form_group->setStyleSheet(QStringLiteral(
-        "QGroupBox { border: none; border-radius: 8px; margin-top: 8px; padding-top: 10px; font-weight: bold; color: #38BDF8; }"
-        "QLineEdit { background: #0A0E17; border: none; border-radius: 6px; padding: 6px 10px; color: #FFFFFF; }"));
+        "QGroupBox { border: 1px solid %1; border-radius: 8px; margin-top: 8px; padding-top: 10px; font-weight: bold; color: %2; }"
+        "QLineEdit { background: %3; border: 1px solid %1; border-radius: 6px; padding: 6px 10px; color: %4; }").arg(pal.border, pal.accent, pal.inputBg, pal.textPrimary));
     auto* form = new QFormLayout(form_group);
     form->setSpacing(10);
 
@@ -1020,7 +1007,7 @@ void ModManagerDialog::SetupCnxBuilderTab(QWidget* tab) {
     // Mod package name
     const QString default_pkg_name = game_name.isEmpty()
         ? QStringLiteral("STORM Mod Package")
-        : QStringLiteral("%1 — Mod Pack").arg(game_name);
+        : QStringLiteral("%1 - Mod Pack").arg(game_name);
     cnx_name_edit = new QLineEdit(default_pkg_name, form_group);
     form->addRow(tr("Название пакета (NACP):"), cnx_name_edit);
 
@@ -1064,7 +1051,7 @@ void ModManagerDialog::SetupCnxBuilderTab(QWidget* tab) {
     cnx_icon_preview->setFixedSize(160, 160);
     cnx_icon_preview->setAlignment(Qt::AlignCenter);
     cnx_icon_preview->setStyleSheet(QStringLiteral(
-        "background: #0A0E17; border: 2px dashed #334155; border-radius: 10px; color: #FFFFFF; font-weight: bold;"));
+        "background: %1; border: 2px dashed %2; border-radius: 10px; color: %3; font-weight: bold;").arg(pal.inputBg, pal.border, pal.textPrimary));
     right_col->addWidget(cnx_icon_preview, 0, Qt::AlignHCenter);
 
     auto* btn_save_cfg = new QPushButton(StormLang(QStringLiteral("Сохранить профиль (.json)"), QStringLiteral("Save Profile (.json)")), tab);
@@ -1105,7 +1092,7 @@ void ModManagerDialog::OnCnxBrowseSource() {
     const QString dir = QFileDialog::getExistingDirectory(this, tr("Выберите папку с файлами мода"));
     if (!dir.isEmpty()) {
         cnx_source_edit->setText(dir);
-        if (cnx_name_edit->text().isEmpty() || cnx_name_edit->text().endsWith(QStringLiteral("— Mod Pack"))) {
+        if (cnx_name_edit->text().isEmpty() || cnx_name_edit->text().endsWith(QStringLiteral("- Mod Pack"))) {
             cnx_name_edit->setText(QFileInfo(dir).fileName());
         }
     }

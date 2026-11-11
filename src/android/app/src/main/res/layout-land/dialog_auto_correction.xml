@@ -238,7 +238,7 @@
                     <com.google.android.material.textview.MaterialTextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="⚡ STORM PROFILE"
+                        android:text="STORM PROFILE"
                         android:textSize="12.5sp"
                         android:textStyle="bold"
                         android:textColor="?attr/colorPrimary"
@@ -300,7 +300,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_close_auto_correction"
-                style="@style/Widget.Material3.Button.TextButton"
+                style="@style/StormButton.Faceted.Secondary"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
                 android:text="@string/close"

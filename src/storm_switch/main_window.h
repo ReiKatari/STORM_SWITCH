@@ -277,6 +277,8 @@ private:
     void ConnectWidgetEvents();
     void ConnectMenuEvents();
     void UpdateMenuState();
+    void RefreshRuntimeCheats();
+    void ClearRuntimeCheats();
 
     void SetupPrepareForSleep();
 
@@ -723,6 +725,7 @@ private:
     QString startup_icon_theme;
 
     QActionGroup* game_size_actions;
+    std::vector<QAction*> runtime_cheat_actions;
 
     // Debugger panes
     ControllerDialog* controller_dialog = nullptr;
@@ -812,4 +815,5 @@ protected:
     void dropEvent(QDropEvent* event) override;
     void dragEnterEvent(QDragEnterEvent* event) override;
     void dragMoveEvent(QDragMoveEvent* event) override;
+    bool eventFilter(QObject* watched, QEvent* event) override;
 };

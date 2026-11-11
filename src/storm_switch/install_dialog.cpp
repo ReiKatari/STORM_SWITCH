@@ -1,4 +1,8 @@
-﻿// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QMimeData>
+#include <QUrl>
+// SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // SPDX-FileCopyrightText: Copyright 2020 yuzu Emulator Project
@@ -15,6 +19,7 @@
 #include "storm_switch/configuration/storm_ui_structure_helper.h"
 
 InstallDialog::InstallDialog(QWidget* parent, const QStringList& files) : QDialog(parent) {
+    setAcceptDrops(true);
     file_list = new QListWidget(this);
 
     for (const QString& file : files) {
@@ -70,4 +75,35 @@ QStringList InstallDialog::GetFiles() const {
 
 int InstallDialog::GetMinimumWidth() const {
     return file_list->width();
+}
+
+void InstallDialog::dragEnterEvent(QDragEnterEvent* event) {
+    if (event->mimeData()->hasUrls()) {
+        event->acceptProposedAction();
+    } else {
+        QDialog::dragEnterEvent(event);
+    }
+}
+
+void InstallDialog::dropEvent(QDropEvent* event) {
+    if (!event->mimeData()->hasUrls()) {
+        QDialog::dropEvent(event);
+        return;
+    }
+    const QStringList valid_exts = {
+        QStringLiteral("nsp"), QStringLiteral("xci"), QStringLiteral("nsz"),
+        QStringLiteral("xcz"), QStringLiteral("nca"), QStringLiteral("nro")
+    };
+    for (const QUrl& url : event->mimeData()->urls()) {
+        const QString local_path = url.toLocalFile();
+        if (local_path.isEmpty()) continue;
+        const QFileInfo fi(local_path);
+        if (fi.isFile() && valid_exts.contains(fi.suffix().toLower())) {
+            auto* item = new QListWidgetItem(fi.fileName(), file_list);
+            item->setData(Qt::UserRole, local_path);
+            item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+            item->setCheckState(Qt::Checked);
+        }
+    }
+    event->acceptProposedAction();
 }

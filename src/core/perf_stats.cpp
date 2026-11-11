@@ -24,6 +24,12 @@
 #if defined(_M_X64) || defined(__x86_64__)
 #include <immintrin.h>
 #endif
+#else
+#include <cerrno>
+#include <time.h>
+#if defined(__x86_64__)
+#include <immintrin.h>
+#endif
 #endif
 
 using namespace std::chrono_literals;
@@ -168,11 +174,14 @@ void SpeedLimiter::DoSpeedLimiting(microseconds current_system_time_us) {
         std::clamp(speed_limiting_delta_err, -max_lag_time_us, max_lag_time_us);
 
     if (speed_limiting_delta_err > microseconds::zero()) {
+        const bool eco_cool = Settings::values.eco_frame_pacing.GetValue() ||
+                              Settings::values.eco_thermal_mode.GetValue() ||
+                              Settings::values.storm_thermal_governor.GetValue();
 #ifdef _WIN32
-        static constexpr auto SPIN_THRESHOLD = std::chrono::milliseconds(1);
+        const auto spin_margin = eco_cool ? microseconds(0) : microseconds(250);
         const auto target_time = now + speed_limiting_delta_err;
-        if (speed_limiting_delta_err > SPIN_THRESHOLD) {
-            const auto sleep_dur = speed_limiting_delta_err - SPIN_THRESHOLD;
+        if (speed_limiting_delta_err > spin_margin) {
+            const auto sleep_dur = speed_limiting_delta_err - spin_margin;
             static const auto get_timer = []() -> HANDLE {
 #ifndef CREATE_WAITABLE_TIMER_HIGH_RESOLUTION
 #define CREATE_WAITABLE_TIMER_HIGH_RESOLUTION 0x00000002
@@ -201,22 +210,42 @@ void SpeedLimiter::DoSpeedLimiting(microseconds current_system_time_us) {
         while (Clock::now() < target_time) {
 #if defined(_M_X64) || defined(__x86_64__)
             _mm_pause();
+#elif defined(_M_ARM64) || defined(__aarch64__)
+            YieldProcessor();
 #else
             std::this_thread::yield();
 #endif
         }
 #else
-        static constexpr auto SPIN_THRESHOLD = std::chrono::milliseconds(1);
+        const auto spin_margin = eco_cool ? microseconds(0) : microseconds(50);
         const auto target_time = now + speed_limiting_delta_err;
-        if (speed_limiting_delta_err > SPIN_THRESHOLD) {
-            std::this_thread::sleep_for(speed_limiting_delta_err - SPIN_THRESHOLD);
-        }
-        while (Clock::now() < target_time) {
-#if defined(__x86_64__)
-            _mm_pause();
+        if (speed_limiting_delta_err > spin_margin) {
+            const auto sleep_dur = speed_limiting_delta_err - spin_margin;
+#if defined(__APPLE__)
+            struct timespec req;
+            req.tv_sec = static_cast<time_t>(duration_cast<std::chrono::seconds>(sleep_dur).count());
+            req.tv_nsec = static_cast<long>((duration_cast<std::chrono::nanoseconds>(sleep_dur) % 1s).count());
+            nanosleep(&req, nullptr);
 #else
-            std::this_thread::yield();
+            struct timespec ts;
+            clock_gettime(CLOCK_MONOTONIC, &ts);
+            const auto nsecs = ts.tv_nsec + duration_cast<std::chrono::nanoseconds>(sleep_dur).count();
+            ts.tv_sec += static_cast<time_t>(nsecs / 1000000000LL);
+            ts.tv_nsec = static_cast<long>(nsecs % 1000000000LL);
+            while (clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, nullptr) == EINTR) {
+            }
 #endif
+        }
+        if (!eco_cool) {
+            while (Clock::now() < target_time) {
+#if defined(__aarch64__)
+                asm volatile("yield" ::: "memory");
+#elif defined(__x86_64__)
+                _mm_pause();
+#else
+                std::this_thread::yield();
+#endif
+            }
         }
 #endif
         auto now_after_sleep = Clock::now();

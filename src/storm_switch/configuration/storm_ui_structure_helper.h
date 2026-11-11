@@ -28,12 +28,14 @@ namespace StormUI {
 /// Visual options for volumetric structured cards
 struct CardStyleOptions {
     QString accent_color;
-    QString card_bg = QStringLiteral("rgba(15, 23, 42, 0.65)");
-    QString border_color = QStringLiteral("rgba(255, 255, 255, 0.08)");
+    QString card_bg;
+    QString border_color;
     int border_radius = 8;
     int top_margin = 24;
     int inner_padding = 14;
     int row_spacing = 9;
+
+    CardStyleOptions();
 };
 
 /// Keyboard filter: clean dialog dismissal upon pressing ESC (Law 16)

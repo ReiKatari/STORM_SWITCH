@@ -1,3 +1,4 @@
+#include <mutex>
 // SPDX-FileCopyrightText: Copyright 2018 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
@@ -34,6 +35,7 @@ public:
     void ResumeProcess() override;
     void DebugLog(u8 id, u64 value) override;
     void CommandLog(std::string_view data) override;
+    [[nodiscard]] bool IsCommandLogEnabled() const override;
 
 private:
     bool IsAddressInRange(VAddr address) const;
@@ -70,6 +72,8 @@ public:
     void SetMainMemoryParameters(VAddr main_region_begin, u64 main_region_size);
 
     void Reload(std::vector<CheatEntry> reload_cheats);
+    [[nodiscard]] std::vector<RuntimeCheatInfo> GetCheats() const;
+    bool SetCheatEnabled(u32 cheat_id, bool enabled);
     [[nodiscard]] bool IsCheatsEmpty() const { return cheats.empty(); }
 
 private:
@@ -79,6 +83,7 @@ private:
     DmntCheatVm vm;
 
     std::vector<CheatEntry> cheats;
+    mutable std::mutex cheats_mutex;
     std::atomic_bool is_pending_reload{false};
 
     std::shared_ptr<Core::Timing::EventType> event;

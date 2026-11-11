@@ -1,4 +1,3 @@
-#include "storm_switch/common/storm_theme.h"
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -47,6 +46,24 @@
 #include "storm_switch/render/performance_overlay.h"
 #include "video_core/gpu.h"
 #include "video_core/shader_notify.h"
+#include <QIcon>
+#include <QPixmap>
+
+namespace {
+QIcon MakeVectorCloseIcon(int size = 16, const QColor& color = QColor(148, 163, 184)) {
+    QPixmap px(size, size);
+    px.fill(Qt::transparent);
+    QPainter p(&px);
+    p.setRenderHint(QPainter::Antialiasing);
+    QPen pen(color, 1.8, Qt::SolidLine, Qt::RoundCap);
+    p.setPen(pen);
+    const qreal m = size * 0.25;
+    const qreal s = size - m;
+    p.drawLine(QPointF(m, m), QPointF(s, s));
+    p.drawLine(QPointF(s, m), QPointF(m, s));
+    return QIcon(px);
+}
+} // namespace
 
 // Custom lightweight FPS / Frametime Graph Widget
 class FpsGraphWidget : public QWidget {
@@ -143,30 +160,33 @@ PerformanceOverlay::PerformanceOverlay(MainWindow* parent)
 PerformanceOverlay::~PerformanceOverlay() = default;
 
 void PerformanceOverlay::SetupUI() {
+    const auto po_pal = StormTheme::GetThemePalette();
     auto* root_layout = new QVBoxLayout(this);
     root_layout->setContentsMargins(0, 0, 0, 0);
     root_layout->setSpacing(0);
 
-    // Global OSD Stylesheet matching STORM SOFT Cyber 3D Theme
+    // Global OSD Stylesheet matching dynamic STORM palette
     setStyleSheet(QStringLiteral(
-        "QWidget { color: #FFFFFF; font-family: 'Segoe UI', sans-serif; font-size: 12px; }"
-        "QTabWidget::pane { border: 1px solid #1E293B; background: rgba(15, 23, 42, 235); border-radius: 8px; }"
-        "QTabBar::tab { background: #0F172A; color: #FFFFFF; padding: 7px 14px; border: 1px solid #1E293B; "
+        "QWidget { color: %1; font-size: 12px; }"
+        "QTabWidget::pane { border: 1px solid %2; background: %3; border-radius: 8px; }"
+        "QTabBar::tab { background: %4; color: %1; padding: 7px 14px; border: 1px solid %2; "
         "border-top-left-radius: 6px; border-top-right-radius: 6px; margin-right: 2px; font-weight: bold; }"
-        "QTabBar::tab:selected { background: #1E293B; color: #00D2FF; border-bottom: 2px solid #00D2FF; }"
-        "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1E293B, stop:1 #0F172A); "
-        "border: 1px solid #334155; border-radius: 6px; color: #FFFFFF; padding: 6px 12px; font-weight: 500; }"
-        "QPushButton:hover { border: 1px solid #00D2FF; color: #00D2FF; background: #1E293B; }"
-        "QPushButton:pressed { background: #0284C7; color: #FFFFFF; }"
-        "QPushButton:disabled { background: #0F172A; border: 1px solid #1E293B; color: #FFFFFF; }"
-        "QListWidget { background: rgba(10, 14, 22, 220); border: 1px solid #1E293B; border-radius: 6px; padding: 4px; }"
+        "QTabBar::tab:selected { background: %2; color: %5; border-bottom: 2px solid %5; }"
+        "QPushButton { background: %6; border: 1px solid %2; border-radius: 6px; color: %1; padding: 6px 12px; font-weight: 500; }"
+        "QPushButton:hover { border: 1px solid %5; color: %5; background: %2; }"
+        "QPushButton:pressed { background: %5; color: #FFFFFF; }"
+        "QPushButton:disabled { background: %4; border: 1px solid %2; color: %7; }"
+        "QListWidget { background: %3; border: 1px solid %2; border-radius: 6px; padding: 4px; color: %1; }"
         "QListWidget::item { padding: 5px; border-radius: 4px; margin-bottom: 2px; }"
-        "QListWidget::item:hover { background: #1E293B; color: #00D2FF; }"
-        "QComboBox { background: #0F172A; border: 1px solid #334155; border-radius: 6px; padding: 5px 10px; color: #FFFFFF; }"
+        "QListWidget::item:hover { background: %2; color: %5; }"
+        "QComboBox { background: %4; border: 1px solid %2; border-radius: 6px; padding: 5px 10px; color: %1; }"
         "QComboBox::drop-down { border: none; width: 20px; }"
-        "QCheckBox { spacing: 8px; }"
-        "QCheckBox::indicator { width: 16px; height: 16px; border: 1px solid #475569; border-radius: 4px; background: #0F172A; }"
-        "QCheckBox::indicator:checked { background: #00D2FF; border: 1px solid #00D2FF; }"
+        "QCheckBox { spacing: 8px; color: %1; }"
+        "QCheckBox::indicator { width: 16px; height: 16px; border: 1px solid %2; border-radius: 4px; background: %4; }"
+        "QCheckBox::indicator:checked { background: %5; border: 1px solid %5; }"
+    ).arg(
+        po_pal.textPrimary, po_pal.border, po_pal.card, po_pal.surface, po_pal.accent,
+        po_pal.buttonBg, po_pal.textSecondary
     ));
 
     m_stack = new QStackedWidget(this);
@@ -200,7 +220,8 @@ void PerformanceOverlay::SetupUI() {
     btn_to_expanded->setStyleSheet(QStringLiteral("padding: 2px 8px; font-size: 10px; font-weight: bold; border-color: #00D2FF; color: #00D2FF;"));
     compact_header->addWidget(btn_to_expanded);
 
-    auto* btn_compact_close = new QPushButton(QStringLiteral("✕"), m_compact_widget);
+    auto* btn_compact_close = new QPushButton(m_compact_widget);
+    btn_compact_close->setIcon(MakeVectorCloseIcon(16));
     btn_compact_close->setFixedSize(20, 20);
     btn_compact_close->setStyleSheet(QStringLiteral("padding: 0; font-size: 11px;"));
     compact_header->addWidget(btn_compact_close);
@@ -212,7 +233,6 @@ void PerformanceOverlay::SetupUI() {
     compact_stats_row->addWidget(m_compact_fps);
 
     m_compact_ft = new QLabel(tr("0.0 ms"), m_compact_widget);
-    const auto po_pal = StormTheme::GetThemePalette();
     m_compact_ft->setStyleSheet(QStringLiteral("font-size: 13px; font-weight: bold; color: %1;").arg(po_pal.accent));
     compact_stats_row->addWidget(m_compact_ft);
 
@@ -244,7 +264,7 @@ void PerformanceOverlay::SetupUI() {
     exp_header->addWidget(exp_title);
 
     m_game_title_lbl = new QLabel(m_expanded_widget);
-    m_game_title_lbl->setStyleSheet(QStringLiteral("font-size: 11px; color: #FFFFFF;"));
+    m_game_title_lbl->setStyleSheet(QStringLiteral("font-size: 11px; color: %1;").arg(po_pal.textPrimary));
     exp_header->addWidget(m_game_title_lbl);
     exp_header->addStretch(1);
 
@@ -252,7 +272,8 @@ void PerformanceOverlay::SetupUI() {
     btn_to_compact->setStyleSheet(QStringLiteral("padding: 3px 10px; font-size: 11px;"));
     exp_header->addWidget(btn_to_compact);
 
-    auto* btn_exp_close = new QPushButton(QStringLiteral("✕"), m_expanded_widget);
+    auto* btn_exp_close = new QPushButton(m_expanded_widget);
+    btn_exp_close->setIcon(MakeVectorCloseIcon(18));
     btn_exp_close->setFixedSize(24, 24);
     btn_exp_close->setStyleSheet(QStringLiteral("padding: 0; font-size: 12px; font-weight: bold;"));
     exp_header->addWidget(btn_exp_close);
@@ -270,7 +291,7 @@ void PerformanceOverlay::SetupUI() {
 
     auto* tab_cheats = new QWidget();
     SetupCheatsTab(tab_cheats);
-    m_tabs->addTab(tab_cheats, tr("🎮 Читы"));
+    m_tabs->addTab(tab_cheats, tr("Читы"));
 
     auto* tab_saves = new QWidget();
     SetupSaveStatesTab(tab_saves);
@@ -299,6 +320,7 @@ void PerformanceOverlay::SetupUI() {
 }
 
 void PerformanceOverlay::SetupMonitoringTab(QWidget* tab) {
+    const auto po_pal = StormTheme::GetThemePalette();
     auto* layout = new QVBoxLayout(tab);
     layout->setContentsMargins(12, 12, 12, 12);
     layout->setSpacing(10);
@@ -306,12 +328,11 @@ void PerformanceOverlay::SetupMonitoringTab(QWidget* tab) {
     // Row 1: Frametime
     auto* ft_box = new QHBoxLayout();
     auto* ft_title = new QLabel(tr("Frametime:"), tab);
-    const auto po_pal2 = StormTheme::GetThemePalette();
-    ft_title->setStyleSheet(QStringLiteral("font-weight: bold; color: %1; font-size: 13px;").arg(po_pal2.accent));
+    ft_title->setStyleSheet(QStringLiteral("font-weight: bold; color: %1; font-size: 13px;").arg(po_pal.accent));
     ft_box->addWidget(ft_title);
 
     m_lbl_ft = new QLabel(tr("0.00 ms"), tab);
-    m_lbl_ft->setStyleSheet(QStringLiteral("font-weight: bold; font-size: 14px; color: #FFFFFF;"));
+    m_lbl_ft->setStyleSheet(QStringLiteral("font-weight: bold; font-size: 14px; color: %1;").arg(po_pal.textPrimary));
     ft_box->addWidget(m_lbl_ft);
 
     ft_box->addSpacing(15);
@@ -360,7 +381,7 @@ void PerformanceOverlay::SetupMonitoringTab(QWidget* tab) {
     info_box->addWidget(m_lbl_dps);
 
     m_lbl_res = new QLabel(tr("Масштаб: 1.0x"), tab);
-    m_lbl_res->setStyleSheet(QStringLiteral("color: #FFFFFF;"));
+    m_lbl_res->setStyleSheet(QStringLiteral("color: %1;").arg(po_pal.textPrimary));
     info_box->addWidget(m_lbl_res);
 
     m_lbl_lsfg = new QLabel(tr("LSFG: Выкл"), tab);
@@ -368,7 +389,7 @@ void PerformanceOverlay::SetupMonitoringTab(QWidget* tab) {
     info_box->addWidget(m_lbl_lsfg);
 
     m_lbl_shaders = new QLabel(tr("Шейдеры: 0"), tab);
-    m_lbl_shaders->setStyleSheet(QStringLiteral("color: %1;").arg(po_pal2.accent));
+    m_lbl_shaders->setStyleSheet(QStringLiteral("color: %1;").arg(po_pal.accent));
     info_box->addWidget(m_lbl_shaders);
 
     info_box->addStretch(1);
@@ -390,7 +411,7 @@ void PerformanceOverlay::SetupCheatsTab(QWidget* tab) {
     top_row->addWidget(m_cheat_status);
     top_row->addStretch(1);
 
-    auto* btn_reload = new QPushButton(tr("🔄 Перезагрузить читы"), tab);
+    auto* btn_reload = new QPushButton(tr("Перезагрузить читы"), tab);
     btn_reload->setStyleSheet(QStringLiteral("padding: 4px 10px; font-size: 11px;"));
     connect(btn_reload, &QPushButton::clicked, this, &PerformanceOverlay::OnReloadCheats);
     top_row->addWidget(btn_reload);
@@ -455,18 +476,18 @@ void PerformanceOverlay::SetupAmiiboTab(QWidget* tab) {
     m_amiibo_combo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     select_row->addWidget(m_amiibo_combo, 1);
 
-    m_btn_browse_amiibo = new QPushButton(tr("📂 Обзор..."), tab);
+    m_btn_browse_amiibo = new QPushButton(tr("Обзор..."), tab);
     connect(m_btn_browse_amiibo, &QPushButton::clicked, this, &PerformanceOverlay::OnBrowseAmiibo);
     select_row->addWidget(m_btn_browse_amiibo);
     layout->addLayout(select_row);
 
     auto* btn_row = new QHBoxLayout();
-    m_btn_inject_amiibo = new QPushButton(tr("⚡ Инжектировать Amiibo"), tab);
+    m_btn_inject_amiibo = new QPushButton(tr("Инжектировать Amiibo"), tab);
     m_btn_inject_amiibo->setStyleSheet(QStringLiteral("background: #0284C7; font-weight: bold; padding: 7px 16px;"));
     connect(m_btn_inject_amiibo, &QPushButton::clicked, this, &PerformanceOverlay::OnInjectAmiibo);
     btn_row->addWidget(m_btn_inject_amiibo);
 
-    m_btn_eject_amiibo = new QPushButton(tr("❌ Извлечь Amiibo"), tab);
+    m_btn_eject_amiibo = new QPushButton(tr("Извлечь Amiibo"), tab);
     m_btn_eject_amiibo->setStyleSheet(QStringLiteral("padding: 7px 16px;"));
     connect(m_btn_eject_amiibo, &QPushButton::clicked, this, &PerformanceOverlay::OnEjectAmiibo);
     btn_row->addWidget(m_btn_eject_amiibo);
@@ -490,7 +511,7 @@ void PerformanceOverlay::SetupCfwTab(QWidget* tab) {
     m_docked_status->setStyleSheet(QStringLiteral("font-weight: bold; font-size: 13px; color: #38BDF8;"));
     docked_box->addWidget(m_docked_status, 1);
 
-    m_btn_toggle_docked = new QPushButton(tr("🔄 Переключить (ReverseNX)"), tab);
+    m_btn_toggle_docked = new QPushButton(tr("Переключить (ReverseNX)"), tab);
     m_btn_toggle_docked->setStyleSheet(QStringLiteral("padding: 5px 14px; font-weight: bold; border-color: #00D2FF; color: #00D2FF;"));
     connect(m_btn_toggle_docked, &QPushButton::clicked, this, &PerformanceOverlay::OnToggleDocked);
     docked_box->addWidget(m_btn_toggle_docked);
@@ -584,7 +605,7 @@ void PerformanceOverlay::SetupCfwTab(QWidget* tab) {
     connect(m_btn_gpu_acc, &QPushButton::clicked, this, &PerformanceOverlay::OnToggleGpuAccuracy);
     gpu_acc_box->addWidget(m_btn_gpu_acc, 1);
 
-    m_btn_heal_gpu = new QPushButton(tr("🛠️ Автолечение артефактов"), tab);
+    m_btn_heal_gpu = new QPushButton(tr("Автолечение артефактов"), tab);
     m_btn_heal_gpu->setToolTip(tr("Мгновенно устраняет полосы, засветы и битые текстуры (GPU High + Safe DMA + Accurate Barriers + Reactive Flushing)"));
     m_btn_heal_gpu->setStyleSheet(QStringLiteral(
         "QPushButton { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0F766E, stop:1 #0284C7); "
@@ -986,7 +1007,7 @@ void PerformanceOverlay::OnLoadSlot(int slot) {
         m_save_status->setText(tr("Состояние игры успешно загружено из Слота %1!").arg(slot));
         m_save_status->setStyleSheet(QStringLiteral("font-weight: bold; color: #34D399;"));
     } else {
-        m_save_status->setText(tr("❌ Ошибка при загрузке Слота %1.").arg(slot));
+        m_save_status->setText(tr("Ошибка при загрузке Слота %1.").arg(slot));
         m_save_status->setStyleSheet(QStringLiteral("font-weight: bold; color: #EF4444;"));
     }
 }
@@ -1005,10 +1026,10 @@ void PerformanceOverlay::RefreshAmiiboList() {
     }
 
     if (m_mainWindow && m_mainWindow->IsAmiiboActive()) {
-        m_amiibo_status->setText(tr("🟢 Виртуальный Amiibo активен в игре"));
+        m_amiibo_status->setText(tr("Виртуальный Amiibo активен в игре"));
         m_amiibo_status->setStyleSheet(QStringLiteral("font-weight: bold; color: #34D399;"));
     } else {
-        m_amiibo_status->setText(tr("⚪ Amiibo не подключен"));
+        m_amiibo_status->setText(tr("Amiibo не подключен"));
         m_amiibo_status->setStyleSheet(QStringLiteral("color: #FFFFFF;"));
     }
 }
@@ -1167,7 +1188,7 @@ void PerformanceOverlay::OnAutoHealGraphicsArtifacts() {
         m_mainWindow->OnHealGraphicsArtifacts();
         RefreshCfwInfo();
         if (m_btn_heal_gpu) {
-            m_btn_heal_gpu->setText(tr("✅ Артефакты устранены!"));
+            m_btn_heal_gpu->setText(tr("Артефакты устранены!"));
         }
     }
 }
@@ -1233,7 +1254,8 @@ void PerformanceOverlay::SetupSidebarUI() {
     });
     header->addWidget(btn_to_hud);
 
-    auto* btn_close = new QPushButton(QStringLiteral("✕"), m_sidebar_widget);
+    auto* btn_close = new QPushButton(m_sidebar_widget);
+    btn_close->setIcon(MakeVectorCloseIcon(16));
     btn_close->setFixedSize(22, 22);
     btn_close->setCursor(Qt::PointingHandCursor);
     btn_close->setStyleSheet(QStringLiteral("padding: 0; font-size: 11px; font-weight: bold; border-radius: 4px;"));

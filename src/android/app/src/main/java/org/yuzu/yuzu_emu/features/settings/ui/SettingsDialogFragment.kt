@@ -86,6 +86,9 @@ class SettingsDialogFragment : DialogFragment(), DialogInterface.OnClickListener
         }
         (dialog as? androidx.appcompat.app.AlertDialog)?.listView?.apply {
             isSmoothScrollbarEnabled = false
+            isScrollbarFadingEnabled = false
+            overScrollMode = android.view.View.OVER_SCROLL_NEVER
+            scrollIndicators = 0
         }
         dialog?.window?.let { window ->
             org.yuzu.yuzu_emu.utils.ThemeHelper.applySystemBarsTheme(window, requireContext())
@@ -455,6 +458,9 @@ class SettingsDialogFragment : DialogFragment(), DialogInterface.OnClickListener
         when (settingsViewModel.clickedItem) {
             is SingleChoiceSetting -> {
                 val scSetting = settingsViewModel.clickedItem as SingleChoiceSetting
+                if (NativeConfig.isPerGameConfigLoaded()) {
+                    scSetting.setting.global = false
+                }
                 val value = getValueForSingleChoiceSelection(scSetting, which)
 
                 if (scSetting.setting.key == IntSetting.MEMORY_LAYOUT.key && value == 4) {

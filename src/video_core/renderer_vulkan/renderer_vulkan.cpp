@@ -256,10 +256,18 @@ void RendererVulkan::Composite(std::span<const Tegra::FramebufferConfig> framebu
         return;
     }
 
-    const auto& current_layout = render_window.GetFramebufferLayout();
     const auto current_extent = swapchain.GetExtent();
-    const bool extent_mismatch =
-        current_extent.width != current_layout.width || current_extent.height != current_layout.height;
+    Layout::FramebufferLayout effective_layout = render_window.GetFramebufferLayout();
+#ifdef __ANDROID__
+    if (current_extent.width > 0 && current_extent.height > 0 &&
+        (current_extent.width != effective_layout.width || current_extent.height != effective_layout.height)) {
+        render_window.UpdateCurrentFramebufferLayout(current_extent.width, current_extent.height);
+        effective_layout = render_window.GetFramebufferLayout();
+        if (effective_layout.width != current_extent.width || effective_layout.height != current_extent.height) {
+            effective_layout = Layout::DefaultFrameLayout(current_extent.width, current_extent.height);
+        }
+    }
+#endif
 
     // Frame composition proceeds directly without skipping to preserve smooth VSync pacing
 
@@ -268,7 +276,7 @@ void RendererVulkan::Composite(std::span<const Tegra::FramebufferConfig> framebu
 
     scheduler.RequestOutsideRenderPassOperationContext();
     blit_swapchain.DrawToFrame(device, rasterizer, frame, framebuffers,
-                               render_window.GetFramebufferLayout(), swapchain.GetImageCount(),
+                               effective_layout, swapchain.GetImageCount(),
                                swapchain.GetImageViewFormat());
 
 #ifdef HAS_LSFG
@@ -281,7 +289,7 @@ void RendererVulkan::Composite(std::span<const Tegra::FramebufferConfig> framebu
         if (generated_frames > 0) {
             for (size_t generation = 0; generation < generated_frames; ++generation) {
                 Frame* generated = present_manager.GetRenderFrame();
-                blit_swapchain.PrepareFrame(device, generated, render_window.GetFramebufferLayout());
+                blit_swapchain.PrepareFrame(device, generated, effective_layout);
                 frame_gen.GenerateInto(device, generated, generation);
                 scheduler.Flush(*generated->render_ready);
                 present_manager.Present(generated);

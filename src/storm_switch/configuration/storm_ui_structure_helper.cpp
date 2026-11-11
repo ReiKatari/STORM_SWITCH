@@ -28,6 +28,14 @@
 
 namespace StormUI {
 
+CardStyleOptions::CardStyleOptions() {
+    const auto pal = StormTheme::GetThemePalette();
+    card_bg = pal.card;
+    border_color = pal.border;
+    accent_color = pal.accent;
+}
+
+
 // -----------------------------------------------------------------------------
 // EscDismissFilter (Law 16)
 // -----------------------------------------------------------------------------
@@ -140,6 +148,11 @@ void StructureEngine::StyleAsVolumetricCard(QGroupBox* box, const CardStyleOptio
     if (!box) return;
     box->setProperty("stormCard", true);
 
+    const auto pal = StormTheme::GetThemePalette();
+    const QString bg = options.card_bg.isEmpty() ? pal.card : options.card_bg;
+    const QString border = options.border_color.isEmpty() ? pal.border : options.border_color;
+    const QString accent = options.accent_color.isEmpty() ? pal.accent : options.accent_color;
+
     QFont f = box->font();
     f.setBold(true);
     box->setFont(f);
@@ -194,7 +207,8 @@ QWidget* StructureEngine::CreateSectionHeader(const QString& title, const QStrin
 
     if (!subtitle.isEmpty()) {
         auto* lbl_sub = new QLabel(subtitle, container);
-        lbl_sub->setStyleSheet(QStringLiteral("color: rgba(255, 255, 255, 0.65); font-size: 8.5pt;"));
+        const auto pal = StormTheme::GetThemePalette();
+        lbl_sub->setStyleSheet(QStringLiteral("color: %1; font-size: 8.5pt;").arg(pal.textSecondary));
         lbl_sub->setWordWrap(true);
         lay->addWidget(lbl_sub);
     }
@@ -413,12 +427,13 @@ QWidget* PerGameOverrideManager::CreateGameHeaderCard(quint64 title_id, const QS
     info_lay->setContentsMargins(0, 0, 0, 0);
     info_lay->setSpacing(6);
 
+    const auto pal = StormTheme::GetThemePalette();
     auto* title_lbl = new QLabel(title, card);
     QFont tf = title_lbl->font();
     tf.setBold(true);
     tf.setPointSize(13);
     title_lbl->setFont(tf);
-    title_lbl->setStyleSheet(QStringLiteral("color: #FFFFFF; font-weight: bold;"));
+    title_lbl->setStyleSheet(QStringLiteral("color: %1; font-weight: bold;").arg(pal.textPrimary));
     title_lbl->setWordWrap(true);
     info_lay->addWidget(title_lbl);
 
@@ -428,35 +443,38 @@ QWidget* PerGameOverrideManager::CreateGameHeaderCard(quint64 title_id, const QS
     pills_lay->setContentsMargins(0, 0, 0, 0);
     pills_lay->setSpacing(8);
 
-    auto create_pill = [pills_row](const QString& text, const QString& tooltip = QString()) {
+    auto create_pill = [pills_row, &pal](const QString& text, const QString& tooltip = QString()) {
         auto* btn = new QPushButton(text, pills_row);
         btn->setObjectName(QStringLiteral("StormGamePill"));
         btn->setProperty("stormGamePill", true);
         btn->setCursor(Qt::PointingHandCursor);
-        const auto pill_pal = StormTheme::GetThemePalette();
-        const QColor pill_acc(pill_pal.accent);
+        const QColor pill_acc(pal.accent);
+        const QString pill_bg = pal.is_light ? QStringLiteral("rgba(0, 0, 0, 0.05)") : QStringLiteral("rgba(255, 255, 255, 0.08)");
+        const QString pill_border = pal.is_light ? QStringLiteral("rgba(0, 0, 0, 0.12)") : QStringLiteral("rgba(255, 255, 255, 0.16)");
         btn->setStyleSheet(QStringLiteral(
             "QPushButton {"
-            "    background: rgba(255, 255, 255, 0.08);"
-            "    border: 1px solid rgba(255, 255, 255, 0.16);"
-            "    color: #E2E8F0;"
+            "    background: %1;"
+            "    border: 1px solid %2;"
+            "    color: %3;"
             "    border-radius: 12px;"
             "    padding: 3px 10px;"
             "    font-weight: 600;"
             "    font-size: 8.5pt;"
             "}"
             "QPushButton:hover {"
-            "    background: rgba(%1, %2, %3, 0.20);"
-            "    border-color: %4;"
-            "    color: %4;"
+            "    background: rgba(%4, %5, %6, 0.20);"
+            "    border-color: %7;"
+            "    color: %7;"
             "}"
-        ).arg(pill_acc.red()).arg(pill_acc.green()).arg(pill_acc.blue()).arg(pill_pal.accent));
+        ).arg(pill_bg, pill_border, pal.textPrimary,
+             QString::number(pill_acc.red()), QString::number(pill_acc.green()), QString::number(pill_acc.blue()),
+             pal.accent));
         if (!tooltip.isEmpty()) btn->setToolTip(tooltip);
         return btn;
     };
 
     const QString tid_str = QStringLiteral("%1").arg(title_id, 16, 16, QLatin1Char('0')).toUpper();
-    auto* tid_btn = create_pill(QStringLiteral("📋 TID: ") + tid_str,
+    auto* tid_btn = create_pill(QStringLiteral("TID: ") + tid_str,
                                 StormLang(QStringLiteral("Нажмите, чтобы скопировать Title ID"),
                                           QStringLiteral("Click to copy Title ID")));
     connect(tid_btn, &QPushButton::clicked, [tid_str]() {
@@ -464,12 +482,12 @@ QWidget* PerGameOverrideManager::CreateGameHeaderCard(quint64 title_id, const QS
     });
     pills_lay->addWidget(tid_btn);
 
-    auto* ver_btn = create_pill(QStringLiteral("📦 v") + version,
+    auto* ver_btn = create_pill(QStringLiteral("v") + version,
                                 StormLang(QStringLiteral("Версия игры"), QStringLiteral("Game Version")));
     pills_lay->addWidget(ver_btn);
 
     if (!play_time.isEmpty()) {
-        auto* time_btn = create_pill(QStringLiteral("⏱️ ") + play_time,
+        auto* time_btn = create_pill(play_time,
                                      StormLang(QStringLiteral("Общее время в игре"), QStringLiteral("Total Playtime")));
         pills_lay->addWidget(time_btn);
     }

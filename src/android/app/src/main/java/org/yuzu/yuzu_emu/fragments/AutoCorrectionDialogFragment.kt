@@ -97,7 +97,7 @@ class AutoCorrectionDialogFragment : DialogFragment() {
             binding.textAutoCorrectionStatus.setTextColor(org.yuzu.yuzu_emu.utils.ThemeHelper.getColorFromAttr(requireContext(), com.google.android.material.R.attr.colorPrimary))
         } else {
             binding.textAutoCorrectionStatus.text = getString(R.string.auto_correction_status_inactive)
-            binding.textAutoCorrectionStatus.setTextColor(Color.parseColor("#EF4444"))
+            binding.textAutoCorrectionStatus.setTextColor(org.yuzu.yuzu_emu.utils.ThemeHelper.getColorFromAttr(requireContext(), com.google.android.material.R.attr.colorError))
         }
 
         binding.textAutoCorrectionIssues.text = getString(R.string.auto_correction_issues_content)

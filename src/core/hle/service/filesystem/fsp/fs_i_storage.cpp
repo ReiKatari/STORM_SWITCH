@@ -1,3 +1,6 @@
+#include <algorithm>
+#include <chrono>
+#include <thread>
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -47,6 +50,14 @@ Result IStorage::Read(
         LOG_ERROR(Service_FS, "IStorage::Read: out_bytes.data() is null for length={}! Returning ResultNullptrArgument (0x2F5E02)", length);
         R_RETURN(FileSys::ResultNullptrArgument);
     }
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now < next_read_tick) {
+        std::this_thread::sleep_for(next_read_tick - now);
+    }
+    next_read_tick = std::chrono::steady_clock::now() +
+                     std::chrono::nanoseconds{std::min(length, MaxChargedReadSize) *
+                                              1'000'000'000 / ReadBytesPerSecond};
 
     const std::size_t to_read = std::min<std::size_t>(static_cast<std::size_t>(length), out_bytes.size());
     const std::size_t read_bytes = backend->Read(out_bytes.data(), to_read, offset);

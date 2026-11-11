@@ -261,7 +261,7 @@ std::shared_ptr<FrontendApplet> FrontendAppletHolder::GetApplet(std::shared_ptr<
         if (frontend.net_connect) return std::make_shared<NetConnect>(system, applet, mode, *frontend.net_connect);
         break;
     case AppletId::None:
-        return std::make_shared<StubApplet>(system, applet, id, mode);
+        return nullptr;
     default:
         break;
     }

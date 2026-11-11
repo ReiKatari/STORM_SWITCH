@@ -1,4 +1,5 @@
 #include "storm_switch/common/storm_theme.h"
+#include "storm_switch/common/storm_design_engine.h"
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -54,7 +55,7 @@ public:
 
         // Icon
         auto* icon_label = new QLabel(m_frame);
-        icon_label->setText(type == OnlineToolType::Firmware ? QStringLiteral("📦") : QStringLiteral("🔑"));
+        icon_label->setText(type == OnlineToolType::Firmware ? QStringLiteral("FW") : QStringLiteral("KEY"));
         icon_label->setStyleSheet(QStringLiteral("font-size: 24px; background: transparent;"));
         card_layout->addWidget(icon_label);
 
@@ -74,7 +75,7 @@ public:
 
         // Recommended Badge
         if (asset.is_recommended) {
-            auto* badge = new QLabel(tr("🌟 РЕКОМЕНДУЕТСЯ"), m_frame);
+            auto* badge = new QLabel(tr("РЕКОМЕНДУЕТСЯ"), m_frame);
             const auto otd_pal = StormTheme::GetThemePalette();
             const QColor otd_acc(otd_pal.accent);
             badge->setStyleSheet(QStringLiteral(
@@ -82,19 +83,19 @@ public:
                 "border: 1px solid %4; "
                 "border-radius: 10px; "
                 "color: %4; "
-                "font-family: 'Segoe UI'; "
+                ""
                 "font-size: 11px; "
                 "font-weight: bold; "
                 "padding: 4px 10px;").arg(otd_acc.red()).arg(otd_acc.green()).arg(otd_acc.blue()).arg(otd_pal.accent));
             card_layout->addWidget(badge);
         }
 
-        m_selected_badge = new QLabel(tr("✔ ВЫБРАНО"), m_frame);
+        m_selected_badge = new QLabel(tr("[OK] ВЫБРАНО"), m_frame);
         const auto otd_pal = StormTheme::GetThemePalette();
         m_selected_badge->setStyleSheet(QStringLiteral(
             "background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 %1, stop:1 %2); "
             "color: #06101e; "
-            "font-family: 'Segoe UI'; "
+            ""
             "font-size: 11px; "
             "font-weight: bold; "
             "border-radius: 10px; "
@@ -117,21 +118,22 @@ public:
                 "    border-radius: 8px;"
                 "}").arg(otd_pal.surface, otd_pal.bg, otd_pal.accent));
             m_title_label->setStyleSheet(QStringLiteral(
-                "font-family: 'Segoe UI'; font-size: 14px; font-weight: bold; color: #ffffff; background: transparent;"));
+                "font-size: 14px; font-weight: bold; color: %1; background: transparent;"));
             m_sub_label->setStyleSheet(QStringLiteral(
-                "font-family: 'Segoe UI'; font-size: 11px; color: #38bdf8; background: transparent;"));
+                "font-size: 11px; color: #38bdf8; background: transparent;"));
             m_selected_badge->setVisible(true);
         } else {
+            const auto otd_pal = StormTheme::GetThemePalette();
             m_frame->setStyleSheet(QStringLiteral(
                 "QFrame#CardFrame {"
-                "    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #151922, stop:1 #0f1218);"
-                "    border: 1px solid #232b3b;"
+                "    background: %1;"
+                "    border: 1px solid %2;"
                 "    border-radius: 8px;"
-                "}"));
+                "}").arg(otd_pal.card, otd_pal.border));
             m_title_label->setStyleSheet(QStringLiteral(
-                "font-family: 'Segoe UI'; font-size: 14px; font-weight: 500; color: #FFFFFF; background: transparent;"));
+                "font-size: 14px; font-weight: 500; color: %1; background: transparent;"));
             m_sub_label->setStyleSheet(QStringLiteral(
-                "font-family: 'Segoe UI'; font-size: 11px; color: #FFFFFF; background: transparent;"));
+                "font-size: 11px; color: %1; background: transparent;"));
             m_selected_badge->setVisible(false);
         }
     }
@@ -172,93 +174,23 @@ void OnlineToolsDialog::SetupUI() {
     resize(640, 560);
     setMinimumSize(560, 480);
     setWindowTitle(m_type == OnlineToolType::Firmware
-                       ? tr("STORM SWITCH — Онлайн-установка прошивки")
-                       : tr("STORM SWITCH — Онлайн-установка ключей"));
+                       ? tr("STORM SWITCH - Онлайн-установка прошивки")
+                       : tr("STORM SWITCH - Онлайн-установка ключей"));
 
+    setProperty("_stormDialogThemed", true);
     const StormTheme::Palette pal = StormTheme::GetThemePalette();
-    setStyleSheet(QStringLiteral(
-        "QDialog {"
-        "    background-color: %1;"
-        "    color: %2;"
-        "    font-family: 'Segoe UI', sans-serif;"
-        "}"
-        "QListWidget {"
-        "    background-color: %3;"
-        "    border: 1px solid %4;"
-        "    border-radius: 8px;"
-        "    outline: none;"
-        "    padding: 4px;"
-        "    color: %2;"
-        "}"
-        "QListWidget::item {"
-        "    background: transparent;"
-        "    border: none;"
-        "    margin: 2px 0px;"
-        "}"
-        "QProgressBar {"
-        "    background-color: %3;"
-        "    border: 1px solid %4;"
-        "    border-radius: 6px;"
-        "    height: 22px;"
-        "    text-align: center;"
-        "    color: %2;"
-        "    font-weight: bold;"
-        "    font-size: 11px;"
-        "}"
-        "QProgressBar::chunk {"
-        "    background-color: %5;"
-        "    border-radius: 5px;"
-        "}"
-        "QPushButton {"
-        "    background-color: %6;"
-        "    border: 1px solid %4;"
-        "    border-radius: 7px;"
-        "    color: %2;"
-        "    padding: 6px 16px;"
-        "    font-size: 13px;"
-        "    font-weight: 600;"
-        "    min-height: 22px;"
-        "}"
-        "QPushButton:hover {"
-        "    border: 1px solid %5;"
-        "    background-color: %4;"
-        "    color: %2;"
-        "}"
-        "QPushButton:pressed {"
-        "    background-color: %7;"
-        "    border: 1px solid %5;"
-        "    padding: 6px 16px;"
-        "    color: %2;"
-        "}"
-        "QPushButton#HeroButton {"
-        "    background-color: %5;"
-        "    border: 1px solid %5;"
-        "    border-radius: 7px;"
-        "    color: %8;"
-        "    font-weight: bold;"
-        "    font-size: 13px;"
-        "    padding: 6px 18px;"
-        "    min-height: 22px;"
-        "}"
-        "QPushButton#HeroButton:hover {"
-        "    background-color: %9;"
-        "    border: 1px solid %9;"
-        "    color: %8;"
-        "}"
-        "QPushButton#HeroButton:pressed {"
-        "    background-color: %5;"
-        "    border: 1px solid %5;"
-        "    padding: 6px 18px;"
-        "    color: %8;"
-        "}"
-        "QPushButton#HeroButton:disabled {"
-        "    background: %3;"
-        "    border: 1px solid %4;"
-        "    color: %10;"
-        "}"
+    setStyleSheet(StormDesign::BuildDialogStylesheet(pal) + QStringLiteral(
+        "QListWidget { background-color: %1; border: 1px solid %2; border-radius: 8px; outline: none; padding: 4px; color: %3; }"
+        "QListWidget::item { background: transparent; border: none; margin: 2px 0px; }"
+        "QProgressBar { background-color: %1; border: 1px solid %2; border-radius: 6px; height: 22px; text-align: center; color: %3; font-weight: bold; font-size: 11px; }"
+        "QProgressBar::chunk { background-color: %4; border-radius: 5px; }"
+        "QPushButton#HeroButton { background-color: %4; border: 1px solid %4; border-radius: 7px; color: %5; font-weight: bold; font-size: 13px; padding: 6px 18px; min-height: 22px; }"
+        "QPushButton#HeroButton:hover { background-color: %6; border: 1px solid %6; color: %5; }"
+        "QPushButton#HeroButton:pressed { background-color: %4; border: 1px solid %4; padding: 6px 18px; color: %5; }"
+        "QPushButton#HeroButton:disabled { background: %1; border: 1px solid %2; color: %7; }"
     ).arg(
-        pal.bg, pal.textPrimary, pal.inputBg, pal.border, pal.accent,
-        pal.buttonBg, pal.surface, pal.is_light ? QStringLiteral("#FFFFFF") : QStringLiteral("#000000"),
+        pal.card, pal.border, pal.textPrimary, pal.accent,
+        pal.is_light ? QStringLiteral("#FFFFFF") : QStringLiteral("#000000"),
         pal.accentHover, pal.textSecondary
     ));
 
@@ -268,15 +200,13 @@ void OnlineToolsDialog::SetupUI() {
 
     // Header Card
     auto* header_frame = new QFrame(this);
-    header_frame->setStyleSheet(QStringLiteral(
-        "background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #161c26, stop:1 #0f131a); "
-        "border: 1px solid #232b3b; border-radius: 10px; padding: 10px;"));
+    header_frame->setStyleSheet(QStringLiteral("background: %1; border: 1px solid %2; border-radius: 10px; padding: 10px;").arg(pal.card, pal.border));
     auto* header_layout = new QHBoxLayout(header_frame);
     header_layout->setContentsMargins(12, 8, 12, 8);
     header_layout->setSpacing(14);
 
     m_header_icon = new QLabel(header_frame);
-    m_header_icon->setText(m_type == OnlineToolType::Firmware ? QStringLiteral("🌐") : QStringLiteral("🔑"));
+    m_header_icon->setText(m_type == OnlineToolType::Firmware ? QStringLiteral("FW") : QStringLiteral("KEY"));
     m_header_icon->setStyleSheet(QStringLiteral("font-size: 34px;"));
     header_layout->addWidget(m_header_icon);
 
@@ -297,7 +227,7 @@ void OnlineToolsDialog::SetupUI() {
             : tr("Выберите версию ключей (prod.keys и title.keys) для загрузки и распаковки в каталог keys с мгновенной активацией."),
         header_frame);
     m_header_desc->setWordWrap(true);
-    m_header_desc->setStyleSheet(QStringLiteral("font-size: 11px; color: #FFFFFF;"));
+    m_header_desc->setStyleSheet(QStringLiteral("font-size: 11px; color: %1;"));
     header_text_layout->addWidget(m_header_desc);
 
     header_layout->addLayout(header_text_layout, 1);
@@ -315,7 +245,7 @@ void OnlineToolsDialog::SetupUI() {
     progress_layout->setSpacing(6);
 
     m_status_label = new QLabel(tr("Готово к установке. Выберите версию из списка выше."), this);
-    m_status_label->setStyleSheet(QStringLiteral("font-size: 12px; color: #FFFFFF;"));
+    m_status_label->setStyleSheet(QStringLiteral("font-size: 12px; color: %1;"));
     progress_layout->addWidget(m_status_label);
 
     m_progress_bar = new QProgressBar(this);
@@ -331,7 +261,7 @@ void OnlineToolsDialog::SetupUI() {
     auto* btn_layout = new QHBoxLayout();
     btn_layout->setSpacing(10);
 
-    m_btn_refresh = new QPushButton(tr("🔄 Обновить список"), this);
+    m_btn_refresh = new QPushButton(tr("Обновить список"), this);
     connect(m_btn_refresh, &QPushButton::clicked, this, &OnlineToolsDialog::RefreshCatalog);
     btn_layout->addWidget(m_btn_refresh);
 
@@ -342,8 +272,8 @@ void OnlineToolsDialog::SetupUI() {
     btn_layout->addWidget(m_btn_cancel);
 
     m_btn_install = new QPushButton(m_type == OnlineToolType::Firmware
-                                        ? tr("📥 Скачать и установить прошивку")
-                                        : tr("📥 Скачать и установить ключи"),
+                                        ? tr("Скачать и установить прошивку")
+                                        : tr("Скачать и установить ключи"),
                                     this);
     m_btn_install->setObjectName(QStringLiteral("HeroButton"));
     connect(m_btn_install, &QPushButton::clicked, this, &OnlineToolsDialog::StartDownload);
@@ -737,11 +667,11 @@ void OnlineToolsDialog::HandleInstallationCompleted(bool success, const QString&
     m_btn_install->setEnabled(true);
 
     if (success) {
-        m_status_label->setText(QStringLiteral("✅ ") + message);
+        m_status_label->setText(message);
         QtCommon::Frontend::Information(this, tr("Установка завершена"), message);
         accept();
     } else {
-        m_status_label->setText(QStringLiteral("❌ ") + message);
+        m_status_label->setText(message);
         QtCommon::Frontend::Critical(this, tr("Ошибка установки"), message);
     }
 }

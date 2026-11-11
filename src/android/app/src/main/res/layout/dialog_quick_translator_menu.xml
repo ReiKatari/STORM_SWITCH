@@ -20,7 +20,7 @@
 
         <!-- Header Card -->
         <com.google.android.material.card.MaterialCardView
-            style="@style/EdenCard"
+            style="@style/StormCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
@@ -92,7 +92,7 @@
 
         <!-- Section 1: Actions -->
         <com.google.android.material.card.MaterialCardView
-            style="@style/EdenCard"
+            style="@style/StormCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
@@ -165,7 +165,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="#1E293B"
+                    android:background="?attr/colorOutline"
                     android:layout_marginHorizontal="10dp" />
 
                 <!-- Auto-Translate Toggle -->
@@ -235,7 +235,7 @@
 
         <!-- Section 2: Engine & Voice -->
         <com.google.android.material.card.MaterialCardView
-            style="@style/EdenCard"
+            style="@style/StormCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
@@ -309,7 +309,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="#1E293B"
+                    android:background="?attr/colorOutline"
                     android:layout_marginHorizontal="10dp" />
 
                 <!-- Scan Regions -->
@@ -369,7 +369,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="#1E293B"
+                    android:background="?attr/colorOutline"
                     android:layout_marginHorizontal="10dp" />
 
                 <!-- TTS Voice -->
@@ -436,7 +436,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="#1E293B"
+                    android:background="?attr/colorOutline"
                     android:layout_marginHorizontal="10dp" />
 
                 <!-- Floating Button Visibility -->

@@ -100,9 +100,15 @@ enum class BooleanSetting(override val key: String) : AbstractBooleanSetting {
     ENABLE_QUICK_SETTINGS("enable_quick_settings"),
     SHOW_FILENAME_AS_TITLE("show_filename_as_title"),
 
+    ENABLE_CHEATS_BY_DEFAULT("enable_cheats_by_default"),
+
     // Optimization and Thermal / Memory Features
     ECO_THERMAL_MODE("eco_thermal_mode"),
     ECO_FRAME_PACING("eco_frame_pacing"),
+    STORM_THERMAL_GOVERNOR("storm_thermal_governor"),
+    STORM_LOWEND_TURBO("storm_lowend_turbo"),
+    AUTO_60FPS_UNLOCK("auto_60fps_unlock"),
+    AUTO_ASPECT_RATIO_PATCH("auto_aspect_ratio_patch"),
     SMART_SHADER_THROTTLE("smart_shader_throttle"),
     CPU_AFFINITY_PINNING("cpu_affinity_pinning"),
     STORM_TIER2_COMPILER("use_storm_tier2_compiler"),

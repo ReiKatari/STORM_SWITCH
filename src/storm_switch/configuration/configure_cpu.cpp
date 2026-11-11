@@ -1,3 +1,4 @@
+#include "storm_switch/common/storm_theme.h"
 #include <QLabel>
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
@@ -42,8 +43,10 @@ ConfigureCpu::ConfigureCpu(const Core::System& system_,
 
     m_unsafe_explanation_label = new QLabel(this);
     m_unsafe_explanation_label->setWordWrap(true);
+    const auto cpu_init_pal = StormTheme::GetThemePalette();
+    const QString warn_col = cpu_init_pal.is_light ? QStringLiteral("#b45309") : QStringLiteral("#fbbf24");
     m_unsafe_explanation_label->setStyleSheet(QStringLiteral(
-        "color: #e0b040; background: rgba(224, 176, 64, 0.12); padding: 8px; border-radius: 6px; border: 1px solid rgba(224, 176, 64, 0.3); font-size: 11px;"));
+        "color: %1; background: rgba(224, 176, 64, 0.12); padding: 8px; border-radius: 6px; border: 1px solid rgba(224, 176, 64, 0.3); font-size: 11px;").arg(warn_col));
     if (ui->unsafe_group && ui->unsafe_group->layout()) {
         ui->unsafe_group->layout()->addWidget(m_unsafe_explanation_label);
     }
@@ -150,21 +153,25 @@ void ConfigureCpu::UpdateGroup() {
 
     ui->unsafe_group->setVisible(true);
     ui->unsafe_widget->setEnabled(is_unsafe);
+    const auto cpu_pal = StormTheme::GetThemePalette();
     ui->unsafe_widget->setStyleSheet(is_unsafe ? QString{} : QStringLiteral(
-        "QCheckBox { color: #64748b; } "
-        "QCheckBox::indicator:checked { background-color: #334155; border: 1px solid #475569; } "
-        "QCheckBox::indicator:unchecked { background-color: #1e293b; border: 1px solid #334155; }"));
+        "QCheckBox { color: %1; } "
+        "QCheckBox::indicator:checked { background-color: %2; border: 1px solid %3; } "
+        "QCheckBox::indicator:unchecked { background-color: %4; border: 1px solid %3; }")
+        .arg(cpu_pal.textSecondary, cpu_pal.cardAlt, cpu_pal.border, cpu_pal.card));
 
     if (m_unsafe_explanation_label) {
         if (is_unsafe) {
+            const QString ok_col = cpu_pal.is_light ? QStringLiteral("#15803d") : QStringLiteral("#34d399");
             m_unsafe_explanation_label->setStyleSheet(QStringLiteral(
-                "color: #55ff99; background: rgba(85, 255, 153, 0.12); padding: 8px; border-radius: 6px; border: 1px solid rgba(85, 255, 153, 0.3); font-size: 11px;"));
+                "color: %1; background: rgba(52, 211, 153, 0.12); padding: 8px; border-radius: 6px; border: 1px solid rgba(52, 211, 153, 0.3); font-size: 11px;").arg(ok_col));
             m_unsafe_explanation_label->setText(StormLang(
                 QStringLiteral("Режим «Небезопасно» активен: выбранные оптимизации процессора задействованы."),
                 QStringLiteral("Unsafe mode is active: selected CPU optimizations are enabled.")));
         } else {
+            const QString warn_col2 = cpu_pal.is_light ? QStringLiteral("#b45309") : QStringLiteral("#fbbf24");
             m_unsafe_explanation_label->setStyleSheet(QStringLiteral(
-                "color: #e0b040; background: rgba(224, 176, 64, 0.12); padding: 8px; border-radius: 6px; border: 1px solid rgba(224, 176, 64, 0.3); font-size: 11px;"));
+                "color: %1; background: rgba(224, 176, 64, 0.12); padding: 8px; border-radius: 6px; border: 1px solid rgba(224, 176, 64, 0.3); font-size: 11px;").arg(warn_col2));
             m_unsafe_explanation_label->setText(StormLang(
                 QStringLiteral("Параметры этого раздела не задействованы, так как выбрана точность процессора «Автоматически» или «Точно». Чтобы активировать их, выберите точность «Небезопасно»."),
                 QStringLiteral("Options in this section are inactive because CPU accuracy is set to Auto or Accurate. Select 'Unsafe' accuracy to enable them.")));

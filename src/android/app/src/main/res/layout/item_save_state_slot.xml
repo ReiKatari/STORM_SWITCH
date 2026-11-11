@@ -4,10 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:cardBackgroundColor="#161F36"
+    app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
     app:cardCornerRadius="12dp"
     app:cardElevation="3dp"
-    app:strokeColor="#2A3A5E"
+    app:strokeColor="?attr/colorOutline"
     app:strokeWidth="0dp">
 
     <LinearLayout
@@ -31,7 +31,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
-                android:background="#0B1325"
+                android:background="?attr/colorSurfaceVariant"
                 tools:src="@drawable/default_icon" />
         </com.google.android.material.card.MaterialCardView>
 
@@ -47,7 +47,7 @@
                 android:id="@+id/slot_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#00F0FF"
+                android:textColor="?attr/colorPrimary"
                 android:textSize="15sp"
                 android:textStyle="bold"
                 tools:text="Слот 1"

@@ -203,6 +203,28 @@ else()
         add_compile_options($<$<COMPILE_LANGUAGE:C,CXX>:-stdlib=libc++>)
     endif()
 
+    if (ANDROID AND CXX_CLANG)
+        # Safe High-Impact Clang Optimization Upgrades for Android (Release & RelWithDebInfo)
+        add_compile_options(
+            $<$<AND:$<COMPILE_LANGUAGE:C,CXX>,$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>>>:-O3>
+            $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>>>:-fvisibility-inlines-hidden>
+            $<$<AND:$<COMPILE_LANGUAGE:C,CXX>,$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>>>:-fno-semantic-interposition>
+            $<$<AND:$<COMPILE_LANGUAGE:C,CXX>,$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>>>:-fno-math-errno>
+            $<$<AND:$<COMPILE_LANGUAGE:C,CXX>,$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>>>:-fno-trapping-math>
+            $<$<AND:$<COMPILE_LANGUAGE:C,CXX>,$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>>>:-ffp-contract=fast>
+        )
+        if (ARCHITECTURE_arm64)
+            add_compile_options(
+                $<$<AND:$<COMPILE_LANGUAGE:C,CXX>,$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>>>:-moutline-atomics>
+            )
+        endif()
+        add_link_options(
+            $<$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>>:-Wl,--gc-sections>
+            $<$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>>:-Wl,--icf=all>
+            $<$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>>:-Wl,-O2>
+        )
+    endif()
+
     # GCC bugs
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "11" AND CXX_GCC)
         # These diagnostics would be great if they worked, but are just completely broken

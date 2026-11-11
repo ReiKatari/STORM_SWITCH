@@ -39,7 +39,6 @@ ServiceFrameworkBase::ServiceFrameworkBase(Core::System& system_, const char* se
     : SessionRequestHandler(system_.Kernel(), service_name_)
     , system{system_}
     , service_name{service_name_}
-    , is_i_storage{std::string_view{service_name_} == "IStorage"}
     , max_sessions{max_sessions_}
 {}
 
@@ -95,12 +94,7 @@ void ServiceFrameworkBase::InvokeRequest(HLERequestContext& ctx) {
     LOG_TRACE(Service, "{}", MakeFunctionString(it->second.name ? it->second.name : "<unknown>", GetServiceName(), ctx.CommandBuffer()));
     it->second.handler(ctx);
 
-    if (is_i_storage && cmd_id == 0) {
-        const auto* const process = ctx.GetThread().GetOwnerProcess();
-        if (process != nullptr && system.IsNVDECActiveForProcess(process->GetId())) {
-            std::this_thread::sleep_for(std::chrono::microseconds{600});
-        }
-    }
+
 }
 
 void ServiceFrameworkBase::InvokeRequestTipc(HLERequestContext& ctx) {

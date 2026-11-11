@@ -39,7 +39,7 @@ public:
     static constexpr std::size_t SOLID_PREFIX_MAX_SIZE = 64ULL * 1024 * 1024; // 64 MB
     mutable std::vector<u8> solid_prefix_buffer;
     mutable std::size_t solid_prefix_cached_size = 0;
-    
+
     struct PartitionInfo {
         s32 fs_index;
         s64 virtual_offset;
@@ -84,7 +84,7 @@ public:
     std::size_t packed_size = 0;
     std::size_t header_size = 0;
     std::size_t block_size = 0;
-    
+
     struct Block {
         u64 offset;
         u32 compressed_size;
@@ -93,11 +93,12 @@ public:
     bool is_valid = false;
     bool is_raw_nca = false;
     bool is_header_uncompressed = false;
+    bool is_linear_block_stream = false;
     std::size_t uncompressed_header_size = 0x4000;
-    
+
     std::vector<NCZSection> sections;
     std::vector<s64> section_solid_offsets;
-    
+
     bool is_solid_stream = false;
     std::size_t solid_compressed_offset = 0;
     std::size_t solid_compressed_size = 0;
@@ -105,23 +106,23 @@ public:
     mutable std::vector<u8> solid_cache;
     mutable bool solid_header_decompressed = false;
     mutable std::vector<u8> solid_header_cache;
-    
+
     mutable void* solid_dctx = nullptr;
     mutable std::size_t solid_comp_offset = 0;
     mutable std::size_t solid_remaining_comp = 0;
     mutable std::vector<u8> solid_comp_chunk;
     mutable std::size_t solid_carry_over = 0;
     mutable std::size_t solid_decomp_offset = 0;
-    
+
     mutable std::shared_ptr<VfsFile> disk_cache_file;
     mutable bool disk_cache_checked = false;
-    
+
     struct BlockCacheEntry {
         std::size_t index;
         std::vector<u8> data;
     };
     mutable std::list<BlockCacheEntry> block_cache;
-    
+
     mutable std::mutex cache_mutex;
     mutable std::mutex solid_mutex;
     mutable std::mutex header_mutex;
@@ -129,7 +130,7 @@ public:
     mutable std::size_t last_accessed_block = SIZE_MAX;
     mutable std::shared_future<void> prefetch_future;
     mutable std::size_t prefetching_block_index = SIZE_MAX;
-    
+
     // Decrypted NCA header cache (0x0-0x3FFF) - set by NCA driver after header decryption.
     // NCZ files store the raw encrypted NCA header, but body data is pre-decrypted.
     // This cache allows reads at < 0x4000 to return decrypted header bytes.

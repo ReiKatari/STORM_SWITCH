@@ -175,11 +175,11 @@
             android:id="@+id/search_background"
             android:layout_width="match_parent"
             android:layout_height="46dp"
-            app:cardCornerRadius="23dp"
-            app:cardBackgroundColor="?attr/colorSurfaceVariant"
-            app:cardElevation="0dp"
+            app:cardCornerRadius="14dp"
+            app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
+            app:cardElevation="2dp"
             app:strokeColor="?attr/colorOutline"
-            app:strokeWidth="0dp">
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:id="@+id/search_container"

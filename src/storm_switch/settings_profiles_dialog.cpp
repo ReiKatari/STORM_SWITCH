@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "storm_switch/settings_profiles_dialog.h"
+#include "storm_switch/common/storm_design_engine.h"
+#include "storm_switch/common/storm_design_engine.h"
 
 #include <filesystem>
 #include <QDateTime>
@@ -181,10 +183,10 @@ static QIcon DrawProfileVectorIcon(ProfileVectorIcon kind, const QColor& color, 
 SettingsProfilesDialog::SettingsProfilesDialog(QWidget* parent, Core::System* system)
     : QDialog(parent), m_system(system) {
     setWindowTitle(StormLang(
-        QStringLiteral("STORM SWITCH — Профили настроек эмуляции"),
-        QStringLiteral("STORM SWITCH — Emulation Settings Profiles"),
-        QStringLiteral("STORM SWITCH — Einstellungen-Profile"),
-        QStringLiteral("STORM SWITCH — Profils des paramètres")));
+        QStringLiteral("STORM SWITCH - Профили настроек эмуляции"),
+        QStringLiteral("STORM SWITCH - Emulation Settings Profiles"),
+        QStringLiteral("STORM SWITCH - Einstellungen-Profile"),
+        QStringLiteral("STORM SWITCH - Profils des paramètres")));
 
     resize(860, 640);
     setMinimumSize(720, 520);
@@ -420,87 +422,13 @@ void SettingsProfilesDialog::SetupUI() {
 }
 
 void SettingsProfilesDialog::ApplyTheme() {
+    setProperty("_stormDialogThemed", true);
     const auto pal = StormTheme::GetThemePalette();
-    const QColor acc(pal.accent);
-    const QString acc_light = acc.lighter(120).name();
-    const QString acc_dark = acc.darker(130).name();
-
-    setStyleSheet(QStringLiteral(
-        "QDialog {"
-        "  background-color: %1;"
-        "  color: %2;"
-        "  font-family: 'Segoe UI', -apple-system, sans-serif;"
-        "}"
-        "QWidget#ProfilesHeaderCard {"
-        "  background-color: %3;"
-        "  border: none;"
-        "  border-radius: 10px;"
-        "}"
-        "QLineEdit {"
-        "  background-color: %4;"
-        "  color: %2;"
-        "  border: none;"
-        "  border-radius: 8px;"
-        "  padding: 8px 14px;"
-        "  font-size: 12px;"
-        "}"
-        "QLineEdit:focus {"
-        "  background-color: %3;"
-        "  border: none;"
-        "}"
-        "QScrollArea {"
-        "  background: transparent;"
-        "  border: none;"
-        "}"
-        "QScrollBar:vertical {"
-        "  background: %1;"
-        "  width: 8px;"
-        "  margin: 2px 0px;"
-        "  border: none;"
-        "  border-radius: 4px;"
-        "}"
-        "QScrollBar::handle:vertical {"
-        "  background: %4;"
-        "  min-height: 28px;"
-        "  border-radius: 4px;"
-        "}"
-        "QScrollBar::handle:vertical:hover {"
-        "  background: %5;"
-        "}"
-        "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {"
-        "  height: 0px;"
-        "  background: none;"
-        "  border: none;"
-        "}"
-        "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {"
-        "  background: transparent;"
-        "  border: none;"
-        "}"
-        "QPushButton {"
-        "  background: %4;"
-        "  color: %2;"
-        "  border: none;"
-        "  border-radius: 7px;"
-        "  padding: 6px 14px;"
-        "  font-weight: 600;"
-        "  font-size: 12px;"
-        "  min-height: 24px;"
-        "}"
-        "QPushButton:hover {"
-        "  background: %3;"
-        "  border: none;"
-        "  color: %5;"
-        "}"
-        "QPushButton:pressed {"
-        "  background: %1;"
-        "  border: none;"
-        "}"
-        "QPushButton:checked {"
-        "  background: %5;"
-        "  color: #FFFFFF;"
-        "  border: none;"
-        "}"
-    ).arg(pal.bg, pal.textPrimary, pal.card, pal.cardAlt, pal.accent));
+    setStyleSheet(StormDesign::BuildDialogStylesheet(pal) + QStringLiteral(
+        "QWidget#ProfilesHeaderCard { background-color: %1; border: 1px solid %2; border-radius: 10px; }"
+        "QScrollArea { background: transparent; border: none; }"
+        "QWidget#ScrollContent { background: transparent; }"
+    ).arg(pal.card, pal.border));
 }
 
 void SettingsProfilesDialog::LoadCustomProfiles() {

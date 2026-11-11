@@ -78,7 +78,7 @@
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/button_fork_info"
-                style="@style/EdenCard"
+                style="@style/StormCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="16dp"
@@ -123,7 +123,7 @@
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/button_contributors"
-                style="@style/EdenCard"
+                style="@style/StormCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="16dp"
@@ -168,7 +168,7 @@
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/button_licenses"
-                style="@style/EdenCard"
+                style="@style/StormCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="16dp"
@@ -213,7 +213,7 @@
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/button_special_thanks"
-                style="@style/EdenCard"
+                style="@style/StormCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="16dp"
@@ -296,7 +296,7 @@
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/button_version_name"
-                style="@style/EdenCard"
+                style="@style/StormCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="16dp"
@@ -350,7 +350,7 @@
                 android:layout_marginHorizontal="40dp">
 
                 <com.google.android.material.button.MaterialButton
-                    style="@style/EdenButton.Secondary"
+                    style="@style/StormButton.Faceted.Secondary"
                     android:id="@+id/button_discord"
                     android:layout_width="0dp"
                     android:layout_height="56dp"
@@ -368,7 +368,7 @@
     android:ellipsize="none"/>
 
                 <com.google.android.material.button.MaterialButton
-                    style="@style/EdenButton.Secondary"
+                    style="@style/StormButton.Faceted.Secondary"
                     android:id="@+id/button_stoat"
                     android:layout_width="0dp"
                     android:layout_height="56dp"
@@ -386,7 +386,7 @@
     android:ellipsize="none"/>
 
                 <com.google.android.material.button.MaterialButton
-                    style="@style/EdenButton.Secondary"
+                    style="@style/StormButton.Faceted.Secondary"
                     android:id="@+id/button_x"
                     android:layout_width="0dp"
                     android:layout_height="56dp"
@@ -404,7 +404,7 @@
     android:ellipsize="none"/>
 
                 <com.google.android.material.button.MaterialButton
-                    style="@style/EdenButton.Secondary"
+                    style="@style/StormButton.Faceted.Secondary"
                     android:id="@+id/button_website"
                     android:layout_width="0dp"
                     android:layout_height="56dp"
@@ -423,7 +423,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_github"
-                    style="@style/EdenButton.Secondary"
+                    style="@style/StormButton.Faceted.Secondary"
                     android:layout_width="0dp"
                     android:layout_height="56dp"
                     android:layout_weight="1"

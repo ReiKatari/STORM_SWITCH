@@ -17,12 +17,20 @@
             app:nullable="true" />
         <action
             android:id="@+id/action_settingsFragment_to_settingsSearchFragment"
-            app:destination="@id/settingsSearchFragment" />
+            app:destination="@id/settingsSearchFragment"
+        app:enterAnim="@anim/storm_frag_enter"
+        app:exitAnim="@anim/storm_frag_exit"
+        app:popEnterAnim="@anim/storm_pop_enter"
+        app:popExitAnim="@anim/storm_pop_exit" />
     </fragment>
 
     <action
         android:id="@+id/action_global_settingsFragment"
-        app:destination="@id/settingsFragment" />
+        app:destination="@id/settingsFragment"
+        app:enterAnim="@anim/storm_frag_enter"
+        app:exitAnim="@anim/storm_frag_exit"
+        app:popEnterAnim="@anim/storm_pop_enter"
+        app:popExitAnim="@anim/storm_pop_exit" />
 
     <fragment
         android:id="@+id/settingsSearchFragment"
@@ -42,6 +50,10 @@
 
     <action
         android:id="@+id/action_settingsFragment_to_freedrenoSettingsFragment"
-        app:destination="@id/freedrenoSettingsFragment" />
+        app:destination="@id/freedrenoSettingsFragment"
+        app:enterAnim="@anim/storm_frag_enter"
+        app:exitAnim="@anim/storm_frag_exit"
+        app:popEnterAnim="@anim/storm_pop_enter"
+        app:popExitAnim="@anim/storm_pop_exit" />
 
 </navigation>

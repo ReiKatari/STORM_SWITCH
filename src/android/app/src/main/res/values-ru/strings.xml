@@ -1373,7 +1373,7 @@
     <string name="add_cheat">Добавить чит</string>
     <string name="cheat_name">Название чита</string>
     <string name="cheat_code">Код чита (Atmosphere)</string>
-    <string name="cheat_status_active">⚡ Активен в игре</string>
+    <string name="cheat_status_active">Активен в игре</string>
     <string name="cheat_status_enabled">✅ Включен</string>
     <string name="cheat_status_disabled">⚪ Выключен</string>
     <string name="select_all">Включить все</string>
@@ -1399,14 +1399,14 @@
     <string name="auto_optimization_wizard_title">Авто-настройка</string>
     <string name="auto_optimization_wizard_description">Анализ ЦП, ГПУ и ОЗУ с автоматической настройкой всех разделов под ваше устройство</string>
     <string name="auto_optimization_device_info">Характеристики устройства</string>
-    <string name="auto_optimization_mode_fast">⚡ Быстрый</string>
+    <string name="auto_optimization_mode_fast">Быстрый</string>
     <string name="auto_optimization_mode_fast_desc">Максимальный FPS, минимальный нагрев и экономия батареи. 0.75X разрешение, экономный VRAM, быстрые барьеры ГПУ, NCE.</string>
-    <string name="auto_optimization_mode_normal">⚖️ Нормальный (Рекомендуется)</string>
+    <string name="auto_optimization_mode_normal">Нормальный (Рекомендуется)</string>
     <string name="auto_optimization_mode_normal_desc" formatted="false">Идеальный баланс между великолепной графикой, плавностью и стабильностью. 1X (720p/1080p), FSR 85%, FXAA, сбалансированные барьеры.</string>
-    <string name="auto_optimization_mode_accurate">💎 Точный</string>
+    <string name="auto_optimization_mode_accurate">Точный</string>
     <string name="auto_optimization_mode_accurate_desc">Максимальное качество графики, разрешение 1.5X/1X, Безопасный DMA, строгие барьеры ГПУ, SMAA, анизотропия 16x.</string>
     <string name="auto_optimization_apply">Применить режим</string>
-    <string name="auto_optimization_applied_toast">⚡ Авто-настройка успешно применена: профиль «%1$s»!</string>
+    <string name="auto_optimization_applied_toast">Авто-настройка успешно применена: профиль «%1$s»!</string>
     <string name="auto_optimization_summary_title">Примененные настройки</string>
     <string name="auto_optimization_mode_default">🔄 По умолчанию (Сброс)</string>
     <string name="auto_optimization_mode_default_desc">Отключить авто-настройку и вернуть все параметры эмулятора к стандартным значениям по умолчанию.</string>
@@ -1435,7 +1435,7 @@
     <string name="apply_global_to_all_games_confirm_title">Применить ко всем играм?</string>
     <string name="apply_global_to_all_games_confirm_message">Вы действительно хотите сбросить индивидуальные профили всех игр? Текущие глобальные настройки будут мгновенно применены ко всей вашей библиотеке.</string>
     <string name="apply_global_to_all_games_positive">Применить ко всем</string>
-    <string name="apply_global_to_all_games_success">⚡ Глобальные настройки успешно применены ко всем играм (сброшено профилей: %d)</string>
+    <string name="apply_global_to_all_games_success">Глобальные настройки успешно применены ко всем играм (сброшено профилей: %d)</string>
 
     <!-- Генерация кадров -->
     <string name="lossless_scaling">Генерация кадров</string>
@@ -1504,13 +1504,13 @@
     <!-- Профили настроек -->
     <string name="settings_profiles_title">Профили настроек</string>
     <string name="settings_profiles_description">Создание, сохранение, быстрая загрузка, переименование и экспорт профилей настроек</string>
-    <string name="profile_preset_fast_title">⚡ Быстрый (Максимум FPS и низкий нагрев)</string>
+    <string name="profile_preset_fast_title">Быстрый (Максимум FPS и низкий нагрев)</string>
     <string name="profile_preset_fast_desc">0.75X разрешение, быстрый JIT, асинхронные шейдеры, отключенная реактивная очистка, 6 ГБ DRAM, холодный SoC.</string>
-    <string name="profile_preset_balanced_title">⚖️ Сбалансированный (Рекомендуемый)</string>
+    <string name="profile_preset_balanced_title">Сбалансированный (Рекомендуемый)</string>
     <string name="profile_preset_balanced_desc" formatted="false">1.0X (720p/1080p), FSR 85%, быстрый JIT, асинхронные шейдеры, базовая динамика EDS1, 6 ГБ DRAM.</string>
-    <string name="profile_preset_accurate_title">💎 Высокое качество (Точная точность)</string>
+    <string name="profile_preset_accurate_title">Высокое качество (Точная точность)</string>
     <string name="profile_preset_accurate_desc">1.0X-1.5X, высокая точность ГПУ, строгая синхронизация, FXAA/SMAA, 8 ГБ DRAM.</string>
-    <string name="profile_preset_saver_title">🔋 Энергосбережение и холодный SoC</string>
+    <string name="profile_preset_saver_title">Энергосбережение и холодный SoC</string>
     <string name="profile_preset_saver_desc" formatted="false">0.75X разрешение, лимит 100% скорости, экономный VRAM, минимальный нагрев аккумулятора.</string>
     <string name="profile_btn_apply">Применить</string>
     <string name="profile_btn_share">Поделиться</string>
@@ -1524,7 +1524,7 @@
     <string name="profile_rename_title">Переименовать профиль</string>
     <string name="profile_delete_title">Удаление профиля</string>
     <string name="profile_delete_confirmation">Вы действительно хотите удалить профиль «%1$s»?</string>
-    <string name="profile_applied_toast">⚡ Профиль настроек «%1$s» успешно применен!</string>
+    <string name="profile_applied_toast">Профиль настроек «%1$s» успешно применен!</string>
     <string name="profile_apply_failed">Не удалось применить профиль настроек.</string>
     <string name="profile_saved_toast">Профиль «%1$s» успешно сохранен!</string>
     <string name="profile_share_title">Поделиться профилем настроек</string>
@@ -1638,8 +1638,8 @@
     <string name="storm_save_replace_current">Заменить текущее</string>
     <string name="storm_save_replace_remote">Заменить на удалённом</string>
     <string name="storm_save_keep_both">Сохранить оба варианта</string>
-    <string name="gamebanana_tab_online">🌐 Каталог GameBanana</string>
-    <string name="gamebanana_tab_installed">💾 Установленные</string>
+    <string name="gamebanana_tab_online">Каталог GameBanana</string>
+    <string name="gamebanana_tab_installed">Установленные</string>
     <string name="gamebanana_no_installed_mods">Для этой игры нет установленных модов</string>
     <string name="gamebanana_installed_stats">Всего: %1$d | Включено: %2$d | Отключено: %3$d</string>
     <string name="gamebanana_mod_deleted">Мод «%1$s» удален</string>
@@ -1897,12 +1897,12 @@
     <string name="cheat_item_desc_placeholder">Описание</string>
     <string name="cheat_btn_edit_qty">✏️ Кол-во</string>
     <string name="cheat_header_version_prefix"> | Версия: </string>
-    <string name="cheat_header_in_game"> | ⚡ В игре</string>
+    <string name="cheat_header_in_game"> | В игре</string>
     <string name="cheat_header_offline"> | ⚪ Оффлайн</string>
     <string name="cheat_header_dmnt_active">
-⚡ Движок читов Atmosphere DMNT VM: Активен (60Hz / I-Cache Sync)</string>
+Движок читов Atmosphere DMNT VM: Активен (60Hz / I-Cache Sync)</string>
     <string name="cheat_build_all_versions">Все версии</string>
-    <string name="cheat_toast_activated_ingame">⚡ Чит-коды активированы в игре!</string>
+    <string name="cheat_toast_activated_ingame">Чит-коды активированы в игре!</string>
     <string name="cheat_toast_saved">✅ Чит-коды успешно сохранены</string>
     <string name="cheat_add_name_hint">Название чита (например: Бесконечные жизни)</string>
     <string name="cheat_add_code_hint">Код в формате Atmosphere (04000000 12345678 ...)</string>
@@ -1960,7 +1960,7 @@
     <string name="log_viewer_chip_errors">🚨 Ошибки (Errors)</string>
     <string name="log_viewer_chip_warnings">⚠️ Предупреждения (Warnings)</string>
     <string name="log_viewer_chip_info">ℹ️ Информация (Info)</string>
-    <string name="log_viewer_status_ingame">⚡ В игре</string>
+    <string name="log_viewer_status_ingame">В игре</string>
     <string name="log_viewer_status_offline">⚪ Оффлайн</string>
     <string name="log_viewer_toast_refreshing">🔄 Обновление журнала...</string>
     <string name="log_viewer_stats_total_fmt">Всего строк: %1$d | Размер: %2$d КБ</string>
@@ -2084,11 +2084,11 @@
     <string name="translator_toast_no_text_screen">Текст на экране не обнаружен</string>
     <string name="translator_overlay_region_fmt">Область %1$d</string>
     <string name="translator_overlay_btn_add">+ Добавить область</string>
-    <string name="translator_overlay_btn_clear">🧹 Очистить</string>
+    <string name="translator_overlay_btn_clear">Очистить</string>
     <string name="translator_overlay_btn_save">Сохранить</string>
-    <string name="translator_overlay_btn_close">✕ Закрыть</string>
-    <string name="translator_snack_auto_on">⚡ Авто-перевод активирован</string>
-    <string name="translator_snack_auto_off">⚡ Авто-перевод отключен</string>
+    <string name="translator_overlay_btn_close">Закрыть</string>
+    <string name="translator_snack_auto_on">Авто-перевод активирован</string>
+    <string name="translator_snack_auto_off">Авто-перевод отключен</string>
     <string name="translator_snack_tts_on">🔊 Озвучка TTS включена</string>
     <string name="translator_snack_tts_off">🔇 Озвучка TTS выключена</string>
     <string name="translator_snack_float_on">👁️ Плавающая кнопка показана</string>
@@ -2096,7 +2096,7 @@
     <string name="translator_dialog_select_model">🤖 Выберите модель перевода</string>
     <string name="translator_toast_model_selected_fmt">Модель перевода: %1$s</string>
     <string name="sysinfo_sec_device">📱  УСТРОЙСТВО И СИСТЕМА</string>
-    <string name="sysinfo_sec_cpu">⚡  ПРОЦЕССОР (CPU / SOC)</string>
+    <string name="sysinfo_sec_cpu"> ПРОЦЕССОР (CPU / SOC)</string>
     <string name="sysinfo_sec_gpu">🎮  ГРАФИКА (GPU &amp; VULKAN)</string>
     <string name="sysinfo_sec_ram">💾  ОПЕРАТИВНАЯ ПАМЯТЬ (RAM)</string>
     <string name="sysinfo_lbl_manufacturer">• Производитель: </string>
@@ -2120,7 +2120,7 @@
     <string name="sysinfo_lbl_low_mem_thresh">• Порог нехватки памяти: </string>
     <string name="emulation_cooling_paused_title">❄️ Игра на паузе - идёт охлаждение устройства</string>
     <string name="emulation_cooling_temp_default">🌡️ Температура: --°C ➔ Цель: 36.5°C</string>
-    <string name="emulation_cooling_chipset_unloaded">⚡ Нагрузка на чипсет снята (&lt; 1 Вт)</string>
+    <string name="emulation_cooling_chipset_unloaded">Нагрузка на чипсет снята (&lt; 1 Вт)</string>
     <string name="emulation_cooling_done_fmt">✅ Охлаждение завершено: %1$s°C</string>
     <string name="emulation_cooling_temp_fmt">🌡️ Температура: %1$s°C ➔ Цель: %2$s°C</string>
     <string name="emulation_cooling_in_progress">🌡️ Идёт охлаждение чипсета</string>
@@ -2390,8 +2390,8 @@
     <string name="save_states_mode_disabled_toast">Быстрые сохранения отключены в Настройки → Система.</string>
     <string name="performance_preset">Профиль производительности</string>
     <string name="performance_preset_description">Готовый профиль настроек для баланса скорости, нагрева батареи и качества картинки</string>
-    <string name="performance_preset_battery">🔋 Экономия батареи</string>
-    <string name="performance_preset_balanced">⚖️ Баланс (Рекомендуется)</string>
+    <string name="performance_preset_battery">Экономия батареи</string>
+    <string name="performance_preset_balanced">Баланс (Рекомендуется)</string>
     <string name="performance_preset_quality">🚀 Максимальное качество</string>
     <string name="performance_preset_custom">⚙️ Свой</string>
     <string name="performance_preset_applied">Профиль производительности применён</string>
@@ -2418,7 +2418,7 @@
     <string name="tab_driver_turnip">Turnip (Adreno)</string>
     <string name="tab_driver_panvk">PanVK (Mali / Immortalis)</string>
     <string name="tab_driver_qualcomm">Qualcomm Proprietary</string>
-    <string name="install_storm_driver_10">⚡ Скачать STORM DRIVER 10.0.0</string>
+    <string name="install_storm_driver_10">Скачать STORM DRIVER 10.0.0</string>
     <string name="storm_driver_10_recommendation">ГПУ: %1$s • Рекомендуется: %2$s</string>
     <string name="storm_driver_downloading">Загрузка STORM DRIVER 10.0.0…</string>
 
@@ -2447,4 +2447,33 @@
     <string name="storm_folder_picker_deep_scan">Сканировать вложенные подпапки</string>
     <string name="storm_folder_picker_added_count">Добавлено папок с играми: %1$d</string>
     <string name="storm_setup_games_multi_status">Игры (папок: %1$d)</string>
+
+    <string name="enable_all_cheats">Включить все читы</string>
+    <string name="disable_all_cheats">Отключить все читы</string>
+    <string name="unnamed_cheat">Чит без названия</string>
+    <string name="enable_cheats_by_default">Включать читы по умолчанию</string>
+    <string name="enable_cheats_by_default_description">Автоматически активировать обычные читы при запуске игры</string>
+    <string name="storm_thermal_governor">STORM Thermal Governor</string>
+    <string name="storm_thermal_governor_description">Интеллектуальная термозащита: поддержание максимальных устойчивых частот без просадок кадров</string>
+    <string name="storm_lowend_turbo">STORM Low-End Turbo</string>
+    <string name="storm_lowend_turbo_description">Оптимизированное распределение потоков и буферов для бюджетных устройств</string>
+    <string name="auto_60fps_unlock">Авторазблокировка 60 FPS</string>
+    <string name="auto_60fps_unlock_description">Автоматическая разблокировка 60 кадров/с в поддерживаемых играх</string>
+    <string name="auto_aspect_ratio_patch">Автопатч соотношения сторон</string>
+    <string name="auto_aspect_ratio_patch_description">Автоматическая адаптация геометрии рендеринга под широкоформатные экраны</string>
+    <string name="storm_prof_presets_count_default">Готовых пресетов: 4 • Пользовательских: 0</string>
+    <string name="save_state_slot_restored_success">Слот %1$d успешно восстановлен из резервной копии!</string>
+    <string name="save_state_slot_restore_error">Ошибка восстановления слота: %1$s</string>
+    <string name="save_state_undo_action">ОТМЕНИТЬ</string>
+    <string name="save_state_slot_empty_undo_available">Пусто • Доступна отмена (удерживайте карточку)</string>
+    <string name="save_state_restore_slot_title">Восстановление слота %1$d</string>
+    <string name="save_state_restore_slot_message">Восстановить сохранение слота %1$d из резервной копии (.undo.bak)?</string>
+    <string name="save_state_restore_button">Восстановить</string>
+    <string name="storm_driver_10_active">STORM DRIVER 10.0.0 (Активен)</string>
+    <string name="storm_driver_already_active">STORM DRIVER 10.0.0 уже активен!</string>
+    <string name="added">Добавлено</string>
+    <string name="pagination_first">&lt;&lt;</string>
+    <string name="pagination_prev">&lt;</string>
+    <string name="pagination_next">&gt;</string>
+    <string name="copy">Копировать</string>
 </resources>

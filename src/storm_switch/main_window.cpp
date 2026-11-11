@@ -97,6 +97,9 @@
 
 #include "qt_common/game_list/game_list_p.h"
 
+#include <QMouseEvent>
+#include <QSignalBlocker>
+#include "core/memory/dmnt_cheat_types.h"
 #include "ui_main.h"
 
 
@@ -3747,9 +3750,9 @@ void MainWindow::InitializeWidgets() {
 
             auto* mode_header = context_menu.addAction(StormLang(
 
-                QStringLiteral("⚡ Режим качества AMD FSR 2.0:"),
+                QStringLiteral("Режим качества AMD FSR 2.0:"),
 
-                QStringLiteral("⚡ AMD FSR 2.0 Quality Mode:")));
+                QStringLiteral("AMD FSR 2.0 Quality Mode:")));
 
             mode_header->setEnabled(false);
 
@@ -4723,17 +4726,17 @@ void MainWindow::InitializeWidgets() {
 
             context_menu.addAction(StormLang(
 
-                QStringLiteral("📋 Открыть менеджер дополнений..."),
+                QStringLiteral("Открыть менеджер дополнений..."),
 
-                QStringLiteral("📋 Open Add-ons Manager..."),
+                QStringLiteral("Open Add-ons Manager..."),
 
-                QStringLiteral("📋 Add-ons-Manager öffnen..."),
+                QStringLiteral("Add-ons-Manager öffnen..."),
 
-                QStringLiteral("📋 Ouvrir le gestionnaire d'extensions..."),
+                QStringLiteral("Ouvrir le gestionnaire d'extensions..."),
 
-                QStringLiteral("📋 打开附加组件管理器..."),
+                QStringLiteral("打开附加组件管理器..."),
 
-                QStringLiteral("📋 アドオンマネージャーを開く...")
+                QStringLiteral("アドオンマネージャーを開く...")
 
             ), [this] {
 
@@ -4907,17 +4910,17 @@ void MainWindow::InitializeWidgets() {
 
             context_menu.addAction(StormLang(
 
-                QStringLiteral("⚙️ Свойства игры (Управление дополнениями)..."),
+                QStringLiteral("Свойства игры (Управление дополнениями)..."),
 
-                QStringLiteral("⚙️ Game properties (Manage add-ons)..."),
+                QStringLiteral("Game properties (Manage add-ons)..."),
 
-                QStringLiteral("⚙️ Spieleigenschaften (Add-ons verwalten)..."),
+                QStringLiteral("Spieleigenschaften (Add-ons verwalten)..."),
 
-                QStringLiteral("⚙️ Propriétés du jeu (Gérer les extensions)..."),
+                QStringLiteral("Propriétés du jeu (Gérer les extensions)..."),
 
-                QStringLiteral("⚙️ 游戏属性 (管理附加组件)..."),
+                QStringLiteral("游戏属性 (管理附加组件)..."),
 
-                QStringLiteral("⚙️ ゲームのプロパティ (アドオンの管理)...")
+                QStringLiteral("ゲームのプロパティ (アドオンの管理)...")
 
             ), [this] {
 
@@ -4981,17 +4984,17 @@ void MainWindow::InitializeWidgets() {
 
                   .arg(QString::fromStdString(profile->game_name))
 
-            : StormLang(QStringLiteral("⚡ Быстрые настройки и Авто-исправление"),
+            : StormLang(QStringLiteral("Быстрые настройки и Авто-исправление"),
 
-                        QStringLiteral("⚡ Quick Settings & Auto-Fix"),
+                        QStringLiteral("Quick Settings & Auto-Fix"),
 
-                        QStringLiteral("⚡ Schnelleinstellungen & Auto-Fix"),
+                        QStringLiteral("Schnelleinstellungen & Auto-Fix"),
 
-                        QStringLiteral("⚡ Paramètres rapides & Auto-Fix"),
+                        QStringLiteral("Paramètres rapides & Auto-Fix"),
 
-                        QStringLiteral("⚡ 快捷设置与自动修复"),
+                        QStringLiteral("快捷设置与自动修复"),
 
-                        QStringLiteral("⚡ クイック設定と自動修正"));
+                        QStringLiteral("クイック設定と自動修正"));
 
         auto* hdr = context_menu.addAction(header_text);
 
@@ -5035,17 +5038,17 @@ void MainWindow::InitializeWidgets() {
 
         auto* act_fg = context_menu.addAction(StormLang(
 
-            QStringLiteral("🚀 Генерация кадров LSFG (x2 FPS)"),
+            QStringLiteral("Генерация кадров LSFG (x2 FPS)"),
 
-            QStringLiteral("🚀 LSFG Frame Generation (x2 FPS)"),
+            QStringLiteral("LSFG Frame Generation (x2 FPS)"),
 
-            QStringLiteral("🚀 LSFG-Bildgenerierung (x2 FPS)"),
+            QStringLiteral("LSFG-Bildgenerierung (x2 FPS)"),
 
-            QStringLiteral("🚀 Génération d'images LSFG (x2 FPS)"),
+            QStringLiteral("Génération d'images LSFG (x2 FPS)"),
 
-            QStringLiteral("🚀 LSFG 帧生成 (x2 FPS)"),
+            QStringLiteral("LSFG 帧生成 (x2 FPS)"),
 
-            QStringLiteral("🚀 LSFG フレーム生成 (x2 FPS)")
+            QStringLiteral("LSFG フレーム生成 (x2 FPS)")
 
         ), [this] {
 
@@ -5109,17 +5112,17 @@ void MainWindow::InitializeWidgets() {
 
         auto* act_rf = context_menu.addAction(StormLang(
 
-            QStringLiteral("⚡ Реактивная очистка буферов (Reactive Flushing)"),
+            QStringLiteral("Реактивная очистка буферов (Reactive Flushing)"),
 
-            QStringLiteral("⚡ Reactive Buffer Flushing"),
+            QStringLiteral("Reactive Buffer Flushing"),
 
-            QStringLiteral("⚡ Reaktives Puffer-Flushing"),
+            QStringLiteral("Reaktives Puffer-Flushing"),
 
-            QStringLiteral("⚡ Vidage réactif des tampons"),
+            QStringLiteral("Vidage réactif des tampons"),
 
-            QStringLiteral("⚡ 响应式缓冲刷新 (Reactive Flushing)"),
+            QStringLiteral("响应式缓冲刷新 (Reactive Flushing)"),
 
-            QStringLiteral("⚡ リアクティブフラッシング")
+            QStringLiteral("リアクティブフラッシング")
 
         ), [this] {
 
@@ -5147,17 +5150,17 @@ void MainWindow::InitializeWidgets() {
 
         auto* act_rb = context_menu.addAction(StormLang(
 
-            QStringLiteral("🔄 Обратное чтение буферов ГПУ (GPU Readback)"),
+            QStringLiteral("Обратное чтение буферов ГПУ (GPU Readback)"),
 
-            QStringLiteral("🔄 GPU Buffer Readback"),
+            QStringLiteral("GPU Buffer Readback"),
 
-            QStringLiteral("🔄 GPU-Puffer-Readback"),
+            QStringLiteral("GPU-Puffer-Readback"),
 
-            QStringLiteral("🔄 Lecture inverse des tampons GPU"),
+            QStringLiteral("Lecture inverse des tampons GPU"),
 
-            QStringLiteral("🔄 GPU 缓冲回读 (Readback)"),
+            QStringLiteral("GPU 缓冲回读 (Readback)"),
 
-            QStringLiteral("🔄 GPU バッファリードバック")
+            QStringLiteral("GPU バッファリードバック")
 
         ), [this] {
 
@@ -5185,17 +5188,17 @@ void MainWindow::InitializeWidgets() {
 
         auto* act_bloom = context_menu.addAction(StormLang(
 
-            QStringLiteral("✨ Защита свечения HDR (Fix Bloom Effects)"),
+            QStringLiteral("Защита свечения HDR (Fix Bloom Effects)"),
 
-            QStringLiteral("✨ HDR Bloom Protection (Fix Bloom Effects)"),
+            QStringLiteral("HDR Bloom Protection (Fix Bloom Effects)"),
 
-            QStringLiteral("✨ HDR-Bloom-Schutz (Fix Bloom Effects)"),
+            QStringLiteral("HDR-Bloom-Schutz (Fix Bloom Effects)"),
 
-            QStringLiteral("✨ Protection HDR Bloom"),
+            QStringLiteral("Protection HDR Bloom"),
 
-            QStringLiteral("✨ HDR 泛光修复 (Fix Bloom Effects)"),
+            QStringLiteral("HDR 泛光修复 (Fix Bloom Effects)"),
 
-            QStringLiteral("✨ HDR ブルーム保護")
+            QStringLiteral("HDR ブルーム保護")
 
         ), [this] {
 
@@ -5225,21 +5228,21 @@ void MainWindow::InitializeWidgets() {
 
         auto* act_ar_patch = context_menu.addAction(StormLang(
 
-            QStringLiteral("📐 Авто-патч 3D-камеры под формат экрана (Auto Aspect Patch)"),
+            QStringLiteral("Авто-патч 3D-камеры под формат экрана (Auto Aspect Patch)"),
 
-            QStringLiteral("📐 Auto-Patch 3D Camera Aspect Ratio"),
+            QStringLiteral("Auto-Patch 3D Camera Aspect Ratio"),
 
-            QStringLiteral("📐 3D-Kamera-Seitenverhältnis automatisch patchen"),
+            QStringLiteral("3D-Kamera-Seitenverhältnis automatisch patchen"),
 
-            QStringLiteral("📐 Patch auto du format d'image 3D"),
+            QStringLiteral("Patch auto du format d'image 3D"),
 
-            QStringLiteral("📐 自动修补 3D 摄像机宽高比（无拉伸）"),
+            QStringLiteral("自动修补 3D 摄像机宽高比（无拉伸）"),
 
-            QStringLiteral("📐 3D カメラアスペクト比自動パッチ"),
+            QStringLiteral("3D カメラアスペクト比自動パッチ"),
 
-            QStringLiteral("📐 تصحيح تلقائي لنسبة أبعاد الكاميرا 3D"),
+            QStringLiteral("تصحيح تلقائي لنسبة أبعاد الكاميرا 3D"),
 
-            QStringLiteral("📐 Auto-parche de relación de aspecto 3D")
+            QStringLiteral("Auto-parche de relación de aspecto 3D")
 
         ), [this] {
 
@@ -5265,21 +5268,21 @@ void MainWindow::InitializeWidgets() {
 
         auto* act_fps_unlock = context_menu.addAction(StormLang(
 
-            QStringLiteral("🚀 Авто-снятие лимита 30 FPS -> 60/120 FPS (Auto FPS Unlock)"),
+            QStringLiteral("Авто-снятие лимита 30 FPS -> 60/120 FPS (Auto FPS Unlock)"),
 
-            QStringLiteral("🚀 Auto-Unlock 30 FPS Cap -> 60/120 FPS"),
+            QStringLiteral("Auto-Unlock 30 FPS Cap -> 60/120 FPS"),
 
-            QStringLiteral("🚀 30-FPS-Limit automatisch auf 60/120 FPS entsperren"),
+            QStringLiteral("30-FPS-Limit automatisch auf 60/120 FPS entsperren"),
 
-            QStringLiteral("🚀 Déverrouillage auto 30 FPS -> 60/120 FPS"),
+            QStringLiteral("Déverrouillage auto 30 FPS -> 60/120 FPS"),
 
-            QStringLiteral("🚀 自动解锁 30 FPS 限制 -> 60/120 FPS"),
+            QStringLiteral("自动解锁 30 FPS 限制 -> 60/120 FPS"),
 
-            QStringLiteral("🚀 30 FPS 制限を 60/120 FPS に自動解除"),
+            QStringLiteral("30 FPS 制限を 60/120 FPS に自動解除"),
 
-            QStringLiteral("🚀 فتح قيد 30 إطاراً تلقائياً إلى 60/120 FPS"),
+            QStringLiteral("فتح قيد 30 إطاراً تلقائياً إلى 60/120 FPS"),
 
-            QStringLiteral("🚀 Auto-desbloqueo de 30 FPS -> 60/120 FPS")
+            QStringLiteral("Auto-desbloqueo de 30 FPS -> 60/120 FPS")
 
         ), [this] {
 
@@ -5317,21 +5320,21 @@ void MainWindow::InitializeWidgets() {
 
         auto* act_hdr = context_menu.addAction(StormLang(
 
-            QStringLiteral("🌈 Авто-HDR10 (Inverse Tone Mapping)"),
+            QStringLiteral("Авто-HDR10 (Inverse Tone Mapping)"),
 
-            QStringLiteral("🌈 Auto-HDR10 (Inverse Tone Mapping)"),
+            QStringLiteral("Auto-HDR10 (Inverse Tone Mapping)"),
 
-            QStringLiteral("🌈 Auto-HDR10 (Inverses Tone Mapping)"),
+            QStringLiteral("Auto-HDR10 (Inverses Tone Mapping)"),
 
-            QStringLiteral("🌈 Auto-HDR10 (Tone Mapping inverse)"),
+            QStringLiteral("Auto-HDR10 (Tone Mapping inverse)"),
 
-            QStringLiteral("🌈 自动 HDR10（逆色调映射）"),
+            QStringLiteral("自动 HDR10（逆色调映射）"),
 
-            QStringLiteral("🌈 自動 HDR10（逆トーンマッピング）"),
+            QStringLiteral("自動 HDR10（逆トーンマッピング）"),
 
-            QStringLiteral("🌈 تقنية Auto-HDR10 التلقائية"),
+            QStringLiteral("تقنية Auto-HDR10 التلقائية"),
 
-            QStringLiteral("🌈 Auto-HDR10 (Mapeo de tonos inverso)")
+            QStringLiteral("Auto-HDR10 (Mapeo de tonos inverso)")
 
         ), [this] {
 
@@ -5361,17 +5364,17 @@ void MainWindow::InitializeWidgets() {
 
             context_menu.addAction(StormLang(
 
-                QStringLiteral("♻️ Сбросить настройки сессии к глобальным"),
+                QStringLiteral("Сбросить настройки сессии к глобальным"),
 
-                QStringLiteral("♻️ Reset Session Settings to Global"),
+                QStringLiteral("Reset Session Settings to Global"),
 
-                QStringLiteral("♻️ Sitzungseinstellungen auf Global zurücksetzen"),
+                QStringLiteral("Sitzungseinstellungen auf Global zurücksetzen"),
 
-                QStringLiteral("♻️ Réinitialiser la session aux paramètres globaux"),
+                QStringLiteral("Réinitialiser la session aux paramètres globaux"),
 
-                QStringLiteral("♻️ 将会话设置重置为全局"),
+                QStringLiteral("将会话设置重置为全局"),
 
-                QStringLiteral("♻️ セッション設定をグローバルにリセット")
+                QStringLiteral("セッション設定をグローバルにリセット")
 
             ), [this] {
 
@@ -5387,17 +5390,17 @@ void MainWindow::InitializeWidgets() {
 
                 statusBar()->showMessage(StormLang(
 
-                    QStringLiteral("♻️ Настройки текущей сессии сброшены к глобальным"),
+                    QStringLiteral("Настройки текущей сессии сброшены к глобальным"),
 
-                    QStringLiteral("♻️ Current session settings reset to global"),
+                    QStringLiteral("Current session settings reset to global"),
 
-                    QStringLiteral("♻️ Aktuelle Sitzungseinstellungen auf Global zurückgesetzt"),
+                    QStringLiteral("Aktuelle Sitzungseinstellungen auf Global zurückgesetzt"),
 
-                    QStringLiteral("♻️ Paramètres de session réinitialisés aux valeurs globales"),
+                    QStringLiteral("Paramètres de session réinitialisés aux valeurs globales"),
 
-                    QStringLiteral("♻️ 当前会话设置已重置为全局"),
+                    QStringLiteral("当前会话设置已重置为全局"),
 
-                    QStringLiteral("♻️ 現在のセッション設定をグローバルにリセットしました")
+                    QStringLiteral("現在のセッション設定をグローバルにリセットしました")
 
                 ), 5000);
 
@@ -8062,6 +8065,15 @@ void MainWindow::OnAppFocusStateChanged(Qt::ApplicationState state) {
 
 
 void MainWindow::ConnectWidgetEvents() {
+    ui->menu_Cheats->installEventFilter(this);
+    ui->menu_Cheats->menuAction()->setVisible(false);
+    ui->menu_Cheats->setTitle(StormLangStorm11(
+        QStringLiteral("&Читы"), QStringLiteral("&Cheats"),
+        QStringLiteral("&Cheats"), QStringLiteral("&Codes de triche"),
+        QStringLiteral("&作弊码"), QStringLiteral("&치트"),
+        QStringLiteral("&チート"), QStringLiteral("&Trucos"),
+        QStringLiteral("&Trucchi"), QStringLiteral("&Trapaças"),
+        QStringLiteral("&चीट्स")));
 
     connect(game_list, &GameList::BootGame, this, &MainWindow::BootGameFromList);
 
@@ -8216,6 +8228,8 @@ void MainWindow::ConnectWidgetEvents() {
     connect(this, &MainWindow::EmulationStarting, this, &MainWindow::SoftwareKeyboardExit);
 
     connect(this, &MainWindow::EmulationStopping, this, &MainWindow::SoftwareKeyboardExit);
+    connect(this, &MainWindow::EmulationStarting, this, &MainWindow::RefreshRuntimeCheats);
+    connect(this, &MainWindow::EmulationStopping, this, &MainWindow::ClearRuntimeCheats);
 
 
 
@@ -8230,6 +8244,94 @@ void MainWindow::ConnectWidgetEvents() {
 }
 
 
+
+
+void MainWindow::RefreshRuntimeCheats() {
+    ClearRuntimeCheats();
+
+    if (!QtCommon::system) {
+        return;
+    }
+
+    const auto cheats = QtCommon::system->GetRuntimeCheats();
+    const QString disable_text = StormLangStorm11(
+        QStringLiteral("Отключить все читы"), QStringLiteral("Disable All Cheats"),
+        QStringLiteral("Alle Cheats deaktivieren"), QStringLiteral("Désactiver tous les codes de triche"),
+        QStringLiteral("禁用所有作弊码"), QStringLiteral("모든 치트 비활성화"),
+        QStringLiteral("すべてのチートを無効化"), QStringLiteral("Desactivar todos los trucos"),
+        QStringLiteral("Disabilita tutti i trucchi"), QStringLiteral("Desativar todas as trapaças"),
+        QStringLiteral("सभी चीट्स अक्षम करें"));
+    auto* disable_all = ui->menu_Cheats->addAction(disable_text);
+    connect(disable_all, &QAction::triggered, this, [this] {
+        for (auto* action : runtime_cheat_actions) {
+            if (action->isEnabled()) {
+                action->setChecked(false);
+            }
+        }
+    });
+
+    const QString enable_text = StormLangStorm11(
+        QStringLiteral("Включить все читы"), QStringLiteral("Enable All Cheats"),
+        QStringLiteral("Alle Cheats aktivieren"), QStringLiteral("Activer tous les codes de triche"),
+        QStringLiteral("启用所有作弊码"), QStringLiteral("모든 치트 활성화"),
+        QStringLiteral("すべてのチートを有効化"), QStringLiteral("Activar todos los trucos"),
+        QStringLiteral("Abilita tutti i trucchi"), QStringLiteral("Ativar todas as trapaças"),
+        QStringLiteral("सभी चीट्स सक्षम करें"));
+    auto* enable_all = ui->menu_Cheats->addAction(enable_text);
+    connect(enable_all, &QAction::triggered, this, [this] {
+        for (auto* action : runtime_cheat_actions) {
+            if (action->isEnabled()) {
+                action->setChecked(true);
+            }
+        }
+    });
+
+    ui->menu_Cheats->addSeparator();
+    runtime_cheat_actions.reserve(cheats.size());
+    for (const auto& cheat : cheats) {
+        const QString unnamed_text = StormLangStorm11(
+            QStringLiteral("Безымянный чит-код"), QStringLiteral("Unnamed Cheat"),
+            QStringLiteral("Unbenannter Cheat"), QStringLiteral("Code de triche sans nom"),
+            QStringLiteral("未命名作弊码"), QStringLiteral("이름 없는 치트"),
+            QStringLiteral("名前のないチート"), QStringLiteral("Truco sin nombre"),
+            QStringLiteral("Trucco senza nome"), QStringLiteral("Trapaça sem nome"),
+            QStringLiteral("अनाम चीट"));
+        const QString name = cheat.name.empty() ? unnamed_text
+                                                : QString::fromUtf8(cheat.name.data(), static_cast<qsizetype>(cheat.name.size()));
+        auto* action = ui->menu_Cheats->addAction(name);
+        action->setCheckable(true);
+        action->setChecked(cheat.enabled || cheat.is_master);
+        action->setEnabled(!cheat.is_master);
+        connect(action, &QAction::toggled, this, [action, id = cheat.id](bool enabled) {
+            if (!QtCommon::system->SetCheatEnabled(id, enabled)) {
+                const QSignalBlocker blocker{action};
+                action->setChecked(!enabled);
+            }
+        });
+        runtime_cheat_actions.push_back(action);
+    }
+
+    ui->menu_Cheats->menuAction()->setVisible(!runtime_cheat_actions.empty());
+}
+
+void MainWindow::ClearRuntimeCheats() {
+    ui->menu_Cheats->clear();
+    runtime_cheat_actions.clear();
+    ui->menu_Cheats->menuAction()->setVisible(false);
+}
+
+bool MainWindow::eventFilter(QObject* watched, QEvent* event) {
+    if (watched == ui->menu_Cheats && event->type() == QEvent::MouseButtonRelease) {
+        const auto* mouse_event = static_cast<QMouseEvent*>(event);
+        auto* action = ui->menu_Cheats->actionAt(mouse_event->pos());
+        if (mouse_event->button() == Qt::LeftButton && action && action->isEnabled() &&
+            action->isCheckable()) {
+            action->trigger();
+            return true;
+        }
+    }
+    return QMainWindow::eventFilter(watched, event);
+}
 
 void MainWindow::ConnectMenuEvents() {
 
@@ -14329,27 +14431,27 @@ void MainWindow::OnToggleGpuAccuracy() {
 
     const QString gpu_title = StormLang11(
 
-        QStringLiteral("⚙️ ТОЧНОСТЬ GPU"),
+        QStringLiteral("ТОЧНОСТЬ GPU"),
 
-        QStringLiteral("⚙️ GPU ACCURACY"),
+        QStringLiteral("GPU ACCURACY"),
 
-        QStringLiteral("⚙️ GPU-GENAUIGKEIT"),
+        QStringLiteral("GPU-GENAUIGKEIT"),
 
-        QStringLiteral("⚙️ PRÉCISION GPU"),
+        QStringLiteral("PRÉCISION GPU"),
 
-        QStringLiteral("⚙️ PRECISIÓN DE GPU"),
+        QStringLiteral("PRECISIÓN DE GPU"),
 
-        QStringLiteral("⚙️ PRECISIONE GPU"),
+        QStringLiteral("PRECISIONE GPU"),
 
-        QStringLiteral("⚙️ PRECISÃO DA GPU"),
+        QStringLiteral("PRECISÃO DA GPU"),
 
-        QStringLiteral("⚙️ GPU 精度"),
+        QStringLiteral("GPU 精度"),
 
-        QStringLiteral("⚙️ GPU 精度"),
+        QStringLiteral("GPU 精度"),
 
-        QStringLiteral("⚙️ GPU 정밀도"),
+        QStringLiteral("GPU 정밀도"),
 
-        QStringLiteral("⚙️ دقة معالج الرسوميات"));
+        QStringLiteral("دقة معالج الرسوميات"));
 
     const QString gpu_sub = is_high
 
@@ -14445,27 +14547,27 @@ void MainWindow::OnHealGraphicsArtifacts() {
 
     const QString heal_title = StormLang11(
 
-        QStringLiteral("✨ АВТОЛЕЧЕНИЕ ГРАФИКИ"),
+        QStringLiteral("АВТОЛЕЧЕНИЕ ГРАФИКИ"),
 
-        QStringLiteral("✨ GRAPHICS AUTO-HEAL"),
+        QStringLiteral("GRAPHICS AUTO-HEAL"),
 
-        QStringLiteral("✨ GRAFIK-AUTO-HEILUNG"),
+        QStringLiteral("GRAFIK-AUTO-HEILUNG"),
 
-        QStringLiteral("✨ AUTO-RÉPARATION GRAPHIQUE"),
+        QStringLiteral("AUTO-RÉPARATION GRAPHIQUE"),
 
-        QStringLiteral("✨ AUTORREPARACIÓN GRÁFICA"),
+        QStringLiteral("AUTORREPARACIÓN GRÁFICA"),
 
-        QStringLiteral("✨ AUTO-RIPARAZIONE GRAFICA"),
+        QStringLiteral("AUTO-RIPARAZIONE GRAFICA"),
 
-        QStringLiteral("✨ AUTORREPARAÇÃO GRÁFICA"),
+        QStringLiteral("AUTORREPARAÇÃO GRÁFICA"),
 
-        QStringLiteral("✨ 图形自动修复"),
+        QStringLiteral("图形自动修复"),
 
-        QStringLiteral("✨ グラフィックス自動修復"),
+        QStringLiteral("グラフィックス自動修復"),
 
-        QStringLiteral("✨ 그래픽 자동 복구"),
+        QStringLiteral("그래픽 자동 복구"),
 
-        QStringLiteral("✨ الإصلاح التلقائي للرسوميات"));
+        QStringLiteral("الإصلاح التلقائي للرسوميات"));
 
     const QString heal_msg = StormLang11(
 
@@ -14801,27 +14903,27 @@ void MainWindow::OnToggleAdaptingFilter() {
 
         const QString f_title = StormLang11(
 
-            QStringLiteral("🔍 ФИЛЬТР МАСШТАБИРОВАНИЯ"),
+            QStringLiteral("ФИЛЬТР МАСШТАБИРОВАНИЯ"),
 
-            QStringLiteral("🔍 SCALING FILTER"),
+            QStringLiteral("SCALING FILTER"),
 
-            QStringLiteral("🔍 SKALIERUNGSFILTER"),
+            QStringLiteral("SKALIERUNGSFILTER"),
 
-            QStringLiteral("🔍 FILTRE DE MISE À L'ÉCHELLE"),
+            QStringLiteral("FILTRE DE MISE À L'ÉCHELLE"),
 
-            QStringLiteral("🔍 FILTRO DE ESCALADO"),
+            QStringLiteral("FILTRO DE ESCALADO"),
 
-            QStringLiteral("🔍 FILTRO DI SCALATURA"),
+            QStringLiteral("FILTRO DI SCALATURA"),
 
-            QStringLiteral("🔍 FILTRO DE ESCALA"),
+            QStringLiteral("FILTRO DE ESCALA"),
 
-            QStringLiteral("🔍 缩放过滤器"),
+            QStringLiteral("缩放过滤器"),
 
-            QStringLiteral("🔍 スケーリングフィルター"),
+            QStringLiteral("スケーリングフィルター"),
 
-            QStringLiteral("🔍 스케일링 필터"),
+            QStringLiteral("스케일링 필터"),
 
-            QStringLiteral("🔍 مرشح تحجيم الصورة"));
+            QStringLiteral("مرشح تحجيم الصورة"));
 
         const QString f_sub = StormLang11(
 
@@ -14871,17 +14973,17 @@ void MainWindow::OnToggleGraphicsAPI() {
 
     case Settings::RendererBackend::OpenGL_GLSL:
 
-        api = Settings::RendererBackend::OpenGL_GLSL;
-
-        break;
-
-    case Settings::RendererBackend::OpenGL_SPIRV:
-
         api = Settings::RendererBackend::OpenGL_GLASM;
 
         break;
 
     case Settings::RendererBackend::OpenGL_GLASM:
+
+        api = Settings::RendererBackend::OpenGL_SPIRV;
+
+        break;
+
+    case Settings::RendererBackend::OpenGL_SPIRV:
 
         api = Settings::RendererBackend::Null;
 
@@ -18076,17 +18178,17 @@ void MainWindow::OnSaveStateManager() {
 
     auto* lbl_main_title = new QLabel(StormLang(
 
-        QStringLiteral("⚡ МЕНЕДЖЕР БЫСТРЫХ СОХРАНЕНИЙ SESS v2"),
+        QStringLiteral("МЕНЕДЖЕР БЫСТРЫХ СОХРАНЕНИЙ SESS v2"),
 
-        QStringLiteral("⚡ STORM SESS v2 SAVE STATE MANAGER"),
+        QStringLiteral("STORM SESS v2 SAVE STATE MANAGER"),
 
-        QStringLiteral("⚡ STORM SESS v2 SCHNELLSPEICHER-MANAGER"),
+        QStringLiteral("STORM SESS v2 SCHNELLSPEICHER-MANAGER"),
 
-        QStringLiteral("⚡ GESTIONNAIRE DE SAUVEGARDES SESS v2"),
+        QStringLiteral("GESTIONNAIRE DE SAUVEGARDES SESS v2"),
 
-        QStringLiteral("⚡ STORM SESS v2 快速保存管理器"),
+        QStringLiteral("STORM SESS v2 快速保存管理器"),
 
-        QStringLiteral("⚡ STORM SESS v2 クイックセーブマネージャー")), header_frame);
+        QStringLiteral("STORM SESS v2 クイックセーブマネージャー")), header_frame);
 
     lbl_main_title->setStyleSheet(QStringLiteral("font-size: 12.5pt; font-weight: 800; color: %1; border: none; background: transparent;").arg(StormTheme::GetThemePalette().accent));
 
@@ -18138,17 +18240,17 @@ void MainWindow::OnSaveStateManager() {
 
     game_search_edit->setPlaceholderText(StormLang(
 
-        QStringLiteral("🔍 Поиск игры по названию или Title ID (например: Animal Well, 010020D01AD24000)..."),
+        QStringLiteral("Поиск игры по названию или Title ID (например: Animal Well, 010020D01AD24000)..."),
 
-        QStringLiteral("🔍 Search game by title or Title ID (e.g. Animal Well, 010020D01AD24000)..."),
+        QStringLiteral("Search game by title or Title ID (e.g. Animal Well, 010020D01AD24000)..."),
 
-        QStringLiteral("🔍 Spiel nach Name oder Title-ID suchen..."),
+        QStringLiteral("Spiel nach Name oder Title-ID suchen..."),
 
-        QStringLiteral("🔍 Rechercher un jeu par titre ou Title ID..."),
+        QStringLiteral("Rechercher un jeu par titre ou Title ID..."),
 
-        QStringLiteral("🔍 按游戏名称或 Title ID 搜索..."),
+        QStringLiteral("按游戏名称或 Title ID 搜索..."),
 
-        QStringLiteral("🔍 ゲーム名または Title ID で検索...")));
+        QStringLiteral("ゲーム名または Title ID で検索...")));
 
     search_and_folder_row->addWidget(game_search_edit, 1);
 
@@ -18624,17 +18726,17 @@ void MainWindow::OnSaveStateManager() {
 
     auto* btn_load_slot = new QPushButton(StormLang(
 
-        QStringLiteral("⚡ Загрузить выбранный слот"),
+        QStringLiteral("Загрузить выбранный слот"),
 
-        QStringLiteral("⚡ Load Selected Slot"),
+        QStringLiteral("Load Selected Slot"),
 
-        QStringLiteral("⚡ Ausgewählten Slot laden"),
+        QStringLiteral("Ausgewählten Slot laden"),
 
-        QStringLiteral("⚡ Charger l'emplacement"),
+        QStringLiteral("Charger l'emplacement"),
 
-        QStringLiteral("⚡ 加载所选槽位"),
+        QStringLiteral("加载所选槽位"),
 
-        QStringLiteral("⚡ 選択スロットをロード")), &dlg);
+        QStringLiteral("選択スロットをロード")), &dlg);
 
     btn_load_slot->setStyleSheet(QStringLiteral(
 
@@ -18730,17 +18832,17 @@ void MainWindow::OnSaveStateManager() {
 
     auto* btn_copy_slot = new QPushButton(StormLang(
 
-        QStringLiteral("📋 Копировать в слот..."),
+        QStringLiteral("Копировать в слот..."),
 
-        QStringLiteral("📋 Copy to Another Slot..."),
+        QStringLiteral("Copy to Another Slot..."),
 
-        QStringLiteral("📋 In anderen Slot kopieren..."),
+        QStringLiteral("In anderen Slot kopieren..."),
 
-        QStringLiteral("📋 Copier vers un emplacement..."),
+        QStringLiteral("Copier vers un emplacement..."),
 
-        QStringLiteral("📋 复制到其他槽位..."),
+        QStringLiteral("复制到其他槽位..."),
 
-        QStringLiteral("📋 別のスロットにコピー...")), &dlg);
+        QStringLiteral("別のスロットにコピー...")), &dlg);
 
     btn_copy_slot->setToolTip(StormLang(
 
@@ -19580,17 +19682,17 @@ void MainWindow::OnSaveStateManager() {
 
         lbl_status_feedback->setText(StormLang(
 
-            QStringLiteral("✅ Заметка для Слота %1 сохранена").arg(s),
+            QStringLiteral("Заметка для Слота %1 сохранена").arg(s),
 
-            QStringLiteral("✅ Note saved for Slot %1").arg(s),
+            QStringLiteral("Note saved for Slot %1").arg(s),
 
-            QStringLiteral("✅ Notiz für Slot %1 gespeichert").arg(s),
+            QStringLiteral("Notiz für Slot %1 gespeichert").arg(s),
 
-            QStringLiteral("✅ Note enregistrée pour l'emplacement %1").arg(s),
+            QStringLiteral("Note enregistrée pour l'emplacement %1").arg(s),
 
-            QStringLiteral("✅ 槽位 %1 的备注已保存").arg(s),
+            QStringLiteral("槽位 %1 的备注已保存").arg(s),
 
-            QStringLiteral("✅ スロット %1 のメモを保存しました").arg(s)));
+            QStringLiteral("スロット %1 のメモを保存しました").arg(s)));
 
     });
 
@@ -19636,17 +19738,17 @@ void MainWindow::OnSaveStateManager() {
 
             lbl_status_feedback->setText(StormLang(
 
-                QStringLiteral("⚡ Состояние игры и превью сохранены в Слот %1!").arg(get_selected_slot()),
+                QStringLiteral("Состояние игры и превью сохранены в Слот %1!").arg(get_selected_slot()),
 
-                QStringLiteral("⚡ Game state & preview saved to Slot %1!").arg(get_selected_slot()),
+                QStringLiteral("Game state & preview saved to Slot %1!").arg(get_selected_slot()),
 
-                QStringLiteral("⚡ Spielstatus & Vorschau in Slot %1 gespeichert!").arg(get_selected_slot()),
+                QStringLiteral("Spielstatus & Vorschau in Slot %1 gespeichert!").arg(get_selected_slot()),
 
-                QStringLiteral("⚡ État du jeu et aperçu enregistrés dans l'emplacement %1 !").arg(get_selected_slot()),
+                QStringLiteral("État du jeu et aperçu enregistrés dans l'emplacement %1 !").arg(get_selected_slot()),
 
-                QStringLiteral("⚡ 游戏状态与预览图已保存到槽位 %1！").arg(get_selected_slot()),
+                QStringLiteral("游戏状态与预览图已保存到槽位 %1！").arg(get_selected_slot()),
 
-                QStringLiteral("⚡ スロット %1 にゲーム状態とプレビューを保存しました！").arg(get_selected_slot())));
+                QStringLiteral("スロット %1 にゲーム状態とプレビューを保存しました！").arg(get_selected_slot())));
 
         });
 
@@ -19868,17 +19970,17 @@ void MainWindow::OnSaveStateManager() {
 
         lbl_status_feedback->setText(StormLang(
 
-            QStringLiteral("📋 Слот %1 успешно скопирован в Слот %2!").arg(src).arg(dst),
+            QStringLiteral("Слот %1 успешно скопирован в Слот %2!").arg(src).arg(dst),
 
-            QStringLiteral("📋 Slot %1 copied to Slot %2!").arg(src).arg(dst),
+            QStringLiteral("Slot %1 copied to Slot %2!").arg(src).arg(dst),
 
-            QStringLiteral("📋 Slot %1 in Slot %2 kopiert!").arg(src).arg(dst),
+            QStringLiteral("Slot %1 in Slot %2 kopiert!").arg(src).arg(dst),
 
-            QStringLiteral("📋 Emplacement %1 copié vers %2 !").arg(src).arg(dst),
+            QStringLiteral("Emplacement %1 copié vers %2 !").arg(src).arg(dst),
 
-            QStringLiteral("📋 槽位 %1 已复制到槽位 %2！").arg(src).arg(dst),
+            QStringLiteral("槽位 %1 已复制到槽位 %2！").arg(src).arg(dst),
 
-            QStringLiteral("📋 スロット %1 をスロット %2 にコピーしました！").arg(src).arg(dst)));
+            QStringLiteral("スロット %1 をスロット %2 にコピーしました！").arg(src).arg(dst)));
 
     });
 
@@ -23034,17 +23136,17 @@ void MainWindow::UpdateGameFixStatusButton() {
 
         gamefix_status_button->setToolTip(StormLang(
 
-            QStringLiteral("⚡ Меню быстрых настроек (LSFG FrameGen, DRS 100%, Reactive Flushing, GPU Readback, HDR Bloom)"),
+            QStringLiteral("Меню быстрых настроек (LSFG FrameGen, DRS 100%, Reactive Flushing, GPU Readback, HDR Bloom)"),
 
-            QStringLiteral("⚡ Quick Settings menu (LSFG FrameGen, DRS 100%, Reactive Flushing, GPU Readback, HDR Bloom)"),
+            QStringLiteral("Quick Settings menu (LSFG FrameGen, DRS 100%, Reactive Flushing, GPU Readback, HDR Bloom)"),
 
-            QStringLiteral("⚡ Schnelleinstellungsmenü (LSFG FrameGen, DRS 100%, Reactive Flushing, GPU Readback, HDR Bloom)"),
+            QStringLiteral("Schnelleinstellungsmenü (LSFG FrameGen, DRS 100%, Reactive Flushing, GPU Readback, HDR Bloom)"),
 
-            QStringLiteral("⚡ Menu des paramètres rapides (LSFG FrameGen, DRS 100%, Reactive Flushing, GPU Readback, HDR Bloom)"),
+            QStringLiteral("Menu des paramètres rapides (LSFG FrameGen, DRS 100%, Reactive Flushing, GPU Readback, HDR Bloom)"),
 
-            QStringLiteral("⚡ 快捷设置菜单 (LSFG 帧生成, DRS 100%, 响应式刷新, GPU 回读, HDR 泛光)"),
+            QStringLiteral("快捷设置菜单 (LSFG 帧生成, DRS 100%, 响应式刷新, GPU 回读, HDR 泛光)"),
 
-            QStringLiteral("⚡ クイック設定メニュー (LSFG フレーム生成, DRS 100%, リアクティブフラッシング, GPU リードバック, HDR ブルーム)")
+            QStringLiteral("クイック設定メニュー (LSFG フレーム生成, DRS 100%, リアクティブフラッシング, GPU リードバック, HDR ブルーム)")
 
         ));
 
@@ -23922,17 +24024,17 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         auto* decode_menu = context_menu.addMenu(StormLang(
 
-            QStringLiteral("⚙️ Метод декодирования ASTC"),
+            QStringLiteral("Метод декодирования ASTC"),
 
-            QStringLiteral("⚙️ ASTC Decode Method"),
+            QStringLiteral("ASTC Decode Method"),
 
-            QStringLiteral("⚙️ ASTC-Dekodiermethode"),
+            QStringLiteral("ASTC-Dekodiermethode"),
 
-            QStringLiteral("⚙️ Méthode de décodage ASTC"),
+            QStringLiteral("Méthode de décodage ASTC"),
 
-            QStringLiteral("⚙️ ASTC 解码方式"),
+            QStringLiteral("ASTC 解码方式"),
 
-            QStringLiteral("⚙️ ASTC デコード方法")
+            QStringLiteral("ASTC デコード方法")
 
         ));
 
@@ -24030,17 +24132,17 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         auto* header_act = context_menu.addAction(StormLang(
 
-            QStringLiteral("⚡ Параметры рендера"),
+            QStringLiteral("Параметры рендера"),
 
-            QStringLiteral("⚡ Render Settings"),
+            QStringLiteral("Render Settings"),
 
-            QStringLiteral("⚡ Rendereinstellungen"),
+            QStringLiteral("Rendereinstellungen"),
 
-            QStringLiteral("⚡ Paramètres de rendu"),
+            QStringLiteral("Paramètres de rendu"),
 
-            QStringLiteral("⚡ 渲染设置"),
+            QStringLiteral("渲染设置"),
 
-            QStringLiteral("⚡ レンダラー設定")
+            QStringLiteral("レンダラー設定")
 
         ));
 
@@ -24312,17 +24414,17 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         auto* dma_menu = context_menu.addMenu(StormLang(
 
-            QStringLiteral("⚡ Точность DMA"),
+            QStringLiteral("Точность DMA"),
 
-            QStringLiteral("⚡ DMA Accuracy"),
+            QStringLiteral("DMA Accuracy"),
 
-            QStringLiteral("⚡ DMA-Genauigkeit"),
+            QStringLiteral("DMA-Genauigkeit"),
 
-            QStringLiteral("⚡ Précision DMA"),
+            QStringLiteral("Précision DMA"),
 
-            QStringLiteral("⚡ DMA 精度"),
+            QStringLiteral("DMA 精度"),
 
-            QStringLiteral("⚡ DMA 精度")
+            QStringLiteral("DMA 精度")
 
         ));
 
@@ -24498,17 +24600,17 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         auto* res_menu = context_menu.addMenu(StormLang(
 
-            QStringLiteral("📐 Разрешение"),
+            QStringLiteral("Разрешение"),
 
-            QStringLiteral("📐 Resolution"),
+            QStringLiteral("Resolution"),
 
-            QStringLiteral("📐 Auflösung"),
+            QStringLiteral("Auflösung"),
 
-            QStringLiteral("📐 Résolution"),
+            QStringLiteral("Résolution"),
 
-            QStringLiteral("📐 分辨率"),
+            QStringLiteral("分辨率"),
 
-            QStringLiteral("📐 解像度")
+            QStringLiteral("解像度")
 
         ));
 
@@ -24592,17 +24694,17 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         auto* aspect_menu = context_menu.addMenu(StormLang(
 
-            QStringLiteral("📐 Соотношение сторон"),
+            QStringLiteral("Соотношение сторон"),
 
-            QStringLiteral("📐 Aspect Ratio"),
+            QStringLiteral("Aspect Ratio"),
 
-            QStringLiteral("📐 Seitenverhältnis"),
+            QStringLiteral("Seitenverhältnis"),
 
-            QStringLiteral("📐 Format d'image"),
+            QStringLiteral("Format d'image"),
 
-            QStringLiteral("📐 宽高比"),
+            QStringLiteral("宽高比"),
 
-            QStringLiteral("📐 アスペクト比")
+            QStringLiteral("アスペクト比")
 
         ));
 
@@ -24744,17 +24846,17 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         auto* aniso_menu = context_menu.addMenu(StormLang(
 
-            QStringLiteral("🔍 Анизотропная фильтрация"),
+            QStringLiteral("Анизотропная фильтрация"),
 
-            QStringLiteral("🔍 Anisotropic Filtering"),
+            QStringLiteral("Anisotropic Filtering"),
 
-            QStringLiteral("🔍 Anisotrope Filterung"),
+            QStringLiteral("Anisotrope Filterung"),
 
-            QStringLiteral("🔍 Filtrage anisotrope"),
+            QStringLiteral("Filtrage anisotrope"),
 
-            QStringLiteral("🔍 各向异性过滤"),
+            QStringLiteral("各向异性过滤"),
 
-            QStringLiteral("🔍 異方性フィルタリング")
+            QStringLiteral("異方性フィルタリング")
 
         ));
 
@@ -24808,17 +24910,17 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         auto* aa_menu = context_menu.addMenu(StormLang(
 
-            QStringLiteral("✨ Сглаживание"),
+            QStringLiteral("Сглаживание"),
 
-            QStringLiteral("✨ Anti-Aliasing"),
+            QStringLiteral("Anti-Aliasing"),
 
-            QStringLiteral("✨ Kantenglättung"),
+            QStringLiteral("Kantenglättung"),
 
-            QStringLiteral("✨ Anticrénelage"),
+            QStringLiteral("Anticrénelage"),
 
-            QStringLiteral("✨ 抗锯齿"),
+            QStringLiteral("抗锯齿"),
 
-            QStringLiteral("✨ アンチエイリアス")
+            QStringLiteral("アンチエイリアス")
 
         ));
 
@@ -24942,9 +25044,9 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
             auto* mode_header = filter_menu->addAction(StormLang(
 
-                QStringLiteral("⚡ Режим качества AMD FSR 2.0:"),
+                QStringLiteral("Режим качества AMD FSR 2.0:"),
 
-                QStringLiteral("⚡ AMD FSR 2.0 Quality Mode:")));
+                QStringLiteral("AMD FSR 2.0 Quality Mode:")));
 
             mode_header->setEnabled(false);
 
@@ -25118,17 +25220,17 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         auto* speed_menu = context_menu.addMenu(StormLang(
 
-            QStringLiteral("⚡ Ограничение скорости"),
+            QStringLiteral("Ограничение скорости"),
 
-            QStringLiteral("⚡ Speed Limit"),
+            QStringLiteral("Speed Limit"),
 
-            QStringLiteral("⚡ Geschwindigkeitsbegrenzung"),
+            QStringLiteral("Geschwindigkeitsbegrenzung"),
 
-            QStringLiteral("⚡ Limite de vitesse"),
+            QStringLiteral("Limite de vitesse"),
 
-            QStringLiteral("⚡ 速度限制"),
+            QStringLiteral("速度限制"),
 
-            QStringLiteral("⚡ 速度制限")
+            QStringLiteral("速度制限")
 
         ));
 
@@ -25288,17 +25390,17 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         context_menu.addAction(StormLang(
 
-            QStringLiteral("🔄 Обновить список игр"),
+            QStringLiteral("Обновить список игр"),
 
-            QStringLiteral("🔄 Refresh Game List"),
+            QStringLiteral("Refresh Game List"),
 
-            QStringLiteral("🔄 Spielliste aktualisieren"),
+            QStringLiteral("Spielliste aktualisieren"),
 
-            QStringLiteral("🔄 Actualiser la liste des jeux"),
+            QStringLiteral("Actualiser la liste des jeux"),
 
-            QStringLiteral("🔄 刷新游戏列表"),
+            QStringLiteral("刷新游戏列表"),
 
-            QStringLiteral("🔄 ゲームリストを更新")
+            QStringLiteral("ゲームリストを更新")
 
         ), this, &MainWindow::OnGameListRefresh);
 
@@ -25382,17 +25484,17 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         context_menu.addAction(StormLang(
 
-            QStringLiteral("📁 Установить прошивку из папки..."),
+            QStringLiteral("Установить прошивку из папки..."),
 
-            QStringLiteral("📁 Install Firmware from Folder..."),
+            QStringLiteral("Install Firmware from Folder..."),
 
-            QStringLiteral("📁 Firmware aus Ordner installieren..."),
+            QStringLiteral("Firmware aus Ordner installieren..."),
 
-            QStringLiteral("📁 Installer le firmware depuis un dossier..."),
+            QStringLiteral("Installer le firmware depuis un dossier..."),
 
-            QStringLiteral("📁 从文件夹安装固件..."),
+            QStringLiteral("从文件夹安装固件..."),
 
-            QStringLiteral("📁 フォルダからファームウェアをインストール...")
+            QStringLiteral("フォルダからファームウェアをインストール...")
 
         ), this, &MainWindow::OnInstallFirmware);
 
@@ -25400,17 +25502,17 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         context_menu.addAction(StormLang(
 
-            QStringLiteral("🔑 Онлайн-установка ключей из сети..."),
+            QStringLiteral("Онлайн-установка ключей из сети..."),
 
-            QStringLiteral("🔑 Online Install Keys from Network..."),
+            QStringLiteral("Online Install Keys from Network..."),
 
-            QStringLiteral("🔑 Online-Schlüssel-Installation aus dem Netzwerk..."),
+            QStringLiteral("Online-Schlüssel-Installation aus dem Netzwerk..."),
 
-            QStringLiteral("🔑 Installation en ligne des clés depuis le réseau..."),
+            QStringLiteral("Installation en ligne des clés depuis le réseau..."),
 
-            QStringLiteral("🔑 从网络在线安装密钥..."),
+            QStringLiteral("从网络在线安装密钥..."),
 
-            QStringLiteral("🔑 ネットワークからキーをオンラインインストール...")
+            QStringLiteral("ネットワークからキーをオンラインインストール...")
 
         ), this, &MainWindow::OnInstallKeysOnline);
 
@@ -25432,17 +25534,17 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         context_menu.addAction(StormLang(
 
-            QStringLiteral("🔑 Установить ключи из файла (prod.keys)..."),
+            QStringLiteral("Установить ключи из файла (prod.keys)..."),
 
-            QStringLiteral("🔑 Install Decryption Keys (prod.keys)..."),
+            QStringLiteral("Install Decryption Keys (prod.keys)..."),
 
-            QStringLiteral("🔑 Entschlüsselungsschlüssel installieren (prod.keys)..."),
+            QStringLiteral("Entschlüsselungsschlüssel installieren (prod.keys)..."),
 
-            QStringLiteral("🔑 Installer les clés de déchiffrement (prod.keys)..."),
+            QStringLiteral("Installer les clés de déchiffrement (prod.keys)..."),
 
-            QStringLiteral("🔑 从文件安装解密密钥 (prod.keys)..."),
+            QStringLiteral("从文件安装解密密钥 (prod.keys)..."),
 
-            QStringLiteral("🔑 ファイルから復号キーをインストール (prod.keys)...")
+            QStringLiteral("ファイルから復号キーをインストール (prod.keys)...")
 
         ), this, &MainWindow::OnInstallDecryptionKeys);
 
@@ -25450,17 +25552,17 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         context_menu.addAction(StormLang(
 
-            QStringLiteral("📁 Открыть папку NAND..."),
+            QStringLiteral("Открыть папку NAND..."),
 
-            QStringLiteral("📁 Open NAND Folder..."),
+            QStringLiteral("Open NAND Folder..."),
 
-            QStringLiteral("📁 NAND-Ordner öffnen..."),
+            QStringLiteral("NAND-Ordner öffnen..."),
 
-            QStringLiteral("📁 Ouvrir le dossier NAND..."),
+            QStringLiteral("Ouvrir le dossier NAND..."),
 
-            QStringLiteral("📁 打开 NAND 文件夹..."),
+            QStringLiteral("打开 NAND 文件夹..."),
 
-            QStringLiteral("📁 NAND フォルダを開く...")
+            QStringLiteral("NAND フォルダを開く...")
 
         ), this, &MainWindow::OnOpenNANDFolder);
 
@@ -25520,17 +25622,17 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         context_menu.addAction(StormLang(
 
-            QStringLiteral("⚙️ Настройки сети..."),
+            QStringLiteral("Настройки сети..."),
 
-            QStringLiteral("⚙️ Network Settings..."),
+            QStringLiteral("Network Settings..."),
 
-            QStringLiteral("⚙️ Netzwerkeinstellungen..."),
+            QStringLiteral("Netzwerkeinstellungen..."),
 
-            QStringLiteral("⚙️ Paramètres réseau..."),
+            QStringLiteral("Paramètres réseau..."),
 
-            QStringLiteral("⚙️ 网络设置..."),
+            QStringLiteral("网络设置..."),
 
-            QStringLiteral("⚙️ ネットワーク設定...")
+            QStringLiteral("ネットワーク設定...")
 
         ), this, [this] {
 
@@ -25544,17 +25646,17 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
     context_menu.addAction(StormLang(
 
-        QStringLiteral("⚙️ Настроить подвал..."),
+        QStringLiteral("Настроить подвал..."),
 
-        QStringLiteral("⚙️ Customize Footer..."),
+        QStringLiteral("Customize Footer..."),
 
-        QStringLiteral("⚙️ Fußzeile anpassen..."),
+        QStringLiteral("Fußzeile anpassen..."),
 
-        QStringLiteral("⚙️ Personnaliser le pied de page..."),
+        QStringLiteral("Personnaliser le pied de page..."),
 
-        QStringLiteral("⚙️ 自定义底部栏..."),
+        QStringLiteral("自定义底部栏..."),
 
-        QStringLiteral("⚙️ フッターのカスタマイズ...")
+        QStringLiteral("フッターのカスタマイズ...")
 
     ), this, &MainWindow::ShowFooterCustomizeMenu);
 
@@ -26149,17 +26251,17 @@ void MainWindow::OnCheckFirmwareDecryption() {
 
         auto* file_btn = msg.addButton(StormLang(
 
-            QStringLiteral("📁 Выбрать файл"),
+            QStringLiteral("Выбрать файл"),
 
-            QStringLiteral("📁 Select File"),
+            QStringLiteral("Select File"),
 
-            QStringLiteral("📁 Datei auswählen"),
+            QStringLiteral("Datei auswählen"),
 
-            QStringLiteral("📁 Choisir un fichier"),
+            QStringLiteral("Choisir un fichier"),
 
-            QStringLiteral("📁 选择文件"),
+            QStringLiteral("选择文件"),
 
-            QStringLiteral("📁 ファイルを選択")
+            QStringLiteral("ファイルを選択")
 
         ), QMessageBox::ActionRole);
 
@@ -26263,17 +26365,17 @@ void MainWindow::ShowFirmwareContextMenu() {
 
     context_menu.addAction(StormLang(
 
-        QStringLiteral("📁 Установить прошивку из папки..."),
+        QStringLiteral("Установить прошивку из папки..."),
 
-        QStringLiteral("📁 Install Firmware from Folder..."),
+        QStringLiteral("Install Firmware from Folder..."),
 
-        QStringLiteral("📁 Firmware aus Ordner installieren..."),
+        QStringLiteral("Firmware aus Ordner installieren..."),
 
-        QStringLiteral("📁 Installer le firmware depuis un dossier..."),
+        QStringLiteral("Installer le firmware depuis un dossier..."),
 
-        QStringLiteral("📁 从文件夹安装固件..."),
+        QStringLiteral("从文件夹安装固件..."),
 
-        QStringLiteral("📁 フォルダからファームウェアをインストール...")
+        QStringLiteral("フォルダからファームウェアをインストール...")
 
     ), this, &MainWindow::OnInstallFirmware);
 
@@ -26281,17 +26383,17 @@ void MainWindow::ShowFirmwareContextMenu() {
 
     context_menu.addAction(StormLang(
 
-        QStringLiteral("🔑 Онлайн-установка ключей из сети..."),
+        QStringLiteral("Онлайн-установка ключей из сети..."),
 
-        QStringLiteral("🔑 Online Install Keys from Network..."),
+        QStringLiteral("Online Install Keys from Network..."),
 
-        QStringLiteral("🔑 Online-Schlüssel-Installation aus dem Netzwerk..."),
+        QStringLiteral("Online-Schlüssel-Installation aus dem Netzwerk..."),
 
-        QStringLiteral("🔑 Installation en ligne des clés depuis le réseau..."),
+        QStringLiteral("Installation en ligne des clés depuis le réseau..."),
 
-        QStringLiteral("🔑 从网络在线安装密钥..."),
+        QStringLiteral("从网络在线安装密钥..."),
 
-        QStringLiteral("🔑 ネットワークからキーをオンラインインストール...")
+        QStringLiteral("ネットワークからキーをオンラインインストール...")
 
     ), this, &MainWindow::OnInstallKeysOnline);
 
@@ -26313,17 +26415,17 @@ void MainWindow::ShowFirmwareContextMenu() {
 
     context_menu.addAction(StormLang(
 
-        QStringLiteral("🔑 Установить ключи из файла (prod.keys)..."),
+        QStringLiteral("Установить ключи из файла (prod.keys)..."),
 
-        QStringLiteral("🔑 Install Decryption Keys (prod.keys)..."),
+        QStringLiteral("Install Decryption Keys (prod.keys)..."),
 
-        QStringLiteral("🔑 Entschlüsselungsschlüssel installieren (prod.keys)..."),
+        QStringLiteral("Entschlüsselungsschlüssel installieren (prod.keys)..."),
 
-        QStringLiteral("🔑 Installer les clés de déchiffrement (prod.keys)..."),
+        QStringLiteral("Installer les clés de déchiffrement (prod.keys)..."),
 
-        QStringLiteral("🔑 从文件安装解密密钥 (prod.keys)..."),
+        QStringLiteral("从文件安装解密密钥 (prod.keys)..."),
 
-        QStringLiteral("🔑 ファイルから復号キーをインストール (prod.keys)...")
+        QStringLiteral("ファイルから復号キーをインストール (prod.keys)...")
 
     ), this, &MainWindow::OnInstallDecryptionKeys);
 
@@ -26331,17 +26433,17 @@ void MainWindow::ShowFirmwareContextMenu() {
 
     context_menu.addAction(StormLang(
 
-        QStringLiteral("📁 Открыть папку NAND..."),
+        QStringLiteral("Открыть папку NAND..."),
 
-        QStringLiteral("📁 Open NAND Folder..."),
+        QStringLiteral("Open NAND Folder..."),
 
-        QStringLiteral("📁 NAND-Ordner öffnen..."),
+        QStringLiteral("NAND-Ordner öffnen..."),
 
-        QStringLiteral("📁 Ouvrir le dossier NAND..."),
+        QStringLiteral("Ouvrir le dossier NAND..."),
 
-        QStringLiteral("📁 打开 NAND 文件夹..."),
+        QStringLiteral("打开 NAND 文件夹..."),
 
-        QStringLiteral("📁 NAND フォルダを開く...")
+        QStringLiteral("NAND フォルダを開く...")
 
     ), this, &MainWindow::OnOpenNANDFolder);
 
@@ -28166,19 +28268,19 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
 
 
 
-    auto* title_label = new QLabel(tr("<h2 style='margin:0; color:#00e5ff;'>🎮 %1</h2>").arg(full_display_name), header_card);
+    auto* title_label = new QLabel(tr("<h2 style='margin:0; color:#00e5ff;'>%1</h2>").arg(full_display_name), header_card);
 
     auto* badges_label = new QLabel(tr(
 
         "<span style='background:#1b2438; color:#FFFFFF; padding:4px 9px; border-radius:5px; font-weight:bold;'>ID: %1</span> &nbsp; "
 
-        "<span style='background:#143324; color:#00e676; padding:4px 9px; border-radius:5px; font-weight:bold;'>📦 Дополнений в файле: %2</span> &nbsp; "
+        "<span style='background:#143324; color:#00e676; padding:4px 9px; border-radius:5px; font-weight:bold;'>Дополнений в файле: %2</span> &nbsp; "
 
-        "<span style='background:#142738; color:#00e5ff; padding:4px 9px; border-radius:5px; font-weight:bold;'>🗃️ Всего в базе Tinfoil: %3</span> &nbsp; "
+        "<span style='background:#142738; color:#00e5ff; padding:4px 9px; border-radius:5px; font-weight:bold;'>Всего в базе Tinfoil: %3</span> &nbsp; "
 
-        "<span style='background:#2d2915; color:#ffca28; padding:4px 9px; border-radius:5px; font-weight:bold;'>🆙 Версия игры: %4</span> &nbsp; "
+        "<span style='background:#2d2915; color:#ffca28; padding:4px 9px; border-radius:5px; font-weight:bold;'>Версия игры: %4</span> &nbsp; "
 
-        "<span style='background:#2e183a; color:#e040fb; padding:4px 9px; border-radius:5px; font-weight:bold;'>⚡ Модов: %5</span>")
+        "<span style='background:#2e183a; color:#e040fb; padding:4px 9px; border-radius:5px; font-weight:bold;'>Модов: %5</span>")
 
         .arg(tid_str, QString::number(total_dlcs), tinfoil_badge_text, update_ver_str, QString::number(total_mods)), header_card);
 
@@ -28196,17 +28298,17 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
 
     search_box->setPlaceholderText(StormLang(
 
-        QStringLiteral("🔍 Поиск по названию, описанию или Title ID..."),
+        QStringLiteral("Поиск по названию, описанию или Title ID..."),
 
-        QStringLiteral("🔍 Search by title, description, or Title ID..."),
+        QStringLiteral("Search by title, description, or Title ID..."),
 
-        QStringLiteral("🔍 Suche nach Titel, Beschreibung oder Title-ID..."),
+        QStringLiteral("Suche nach Titel, Beschreibung oder Title-ID..."),
 
-        QStringLiteral("🔍 Rechercher par titre, description ou Title ID..."),
+        QStringLiteral("Rechercher par titre, description ou Title ID..."),
 
-        QStringLiteral("🔍 按名称、描述或 Title ID 搜索..."),
+        QStringLiteral("按名称、描述或 Title ID 搜索..."),
 
-        QStringLiteral("🔍 タイトル、説明、または Title ID で検索...")
+        QStringLiteral("タイトル、説明、または Title ID で検索...")
 
     ));
 
@@ -28221,23 +28323,14 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
     table->setColumnCount(8);
 
     table->setHorizontalHeaderLabels({
-
-        QStringLiteral("№"),
-
-        StormLang(QStringLiteral("Тип"), QStringLiteral("Type"), QStringLiteral("Typ"), QStringLiteral("Type"), QStringLiteral("类型"), QStringLiteral("タイプ")),
-
-        QStringLiteral("Title ID"),
-
-        StormLang(QStringLiteral("Полное название"), QStringLiteral("Full Name"), QStringLiteral("Vollständiger Name"), QStringLiteral("Nom complet"), QStringLiteral("完整名称"), QStringLiteral("完全な名前")),
-
-        StormLang(QStringLiteral("Описание"), QStringLiteral("Description"), QStringLiteral("Beschreibung"), QStringLiteral("Description"), QStringLiteral("描述"), QStringLiteral("説明")),
-
-        StormLang(QStringLiteral("Версия"), QStringLiteral("Version"), QStringLiteral("Version"), QStringLiteral("Version"), QStringLiteral("版本"), QStringLiteral("バージョン")),
-
-        StormLang(QStringLiteral("Внутренняя версия"), QStringLiteral("Internal Version"), QStringLiteral("Interne Version"), QStringLiteral("Version interne"), QStringLiteral("内部版本"), QStringLiteral("内部バージョン")),
-
-        StormLang(QStringLiteral("Статус"), QStringLiteral("Status"), QStringLiteral("Status"), QStringLiteral("Statut"), QStringLiteral("状态"), QStringLiteral("ステータス"))
-
+        StormLangStorm11(QStringLiteral("№"), QStringLiteral("#"), QStringLiteral("Nr."), QStringLiteral("N°"), QStringLiteral("序号"), QStringLiteral("번호"), QStringLiteral("番号"), QStringLiteral("N.º"), QStringLiteral("N."), QStringLiteral("N.º"), QStringLiteral("क्र.")),
+        StormLangStorm11(QStringLiteral("Тип"), QStringLiteral("Type"), QStringLiteral("Typ"), QStringLiteral("Type"), QStringLiteral("类型"), QStringLiteral("유형"), QStringLiteral("タイプ"), QStringLiteral("Tipo"), QStringLiteral("Tipo"), QStringLiteral("Tipo"), QStringLiteral("प्रकार")),
+        StormLangStorm11(QStringLiteral("Title ID"), QStringLiteral("Title ID"), QStringLiteral("Titel-ID"), QStringLiteral("ID de titre"), QStringLiteral("Title ID"), QStringLiteral("타이틀 ID"), QStringLiteral("タイトル ID"), QStringLiteral("ID de título"), QStringLiteral("ID titolo"), QStringLiteral("ID do título"), QStringLiteral("शीर्षक आईडी")),
+        StormLangStorm11(QStringLiteral("Полное название"), QStringLiteral("Full Name"), QStringLiteral("Vollständiger Name"), QStringLiteral("Nom complet"), QStringLiteral("完整名称"), QStringLiteral("전체 이름"), QStringLiteral("完全な名前"), QStringLiteral("Nombre completo"), QStringLiteral("Nome completo"), QStringLiteral("Nome completo"), QStringLiteral("पूरा नाम")),
+        StormLangStorm11(QStringLiteral("Описание"), QStringLiteral("Description"), QStringLiteral("Beschreibung"), QStringLiteral("Description"), QStringLiteral("描述"), QStringLiteral("설명"), QStringLiteral("説明"), QStringLiteral("Descripción"), QStringLiteral("Descrizione"), QStringLiteral("Descrição"), QStringLiteral("विवरण")),
+        StormLangStorm11(QStringLiteral("Версия"), QStringLiteral("Version"), QStringLiteral("Version"), QStringLiteral("Version"), QStringLiteral("版本"), QStringLiteral("버전"), QStringLiteral("バージョン"), QStringLiteral("Versión"), QStringLiteral("Versione"), QStringLiteral("Versão"), QStringLiteral("संस्करण")),
+        StormLangStorm11(QStringLiteral("Внутренняя версия"), QStringLiteral("Internal Version"), QStringLiteral("Interne Version"), QStringLiteral("Version interne"), QStringLiteral("内部版本"), QStringLiteral("내부 버전"), QStringLiteral("内部バージョン"), QStringLiteral("Versión interna"), QStringLiteral("Versione interna"), QStringLiteral("Versão interna"), QStringLiteral("आंतरिक संस्करण")),
+        StormLangStorm11(QStringLiteral("Статус"), QStringLiteral("Status"), QStringLiteral("Status"), QStringLiteral("Statut"), QStringLiteral("状态"), QStringLiteral("상태"), QStringLiteral("ステータス"), QStringLiteral("Estado"), QStringLiteral("Stato"), QStringLiteral("Status"), QStringLiteral("स्थिति"))
     });
 
     table->setWordWrap(true);
@@ -28410,7 +28503,7 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
 
         if (r.status == tr("Отсутствует")) {
 
-            item7->setText(tr("❌ Отсутствует"));
+            item7->setText(tr("Отсутствует"));
 
             item7->setForeground(QColor("#ef4444"));
 
@@ -28518,7 +28611,7 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
 
         QMenu menu(table);
 
-        menu.addAction(QObject::tr("📋 Копировать ячейку"), [item] {
+        menu.addAction(QObject::tr("Копировать ячейку"), [item] {
 
             QGuiApplication::clipboard()->setText(item->text());
 
@@ -28530,7 +28623,7 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
 
         if (tid_item) {
 
-            menu.addAction(QObject::tr("📋 Копировать Title ID"), [tid_item] {
+            menu.addAction(QObject::tr("Копировать Title ID"), [tid_item] {
 
                 QGuiApplication::clipboard()->setText(tid_item->text());
 
@@ -28542,7 +28635,7 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
 
         if (name_item) {
 
-            menu.addAction(QObject::tr("📋 Копировать название"), [name_item] {
+            menu.addAction(QObject::tr("Копировать название"), [name_item] {
 
                 QGuiApplication::clipboard()->setText(name_item->text());
 
@@ -28554,7 +28647,7 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
 
         if (desc_item) {
 
-            menu.addAction(QObject::tr("📋 Копировать описание"), [desc_item] {
+            menu.addAction(QObject::tr("Копировать описание"), [desc_item] {
 
                 QGuiApplication::clipboard()->setText(desc_item->text());
 
@@ -28564,7 +28657,7 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
 
         menu.addSeparator();
 
-        menu.addAction(QObject::tr("📋 Копировать строку целиком"), [table, row] {
+        menu.addAction(QObject::tr("Копировать строку целиком"), [table, row] {
 
             QStringList cell_texts;
 
@@ -28642,17 +28735,17 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
 
     auto* copy_btn = new QPushButton(StormLang(
 
-        QStringLiteral("📋 Копировать список"),
+        QStringLiteral("Копировать список"),
 
-        QStringLiteral("📋 Copy List"),
+        QStringLiteral("Copy List"),
 
-        QStringLiteral("📋 Liste kopieren"),
+        QStringLiteral("Liste kopieren"),
 
-        QStringLiteral("📋 Copier la liste"),
+        QStringLiteral("Copier la liste"),
 
-        QStringLiteral("📋 复制列表"),
+        QStringLiteral("复制列表"),
 
-        QStringLiteral("📋 リストをコピー")
+        QStringLiteral("リストをコピー")
 
     ), &dlg);
 
@@ -28664,17 +28757,17 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
 
         copy_btn->setText(StormLang(
 
-            QStringLiteral("✅ Скопировано в буфер обмена!"),
+            QStringLiteral("Скопировано в буфер обмена!"),
 
-            QStringLiteral("✅ Copied to clipboard!"),
+            QStringLiteral("Copied to clipboard!"),
 
-            QStringLiteral("✅ In Zwischenablage kopiert!"),
+            QStringLiteral("In Zwischenablage kopiert!"),
 
-            QStringLiteral("✅ Copié dans le presse-papiers !"),
+            QStringLiteral("Copié dans le presse-papiers !"),
 
-            QStringLiteral("✅ 已复制到剪贴板！"),
+            QStringLiteral("已复制到剪贴板！"),
 
-            QStringLiteral("✅ クリップボードにコピーしました！")
+            QStringLiteral("クリップボードにコピーしました！")
 
         ));
 
@@ -28682,17 +28775,17 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
 
             if (copy_btn) copy_btn->setText(StormLang(
 
-                QStringLiteral("📋 Копировать список"),
+                QStringLiteral("Копировать список"),
 
-                QStringLiteral("📋 Copy List"),
+                QStringLiteral("Copy List"),
 
-                QStringLiteral("📋 Liste kopieren"),
+                QStringLiteral("Liste kopieren"),
 
-                QStringLiteral("📋 Copier la liste"),
+                QStringLiteral("Copier la liste"),
 
-                QStringLiteral("📋 复制列表"),
+                QStringLiteral("复制列表"),
 
-                QStringLiteral("📋 リストをコピー")
+                QStringLiteral("リストをコピー")
 
             ));
 
@@ -28704,17 +28797,17 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
 
     auto* manage_btn = new QPushButton(StormLang(
 
-        QStringLiteral("⚙️ Управление дополнениями..."),
+        QStringLiteral("Управление дополнениями..."),
 
-        QStringLiteral("⚙️ Manage Add-ons..."),
+        QStringLiteral("Manage Add-ons..."),
 
-        QStringLiteral("⚙️ Add-ons verwalten..."),
+        QStringLiteral("Add-ons verwalten..."),
 
-        QStringLiteral("⚙️ Gérer les extensions..."),
+        QStringLiteral("Gérer les extensions..."),
 
-        QStringLiteral("⚙️ 管理附加组件..."),
+        QStringLiteral("管理附加组件..."),
 
-        QStringLiteral("⚙️ アドオンを管理...")
+        QStringLiteral("アドオンを管理...")
 
     ), &dlg);
 

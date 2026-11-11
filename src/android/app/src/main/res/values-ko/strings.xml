@@ -750,17 +750,17 @@
     <string name="license_fidelityfx_fsr_description">AMD 고품질 업스케일링</string>
     <string name="add_cheat">치트 추가</string>
     <string name="auto_optimization_apply">모드 적용</string>
-    <string name="auto_optimization_mode_normal">⚖️ 보통 (권장)</string>
+    <string name="auto_optimization_mode_normal">보통 (권장)</string>
     <string name="downloading_cheats">치트 데이터베이스 다운로드 중…</string>
     <string name="auto_optimization_mode_normal_desc" formatted="false">그래픽 품질, 부드러움 및 안정성의 완벽한 균형. 1X (720p/1080p), FSR 85%, FXAA, 균형 배리어.</string>
-    <string name="auto_optimization_mode_accurate">💎 최고 화질 / 정확</string>
+    <string name="auto_optimization_mode_accurate">최고 화질 / 정확</string>
     <string name="auto_optimization_mode_accurate_desc">최고 그래픽 품질, 1.5X/1X 해상도, 안전한 DMA, 엄격한 GPU 배리어, SMAA, 16x 비등방성.</string>
     <string name="dma_accuracy_high">높음</string>
     <string name="vram_usage_mode_aggressive">적극적 (최고 성능)</string>
     <string name="auto_optimization_mode_fast_desc">최대 FPS, 최소 발열 및 배터리 절약. 0.75X 해상도, 절약형 VRAM, 빠른 GPU 배리어, NCE.</string>
     <string name="app_language_system">시스템 기본값</string>
-    <string name="auto_optimization_mode_fast">⚡ 고속 / 절약</string>
-    <string name="cheat_status_active">⚡ 게임 내 적용 중</string>
+    <string name="auto_optimization_mode_fast">고속 / 절약</string>
+    <string name="cheat_status_active">게임 내 적용 중</string>
     <string name="translator_enable_floating_button">플로팅 버튼 표시</string>
     <string name="amiibo">Amiibo</string>
     <string name="eco_frame_pacing_description">프레임 대기 중 불필요한 CPU 회전을 제거하여 60 FPS를 유지하며 발열을 낮춥니다.</string>
@@ -785,7 +785,7 @@
     <string name="cheats_not_found">이 게임의 치트를 찾을 수 없습니다. 직접 코드를 추가할 수 있습니다.</string>
     <string name="overlay_skin_theme_description">가상 버튼과 조이스틱의 색상 테마 및 스타일을 선택합니다</string>
     <string name="cheats_count_summary">총 치트: %1$d | 활성화: %2$d</string>
-    <string name="auto_optimization_applied_toast">⚡ 자동 최적화 적용 완료: "%1$s" 프로필!</string>
+    <string name="auto_optimization_applied_toast">자동 최적화 적용 완료: "%1$s" 프로필!</string>
     <string name="eco_thermal_mode">에코 / 발열 제어 모드</string>
     <string name="dma_accuracy_normal">보통 (권장)</string>
     <string name="cheats_manager_title">치트 관리자</string>
@@ -810,9 +810,9 @@
     <string name="vulkan_pipeline_cache">Vulkan 파이프라인 캐시</string>
 
     <string name="memory_12gb_not_enough_ram">12GB DRAM 모드는 최소 12GB의 물리적 RAM이 있는 기기가 필요합니다.</string>
-    <string name="game_fix_apply_and_launch">⚡ 수정 사항 적용 및 실행</string>
+    <string name="game_fix_apply_and_launch">수정 사항 적용 및 실행</string>
     <string name="game_fix_dont_ask_again">이 게임에 대해 다시 묻지 않음</string>
-    <string name="game_fix_recommended_header">⚡ STORM SWITCH 권장 설정</string>
+    <string name="game_fix_recommended_header">STORM SWITCH 권장 설정</string>
     <string name="game_fix_skip_and_launch">변경 없이 실행</string>
     <string name="game_fix_issues_header">⚠️ 알려진 문제 및 버그</string>
     <string name="memory_12gb">12GB (극한)</string>
@@ -1402,16 +1402,16 @@
     <string name="apply_global_to_all_games_confirm_title">Apply to all games?</string>
     <string name="apply_global_to_all_games_confirm_message">Do you want to reset custom profiles for all games? Current global settings will be applied across your entire game library.</string>
     <string name="apply_global_to_all_games_positive">Apply to all</string>
-    <string name="apply_global_to_all_games_success">⚡ Global settings successfully applied to all games (%d profiles reset)</string>
+    <string name="apply_global_to_all_games_success">Global settings successfully applied to all games (%d profiles reset)</string>
     <string name="settings_profiles_title">Settings Profiles</string>
     <string name="settings_profiles_description">Create, save, quickly load, rename, export and share settings profiles.</string>
-    <string name="profile_preset_fast_title">⚡ Fast (Maximum FPS and Low Temp)</string>
+    <string name="profile_preset_fast_title">Fast (Maximum FPS and Low Temp)</string>
     <string name="profile_preset_fast_desc">0.75X resolution, fast JIT, async shaders, disabled reactive flushing, 6GB DRAM, cool SoC.</string>
-    <string name="profile_preset_balanced_title">⚖️ Balanced (Recommended)</string>
+    <string name="profile_preset_balanced_title">Balanced (Recommended)</string>
     <string name="profile_preset_balanced_desc" formatted="false">1.0X (720p/1080p), FSR 85%, fast JIT, async shaders, EDS1 dynamic state, 6GB DRAM.</string>
-    <string name="profile_preset_accurate_title">💎 High Quality (Accurate)</string>
+    <string name="profile_preset_accurate_title">High Quality (Accurate)</string>
     <string name="profile_preset_accurate_desc">1.0X-1.5X, high GPU accuracy, strict sync, FXAA/SMAA, 8GB DRAM.</string>
-    <string name="profile_preset_saver_title">🔋 Battery Saver and Cool SoC</string>
+    <string name="profile_preset_saver_title">Battery Saver and Cool SoC</string>
     <string name="profile_preset_saver_desc" formatted="false">0.75X resolution, 100% speed limit, battery-efficient VRAM, minimum thermal output.</string>
     <string name="profile_btn_apply">Apply</string>
     <string name="profile_btn_share">Share</string>
@@ -1425,7 +1425,7 @@
     <string name="profile_rename_title">Rename Profile</string>
     <string name="profile_delete_title">Delete Profile</string>
     <string name="profile_delete_confirmation">Are you sure you want to delete profile \"%1$s\"?</string>
-    <string name="profile_applied_toast">⚡ Profile \"%1$s\" applied successfully!</string>
+    <string name="profile_applied_toast">Profile \"%1$s\" applied successfully!</string>
     <string name="profile_apply_failed">Failed to apply settings profile.</string>
     <string name="profile_saved_toast">Profile \"%1$s\" saved!</string>
     <string name="profile_share_title">Share Settings Profile</string>
@@ -1440,8 +1440,8 @@
     <string name="storm_save_replace_current">Replace current</string>
     <string name="storm_save_replace_remote">Replace remote</string>
     <string name="storm_save_keep_both">Keep both variants</string>
-    <string name="gamebanana_tab_online">🌐 GameBanana catalog</string>
-    <string name="gamebanana_tab_installed">💾 Installed</string>
+    <string name="gamebanana_tab_online">GameBanana catalog</string>
+    <string name="gamebanana_tab_installed">Installed</string>
     <string name="gamebanana_no_installed_mods">No mods installed for this game</string>
     <string name="gamebanana_installed_stats">Total: %1$d | Enabled: %2$d | Disabled: %3$d</string>
     <string name="gamebanana_mod_deleted">Mod \"%1$s\" deleted</string>
@@ -1555,7 +1555,7 @@
     <string name="storm_sync_saves_count_zero">Game saves (0)</string>
     <string name="storm_sync_saves_count_fmt">Game saves (%1$d)</string>
     <string name="storm_sync_saves_filtered_fmt">Game saves (%1$d of %2$d)</string>
-    <string name="storm_sync_btn_sync_all">⚡ 모두 동기화</string>
+    <string name="storm_sync_btn_sync_all">모두 동기화</string>
     <string name="storm_sync_search_hint">Search saves by title or ID...</string>
     <string name="storm_sync_empty_saves">No saves found. Connect to a device or start a game.</string>
     <string name="storm_sync_conflict_desc">Different save versions were detected on the current and remote devices. Compare creation times and choose an action.</string>
@@ -1692,12 +1692,12 @@
     <string name="cheat_item_desc_placeholder">Description</string>
     <string name="cheat_btn_edit_qty">✏️ Value</string>
     <string name="cheat_header_version_prefix"> | Version: </string>
-    <string name="cheat_header_in_game"> | ⚡ In Game</string>
+    <string name="cheat_header_in_game"> | In Game</string>
     <string name="cheat_header_offline"> | ⚪ Offline</string>
     <string name="cheat_header_dmnt_active">
-⚡ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
+Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="cheat_build_all_versions">All versions</string>
-    <string name="cheat_toast_activated_ingame">⚡ Cheat codes activated in game!</string>
+    <string name="cheat_toast_activated_ingame">Cheat codes activated in game!</string>
     <string name="cheat_toast_saved">✅ Cheat codes saved successfully</string>
     <string name="cheat_add_name_hint">Cheat name (e.g. Infinite Lives)</string>
     <string name="cheat_add_code_hint">Atmosphere format code (04000000 12345678 ...)</string>
@@ -1755,7 +1755,7 @@
     <string name="log_viewer_chip_errors">🚨 Errors</string>
     <string name="log_viewer_chip_warnings">⚠️ Warnings</string>
     <string name="log_viewer_chip_info">ℹ️ Info</string>
-    <string name="log_viewer_status_ingame">⚡ In Game</string>
+    <string name="log_viewer_status_ingame">In Game</string>
     <string name="log_viewer_status_offline">⚪ Offline</string>
     <string name="log_viewer_toast_refreshing">🔄 Refreshing log...</string>
     <string name="log_viewer_stats_total_fmt">Total lines: %1$d | Size: %2$d KB</string>
@@ -1878,11 +1878,11 @@
     <string name="translator_toast_no_text_screen">No text detected on screen</string>
     <string name="translator_overlay_region_fmt">Region %1$d</string>
     <string name="translator_overlay_btn_add">+ Add region</string>
-    <string name="translator_overlay_btn_clear">🧹 Clear</string>
+    <string name="translator_overlay_btn_clear">Clear</string>
     <string name="translator_overlay_btn_save">💾 Save</string>
-    <string name="translator_overlay_btn_close">✕ Close</string>
-    <string name="translator_snack_auto_on">⚡ Auto-translation enabled</string>
-    <string name="translator_snack_auto_off">⚡ Auto-translation disabled</string>
+    <string name="translator_overlay_btn_close">Close</string>
+    <string name="translator_snack_auto_on">Auto-translation enabled</string>
+    <string name="translator_snack_auto_off">Auto-translation disabled</string>
     <string name="translator_snack_tts_on">🔊 TTS voice readout enabled</string>
     <string name="translator_snack_tts_off">🔇 TTS voice readout disabled</string>
     <string name="translator_snack_float_on">👁️ Floating button shown</string>
@@ -1890,7 +1890,7 @@
     <string name="translator_dialog_select_model">🤖 Select translation model</string>
     <string name="translator_toast_model_selected_fmt">Translation model: %1$s</string>
     <string name="sysinfo_sec_device">📱  DEVICE &amp; SYSTEM</string>
-    <string name="sysinfo_sec_cpu">⚡  PROCESSOR (CPU / SOC)</string>
+    <string name="sysinfo_sec_cpu"> PROCESSOR (CPU / SOC)</string>
     <string name="sysinfo_sec_gpu">🎮  GRAPHICS (GPU &amp; VULKAN)</string>
     <string name="sysinfo_sec_ram">💾  SYSTEM MEMORY (RAM)</string>
     <string name="sysinfo_lbl_manufacturer">• Manufacturer: </string>
@@ -1914,7 +1914,7 @@
     <string name="sysinfo_lbl_low_mem_thresh">• Low Memory Threshold: </string>
     <string name="emulation_cooling_paused_title">❄️ Game paused — cooling down device</string>
     <string name="emulation_cooling_temp_default">🌡️ Temperature: --°C ➔ Target: 36.5°C</string>
-    <string name="emulation_cooling_chipset_unloaded">⚡ Chipset load removed (&lt; 1 W)</string>
+    <string name="emulation_cooling_chipset_unloaded">Chipset load removed (&lt; 1 W)</string>
     <string name="emulation_cooling_done_fmt">✅ Cooling complete: %1$s°C</string>
     <string name="emulation_cooling_temp_fmt">🌡️ Temperature: %1$s°C ➔ Target: %2$s°C</string>
     <string name="emulation_cooling_in_progress">🌡️ Cooling down chipset</string>
@@ -1941,9 +1941,9 @@
     <string name="gamebanana_no_mod_desc">No mod description available.</string>
     <string name="gamebanana_avail_files_header">
 📦 Available files for download:</string>
-    <string name="game_fix_toast_autofix_custom">⚡ Auto-Fix: Applied with your custom settings preserved</string>
-    <string name="game_fix_toast_autofix_clean">⚡ Auto-Fix: Clean reference profile applied</string>
-    <string name="game_fix_toast_custom_saved">⚡ Auto-Fix: Custom settings preserved</string>
+    <string name="game_fix_toast_autofix_custom">Auto-Fix: Applied with your custom settings preserved</string>
+    <string name="game_fix_toast_autofix_clean">Auto-Fix: Clean reference profile applied</string>
+    <string name="game_fix_toast_custom_saved">Auto-Fix: Custom settings preserved</string>
     <string name="game_fix_toast_launch_custom">🎮 Custom Settings: Launching with your profile</string>
     <string name="game_fix_toast_launch_global">🌐 Global Settings: Launching with global settings</string>
     <string name="overlay_style_neon_glow">Neon Cyber Glow (3D)</string>
@@ -2094,8 +2094,8 @@
 
     <string name="performance_preset">성능 프리셋</string>
     <string name="performance_preset_description">성능, 배터리 소모 및 화질의 균형을 맞춘 최적화 프리셋을 선택합니다</string>
-    <string name="performance_preset_battery">🔋 배터리 절약</string>
-    <string name="performance_preset_balanced">⚖️ 균형 (권장)</string>
+    <string name="performance_preset_battery">배터리 절약</string>
+    <string name="performance_preset_balanced">균형 (권장)</string>
     <string name="performance_preset_quality">🚀 최고 품질</string>
     <string name="performance_preset_custom">⚙️ 사용자 지정</string>
     <string name="performance_preset_applied">성능 프리셋이 적용되었습니다</string>
@@ -2113,4 +2113,33 @@
     <string name="ui_design_style_aurora">STORM AURORA QUANTUM</string>
     <string name="ui_design_style_orbital">STORM ORBITAL SPATIAL UI</string>
     <string name="ui_design_style_chrono">STORM CHRONO-NEXUS COMMANDER</string>
+
+    <string name="enable_all_cheats">모든 치트 활성화</string>
+    <string name="disable_all_cheats">모든 치트 비활성화</string>
+    <string name="unnamed_cheat">이름 없는 치트</string>
+    <string name="enable_cheats_by_default">기본값으로 치트 활성화</string>
+    <string name="enable_cheats_by_default_description">게임 시작 시 일반 치트를 자동으로 활성화합니다</string>
+    <string name="storm_thermal_governor">STORM Thermal Governor</string>
+    <string name="storm_thermal_governor_description">프레임 드랍 없이 최대 유지 클럭을 지켜주는 지능형 발열 제어</string>
+    <string name="storm_lowend_turbo">STORM Low-End Turbo</string>
+    <string name="storm_lowend_turbo_description">보급형 기기를 위한 최적화된 스레드 및 버퍼 스케줄링</string>
+    <string name="auto_60fps_unlock">자동 60 FPS 해제</string>
+    <string name="auto_60fps_unlock_description">지원되는 게임에서 60 FPS를 자동으로 잠금 해제합니다</string>
+    <string name="auto_aspect_ratio_patch">자동 화면 비율 패치</string>
+    <string name="auto_aspect_ratio_patch_description">와이드 및 울트라와이드 화면에 맞춰 렌더링 비율을 자동 조정합니다</string>
+    <string name="storm_prof_presets_count_default">기본 프리셋: 4 • 사용자 정의: 0</string>
+    <string name="save_state_slot_restored_success">슬롯 %1$d 백업에서 성공적으로 복원되었습니다!</string>
+    <string name="save_state_slot_restore_error">슬롯 복원 오류: %1$s</string>
+    <string name="save_state_undo_action">실행 취소</string>
+    <string name="save_state_slot_empty_undo_available">비어 있음 • 실행 취소 가능 (카드 길게 누르기)</string>
+    <string name="save_state_restore_slot_title">슬롯 %1$d 복원</string>
+    <string name="save_state_restore_slot_message">슬롯 %1$d 세이브 상태를 백업 (.undo.bak)에서 복원하시겠습니까?</string>
+    <string name="save_state_restore_button">복원</string>
+    <string name="storm_driver_10_active">STORM DRIVER 10.0.0 (활성)</string>
+    <string name="storm_driver_already_active">STORM DRIVER 10.0.0이 이미 활성화되어 있습니다!</string>
+    <string name="added">추가됨</string>
+    <string name="pagination_first">&lt;&lt;</string>
+    <string name="pagination_prev">&lt;</string>
+    <string name="pagination_next">&gt;</string>
+    <string name="copy">복사</string>
 </resources>

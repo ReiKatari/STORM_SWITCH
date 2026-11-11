@@ -113,6 +113,9 @@ class QuickSettings(val emulationFragment: EmulationFragment) {
             radioButton.setOnCheckedChangeListener { _, isChecked ->
                 if (isChecked) {
                     ensureCustomConfigLoaded()
+                    if (NativeConfig.isPerGameConfigLoaded()) {
+                        setting.global = false
+                    }
                     setting.setInt(values[index])
                     saveSettings()
                     valueView.text = optionName
@@ -164,6 +167,9 @@ class QuickSettings(val emulationFragment: EmulationFragment) {
 
         switchView.setOnCheckedChangeListener { _, isChecked ->
             ensureCustomConfigLoaded()
+            if (NativeConfig.isPerGameConfigLoaded()) {
+                setting.global = false
+            }
             setting.setBoolean(isChecked)
             saveSettings()
             onValueChanged?.invoke(isChecked)
@@ -249,6 +255,9 @@ class QuickSettings(val emulationFragment: EmulationFragment) {
         slider.addOnChangeListener { _, value, changed ->
             if (changed) {
                 ensureCustomConfigLoaded()
+                if (NativeConfig.isPerGameConfigLoaded()) {
+                    setting.global = false
+                }
                 val intValue = value.toInt()
                 when (setting) {
                     is AbstractShortSetting -> setting.setShort(intValue.toShort())

@@ -90,7 +90,8 @@
                 android:layout_height="wrap_content"
                 android:inputType="textCapSentences"
                 android:maxLines="1"
-                android:singleLine="true"
+                android:ellipsize="end"
+                android:scrollHorizontally="true"
                 android:textColor="?attr/colorOnSurface"
                 android:textColorHint="?attr/colorOnSurfaceVariant"
                 android:textSize="14sp" />

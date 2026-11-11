@@ -69,9 +69,15 @@ VkSurfaceFormatKHR ChooseSwapSurfaceFormat(vk::Span<VkSurfaceFormatKHR> formats)
 static VkPresentModeKHR ChooseSwapPresentMode(bool has_imm, bool has_mailbox,
                                               bool has_fifo_relaxed) {
 #ifdef __ANDROID__
+    if (Settings::values.low_latency_display.GetValue() && has_mailbox) {
+        return VK_PRESENT_MODE_MAILBOX_KHR;
+    }
     // On Android, force FIFO present mode to eliminate frame-pacing judder, tearing, and thermal spikes
     return VK_PRESENT_MODE_FIFO_KHR;
 #else
+    if (Settings::values.low_latency_display.GetValue() && has_mailbox) {
+        return VK_PRESENT_MODE_MAILBOX_KHR;
+    }
     // Desktop: respect user VSync choice independently of speed limit / turbo mode
     Settings::VSyncMode setting = Settings::values.vsync_mode.GetValue();
     if (Settings::values.frame_gen.GetValue()) {
@@ -301,16 +307,22 @@ void Swapchain::CreateSwapchain(const VkSurfaceCapabilitiesKHR& capabilities) {
     present_mode = ChooseSwapPresentMode(has_imm, has_mailbox, has_fifo_relaxed);
 
     u32 requested_image_count{capabilities.minImageCount + 1};
-    // Ensure Triple buffering if possible.
-    if (capabilities.maxImageCount > 0) {
-        if (requested_image_count > capabilities.maxImageCount) {
+    if (Settings::values.low_latency_display.GetValue()) {
+        if (capabilities.maxImageCount > 0 && requested_image_count > capabilities.maxImageCount) {
             requested_image_count = capabilities.maxImageCount;
-        } else {
-            requested_image_count =
-                (std::max)(requested_image_count, (std::min)(3U, capabilities.maxImageCount));
         }
     } else {
-        requested_image_count = (std::max)(requested_image_count, 3U);
+        // Ensure Triple buffering if possible.
+        if (capabilities.maxImageCount > 0) {
+            if (requested_image_count > capabilities.maxImageCount) {
+                requested_image_count = capabilities.maxImageCount;
+            } else {
+                requested_image_count =
+                    (std::max)(requested_image_count, (std::min)(3U, capabilities.maxImageCount));
+            }
+        } else {
+            requested_image_count = (std::max)(requested_image_count, 3U);
+        }
     }
     VkImageUsageFlags image_usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
     if (capabilities.supportedUsageFlags != 0) {

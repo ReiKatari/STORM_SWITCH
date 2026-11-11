@@ -40,6 +40,7 @@ public:
 protected:
     void showEvent(QShowEvent* ev) override;
     void hideEvent(QHideEvent* ev) override;
+    void keyPressEvent(QKeyEvent* ev) override;
 
 private:
     /// Redirects input from the widget to the TAS driver

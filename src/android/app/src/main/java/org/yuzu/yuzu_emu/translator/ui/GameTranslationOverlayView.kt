@@ -167,6 +167,36 @@ class GameTranslationOverlayView @JvmOverloads constructor(
     }
 
     init {
+        val primary = try {
+            org.yuzu.yuzu_emu.utils.ThemeHelper.getColorFromAttr(context, com.google.android.material.R.attr.colorPrimary).let {
+                if (it != 0) it else Color.parseColor("#00E5FF")
+            }
+        } catch (_: Throwable) { Color.parseColor("#00E5FF") }
+
+        val surface = try {
+            org.yuzu.yuzu_emu.utils.ThemeHelper.getColorFromAttr(context, com.google.android.material.R.attr.colorSurface).let {
+                if (it != 0) it else Color.parseColor("#0F172A")
+            }
+        } catch (_: Throwable) { Color.parseColor("#0F172A") }
+
+        val error = try {
+            org.yuzu.yuzu_emu.utils.ThemeHelper.getColorFromAttr(context, com.google.android.material.R.attr.colorError).let {
+                if (it != 0) it else Color.parseColor("#EF4444")
+            }
+        } catch (_: Throwable) { Color.parseColor("#EF4444") }
+
+        regionBorderPaint.color = primary
+        regionHandlePaint.color = primary
+        regionBadgeBgPaint.color = androidx.core.graphics.ColorUtils.setAlphaComponent(surface, 230)
+        regionBadgeTextPaint.color = primary
+        closeBtnPaint.color = androidx.core.graphics.ColorUtils.setAlphaComponent(error, 204)
+        dockBtnPaint.color = androidx.core.graphics.ColorUtils.setAlphaComponent(surface, 230)
+        dockBtnBorderPaint.color = androidx.core.graphics.ColorUtils.setAlphaComponent(primary, 128)
+        floatBtnPaint.color = androidx.core.graphics.ColorUtils.setAlphaComponent(surface, 230)
+        floatBtnGlowPaint.color = androidx.core.graphics.ColorUtils.setAlphaComponent(primary, 77)
+        floatBtnStrokePaint.color = primary
+        floatBtnTextPaint.color = primary
+
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
         floatBtnX = prefs.getFloat("translator_float_btn_x", 70f)
         floatBtnY = prefs.getFloat("translator_float_btn_y", 280f)
@@ -440,9 +470,20 @@ class GameTranslationOverlayView @JvmOverloads constructor(
 
         val dockRect = RectF(startX, startY, startX + dockW, startY + totalH)
         canvas.drawRoundRect(dockRect, 20f, 20f, shadowPaint)
-        bgPaint.color = Color.parseColor("#E60F172A")
+        val dockPrimary = try {
+            org.yuzu.yuzu_emu.utils.ThemeHelper.getColorFromAttr(context, com.google.android.material.R.attr.colorPrimary).let {
+                if (it != 0) it else Color.parseColor("#00E5FF")
+            }
+        } catch (_: Throwable) { Color.parseColor("#00E5FF") }
+
+        val dockSurface = try {
+            org.yuzu.yuzu_emu.utils.ThemeHelper.getColorFromAttr(context, com.google.android.material.R.attr.colorSurface).let {
+                if (it != 0) it else Color.parseColor("#0F172A")
+            }
+        } catch (_: Throwable) { Color.parseColor("#0F172A") }
+        bgPaint.color = androidx.core.graphics.ColorUtils.setAlphaComponent(dockSurface, 230)
         canvas.drawRoundRect(dockRect, 20f, 20f, bgPaint)
-        borderPaint.color = Color.parseColor("#4D00E5FF")
+        borderPaint.color = androidx.core.graphics.ColorUtils.setAlphaComponent(dockPrimary, 77)
         canvas.drawRoundRect(dockRect, 20f, 20f, borderPaint)
 
         var curY = startY + padV

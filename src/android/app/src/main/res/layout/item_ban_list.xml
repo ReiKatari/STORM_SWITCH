@@ -24,7 +24,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_unban"
-        style="@style/Widget.Material3.Button.TextButton"
+        style="@style/StormButton.Faceted.Secondary"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/multiplayer_unban"

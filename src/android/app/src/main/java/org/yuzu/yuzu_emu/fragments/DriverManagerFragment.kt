@@ -431,7 +431,7 @@ class DriverManagerFragment : Fragment() {
                          activePath.contains("10.0", ignoreCase = true)
 
         if (is10Active) {
-            binding.buttonInstallStormDriver.text = "⚡ STORM DRIVER 10.0.0 (Активен)"
+            binding.buttonInstallStormDriver.text = "STORM DRIVER 10.0.0 (Активен)"
         } else {
             binding.buttonInstallStormDriver.text = getString(R.string.install_storm_driver_10)
         }
@@ -447,7 +447,7 @@ class DriverManagerFragment : Fragment() {
             if (meta.name != null) {
                 val currentPath = StringSetting.DRIVER_PATH.getString()
                 if (currentPath.equals(storagePath, ignoreCase = true)) {
-                    android.widget.Toast.makeText(requireContext(), "⚡ STORM DRIVER 10.0.0 уже активен!", android.widget.Toast.LENGTH_SHORT).show()
+                    android.widget.Toast.makeText(requireContext(), "STORM DRIVER 10.0.0 уже активен!", android.widget.Toast.LENGTH_SHORT).show()
                     return
                 }
                 promptDriverApplication(storagePath, 1)

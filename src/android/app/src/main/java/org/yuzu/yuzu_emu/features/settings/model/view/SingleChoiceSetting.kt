@@ -32,10 +32,14 @@ class SingleChoiceSetting(
             else -> -1
         }
 
-    fun setSelectedValue(value: Int) =
+    fun setSelectedValue(value: Int) {
+        if (org.yuzu.yuzu_emu.utils.NativeConfig.isPerGameConfigLoaded()) {
+            setting.global = false
+        }
         when (setting) {
             is AbstractIntSetting -> setting.setInt(value)
             is AbstractByteSetting -> setting.setByte(value.toByte())
             else -> -1
         }
+    }
 }

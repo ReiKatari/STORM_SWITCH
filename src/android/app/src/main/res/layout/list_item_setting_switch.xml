@@ -2,7 +2,7 @@
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    style="@style/EdenCard"
+    style="@style/StormCard"
     android:id="@+id/setting_card"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -123,7 +123,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_clear"
-            style="@style/EdenButton.Outlined"
+            style="@style/StormButton.Faceted.Secondary"
             android:layout_width="wrap_content"
             android:layout_height="32dp"
             android:insetTop="0dp"

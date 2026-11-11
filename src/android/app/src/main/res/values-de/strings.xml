@@ -1083,7 +1083,7 @@ Wirklich fortfahren?</string>
     <string name="auto_optimization_mode_normal_desc" formatted="false">Optimale Balance aus Grafikqualität, Flüssigkeit und Stabilität. 1X (720p/1080p), FSR 85%, FXAA, ausgewogene Barrieren.</string>
     <string name="download_cheats">Online-Cheats herunterladen</string>
     <string name="auto_optimization_mode_accurate_desc">Höchste Grafikqualität, 1.5X/1X Auflösung, sicheres DMA, strikte GPU-Barrieren, SMAA, 16x Anisotropie.</string>
-    <string name="auto_optimization_mode_normal">⚖️ Normal (Empfohlen)</string>
+    <string name="auto_optimization_mode_normal">Normal (Empfohlen)</string>
     <string name="auto_optimization_apply">Modus anwenden</string>
     <string name="cheats_not_found">Keine Cheats für dieses Spiel gefunden. Du kannst eigene Cheats hinzufügen.</string>
     <string name="vram_garbage_collection">VRAM-Bereinigung</string>
@@ -1092,15 +1092,15 @@ Wirklich fortfahren?</string>
     <string name="cpu_affinity_pinning_description">Weist kritische JIT- und GPU-Threads Leistungs-Kernen zu und Hintergrundaufgaben Effizienzkernen.</string>
     <string name="cheats_manager_title">Cheat-Manager</string>
     <string name="amiibo_database_description">Virtuelle Amiibos durchsuchen, erstellen und schnell in Spiele einfügen</string>
-    <string name="auto_optimization_mode_accurate">💎 Präzise</string>
+    <string name="auto_optimization_mode_accurate">Präzise</string>
     <string name="add_cheat">Cheat hinzufügen</string>
     <string name="translator_translate_screen">Bildschirm übersetzen (OCR + TTS)</string>
     <string name="overlay_skin_theme_description">Farben und Animationen für virtuelle Tasten und Joysticks auswählen</string>
-    <string name="cheat_status_active">⚡ Im Spiel aktiv</string>
+    <string name="cheat_status_active">Im Spiel aktiv</string>
     <string name="translator_disable_floating_button">Schwebenden Button ausblenden</string>
     <string name="overlay_skin_theme">Touch-Controller-Design</string>
     <string name="eco_frame_pacing_description">Beseitigt ungenutzte CPU-Zyklen beim Frame-Pacing und senkt die Temperatur bei stabilen 60 FPS.</string>
-    <string name="auto_optimization_applied_toast">⚡ Automatische Konfiguration angewendet: Profil «%1$s»!</string>
+    <string name="auto_optimization_applied_toast">Automatische Konfiguration angewendet: Profil «%1$s»!</string>
     <string name="dma_accuracy_normal">Normal (Empfohlen)</string>
     <string name="cheat_name">Cheat-Name</string>
     <string name="auto_optimization_wizard_title">Automatische Konfiguration</string>
@@ -1110,15 +1110,15 @@ Wirklich fortfahren?</string>
     <string name="dma_accuracy_high">Hoch</string>
     <string name="eco_thermal_mode_description">Regelt Spitzenfrequenzen, um Überhitzung und thermisches Throttling zu verhindern.</string>
     <string name="cheats">Cheat-Codes</string>
-    <string name="auto_optimization_mode_fast">⚡ Schnell</string>
+    <string name="auto_optimization_mode_fast">Schnell</string>
     <string name="vulkan_pipeline_cache">Vulkan-Pipeline-Cache</string>
     <string name="cheats_count_summary">Cheats insgesamt: %1$d | Aktiviert: %2$d</string>
     <string name="eco_thermal_mode">Eco- &amp; Thermomodus</string>
 
     <string name="memory_12gb_not_enough_ram">Der 12 GB DRAM-Modus erfordert ein Gerät mit mindestens 12 GB physischem RAM.</string>
-    <string name="game_fix_apply_and_launch">⚡ Optimierungen anwenden &amp; starten</string>
+    <string name="game_fix_apply_and_launch">Optimierungen anwenden &amp; starten</string>
     <string name="game_fix_dont_ask_again">Für dieses Spiel nicht mehr nachfragen</string>
-    <string name="game_fix_recommended_header">⚡ Empfohlene STORM SWITCH Optimierungen</string>
+    <string name="game_fix_recommended_header">Empfohlene STORM SWITCH Optimierungen</string>
     <string name="game_fix_skip_and_launch">Ohne Änderungen starten</string>
     <string name="game_fix_issues_header">⚠️ Bekannte Probleme und Fehler</string>
 
@@ -1137,7 +1137,7 @@ Wirklich fortfahren?</string>
     <string name="apply_global_to_all_games_confirm_title">Für alle Spiele übernehmen?</string>
     <string name="apply_global_to_all_games_confirm_message">Möchten Sie benutzerdefinierte Profile für alle Spiele zurücksetzen? Aktuelle globale Einstellungen werden auf die gesamte Spielebibliothek angewendet.</string>
     <string name="apply_global_to_all_games_positive">Für alle übernehmen</string>
-    <string name="apply_global_to_all_games_success">⚡ Globale Einstellungen erfolgreich für alle Spiele übernommen (%d Profile zurückgesetzt)</string>
+    <string name="apply_global_to_all_games_success">Globale Einstellungen erfolgreich für alle Spiele übernommen (%d Profile zurückgesetzt)</string>
     <string name="memory_12gb">12 GB (Extrem)</string>
     <!-- 100% Full Localization -->
     <string name="copy_to_clipboard">Informationen kopieren</string>
@@ -1337,13 +1337,13 @@ Wirklich fortfahren?</string>
     <string name="show_device_load_overlay_description">Echtzeitanzeige von CPU-, GPU- und RAM-Auslastung sowie 5-stufigem Temperaturindikator.</string>
     <string name="settings_profiles_title">Einstellungsprofile</string>
     <string name="settings_profiles_description">Erstellen, Speichern, schnelles Laden, Umbenennen und Exportieren von Profilen.</string>
-    <string name="profile_preset_fast_title">⚡ Schnell (Maximale FPS und niedrige Temperatur)</string>
+    <string name="profile_preset_fast_title">Schnell (Maximale FPS und niedrige Temperatur)</string>
     <string name="profile_preset_fast_desc">0.75X Auflösung, schneller JIT, asynchrone Shader, 6 GB DRAM, kühler SoC.</string>
-    <string name="profile_preset_balanced_title">⚖️ Ausgewogen (Empfohlen)</string>
+    <string name="profile_preset_balanced_title">Ausgewogen (Empfohlen)</string>
     <string name="profile_preset_balanced_desc" formatted="false">1.0X (720p/1080p), FSR 85%, schneller JIT, asynchrone Shader, 6 GB DRAM.</string>
-    <string name="profile_preset_accurate_title">💎 Hohe Qualität (Präzise)</string>
+    <string name="profile_preset_accurate_title">Hohe Qualität (Präzise)</string>
     <string name="profile_preset_accurate_desc">1.0X-1.5X, hohe GPU-Genauigkeit, strikte Synchronisation, FXAA/SMAA, 8 GB DRAM.</string>
-    <string name="profile_preset_saver_title">🔋 Energiesparmodus und kühler SoC</string>
+    <string name="profile_preset_saver_title">Energiesparmodus und kühler SoC</string>
     <string name="profile_preset_saver_desc" formatted="false">0.75X Auflösung, 100% Geschwindigkeitslimit, sparsamer VRAM, minimaler Akkuverbrauch.</string>
     <string name="profile_btn_apply">Anwenden</string>
     <string name="profile_btn_share">Teilen</string>
@@ -1357,7 +1357,7 @@ Wirklich fortfahren?</string>
     <string name="profile_rename_title">Profil umbenennen</string>
     <string name="profile_delete_title">Profil löschen</string>
     <string name="profile_delete_confirmation">Möchten Sie das Profil «%1$s» wirklich löschen?</string>
-    <string name="profile_applied_toast">⚡ Profil «%1$s» erfolgreich angewendet!</string>
+    <string name="profile_applied_toast">Profil «%1$s» erfolgreich angewendet!</string>
     <string name="profile_apply_failed">Fehler beim Anwenden des Profils.</string>
     <string name="profile_saved_toast">Profil «%1$s» gespeichert!</string>
     <string name="profile_share_title">Einstellungsprofil teilen</string>
@@ -1459,7 +1459,7 @@ Wirklich fortfahren?</string>
     <string name="storm_save_replace_current">Aktuellen ersetzen</string>
     <string name="storm_save_replace_remote">Auf Remote ersetzen</string>
     <string name="storm_save_keep_both">Beide Varianten behalten</string>
-    <string name="gamebanana_tab_online">🌐 GameBanana-Katalog</string>
+    <string name="gamebanana_tab_online">GameBanana-Katalog</string>
     <string name="gamebanana_tab_installed">💾 Installiert</string>
     <string name="gamebanana_no_installed_mods">Keine Mods für dieses Spiel installiert</string>
     <string name="gamebanana_installed_stats">Gesamt: %1$d | Aktiviert: %2$d | Deaktiviert: %3$d</string>
@@ -1610,7 +1610,7 @@ Wirklich fortfahren?</string>
     <string name="storm_sync_saves_count_zero">Spiele mit Speicherständen (0)</string>
     <string name="storm_sync_saves_count_fmt">Spiele mit Speicherständen (%1$d)</string>
     <string name="storm_sync_saves_filtered_fmt">Spiele mit Speicherständen (%1$d von %2$d)</string>
-    <string name="storm_sync_btn_sync_all">⚡ Alles synchronisieren</string>
+    <string name="storm_sync_btn_sync_all">Alles synchronisieren</string>
     <string name="storm_sync_search_hint">Spiel nach Titel oder Title-ID suchen…</string>
     <string name="storm_sync_empty_saves">Keine Speicherstände zum Anzeigen.
 Starte ein Spiel oder verbinde dich mit einem anderen Gerät.</string>
@@ -1748,12 +1748,12 @@ Starte ein Spiel oder verbinde dich mit einem anderen Gerät.</string>
     <string name="cheat_item_desc_placeholder">Description</string>
     <string name="cheat_btn_edit_qty">✏️ Value</string>
     <string name="cheat_header_version_prefix"> | Version: </string>
-    <string name="cheat_header_in_game"> | ⚡ In Game</string>
+    <string name="cheat_header_in_game"> | In Game</string>
     <string name="cheat_header_offline"> | ⚪ Offline</string>
     <string name="cheat_header_dmnt_active">
-⚡ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
+Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="cheat_build_all_versions">All versions</string>
-    <string name="cheat_toast_activated_ingame">⚡ Cheat codes activated in game!</string>
+    <string name="cheat_toast_activated_ingame">Cheat codes activated in game!</string>
     <string name="cheat_toast_saved">✅ Cheat codes saved successfully</string>
     <string name="cheat_add_name_hint">Cheat name (e.g. Infinite Lives)</string>
     <string name="cheat_add_code_hint">Atmosphere format code (04000000 12345678 ...)</string>
@@ -1811,7 +1811,7 @@ Starte ein Spiel oder verbinde dich mit einem anderen Gerät.</string>
     <string name="log_viewer_chip_errors">🚨 Errors</string>
     <string name="log_viewer_chip_warnings">⚠️ Warnings</string>
     <string name="log_viewer_chip_info">ℹ️ Info</string>
-    <string name="log_viewer_status_ingame">⚡ In Game</string>
+    <string name="log_viewer_status_ingame">In Game</string>
     <string name="log_viewer_status_offline">⚪ Offline</string>
     <string name="log_viewer_toast_refreshing">🔄 Refreshing log...</string>
     <string name="log_viewer_stats_total_fmt">Total lines: %1$d | Size: %2$d KB</string>
@@ -1934,11 +1934,11 @@ Starte ein Spiel oder verbinde dich mit einem anderen Gerät.</string>
     <string name="translator_toast_no_text_screen">No text detected on screen</string>
     <string name="translator_overlay_region_fmt">Region %1$d</string>
     <string name="translator_overlay_btn_add">+ Add region</string>
-    <string name="translator_overlay_btn_clear">🧹 Clear</string>
+    <string name="translator_overlay_btn_clear">Clear</string>
     <string name="translator_overlay_btn_save">💾 Save</string>
-    <string name="translator_overlay_btn_close">✕ Close</string>
-    <string name="translator_snack_auto_on">⚡ Auto-translation enabled</string>
-    <string name="translator_snack_auto_off">⚡ Auto-translation disabled</string>
+    <string name="translator_overlay_btn_close">Close</string>
+    <string name="translator_snack_auto_on">Auto-translation enabled</string>
+    <string name="translator_snack_auto_off">Auto-translation disabled</string>
     <string name="translator_snack_tts_on">🔊 TTS voice readout enabled</string>
     <string name="translator_snack_tts_off">🔇 TTS voice readout disabled</string>
     <string name="translator_snack_float_on">👁️ Floating button shown</string>
@@ -1946,7 +1946,7 @@ Starte ein Spiel oder verbinde dich mit einem anderen Gerät.</string>
     <string name="translator_dialog_select_model">🤖 Select translation model</string>
     <string name="translator_toast_model_selected_fmt">Translation model: %1$s</string>
     <string name="sysinfo_sec_device">📱  DEVICE &amp; SYSTEM</string>
-    <string name="sysinfo_sec_cpu">⚡  PROCESSOR (CPU / SOC)</string>
+    <string name="sysinfo_sec_cpu"> PROCESSOR (CPU / SOC)</string>
     <string name="sysinfo_sec_gpu">🎮  GRAPHICS (GPU &amp; VULKAN)</string>
     <string name="sysinfo_sec_ram">💾  SYSTEM MEMORY (RAM)</string>
     <string name="sysinfo_lbl_manufacturer">• Manufacturer: </string>
@@ -1970,7 +1970,7 @@ Starte ein Spiel oder verbinde dich mit einem anderen Gerät.</string>
     <string name="sysinfo_lbl_low_mem_thresh">• Low Memory Threshold: </string>
     <string name="emulation_cooling_paused_title">❄️ Game paused — cooling down device</string>
     <string name="emulation_cooling_temp_default">🌡️ Temperature: --°C ➔ Target: 36.5°C</string>
-    <string name="emulation_cooling_chipset_unloaded">⚡ Chipset load removed (&lt; 1 W)</string>
+    <string name="emulation_cooling_chipset_unloaded">Chipset load removed (&lt; 1 W)</string>
     <string name="emulation_cooling_done_fmt">✅ Cooling complete: %1$s°C</string>
     <string name="emulation_cooling_temp_fmt">🌡️ Temperature: %1$s°C ➔ Target: %2$s°C</string>
     <string name="emulation_cooling_in_progress">🌡️ Cooling down chipset</string>
@@ -1997,9 +1997,9 @@ Starte ein Spiel oder verbinde dich mit einem anderen Gerät.</string>
     <string name="gamebanana_no_mod_desc">No mod description available.</string>
     <string name="gamebanana_avail_files_header">
 📦 Available files for download:</string>
-    <string name="game_fix_toast_autofix_custom">⚡ Auto-Fix: Applied with your custom settings preserved</string>
-    <string name="game_fix_toast_autofix_clean">⚡ Auto-Fix: Clean reference profile applied</string>
-    <string name="game_fix_toast_custom_saved">⚡ Auto-Fix: Custom settings preserved</string>
+    <string name="game_fix_toast_autofix_custom">Auto-Fix: Applied with your custom settings preserved</string>
+    <string name="game_fix_toast_autofix_clean">Auto-Fix: Clean reference profile applied</string>
+    <string name="game_fix_toast_custom_saved">Auto-Fix: Custom settings preserved</string>
     <string name="game_fix_toast_launch_custom">🎮 Custom Settings: Launching with your profile</string>
     <string name="game_fix_toast_launch_global">🌐 Global Settings: Launching with global settings</string>
     <string name="overlay_style_neon_glow">Neon Cyber Glow (3D)</string>
@@ -2224,8 +2224,8 @@ Starte ein Spiel oder verbinde dich mit einem anderen Gerät.</string>
 
     <string name="performance_preset">Leistungsprofil</string>
     <string name="performance_preset_description">Optimiertes Konfigurationsprofil für Leistung, Akku und Bildqualität wählen</string>
-    <string name="performance_preset_battery">🔋 Energiesparmodus</string>
-    <string name="performance_preset_balanced">⚖️ Ausbalanciert (Empfohlen)</string>
+    <string name="performance_preset_battery">Energiesparmodus</string>
+    <string name="performance_preset_balanced">Ausbalanciert (Empfohlen)</string>
     <string name="performance_preset_quality">🚀 Maximale Qualität</string>
     <string name="performance_preset_custom">⚙️ Benutzerdefiniert</string>
     <string name="performance_preset_applied">Leistungsprofil angewendet</string>
@@ -2243,4 +2243,33 @@ Starte ein Spiel oder verbinde dich mit einem anderen Gerät.</string>
     <string name="ui_design_style_aurora">STORM AURORA QUANTUM</string>
     <string name="ui_design_style_orbital">STORM ORBITAL SPATIAL UI</string>
     <string name="ui_design_style_chrono">STORM CHRONO-NEXUS COMMANDER</string>
+
+    <string name="enable_all_cheats">Alle Cheats aktivieren</string>
+    <string name="disable_all_cheats">Alle Cheats deaktivieren</string>
+    <string name="unnamed_cheat">Unbenannter Cheat</string>
+    <string name="enable_cheats_by_default">Cheats standardmäßig aktivieren</string>
+    <string name="enable_cheats_by_default_description">Reguläre Cheats beim Spielstart aktivieren</string>
+    <string name="storm_thermal_governor">STORM Thermal Governor</string>
+    <string name="storm_thermal_governor_description">Intelligenter Wärmeschutz zur Aufrechterhaltung stabiler Taktraten ohne Ruckler</string>
+    <string name="storm_lowend_turbo">STORM Low-End Turbo</string>
+    <string name="storm_lowend_turbo_description">Optimierte Thread- und Pufferverwaltung für Einsteigergeräte</string>
+    <string name="auto_60fps_unlock">Automatische 60-FPS-Freischaltung</string>
+    <string name="auto_60fps_unlock_description">Automatische 60 FPS in unterstützten Spielen aktivieren</string>
+    <string name="auto_aspect_ratio_patch">Automatischer Seitenverhältnis-Patch</string>
+    <string name="auto_aspect_ratio_patch_description">Rendergeometrie automatisch an Breitbildschirme anpassen</string>
+    <string name="storm_prof_presets_count_default">Fertige Voreinstellungen: 4 • Benutzerdefiniert: 0</string>
+    <string name="save_state_slot_restored_success">Slot %1$d erfolgreich aus Sicherung wiederhergestellt!</string>
+    <string name="save_state_slot_restore_error">Fehler beim Wiederherstellen von Slot: %1$s</string>
+    <string name="save_state_undo_action">RÜCKGÄNGIG</string>
+    <string name="save_state_slot_empty_undo_available">Leer • Rückgängig verfügbar (Karte gedrückt halten)</string>
+    <string name="save_state_restore_slot_title">Slot %1$d wiederherstellen</string>
+    <string name="save_state_restore_slot_message">Spielstand für Slot %1$d aus Sicherung (.undo.bak) wiederherstellen?</string>
+    <string name="save_state_restore_button">Wiederherstellen</string>
+    <string name="storm_driver_10_active">STORM DRIVER 10.0.0 (Aktiv)</string>
+    <string name="storm_driver_already_active">STORM DRIVER 10.0.0 ist bereits aktiv!</string>
+    <string name="added">Hinzugefügt</string>
+    <string name="pagination_first">&lt;&lt;</string>
+    <string name="pagination_prev">&lt;</string>
+    <string name="pagination_next">&gt;</string>
+    <string name="copy">Kopieren</string>
 </resources>

@@ -6,8 +6,8 @@
     app:cardCornerRadius="18dp"
     app:cardElevation="12dp"
     app:strokeWidth="0dp"
-    app:strokeColor="#4000D2FF"
-    app:cardBackgroundColor="#F00F172A">
+    app:strokeColor="?attr/colorOutline"
+    app:cardBackgroundColor="?attr/colorSurface">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -23,7 +23,7 @@
             android:text="@string/emulation_control_adjust"
             android:textAppearance="?attr/textAppearanceTitleMedium"
             android:gravity="center"
-            android:textColor="#00F0FF"
+            android:textColor="?attr/colorPrimary"
             android:textStyle="bold"
             android:layout_marginBottom="12dp"
     android:breakStrategy="simple"
@@ -53,7 +53,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="1.0x"
-                android:textColor="#38BDF8"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="13sp"
                 android:textStyle="bold"
     android:breakStrategy="simple"

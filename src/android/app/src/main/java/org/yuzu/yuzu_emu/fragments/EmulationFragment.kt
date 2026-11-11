@@ -1050,11 +1050,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
 
                 R.id.menu_cheats -> {
                     binding.drawerLayout.close()
-                    val currentGame = game ?: args.game
-                    if (currentGame != null) {
-                        CheatsDialogFragment.newInstance(currentGame)
-                            .show(childFragmentManager, CheatsDialogFragment.TAG)
-                    }
+                    showRuntimeCheatDialog()
                     true
                 }
 
@@ -1376,6 +1372,56 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         }
     }
 
+    private fun showRuntimeCheatDialog() {
+        val cheats = try {
+            NativeLibrary.getRuntimeCheats()
+        } catch (_: Throwable) {
+            emptyArray()
+        }
+        if (cheats.isEmpty()) {
+            val currentGame = game ?: args.game
+            if (currentGame != null) {
+                CheatsDialogFragment.newInstance(currentGame)
+                    .show(childFragmentManager, CheatsDialogFragment.TAG)
+            }
+            return
+        }
+
+        val names = cheats.map { it.name.ifEmpty { getString(R.string.unnamed_cheat) } }.toTypedArray()
+        lateinit var dialog: androidx.appcompat.app.AlertDialog
+        dialog = com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.cheats)
+            .setMultiChoiceItems(names, cheats.map { it.enabled || it.isMaster }.toBooleanArray()) { _, which, enabled ->
+                if (cheats[which].isMaster) {
+                    dialog.listView.setItemChecked(which, true)
+                } else if (!NativeLibrary.setRuntimeCheatEnabled(cheats[which].id, enabled)) {
+                    dialog.listView.setItemChecked(which, !enabled)
+                }
+            }
+            .setNegativeButton(R.string.disable_all_cheats) { _, _ ->
+                cheats.forEach {
+                    if (!it.isMaster) NativeLibrary.setRuntimeCheatEnabled(it.id, false)
+                }
+            }
+            .setNeutralButton(R.string.enable_all_cheats) { _, _ ->
+                cheats.forEach {
+                    if (!it.isMaster) NativeLibrary.setRuntimeCheatEnabled(it.id, true)
+                }
+            }
+            .setPositiveButton(R.string.close, null)
+            .create()
+        dialog.setOnShowListener {
+            val listView = dialog.listView
+            fun updateMasterVisuals() = repeat(listView.childCount) { index ->
+                listView.getChildAt(index).alpha =
+                    if (cheats[listView.firstVisiblePosition + index].isMaster) 0.38f else 1f
+            }
+            listView.setOnScrollChangeListener { _, _, _, _, _ -> updateMasterVisuals() }
+            updateMasterVisuals()
+        }
+        dialog.show()
+    }
+
     private fun addQuickSettings() {
         binding.quickSettingsSheet.apply {
             val container = binding.quickSettingsSheet.findViewById<ViewGroup>(R.id.quick_settings_container)
@@ -1693,6 +1739,40 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 R.string.airplane_mode,
                 container,
                 BooleanSetting.AIRPLANE_MODE
+            )
+
+            quickSettings.addDivider(container)
+
+            // --- Thermal & Performance Section ---
+            quickSettings.addBooleanSetting(
+                R.string.eco_thermal_mode,
+                container,
+                BooleanSetting.ECO_THERMAL_MODE
+            )
+            quickSettings.addBooleanSetting(
+                R.string.eco_frame_pacing,
+                container,
+                BooleanSetting.ECO_FRAME_PACING
+            )
+            quickSettings.addBooleanSetting(
+                R.string.storm_thermal_governor,
+                container,
+                BooleanSetting.STORM_THERMAL_GOVERNOR
+            )
+            quickSettings.addBooleanSetting(
+                R.string.storm_lowend_turbo,
+                container,
+                BooleanSetting.STORM_LOWEND_TURBO
+            )
+            quickSettings.addBooleanSetting(
+                R.string.auto_60fps_unlock,
+                container,
+                BooleanSetting.AUTO_60FPS_UNLOCK
+            )
+            quickSettings.addBooleanSetting(
+                R.string.auto_aspect_ratio_patch,
+                container,
+                BooleanSetting.AUTO_ASPECT_RATIO_PATCH
             )
         }
     }
@@ -3085,6 +3165,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         // aspect ratios + vertical alignments cleanly without SurfaceView / OEM WSI mismatches
         // or CoordinatorLayout relayout jitter under QuickSettings.
         b.surfaceEmulation.setAspectRatio(null)
+        b.surfaceEmulation.holder.setSizeFromLayout()
         val existing = b.surfaceEmulation.layoutParams as? FrameLayout.LayoutParams
         if (existing == null ||
             existing.width != ViewGroup.LayoutParams.MATCH_PARENT ||

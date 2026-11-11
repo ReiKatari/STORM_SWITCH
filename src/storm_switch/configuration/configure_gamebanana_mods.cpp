@@ -33,6 +33,8 @@
 #include "frontend_common/mod_manager.h"
 #include "qt_common/util/mod.h"
 #include "storm_switch/configuration/configure_gamebanana_mods.h"
+#include "storm_switch/common/storm_theme.h"
+#include "storm_switch/common/storm_design_engine.h"
 #include "storm_switch/configuration/configure_per_game_addons.h"
 #include "common/settings.h"
 #include "qt_common/config/uisettings.h"
@@ -240,6 +242,9 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
     : QWidget(parent), title_id{title_id_}, game_name{game_name_}, system{system_},
       addons_tab{addons_tab_} {
     network_manager = new QNetworkAccessManager(this);
+    setProperty("_stormDialogThemed", true);
+    const auto pal = StormTheme::GetThemePalette();
+    setStyleSheet(StormDesign::BuildDialogStylesheet(pal));
 
     auto* main_layout = new QVBoxLayout(this);
     main_layout->setContentsMargins(8, 8, 8, 8);
@@ -248,7 +253,7 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
     // 1. Header Banner
     game_header_label = new QLabel(this);
     game_header_label->setStyleSheet(QStringLiteral(
-        "background-color: #1e293b; color: #FFFFFF; padding: 8px 12px; border-radius: 6px; font-weight: bold; font-size: 13px;"));
+        "background-color: %1; color: %2; border: 1px solid %3; padding: 8px 12px; border-radius: 6px; font-weight: bold; font-size: 13px;").arg(pal.card, pal.textPrimary, pal.border));
     main_layout->addWidget(game_header_label);
 
     // 2. View Switcher Bar (Online Catalog vs Installed Mods)
@@ -285,8 +290,6 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
     auto* online_layout = new QVBoxLayout(online_page);
     online_layout->setContentsMargins(0, 0, 0, 0);
     online_layout->setSpacing(6);
-
-    const auto pal = StormTheme::GetThemePalette();
 
     // Search & Controls Bar
     auto* controls_layout = new QHBoxLayout;
@@ -541,14 +544,13 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
 
     status_label = new QLabel(this);
     status_label->setWordWrap(true);
-    status_label->setStyleSheet(QStringLiteral("color: #00e676; font-weight: bold;"));
+    status_label->setStyleSheet(QStringLiteral("color: %1; font-weight: bold;").arg(pal.accent));
     details_layout->addWidget(status_label);
 
     auto* btn_layout = new QHBoxLayout;
     install_btn = new QPushButton(StormLang(QStringLiteral("Установить мод"), QStringLiteral("Install Mod")), this);
     install_btn->setIcon(MakeGbIcon(GbIconType::Download, QColor(QStringLiteral("#FFFFFF"))));
-    install_btn->setStyleSheet(QStringLiteral("QPushButton { background-color: %1; color: #FFFFFF; font-weight: bold; padding: 6px 18px; border-radius: 6px; min-height: 32px; font-size: 9.5pt; } QPushButton:hover { background-color: %2; }").arg(pal.accent, pal.accentHover));
-    install_btn->setStyleSheet(QStringLiteral("background-color: #2563eb; color: white; font-weight: bold; padding: 6px 16px; border-radius: 4px;"));
+    install_btn->setStyleSheet(QStringLiteral("QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %1, stop:1 %2); color: #FFFFFF; font-weight: bold; padding: 6px 18px; border: 1px solid %3; border-top: 1px solid rgba(255,255,255,0.35); border-radius: 6px; min-height: 32px; font-size: 9.5pt; } QPushButton:hover { background: %2; } QPushButton:pressed { background: %1; }").arg(pal.accent, pal.accentHover, pal.border));
     install_btn->setEnabled(false);
     btn_layout->addWidget(install_btn, 1);
 
@@ -660,7 +662,7 @@ ConfigureGameBananaMods::ConfigureGameBananaMods(Core::System& system_, u64 titl
 
     delete_mod_btn = new QPushButton(StormLang(QStringLiteral("Удалить выбранный"), QStringLiteral("Delete Selected")), this);
     delete_mod_btn->setIcon(MakeGbIcon(GbIconType::Trash, QColor(QStringLiteral("#EF4444"))));
-    delete_mod_btn->setStyleSheet(QStringLiteral("background-color: #dc2626; color: white; font-weight: bold; padding: 5px 14px; border-radius: 4px;"));
+    delete_mod_btn->setStyleSheet(QStringLiteral("QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ef4444, stop:1 #b91c1c); color: #FFFFFF; font-weight: bold; padding: 5px 14px; border: 1px solid #dc2626; border-top: 1px solid rgba(255,255,255,0.35); border-radius: 5px; } QPushButton:hover { background: #dc2626; } QPushButton:pressed { background: #991b1b; }"));
     installed_top_bar->addWidget(delete_mod_btn);
 
     installed_layout->addLayout(installed_top_bar);
@@ -1046,7 +1048,7 @@ void ConfigureGameBananaMods::LoadModDetails(int mod_id) {
                 QStringLiteral("%1 (%2, downloads: %3)").arg(file_info.name, sz_str, FormatNumber(file_dl))
             );
             if (!file_info.description.isEmpty()) {
-                item_label += QStringLiteral(" — %1").arg(file_info.description);
+                item_label += QStringLiteral(" - %1").arg(file_info.description);
             }
             files_combo->addItem(item_label, file_info.id);
         }
@@ -1196,7 +1198,7 @@ void ConfigureGameBananaMods::DownloadAndInstallMod(const GameBananaFile& file_i
         auto& disabled = Settings::values.disabled_addons[title_id];
         disabled.erase(std::remove(disabled.begin(), disabled.end(), clean_mod_name.toStdString()), disabled.end());
 
-        status_label->setStyleSheet(QStringLiteral("color: #00e676; font-weight: bold;"));
+        status_label->setStyleSheet(QStringLiteral("color: %1; font-weight: bold;").arg(StormTheme::GetThemePalette().accent));
         status_label->setText(StormLang(QStringLiteral("Мод '%1' успешно установлен и активирован!").arg(clean_mod_name), QStringLiteral("Mod '%1' installed and enabled!").arg(clean_mod_name)));
 
         RefreshInstalledMods();
@@ -1209,29 +1211,27 @@ void ConfigureGameBananaMods::DownloadAndInstallMod(const GameBananaFile& file_i
 }
 
 void ConfigureGameBananaMods::OnSwitchView(int view_index) {
+    const auto pal = StormTheme::GetThemePalette();
+    const QString active_style = QStringLiteral(
+        "QPushButton { background-color: %1; color: %2; font-weight: bold; padding: 6px 18px; border-radius: 6px; font-size: 12px; }"
+        "QPushButton:hover { background-color: %3; }"
+    ).arg(pal.accent, pal.is_light ? QStringLiteral("#FFFFFF") : QStringLiteral("#000000"), pal.accentHover);
+    const QString inactive_style = QStringLiteral(
+        "QPushButton { background-color: %1; color: %2; border: 1px solid %3; font-weight: bold; padding: 6px 18px; border-radius: 6px; font-size: 12px; }"
+        "QPushButton:hover { background-color: %4; }"
+    ).arg(pal.buttonBg, pal.textPrimary, pal.border, pal.surface);
+
     if (view_index == 0) {
         tab_online_btn->setChecked(true);
         tab_installed_btn->setChecked(false);
-        tab_online_btn->setStyleSheet(QStringLiteral(
-            "QPushButton { background-color: #00f2fe; color: #000000; font-weight: bold; padding: 6px 18px; border-radius: 6px; font-size: 12px; }"
-            "QPushButton:hover { background-color: #38bdf8; }"
-        ));
-        tab_installed_btn->setStyleSheet(QStringLiteral(
-            "QPushButton { background-color: #1e293b; color: #FFFFFF; font-weight: bold; padding: 6px 18px; border-radius: 6px; font-size: 12px; }"
-            "QPushButton:hover { background-color: #334155; }"
-        ));
+        tab_online_btn->setStyleSheet(active_style);
+        tab_installed_btn->setStyleSheet(inactive_style);
         view_stack->setCurrentIndex(0);
     } else {
         tab_online_btn->setChecked(false);
         tab_installed_btn->setChecked(true);
-        tab_installed_btn->setStyleSheet(QStringLiteral(
-            "QPushButton { background-color: #00f2fe; color: #000000; font-weight: bold; padding: 6px 18px; border-radius: 6px; font-size: 12px; }"
-            "QPushButton:hover { background-color: #38bdf8; }"
-        ));
-        tab_online_btn->setStyleSheet(QStringLiteral(
-            "QPushButton { background-color: #1e293b; color: #FFFFFF; font-weight: bold; padding: 6px 18px; border-radius: 6px; font-size: 12px; }"
-            "QPushButton:hover { background-color: #334155; }"
-        ));
+        tab_installed_btn->setStyleSheet(active_style);
+        tab_online_btn->setStyleSheet(inactive_style);
         view_stack->setCurrentIndex(1);
         RefreshInstalledMods();
     }

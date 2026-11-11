@@ -56,7 +56,7 @@
                     style="@style/SynthwaveText.Body"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Title ID: 0000000000000000"
+                    tools:text="Title ID: 0000000000000000"
                     android:textSize="10sp"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:breakStrategy="simple"
@@ -80,7 +80,7 @@
         <!-- Search Card -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_search"
-            style="@style/EdenCard"
+            style="@style/StormCard"
             android:layout_width="match_parent"
             android:layout_height="36dp"
             android:layout_marginBottom="6dp"
@@ -109,7 +109,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:gravity="center_vertical"
-                    android:background="@android:color/transparent"
+                    android:background="@drawable/storm_input_3d"
                     android:hint="@string/cheats_search_hint"
                     android:textSize="12sp"
                     android:textColor="?attr/colorOnSurface"
@@ -143,7 +143,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_download_online"
-                style="@style/EdenButton.Outlined"
+                style="@style/StormButton.Faceted.Secondary"
                 android:layout_width="0dp"
                 android:layout_height="36dp"
                 android:layout_weight="1"
@@ -173,7 +173,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_add_custom_cheat"
-                style="@style/EdenButton.Outlined"
+                style="@style/StormButton.Faceted.Secondary"
                 android:layout_width="0dp"
                 android:layout_height="36dp"
                 android:layout_weight="1"
@@ -203,7 +203,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_toggle_all"
-                style="@style/EdenButton.Outlined"
+                style="@style/StormButton.Faceted.Secondary"
                 android:layout_width="0dp"
                 android:layout_height="36dp"
                 android:layout_weight="1"
@@ -325,7 +325,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_save_cheats"
-                style="@style/EdenButton.Primary"
+                style="@style/StormButton.Faceted.Primary"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
                 android:minHeight="36dp"

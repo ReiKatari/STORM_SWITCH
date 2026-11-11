@@ -716,13 +716,25 @@ void PipelineCache::LoadDiskResources(u64 title_id, std::stop_token stop_loading
     if (device.IsKhrPipelineExecutablePropertiesEnabled()) {
         state->statistics = std::make_unique<PipelineStatistics>(device);
     }
-    // Persistent workers pool is used for preloading at Priority::Low to eliminate thread pool churn
+    // Two-Phase Shader Worker Boost: Full worker count at ThreadPlacement::Default for disk preload,
+    // switching to throttled background workers for progressive async compilation.
+    const size_t hardware_threads = static_cast<size_t>(std::thread::hardware_concurrency());
+    const size_t preload_threads = device.HasBrokenParallelShaderCompiling()
+        ? 1ULL
+        : std::clamp<size_t>(hardware_threads > 2 ? hardware_threads - 1 : 2, 2ULL, 8ULL);
+    Common::ThreadWorker preload_workers(preload_threads, "VkPipelinePreload", {},
+                                         Common::ThreadPlacement::Default);
+    constexpr size_t CRITICAL_BATCH_SIZE = 512;
+    const bool async_shaders = Settings::values.use_asynchronous_shaders.GetValue();
 
     const auto load_compute{[&](std::ifstream& file, FileEnvironment env) {
         ComputePipelineCacheKey key;
         file.read(reinterpret_cast<char*>(&key), sizeof(key));
 
-        workers.QueueWork([this, key, env_ = std::move(env), state, callback]() mutable {
+        Common::ThreadWorker& target_pool =
+            (async_shaders && state->total >= CRITICAL_BATCH_SIZE) ? workers : preload_workers;
+
+        target_pool.QueueWork([this, key, env_ = std::move(env), state, callback]() mutable {
             ShaderPools pools;
             PipelineStatistics* stats = state ? state->statistics.get() : nullptr;
             auto pipeline{CreateComputePipeline(pools, key, env_, stats, false)};
@@ -776,7 +788,10 @@ void PipelineCache::LoadDiskResources(u64 title_id, std::stop_token stop_loading
             return;
         }
 
-        workers.QueueWork([this, key, envs_ = std::move(envs), state, callback]() mutable {
+        Common::ThreadWorker& target_pool =
+            (async_shaders && state->total >= CRITICAL_BATCH_SIZE) ? workers : preload_workers;
+
+        target_pool.QueueWork([this, key, envs_ = std::move(envs), state, callback]() mutable {
             ShaderPools pools;
             boost::container::static_vector<Shader::Environment*, 5> env_ptrs;
             for (auto& env : envs_) {
@@ -814,21 +829,16 @@ void PipelineCache::LoadDiskResources(u64 title_id, std::stop_token stop_loading
         state->has_loaded.store(true, std::memory_order_release);
     }
 
-    const bool async_shaders = Settings::values.use_asynchronous_shaders.GetValue();
-    if (async_shaders && state->total > 512) {
-        // Compile the first critical batch synchronously (<= 512 pipelines) for instant game boot,
+    if (async_shaders && state->total > CRITICAL_BATCH_SIZE) {
+        // Compile the first critical batch synchronously with full preload workers for instant game boot,
         // allowing remaining pipelines to finish progressively in background workers.
-        constexpr size_t CRITICAL_BATCH_SIZE = 512;
-        std::unique_lock lock{state->mutex};
-        state->cv.wait(lock, [&] {
-            return stop_loading.stop_requested() || state->built >= CRITICAL_BATCH_SIZE || state->built >= state->total;
-        });
+        preload_workers.WaitForRequests(stop_loading);
         state->is_background.store(true, std::memory_order_release);
         callback(VideoCore::LoadCallbackStage::Build, state->built, state->total);
     } else {
         // Synchronous pipeline compilation (e.g. Super Mario Bros. Wonder):
-        // Compile 100% of cached graphics & compute pipelines using multi-threaded workers before returning.
-        workers.WaitForRequests(stop_loading);
+        // Compile 100% of cached graphics & compute pipelines using full multi-threaded workers before returning.
+        preload_workers.WaitForRequests(stop_loading);
         std::unique_lock lock{state->mutex};
         state->is_background.store(false, std::memory_order_release);
         callback(VideoCore::LoadCallbackStage::Build, state->total, state->total);

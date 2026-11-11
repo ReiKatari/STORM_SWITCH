@@ -62,10 +62,6 @@ Result IApplicationProxy::GetGraphicsScaleController(
 }
 
 void IApplicationProxy::DispatchCmd40(HLERequestContext& ctx) {
-    if (Settings::IsCurrentProgramSwitch2()) {
-        GetNx2Interface(ctx);
-        return;
-    }
     (this->*D<&IApplicationProxy::GetPerformanceFunctions>)(ctx);
 }
 

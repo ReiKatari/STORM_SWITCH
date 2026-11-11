@@ -250,7 +250,11 @@ void OverlayDialog::StopInputThread() {
 }
 
 void OverlayDialog::keyPressEvent(QKeyEvent* e) {
-    if (!ui->buttonsDialog->isHidden() || e->key() != Qt::Key_Escape) {
+    if (e->key() == Qt::Key_Escape) {
+        reject();
+        return;
+    }
+    if (!ui->buttonsDialog->isHidden()) {
         QDialog::keyPressEvent(e);
     }
 }

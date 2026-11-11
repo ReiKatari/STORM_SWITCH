@@ -328,16 +328,28 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
             window.setPreferMinimalPostProcessing(true)
             try {
                 window.attributes?.let { lp ->
-                    val modes = display?.supportedModes ?: windowManager.defaultDisplay.supportedModes
-                    val targetMode = modes?.firstOrNull { mode ->
-                        (mode.refreshRate >= 59.9f && mode.refreshRate <= 60.1f) ||
-                        (mode.refreshRate >= 119.9f && mode.refreshRate <= 120.1f)
+                    val activeMode = display?.mode ?: @Suppress("DEPRECATION") windowManager.defaultDisplay.mode
+                    val modes = display?.supportedModes ?: @Suppress("DEPRECATION") windowManager.defaultDisplay.supportedModes
+                    // Filter STRICTLY by physical dimensions to prevent Vivo OriginOS / WQHD+ 2/3 screen bug (Issue #76)
+                    val matchingModes = modes?.filter { mode ->
+                        mode.physicalWidth == activeMode.physicalWidth &&
+                        mode.physicalHeight == activeMode.physicalHeight &&
+                        mode.refreshRate in 59.9f..120.5f
                     }
-                    if (targetMode != null) {
+                    val targetMode = matchingModes?.maxByOrNull { it.refreshRate }
+                    if (targetMode != null &&
+                        targetMode.physicalWidth == activeMode.physicalWidth &&
+                        targetMode.physicalHeight == activeMode.physicalHeight
+                    ) {
                         lp.preferredDisplayModeId = targetMode.modeId
-                        window.attributes = lp
-                        Log.info("[EmulationActivity] Set preferred display mode to ${targetMode.refreshRate} Hz (id=${targetMode.modeId})")
+                        Log.info("[EmulationActivity] Set preferred display mode to ${targetMode.refreshRate} Hz (${targetMode.physicalWidth}x${targetMode.physicalHeight}, id=${targetMode.modeId})")
+                    } else {
+                        val bestRefresh = modes?.filter { it.refreshRate in 59.9f..120.5f }
+                            ?.maxByOrNull { it.refreshRate }?.refreshRate ?: 60.0f
+                        lp.preferredRefreshRate = bestRefresh
+                        Log.info("[EmulationActivity] Set preferred refresh rate to $bestRefresh Hz without altering display resolution (${activeMode.physicalWidth}x${activeMode.physicalHeight})")
                     }
+                    window.attributes = lp
                 }
             } catch (e: Exception) {
                 Log.warning("[EmulationActivity] Failed to set preferred display mode: ${e.message}")

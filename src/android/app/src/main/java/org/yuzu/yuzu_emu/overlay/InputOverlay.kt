@@ -236,6 +236,9 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
     }
 
     override fun onTouch(v: View, event: MotionEvent): Boolean {
+        if (event.actionMasked == MotionEvent.ACTION_DOWN) {
+            v.requestUnbufferedDispatch(event)
+        }
         try {
             touchEventListener?.invoke(event)
         } catch (e: Exception) {}
@@ -623,9 +626,16 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
         return true
     }
 
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (event.actionMasked == MotionEvent.ACTION_DOWN) {
+            requestUnbufferedDispatch(event)
+        }
+        return super.onTouchEvent(event)
+    }
+
     private fun addOverlayControls(layout: OverlayLayout) {
         val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
-        if (!prefs.getBoolean("storm_overlay_shoulder_y_v20_2", false)) {
+        if (!prefs.getBoolean("storm_overlay_shoulder_y_v20_3", false)) {
             try {
                 val overlayControlData = NativeConfig.getOverlayControlData()
                 var modified = false
@@ -654,6 +664,19 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
                         }
                         if (data.foldablePosition.second < 0.18) {
                             data.foldablePosition = Pair(data.foldablePosition.first, 0.205)
+                            modified = true
+                        }
+                    } else if (data.id == OverlayControl.BUTTON_STICK_L.id || data.id == OverlayControl.BUTTON_STICK_R.id) {
+                        if (data.landscapePosition.second < 0.40) {
+                            data.landscapePosition = Pair(data.landscapePosition.first, 0.415)
+                            modified = true
+                        }
+                        if (data.portraitPosition.second < 0.38) {
+                            data.portraitPosition = Pair(data.portraitPosition.first, 0.40)
+                            modified = true
+                        }
+                        if (data.foldablePosition.second < 0.25) {
+                            data.foldablePosition = Pair(data.foldablePosition.first, 0.28)
                             modified = true
                         }
                     }

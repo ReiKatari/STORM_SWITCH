@@ -93,7 +93,7 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <com.google.android.material.card.MaterialCardView
-            style="@style/EdenCard"
+            style="@style/StormCard"
             android:layout_width="160dp"
             android:layout_height="160dp"
             android:layout_marginTop="8dp"

@@ -273,9 +273,9 @@ ConfigurePerGameCheats::ConfigurePerGameCheats(Core::System& system_, u64 title_
     // 2. 3-column QTreeWidget (34 px rows, styled Aurora checkboxes, unclipped status column minWidth 156 px)
     tree_widget = new QTreeWidget(this);
     tree_widget->setHeaderLabels({
-        StormLang(QStringLiteral("НАЗВАНИЕ ЧИТ-КОДА"), QStringLiteral("CHEAT NAME")),
-        StormLang(QStringLiteral("СТАТУС"), QStringLiteral("STATUS")),
-        StormLang(QStringLiteral("ВЕРСИЯ (BUILD ID)"), QStringLiteral("VERSION (BUILD ID)"))
+        StormLangStorm11(QStringLiteral("НАЗВАНИЕ ЧИТ-КОДА"), QStringLiteral("CHEAT NAME"), QStringLiteral("CHEAT-NAME"), QStringLiteral("NOM DU CODE DE TRICHE"), QStringLiteral("作弊码名称"), QStringLiteral("치트 코드 이름"), QStringLiteral("チートコード名"), QStringLiteral("NOMBRE DEL TRUCO"), QStringLiteral("NOME DEL TRUCCO"), QStringLiteral("NOME DA TRAPAÇA"), QStringLiteral("चीट कोड का नाम")),
+        StormLangStorm11(QStringLiteral("СТАТУС"), QStringLiteral("STATUS"), QStringLiteral("STATUS"), QStringLiteral("STATUT"), QStringLiteral("状态"), QStringLiteral("상태"), QStringLiteral("ステータス"), QStringLiteral("ESTADO"), QStringLiteral("STATO"), QStringLiteral("STATUS"), QStringLiteral("स्थिति")),
+        StormLangStorm11(QStringLiteral("ВЕРСИЯ (BUILD ID)"), QStringLiteral("VERSION (BUILD ID)"), QStringLiteral("VERSION (BUILD-ID)"), QStringLiteral("VERSION (BUILD ID)"), QStringLiteral("版本 (BUILD ID)"), QStringLiteral("버전 (빌드 ID)"), QStringLiteral("バージョン (BUILD ID)"), QStringLiteral("VERSIÓN (BUILD ID)"), QStringLiteral("VERSIONE (BUILD ID)"), QStringLiteral("VERSÃO (BUILD ID)"), QStringLiteral("संस्करण (बिल्ड आईडी)"))
     });
 
     tree_widget->header()->setDefaultAlignment(Qt::AlignCenter);

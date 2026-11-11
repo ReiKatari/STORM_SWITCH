@@ -48,7 +48,7 @@
                         android:id="@+id/text_auto_correction_game_title"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="The Legend of Zelda"
+                        tools:text="The Legend of Zelda"
                         android:textSize="17sp"
                         android:textStyle="bold"
                         android:textColor="?attr/colorOnSurface"
@@ -92,7 +92,7 @@
                 app:cardCornerRadius="12dp"
                 app:cardElevation="0dp"
                 app:cardBackgroundColor="?attr/colorSurfaceVariant"
-                app:strokeColor="#EF4444"
+                app:strokeColor="?attr/colorError"
                 app:strokeWidth="0dp">
 
                 <LinearLayout
@@ -121,7 +121,7 @@
                             android:text="@string/auto_correction_issues_title"
                             android:textSize="12.5sp"
                             android:textStyle="bold"
-                            android:textColor="#EF4444"
+                            android:textColor="?attr/colorError"
     android:breakStrategy="simple"
     android:hyphenationFrequency="none"/>
 
@@ -245,7 +245,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_close_auto_correction"
-                    style="@style/Widget.Material3.Button.TextButton"
+                    style="@style/StormButton.Faceted.Secondary"
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
                     android:text="@string/close"

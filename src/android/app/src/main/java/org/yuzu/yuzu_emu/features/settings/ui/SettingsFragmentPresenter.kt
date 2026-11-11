@@ -690,6 +690,7 @@ class SettingsFragmentPresenter(
             add(IntSetting.FAST_GPU_TIME.key)
 
             add(BooleanSetting.CORE_SYNC_CORE_SPEED.key)
+            add(BooleanSetting.ENABLE_CHEATS_BY_DEFAULT.key)
 
 
 
@@ -812,6 +813,10 @@ class SettingsFragmentPresenter(
             add(BooleanSetting.ECO_THERMAL_MODE.key)
 
             add(BooleanSetting.ECO_FRAME_PACING.key)
+            add(BooleanSetting.STORM_THERMAL_GOVERNOR.key)
+            add(BooleanSetting.STORM_LOWEND_TURBO.key)
+            add(BooleanSetting.AUTO_60FPS_UNLOCK.key)
+            add(BooleanSetting.AUTO_ASPECT_RATIO_PATCH.key)
 
             add(BooleanSetting.SMART_SHADER_THROTTLE.key)
 

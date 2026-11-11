@@ -22,6 +22,10 @@ public:
     [[nodiscard]] QStringList GetFiles() const;
     [[nodiscard]] int GetMinimumWidth() const;
 
+protected:
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dropEvent(QDropEvent* event) override;
+
 private:
     QListWidget* file_list;
 

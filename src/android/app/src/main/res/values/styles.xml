@@ -679,6 +679,7 @@
 
 
     <style name="EdenMaterialDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="android:windowAnimationStyle">@style/StormDialogAnimation</item>
 
         <item name="materialAlertDialogTitleTextStyle">@style/StormDialog.Title</item>
 
@@ -868,22 +869,24 @@
 
 
 
-    <style name="EdenCard" parent="Widget.Material3.CardView.Elevated">
-
-        <item name="cardCornerRadius">16dp</item>
-
+    <style name="StormCard" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardCornerRadius">14dp</item>
         <item name="cardBackgroundColor">?attr/colorSurfaceVariant</item>
-
-        <item name="cardElevation">0dp</item>
-
+        <item name="cardElevation">2dp</item>
         <item name="strokeColor">?attr/colorOutline</item>
-
-        <item name="strokeWidth">0dp</item>
-
+        <item name="strokeWidth">1dp</item>
         <item name="android:focusable">true</item>
-
         <item name="android:clickable">true</item>
+    </style>
 
+    <style name="EdenCard" parent="StormCard">
+        <item name="cardCornerRadius">14dp</item>
+        <item name="cardBackgroundColor">?attr/colorSurfaceVariant</item>
+        <item name="cardElevation">2dp</item>
+        <item name="strokeColor">?attr/colorOutline</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
     </style>
 
     <style name="EdenGameCard" parent="Widget.Material3.CardView.Elevated">
@@ -1019,6 +1022,12 @@
         <item name="thumbTint">@color/switch_thumb_red_green</item>
         <item name="trackTint">@color/switch_track_red_green</item>
         <item name="useMaterialThemeColors">false</item>
+    </style>
+
+
+    <style name="StormDialogAnimation">
+        <item name="android:windowEnterAnimation">@anim/storm_dialog_enter</item>
+        <item name="android:windowExitAnimation">@anim/storm_dialog_exit</item>
     </style>
 
 </resources>

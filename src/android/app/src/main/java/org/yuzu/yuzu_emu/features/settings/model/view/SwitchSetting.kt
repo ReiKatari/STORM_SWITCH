@@ -26,6 +26,9 @@ class SwitchSetting(
     }
 
     fun setChecked(value: Boolean) {
+        if (org.yuzu.yuzu_emu.utils.NativeConfig.isPerGameConfigLoaded()) {
+            setting.global = false
+        }
         when (setting) {
             is AbstractIntSetting -> setting.setInt(if (value) 1 else 0)
             is AbstractBooleanSetting -> setting.setBoolean(value)

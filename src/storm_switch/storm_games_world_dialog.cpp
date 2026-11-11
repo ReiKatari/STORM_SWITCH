@@ -5,6 +5,7 @@
 #include <windows.h>
 #endif
 #include "storm_switch/storm_games_world_dialog.h"
+#include "storm_switch/common/storm_design_engine.h"
 #include <atomic>
 #include <mutex>
 #include <thread>
@@ -530,7 +531,7 @@ public:
     StormWorldDlcListDialog(QWidget* parent, const StormWorldGame& game)
         : QDialog(parent) {
         const QString disp_title = game.final_title.isEmpty() ? game.title : game.final_title;
-        setWindowTitle(tr("STORM SWITCH — Дополнения: %1").arg(disp_title));
+        setWindowTitle(tr("STORM SWITCH - Дополнения: %1").arg(disp_title));
         resize(740, 500);
         setMinimumSize(620, 380);
 
@@ -628,13 +629,13 @@ public:
         header_text_layout->setSpacing(3);
 
         auto* title_lbl = new QLabel(disp_title, header_box);
-        title_lbl->setStyleSheet(QStringLiteral("font-size: 15px; font-weight: bold; color: #FFFFFF;"));
+        title_lbl->setStyleSheet(QStringLiteral("font-size: 15px; font-weight: bold; color: %1;").arg(pal.textPrimary));
         title_lbl->setWordWrap(true);
         header_text_layout->addWidget(title_lbl);
 
         auto* meta_lbl = new QLabel(
             tr("Title ID: %1  •  Всего дополнений (DLC): %2")
-                .arg(game.serial_id.isEmpty() ? tr("—") : game.serial_id)
+                .arg(game.serial_id.isEmpty() ? tr("-") : game.serial_id)
                 .arg(game.dlc_count),
             header_box);
         meta_lbl->setStyleSheet(QStringLiteral("font-size: 12px; color: %1; font-family: monospace; font-weight: bold;").arg(StormTheme::GetThemePalette().accent));
@@ -677,7 +678,7 @@ public:
                 auto* item = new QTreeWidgetItem(tree);
                 item->setText(0, QString::number(i + 1));
                 item->setTextAlignment(0, Qt::AlignCenter);
-                item->setText(1, d.id.isEmpty() ? (ok ? QStringLiteral("%1").arg(tid + 0x1000ULL + static_cast<u64>(i + 1), 16, 16, QLatin1Char('0')).toUpper() : QStringLiteral("—")) : d.id.toUpper());
+                item->setText(1, d.id.isEmpty() ? (ok ? QStringLiteral("%1").arg(tid + 0x1000ULL + static_cast<u64>(i + 1), 16, 16, QLatin1Char('0')).toUpper() : QStringLiteral("-")) : d.id.toUpper());
                 item->setText(2, d.name.isEmpty() ? tr("Официальное дополнение (DLC #%1)").arg(i + 1) : d.name);
                 item->setText(3, d.version.isEmpty() ? (game.version.isEmpty() ? QStringLiteral("1.0.0") : game.version) : d.version);
                 item->setText(4, tr("Доступно в пакете"));
@@ -710,7 +711,7 @@ public:
                         item->setText(4, tr("Доступно в пакете"));
                     } else {
                         const u64 dlc_tid = ok ? (tid + 0x1000ULL + static_cast<u64>(i)) : 0ULL;
-                        item->setText(1, dlc_tid != 0 ? QStringLiteral("%1").arg(dlc_tid, 16, 16, QLatin1Char('0')).toUpper() : QStringLiteral("—"));
+                        item->setText(1, dlc_tid != 0 ? QStringLiteral("%1").arg(dlc_tid, 16, 16, QLatin1Char('0')).toUpper() : QStringLiteral("-"));
                         item->setText(2, tr("Официальный контент (DLC #%1)").arg(i + 1));
                         item->setText(3, game.version.isEmpty() ? QStringLiteral("1.0.0") : game.version);
                         item->setText(4, tr("Включено в релиз"));
@@ -725,10 +726,10 @@ public:
                 }
             } else {
                 auto* item = new QTreeWidgetItem(tree);
-                item->setText(0, QStringLiteral("—"));
-                item->setText(1, QStringLiteral("—"));
+                item->setText(0, QStringLiteral("-"));
+                item->setText(1, QStringLiteral("-"));
                 item->setText(2, tr("Для данной игры официальные дополнения не обнаружены"));
-                item->setText(3, QStringLiteral("—"));
+                item->setText(3, QStringLiteral("-"));
                 item->setText(4, tr("Нет данных"));
                 item->setForeground(2, QBrush(QColor(QStringLiteral("#94a3b8"))));
             }
@@ -1569,7 +1570,7 @@ void StormGamesWorldDialog::MergeLocalGamesIntoCatalog(const QString bitand dir_
     QSet<QString> catalog_names;
     for (const auto bitand g : all_games) {
         const QString c_tid = g.serial_id.trimmed().remove(QStringLiteral("0x"), Qt::CaseInsensitive).toUpper();
-        if (!c_tid.isEmpty() and c_tid != QStringLiteral("—")) {
+        if (!c_tid.isEmpty() and c_tid != QStringLiteral("-")) {
             catalog_tids.insert(c_tid);
             bool ok = false;
             const u64 val = c_tid.toULongLong(bitand ok, 16);
@@ -1618,7 +1619,7 @@ void StormGamesWorldDialog::MergeLocalGamesIntoCatalog(const QString bitand dir_
             local_g.id = -1000 - (++local_idx);
             local_g.title = file.title.isEmpty() ? file.file_name : file.title;
             local_g.final_title = local_g.title;
-            local_g.serial_id = ftid.isEmpty() ? QStringLiteral("—") : ftid;
+            local_g.serial_id = ftid.isEmpty() ? QStringLiteral("-") : ftid;
             local_g.version = file.version.isEmpty() ? QStringLiteral("1.0.0") : file.version;
             local_g.size = QtCommon::ReadableByteSize(file.size);
             local_g.file_exists = true;
@@ -1739,7 +1740,7 @@ bool StormGamesWorldDialog::IsGameDownloaded(const StormWorldGame bitand game, c
 
         // [Rule 2: GAME IDENTITY MATCH]
         bool id_match = false;
-        if (!tid.isEmpty() and tid != QStringLiteral("—") and !ftid.isEmpty() and ftid == tid) {
+        if (!tid.isEmpty() and tid != QStringLiteral("-") and !ftid.isEmpty() and ftid == tid) {
             id_match = true;
         } else if (game_base_tid != 0 and ok_ftid and file_tid_val != 0 and (file_tid_val & ~0x1FFFULL) == game_base_tid) {
             id_match = true;
@@ -1747,7 +1748,7 @@ bool StormGamesWorldDialog::IsGameDownloaded(const StormWorldGame bitand game, c
             id_match = true;
         } else if (!clean_title.isEmpty() and (file.complete_base_name == clean_title or (clean_title.length() >= 4 and file.lower_name.contains(clean_title)))) {
             id_match = true;
-        } else if (!tid.isEmpty() and tid != QStringLiteral("—") and file.lower_name.contains(tid.toLower())) {
+        } else if (!tid.isEmpty() and tid != QStringLiteral("-") and file.lower_name.contains(tid.toLower())) {
             id_match = true;
         }
 
@@ -1793,7 +1794,7 @@ bool StormGamesWorldDialog::IsGameDownloaded(const StormWorldGame bitand game, c
             }
         }
 
-        const bool has_ver = (!ver.isEmpty() and ver != QStringLiteral("1.0.0") and ver != QStringLiteral("—") and ver != QStringLiteral("-"));
+        const bool has_ver = (!ver.isEmpty() and ver != QStringLiteral("1.0.0") and ver != QStringLiteral("-") and ver != QStringLiteral("-"));
         const bool has_int_ver = (!eff_int_ver.isEmpty() and eff_int_ver != QStringLiteral("0"));
         if (has_ver or has_int_ver) {
             bool ver_matched = false;
@@ -1820,7 +1821,7 @@ bool StormGamesWorldDialog::IsGameDownloaded(const StormWorldGame bitand game, c
 }
 
 void StormGamesWorldDialog::SetupUI() {
-    setWindowTitle(tr("STORM SWITCH — Каталог и менеджер игр STORM GAMES WORLD"));
+    setWindowTitle(tr("STORM SWITCH - Каталог и менеджер игр STORM GAMES WORLD"));
 
     const auto pal = StormTheme::GetThemePalette();
 
@@ -1931,19 +1932,19 @@ void StormGamesWorldDialog::SetupUI() {
     games_tree->header()->setDefaultAlignment(Qt::AlignCenter);
 
     games_tree->header()->setSectionResizeMode(0, QHeaderView::Stretch);
-    games_tree->header()->setSectionResizeMode(1, QHeaderView::Interactive);
-    games_tree->header()->setSectionResizeMode(2, QHeaderView::Interactive);
+    games_tree->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    games_tree->header()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
     games_tree->header()->setSectionResizeMode(3, QHeaderView::Interactive);
-    games_tree->header()->setSectionResizeMode(4, QHeaderView::Interactive);
+    games_tree->header()->setSectionResizeMode(4, QHeaderView::ResizeToContents);
     games_tree->header()->setSectionResizeMode(5, QHeaderView::Interactive);
     games_tree->header()->setSectionResizeMode(6, QHeaderView::Interactive);
 
-    games_tree->setColumnWidth(1, 110);
-    games_tree->setColumnWidth(2, 95);
-    games_tree->setColumnWidth(3, 140);
-    games_tree->setColumnWidth(4, 90);
-    games_tree->setColumnWidth(5, 145);
-    games_tree->setColumnWidth(6, 110);
+    games_tree->setColumnWidth(1, 140);
+    games_tree->setColumnWidth(2, 130);
+    games_tree->setColumnWidth(3, 160);
+    games_tree->setColumnWidth(4, 130);
+    games_tree->setColumnWidth(5, 160);
+    games_tree->setColumnWidth(6, 130);
 
     connect(games_tree, &QTreeWidget::itemClicked, this, [this](QTreeWidgetItem* item, int column) {
         if (column == 3) {
@@ -1982,7 +1983,7 @@ void StormGamesWorldDialog::SetupUI() {
     title_label->setStyleSheet(QStringLiteral("font-size: 15px; font-weight: bold; color: %1;").arg(pal.textPrimary));
     meta_layout->addWidget(title_label);
 
-    tid_label = new QLabel(tr("Title ID: —"), details_panel);
+    tid_label = new QLabel(tr("Title ID: -"), details_panel);
     tid_label->setStyleSheet(QStringLiteral("font-family: monospace; color: %1; font-size: 12px; font-weight: bold;").arg(pal.accent));
     meta_layout->addWidget(tid_label);
 
@@ -1991,19 +1992,19 @@ void StormGamesWorldDialog::SetupUI() {
     badges_grid->setHorizontalSpacing(6);
     badges_grid->setVerticalSpacing(6);
 
-    version_badge = new QLabel(tr("Версия: —"), details_panel);
-    internal_version_badge = new QLabel(tr("Сборка: —"), details_panel);
+    version_badge = new QLabel(tr("Версия: -"), details_panel);
+    internal_version_badge = new QLabel(tr("Сборка: -"), details_panel);
     format_badge = new QLabel(tr("Формат: NSP"), details_panel);
-    size_badge = new QLabel(tr("Размер: —"), details_panel);
+    size_badge = new QLabel(tr("Размер: -"), details_panel);
 
-    dlc_badge = new QLabel(tr("Дополнений: —"), details_panel);
+    dlc_badge = new QLabel(tr("Дополнений: -"), details_panel);
     dlc_badge->setCursor(Qt::PointingHandCursor);
     dlc_badge->installEventFilter(this);
 
-    mod_badge = new QLabel(tr("Модификации: —"), details_panel);
+    mod_badge = new QLabel(tr("Модификации: -"), details_panel);
     mod_badge->setVisible(false);
 
-    lang_badge = new QLabel(tr("Язык: —"), details_panel);
+    lang_badge = new QLabel(tr("Язык: -"), details_panel);
 
     badges_grid->addWidget(version_badge, 0, 0);
     badges_grid->addWidget(internal_version_badge, 0, 1);
@@ -2019,7 +2020,7 @@ void StormGamesWorldDialog::SetupUI() {
     auto* ver_select_layout = new QHBoxLayout();
     ver_select_layout->setSpacing(6);
     auto* ver_title = new QLabel(tr("Доступная версия:"), details_panel);
-    ver_title->setStyleSheet(QStringLiteral("color: #FFFFFF; font-weight: bold;"));
+    ver_title->setStyleSheet(QStringLiteral("color: %1; font-weight: bold;").arg(pal.textPrimary));
     ver_select_layout->addWidget(ver_title);
 
     version_combo = new QComboBox(details_panel);
@@ -2034,7 +2035,7 @@ void StormGamesWorldDialog::SetupUI() {
 
     // Description text browser
     auto* desc_title = new QLabel(tr("Описание и состав релиза:"), details_panel);
-    desc_title->setStyleSheet(QStringLiteral("font-weight: bold; color: #FFFFFF; font-size: 13px;"));
+    desc_title->setStyleSheet(QStringLiteral("font-weight: bold; color: %1; font-size: 13px;").arg(pal.textPrimary));
     details_layout->addWidget(desc_title);
 
     description_browser = new QTextBrowser(details_panel);
@@ -2059,7 +2060,7 @@ void StormGamesWorldDialog::SetupUI() {
     dl_box_layout->addWidget(progress_bar);
 
     download_status_label = new QLabel(tr("Готов к скачиванию"), download_box);
-    download_status_label->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 12px; font-weight: 500;"));
+    download_status_label->setStyleSheet(QStringLiteral("color: %1; font-size: 12px; font-weight: 500;").arg(pal.textPrimary));
     dl_box_layout->addWidget(download_status_label);
 
     auto* dl_buttons = new QHBoxLayout();
@@ -2102,7 +2103,7 @@ void StormGamesWorldDialog::SetupUI() {
     // --- Bottom Status Bar ---
     auto* bottom_bar = new QHBoxLayout();
     status_label = new QLabel(tr("Подключение к порталу stormgamesworld.ru..."), this);
-    status_label->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 12px;"));
+    status_label->setStyleSheet(QStringLiteral("color: %1; font-size: 12px;").arg(pal.textSecondary));
     bottom_bar->addWidget(status_label, 1);
 
     auto* close_btn = new QPushButton(tr("Закрыть"), this);
@@ -2301,7 +2302,8 @@ void StormGamesWorldDialog::ApplyStormStyles() {
         pal.accentHover
     );
 
-    setStyleSheet(base_style + QStringLiteral("\n") + custom_style);
+    setProperty("_stormDialogThemed", true);
+    setStyleSheet(StormDesign::BuildDialogStylesheet(pal) + QStringLiteral("\n") + custom_style);
 }
 
 void StormGamesWorldDialog::OnFetchCatalog() {
@@ -2360,7 +2362,7 @@ void StormGamesWorldDialog::OnCatalogReplyFinished() {
             const bool hf = parse_bool_val(obj[QStringLiteral("hasFile")]);
             const QString sz = obj[QStringLiteral("size")].toString().trimmed();
             const bool sz_ok = !sz.isEmpty() and
-                               sz != QStringLiteral("—") and
+                               sz != QStringLiteral("-") and
                                sz != QStringLiteral("null") and
                                sz != QStringLiteral("0") and
                                sz != QStringLiteral("0 B") and
@@ -2434,7 +2436,7 @@ void StormGamesWorldDialog::ParseCatalogArray(const QJsonArray bitand arr) {
         const QString size_str = obj[QStringLiteral("size")].toString().trimmed();
 
         const bool size_valid = !size_str.isEmpty() and
-                                size_str != QStringLiteral("—") and
+                                size_str != QStringLiteral("-") and
                                 size_str != QStringLiteral("null") and
                                 size_str != QStringLiteral("0") and
                                 size_str != QStringLiteral("0 B") and
@@ -2697,7 +2699,7 @@ void StormGamesWorldDialog::PopulateGameList(const QString bitand filter) {
     for (const auto bitand g : all_games) {
         const QString tid = g.serial_id.trimmed().toLower();
         const QString clean_title = SanitizeFileName(g.title).toLower();
-        const QString key = (!tid.isEmpty() and tid != QStringLiteral("—")) ? tid : clean_title;
+        const QString key = (!tid.isEmpty() and tid != QStringLiteral("-")) ? tid : clean_title;
         group_counts[key]++;
     }
 
@@ -2705,7 +2707,7 @@ void StormGamesWorldDialog::PopulateGameList(const QString bitand filter) {
     items_to_add.reserve(all_games.size());
 
     for (const auto bitand g : all_games) {
-        if (g.id >= 0 and (!g.file_exists or !g.has_file or g.size.trimmed().isEmpty() or g.size.trimmed() == QStringLiteral("—"))) {
+        if (g.id >= 0 and (!g.file_exists or !g.has_file or g.size.trimmed().isEmpty() or g.size.trimmed() == QStringLiteral("-"))) {
             continue;
         }
 
@@ -2746,7 +2748,7 @@ void StormGamesWorldDialog::PopulateGameList(const QString bitand filter) {
         item->setForeground(0, QBrush(QColor(QStringLiteral("#FFFFFF"))));
 
         const QString item_tid = g.serial_id.trimmed().remove(QStringLiteral("0x"), Qt::CaseInsensitive).toUpper();
-        if (!item_tid.isEmpty() and item_tid != QStringLiteral("—")) {
+        if (!item_tid.isEmpty() and item_tid != QStringLiteral("-")) {
             const QString icon_file = QDir(gl_dir).filePath(item_tid + QStringLiteral(".jpeg"));
             if (QFile::exists(icon_file)) {
                 item->setIcon(0, QIcon(icon_file));
@@ -2769,7 +2771,7 @@ void StormGamesWorldDialog::PopulateGameList(const QString bitand filter) {
 
         const QString sz_str = (g.file_size_bytes > 0)
             ? StormFormat::ReadableByteSize(static_cast<qulonglong>(g.file_size_bytes))
-            : (g.size.isEmpty() ? tr("—") : LocalizeSizeString(g.size));
+            : (g.size.isEmpty() ? tr("-") : LocalizeSizeString(g.size));
         item->setText(2, sz_str);
         item->setForeground(2, QBrush(QColor(pal.textPrimary)));
 
@@ -2786,14 +2788,14 @@ void StormGamesWorldDialog::PopulateGameList(const QString bitand filter) {
             item->setForeground(3, QBrush(QColor(QStringLiteral("#C084FC"))));
             item->setToolTip(3, tr("Вшита модификация / русификатор (%1 MOD)").arg(g.mod_count));
         } else {
-            item->setText(3, QStringLiteral("—"));
+            item->setText(3, QStringLiteral("-"));
             item->setForeground(3, QBrush(QColor(pal.textSecondary)));
         }
 
         item->setText(4, langs);
         item->setForeground(4, QBrush(QColor(pal.textPrimary)));
 
-        item->setText(5, g.serial_id.isEmpty() ? tr("—") : g.serial_id);
+        item->setText(5, g.serial_id.isEmpty() ? tr("-") : g.serial_id);
         item->setForeground(5, QBrush(QColor(pal.accent)));
 
         // Center align columns 1 to 6
@@ -2844,7 +2846,7 @@ void StormGamesWorldDialog::PopulateGameList(const QString bitand filter) {
         selected_game_index = -1;
         download_btn->setEnabled(false);
         title_label->setText(tr("Игры не найдены"));
-        tid_label->setText(tr("Title ID: —"));
+        tid_label->setText(tr("Title ID: -"));
         description_browser->clear();
     }
 }
@@ -2900,7 +2902,7 @@ void StormGamesWorldDialog::OnGameSelectionChanged() {
                     download_btn->setText(tr("Докачать игру (%1)").arg(StormFormat::ReadableByteSize(part_fi.size())));
                     download_btn->setIcon(MakeDialogVectorIcon(DialogIcon::Play, Qt::white, 16));
                     if (!is_downloading) {
-                        download_status_label->setText(tr("Найден незавершенный файл (%1) — доступна докачка").arg(StormFormat::ReadableByteSize(part_fi.size())));
+                        download_status_label->setText(tr("Найден незавершенный файл (%1) - доступна докачка").arg(StormFormat::ReadableByteSize(part_fi.size())));
                         if (game.file_size_bytes > 0) {
                             progress_bar->setValue(static_cast<int>(std::min<qint64>(99, (part_fi.size() * 100) / game.file_size_bytes)));
                         }
@@ -3024,7 +3026,7 @@ void StormGamesWorldDialog::DisplayGameDetails(const StormWorldGame& game) {
 
     version_combo->clear();
     const QString ver_item_text = game.is_recommended
-        ? tr("Основная версия (%1) [%2] — Рекомендуемая").arg(game.version.isEmpty() ? QStringLiteral("1.0.0") : game.version).arg(ext_tag)
+        ? tr("Основная версия (%1) [%2] - Рекомендуемая").arg(game.version.isEmpty() ? QStringLiteral("1.0.0") : game.version).arg(ext_tag)
         : tr("Основная версия (%1) [%2]").arg(game.version.isEmpty() ? QStringLiteral("1.0.0") : game.version).arg(ext_tag);
     version_combo->addItem(ver_item_text);
 
@@ -3228,7 +3230,7 @@ void StormGamesWorldDialog::LoadCover(const StormWorldGame bitand game) {
 
     // Normalize Title ID
     QString tid = game.serial_id.trimmed().remove(QStringLiteral("0x"), Qt::CaseInsensitive).toUpper();
-    if (tid.isEmpty() or tid == QStringLiteral("—")) {
+    if (tid.isEmpty() or tid == QStringLiteral("-")) {
         for (const auto bitand file_item : cached_dir_files) {
             if (!file_item.tid.isEmpty() and (file_item.title.compare(game.title, Qt::CaseInsensitive) == 0 or
                                               file_item.title.compare(game.final_title, Qt::CaseInsensitive) == 0 or
@@ -3243,7 +3245,7 @@ void StormGamesWorldDialog::LoadCover(const StormWorldGame bitand game) {
     const auto eden_cache = Common::FS::GetEdenPath(Common::FS::EdenPath::CacheDir);
     const QString game_list_dir = QString::fromStdString(Common::FS::PathToUTF8String(eden_cache / "game_list"));
 
-    if (!tid.isEmpty() and tid != QStringLiteral("—")) {
+    if (!tid.isEmpty() and tid != QStringLiteral("-")) {
         const QStringList local_icon_candidates = {
             QDir(game_list_dir).filePath(tid + QStringLiteral(".jpeg")),
             QDir(game_list_dir).filePath(tid.toLower() + QStringLiteral(".jpeg")),
@@ -3293,7 +3295,7 @@ void StormGamesWorldDialog::LoadCover(const StormWorldGame bitand game) {
     current_cover_candidate_index = 0;
 
     // S. Storm Switch Verified High-Res CDN Icon (Exact 1:1 match for all known games)
-    if (!tid.isEmpty() and tid != QStringLiteral("—")) {
+    if (!tid.isEmpty() and tid != QStringLiteral("-")) {
         const QString verified_url = GetVerifiedCoverUrlForTid(tid);
         if (!verified_url.isEmpty()) {
             current_cover_candidates.append(verified_url);
@@ -3301,7 +3303,7 @@ void StormGamesWorldDialog::LoadCover(const StormWorldGame bitand game) {
     }
 
     // A. TitleDB Official Nintendo eShop Icon
-    if (!tid.isEmpty() and tid != QStringLiteral("—")) {
+    if (!tid.isEmpty() and tid != QStringLiteral("-")) {
         bool ok = false;
         const u64 tid_val = tid.toULongLong(bitand ok, 16);
         if (ok) {
@@ -3339,7 +3341,7 @@ void StormGamesWorldDialog::LoadCover(const StormWorldGame bitand game) {
     }
 
     // D. Tinfoil and GameTDB CDNs
-    if (!tid.isEmpty() and tid != QStringLiteral("—")) {
+    if (!tid.isEmpty() and tid != QStringLiteral("-")) {
         current_cover_candidates.append(QStringLiteral("https://tinfoil.media/repo/db/icons/%1.jpg").arg(tid));
         current_cover_candidates.append(QStringLiteral("https://art.gametdb.com/switch/coverM/US/%1.jpg").arg(tid));
     }
@@ -3736,7 +3738,7 @@ void StormGamesWorldDialog::OnDownloadReplyFinished() {
         download_retry_count = 0;
         download_status_label->setText(tr("Ошибка загрузки: %1 (прогресс сохранен для докачки)").arg(err_str));
         QMessageBox::critical(this, tr("Сбой скачивания"),
-            tr("Произошла ошибка при загрузке игры с сервера:\n%1\n\nСкачанная часть сохранена — вы можете продолжить докачку в любой момент.").arg(err_str));
+            tr("Произошла ошибка при загрузке игры с сервера:\n%1\n\nСкачанная часть сохранена - вы можете продолжить докачку в любой момент.").arg(err_str));
     } else {
         download_retry_count = 0;
         if (QFile::exists(current_download_path)) {

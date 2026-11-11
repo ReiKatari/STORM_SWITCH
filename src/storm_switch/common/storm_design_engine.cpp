@@ -18,6 +18,8 @@
 #include <QPropertyAnimation>
 #include <QPushButton>
 #include <QTabWidget>
+#include <QStackedWidget>
+#include <QDialog>
 #include <QVariantAnimation>
 #include <QWidget>
 
@@ -162,78 +164,100 @@ DerivedTokens ComputeTokens(const StormTheme::Palette& pal, Preset preset) {
     }
     }
 
+    // 3D Volumetric tactile buttons with top specular highlight, subtle bottom bevel, hover glow, pressed state
+    const QColor btnBevel = pal.is_light ? t.border.darker(110) : t.deepShadow;
+    const QColor btnBorderCol = pal.is_light ? t.border : MixColors(t.border, t.accent, 0.15);
+
     t.btnNormal = QStringLiteral(
-        "background-color: %1;"
-        "border: none;"
-        "border-radius: %2;"
-        "padding: 6px 16px;"
+        "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %1, stop:1 %2);"
+        "border: 1px solid %3;"
+        "border-top: 1px solid %4;"
+        "border-bottom: 2px solid %5;"
+        "border-radius: %6;"
+        "padding: 5px 15px 6px 15px;"
         "outline: none;")
-        .arg(pal.buttonBg, t.btnRadius);
+        .arg(btnTop.name(), btnBot.name(), btnBorderCol.name(),
+             (pal.is_light ? QStringLiteral("#FFFFFF") : specSoft),
+             btnBevel.name(), t.btnRadius);
 
     t.btnHover = QStringLiteral(
-        "background-color: %1;"
-        "border: none;")
-        .arg(hoverTop.name());
+        "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %1, stop:1 %2);"
+        "border: 1px solid %3;"
+        "border-bottom: 2px solid %4;")
+        .arg(hoverTop.name(), hoverBot.name(), t.accent.name(), t.accentDark.name());
 
     t.btnPressed = QStringLiteral(
         "background-color: %1;"
-        "border: none;"
-        "padding: 6px 16px;")
-        .arg(btnBot.name());
+        "border: 1px solid %2;"
+        "border-top: 2px solid %3;"
+        "border-bottom: 1px solid %2;"
+        "padding: 7px 15px 4px 15px;")
+        .arg(btnBot.name(), btnBorderCol.name(), btnBevel.name());
 
+    // 3D Recessed input fields with top inner shadow and focus accent border
+    const QColor inputTopBorder = pal.is_light ? t.border.darker(112) : t.bg.darker(150);
     t.inputNormal = QStringLiteral(
         "background-color: %1;"
-        "border: none;"
-        "border-radius: %2;"
+        "border: 1px solid %2;"
+        "border-top: 1px solid %3;"
+        "border-radius: %4;"
         "outline: none;")
-        .arg(pal.inputBg, t.inputRadius);
+        .arg(pal.inputBg, pal.border, inputTopBorder.name(), t.inputRadius);
 
     t.inputHover = QStringLiteral(
-        "border: none;"
-        "background-color: %1;")
-        .arg(inputHoverBg.name());
+        "border: 1px solid %1;"
+        "border-top: 1px solid %1;"
+        "background-color: %2;")
+        .arg(pal.borderHover, inputHoverBg.name());
 
     t.inputFocus = QStringLiteral(
-        "border: none;"
-        "background-color: %1;")
-        .arg(inputFocusBg.name());
+        "border: 1px solid %1;"
+        "border-top: 1px solid %1;"
+        "background-color: %2;")
+        .arg(pal.accent, inputFocusBg.name());
 
     t.groupBoxRule = QStringLiteral(
         "background-color: %1;"
-        "border: none;"
-        "border-radius: %2;"
+        "border: 1px solid %2;"
+        "border-radius: %3;"
         "margin-top: 14px;"
         "padding: 18px 14px 13px 14px;")
-        .arg(cardGlass, t.cardRadius);
+        .arg(pal.card, pal.border, t.cardRadius);
 
     t.groupTitleRule = QStringLiteral(
         "subcontrol-origin: margin; subcontrol-position: top left; top: 1px; left: 12px;"
         "padding: 2px 10px; border-radius: 6px; font-weight: 700; font-size: 12px;"
-        "color: %1; background-color: %2; border: none;")
-        .arg(pal.is_light ? pal.accent : t.accentLight.name(), pal.surface);
+        "color: %1; background-color: %2; border: 1px solid %3;")
+        .arg(pal.is_light ? pal.accent : t.accentLight.name(), pal.surface, pal.border);
 
     t.btnPrimaryNormal = QStringLiteral(
-        "background-color: %1;"
+        "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %1, stop:1 %2);"
         "color: #FFFFFF;"
-        "border: none;"
-        "border-radius: %2;"
-        "padding: 6px 18px;"
+        "border: 1px solid %3;"
+        "border-top: 1px solid %4;"
+        "border-bottom: 2px solid %5;"
+        "border-radius: %6;"
+        "padding: 5px 17px 6px 17px;"
         "font-weight: 700;"
         "outline: none;")
-        .arg(pal.accent, t.btnRadius);
+        .arg(t.accentLight.name(), t.accent.name(), t.accent.name(),
+             specBright, t.accentDark.darker(120).name(), t.btnRadius);
 
     t.btnPrimaryHover = QStringLiteral(
-        "background-color: %1;"
+        "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %1, stop:1 %2);"
         "color: #FFFFFF;"
-        "border: none;")
-        .arg(t.accentLight.name());
+        "border: 1px solid %3;"
+        "border-bottom: 2px solid %4;")
+        .arg(t.accentLight.lighter(112).name(), t.accent.name(), t.accentLight.name(), t.accentDark.name());
 
     t.btnPrimaryPressed = QStringLiteral(
         "background-color: %1;"
         "color: #FFFFFF;"
-        "border: none;"
-        "padding: 6px 18px;")
-        .arg(t.accentDark.name());
+        "border: 1px solid %2;"
+        "border-top: 2px solid %3;"
+        "border-bottom: 1px solid %2;"
+        "padding: 7px 17px 4px 17px;")
+        .arg(t.accentDark.name(), t.accentDark.name(), t.accentDark.darker(140).name());
 
     t.tabPaneRule = QStringLiteral(
         "border: none; border-radius: %1; background-color: %2; top: 0px;")
@@ -297,22 +321,26 @@ QString BuildCoreControlsQss(const StormTheme::Palette& pal, const DerivedTokens
     qss += t.tabRule;
     qss += t.selectorListRule;
 
-    // Clean Borderless Inputs, SpinBoxes & Dropdowns (Zero Faceted Stroke Glow)
+    // 3D Recessed Input Fields, SpinBoxes, PlainTextEdit, QTextEdit & Dropdowns across all 9 themes
     qss += QStringLiteral(
-        "QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox, QDateTimeEdit {"
+        "QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox, QDateTimeEdit, QPlainTextEdit, QTextEdit {"
         "  %1"
         "  color: %2;"
-        "  padding-top: 0px; padding-bottom: 0px; padding-left: 11px; padding-right: 28px;"
-        "  min-height: 32px; font-size: 12px;"
+        "  padding: 5px 10px;"
+        "  font-size: 12px;"
         "  selection-background-color: %3; selection-color: #FFFFFF;"
+        "}"
+        "QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox, QDateTimeEdit {"
+        "  padding-top: 0px; padding-bottom: 0px; padding-left: 11px; padding-right: 28px;"
+        "  min-height: 32px;"
         "}"
         "QSpinBox QLineEdit, QDoubleSpinBox QLineEdit {"
         "  padding: 0px; margin: 0px; border: none; background: transparent;"
         "}"
-        "QLineEdit:hover, QSpinBox:hover, QDoubleSpinBox:hover, QComboBox:hover, QDateTimeEdit:hover {"
+        "QLineEdit:hover, QSpinBox:hover, QDoubleSpinBox:hover, QComboBox:hover, QDateTimeEdit:hover, QPlainTextEdit:hover, QTextEdit:hover {"
         "  %4"
         "}"
-        "QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus, QComboBox:focus, QComboBox:on, QDateTimeEdit:focus {"
+        "QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus, QComboBox:focus, QComboBox:on, QDateTimeEdit:focus, QPlainTextEdit:focus, QTextEdit:focus {"
         "  %5"
         "}"
         "QComboBox::drop-down {"
@@ -323,17 +351,17 @@ QString BuildCoreControlsQss(const StormTheme::Palette& pal, const DerivedTokens
         "}"
         "QComboBox::down-arrow { image: url(:/icons/down_arrow.svg); width: 12px; height: 12px; }"
         "QComboBoxPrivateContainer, QComboBox QListView, QComboBox QAbstractItemView {"
-        "  background-color: %9; color: %2; border: 1px solid %6; border-radius: %7;"
+        "  background-color: %8; color: %2; border: 1px solid %6; border-radius: %7;"
         "  selection-background-color: %3; selection-color: #FFFFFF; outline: none; padding: 4px;"
         "}"
         "QComboBox QAbstractItemView::item {"
-        "  min-height: 26px; padding: 4px 10px; border-radius: 5px; color: %2; border: none;"
+        "  min-height: 26px; padding: 4px 10px; border-radius: 5px; color: %2; border: none; background: transparent;"
         "}"
         "QComboBox QAbstractItemView::item:selected, QComboBox QAbstractItemView::item:hover {"
         "  background-color: %3; color: #FFFFFF; border: none;"
         "}")
         .arg(t.inputNormal, pal.textPrimary, pal.accent, t.inputHover, t.inputFocus,
-             pal.border, t.inputRadius, RgbaCss(t.accent, 20), pal.surface);
+             pal.border, t.inputRadius, pal.card);
 
     // Clean Sliders & Indicators (Zero harsh border glow)
     qss += QStringLiteral(
@@ -356,15 +384,37 @@ QString BuildCoreControlsQss(const StormTheme::Palette& pal, const DerivedTokens
         "}")
         .arg(pal.border, t.deepShadow.name(), pal.inputBg, pal.accent, t.accentLight.name());
 
+    // Cards, Volumetric Sections & Frames across all 9 themes
+    qss += QStringLiteral(
+        "QFrame#StormCard, QFrame[stormCard=\"true\"] {"
+        "  background-color: %1; border: 1px solid %2; border-radius: %3;"
+        "}"
+        "QMenu {"
+        "  background-color: %1; color: %4; border: 1px solid %2; border-radius: 6px; padding: 4px;"
+        "}"
+        "QMenu::item {"
+        "  padding: 5px 18px 5px 12px; border-radius: 4px; color: %4;"
+        "}"
+        "QMenu::item:selected {"
+        "  background-color: %5; color: #FFFFFF;"
+        "}"
+        "QMenu::separator {"
+        "  height: 1px; background: %2; margin: 4px 6px;"
+        "}"
+        "QToolTip {"
+        "  background-color: %1; color: %4; border: 1px solid %2; border-radius: 5px; padding: 5px 9px; font-size: 11px;"
+        "}")
+        .arg(pal.card, pal.border, t.cardRadius, pal.textPrimary, pal.accent);
+
     // Tables, Headers & Lists (No viewport-clipping border-radius or glowing outlines)
     qss += QStringLiteral(
         "QTableWidget, QTableView, QTreeWidget, QTreeView, QListWidget {"
         "  background-color: %1; alternate-background-color: %2; color: %3;"
-        "  border: none; gridline-color: %4; outline: none;"
+        "  border: 1px solid %4; gridline-color: %4; outline: none;"
         "  selection-background-color: %6; selection-color: #FFFFFF;"
         "}"
         "QTableWidget::item, QTableView::item, QTreeWidget::item, QTreeView::item, QListWidget::item {"
-        "  border: none; outline: none;"
+        "  border: none; outline: none; padding: 4px 6px;"
         "}"
         "QHeaderView::section {"
         "  background-color: %7;"
@@ -440,6 +490,136 @@ protected:
         if (!watched || !event) {
             return QObject::eventFilter(watched, event);
         }
+
+        const QEvent::Type type = event->type();
+
+        if (type == QEvent::Show) {
+            // 1. Smooth 130ms windowOpacity fade-in for top-level QDialogs (Zero-Idle-CPU)
+            if (auto* dialog = qobject_cast<QDialog*>(watched)) {
+                if (dialog->isWindow() &&
+                    !dialog->inherits("QFileDialog") &&
+                    !dialog->inherits("QColorDialog") &&
+                    !dialog->inherits("QFontDialog") &&
+                    dialog->windowType() != Qt::SubWindow &&
+                    !dialog->property("_stormAnimRunning").toBool()) {
+
+                    dialog->setProperty("_stormAnimRunning", true);
+                    dialog->setWindowOpacity(0.0);
+
+                    auto* anim = new QVariantAnimation(dialog);
+                    anim->setDuration(130);
+                    anim->setStartValue(0.0);
+                    anim->setEndValue(1.0);
+                    anim->setEasingCurve(QEasingCurve::OutCubic);
+
+                    QPointer<QDialog> safe_dialog(dialog);
+                    connect(anim, &QVariantAnimation::valueChanged, dialog, [safe_dialog](const QVariant& value) {
+                        if (safe_dialog) {
+                            safe_dialog->setWindowOpacity(value.toReal());
+                        }
+                    });
+                    connect(anim, &QVariantAnimation::finished, dialog, [safe_dialog, anim]() {
+                        if (safe_dialog) {
+                            safe_dialog->setWindowOpacity(1.0);
+                            safe_dialog->setProperty("_stormAnimRunning", false);
+                        }
+                        anim->deleteLater();
+                    });
+                    anim->start();
+                }
+            }
+
+            // 2. Pixel-smooth 120 FPS scrolling on all QAbstractItemView tables/lists/trees (Zero idle CPU)
+            if (auto* itemView = qobject_cast<QAbstractItemView*>(watched)) {
+                itemView->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+                itemView->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
+            }
+
+            // 3. Tab & Stacked transitions inside QDialog / config widgets (NEVER attach to GRenderWindow or game viewport!)
+            if (auto* tabWidget = qobject_cast<QTabWidget*>(watched)) {
+                if (!tabWidget->property("_stormTabHooked").toBool() &&
+                    (tabWidget->window() && tabWidget->window()->inherits("QDialog"))) {
+                    tabWidget->setProperty("_stormTabHooked", true);
+                    connect(tabWidget, &QTabWidget::currentChanged, tabWidget, [tabWidget](int index) {
+                        QWidget* page = tabWidget->widget(index);
+                        if (!page || page->inherits("GRenderWindow") || page->property("isGameView").toBool()) {
+                            return;
+                        }
+                        auto* effect = new QGraphicsOpacityEffect(page);
+                        page->setGraphicsEffect(effect);
+                        auto* anim = new QVariantAnimation(page);
+                        anim->setDuration(80);
+                        anim->setStartValue(0.65);
+                        anim->setEndValue(1.0);
+                        anim->setEasingCurve(QEasingCurve::OutQuad);
+                        QPointer<QWidget> safe_page(page);
+                        QPointer<QGraphicsOpacityEffect> safe_effect(effect);
+                        connect(anim, &QVariantAnimation::valueChanged, page, [safe_effect](const QVariant& val) {
+                            if (safe_effect) {
+                                safe_effect->setOpacity(val.toReal());
+                            }
+                        });
+                        connect(anim, &QVariantAnimation::finished, page, [safe_page, anim]() {
+                            if (safe_page) {
+                                safe_page->setGraphicsEffect(nullptr); // Clean removal: zero idle CPU!
+                            }
+                            anim->deleteLater();
+                        });
+                        anim->start();
+                    });
+                }
+            } else if (auto* stacked = qobject_cast<QStackedWidget*>(watched)) {
+                if (!stacked->property("_stormStackHooked").toBool() &&
+                    (stacked->window() && stacked->window()->inherits("QDialog"))) {
+                    stacked->setProperty("_stormStackHooked", true);
+                    connect(stacked, &QStackedWidget::currentChanged, stacked, [stacked](int index) {
+                        QWidget* page = stacked->widget(index);
+                        if (!page || page->inherits("GRenderWindow") || page->property("isGameView").toBool()) {
+                            return;
+                        }
+                        auto* effect = new QGraphicsOpacityEffect(page);
+                        page->setGraphicsEffect(effect);
+                        auto* anim = new QVariantAnimation(page);
+                        anim->setDuration(80);
+                        anim->setStartValue(0.65);
+                        anim->setEndValue(1.0);
+                        anim->setEasingCurve(QEasingCurve::OutQuad);
+                        QPointer<QWidget> safe_page(page);
+                        QPointer<QGraphicsOpacityEffect> safe_effect(effect);
+                        connect(anim, &QVariantAnimation::valueChanged, page, [safe_effect](const QVariant& val) {
+                            if (safe_effect) {
+                                safe_effect->setOpacity(val.toReal());
+                            }
+                        });
+                        connect(anim, &QVariantAnimation::finished, page, [safe_page, anim]() {
+                            if (safe_page) {
+                                safe_page->setGraphicsEffect(nullptr); // Clean removal: zero idle CPU!
+                            }
+                            anim->deleteLater();
+                        });
+                        anim->start();
+                    });
+                }
+            }
+        } else if (type == QEvent::Hide) {
+            // Restore opacity to 1.0 upon dialog hide
+            if (auto* dialog = qobject_cast<QDialog*>(watched)) {
+                if (dialog->isWindow()) {
+                    dialog->setWindowOpacity(1.0);
+                    dialog->setProperty("_stormAnimRunning", false);
+                }
+            }
+        } else if (type == QEvent::PaletteChange || type == QEvent::ThemeChange ||
+                   type == QEvent::ApplicationPaletteChange) {
+            // Live Theme & Palette Refresh for dialogs
+            if (auto* w = qobject_cast<QWidget*>(watched)) {
+                if (w->property("_stormDialogThemed").toBool()) {
+                    const auto pal = StormTheme::GetThemePalette();
+                    w->setStyleSheet(BuildDialogStylesheet(pal));
+                }
+            }
+        }
+
         // Clean up any stale QGraphicsDropShadowEffect if attached to controls (zero opacity backing-store flicker)
         if (auto* widget = qobject_cast<QWidget*>(watched)) {
             if (widget->graphicsEffect() != nullptr &&
@@ -447,6 +627,7 @@ protected:
                 widget->setGraphicsEffect(nullptr);
             }
         }
+
         return QObject::eventFilter(watched, event);
     }
 };
@@ -498,87 +679,87 @@ QString GetDesignSelectorLabel() {
 QString GetLocalizedDesignName(const std::string& design_id) {
     if (design_id == "cyber_deck") {
         return StormLangStorm11(
-            QStringLiteral("STORM CYBER-DECK TACTILE — Тактильная кибер-дека"),
-            QStringLiteral("STORM CYBER-DECK TACTILE — Tactile Cyber-Deck"),
-            QStringLiteral("STORM CYBER-DECK TACTILE — Taktiles Cyber-Deck"),
-            QStringLiteral("STORM CYBER-DECK TACTILE — Cyber-Deck tactile"),
-            QStringLiteral("STORM CYBER-DECK TACTILE — 战术赛博甲板"),
-            QStringLiteral("STORM CYBER-DECK TACTILE — 택틸 사이버 덱"),
-            QStringLiteral("STORM CYBER-DECK TACTILE — タクティカル・サイバーデッキ"),
-            QStringLiteral("STORM CYBER-DECK TACTILE — Cyber-Deck táctil"),
-            QStringLiteral("STORM CYBER-DECK TACTILE — Cyber-Deck tattile"),
-            QStringLiteral("STORM CYBER-DECK TACTILE — Cyber-Deck tátil"),
-            QStringLiteral("STORM CYBER-DECK TACTILE — टैक्टाइल साइबर-डेक"));
+            QStringLiteral("STORM CYBER-DECK TACTILE - Тактильная кибер-дека"),
+            QStringLiteral("STORM CYBER-DECK TACTILE - Tactile Cyber-Deck"),
+            QStringLiteral("STORM CYBER-DECK TACTILE - Taktiles Cyber-Deck"),
+            QStringLiteral("STORM CYBER-DECK TACTILE - Cyber-Deck tactile"),
+            QStringLiteral("STORM CYBER-DECK TACTILE - 战术赛博甲板"),
+            QStringLiteral("STORM CYBER-DECK TACTILE - 택틸 사이버 덱"),
+            QStringLiteral("STORM CYBER-DECK TACTILE - タクティカル・サイバーデッキ"),
+            QStringLiteral("STORM CYBER-DECK TACTILE - Cyber-Deck táctil"),
+            QStringLiteral("STORM CYBER-DECK TACTILE - Cyber-Deck tattile"),
+            QStringLiteral("STORM CYBER-DECK TACTILE - Cyber-Deck tátil"),
+            QStringLiteral("STORM CYBER-DECK TACTILE - टैक्टाइल साइबर-डेक"));
     }
     if (design_id == "aurora_quantum") {
         return StormLangStorm11(
-            QStringLiteral("STORM AURORA QUANTUM — Жидкий металл и Аврора"),
-            QStringLiteral("STORM AURORA QUANTUM — Liquid Metal & Aurora"),
-            QStringLiteral("STORM AURORA QUANTUM — Flüssigmetall & Aurora"),
-            QStringLiteral("STORM AURORA QUANTUM — Métal liquide & Aurore"),
-            QStringLiteral("STORM AURORA QUANTUM — 液态金属与极光"),
-            QStringLiteral("STORM AURORA QUANTUM — 리퀴드 메탈 & 오로라"),
-            QStringLiteral("STORM AURORA QUANTUM — リキッドメタル＆オーロラ"),
-            QStringLiteral("STORM AURORA QUANTUM — Metal líquido y Aurora"),
-            QStringLiteral("STORM AURORA QUANTUM — Metallo liquido e Aurora"),
-            QStringLiteral("STORM AURORA QUANTUM — Metal líquido e Aurora"),
-            QStringLiteral("STORM AURORA QUANTUM — लिक्विड मेटल और ऑरोरा"));
+            QStringLiteral("STORM AURORA QUANTUM - Жидкий металл и Аврора"),
+            QStringLiteral("STORM AURORA QUANTUM - Liquid Metal & Aurora"),
+            QStringLiteral("STORM AURORA QUANTUM - Flüssigmetall & Aurora"),
+            QStringLiteral("STORM AURORA QUANTUM - Métal liquide & Aurore"),
+            QStringLiteral("STORM AURORA QUANTUM - 液态金属与极光"),
+            QStringLiteral("STORM AURORA QUANTUM - 리퀴드 메탈 & 오로라"),
+            QStringLiteral("STORM AURORA QUANTUM - リキッドメタル＆オーロラ"),
+            QStringLiteral("STORM AURORA QUANTUM - Metal líquido y Aurora"),
+            QStringLiteral("STORM AURORA QUANTUM - Metallo liquido e Aurora"),
+            QStringLiteral("STORM AURORA QUANTUM - Metal líquido e Aurora"),
+            QStringLiteral("STORM AURORA QUANTUM - लिक्विड मेटल और ऑरोरा"));
     }
     if (design_id == "orbital_spatial") {
         return StormLangStorm11(
-            QStringLiteral("STORM ORBITAL SPATIAL UI — Пространственный 3D-интерфейс"),
-            QStringLiteral("STORM ORBITAL SPATIAL UI — Spatial 3D Vision UI"),
-            QStringLiteral("STORM ORBITAL SPATIAL UI — Räumliches 3D-Interface"),
-            QStringLiteral("STORM ORBITAL SPATIAL UI — Interface spatiale 3D"),
-            QStringLiteral("STORM ORBITAL SPATIAL UI — 空间立体 3D 界面"),
-            QStringLiteral("STORM ORBITAL SPATIAL UI — 공간형 3D 인터페이스"),
-            QStringLiteral("STORM ORBITAL SPATIAL UI — 空間 3D インターフェース"),
-            QStringLiteral("STORM ORBITAL SPATIAL UI — Interfaz espacial 3D"),
-            QStringLiteral("STORM ORBITAL SPATIAL UI — Interfaccia spaziale 3D"),
-            QStringLiteral("STORM ORBITAL SPATIAL UI — Interface espacial 3D"),
-            QStringLiteral("STORM ORBITAL SPATIAL UI — स्पेशियल 3D इंटरफ़ेस"));
+            QStringLiteral("STORM ORBITAL SPATIAL UI - Пространственный 3D-интерфейс"),
+            QStringLiteral("STORM ORBITAL SPATIAL UI - Spatial 3D Vision UI"),
+            QStringLiteral("STORM ORBITAL SPATIAL UI - Räumliches 3D-Interface"),
+            QStringLiteral("STORM ORBITAL SPATIAL UI - Interface spatiale 3D"),
+            QStringLiteral("STORM ORBITAL SPATIAL UI - 空间立体 3D 界面"),
+            QStringLiteral("STORM ORBITAL SPATIAL UI - 공간형 3D 인터페이스"),
+            QStringLiteral("STORM ORBITAL SPATIAL UI - 空間 3D インターフェース"),
+            QStringLiteral("STORM ORBITAL SPATIAL UI - Interfaz espacial 3D"),
+            QStringLiteral("STORM ORBITAL SPATIAL UI - Interfaccia spaziale 3D"),
+            QStringLiteral("STORM ORBITAL SPATIAL UI - Interface espacial 3D"),
+            QStringLiteral("STORM ORBITAL SPATIAL UI - स्पेशियल 3D इंटरफ़ेस"));
     }
     if (design_id == "chrono_nexus") {
         return StormLangStorm11(
-            QStringLiteral("STORM CHRONO-NEXUS COMMANDER — Командный центр киберспорта"),
-            QStringLiteral("STORM CHRONO-NEXUS COMMANDER — Esports Command Center"),
-            QStringLiteral("STORM CHRONO-NEXUS COMMANDER — E-Sport-Kommandozentrale"),
-            QStringLiteral("STORM CHRONO-NEXUS COMMANDER — Centre de commandement Esports"),
-            QStringLiteral("STORM CHRONO-NEXUS COMMANDER — 电竞指挥中心"),
-            QStringLiteral("STORM CHRONO-NEXUS COMMANDER — 이스포츠 커맨드 센터"),
-            QStringLiteral("STORM CHRONO-NEXUS COMMANDER — eスポーツ・コマンドセンター"),
-            QStringLiteral("STORM CHRONO-NEXUS COMMANDER — Centro de mando Esports"),
-            QStringLiteral("STORM CHRONO-NEXUS COMMANDER — Centro di comando Esports"),
-            QStringLiteral("STORM CHRONO-NEXUS COMMANDER — Centro de comando Esports"),
-            QStringLiteral("STORM CHRONO-NEXUS COMMANDER — ई-स्पोर्ट्स कमांड सेंटर"));
+            QStringLiteral("STORM CHRONO-NEXUS COMMANDER - Командный центр киберспорта"),
+            QStringLiteral("STORM CHRONO-NEXUS COMMANDER - Esports Command Center"),
+            QStringLiteral("STORM CHRONO-NEXUS COMMANDER - E-Sport-Kommandozentrale"),
+            QStringLiteral("STORM CHRONO-NEXUS COMMANDER - Centre de commandement Esports"),
+            QStringLiteral("STORM CHRONO-NEXUS COMMANDER - 电竞指挥中心"),
+            QStringLiteral("STORM CHRONO-NEXUS COMMANDER - 이스포츠 커맨드 센터"),
+            QStringLiteral("STORM CHRONO-NEXUS COMMANDER - eスポーツ・コマンドセンター"),
+            QStringLiteral("STORM CHRONO-NEXUS COMMANDER - Centro de mando Esports"),
+            QStringLiteral("STORM CHRONO-NEXUS COMMANDER - Centro di comando Esports"),
+            QStringLiteral("STORM CHRONO-NEXUS COMMANDER - Centro de comando Esports"),
+            QStringLiteral("STORM CHRONO-NEXUS COMMANDER - ई-स्पोर्ट्स कमांड सेंटर"));
     }
     return StormLangStorm11(
-        QStringLiteral("STORM HYPERION GLASS 3D — Голографическое 3D-стекло"),
-        QStringLiteral("STORM HYPERION GLASS 3D — Holographic 3D Glass"),
-        QStringLiteral("STORM HYPERION GLASS 3D — Holografisches 3D-Glas"),
-        QStringLiteral("STORM HYPERION GLASS 3D — Verre 3D holographique"),
-        QStringLiteral("STORM HYPERION GLASS 3D — 全息 3D 玻璃"),
-        QStringLiteral("STORM HYPERION GLASS 3D — 홀로그래픽 3D 글래스"),
-        QStringLiteral("STORM HYPERION GLASS 3D — ホログラフィック 3D グラス"),
-        QStringLiteral("STORM HYPERION GLASS 3D — Cristal 3D holográfico"),
-        QStringLiteral("STORM HYPERION GLASS 3D — Vetro 3D olografico"),
-        QStringLiteral("STORM HYPERION GLASS 3D — Vidro 3D holográfico"),
-        QStringLiteral("STORM HYPERION GLASS 3D — होलोग्राफिक 3D ग्लास"));
+        QStringLiteral("STORM HYPERION GLASS 3D - Голографическое 3D-стекло"),
+        QStringLiteral("STORM HYPERION GLASS 3D - Holographic 3D Glass"),
+        QStringLiteral("STORM HYPERION GLASS 3D - Holografisches 3D-Glas"),
+        QStringLiteral("STORM HYPERION GLASS 3D - Verre 3D holographique"),
+        QStringLiteral("STORM HYPERION GLASS 3D - 全息 3D 玻璃"),
+        QStringLiteral("STORM HYPERION GLASS 3D - 홀로그래픽 3D 글래스"),
+        QStringLiteral("STORM HYPERION GLASS 3D - ホログラフィック 3D グラス"),
+        QStringLiteral("STORM HYPERION GLASS 3D - Cristal 3D holográfico"),
+        QStringLiteral("STORM HYPERION GLASS 3D - Vetro 3D olografico"),
+        QStringLiteral("STORM HYPERION GLASS 3D - Vidro 3D holográfico"),
+        QStringLiteral("STORM HYPERION GLASS 3D - होलोग्राफिक 3D ग्लास"));
 }
 
 QString GetLocalizedDesignTooltip() {
     return StormLangStorm11(
         QStringLiteral("Полная архитектурная смена 3D-оформления интерфейса, формы объёмных кнопок, полей ввода, фасок, теней, фонов и плавных 60/120 FPS анимаций. Полностью совместима со всеми 9 цветовыми темами и 13 акцентами."),
         QStringLiteral("Complete architectural UI transformation changing 3D button geometry, input wells, bevels, shadows, ambient backdrops, and smooth 60/120 FPS animations. Works seamlessly across all 9 color themes and 13 accent colors."),
-        QStringLiteral("Vollständige 3D-UI-Architektur für Tastenformen, Eingabefelder, Schatten, Hintergründe und flüssige Animationen — kompatibel mit allen 9 Farbthemen."),
-        QStringLiteral("Architecture complète d'interface 3D transformant boutons, champs, ombres, arrière-plans et animations fluides — compatible avec les 9 thèmes."),
+        QStringLiteral("Vollständige 3D-UI-Architektur für Tastenformen, Eingabefelder, Schatten, Hintergründe und flüssige Animationen - kompatibel mit allen 9 Farbthemen."),
+        QStringLiteral("Architecture complète d'interface 3D transformant boutons, champs, ombres, arrière-plans et animations fluides - compatible avec les 9 thèmes."),
         QStringLiteral("完整切换 3D 立体按钮几何造型、输入框凹槽、阴影、动态背景与流畅动画，完美兼容全部 9 款配色主题与 13 种强调色。"),
         QStringLiteral("버튼 입체 형상, 입력창, 그림자, 배경 및 부드러운 애니메이션을 완전히 전환하며 모든 9개 컬러 테마와 완벽 호환됩니다."),
         QStringLiteral("3Dボタン形状、入力欄、陰影、背景、滑らかなアニメーションを全面的に切り替えます（全9カラーテーマ対応）。"),
         QStringLiteral("Transformación completa de la arquitectura 3D de botones, campos, sombras, fondos y animaciones fluidas, compatible con los 9 temas."),
         QStringLiteral("Trasformazione completa dell'architettura 3D di pulsanti, campi, ombre, sfondi e animazioni fluide, compatibile con tutti i 9 temi."),
         QStringLiteral("Transformação completa da arquitetura 3D de botões, campos, sombras, fundos e animações suaves, compatível com todos os 9 temas."),
-        QStringLiteral("बटन, इनपुट फ़ील्ड, शैडो, बैकग्राउंड और स्मूथ एनिमेशन का पूर्ण 3D डिज़ाइन बदलाव — सभी 9 थीम के साथ संगत।"));
+        QStringLiteral("बटन, इनपुट फ़ील्ड, शैडो, बैकग्राउंड और स्मूथ एनिमेशन का पूर्ण 3D डिज़ाइन बदलाव - सभी 9 थीम के साथ संगत।"));
 }
 
 QString BuildDialogStylesheet(const StormTheme::Palette& pal, const std::string& explicit_design) {
@@ -617,23 +798,24 @@ QString BuildDialogStylesheet(const StormTheme::Palette& pal, const std::string&
         "  background: %6; border: none; color: %4; border-radius: 4px; padding: 2px 6px; font-weight: bold; font-size: 8.5pt;"
         "}"
         "QPushButton#StormGamePill, QPushButton[stormGamePill=\"true\"] {"
-        "  background: rgba(255, 255, 255, 0.08); border: none; color: %3; border-radius: 12px; padding: 3px 10px; font-weight: 600; font-size: 8.5pt;"
+        "  background: %9; border: 1px solid %2; color: %3; border-radius: 12px; padding: 3px 10px; font-weight: 600; font-size: 8.5pt;"
         "}"
         "QPushButton#StormGamePill:hover, QPushButton[stormGamePill=\"true\"]:hover {"
-        "  background: %7; border: none; color: %4;"
+        "  background: %7; border: 1px solid %4; color: %4;"
         "}"
         "QGroupBox[stormCard=\"true\"], QGroupBox#groupBox[stormHeroCard=\"true\"], QGroupBox#BentoGameHeaderCard {"
-        "  background-color: %8; border: none; border-radius: 10px; margin-top: 14px; padding: 24px 14px 14px 14px;"
+        "  background-color: %8; border: 1px solid %2; border-radius: 10px; margin-top: 14px; padding: 24px 14px 14px 14px;"
         "}"
         "QGroupBox[stormCard=\"true\"]::title, QGroupBox#groupBox[stormHeroCard=\"true\"]::title, QGroupBox#BentoGameHeaderCard::title {"
         "  subcontrol-origin: margin; subcontrol-position: top left; left: 14px; padding: 2px 10px;"
-        "  color: %4; font-size: 12px; font-weight: bold; background-color: %5; border: none; border-radius: 4px;"
+        "  color: %4; font-size: 12px; font-weight: bold; background-color: %5; border: 1px solid %2; border-radius: 4px;"
         "}"
         "QWidget[stormOverrideRow=\"true\"], ConfigurationShared--Widget[stormOverrideRow=\"true\"] {"
         "  border-left: 3px solid %4; background-color: %6; border-radius: 4px;"
         "}"
     ).arg(pal.inputBg, pal.border, pal.textPrimary, accentHex, pal.surface,
-         accentRgba15, accentRgba30, RgbaCss(QColor(pal.surface), 200));
+         accentRgba15, accentRgba30, pal.card,
+         (pal.is_light ? QStringLiteral("rgba(0, 0, 0, 0.05)") : QStringLiteral("rgba(255, 255, 255, 0.08)")));
 
     qss += BuildCoreControlsQss(pal, t);
     return qss;

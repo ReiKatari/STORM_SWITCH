@@ -16,6 +16,8 @@
 #include <QListView>
 #include <QMenu>
 #include <QPainter>
+#include <QIcon>
+#include <QPainterPath>
 #include <cmath>
 #include <QMessageBox>
 #include <QScrollBar>
@@ -676,8 +678,8 @@ void GameList::PopupContextMenu(const QPoint& menu_location) {
             lang = QLocale::system().name().toStdString();
         }
         const QString add_dir_text = (lang.rfind("ru", 0) == 0)
-                                         ? QStringLiteral("📁 Добавить папку с играми...")
-                                         : (QStringLiteral("📁 ") + tr("&Add New Game Directory"));
+                                         ? QStringLiteral("Добавить папку с играми...")
+                                         : tr("&Add New Game Directory");
         QAction* addGameDirAction = blank_menu.addAction(add_dir_text);
 
         connect(addGameDirAction, &QAction::triggered, this, &GameList::AddDirectory);
@@ -744,16 +746,171 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
         return en;
     };
 
-    const auto make_emoji_icon = [](const QString& emoji) -> QIcon {
+    enum class ContextVectorIcon {
+        Star,
+        Play,
+        Fast,
+        Save,
+        Sync,
+        Puzzle,
+        Bolt,
+        Link,
+        Trash,
+        Clock,
+        Package,
+        Search,
+        Copy,
+        Sparkle,
+        Shield,
+    };
+
+    const auto make_vector_icon = [](ContextVectorIcon type) -> QIcon {
         QPixmap pixmap(18, 18);
         pixmap.fill(Qt::transparent);
         QPainter painter(&pixmap);
         painter.setRenderHint(QPainter::Antialiasing);
-        painter.setRenderHint(QPainter::TextAntialiasing);
-        QFont f(QStringLiteral("Segoe UI Emoji"));
-        f.setPixelSize(13);
-        painter.setFont(f);
-        painter.drawText(QRect(0, 0, 18, 18), Qt::AlignCenter, emoji);
+
+        const QColor accent(0, 240, 255);
+        QPen pen(accent, 1.4, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+        painter.setPen(pen);
+        painter.setBrush(Qt::NoBrush);
+
+        switch (type) {
+        case ContextVectorIcon::Star: {
+            QPainterPath path;
+            const qreal cx = 9.0, cy = 9.0;
+            const qreal r_out = 6.5, r_in = 2.8;
+            for (int i = 0; i < 10; ++i) {
+                const qreal angle = -1.57079632679 + i * (3.14159265359 / 5.0);
+                const qreal r = (i % 2 == 0) ? r_out : r_in;
+                const qreal x = cx + r * std::cos(angle);
+                const qreal y = cy + r * std::sin(angle);
+                if (i == 0) path.moveTo(x, y);
+                else path.lineTo(x, y);
+            }
+            path.closeSubpath();
+            painter.setBrush(QColor(0, 240, 255, 60));
+            painter.drawPath(path);
+            break;
+        }
+        case ContextVectorIcon::Play: {
+            QPainterPath path;
+            path.moveTo(6.0, 4.0);
+            path.lineTo(13.5, 9.0);
+            path.lineTo(6.0, 14.0);
+            path.closeSubpath();
+            painter.setBrush(QColor(0, 240, 255, 120));
+            painter.drawPath(path);
+            break;
+        }
+        case ContextVectorIcon::Fast: {
+            QPainterPath p1, p2;
+            p1.moveTo(4.5, 5.0); p1.lineTo(9.5, 9.0); p1.lineTo(4.5, 13.0); p1.closeSubpath();
+            p2.moveTo(9.5, 5.0); p2.lineTo(14.5, 9.0); p2.lineTo(9.5, 13.0); p2.closeSubpath();
+            painter.setBrush(QColor(0, 240, 255, 120));
+            painter.drawPath(p1);
+            painter.drawPath(p2);
+            break;
+        }
+        case ContextVectorIcon::Save: {
+            painter.drawRoundedRect(QRectF(3.5, 3.5, 11.0, 11.0), 1.5, 1.5);
+            painter.fillRect(QRectF(5.5, 3.5, 7.0, 3.5), accent);
+            painter.fillRect(QRectF(6.0, 9.5, 6.0, 4.5), QColor(0, 240, 255, 80));
+            break;
+        }
+        case ContextVectorIcon::Sync: {
+            painter.drawArc(QRectF(3.5, 3.5, 11.0, 11.0), 45 * 16, 270 * 16);
+            QPainterPath arrow;
+            arrow.moveTo(13.0, 6.0);
+            arrow.lineTo(15.5, 8.5);
+            arrow.lineTo(11.5, 9.5);
+            arrow.closeSubpath();
+            painter.setBrush(accent);
+            painter.drawPath(arrow);
+            break;
+        }
+        case ContextVectorIcon::Puzzle: {
+            painter.drawRoundedRect(QRectF(4.0, 4.0, 10.0, 10.0), 2.0, 2.0);
+            painter.drawEllipse(QPointF(9.0, 4.0), 2.0, 2.0);
+            painter.drawEllipse(QPointF(14.0, 9.0), 2.0, 2.0);
+            break;
+        }
+        case ContextVectorIcon::Bolt: {
+            QPainterPath path;
+            path.moveTo(10.0, 3.0);
+            path.lineTo(5.5, 9.5);
+            path.lineTo(9.0, 9.5);
+            path.lineTo(8.0, 15.0);
+            path.lineTo(13.0, 8.0);
+            path.lineTo(9.8, 8.0);
+            path.closeSubpath();
+            painter.setBrush(QColor(0, 240, 255, 120));
+            painter.drawPath(path);
+            break;
+        }
+        case ContextVectorIcon::Link: {
+            painter.drawRoundedRect(QRectF(3.5, 6.5, 6.5, 5.0), 2.5, 2.5);
+            painter.drawRoundedRect(QRectF(8.0, 6.5, 6.5, 5.0), 2.5, 2.5);
+            painter.drawLine(QPointF(7.0, 9.0), QPointF(11.0, 9.0));
+            break;
+        }
+        case ContextVectorIcon::Trash: {
+            painter.drawLine(QPointF(4.0, 5.5), QPointF(14.0, 5.5));
+            painter.drawRoundedRect(QRectF(5.0, 5.5, 8.0, 9.0), 1.0, 1.0);
+            painter.drawLine(QPointF(7.5, 7.5), QPointF(7.5, 12.5));
+            painter.drawLine(QPointF(10.5, 7.5), QPointF(10.5, 12.5));
+            painter.drawArc(QRectF(7.0, 3.0, 4.0, 3.0), 0, 180 * 16);
+            break;
+        }
+        case ContextVectorIcon::Clock: {
+            painter.drawEllipse(QPointF(9.0, 9.0), 5.5, 5.5);
+            painter.drawLine(QPointF(9.0, 9.0), QPointF(9.0, 5.5));
+            painter.drawLine(QPointF(9.0, 9.0), QPointF(12.0, 9.0));
+            break;
+        }
+        case ContextVectorIcon::Package: {
+            painter.drawRect(QRectF(4.0, 4.0, 10.0, 10.0));
+            painter.drawLine(QPointF(4.0, 9.0), QPointF(14.0, 9.0));
+            painter.drawLine(QPointF(9.0, 4.0), QPointF(9.0, 14.0));
+            break;
+        }
+        case ContextVectorIcon::Search: {
+            painter.drawEllipse(QPointF(7.5, 7.5), 4.0, 4.0);
+            painter.drawLine(QPointF(10.5, 10.5), QPointF(14.5, 14.5));
+            break;
+        }
+        case ContextVectorIcon::Copy: {
+            painter.drawRoundedRect(QRectF(6.0, 3.5, 8.0, 9.5), 1.0, 1.0);
+            painter.drawRoundedRect(QRectF(4.0, 5.5, 8.0, 9.5), 1.0, 1.0);
+            break;
+        }
+        case ContextVectorIcon::Sparkle: {
+            QPainterPath path;
+            const qreal cx = 9.0, cy = 9.0;
+            path.moveTo(cx, cy - 6.5);
+            path.quadTo(cx, cy, cx + 6.5, cy);
+            path.quadTo(cx, cy, cx, cy + 6.5);
+            path.quadTo(cx, cy, cx - 6.5, cy);
+            path.quadTo(cx, cy, cx, cy - 6.5);
+            painter.setBrush(QColor(0, 240, 255, 120));
+            painter.drawPath(path);
+            break;
+        }
+        case ContextVectorIcon::Shield: {
+            QPainterPath path;
+            path.moveTo(9.0, 3.5);
+            path.lineTo(14.0, 5.5);
+            path.lineTo(14.0, 9.5);
+            path.quadTo(14.0, 14.0, 9.0, 15.5);
+            path.quadTo(4.0, 14.0, 4.0, 9.5);
+            path.lineTo(4.0, 5.5);
+            path.closeSubpath();
+            painter.setBrush(QColor(0, 240, 255, 70));
+            painter.drawPath(path);
+            break;
+        }
+        }
+
         return QIcon(pixmap);
     };
 
@@ -778,16 +935,16 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
     QAction* favorite = context_menu.addAction(
         is_fav ? item_tr(QString(), "Favorite", QStringLiteral("В избранном (убрать)"))
                : item_tr(QString(), "Favorite", QStringLiteral("Добавить в избранное")));
-    favorite->setIcon(make_emoji_icon(QStringLiteral("⭐")));
+    favorite->setIcon(make_vector_icon(ContextVectorIcon::Star));
     context_menu.addSeparator();
     QAction* start_game = context_menu.addAction(item_tr(QString(), "Start Game", QStringLiteral("Запустить игру")));
-    start_game->setIcon(make_emoji_icon(QStringLiteral("▶️")));
+    start_game->setIcon(make_vector_icon(ContextVectorIcon::Play));
     QAction* start_game_global =
         context_menu.addAction(item_tr(QString(), "Start Game without Custom Configuration", QStringLiteral("Запустить со стандартными настройками")));
-    start_game_global->setIcon(make_emoji_icon(QStringLiteral("🚀")));
+    start_game_global->setIcon(make_vector_icon(ContextVectorIcon::Fast));
     context_menu.addSeparator();
     QAction* open_save_location = context_menu.addAction(item_tr(QString(), "Open Save Data Location", QStringLiteral("Открыть папку сохранений")));
-    open_save_location->setIcon(make_emoji_icon(QStringLiteral("💾")));
+    open_save_location->setIcon(make_vector_icon(ContextVectorIcon::Save));
     QAction* sync_save = context_menu.addAction(storm_tr(
         QStringLiteral("Синхронизация сохранения (STORM SAVE SYNC)..."),
         QStringLiteral("Save Data Sync (STORM SAVE SYNC)..."),
@@ -798,17 +955,17 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
         QStringLiteral("Synchronisation des sauvegardes (STORM SAVE SYNC)..."),
         QStringLiteral("Sincronización de partidas (STORM SAVE SYNC)..."),
         QStringLiteral("مزامنة بيانات الحفظ (STORM SAVE SYNC)...")));
-    sync_save->setIcon(make_emoji_icon(QStringLiteral("🔄")));
+    sync_save->setIcon(make_vector_icon(ContextVectorIcon::Sync));
     QAction* open_mod_location = context_menu.addAction(item_tr(QString(), "Open Mod Data Location", QStringLiteral("Открыть папку модов")));
-    open_mod_location->setIcon(make_emoji_icon(QStringLiteral("🧩")));
+    open_mod_location->setIcon(make_vector_icon(ContextVectorIcon::Puzzle));
     QAction* open_transferable_shader_cache =
         context_menu.addAction(item_tr(QString(), "Open Transferable Pipeline Cache", QStringLiteral("Открыть кэш шейдеров")));
-    open_transferable_shader_cache->setIcon(make_emoji_icon(QStringLiteral("⚡")));
+    open_transferable_shader_cache->setIcon(make_vector_icon(ContextVectorIcon::Bolt));
     QAction* ryujinx = context_menu.addAction(item_tr(QString(), "Link to Ryujinx", QStringLiteral("Связать с Ryujinx")));
-    ryujinx->setIcon(make_emoji_icon(QStringLiteral("🔗")));
+    ryujinx->setIcon(make_vector_icon(ContextVectorIcon::Link));
     context_menu.addSeparator();
     QMenu* remove_menu = context_menu.addMenu(item_tr(QString(), "Remove", QStringLiteral("Удалить")));
-    remove_menu->setIcon(make_emoji_icon(QStringLiteral("🗑️")));
+    remove_menu->setIcon(make_vector_icon(ContextVectorIcon::Trash));
     QAction* remove_update = remove_menu->addAction(item_tr(QString(), "Remove Installed Update", QStringLiteral("Удалить установленное обновление")));
     QAction* remove_dlc = remove_menu->addAction(item_tr(QString(), "Remove All Installed DLC", QStringLiteral("Удалить все установленные DLC")));
     QAction* remove_custom_config = remove_menu->addAction(item_tr(QString(), "Remove Custom Configuration", QStringLiteral("Удалить индивидуальные настройки")));
@@ -819,20 +976,20 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
     QAction* remove_shader_cache = remove_menu->addAction(item_tr(QString(), "Remove All Pipeline Caches", QStringLiteral("Удалить все кэши шейдеров")));
     QAction* remove_all_content = remove_menu->addAction(item_tr(QString(), "Remove All Installed Contents", QStringLiteral("Удалить весь установленный контент")));
     QMenu* play_time_menu = context_menu.addMenu(item_tr(QString(), "Manage Play Time", QStringLiteral("Управление временем игры")));
-    play_time_menu->setIcon(make_emoji_icon(QStringLiteral("⏱️")));
+    play_time_menu->setIcon(make_vector_icon(ContextVectorIcon::Clock));
     QAction* set_play_time = play_time_menu->addAction(item_tr(QString(), "Edit Play Time Data", QStringLiteral("Изменить время игры...")));
     QAction* remove_play_time_data = play_time_menu->addAction(item_tr(QString(), "Remove Play Time Data", QStringLiteral("Сбросить время игры")));
     QMenu* dump_romfs_menu = context_menu.addMenu(item_tr(QString(), "Dump RomFS", QStringLiteral("Дамп RomFS")));
-    dump_romfs_menu->setIcon(make_emoji_icon(QStringLiteral("📦")));
+    dump_romfs_menu->setIcon(make_vector_icon(ContextVectorIcon::Package));
     QAction* dump_romfs = dump_romfs_menu->addAction(item_tr(QString(), "Dump RomFS", QStringLiteral("Дамп RomFS")));
     QAction* dump_romfs_sdmc = dump_romfs_menu->addAction(item_tr(QString(), "Dump RomFS to SDMC", QStringLiteral("Дамп RomFS на SD-карту")));
     QAction* verify_integrity = context_menu.addAction(item_tr(QString(), "Verify Integrity", QStringLiteral("Проверить целостность")));
-    verify_integrity->setIcon(make_emoji_icon(QStringLiteral("🔍")));
+    verify_integrity->setIcon(make_vector_icon(ContextVectorIcon::Search));
     QAction* copy_tid = context_menu.addAction(item_tr(QString(), "Copy Title ID to Clipboard", QStringLiteral("Скопировать Title ID в буфер обмена")));
-    copy_tid->setIcon(make_emoji_icon(QStringLiteral("📋")));
+    copy_tid->setIcon(make_vector_icon(ContextVectorIcon::Copy));
 #if !defined(__APPLE__)
     QMenu* shortcut_menu = context_menu.addMenu(item_tr(QString(), "Create Shortcut", QStringLiteral("Создать ярлык")));
-    shortcut_menu->setIcon(make_emoji_icon(QStringLiteral("🔗")));
+    shortcut_menu->setIcon(make_vector_icon(ContextVectorIcon::Link));
     QAction* create_desktop_shortcut = shortcut_menu->addAction(item_tr(QString(), "Add to Desktop", QStringLiteral("На рабочий стол")));
     QAction* create_applications_menu_shortcut =
         shortcut_menu->addAction(item_tr(QString(), "Add to Applications Menu", QStringLiteral("В меню приложений")));
@@ -848,7 +1005,7 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
         QStringLiteral("Gestionnaire de mods..."),
         QStringLiteral("Gestor de mods..."),
         QStringLiteral("مدير التعديلات...")));
-    mod_manager_action->setIcon(make_emoji_icon(QStringLiteral("🧩")));
+    mod_manager_action->setIcon(make_vector_icon(ContextVectorIcon::Puzzle));
     QAction* cheats_action = context_menu.addAction(storm_tr(
         QStringLiteral("Чит-коды..."),
         QStringLiteral("Cheats..."),
@@ -859,7 +1016,7 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
         QStringLiteral("Codes de triche..."),
         QStringLiteral("Trucos..."),
         QStringLiteral("رموز الغش...")));
-    cheats_action->setIcon(make_emoji_icon(QStringLiteral("✨")));
+    cheats_action->setIcon(make_vector_icon(ContextVectorIcon::Sparkle));
     QAction* game_fix_action = nullptr;
     if (Core::GameFixDatabase::GetProfileByTitleOrPath(program_id, path) != nullptr) {
         game_fix_action = context_menu.addAction(storm_tr(
@@ -872,7 +1029,7 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
             QStringLiteral("Correction automatique du jeu..."),
             QStringLiteral("Corrección automática del juego..."),
             QStringLiteral("الإصلاح التلقائي للعبة...")));
-        game_fix_action->setIcon(make_emoji_icon(QStringLiteral("🛡️")));
+        game_fix_action->setIcon(make_vector_icon(ContextVectorIcon::Shield));
     }
     // properties action moved to top of context menu per Item 21
     QAction* reset_game_settings = context_menu.addAction(storm_tr(
@@ -885,7 +1042,7 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
         QStringLiteral("Réinitialiser les paramètres du jeu par défaut"),
         QStringLiteral("Restablecer configuración del juego a valores predeterminados"),
         QStringLiteral("إعادة تعيين إعدادات اللعبة إلى الافتراضية")));
-    reset_game_settings->setIcon(make_emoji_icon(QStringLiteral("🔄")));
+    reset_game_settings->setIcon(make_vector_icon(ContextVectorIcon::Sync));
 
     favorite->setVisible(program_id != 0);
     reset_game_settings->setVisible(program_id != 0);

@@ -30,6 +30,10 @@ public:
     void accept() override;
     void reject() override;
 
+protected:
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dropEvent(QDropEvent* event) override;
+
 private:
     void SetupPages();
     void RetranslateUI();

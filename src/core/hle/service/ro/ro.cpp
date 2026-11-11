@@ -1,3 +1,4 @@
+#include "common/scope_exit.h"
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -90,21 +91,7 @@ struct ProcessContext {
     void Finalize(Kernel::KernelCore& kernel) {
         ASSERT(m_in_use);
 
-#ifdef HAS_NCE
-        if (m_process) {
-            for (size_t i = 0; i < MaxNroInfos; ++i) {
-                if (m_nro_in_use[i] && m_nro_infos[i].patch_memory != nullptr) {
-                    (void)m_nro_infos[i].patch_memory->Unmap(
-                        *m_process, m_nro_infos[i].patch_address, m_nro_infos[i].patch_size);
-                    m_process->RemoveSharedMemory(kernel, m_nro_infos[i].patch_memory,
-                                                  m_nro_infos[i].patch_address,
-                                                  m_nro_infos[i].patch_size);
-                    m_nro_infos[i].patch_memory->Close(kernel);
-                    m_nro_infos[i].patch_memory = nullptr;
-                }
-            }
-        }
-#endif
+
 
         if (m_process) {
             m_process->Close(kernel);
@@ -481,81 +468,47 @@ public:
         R_TRY(context->ValidateNro(std::addressof(nro_info->module_id), std::addressof(rx_size),
                                    std::addressof(ro_size), std::addressof(rw_size),
                                    nro_info->base_address, nro_size, bss_size));
-
-#ifdef HAS_NCE
-        if (Settings::IsNceEnabled() && rx_size > 0) {
-            auto* process = context->GetProcess();
-            auto& memory = process->GetMemory();
-
-            nro_info->original_text.resize(rx_size);
-            memory.ReadBlock(nro_info->base_address, nro_info->original_text.data(), rx_size);
-
-            std::vector<u8> image(total_size);
-            std::memcpy(image.data(), nro_info->original_text.data(), rx_size);
-
-            Kernel::CodeSet::Segment code{.offset = 0, .addr = 0, .size = static_cast<u32>(rx_size)};
-            Core::NCE::Patcher patch;
-            patch.PatchText(image, code);
-            patch.RelocateAndCopy(nro_info->base_address, code, image,
-                                  std::addressof(process->GetPostHandlers()));
-
-            const u64 patch_address = nro_info->base_address + total_size;
-            const size_t patch_size = patch.GetSectionSize();
-            constexpr auto permission = Kernel::Svc::MemoryPermission::ReadExecute;
-
-            if (patch_size > 0 && image.size() >= total_size + patch_size) {
-                auto* patch_memory = Kernel::KSharedMemory::Create(kernel);
-                if (R_SUCCEEDED(patch_memory->Initialize(kernel, kernel.System().DeviceMemory(),
-                                                         process, permission, permission,
-                                                         patch_size))) {
-                    std::memcpy(patch_memory->GetPointer(), image.data() + total_size, patch_size);
-                    if (R_SUCCEEDED(process->AddSharedMemory(kernel, patch_memory, patch_address,
-                                                             patch_size)) &&
-                        R_SUCCEEDED(
-                            patch_memory->Map(*process, patch_address, patch_size, permission))) {
-                        nro_info->patch_memory = patch_memory;
-                        nro_info->patch_address = patch_address;
-                        nro_info->patch_size = patch_size;
-                        memory.WriteBlock(nro_info->base_address, image.data(), rx_size);
-                    } else {
-                        patch_memory->Close(kernel);
-                    }
-                } else {
-                    patch_memory->Close(kernel);
-                }
-            }
-        }
-#endif
-
-        // Set NRO perms.
-        R_TRY(SetNroPerms(context->GetProcess(), nro_info->base_address, rx_size, ro_size,
-                          rw_size + bss_size));
-
+        R_TRY(SetNroPerms(context->GetProcess(), nro_info->base_address, rx_size, ro_size, rw_size + bss_size));
 #ifdef HAS_NCE
         if (Settings::IsNceEnabled()) {
             auto* process = context->GetProcess();
-            auto& buffer = kernel.System().DeviceMemory().buffer;
-#ifdef __aarch64__
-            if (auto* base_ptr = reinterpret_cast<char*>(buffer.VirtualBasePointer())) {
-                const u64 host_base = reinterpret_cast<u64>(base_ptr);
-                char* nro_start = (nro_info->base_address >= host_base)
-                                      ? reinterpret_cast<char*>(nro_info->base_address)
-                                      : (base_ptr + nro_info->base_address);
-                __builtin___clear_cache(nro_start, nro_start + rx_size);
-                if (nro_info->patch_size > 0) {
-                    char* patch_start = (nro_info->patch_address >= host_base)
-                                            ? reinterpret_cast<char*>(nro_info->patch_address)
-                                            : (base_ptr + nro_info->patch_address);
-                    __builtin___clear_cache(patch_start, patch_start + nro_info->patch_size);
+            auto& memory = process->GetMemory();
+            std::vector<u8> text(rx_size);
+            memory.ReadBlock(nro_info->base_address, text.data(), text.size());
+            Core::NCE::Patcher patch{text};
+            const size_t patch_size = patch.GetSectionSize();
+            if (patch_size != 0) {
+                constexpr auto permission = Kernel::Svc::MemoryPermission::ReadExecute;
+                auto* patch_memory = Kernel::KSharedMemory::Create(kernel);
+                SCOPE_EXIT { patch_memory->Close(kernel); };
+                R_TRY(patch_memory->Initialize(kernel, kernel.System().DeviceMemory(), process, permission, permission, patch_size));
+                Kernel::KSharedMemory::Register(kernel, patch_memory);
+                const std::array<s64, 2> offsets{static_cast<s64>(total_size + Kernel::PageSize),-static_cast<s64>(patch_size + Kernel::PageSize)};
+                std::vector<Core::NCE::InstructionPatch> tls_patches;
+                std::span<const u32> instructions;
+                u64 patch_address = 0;
+                for (const s64 offset : offsets) {
+                    instructions = patch.RelocateRuntimeTls(offset, tls_patches);
+                    if (instructions.empty()) {continue;}
+                    const u64 address = static_cast<u64>(static_cast<s64>(nro_info->base_address) + offset);
+                    if (R_FAILED(patch_memory->Map(*process, address, patch_size, permission))) {continue;}
+                    patch_address = address;
+                    break;
                 }
-            }
-#endif
-            for (size_t i = 0; i < Core::Hardware::NUM_CPU_CORES; ++i) {
-                if (auto* arm = process->GetArmInterface(i)) {
-                    arm->InvalidateCacheRange(nro_info->base_address, rx_size);
-                    if (nro_info->patch_size > 0) {
-                        arm->InvalidateCacheRange(nro_info->patch_address, nro_info->patch_size);
-                    }
+                R_UNLESS(patch_address != 0, RO::ResultOutOfAddressSpace);
+                const Result add_shared_memory_result = process->AddSharedMemory(kernel, patch_memory, patch_address, patch_size);
+                if (R_FAILED(add_shared_memory_result)) {
+                    R_ASSERT(patch_memory->Unmap(*process, patch_address, patch_size));
+                }
+                R_TRY(add_shared_memory_result);
+                std::memcpy(patch_memory->GetPointer(), instructions.data(), instructions.size_bytes());
+                auto* ptr = reinterpret_cast<char*>(patch_address);
+                __builtin___clear_cache(ptr, ptr + instructions.size_bytes());
+                for (const auto& instruction : tls_patches) {
+                    const u64 address = nro_info->base_address + instruction.offset;
+                    memory.Write32(address, instruction.replacement);
+                    ptr = reinterpret_cast<char*>(address);
+                    __builtin___clear_cache(ptr, ptr + sizeof(u32));
                 }
             }
         }
@@ -590,22 +543,7 @@ public:
             *nro_info = {};
         }
 
-#ifdef HAS_NCE
-        if (auto* process = context->GetProcess(); process != nullptr) {
-            if (!nro_backup.original_text.empty()) {
-                process->GetMemory().WriteBlock(nro_backup.base_address,
-                                                nro_backup.original_text.data(),
-                                                nro_backup.original_text.size());
-            }
-            if (nro_backup.patch_memory != nullptr) {
-                (void)nro_backup.patch_memory->Unmap(*process, nro_backup.patch_address,
-                                                     nro_backup.patch_size);
-                process->RemoveSharedMemory(kernel, nro_backup.patch_memory,
-                                            nro_backup.patch_address, nro_backup.patch_size);
-                nro_backup.patch_memory->Close(kernel);
-            }
-        }
-#endif
+
 
         R_RETURN(UnmapNro(context->GetProcess(), nro_backup.base_address,
                           nro_backup.nro_heap_address, nro_backup.code_size + nro_backup.rw_size,

@@ -212,7 +212,7 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
     m_selector_list = new QListWidget(this);
     m_selector_list->setObjectName(QStringLiteral("PerGameSelectorList"));
     m_selector_list->setProperty("stormList", true);
-    m_selector_list->setFixedWidth(200);
+    m_selector_list->setMinimumWidth(220);
     ui->horizontalLayout->insertWidget(1, m_selector_list);
 
     // Hide legacy single tabWidget to prevent mutating clear()/addTab() glitches and overlapping
@@ -292,7 +292,7 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
         sa->setMinimumSize(200, 160);
     }
     ui->groupBox->setMinimumWidth(290);
-    ui->groupBox->setMaximumWidth(320);
+    ui->groupBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     ui->icon_view->setFixedSize(144, 144);
     ui->verticalLayout->setSpacing(8);
     ui->name_layout->setSpacing(3);
@@ -972,12 +972,16 @@ void ConfigurePerGame::PopulateSelectionList() {
 
     [[maybe_unused]] const QSignalBlocker blocker(m_selector_list);
     m_selector_list->clear();
+    const QFontMetrics fm(list_font);
+    int max_item_w = 220;
     for (const auto& entry : items) {
         auto* const item = new QListWidgetItem(entry.first);
         item->setFont(list_font);
         item->setData(Qt::UserRole, QVariant::fromValue(entry.second));
+        max_item_w = std::max(max_item_w, fm.horizontalAdvance(entry.first) + 48);
         m_selector_list->addItem(item);
     }
+    m_selector_list->setFixedWidth(max_item_w);
 }
 
 void ConfigurePerGame::UpdateVisibleTabs() {
@@ -1003,8 +1007,9 @@ void ConfigurePerGame::SetupConflictBanner() {
     m_conflict_fix_btn = new QPushButton(StormLang(QStringLiteral("Исправить"), QStringLiteral("Fix")), m_conflict_banner);
     m_conflict_fix_btn->setCursor(Qt::PointingHandCursor);
     m_conflict_fix_btn->setStyleSheet(QStringLiteral(
-        "QPushButton { background: #ffaa00; color: #1a1a1a; font-weight: bold; padding: 4px 12px; border-radius: 4px; border: none; font-size: 8.5pt; }"
-        "QPushButton:hover { background: #ffbb22; }"));
+        "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #fbbf24, stop:1 #d97706); color: #1e1e2e; font-weight: bold; padding: 4px 14px; border-radius: 5px; border: 1px solid #b45309; border-top: 1px solid rgba(255,255,255,0.4); font-size: 8.5pt; }"
+        "QPushButton:hover { background: #f59e0b; }"
+        "QPushButton:pressed { background: #d97706; }"));
 
     banner_layout->addWidget(m_conflict_label, 1);
     banner_layout->addWidget(m_conflict_fix_btn);

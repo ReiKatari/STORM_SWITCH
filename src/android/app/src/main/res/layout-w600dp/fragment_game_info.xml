@@ -51,7 +51,7 @@
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/card_game_header"
-                    style="@style/EdenCard"
+                    style="@style/StormCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
@@ -150,7 +150,7 @@
                 <!-- Action Buttons on Left -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_copy"
-                    style="@style/EdenButton.Primary"
+                    style="@style/StormButton.Faceted.Primary"
                     android:layout_width="match_parent"
                     android:layout_height="46dp"
                     android:text="@string/copy_details"
@@ -160,7 +160,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_verify_integrity"
-                    style="@style/EdenButton.Outlined"
+                    style="@style/StormButton.Faceted.Secondary"
                     android:layout_width="match_parent"
                     android:layout_height="46dp"
                     android:layout_marginTop="10dp"
@@ -182,7 +182,7 @@
                 <!-- Path Card -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/path"
-                    style="@style/EdenCard"
+                    style="@style/StormCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="10dp"
@@ -248,7 +248,7 @@
                 <!-- Program ID Card -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/program_id"
-                    style="@style/EdenCard"
+                    style="@style/StormCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="10dp"
@@ -316,7 +316,7 @@
                 <!-- Developer Card -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/developer"
-                    style="@style/EdenCard"
+                    style="@style/StormCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="10dp"
@@ -382,7 +382,7 @@
                 <!-- Version Card -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/version"
-                    style="@style/EdenCard"
+                    style="@style/StormCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="10dp"
@@ -448,7 +448,7 @@
                 <!-- File Size Card -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/card_file_size"
-                    style="@style/EdenCard"
+                    style="@style/StormCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="10dp"

@@ -20,4 +20,4 @@
     android:hyphenationFrequency="none"
     android:focusable="false"
     android:clickable="false"
-    android:background="?attr/selectableItemBackground" />
+    android:background="@drawable/storm_dialog_item_bg" />

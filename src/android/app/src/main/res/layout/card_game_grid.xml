@@ -141,13 +141,13 @@
                 android:minLines="3"
                 android:maxLines="3"
                 android:ellipsize="end"
+                android:breakStrategy="simple"
+                android:hyphenationFrequency="none"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/image_wrapper"
                 app:layout_constraintBottom_toBottomOf="parent"
-                tools:text="The Legend of Zelda: Tears of the Kingdom"
-    android:breakStrategy="simple"
-    android:hyphenationFrequency="none"/>
+                tools:text="The Legend of Zelda: Tears of the Kingdom" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

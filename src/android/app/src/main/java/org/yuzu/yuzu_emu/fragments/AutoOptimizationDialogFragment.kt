@@ -400,7 +400,7 @@ class AutoOptimizationDialogFragment : DialogFragment() {
 
         val isNeonCyan = profile.tier == StormHardwareCalibrator.HardwareTier.FLAGSHIP_ELITE || profile.tier == StormHardwareCalibrator.HardwareTier.FLAGSHIP
 
-        binding.textHwTier.setTextColor(if (isNeonCyan) Color.parseColor("#00F2FE") else Color.parseColor("#00E676"))
+        binding.textHwTier.setTextColor(if (isNeonCyan) org.yuzu.yuzu_emu.utils.ThemeHelper.getColorFromAttr(requireContext(), com.google.android.material.R.attr.colorPrimary) else org.yuzu.yuzu_emu.utils.ThemeHelper.getColorFromAttr(requireContext(), com.google.android.material.R.attr.colorSecondary))
 
 
 

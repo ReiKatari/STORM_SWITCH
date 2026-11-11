@@ -71,6 +71,7 @@
 #include "core/core.h"
 #include "qt_common/config/uisettings.h"
 #include "storm_switch/translator/game_translator.h"
+#include "storm_switch/common/storm_design_engine.h"
 
 static QString StormLang(const QString& ru, const QString& en,
                          const QString& de = QString(), const QString& fr = QString(),
@@ -98,7 +99,8 @@ ROIPreviewWidget::ROIPreviewWidget(QWidget* parent) : QWidget(parent) {
     setMinimumSize(480, 270);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     setCursor(Qt::CrossCursor);
-    setStyleSheet(QStringLiteral("background: #060911; border: 1px solid #1E293B; border-radius: 8px;"));
+    const auto r_pal = StormTheme::GetThemePalette();
+    setStyleSheet(QStringLiteral("background: %1; border: 1px solid %2; border-radius: 8px;").arg(r_pal.card, r_pal.border));
 }
 
 void ROIPreviewWidget::SetImage(const QImage& image) {
@@ -247,13 +249,13 @@ void ROIPreviewWidget::paintEvent(QPaintEvent* /*event*/) {
         p.setBrush(QColor(0, 229, 255, 30));
         p.drawRoundedRect(badgeRect, 4, 4);
         p.setPen(QColor(0, 229, 255));
-        QFont bFont(QStringLiteral("Segoe UI"), 8, QFont::Bold);
+        QFont bFont = font(); bFont.setBold(true); bFont.setPointSize(8);
         p.setFont(bFont);
-        p.drawText(badgeRect, Qt::AlignCenter, tr("🎮 ИГРОВОЙ ЭКРАН 16:9 (1080p)"));
+        p.drawText(badgeRect, Qt::AlignCenter, tr("ИГРОВОЙ ЭКРАН 16:9 (1080p)"));
 
         // Instructional Text
         p.setPen(QColor(148, 163, 184));
-        QFont font(QStringLiteral("Segoe UI"), 10, QFont::DemiBold);
+        QFont font = this->font(); font.setPointSize(10); font.setWeight(QFont::DemiBold);
         p.setFont(font);
         QRect textRect(drawRect.left(), center.y() + 20, drawRect.width(), 40);
         p.drawText(textRect, Qt::AlignCenter, tr("Выделите мышью область субтитров или диалогов"));
@@ -280,7 +282,7 @@ void ROIPreviewWidget::paintEvent(QPaintEvent* /*event*/) {
         p.drawRoundedRect(labelRect, 3, 3);
 
         p.setPen(QColor(0, 0, 0));
-        QFont bFont(QStringLiteral("Segoe UI"), 8, QFont::Bold);
+        QFont bFont = font(); bFont.setBold(true); bFont.setPointSize(8);
         p.setFont(bFont);
         p.drawText(labelRect, Qt::AlignCenter, tr("Зона #%1").arg(i + 1));
     }
@@ -416,7 +418,7 @@ void TranslatorHUDOverlay::paintEvent(QPaintEvent* /*event*/) {
     p.setBrush(Qt::NoBrush);
     p.drawRoundedRect(r.adjusted(2, 2, -2, -2), 10, 10);
 
-    QFont font(QStringLiteral("Segoe UI"), m_font_size, QFont::DemiBold);
+    QFont font = this->font(); font.setPointSize(m_font_size); font.setWeight(QFont::DemiBold);
     p.setFont(font);
 
     QRect textRect = r.adjusted(18, 12, -18, -12);
@@ -466,37 +468,20 @@ void TranslatorHUDOverlay::mouseReleaseEvent(QMouseEvent* event) {
 
 GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
     : QDialog(parent), m_system(system) {
-    setWindowTitle(tr("🌐 STORM SWITCH — Авто-переводчик"));
+    setWindowTitle(tr("STORM SWITCH - Авто-переводчик"));
     resize(1160, 700);
     setMinimumSize(680, 460);
 
+    setProperty("_stormDialogThemed", true);
     const auto gt_pal = StormTheme::GetThemePalette();
-    setStyleSheet(QStringLiteral(
-        "QDialog { background: #0B0F19; color: #FFFFFF; font-family: 'Segoe UI', sans-serif; }"
-        "QTabWidget::pane { border: 1px solid #1E293B; background: #0D1424; border-radius: 8px; }"
-        "QTabBar::tab { background: #121826; color: #FFFFFF; border: 1px solid #1E293B; border-bottom: none; "
-        "               padding: 10px 20px; border-top-left-radius: 8px; border-top-right-radius: 8px; font-weight: 600; font-size: 13px; }"
-        "QTabBar::tab:selected { background: #0D1424; color: %1; border: 1px solid %1; border-bottom: 2px solid #0D1424; }"
-        "QGroupBox { color: %1; font-weight: bold; border: 1px solid #1E293B; border-radius: 8px; margin-top: 10px; padding-top: 14px; }"
-        "QGroupBox::title { subcontrol-origin: margin; left: 12px; padding: 0 5px; }"
-        "QLabel { color: #FFFFFF; font-size: 13px; font-weight: 500; }"
-        "QLineEdit, QTextEdit, QSpinBox { background: #151D30; color: #FFFFFF; border: 1px solid #27354F; border-radius: 6px; padding: 6px 10px; font-size: 13px; }"
-        "QLineEdit:focus, QTextEdit:focus, QSpinBox:focus { border: 1px solid %1; }"
-        "QComboBox { background: #151D30; color: #FFFFFF; border: 1px solid #27354F; border-radius: 6px; padding: 6px 12px; font-size: 13px; }"
-        "QComboBox QAbstractItemView { background: #151D30; color: #FFFFFF; selection-background-color: #2563EB; }"
-        "QPushButton { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #2563EB, stop:1 #00D4FF); color: #FFFFFF; border: 1px solid #00D4FF; border-radius: 6px; font-weight: 600; padding: 8px 16px; font-size: 13px; }"
-        "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #1D4ED8, stop:1 #00B4D8); }"
-        "QPushButton#actionBtn { background: #059669; }"
+    setStyleSheet(StormDesign::BuildDialogStylesheet(gt_pal) + QStringLiteral(
+        "QPushButton#actionBtn { background: #059669; color: #FFFFFF; font-weight: 600; border-radius: 6px; padding: 6px 14px; }"
         "QPushButton#actionBtn:hover { background: #047857; }"
-        "QPushButton#dangerBtn { background: #7F1D1D; border: 1px solid #DC2626; color: #FCA5A5; }"
+        "QPushButton#dangerBtn { background: #7F1D1D; border: 1px solid #DC2626; color: #FCA5A5; font-weight: 600; border-radius: 6px; padding: 6px 14px; }"
         "QPushButton#dangerBtn:hover { background: #DC2626; color: #FFFFFF; }"
-        "QPushButton#subtleBtn { background: #1E293B; border: 1px solid #334155; color: #FFFFFF; }"
-        "QPushButton#subtleBtn:hover { background: #2563EB; color: #FFFFFF; border-color: %1; }"
-        "QCheckBox { color: #FFFFFF; font-size: 13px; font-weight: 500; spacing: 8px; }"
-        "QSlider::groove:horizontal { height: 6px; background: #1E293B; border-radius: 3px; }"
-        "QSlider::sub-page:horizontal { background: %1; border-radius: 3px; }"
-        "QSlider::handle:horizontal { background: #FFFFFF; width: 16px; margin: -5px 0; border-radius: 8px; }"
-    ).arg(gt_pal.accent));
+        "QPushButton#subtleBtn { background: %1; border: 1px solid %2; color: %3; border-radius: 6px; padding: 6px 14px; }"
+        "QPushButton#subtleBtn:hover { background: %4; color: %3; border-color: %5; }"
+    ).arg(gt_pal.buttonBg, gt_pal.buttonBorder, gt_pal.textPrimary, gt_pal.itemHover, gt_pal.accent));
 
     m_network_mgr = new QNetworkAccessManager(this);
     m_hud_overlay = new TranslatorHUDOverlay();
@@ -514,25 +499,25 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
     m_tab_widget = new QTabWidget(this);
 
     // ========================================================================
-    // TAB 1: 🌐 Перевод и AI-модели
+    // TAB 1: Перевод и AI-модели
     // ========================================================================
     auto* tab_translate = new QWidget(this);
     auto* t1_layout = new QVBoxLayout(tab_translate);
     t1_layout->setContentsMargins(12, 12, 12, 12);
     t1_layout->setSpacing(10);
 
-    auto* service_box = new QGroupBox(tr("⚙️ Движок перевода и ИИ модели"), tab_translate);
+    auto* service_box = new QGroupBox(tr("Движок перевода и ИИ модели"), tab_translate);
     auto* service_layout = new QGridLayout(service_box);
     service_layout->setHorizontalSpacing(12);
     service_layout->setVerticalSpacing(8);
 
     service_layout->addWidget(new QLabel(tr("AI Провайдер:"), tab_translate), 0, 0);
     m_provider_combo = new QComboBox(tab_translate);
-    m_provider_combo->addItem(tr("🚀 Google Web API (Бесплатно, без ключа)"), QStringLiteral("google"));
-    m_provider_combo->addItem(tr("⚡ DeepL API (Высокая точность)"), QStringLiteral("deepl"));
-    m_provider_combo->addItem(tr("🤖 OpenAI GPT-4o-mini"), QStringLiteral("openai"));
-    m_provider_combo->addItem(tr("✨ Google Gemini 2.5 Flash"), QStringLiteral("gemini"));
-    m_provider_combo->addItem(tr("🏠 Локальный Ollama / LM Studio"), QStringLiteral("ollama"));
+    m_provider_combo->addItem(tr("Google Web API (Бесплатно, без ключа)"), QStringLiteral("google"));
+    m_provider_combo->addItem(tr("DeepL API (Высокая точность)"), QStringLiteral("deepl"));
+    m_provider_combo->addItem(tr("OpenAI GPT-4o-mini"), QStringLiteral("openai"));
+    m_provider_combo->addItem(tr("Google Gemini 2.5 Flash"), QStringLiteral("gemini"));
+    m_provider_combo->addItem(tr("Локальный Ollama / LM Studio"), QStringLiteral("ollama"));
     service_layout->addWidget(m_provider_combo, 0, 1);
 
     service_layout->addWidget(new QLabel(tr("API Ключ:"), tab_translate), 0, 2);
@@ -558,7 +543,7 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
     m_tgt_lang_combo->addItem(tr("Немецкий (German)"), QStringLiteral("de"));
     service_layout->addWidget(m_tgt_lang_combo, 1, 3);
 
-    m_auto_speak_check = new QCheckBox(tr("🔊 Автоматически озвучивать перевод (TTS)"), tab_translate);
+    m_auto_speak_check = new QCheckBox(tr("Автоматически озвучивать перевод (TTS)"), tab_translate);
     service_layout->addWidget(m_auto_speak_check, 2, 0, 1, 2);
 
     m_status_label = new QLabel(tr("Готов к распознаванию"), tab_translate);
@@ -585,12 +570,12 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
     t1_layout->addWidget(text_splitter, 1);
 
     auto* t1_btn_layout = new QHBoxLayout();
-    m_translate_btn = new QPushButton(tr("⚡ Перевести сейчас (F9)"), tab_translate);
-    m_speak_btn = new QPushButton(tr("🔊 Озвучить"), tab_translate);
+    m_translate_btn = new QPushButton(tr("Перевести сейчас (F9)"), tab_translate);
+    m_speak_btn = new QPushButton(tr("Озвучить"), tab_translate);
     m_speak_btn->setObjectName(QStringLiteral("actionBtn"));
-    m_copy_btn = new QPushButton(tr("📋 Скопировать"), tab_translate);
+    m_copy_btn = new QPushButton(tr("Скопировать"), tab_translate);
     m_copy_btn->setObjectName(QStringLiteral("subtleBtn"));
-    m_clear_btn = new QPushButton(tr("🧹 Очистить"), tab_translate);
+    m_clear_btn = new QPushButton(tr("Очистить"), tab_translate);
     m_clear_btn->setObjectName(QStringLiteral("subtleBtn"));
 
     t1_btn_layout->addWidget(m_translate_btn);
@@ -600,10 +585,10 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
     t1_btn_layout->addStretch(1);
 
     t1_layout->addLayout(t1_btn_layout);
-    m_tab_widget->addTab(tab_translate, tr("🌐 Перевод и AI"));
+    m_tab_widget->addTab(tab_translate, tr("Перевод и AI"));
 
     // ========================================================================
-    // TAB 2: 📐 Области экрана (ROI Editor - Redesigned)
+    // TAB 2: Области экрана (ROI Editor - Redesigned)
     // ========================================================================
     auto* tab_roi = new QWidget(this);
     auto* t2_layout = new QHBoxLayout(tab_roi);
@@ -611,14 +596,14 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
     t2_layout->setSpacing(14);
 
     // Left Column: Viewfinder Widget
-    auto* preview_container = new QGroupBox(tr("🖥️ Интерактивный видоискатель (Выделите область мышью)"), tab_roi);
+    auto* preview_container = new QGroupBox(tr("Интерактивный видоискатель (Выделите область мышью)"), tab_roi);
     auto* pc_layout = new QVBoxLayout(preview_container);
     m_roi_preview = new ROIPreviewWidget(preview_container);
     pc_layout->addWidget(m_roi_preview);
     t2_layout->addWidget(preview_container, 3);
 
     // Right Column: Controls & Presets
-    auto* roi_ctrl_box = new QGroupBox(tr("⚙️ Настройка зон распознавания"), tab_roi);
+    auto* roi_ctrl_box = new QGroupBox(tr("Настройка зон распознавания"), tab_roi);
     auto* roi_ctrl_layout = new QVBoxLayout(roi_ctrl_box);
     roi_ctrl_layout->setSpacing(10);
 
@@ -626,10 +611,10 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
     roi_ctrl_layout->addWidget(new QLabel(tr("Быстрый шаблон (Preset):"), tab_roi));
     m_preset_combo = new QComboBox(tab_roi);
     m_preset_combo->addItem(tr("Пользовательский выбор..."), 0);
-    m_preset_combo->addItem(tr("💬 Нижняя треть (Диалоги и сабы)"), 1);
-    m_preset_combo->addItem(tr("📺 Центр экрана (Субтитры)"), 2);
-    m_preset_combo->addItem(tr("🔝 Верхняя область (Заголовки/Имена)"), 3);
-    m_preset_combo->addItem(tr("🖥️ Весь экран (100%)"), 4);
+    m_preset_combo->addItem(tr("Нижняя треть (Диалоги и сабы)"), 1);
+    m_preset_combo->addItem(tr("Центр экрана (Субтитры)"), 2);
+    m_preset_combo->addItem(tr("Верхняя область (Заголовки/Имена)"), 3);
+    m_preset_combo->addItem(tr("Весь экран (100%)"), 4);
     connect(m_preset_combo, &QComboBox::currentIndexChanged, this, &GameTranslator::OnPresetSelected);
     roi_ctrl_layout->addWidget(m_preset_combo);
 
@@ -667,8 +652,8 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
 
     // Buttons
     auto* zb_btn_layout = new QHBoxLayout();
-    m_add_zone_btn = new QPushButton(tr("➕ Добавить"), tab_roi);
-    m_remove_zone_btn = new QPushButton(tr("🗑️ Удалить"), tab_roi);
+    m_add_zone_btn = new QPushButton(tr("Добавить"), tab_roi);
+    m_remove_zone_btn = new QPushButton(tr("Удалить"), tab_roi);
     m_remove_zone_btn->setObjectName(QStringLiteral("dangerBtn"));
     m_clear_zones_btn = new QPushButton(tr("Сброс"), tab_roi);
     m_clear_zones_btn->setObjectName(QStringLiteral("subtleBtn"));
@@ -682,16 +667,16 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
     zb_btn_layout->addWidget(m_clear_zones_btn);
     roi_ctrl_layout->addLayout(zb_btn_layout);
 
-    m_save_per_game_check = new QCheckBox(tr("💾 Сохранять зоны отдельно для каждой игры (Title ID)"), tab_roi);
+    m_save_per_game_check = new QCheckBox(tr("Сохранять зоны отдельно для каждой игры (Title ID)"), tab_roi);
     m_save_per_game_check->setChecked(true);
     roi_ctrl_layout->addWidget(m_save_per_game_check);
     roi_ctrl_layout->addStretch(1);
 
     t2_layout->addWidget(roi_ctrl_box, 2);
-    m_tab_widget->addTab(tab_roi, tr("📐 Области экрана"));
+    m_tab_widget->addTab(tab_roi, tr("Области экрана"));
 
     // ========================================================================
-    // TAB 3: ⚡ Мониторинг и HUD Оверлей
+    // TAB 3: Мониторинг и HUD Оверлей
     // ========================================================================
     auto* tab_hud = new QWidget(this);
     auto* t3_layout = new QVBoxLayout(tab_hud);
@@ -710,7 +695,7 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
     auto_layout->addRow(tr("Интервал захвата:"), m_interval_spin);
     t3_layout->addWidget(auto_box);
 
-    auto* hud_box = new QGroupBox(tr("📺 Плавающий HUD оверлей субтитров поверх игры"), tab_hud);
+    auto* hud_box = new QGroupBox(tr("Плавающий HUD оверлей субтитров поверх игры"), tab_hud);
     auto* hud_layout = new QFormLayout(hud_box);
 
     m_show_hud_check = new QCheckBox(tr("Показывать плавающие субтитры (HUD)"), tab_hud);
@@ -726,7 +711,7 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
     m_hud_font_size_spin->setSuffix(tr(" pt"));
 
     m_hud_color_combo = new QComboBox(tab_hud);
-    m_hud_color_combo->addItem(tr("🎨 Авто под цвет диалога игры (Smart Match)"), QColor(0, 0, 0, 0));
+    m_hud_color_combo->addItem(tr("Авто под цвет диалога игры (Smart Match)"), QColor(0, 0, 0, 0));
     m_hud_color_combo->addItem(tr("Неоновый голубой (Cyan)"), QColor(0, 229, 255));
     m_hud_color_combo->addItem(tr("Золотисто-жёлтый (Gold)"), QColor(245, 158, 11));
     m_hud_color_combo->addItem(tr("Белоснежный (White)"), QColor(255, 255, 255));
@@ -747,24 +732,24 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
     t3_layout->addWidget(hud_box);
 
     auto* hotkey_info = new QLabel(tr("⌨️ Быстрые клавиши:\n"
-                                       "• [F9] — Мгновенный перевод экрана / скрыть перевод\n"
-                                       "• [F5] — Быстрое сохранение игры (< 20 мс)\n"
-                                       "• [F7] — Быстрая загрузка игры"), tab_hud);
-    hotkey_info->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 12px; background: #121826; padding: 12px; border-radius: 6px; border: 1px solid #1E293B;"));
+                                       "• [F9] - Мгновенный перевод экрана / скрыть перевод\n"
+                                       "• [F5] - Быстрое сохранение игры (< 20 мс)\n"
+                                       "• [F7] - Быстрая загрузка игры"), tab_hud);
+    hotkey_info->setStyleSheet(QStringLiteral("color: %1; font-size: 12px; background: %2; border: 1px solid %3; padding: 12px; border-radius: 6px;").arg(gt_pal.textPrimary, gt_pal.card, gt_pal.border));
     t3_layout->addWidget(hotkey_info);
     t3_layout->addStretch(1);
 
-    m_tab_widget->addTab(tab_hud, tr("⚡ Мониторинг и HUD"));
+    m_tab_widget->addTab(tab_hud, tr("Мониторинг и HUD"));
 
     // ========================================================================
-    // TAB 4: 🔊 Синтез речи (TTS) — Multi-Voice & Narrator
+    // TAB 4: Синтез речи (TTS) - Multi-Voice & Narrator
     // ========================================================================
     auto* tab_tts = new QWidget(this);
     auto* t4_layout = new QVBoxLayout(tab_tts);
     t4_layout->setContentsMargins(12, 12, 12, 12);
     t4_layout->setSpacing(12);
 
-    auto* tts_box = new QGroupBox(tr("🎭 Мультиголосовой синтез речи и автоопределение персонажей (24 архетипа)"), tab_tts);
+    auto* tts_box = new QGroupBox(tr("Мультиголосовой синтез речи и автоопределение персонажей (24 архетипа)"), tab_tts);
     auto* tts_form = new QFormLayout(tts_box);
 
     m_multi_voice_check = new QCheckBox(tr("Включить умное распределение голосов (Персонажи + Эмоции + Рассказчик)"), tab_tts);
@@ -778,10 +763,10 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
 
     PopulateTTSVoices();
 
-    tts_form->addRow(tr("🎙️ Основной голос (Default):"), m_tts_voice_combo);
-    tts_form->addRow(tr("🎭 Голос Персонажа 1 (Мужской):"), m_speaker1_voice_combo);
-    tts_form->addRow(tr("🎭 Голос Персонажа 2 (Женский):"), m_speaker2_voice_combo);
-    tts_form->addRow(tr("📖 Голос Рассказчика (Повествование):"), m_narrator_voice_combo);
+    tts_form->addRow(tr("Основной голос (Default):"), m_tts_voice_combo);
+    tts_form->addRow(tr("Голос Персонажа 1 (Мужской):"), m_speaker1_voice_combo);
+    tts_form->addRow(tr("Голос Персонажа 2 (Женский):"), m_speaker2_voice_combo);
+    tts_form->addRow(tr("Голос Рассказчика (Повествование):"), m_narrator_voice_combo);
 
     m_tts_volume_slider = new QSlider(Qt::Horizontal, tab_tts);
     m_tts_volume_slider->setRange(0, 100);
@@ -802,13 +787,13 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
     tts_btn_layout->addStretch(1);
     t4_layout->addLayout(tts_btn_layout);
 
-    auto* tts_info = new QLabel(tr("✨ Студийная система озвучки автоматически распознаёт плашку имени говорящего, закрепляет индивидуальный тембр за каждым персонажем игры (сохраняется в voice_cast_<TitleID>.json) и передаёт эмоциональную интонацию реплики (!, ?, ..., шёпот, угроза)."), tab_tts);
+    auto* tts_info = new QLabel(tr("Студийная система озвучки автоматически распознаёт плашку имени говорящего, закрепляет индивидуальный тембр за каждым персонажем игры (сохраняется в voice_cast_<TitleID>.json) и передаёт эмоциональную интонацию реплики (!, ?, ..., шёпот, угроза)."), tab_tts);
     tts_info->setWordWrap(true);
-    tts_info->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 12px; background: #121826; padding: 10px; border-radius: 6px;"));
+    tts_info->setStyleSheet(QStringLiteral("color: %1; font-size: 12px; background: %2; border: 1px solid %3; padding: 10px; border-radius: 6px;").arg(gt_pal.textPrimary, gt_pal.card, gt_pal.border));
     t4_layout->addWidget(tts_info);
     t4_layout->addStretch(1);
 
-        m_tab_widget->addTab(tab_tts, tr("🔊 Синтез речи (TTS)"));
+        m_tab_widget->addTab(tab_tts, tr("Синтез речи (TTS)"));
 
     // Tab 5: Dialogue Backlog & History (Ported from STORM DS)
     auto* tab_backlog = new QWidget();
@@ -820,14 +805,14 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
     t5_top_row->addWidget(m_backlog_count_label);
     t5_top_row->addStretch(1);
 
-    m_copy_backlog_btn = new QPushButton(tr("📋 Скопировать всю историю"), tab_backlog);
+    m_copy_backlog_btn = new QPushButton(tr("Скопировать всю историю"), tab_backlog);
     m_copy_backlog_btn->setStyleSheet(QStringLiteral(
         "QPushButton { background-color: #1E293B; color: #38BDF8; border: 1px solid #38BDF8; border-radius: 6px; padding: 6px 14px; font-weight: bold; }"
         "QPushButton:hover { background-color: #0284C7; color: #FFFFFF; }"
     ));
     t5_top_row->addWidget(m_copy_backlog_btn);
 
-    m_clear_backlog_btn = new QPushButton(tr("🗑️ Очистить"), tab_backlog);
+    m_clear_backlog_btn = new QPushButton(tr("Очистить"), tab_backlog);
     m_clear_backlog_btn->setStyleSheet(QStringLiteral(
         "QPushButton { background-color: #1E293B; color: #F87171; border: 1px solid #F87171; border-radius: 6px; padding: 6px 14px; font-weight: bold; }"
         "QPushButton:hover { background-color: #EF4444; color: #FFFFFF; }"
@@ -846,11 +831,11 @@ GameTranslator::GameTranslator(Core::System& system, QWidget* parent)
     ).arg(StormTheme::GetThemePalette().accent));
     t5_layout->addWidget(m_backlog_list, 1);
 
-    auto* t5_hint = new QLabel(tr("💡 Двойной клик по реплике копирует её перевод. Система автоматически объединяет повторные и мерцающие кадры OCR (фильтр Левенштейна и Жаккара)."), tab_backlog);
-    t5_hint->setStyleSheet(QStringLiteral("color: #94A3B8; font-size: 11px;"));
+    auto* t5_hint = new QLabel(tr("Двойной клик по реплике копирует её перевод. Система автоматически объединяет повторные и мерцающие кадры OCR (фильтр Левенштейна и Жаккара)."), tab_backlog);
+    t5_hint->setStyleSheet(QStringLiteral("color: %1; font-size: 11px;").arg(gt_pal.textSecondary));
     t5_layout->addWidget(t5_hint);
 
-    m_tab_widget->addTab(tab_backlog, tr("📜 История диалогов"));
+    m_tab_widget->addTab(tab_backlog, tr("История диалогов"));
 
     root_layout->addWidget(m_tab_widget, 1);
 
@@ -907,21 +892,21 @@ void GameTranslator::PopulateTTSVoices() {
 
     // Exclusively Russian Neural & AI Voice Presets
     QStringList russian_voices = {
-        QStringLiteral("🌐 Microsoft Светлана Neural HD (Русский, Женский)"),
-        QStringLiteral("🌐 Microsoft Дмитрий Neural HD (Русский, Мужской)"),
-        QStringLiteral("🌐 Microsoft Денис Neural Fast (Русский, Мужской)"),
-        QStringLiteral("🌐 Microsoft Полина Neural Emotion (Русский, Женский)"),
-        QStringLiteral("🌐 Microsoft Тимофей Neural Deep (Русский, Мужской)"),
-        QStringLiteral("🌐 Microsoft Татьяна Neural Natural (Русский, Женский)"),
-        QStringLiteral("🤖 RHVoice Александр (Русский AI, Мужской)"),
-        QStringLiteral("🤖 RHVoice Елена (Русский AI, Женский)"),
-        QStringLiteral("🤖 RHVoice Анна (Русский AI, Женский)"),
-        QStringLiteral("🤖 RHVoice Ирина (Русский AI, Женский)"),
-        QStringLiteral("🤖 RHVoice Артемий (Русский AI, Мужской)"),
-        QStringLiteral("🤖 RHVoice Михаил (Русский AI, Мужской)"),
-        QStringLiteral("🤖 RHVoice Виктория (Русский AI, Женский)"),
-        QStringLiteral("🤖 Silero Ксения (Русский AI Studio, Женский)"),
-        QStringLiteral("🤖 Silero Байкал (Русский AI Deep, Мужской)"),
+        QStringLiteral("Microsoft Светлана Neural HD (Русский, Женский)"),
+        QStringLiteral("Microsoft Дмитрий Neural HD (Русский, Мужской)"),
+        QStringLiteral("Microsoft Денис Neural Fast (Русский, Мужской)"),
+        QStringLiteral("Microsoft Полина Neural Emotion (Русский, Женский)"),
+        QStringLiteral("Microsoft Тимофей Neural Deep (Русский, Мужской)"),
+        QStringLiteral("Microsoft Татьяна Neural Natural (Русский, Женский)"),
+        QStringLiteral("RHVoice Александр (Русский AI, Мужской)"),
+        QStringLiteral("RHVoice Елена (Русский AI, Женский)"),
+        QStringLiteral("RHVoice Анна (Русский AI, Женский)"),
+        QStringLiteral("RHVoice Ирина (Русский AI, Женский)"),
+        QStringLiteral("RHVoice Артемий (Русский AI, Мужской)"),
+        QStringLiteral("RHVoice Михаил (Русский AI, Мужской)"),
+        QStringLiteral("RHVoice Виктория (Русский AI, Женский)"),
+        QStringLiteral("Silero Ксения (Русский AI Studio, Женский)"),
+        QStringLiteral("Silero Байкал (Русский AI Deep, Мужской)"),
     };
 
     for (const auto& v : russian_voices) {
@@ -952,7 +937,7 @@ void GameTranslator::PopulateTTSVoices() {
                             name.contains(QStringLiteral("Pavel"), Qt::CaseInsensitive) ||
                             name.contains(QStringLiteral("Elena"), Qt::CaseInsensitive) ||
                             name.contains(QStringLiteral("Tatyana"), Qt::CaseInsensitive)) {
-                            QString display = QStringLiteral("💻 %1 (SAPI5)").arg(name);
+                            QString display = QStringLiteral("%1 (SAPI5)").arg(name);
                             m_tts_voice_combo->addItem(display, name);
                             m_speaker1_voice_combo->addItem(display, name);
                             m_speaker2_voice_combo->addItem(display, name);
@@ -1275,8 +1260,8 @@ void GameTranslator::ExtractTextFromImageAndTranslate(const QImage& frame) {
     if (m_has_last_dhash) {
         const int diff = ComputeHammingDistance(current_dhash, m_last_frame_dhash);
         if (diff <= 2) {
-            // Frame is identical or static dialogue — 0 ms instant cache hit!
-            m_status_label->setText(tr("⚡ 0 мс (Кадр статичен / кэш)"));
+            // Frame is identical or static dialogue - 0 ms instant cache hit!
+            m_status_label->setText(tr("0 мс (Кадр статичен / кэш)"));
             if (!m_last_translated_output.isEmpty() && m_hud_overlay && m_show_hud_check->isChecked()) {
                 m_hud_overlay->SetSubtitleText(m_last_translated_output);
                 m_hud_overlay->show();
@@ -1295,7 +1280,7 @@ void GameTranslator::ExtractTextFromImageAndTranslate(const QImage& frame) {
 
     const QString src_lang = m_src_lang_combo->currentData().toString();
     const QString tgt_lang = m_tgt_lang_combo->currentData().toString();
-    m_status_label->setText(tr("🔍 Распознавание текста (Windows GPU OCR)..."));
+    m_status_label->setText(tr("Распознавание текста (Windows GPU OCR)..."));
 
     auto* watcher = new QFutureWatcher<QString>(this);
     connect(watcher, &QFutureWatcher<QString>::finished, this, [this, watcher, src_lang, tgt_lang]() {
@@ -1313,7 +1298,7 @@ void GameTranslator::ExtractTextFromImageAndTranslate(const QImage& frame) {
 
         // Anti-Duplicate & Flicker Filter: Check dialogue similarity against recent dialogue turns (STORM DS)
         if (IsDuplicateDialogue(cleaned_text)) {
-            m_status_label->setText(tr("⚡ 0 мс (Анти-дубликат / фильтр кадров)"));
+            m_status_label->setText(tr("0 мс (Анти-дубликат / фильтр кадров)"));
             if (!m_last_translated_output.isEmpty()) {
                 m_translated_edit->setPlainText(m_last_translated_output);
                 if (m_hud_overlay && m_show_hud_check->isChecked()) {
@@ -1331,7 +1316,7 @@ void GameTranslator::ExtractTextFromImageAndTranslate(const QImage& frame) {
             m_translated_edit->setPlainText(cached_trans);
             m_last_translated_input = cleaned_text;
             m_last_translated_output = cached_trans;
-            m_status_label->setText(tr("⚡ 0 мс (Мгновенный перевод из кэша)"));
+            m_status_label->setText(tr("0 мс (Мгновенный перевод из кэша)"));
             AddOrUpdateBacklog(cleaned_text, cached_trans, src_lang, tgt_lang);
 
             if (m_hud_overlay && m_show_hud_check->isChecked()) {
@@ -1476,7 +1461,7 @@ QString GameTranslator::SanitizeOcrText(const QString& text) const {
 
 void GameTranslator::ExecuteTranslationRequest(int endpoint_index, const QString& text, const QString& src_lang, const QString& tgt_lang, const QString& cache_key) {
     if (endpoint_index > 2) {
-        m_status_label->setText(tr("⚠️ Ошибка перевода: серверы недоступны"));
+        m_status_label->setText(tr("Ошибка перевода: серверы недоступны"));
         return;
     }
 
@@ -1488,7 +1473,7 @@ void GameTranslator::ExecuteTranslationRequest(int endpoint_index, const QString
     // Endpoint -1: Selected AI / Neural Provider (DeepL / OpenAI / Gemini / Ollama) with automatic fallback to endpoint 0
     if (endpoint_index == -1) {
         if (provider == QStringLiteral("deepl") && !api_key.isEmpty()) {
-            m_status_label->setText(tr("🌐 Перевод через DeepL Neural API..."));
+            m_status_label->setText(tr("Перевод через DeepL Neural API..."));
             const bool is_free = api_key.endsWith(QStringLiteral(":fx"));
             QUrl url(is_free ? QStringLiteral("https://api-free.deepl.com/v2/translate")
                              : QStringLiteral("https://api.deepl.com/v2/translate"));
@@ -1519,7 +1504,7 @@ void GameTranslator::ExecuteTranslationRequest(int endpoint_index, const QString
                     m_translated_edit->setText(translated_result);
                     m_hud_overlay->SetSubtitleText(translated_result);
                     if (m_show_hud_check && m_show_hud_check->isChecked()) m_hud_overlay->show();
-                    m_status_label->setText(tr("✅ Перевод завершён (DeepL)"));
+                    m_status_label->setText(tr("Перевод завершён (DeepL)"));
                     AddOrUpdateBacklog(text, translated_result, src_lang, tgt_lang);
                     SaveCache();
                     if (m_auto_speak_check->isChecked()) SpeakText(translated_result);
@@ -1531,8 +1516,8 @@ void GameTranslator::ExecuteTranslationRequest(int endpoint_index, const QString
         } else if ((provider == QStringLiteral("openai") || provider == QStringLiteral("ollama")) &&
                    (provider == QStringLiteral("ollama") || !api_key.isEmpty())) {
             const bool is_ollama = (provider == QStringLiteral("ollama"));
-            m_status_label->setText(is_ollama ? tr("🤖 Перевод через локальный Ollama LLM...")
-                                              : tr("🤖 Перевод через OpenAI GPT-4o-mini..."));
+            m_status_label->setText(is_ollama ? tr("Перевод через локальный Ollama LLM...")
+                                              : tr("Перевод через OpenAI GPT-4o-mini..."));
             QUrl url(is_ollama ? QStringLiteral("http://127.0.0.1:11434/v1/chat/completions")
                                : QStringLiteral("https://api.openai.com/v1/chat/completions"));
             QNetworkRequest req(url);
@@ -1571,7 +1556,7 @@ void GameTranslator::ExecuteTranslationRequest(int endpoint_index, const QString
                     m_translated_edit->setText(translated_result);
                     m_hud_overlay->SetSubtitleText(translated_result);
                     if (m_show_hud_check && m_show_hud_check->isChecked()) m_hud_overlay->show();
-                    m_status_label->setText(tr("✅ Перевод завершён (AI LLM)"));
+                    m_status_label->setText(tr("Перевод завершён (AI LLM)"));
                     AddOrUpdateBacklog(text, translated_result, src_lang, tgt_lang);
                     SaveCache();
                     if (m_auto_speak_check->isChecked()) SpeakText(translated_result);
@@ -1581,7 +1566,7 @@ void GameTranslator::ExecuteTranslationRequest(int endpoint_index, const QString
             });
             return;
         } else if (provider == QStringLiteral("gemini") && !api_key.isEmpty()) {
-            m_status_label->setText(tr("🤖 Перевод через Google Gemini Flash..."));
+            m_status_label->setText(tr("Перевод через Google Gemini Flash..."));
             QUrl url(QStringLiteral("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=%1").arg(api_key));
             QNetworkRequest req(url);
             req.setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("application/json"));
@@ -1611,7 +1596,7 @@ void GameTranslator::ExecuteTranslationRequest(int endpoint_index, const QString
                     m_translated_edit->setText(translated_result);
                     m_hud_overlay->SetSubtitleText(translated_result);
                     if (m_show_hud_check && m_show_hud_check->isChecked()) m_hud_overlay->show();
-                    m_status_label->setText(tr("✅ Перевод завершён (Gemini)"));
+                    m_status_label->setText(tr("Перевод завершён (Gemini)"));
                     AddOrUpdateBacklog(text, translated_result, src_lang, tgt_lang);
                     SaveCache();
                     if (m_auto_speak_check->isChecked()) SpeakText(translated_result);
@@ -1628,7 +1613,7 @@ void GameTranslator::ExecuteTranslationRequest(int endpoint_index, const QString
     QUrlQuery query;
 
     if (endpoint_index == 0) {
-        m_status_label->setText(tr("🌐 Перевод через Google Web API..."));
+        m_status_label->setText(tr("Перевод через Google Web API..."));
         url = QUrl(QStringLiteral("https://translate.googleapis.com/translate_a/single"));
         query.addQueryItem(QStringLiteral("client"), QStringLiteral("gtx"));
         query.addQueryItem(QStringLiteral("sl"), sl);
@@ -1636,14 +1621,14 @@ void GameTranslator::ExecuteTranslationRequest(int endpoint_index, const QString
         query.addQueryItem(QStringLiteral("dt"), QStringLiteral("t"));
         query.addQueryItem(QStringLiteral("q"), text);
     } else if (endpoint_index == 1) {
-        m_status_label->setText(tr("🌐 Перевод через Google Dict API (резерв 1)..."));
+        m_status_label->setText(tr("Перевод через Google Dict API (резерв 1)..."));
         url = QUrl(QStringLiteral("https://clients5.google.com/translate_a/t"));
         query.addQueryItem(QStringLiteral("client"), QStringLiteral("dict-chrome-ex"));
         query.addQueryItem(QStringLiteral("sl"), sl);
         query.addQueryItem(QStringLiteral("tl"), tl);
         query.addQueryItem(QStringLiteral("q"), text);
     } else if (endpoint_index == 2) {
-        m_status_label->setText(tr("🌐 Перевод через MyMemory API (резерв 2)..."));
+        m_status_label->setText(tr("Перевод через MyMemory API (резерв 2)..."));
         url = QUrl(QStringLiteral("https://api.mymemory.translated.net/get"));
         query.addQueryItem(QStringLiteral("q"), text);
         query.addQueryItem(QStringLiteral("langpair"), QStringLiteral("%1|%2").arg(sl == QStringLiteral("auto") ? QStringLiteral("en") : sl, tl));
@@ -1708,7 +1693,7 @@ void GameTranslator::ExecuteTranslationRequest(int endpoint_index, const QString
                 m_hud_overlay->show();
                 m_hud_overlay->raise();
             }
-            m_status_label->setText(tr("✅ Перевод завершён"));
+            m_status_label->setText(tr("Перевод завершён"));
             AddOrUpdateBacklog(text, translated_result, src_lang, tgt_lang);
             SaveCache();
 
@@ -1735,7 +1720,7 @@ void GameTranslator::PerformOnlineTranslation(const QString& text, const QString
         if (m_show_hud_check && m_show_hud_check->isChecked()) {
             m_hud_overlay->show();
         }
-        m_status_label->setText(tr("✅ Перевод (без изменений)"));
+        m_status_label->setText(tr("Перевод (без изменений)"));
         return;
     }
 
@@ -1749,7 +1734,7 @@ void GameTranslator::PerformOnlineTranslation(const QString& text, const QString
         if (m_show_hud_check && m_show_hud_check->isChecked()) {
             m_hud_overlay->show();
         }
-        m_status_label->setText(tr("✅ Перевод (кэш)"));
+        m_status_label->setText(tr("Перевод (кэш)"));
 
         if (m_auto_speak_check->isChecked()) {
             SpeakText(translated_result);
@@ -2182,7 +2167,7 @@ void GameTranslator::OnSpeakClicked() {
 
 void GameTranslator::OnCopyClicked() {
     QApplication::clipboard()->setText(m_translated_edit->toPlainText());
-    m_status_label->setText(tr("📋 Перевод скопирован в буфер обмена"));
+    m_status_label->setText(tr("Перевод скопирован в буфер обмена"));
 }
 
 void GameTranslator::OnClearClicked() {
@@ -2203,7 +2188,7 @@ void GameTranslator::OnProviderChanged(int index) {
 }
 
 void GameTranslator::OnTestTTSClicked() {
-    m_status_label->setText(tr("🔊 Тестирование: Рассказчик -> Герой -> Принцесса Зельда..."));
+    m_status_label->setText(tr("Тестирование: Рассказчик -> Герой -> Принцесса Зельда..."));
     SpeakText(tr("Рассказчик: В сумерках у древней цитадели зашелестели флаги.\n"
                  "Линк: Я чувствую приближение битвы, держись позади!\n"
                  "Зельда: Не беспокойся обо мне, магия света наготове!"));
@@ -2475,7 +2460,7 @@ int GameTranslator::ComputeLevenshteinDistance(const QString& s1, const QString&
 }
 
 double GameTranslator::ComputeJaccardSimilarity(const QString& s1, const QString& s2) {
-    static const QRegularExpression word_regex(QStringLiteral("[\\s,.;:!?\"'()\[\]{}\-—_]+"));
+    static const QRegularExpression word_regex(QStringLiteral("[\\s,.;:!?\"'()\[\]{}\--_]+"));
     const QStringList tokens1 = s1.toLower().split(word_regex, Qt::SkipEmptyParts);
     const QStringList tokens2 = s2.toLower().split(word_regex, Qt::SkipEmptyParts);
 
@@ -2609,7 +2594,7 @@ void GameTranslator::RefreshBacklogUI() {
     for (const auto& entry : entries) {
         QString display;
         if (!entry.speaker_name.isEmpty()) {
-            display = QStringLiteral("[%1] 👤 %2: %3\n      ↳ %4")
+            display = QStringLiteral("[%1] %2: %3\n      ↳ %4")
                           .arg(entry.formatted_time, entry.speaker_name, entry.source_text, entry.translated_text);
         } else {
             display = QStringLiteral("[%1] %2\n      ↳ %3")
@@ -2640,12 +2625,12 @@ void GameTranslator::OnCopyBacklogClicked() {
     }
 
     QApplication::clipboard()->setText(full_text.trimmed());
-    m_status_label->setText(tr("📋 История диалогов скопирована в буфер обмена (%1 реплик)").arg(entries.size()));
+    m_status_label->setText(tr("История диалогов скопирована в буфер обмена (%1 реплик)").arg(entries.size()));
 }
 
 void GameTranslator::OnClearBacklogClicked() {
     ClearBacklog();
-    m_status_label->setText(tr("🗑️ История диалогов очищена"));
+    m_status_label->setText(tr("История диалогов очищена"));
 }
 
 void GameTranslator::OnBacklogItemDoubleClicked(QListWidgetItem* item) {
@@ -2653,6 +2638,6 @@ void GameTranslator::OnBacklogItemDoubleClicked(QListWidgetItem* item) {
     const QString trans = item->data(Qt::UserRole).toString();
     if (!trans.isEmpty()) {
         QApplication::clipboard()->setText(trans);
-        m_status_label->setText(tr("📋 Реплика скопирована в буфер обмена: %1").arg(trans.left(40)));
+        m_status_label->setText(tr("Реплика скопирована в буфер обмена: %1").arg(trans.left(40)));
     }
 }

@@ -71,9 +71,9 @@
     <integer name="BUTTON_ZR_Y_PORTRAIT">160</integer>
     <integer name="BUTTON_PLUS_X_PORTRAIT">560</integer>
     <integer name="BUTTON_STICK_L_X_PORTRAIT">140</integer>
-    <integer name="BUTTON_STICK_L_Y_PORTRAIT">360</integer>
+    <integer name="BUTTON_STICK_L_Y_PORTRAIT">400</integer>
     <integer name="BUTTON_STICK_R_X_PORTRAIT">860</integer>
-    <integer name="BUTTON_STICK_R_Y_PORTRAIT">360</integer>
+    <integer name="BUTTON_STICK_R_Y_PORTRAIT">400</integer>
     <integer name="STICK_L_X_PORTRAIT">180</integer>
     <integer name="STICK_L_Y_PORTRAIT">660</integer>
     <integer name="STICK_R_X_PORTRAIT">820</integer>
@@ -107,9 +107,9 @@
     <integer name="BUTTON_ZR_X_FOLDABLE">860</integer>
     <integer name="BUTTON_ZR_Y_FOLDABLE">70</integer>
     <integer name="BUTTON_STICK_L_X_FOLDABLE">70</integer>
-    <integer name="BUTTON_STICK_L_Y_FOLDABLE">245</integer>
+    <integer name="BUTTON_STICK_L_Y_FOLDABLE">280</integer>
     <integer name="BUTTON_STICK_R_X_FOLDABLE">930</integer>
-    <integer name="BUTTON_STICK_R_Y_FOLDABLE">245</integer>
+    <integer name="BUTTON_STICK_R_Y_FOLDABLE">280</integer>
     <integer name="STICK_L_X_FOLDABLE">180</integer>
     <integer name="STICK_L_Y_FOLDABLE">250</integer>
     <integer name="STICK_R_X_FOLDABLE">820</integer>

@@ -17,22 +17,21 @@
 #include "common/fs/fs.h"
 #include "common/fs/path_util.h"
 #include "storm_switch/crash_report_dialog.h"
+#include "storm_switch/common/storm_design_engine.h"
 #include "storm_switch/common/storm_theme.h"
 #include "storm_switch/configuration/storm_ui_structure_helper.h"
 
 CrashReportDialog::CrashReportDialog(QWidget* parent, const CrashReportInfo& info)
     : QDialog(parent), m_info{info} {
-    setWindowTitle(tr("⚠️ STORM SWITCH — Критический сбой игры"));
+    setWindowTitle(tr("STORM SWITCH - Критический сбой игры"));
     resize(780, 560);
     setMinimumSize(680, 480);
 
-    setStyleSheet(QStringLiteral(
-        "QDialog { background-color: #0B0F19; color: #FFFFFF; font-family: 'Segoe UI', sans-serif; font-size: 12px; }"
-        "QTextEdit { background-color: #0A0E17; border: 1px solid #1E293B; border-radius: 6px; color: #38BDF8; font-family: 'Consolas', 'Courier New', monospace; font-size: 11px; padding: 8px; }"
-        "QPushButton, QDialogButtonBox QPushButton, QToolButton { background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #25354e, stop:1 #0f172a); border: 1px solid #20354e; border-radius: 7px; padding: 6px 16px; color: #FFFFFF; font-weight: 600; min-height: 22px; }" "QPushButton:hover, QDialogButtonBox QPushButton:hover, QToolButton:hover { background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #334664, stop:1 #131c2c); border: 1px solid #00D2FF; color: #00D2FF; }" "QPushButton:pressed, QDialogButtonBox QPushButton:pressed, QToolButton:pressed { background-color: #0d1522; border: 1px solid #00A6CC; padding: 6px 16px; color: #FFFFFF; }"
-        "QPushButton:hover { border: 1px solid #00D2FF; color: #00D2FF; background: #1E293B; }"
-        "QPushButton:pressed { background: #0284C7; color: #FFFFFF; }"
-    ));
+    setProperty("_stormDialogThemed", true);
+    const auto cr_pal = StormTheme::GetThemePalette();
+    setStyleSheet(StormDesign::BuildDialogStylesheet(cr_pal) + QStringLiteral(
+        "QTextEdit { background-color: %1; border: 1px solid %2; border-radius: 6px; color: %3; font-family: 'Consolas', 'Courier New', monospace; font-size: 11px; padding: 8px; }"
+    ).arg(cr_pal.inputBg, cr_pal.border, (cr_pal.is_light ? cr_pal.accent : QStringLiteral("#38BDF8"))));
 
     SetupUI(info);
     StormUI::StructureEngine::ModernizeForm(this);
@@ -42,13 +41,14 @@ CrashReportDialog::CrashReportDialog(QWidget* parent, const CrashReportInfo& inf
 CrashReportDialog::~CrashReportDialog() = default;
 
 void CrashReportDialog::SetupUI(const CrashReportInfo& info) {
+    const auto cr_pal = StormTheme::GetThemePalette();
     auto* main_layout = new QVBoxLayout(this);
     main_layout->setContentsMargins(14, 14, 14, 14);
     main_layout->setSpacing(10);
 
     // Header error banner
     auto* header_layout = new QHBoxLayout();
-    auto* error_icon = new QLabel(QStringLiteral("⚠️"), this);
+    auto* error_icon = new QLabel(QString(), this);
     error_icon->setStyleSheet(QStringLiteral("font-size: 28px;"));
     header_layout->addWidget(error_icon);
 
@@ -61,7 +61,7 @@ void CrashReportDialog::SetupUI(const CrashReportInfo& info) {
         ? QStringLiteral("Title ID: 0x%1").arg(info.title_id, 16, 16, QLatin1Char('0')).toUpper()
         : QStringLiteral("%1 (0x%2)").arg(info.game_name).arg(info.title_id, 16, 16, QLatin1Char('0')).toUpper();
     auto* game_lbl = new QLabel(game_desc, this);
-    game_lbl->setStyleSheet(QStringLiteral("color: #FFFFFF; font-size: 12px;"));
+    game_lbl->setStyleSheet(QStringLiteral("color: %1; font-size: 12px;").arg(cr_pal.textPrimary));
     title_box->addWidget(game_lbl);
 
     header_layout->addLayout(title_box, 1);
@@ -84,8 +84,7 @@ void CrashReportDialog::SetupUI(const CrashReportInfo& info) {
                  "• Включите «Авиарежим», если игра пытается выполнить сетевой запрос к отключенным серверам.<br>"
                  "• Очистите шейдерный кэш игры (ПКМ по игре в списке -> Очистить кэш шейдеров).");
     }
-    auto* rec_box = new QLabel(tr("💡 <b>Рекомендации по устранению сбоя:</b><br>%1").arg(rec), this);
-    const auto cr_pal = StormTheme::GetThemePalette();
+    auto* rec_box = new QLabel(tr("<b>Рекомендации по устранению сбоя:</b><br>%1").arg(rec), this);
     const QColor cr_acc(cr_pal.accent);
     rec_box->setStyleSheet(QStringLiteral("background: rgba(%1, %2, %3, 0.15); border: 1px solid %4; border-radius: 6px; padding: 8px; color: %5;")
         .arg(cr_acc.red()).arg(cr_acc.green()).arg(cr_acc.blue()).arg(cr_pal.accent).arg(cr_pal.textPrimary));
@@ -93,7 +92,7 @@ void CrashReportDialog::SetupUI(const CrashReportInfo& info) {
 
     // Registers and Callstack
     auto* reg_header = new QLabel(tr("Дамп регистров CPU ARM64 и стек вызовов:"), this);
-    reg_header->setStyleSheet(QStringLiteral("font-weight: bold; color: #FFFFFF;"));
+    reg_header->setStyleSheet(QStringLiteral("font-weight: bold; color: %1;").arg(cr_pal.textPrimary));
     main_layout->addWidget(reg_header);
 
     m_register_view = new QTextEdit(this);
@@ -105,17 +104,17 @@ void CrashReportDialog::SetupUI(const CrashReportInfo& info) {
     auto* btn_layout = new QHBoxLayout();
     btn_layout->setSpacing(8);
 
-    m_btn_copy = new QPushButton(tr("📋 Скопировать отчет"), this);
+    m_btn_copy = new QPushButton(tr("Скопировать отчет"), this);
     connect(m_btn_copy, &QPushButton::clicked, this, &CrashReportDialog::OnCopyReport);
     btn_layout->addWidget(m_btn_copy);
 
-    m_btn_open_folder = new QPushButton(tr("📂 Папка отчетов"), this);
+    m_btn_open_folder = new QPushButton(tr("Папка отчетов"), this);
     connect(m_btn_open_folder, &QPushButton::clicked, this, &CrashReportDialog::OnOpenDumpFolder);
     btn_layout->addWidget(m_btn_open_folder);
 
     btn_layout->addStretch(1);
 
-    m_btn_restart = new QPushButton(tr("🔄 Перезапустить игру"), this);
+    m_btn_restart = new QPushButton(tr("Перезапустить игру"), this);
     m_btn_restart->setStyleSheet(QStringLiteral("background: %1; color: #FFFFFF; font-weight: bold; border-color: %1;").arg(cr_pal.accent));
     connect(m_btn_restart, &QPushButton::clicked, this, &CrashReportDialog::OnRestart);
     btn_layout->addWidget(m_btn_restart);
@@ -137,7 +136,7 @@ void CrashReportDialog::OnCopyReport() {
     report += m_info.register_dump;
 
     QGuiApplication::clipboard()->setText(report);
-    m_btn_copy->setText(tr("✅ Отчет скопирован!"));
+    m_btn_copy->setText(tr("Отчет скопирован!"));
 }
 
 void CrashReportDialog::OnOpenDumpFolder() {

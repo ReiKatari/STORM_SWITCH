@@ -12,10 +12,10 @@
         <action
             android:id="@+id/action_gamesFragment_to_homeSettingsFragment"
             app:destination="@id/homeSettingsFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+            app:enterAnim="@anim/storm_frag_enter"
+            app:exitAnim="@anim/storm_frag_exit"
+            app:popEnterAnim="@anim/storm_pop_enter"
+            app:popExitAnim="@anim/storm_pop_exit" />
 
     <fragment
         android:id="@+id/homeSettingsFragment"
@@ -78,7 +78,11 @@
 
     <action
         android:id="@+id/action_global_settingsActivity"
-        app:destination="@id/settingsActivity" />
+        app:destination="@id/settingsActivity"
+            app:enterAnim="@anim/storm_frag_enter"
+            app:exitAnim="@anim/storm_frag_exit"
+            app:popEnterAnim="@anim/storm_pop_enter"
+            app:popExitAnim="@anim/storm_pop_exit" />
     <activity
         android:id="@+id/settingsSubscreenActivity"
         android:name="org.yuzu.yuzu_emu.features.settings.ui.SettingsSubscreenActivity"
@@ -94,7 +98,11 @@
     </activity>
     <action
         android:id="@+id/action_global_settingsSubscreenActivity"
-        app:destination="@id/settingsSubscreenActivity" />
+        app:destination="@id/settingsSubscreenActivity"
+            app:enterAnim="@anim/storm_frag_enter"
+            app:exitAnim="@anim/storm_frag_exit"
+            app:popEnterAnim="@anim/storm_pop_enter"
+            app:popExitAnim="@anim/storm_pop_exit" />
     <fragment
         android:id="@+id/installableFragment"
         android:name="org.yuzu.yuzu_emu.fragments.InstallableFragment"
@@ -134,20 +142,40 @@
             app:argType="org.yuzu.yuzu_emu.model.Game" />
         <action
             android:id="@+id/action_perGamePropertiesFragment_to_gameInfoFragment"
-            app:destination="@id/gameInfoFragment" />
+            app:destination="@id/gameInfoFragment"
+            app:enterAnim="@anim/storm_frag_enter"
+            app:exitAnim="@anim/storm_frag_exit"
+            app:popEnterAnim="@anim/storm_pop_enter"
+            app:popExitAnim="@anim/storm_pop_exit" />
         <action
             android:id="@+id/action_perGamePropertiesFragment_to_addonsFragment"
-            app:destination="@id/addonsFragment" />
+            app:destination="@id/addonsFragment"
+            app:enterAnim="@anim/storm_frag_enter"
+            app:exitAnim="@anim/storm_frag_exit"
+            app:popEnterAnim="@anim/storm_pop_enter"
+            app:popExitAnim="@anim/storm_pop_exit" />
         <action
             android:id="@+id/action_perGamePropertiesFragment_to_driverManagerFragment"
-            app:destination="@id/driverManagerFragment" />
+            app:destination="@id/driverManagerFragment"
+            app:enterAnim="@anim/storm_frag_enter"
+            app:exitAnim="@anim/storm_frag_exit"
+            app:popEnterAnim="@anim/storm_pop_enter"
+            app:popExitAnim="@anim/storm_pop_exit" />
         <action
             android:id="@+id/action_perGamePropertiesFragment_to_freedrenoSettingsFragment"
-            app:destination="@id/freedrenoSettingsFragment" />
+            app:destination="@id/freedrenoSettingsFragment"
+            app:enterAnim="@anim/storm_frag_enter"
+            app:exitAnim="@anim/storm_frag_exit"
+            app:popEnterAnim="@anim/storm_pop_enter"
+            app:popExitAnim="@anim/storm_pop_exit" />
     </fragment>
     <action
         android:id="@+id/action_global_perGamePropertiesFragment"
-        app:destination="@id/perGamePropertiesFragment" />
+        app:destination="@id/perGamePropertiesFragment"
+            app:enterAnim="@anim/storm_frag_enter"
+            app:exitAnim="@anim/storm_frag_exit"
+            app:popEnterAnim="@anim/storm_pop_enter"
+            app:popExitAnim="@anim/storm_pop_exit" />
     <fragment
         android:id="@+id/gameInfoFragment"
         android:name="org.yuzu.yuzu_emu.fragments.GameInfoFragment"

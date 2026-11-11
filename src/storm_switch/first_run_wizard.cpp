@@ -1,3 +1,9 @@
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QMimeData>
+#include <QUrl>
+#include <QDir>
+#include <QFileInfo>
 // SPDX-FileCopyrightText: 2026 STORM SOFT
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -27,12 +33,12 @@ FirstRunWizard::FirstRunWizard(QWidget* parent, Core::System& system_,
                                InputCommon::InputSubsystem& input_subsystem_)
     : QWizard(parent), system(system_), input_subsystem(input_subsystem_) {
     setWindowTitle(StormLang(
-        QStringLiteral("STORM SWITCH — Мастер первоначальной настройки"),
-        QStringLiteral("STORM SWITCH — Initial Setup Wizard"),
-        QStringLiteral("STORM SWITCH — Ersteinrichtungsassistent"),
-        QStringLiteral("STORM SWITCH — Assistant de configuration initiale"),
-        QStringLiteral("STORM SWITCH — 初始设置向导"),
-        QStringLiteral("STORM SWITCH — 初期セットアップウィザード")
+        QStringLiteral("STORM SWITCH - Мастер первоначальной настройки"),
+        QStringLiteral("STORM SWITCH - Initial Setup Wizard"),
+        QStringLiteral("STORM SWITCH - Ersteinrichtungsassistent"),
+        QStringLiteral("STORM SWITCH - Assistant de configuration initiale"),
+        QStringLiteral("STORM SWITCH - 初始设置向导"),
+        QStringLiteral("STORM SWITCH - 初期セットアップウィザード")
     ));
 
     setWizardStyle(QWizard::ModernStyle);
@@ -41,10 +47,13 @@ FirstRunWizard::FirstRunWizard(QWidget* parent, Core::System& system_,
     resize(760, 520);
     setMinimumSize(680, 460);
 
-    setStyleSheet(StormTheme::GetDialogStyle() + StormCancelButtonQssRule());
+    setProperty("_stormDialogThemed", true);
+    const auto frw_pal = StormTheme::GetThemePalette();
+    setStyleSheet(StormDesign::BuildDialogStylesheet(frw_pal) + StormCancelButtonQssRule());
 
     // ESC dismisses
     StormUI::StructureEngine::InstallEscDismiss(this);
+    setAcceptDrops(true);
 
     // Custom button texts
     setButtonText(QWizard::NextButton, StormLang(QStringLiteral("Далее →"), QStringLiteral("Next →")));
@@ -58,6 +67,7 @@ FirstRunWizard::FirstRunWizard(QWidget* parent, Core::System& system_,
 FirstRunWizard::~FirstRunWizard() = default;
 
 void FirstRunWizard::SetupPages() {
+    const auto frw_pal = StormTheme::GetThemePalette();
     // -------------------------------------------------------------------------
     // Page 1: Language & Theme
     // -------------------------------------------------------------------------
@@ -188,7 +198,7 @@ void FirstRunWizard::SetupPages() {
     auto* keys_hint = new QLabel(StormLang(
         QStringLiteral("Если у вас пока нет файлов ключей, вы можете пропустить этот шаг и добавить их позже через меню «Инструменты»."),
         QStringLiteral("If you don't have keys right now, you can skip this step and install them later via the Tools menu.")), m_page_keys);
-    keys_hint->setStyleSheet(QStringLiteral("color: rgba(255, 255, 255, 0.65); font-size: 8.5pt;"));
+    keys_hint->setStyleSheet(QStringLiteral("color: %1; font-size: 8.5pt;").arg(frw_pal.textSecondary));
     keys_hint->setWordWrap(true);
     lay2->addWidget(keys_hint);
     lay2->addStretch();
@@ -243,7 +253,7 @@ void FirstRunWizard::SetupPages() {
     auto* fw_hint = new QLabel(StormLang(
         QStringLiteral("Установка прошивки не является строго обязательной для всех игр. Вы можете пропустить этот шаг."),
         QStringLiteral("Firmware installation is optional for many titles. You can skip this step and proceed.")), m_page_firmware);
-    fw_hint->setStyleSheet(QStringLiteral("color: rgba(255, 255, 255, 0.65); font-size: 8.5pt;"));
+    fw_hint->setStyleSheet(QStringLiteral("color: %1; font-size: 8.5pt;").arg(frw_pal.textSecondary));
     fw_hint->setWordWrap(true);
     lay3->addWidget(fw_hint);
     lay3->addStretch();
@@ -364,6 +374,65 @@ void FirstRunWizard::accept() {
 }
 
 void FirstRunWizard::reject() {
-    CompleteWizard();
+    // Law 24: ESC dismissal should close cleanly without marking setup as complete
     QWizard::reject();
+}
+
+void FirstRunWizard::dragEnterEvent(QDragEnterEvent* event) {
+    if (event->mimeData()->hasUrls()) {
+        event->acceptProposedAction();
+    } else {
+        QWizard::dragEnterEvent(event);
+    }
+}
+
+void FirstRunWizard::dropEvent(QDropEvent* event) {
+    if (!event->mimeData()->hasUrls()) {
+        QWizard::dropEvent(event);
+        return;
+    }
+    for (const QUrl& url : event->mimeData()->urls()) {
+        const QString local_path = url.toLocalFile();
+        if (local_path.isEmpty()) continue;
+        const QFileInfo fi(local_path);
+        if (fi.isFile()) {
+            const QString suf = fi.suffix().toLower();
+            if (suf == QStringLiteral("keys") || fi.fileName().contains(QStringLiteral("keys"), Qt::CaseInsensitive)) {
+                FirmwareManager::InstallKeys(local_path.toStdString(), "keys");
+                UpdateKeysStatus();
+            } else if (suf == QStringLiteral("zip")) {
+                const QString tmp = QtCommon::Content::UnzipFirmwareToTmp(local_path);
+                if (!tmp.isEmpty()) {
+                    QtCommon::Content::InstallFirmware(tmp, false);
+                } else {
+                    QtCommon::Content::InstallKeysFromZip(local_path);
+                    UpdateKeysStatus();
+                }
+                UpdateFirmwareStatus();
+            }
+        } else if (fi.isDir()) {
+            QDir d(local_path);
+            if (!d.entryList(QStringList() << QStringLiteral("*.nca"), QDir::Files).isEmpty()) {
+                QtCommon::Content::InstallFirmware(local_path, false);
+                UpdateFirmwareStatus();
+            } else {
+                const std::string std_dir = local_path.toStdString();
+                bool exists = false;
+                for (const auto& existing : UISettings::values.game_dirs) {
+                    if (existing.path == std_dir) {
+                        exists = true;
+                        break;
+                    }
+                }
+                if (!exists) {
+                    UISettings::GameDir gd;
+                    gd.path = std_dir;
+                    gd.deep_scan = true;
+                    UISettings::values.game_dirs.append(gd);
+                }
+                RefreshGameDirsList();
+            }
+        }
+    }
+    event->acceptProposedAction();
 }

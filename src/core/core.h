@@ -1,3 +1,4 @@
+#include "core/memory/dmnt_cheat_types.h"
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -193,10 +194,8 @@ public:
     std::unique_lock<std::mutex> StallApplication();
     void UnstallApplication();
 
-    void NotifyNVDECChannelOpen(u64 process_id);
-    void NotifyNVDECChannelClose(u64 process_id);
+    void SetNVDECActive(bool is_nvdec_active);
     [[nodiscard]] bool GetNVDECActive();
-    [[nodiscard]] bool IsNVDECActiveForProcess(u64 process_id);
 
     /**
      * Initialize the debugger.
@@ -345,6 +344,8 @@ public:
                            u64 main_region_size);
 
     void ReloadCheatList(const std::vector<Memory::CheatEntry>& list);
+    [[nodiscard]] std::vector<Memory::RuntimeCheatInfo> GetRuntimeCheats() const;
+    bool SetCheatEnabled(u32 cheat_id, bool enabled);
 
     void SetMainNsoParameters(u64 main_region_begin, u64 main_region_size);
     [[nodiscard]] u64 GetMainNsoBase() const;

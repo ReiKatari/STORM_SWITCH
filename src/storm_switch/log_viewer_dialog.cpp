@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "storm_switch/log_viewer_dialog.h"
+#include "storm_switch/common/storm_design_engine.h"
+#include "storm_switch/common/storm_design_engine.h"
 #include "storm_switch/common/storm_theme.h"
 
 #include <QButtonGroup>
@@ -119,7 +121,8 @@ QString LogViewerDialog::FindActiveLogPath() const {
 }
 
 void LogViewerDialog::SetupUI() {
-    setWindowTitle(tr("📜 Журнал работы (Логи) — STORM SWITCH"));
+    const auto pal = StormTheme::GetThemePalette();
+    setWindowTitle(tr("Журнал работы (Логи) - STORM SWITCH"));
     resize(1040, 680);
     setMinimumSize(640, 440);
 
@@ -131,7 +134,7 @@ void LogViewerDialog::SetupUI() {
     auto* header_layout = new QHBoxLayout();
     header_layout->setSpacing(12);
 
-    auto* icon_label = new QLabel(QStringLiteral("📋"), this);
+    auto* icon_label = new QLabel(QString(), this);
     icon_label->setStyleSheet(QStringLiteral("font-size: 26px;"));
     header_layout->addWidget(icon_label);
 
@@ -139,11 +142,11 @@ void LogViewerDialog::SetupUI() {
     title_box->setSpacing(2);
 
     title_label = new QLabel(tr("Журнал работы и диагностики эмулятора"), this);
-    title_label->setStyleSheet(QStringLiteral("font-size: 16px; font-weight: bold; color: #FFFFFF;"));
+    title_label->setStyleSheet(QStringLiteral("font-size: 16px; font-weight: bold; color: %1;").arg(pal.textPrimary));
     title_box->addWidget(title_label);
 
     stats_label = new QLabel(tr("Загрузка записей журнала..."), this);
-    stats_label->setStyleSheet(QStringLiteral("color: #7090B0; font-size: 11px;"));
+    stats_label->setStyleSheet(QStringLiteral("color: %1; font-size: 11px;").arg(pal.textSecondary));
     title_box->addWidget(stats_label);
 
     header_layout->addLayout(title_box, 1);
@@ -176,7 +179,7 @@ void LogViewerDialog::SetupUI() {
     filter_bar->addSpacing(14);
 
     search_edit = new QLineEdit(this);
-    search_edit->setPlaceholderText(tr("🔍 Поиск по тексту журнала..."));
+    search_edit->setPlaceholderText(tr("Поиск по тексту журнала..."));
     search_edit->setClearButtonEnabled(true);
     filter_bar->addWidget(search_edit, 1);
 
@@ -197,19 +200,19 @@ void LogViewerDialog::SetupUI() {
     auto* bottom_bar = new QHBoxLayout();
     bottom_bar->setSpacing(10);
 
-    refresh_btn = new QPushButton(tr("🔄 Обновить"), this);
+    refresh_btn = new QPushButton(tr("Обновить"), this);
     refresh_btn->setCursor(Qt::PointingHandCursor);
     bottom_bar->addWidget(refresh_btn);
 
-    copy_btn = new QPushButton(tr("📋 Скопировать"), this);
+    copy_btn = new QPushButton(tr("Скопировать"), this);
     copy_btn->setCursor(Qt::PointingHandCursor);
     bottom_bar->addWidget(copy_btn);
 
-    export_btn = new QPushButton(tr("💾 Экспорт в файл..."), this);
+    export_btn = new QPushButton(tr("Экспорт в файл..."), this);
     export_btn->setCursor(Qt::PointingHandCursor);
     bottom_bar->addWidget(export_btn);
 
-    open_folder_btn = new QPushButton(tr("📁 Открыть папку логов"), this);
+    open_folder_btn = new QPushButton(tr("Открыть папку логов"), this);
     open_folder_btn->setCursor(Qt::PointingHandCursor);
     bottom_bar->addWidget(open_folder_btn);
 
@@ -232,33 +235,11 @@ void LogViewerDialog::SetupUI() {
 }
 
 void LogViewerDialog::ApplyStormStyles() {
+    setProperty("_stormDialogThemed", true);
     const StormTheme::Palette pal = StormTheme::GetThemePalette();
-    setStyleSheet(QStringLiteral(
-        "QDialog { background-color: %1; color: %2; font-family: 'Segoe UI', sans-serif; }"
-        "QRadioButton { color: %8; font-size: 12px; font-weight: bold; spacing: 6px; }"
-        "QRadioButton:hover { color: %5; }"
-        "QRadioButton:checked { color: %5; }"
-        "QRadioButton::indicator { width: 14px; height: 14px; border-radius: 7px; border: 2px solid %3; background: %6; }"
-        "QRadioButton::indicator:checked { border-color: %5; background: %5; }"
-        "QLineEdit { background: %6; border: 1px solid %3; border-radius: 6px; padding: 6px 12px; color: %2; font-size: 12px; }"
-        "QLineEdit:focus { border: 1px solid %5; }"
-        "QPlainTextEdit { background-color: %6; border: 1px solid %3; border-radius: 8px; color: %2; padding: 8px; }"
-        "QPushButton { background-color: %7; border: 1px solid %3; color: %2; padding: 6px 16px; border-radius: 7px; font-weight: 600; font-size: 12px; min-height: 22px; }"
-        "QPushButton:hover { background-color: %3; border: 1px solid %5; color: %2; }"
-        "QPushButton:pressed { background-color: %4; color: %2; border: 1px solid %5; padding: 6px 16px; }"
-        "QScrollBar:vertical { background: transparent; width: 8px; margin: 0; }"
-        "QScrollBar::handle:vertical { background: %3; min-height: 24px; border-radius: 4px; }"
-        "QScrollBar::handle:vertical:hover { background: %5; }"
-        "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }"
-        "QScrollBar:horizontal { background: transparent; height: 8px; margin: 0; }"
-        "QScrollBar::handle:horizontal { background: %3; min-width: 24px; border-radius: 4px; }"
-        "QScrollBar::handle:horizontal:hover { background: %5; }"
-        "QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal { width: 0; }"
-    ).arg(
-        pal.bg, pal.textPrimary, pal.border, pal.surface, pal.accent, pal.inputBg, pal.buttonBg, pal.textSecondary
-    ));
-
-
+    setStyleSheet(StormDesign::BuildDialogStylesheet(pal) + QStringLiteral(
+        "QPlainTextEdit { background-color: %1; border: 1px solid %2; border-radius: 8px; color: %3; padding: 8px; font-family: 'Consolas', 'Courier New', monospace; font-size: 11px; }"
+    ).arg(pal.inputBg, pal.border, pal.textPrimary));
 }
 
 void LogViewerDialog::LoadLogFile() {
@@ -351,7 +332,7 @@ void LogViewerDialog::OnCopyLog() {
     QClipboard* clipboard = QGuiApplication::clipboard();
     if (clipboard) {
         clipboard->setText(text);
-        stats_label->setText(tr("✅ Содержимое журнала скопировано в буфер обмена!"));
+        stats_label->setText(tr("Содержимое журнала скопировано в буфер обмена!"));
     }
 }
 

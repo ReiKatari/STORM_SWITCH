@@ -1,4 +1,5 @@
-﻿// SPDX-FileCopyrightText: Copyright 2025 Eden Emulator Project
+#include <QKeyEvent>
+// SPDX-FileCopyrightText: Copyright 2025 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // SPDX-FileCopyrightText: 2015 Citra Emulator Project
@@ -115,4 +116,12 @@ void ControllerDialog::ControllerUpdate(Core::HID::ControllerTriggerType type) {
     default:
         break;
     }
+}
+
+void ControllerDialog::keyPressEvent(QKeyEvent* ev) {
+    if (ev->key() == Qt::Key_Escape) {
+        close();
+        return;
+    }
+    QWidget::keyPressEvent(ev);
 }

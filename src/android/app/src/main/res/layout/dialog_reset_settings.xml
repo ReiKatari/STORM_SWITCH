@@ -26,7 +26,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/reset_all_settings"
-            android:textColor="#00F0FF"
+            android:textColor="?attr/colorPrimary"
             android:textSize="18sp"
             android:textStyle="bold"
     android:breakStrategy="simple"
@@ -37,7 +37,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/reset_all_settings_description"
-        android:textColor="#FFFFFF"
+        android:textColor="?attr/colorOnPrimary"
         android:textSize="14sp"
         android:lineSpacingExtra="4dp"
         android:layout_marginBottom="24dp"
@@ -52,7 +52,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_cancel"
-            style="@style/Widget.Material3.Button.TextButton"
+            style="@style/StormButton.Faceted.Secondary"
             android:layout_width="wrap_content"
             android:layout_height="44dp"
             android:text="@android:string/cancel"

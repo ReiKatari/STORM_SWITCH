@@ -25,7 +25,7 @@ void Break(Core::System& system, BreakReason reason, u64 info1, u64 info2) {
     bool has_dumped_buffer{};
     std::vector<u8> debug_buffer;
     bool is_benign_zero_err = false;
-    if (info2 == sizeof(u32) && info1 != 0) {
+    if (notification_only && info2 == sizeof(u32) && info1 != 0) {
         auto& memory = GetCurrentMemory(system.Kernel());
         if (memory.IsValidVirtualAddressRange(info1, sizeof(u32)) && memory.Read32(info1) == 0) {
             is_benign_zero_err = !system.DebuggerEnabled();
@@ -42,7 +42,7 @@ void Break(Core::System& system, BreakReason reason, u64 info1, u64 info2) {
         // This typically is an error code so we're going to assume this is the case
         if (sz == sizeof(u32)) {
             const u32 err_code = memory.IsValidVirtualAddressRange(addr, sizeof(u32)) ? memory.Read32(addr) : 0;
-            if (err_code == 0 && !system.DebuggerEnabled()) {
+            if (is_benign_zero_err) {
                 LOG_WARNING(Debug_Emulated, "debug_buffer_err_code={:X} (ignored benign break)", err_code);
             } else {
                 LOG_CRITICAL(Debug_Emulated, "debug_buffer_err_code={:X}", err_code);
@@ -64,23 +64,13 @@ void Break(Core::System& system, BreakReason reason, u64 info1, u64 info2) {
     };
     switch (break_reason) {
     case BreakReason::Panic:
-        if (is_benign_zero_err) {
-            LOG_WARNING(Debug_Emulated, "Userspace PANIC (err_code=0, continuing): info1={:#016x}, info2={:#016x}",
-                        info1, info2);
-        } else {
-            LOG_CRITICAL(Debug_Emulated, "Userspace PANIC! info1={:#016x}, info2={:#016x}", info1,
-                         info2);
-        }
+        LOG_CRITICAL(Debug_Emulated, "Userspace PANIC! info1={:#016x}, info2={:#016x}", info1,
+                     info2);
         handle_debug_buffer(info1, info2);
         break;
     case BreakReason::Assert:
-        if (is_benign_zero_err) {
-            LOG_WARNING(Debug_Emulated, "Userspace Assertion (err_code=0, continuing): info1={:#016x}, info2={:#016x}",
-                        info1, info2);
-        } else {
-            LOG_CRITICAL(Debug_Emulated, "Userspace Assertion failed! info1={:#016x}, info2={:#016x}",
-                         info1, info2);
-        }
+        LOG_CRITICAL(Debug_Emulated, "Userspace Assertion failed! info1={:#016x}, info2={:#016x}",
+                     info1, info2);
         handle_debug_buffer(info1, info2);
         break;
     case BreakReason::User:
@@ -144,27 +134,32 @@ void Break(Core::System& system, BreakReason reason, u64 info1, u64 info2) {
                 }
             }
         }
-        if (is_benign_zero_err) {
-            LOG_WARNING(
-                Debug_Emulated,
-                "Emulated program broke execution with err_code=0 (continuing)! reason={:#016x}, info1={:#016x}, info2={:#016x}",
-                reason, info1, info2);
-            system.CurrentPhysicalCore().LogBacktrace(system.Kernel());
-        } else {
-            LOG_CRITICAL(
-                Debug_Emulated,
-                "Emulated program broke execution! reason={:#016x}, info1={:#016x}, info2={:#016x}",
-                reason, info1, info2);
-            handle_debug_buffer(info1, info2);
-            system.CurrentPhysicalCore().LogBacktrace(system.Kernel());
-        }
-    }
 
-    const bool should_break = !notification_only;
-    if (system.DebuggerEnabled() && should_break) {
-        auto* thread = system.Kernel().GetCurrentEmuThread();
-        system.GetDebugger().NotifyThreadStopped(thread);
-        thread->RequestSuspend(system.Kernel(), Kernel::SuspendType::Debug);
+        LOG_CRITICAL(
+            Debug_Emulated,
+            "Emulated program broke execution! reason={:#016x}, info1={:#016x}, info2={:#016x}",
+            reason, info1, info2);
+        handle_debug_buffer(info1, info2);
+        system.CurrentPhysicalCore().LogBacktrace(system.Kernel());
+
+        if (system.DebuggerEnabled()) {
+            auto* thread = system.Kernel().GetCurrentEmuThread();
+            system.GetDebugger().NotifyThreadStopped(thread);
+            if (thread != nullptr) {
+                thread->RequestSuspend(system.Kernel(), Kernel::SuspendType::Debug);
+            }
+        } else {
+            auto* thread = system.Kernel().GetCurrentEmuThread();
+            if (thread != nullptr) {
+                thread->RequestSuspend(system.Kernel(), Kernel::SuspendType::Thread);
+            }
+            auto* current_process = GetCurrentProcessPointer(system.Kernel());
+            if (current_process != nullptr && current_process->GetState() == KProcess::State::Running) {
+                ExitProcess(system);
+            } else {
+                system.Exit();
+            }
+        }
     }
 }
 
