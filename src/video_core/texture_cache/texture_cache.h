@@ -24,6 +24,7 @@
 #include "video_core/texture_cache/samples_helper.h"
 #include "video_core/texture_cache/texture_cache_base.h"
 #include "video_core/texture_cache/memory_budget.h"
+#include "video_core/texture_cache/storm_mvcc_radix.h"
 #include "video_core/texture_cache/util.h"
 #include "video_core/textures/decoders.h"
 
@@ -967,13 +968,13 @@ bool TextureCache<P>::BlitImage(const Tegra::Engines::Fermi2D::Surface& dst,
 template <class P>
 std::pair<typename P::ImageView*, bool> TextureCache<P>::TryFindFramebufferImageView(
     const Tegra::FramebufferConfig& config, DAddr cpu_addr) {
-    // TODO: Properly implement this
     const auto it = page_table.find(cpu_addr >> YUZU_PAGEBITS);
     if (it == page_table.end()) {
         return {};
     }
     const auto& image_map_ids = it->second;
     boost::container::small_vector<ImageId, 4> valid_image_ids;
+    boost::container::small_vector<StormMvccCandidate, 4> mvcc_cands;
     for (const ImageMapId map_id : image_map_ids) {
         const ImageMapView& map = slot_map_views[map_id];
         const ImageBase& image = slot_images[map.image_id];
@@ -984,6 +985,20 @@ std::pair<typename P::ImageView*, bool> TextureCache<P>::TryFindFramebufferImage
             continue;
         }
         valid_image_ids.push_back(map.image_id);
+
+        const bool gpu_mod = True(image.flags & (ImageFlagBits::GpuModified | ImageFlagBits::EverGpuModified));
+        const bool cpu_mod = True(image.flags & ImageFlagBits::CpuModified);
+        mvcc_cands.push_back(StormMvccCandidate{
+            .image_id = static_cast<u32>(map.image_id),
+            .cpu_addr = static_cast<u64>(image.cpu_addr),
+            .width = image.info.size.width,
+            .height = image.info.size.height,
+            .format_class = static_cast<u32>(image.info.format),
+            .cpu_tick = cpu_mod ? image.modification_tick : 0,
+            .gpu_tick = gpu_mod ? image.modification_tick : 0,
+            .gpu_modified = gpu_mod,
+            .cpu_modified = cpu_mod,
+        });
     }
 
     const auto view_format = [&]() {
@@ -1008,6 +1023,15 @@ std::pair<typename P::ImageView*, bool> TextureCache<P>::TryFindFramebufferImage
         return std::make_pair(&slot_image_views[FindOrEmplaceImageView(image_id, info)],
                               slot_images[image_id].IsRescaled());
     };
+
+    if (!mvcc_cands.empty()) {
+        const u32 chosen = SelectCausalFramebuffer(
+            mvcc_cands.data(), mvcc_cands.size(), static_cast<u64>(cpu_addr),
+            config.width, config.height, static_cast<u32>(view_format));
+        if (chosen != 0) {
+            return GetImageViewForFramebuffer(static_cast<ImageId>(chosen));
+        }
+    }
 
     if (!valid_image_ids.empty()) {
         return GetImageViewForFramebuffer(valid_image_ids.front());
