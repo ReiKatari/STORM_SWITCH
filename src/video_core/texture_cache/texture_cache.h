@@ -1010,7 +1010,24 @@ std::pair<typename P::ImageView*, bool> TextureCache<P>::TryFindFramebufferImage
     };
 
     if (!valid_image_ids.empty()) {
-        return GetImageViewForFramebuffer(valid_image_ids.front());
+        ImageId best_id = valid_image_ids.front();
+        u64 best_tick = 0;
+        bool found_gpu_mod = false;
+        for (const ImageId image_id : valid_image_ids) {
+            const ImageBase& img = slot_images[image_id];
+            const bool is_gpu_mod = True(img.flags & ImageFlagBits::GpuModified);
+            if (is_gpu_mod) {
+                if (!found_gpu_mod || img.modification_tick > best_tick) {
+                    found_gpu_mod = true;
+                    best_tick = img.modification_tick;
+                    best_id = image_id;
+                }
+            } else if (!found_gpu_mod && img.modification_tick > best_tick) {
+                best_tick = img.modification_tick;
+                best_id = image_id;
+            }
+        }
+        return GetImageViewForFramebuffer(best_id);
     }
 
     return {};
