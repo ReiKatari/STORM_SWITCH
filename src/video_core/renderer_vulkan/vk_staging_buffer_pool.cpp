@@ -16,6 +16,7 @@
 #include "common/common_types.h"
 #include "common/literals.h"
 #include "common/logging.h"
+#include "video_core/renderer_vulkan/storm_hft_staging_ring.h"
 #include "video_core/renderer_vulkan/vk_scheduler.h"
 #include "video_core/renderer_vulkan/vk_staging_buffer_pool.h"
 #include "video_core/vulkan_common/vulkan_device.h"
@@ -34,10 +35,12 @@ constexpr VkDeviceSize MAX_ALIGNMENT = 256;
 // Windows ones however, can intake bigger buffers and generally do not OOM.
 // - GTX 960 on Windows will not OOM with 256mib
 // - GT 1030 on ^NIX will OOM with 256mib
-#if defined(_WIN32) || defined(__ANDROID__)
-constexpr VkDeviceSize MAX_STREAM_BUFFER_SIZE = 256_MiB;
+#if defined(__ANDROID__)
+constexpr VkDeviceSize MAX_STREAM_BUFFER_SIZE = 32_MiB;
+#elif defined(_WIN32)
+constexpr VkDeviceSize MAX_STREAM_BUFFER_SIZE = 64_MiB;
 #else
-constexpr VkDeviceSize MAX_STREAM_BUFFER_SIZE = 128_MiB;
+constexpr VkDeviceSize MAX_STREAM_BUFFER_SIZE = 64_MiB;
 #endif
 
 size_t GetStreamBufferSize(const Device& device) {
