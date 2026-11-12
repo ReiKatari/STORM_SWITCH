@@ -202,6 +202,65 @@ void EmulationSession::SetNativeWindow(ANativeWindow* native_window) {
 }
 #endif
 
+static void UpdateCustomDriverDisplayNameFromMeta(const std::string& custom_driver_dir) {
+    if (custom_driver_dir.empty()) {
+        Vulkan::SetCustomDriverDisplayName("");
+        return;
+    }
+    std::string safe_dir = custom_driver_dir;
+    if (!safe_dir.empty() && safe_dir.back() != '/') {
+        safe_dir.push_back('/');
+    }
+    std::ifstream meta_file(safe_dir + "meta.json");
+    if (!meta_file.is_open()) {
+        Vulkan::SetCustomDriverDisplayName("");
+        return;
+    }
+    std::string content((std::istreambuf_iterator<char>(meta_file)),
+                        std::istreambuf_iterator<char>());
+    auto extract_string_value = [](const std::string& json, const std::string& key) -> std::string {
+        const std::string search = "\"" + key + "\"";
+        size_t pos = json.find(search);
+        if (pos == std::string::npos) return "";
+        pos = json.find(':', pos + search.size());
+        if (pos == std::string::npos) return "";
+        pos = json.find('\"', pos + 1);
+        if (pos == std::string::npos) return "";
+        size_t end_pos = json.find('\"', pos + 1);
+        if (end_pos == std::string::npos) return "";
+        return json.substr(pos + 1, end_pos - (pos + 1));
+    };
+
+    std::string name = extract_string_value(content, "name");
+    std::string version = extract_string_value(content, "driverVersion");
+    if (version.empty()) {
+        version = extract_string_value(content, "version");
+    }
+
+    if (name.starts_with("Vulkan ")) {
+        name = name.substr(7);
+    }
+
+    std::string display_name;
+    if (name == "STORM DRIVER") {
+        if (!version.empty() && name.find(version) == std::string::npos) {
+            display_name = name + " " + version;
+        } else {
+            display_name = name;
+        }
+    } else if (!name.empty()) {
+        if (!version.empty() && name.find(version) == std::string::npos) {
+            display_name = name + " " + version;
+        } else {
+            display_name = name;
+        }
+    } else if (!version.empty()) {
+        display_name = "STORM DRIVER " + version;
+    }
+
+    Vulkan::SetCustomDriverDisplayName(display_name);
+}
+
 void EmulationSession::InitializeGpuDriver(const std::string& hook_lib_dir,
                                            const std::string& custom_driver_dir,
                                            const std::string& custom_driver_name,
@@ -215,6 +274,7 @@ void EmulationSession::InitializeGpuDriver(const std::string& hook_lib_dir,
     if (!safe_custom_driver_dir.empty() && safe_custom_driver_dir.back() != '/') {
         safe_custom_driver_dir.push_back('/');
     }
+    UpdateCustomDriverDisplayNameFromMeta(safe_custom_driver_dir);
     std::string safe_hook_lib_dir = hook_lib_dir;
     if (!safe_hook_lib_dir.empty() && safe_hook_lib_dir.back() != '/') {
         safe_hook_lib_dir.push_back('/');
@@ -520,18 +580,18 @@ static void ApplyGameSpecificSafetyOverrides(u64 title_id, u64 host_ram_bytes,
                 setting.SetValue(val);
             }
         };
-        apply_android_safe(Settings::values.gpu_accuracy, Settings::GpuAccuracy::High);
-        apply_android_safe(Settings::values.use_reactive_flushing, true);
-        apply_android_safe(Settings::values.use_fast_gpu_time, false);
-        apply_android_safe(Settings::values.vram_budget_governor, false);
-        apply_android_safe(Settings::values.vram_garbage_collection, false);
-        apply_android_safe(Settings::values.early_release_fences, false);
+        apply_android_safe(Settings::values.gpu_accuracy, Settings::GpuAccuracy::Normal);
+        apply_android_safe(Settings::values.use_reactive_flushing, false);
+        apply_android_safe(Settings::values.use_fast_gpu_time, true);
+        apply_android_safe(Settings::values.vram_budget_governor, true);
+        apply_android_safe(Settings::values.vram_garbage_collection, true);
+        apply_android_safe(Settings::values.early_release_fences, true);
         apply_android_safe(Settings::values.enable_frame_skipping, false);
-        apply_android_safe(Settings::values.barrier_feedback_loops, true);
+        apply_android_safe(Settings::values.barrier_feedback_loops, false);
         apply_android_safe(Settings::values.airplane_mode, true);
-        apply_android_safe(Settings::values.sync_memory_operations, true);
-        apply_android_safe(Settings::values.enable_gpu_buffer_readback, true);
-        LOG_INFO(Frontend, "Guaranteed Diablo II: Resurrected safety overrides (8GB/6GB DRAM, GPU High, Reactive Flush, airplane mode)");
+        apply_android_safe(Settings::values.sync_memory_operations, false);
+        apply_android_safe(Settings::values.enable_gpu_buffer_readback, false);
+        LOG_INFO(Frontend, "Guaranteed Diablo II: Resurrected safety overrides (8GB/6GB DRAM, GPU Normal, Fast GPU Time, airplane mode)");
     }
 
     // 3) Unravel Two
@@ -548,11 +608,9 @@ static void ApplyGameSpecificSafetyOverrides(u64 title_id, u64 host_ram_bytes,
 
     // 4) Switch 2 games
     if ((title_id >> 48) == 0x0400 || Settings::IsCurrentProgramSwitch2()) {
-        Settings::values.cpu_backend.SetGlobal(false);
-        Settings::values.cpu_backend.SetValue(Settings::CpuBackend::Dynarmic);
         Settings::values.cpuopt_ignore_memory_aborts.SetGlobal(false);
         Settings::values.cpuopt_ignore_memory_aborts.SetValue(true);
-        LOG_INFO(Frontend, "Guaranteed Switch 2 safety overrides (Dynarmic + ignore memory aborts for PAuth)");
+        LOG_INFO(Frontend, "Guaranteed Switch 2 safety overrides (ignore memory aborts for PAuth)");
     }
 }
 
@@ -1238,6 +1296,7 @@ void JNICALL Java_org_yuzu_yuzu_1emu_NativeLibrary_initializeGpuDriver(JNIEnv* e
     if (!safe_driver_dir.empty() && safe_driver_dir.back() != '/') {
         safe_driver_dir.push_back('/');
     }
+    UpdateCustomDriverDisplayNameFromMeta(safe_driver_dir);
 
     std::string safe_hook_dir = hook_lib_dir_str;
     if (!safe_hook_dir.empty() && safe_hook_dir.back() != '/') {

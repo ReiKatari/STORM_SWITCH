@@ -67,7 +67,7 @@ using VideoCommon::FileEnvironment;
 using VideoCommon::GenericEnvironment;
 using VideoCommon::GraphicsEnvironment;
 
-constexpr u32 CACHE_VERSION = 24;
+constexpr u32 CACHE_VERSION = 25;
 constexpr size_t VULKAN_CACHE_FLUSH_PIPELINES = 128;
 constexpr size_t VULKAN_CACHE_FLUSH_MIN_SECONDS = 45;
 constexpr std::array<char, 8> VULKAN_CACHE_MAGIC_NUMBER{'y', 'u', 'z', 'u', 'v', 'k', 'c', 'h'};
@@ -719,9 +719,16 @@ void PipelineCache::LoadDiskResources(u64 title_id, std::stop_token stop_loading
     // Two-Phase Shader Worker Boost: Full worker count at ThreadPlacement::Default for disk preload,
     // switching to throttled background workers for progressive async compilation.
     const size_t hardware_threads = static_cast<size_t>(std::thread::hardware_concurrency());
+#ifdef __ANDROID__
+    // Big.LITTLE thread cap: match Prime + Gold performance cores (e.g. SD 8 Gen 2/3/Elite) without spilling onto Silver cores
+    const size_t preload_threads = device.HasBrokenParallelShaderCompiling()
+        ? 1ULL
+        : std::clamp<size_t>(hardware_threads / 2ULL, 2ULL, 5ULL);
+#else
     const size_t preload_threads = device.HasBrokenParallelShaderCompiling()
         ? 1ULL
         : std::clamp<size_t>(hardware_threads > 2 ? hardware_threads - 1 : 2, 2ULL, 8ULL);
+#endif
     Common::ThreadWorker preload_workers(preload_threads, "VkPipelinePreload", {},
                                          Common::ThreadPlacement::Default);
     constexpr size_t CRITICAL_BATCH_SIZE = 512;

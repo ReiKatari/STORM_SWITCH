@@ -1717,6 +1717,11 @@ public:
             m_context.CloseEvent(m_event);
         }
         if (m_syncpoint != NoSyncpoint) {
+            auto& syncpoints = system.Host1x().GetSyncpointManager();
+            const u32 target = m_sync_base + static_cast<u32>(m_submitted);
+            while (syncpoints.GetGuestSyncpointValue(m_syncpoint) < target) {
+                syncpoints.IncrementGuest(m_syncpoint);
+            }
             NvdrvSyncpoints().FreeSyncpoint(m_syncpoint);
         }
     }
@@ -1960,6 +1965,13 @@ private:
                     decoder->Reset();
                     lk.lock();
                 }
+                if (m_syncpoint != NoSyncpoint) {
+                    auto& syncpoints = system.Host1x().GetSyncpointManager();
+                    const u32 target = m_sync_base + static_cast<u32>(m_submitted);
+                    while (syncpoints.GetGuestSyncpointValue(m_syncpoint) < target) {
+                        syncpoints.IncrementGuest(m_syncpoint);
+                    }
+                }
                 continue;
             }
             if (!m_decoded.empty() && !m_free.empty()) {
@@ -2009,6 +2021,14 @@ private:
             for (auto& picture : pictures) {
                 const u64 pts = picture.pts;
                 m_decoded.push_back({std::move(picture), pts, false});
+            }
+            if (pictures.empty() && !input.end && m_syncpoint != NoSyncpoint) {
+                // When a submitted video packet produces 0 output frames (dropped/skipped/buffering frame),
+                // ensure guest syncpoints are still advanced so m_syncpoint never falls behind m_sync_base + submitted_frames
+                auto& syncpoints = system.Host1x().GetSyncpointManager();
+                if (syncpoints.GetGuestSyncpointValue(m_syncpoint) < m_sync_base + static_cast<u32>(m_submitted)) {
+                    syncpoints.IncrementGuest(m_syncpoint);
+                }
             }
             if (input.end) {
                 // The client stops at the frame marked end of stream; give it one even when the

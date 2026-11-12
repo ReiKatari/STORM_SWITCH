@@ -47,6 +47,14 @@ import org.yuzu.yuzu_emu.model.GameFixDatabase
 class GameAdapter(private val activity: AppCompatActivity) :
     AbstractDiffAdapter<Game, GameAdapter.GameViewHolder>(exact = false) {
 
+    init {
+        // Pre-warm the catalog cache asynchronously on Dispatchers.IO
+        // to prevent synchronous disk JSON reads during onBindViewHolder scroll
+        org.yuzu.yuzu_emu.fragments.StormGamesWorldDialogFragment.prewarmCatalogCache(activity) {
+            notifyDataSetChanged()
+        }
+    }
+
     companion object {
         const val VIEW_TYPE_GRID = 0
         const val VIEW_TYPE_GRID_COMPACT = 1

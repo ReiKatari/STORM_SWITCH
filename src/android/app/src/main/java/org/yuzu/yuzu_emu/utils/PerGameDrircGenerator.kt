@@ -374,13 +374,14 @@ object PerGameDrircGenerator {
             return GameProfileType.EA_SPORTS
         }
 
-        // 20. Alan Wake Remastered (Northlight Engine - All 6 Regional Title IDs)
+        // 20. Alan Wake Remastered (Northlight Engine - All Regional Title IDs)
         if (cleanId.startsWith("0100236015B7A") || // Alan Wake Remastered
             cleanId.startsWith("0100F830138E6") || // Alan Wake USA
             cleanId.startsWith("010074B01456A") || // Alan Wake EUR
             cleanId.startsWith("010065F014C5E") || // Alan Wake JPN
             cleanId.startsWith("0100AD6014FB8") || // Alan Wake Regional 1
             cleanId.startsWith("0100328014FB8") || // Alan Wake Regional 2
+            cleanId.startsWith("0100AD5013BB6") || // Alan Wake EU/RU
             cleanTitle.contains("alan wake")
         ) {
             return GameProfileType.ALAN_WAKE

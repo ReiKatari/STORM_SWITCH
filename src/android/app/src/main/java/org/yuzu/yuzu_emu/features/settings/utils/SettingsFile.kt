@@ -153,7 +153,7 @@ object SettingsFile {
 
     fun sanitizePoisonedConfigs(context: Context = YuzuApplication.appContext) {
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-        val PREF_SANITIZED_KEY = "storm_config_sanitized_17_8_0"
+        val PREF_SANITIZED_KEY = "storm_config_sanitized_17_9_0"
         if (prefs.getBoolean(PREF_SANITIZED_KEY, false)) {
             return
         }
@@ -177,24 +177,31 @@ object SettingsFile {
                         val lines = globalConfigFile.readLines(Charsets.UTF_8)
                         val newLines = mutableListOf<String>()
                         var modified = false
+                        var hasDynaState = false
+                        var hasDynaDefault = false
+                        var hasSyncMem = false
+                        var hasSyncMemDefault = false
 
                         for (line in lines) {
                             val trimmed = line.trim()
                             if (trimmed.startsWith("dyna_state", ignoreCase = true) && !trimmed.startsWith("dyna_state\\default", ignoreCase = true)) {
+                                hasDynaState = true
                                 val parts = trimmed.split("=", limit = 2)
-                                if (parts.size == 2 && parts[1].trim() == "0") {
-                                    newLines.add("dyna_state=3")
+                                if (parts.size == 2 && (parts[1].trim() == "0" || parts[1].trim() == "3")) {
+                                    newLines.add("dyna_state=1")
                                     modified = true
                                     continue
                                 }
                             } else if (trimmed.startsWith("dyna_state\\default", ignoreCase = true)) {
+                                hasDynaDefault = true
                                 val parts = trimmed.split("=", limit = 2)
-                                if (parts.size == 2 && parts[1].trim().equals("false", ignoreCase = true)) {
-                                    newLines.add("dyna_state\\default=true")
+                                if (parts.size == 2 && parts[1].trim().equals("true", ignoreCase = true)) {
+                                    newLines.add("dyna_state\\default=false")
                                     modified = true
                                     continue
                                 }
                             } else if (trimmed.startsWith("sync_memory_operations", ignoreCase = true) && !trimmed.startsWith("sync_memory_operations\\default", ignoreCase = true)) {
+                                hasSyncMem = true
                                 val parts = trimmed.split("=", limit = 2)
                                 if (parts.size == 2 && parts[1].trim().equals("false", ignoreCase = true)) {
                                     newLines.add("sync_memory_operations=true")
@@ -202,9 +209,10 @@ object SettingsFile {
                                     continue
                                 }
                             } else if (trimmed.startsWith("sync_memory_operations\\default", ignoreCase = true)) {
+                                hasSyncMemDefault = true
                                 val parts = trimmed.split("=", limit = 2)
-                                if (parts.size == 2 && parts[1].trim().equals("false", ignoreCase = true)) {
-                                    newLines.add("sync_memory_operations\\default=true")
+                                if (parts.size == 2 && parts[1].trim().equals("true", ignoreCase = true)) {
+                                    newLines.add("sync_memory_operations\\default=false")
                                     modified = true
                                     continue
                                 }
@@ -212,9 +220,27 @@ object SettingsFile {
                             newLines.add(line)
                         }
 
+                        if (!hasDynaState) {
+                            newLines.add("dyna_state=1")
+                            newLines.add("dyna_state\\default=false")
+                            modified = true
+                        } else if (!hasDynaDefault) {
+                            newLines.add("dyna_state\\default=false")
+                            modified = true
+                        }
+
+                        if (!hasSyncMem) {
+                            newLines.add("sync_memory_operations=true")
+                            newLines.add("sync_memory_operations\\default=false")
+                            modified = true
+                        } else if (!hasSyncMemDefault) {
+                            newLines.add("sync_memory_operations\\default=false")
+                            modified = true
+                        }
+
                         if (modified) {
                             globalConfigFile.writeText(newLines.joinToString("\n"), Charsets.UTF_8)
-                            Log.info("[SettingsFile] Sanitized global config.ini: dyna_state=3, sync_memory_operations=true")
+                            Log.info("[SettingsFile] Sanitized global config.ini: dyna_state=1, sync_memory_operations=true")
                         }
                     } catch (e: Exception) {
                         Log.warning("[SettingsFile] Failed to sanitize global config: ${e.message}")
@@ -225,95 +251,29 @@ object SettingsFile {
                 val customDir = File(cfgDir, "custom")
                 if (customDir.exists() && customDir.isDirectory) {
                     val customFiles = customDir.listFiles { f -> f.isFile && f.extension.equals("ini", ignoreCase = true) }
+                    val targetGameIds = setOf(
+                        "0100726014352000",
+                        "01002a801458a000",
+                        "0100916014d8c000",
+                        "0100ad5013bb6000"
+                    )
+
                     customFiles?.forEach { customFile ->
                         val nameLower = customFile.nameWithoutExtension.lowercase()
-                        // Mario + Rabbids: Kingdom Battle (010067300059A000)
-                        if (nameLower.contains("010067300059a000")) {
-                            try {
-                                val lines = customFile.readLines(Charsets.UTF_8)
-                                val newLines = mutableListOf<String>()
-                                var hasUseGlobal = false
-                                var modified = false
+                        val isTargetGame = targetGameIds.any { nameLower.contains(it) }
 
-                                for (line in lines) {
-                                    val trimmed = line.trim()
-                                    if (trimmed.startsWith("fix_bloom_effects\\use_global", ignoreCase = true)) {
-                                        newLines.add("fix_bloom_effects\\use_global=true")
-                                        hasUseGlobal = true
-                                        modified = true
-                                        continue
-                                    } else if (trimmed.startsWith("fix_bloom_effects", ignoreCase = true)) {
-                                        newLines.add("fix_bloom_effects=false")
-                                        modified = true
-                                        continue
-                                    }
-                                    newLines.add(line)
-                                }
-                                if (!hasUseGlobal) {
-                                    newLines.add("fix_bloom_effects\\use_global=true")
-                                    modified = true
-                                }
-                                if (modified) {
-                                    customFile.writeText(newLines.joinToString("\n"), Charsets.UTF_8)
-                                    Log.info("[SettingsFile] Sanitized Mario + Rabbids config: fix_bloom_effects=false")
+                        if (isTargetGame) {
+                            try {
+                                val content = customFile.readText(Charsets.UTF_8)
+                                if (content.contains("STORM_AUTO_GAME_FIX_TEMPORARY", ignoreCase = true)) {
+                                    customFile.delete()
+                                    Log.info("[SettingsFile] Deleted temporary per-game fix profile for $nameLower to regenerate clean 14.4.0 settings")
+                                } else {
+                                    customFile.delete()
+                                    Log.info("[SettingsFile] Reset per-game config for $nameLower to clean profile")
                                 }
                             } catch (e: Exception) {
-                                Log.warning("[SettingsFile] Failed to sanitize Mario + Rabbids config: ${e.message}")
-                            }
-                        }
-
-                        // Diablo II: Resurrected (0100726014352000)
-                        if (nameLower.contains("0100726014352000") || nameLower.contains("0100916014d8c000") || nameLower.contains("01002a801458a000")) {
-                            try {
-                                val lines = customFile.readLines(Charsets.UTF_8)
-                                val newLines = mutableListOf<String>()
-                                var hasMemUseGlobal = false
-                                var hasDynaUseGlobal = false
-                                var modified = false
-
-                                for (line in lines) {
-                                    val trimmed = line.trim()
-                                    if (trimmed.startsWith("memory_layout_mode\\use_global", ignoreCase = true)) {
-                                        newLines.add("memory_layout_mode\\use_global=true")
-                                        hasMemUseGlobal = true
-                                        modified = true
-                                        continue
-                                    } else if (trimmed.startsWith("memory_layout_mode", ignoreCase = true)) {
-                                        val parts = trimmed.split("=", limit = 2)
-                                        if (parts.size == 2 && parts[1].trim() == "2") {
-                                            newLines.add("memory_layout_mode=0")
-                                            modified = true
-                                            continue
-                                        }
-                                    } else if (trimmed.startsWith("dyna_state\\use_global", ignoreCase = true)) {
-                                        newLines.add("dyna_state\\use_global=true")
-                                        hasDynaUseGlobal = true
-                                        modified = true
-                                        continue
-                                    } else if (trimmed.startsWith("dyna_state", ignoreCase = true)) {
-                                        val parts = trimmed.split("=", limit = 2)
-                                        if (parts.size == 2 && parts[1].trim() == "0") {
-                                            // remove dyna_state=0
-                                            modified = true
-                                            continue
-                                        }
-                                    }
-                                    newLines.add(line)
-                                }
-                                if (!hasMemUseGlobal) {
-                                    newLines.add("memory_layout_mode\\use_global=true")
-                                    modified = true
-                                }
-                                if (!hasDynaUseGlobal) {
-                                    newLines.add("dyna_state\\use_global=true")
-                                    modified = true
-                                }
-                                if (modified) {
-                                    customFile.writeText(newLines.joinToString("\n"), Charsets.UTF_8)
-                                    Log.info("[SettingsFile] Sanitized Diablo II config: memory_layout_mode=0, dyna_state use_global=true")
-                                }
-                            } catch (e: Exception) {
-                                Log.warning("[SettingsFile] Failed to sanitize Diablo II config: ${e.message}")
+                                Log.warning("[SettingsFile] Failed to sanitize target game profile $nameLower: ${e.message}")
                             }
                         }
                     }
@@ -321,9 +281,9 @@ object SettingsFile {
             }
 
             prefs.edit().putBoolean(PREF_SANITIZED_KEY, true).apply()
-            Log.info("[SettingsFile] Successfully completed storm_config_sanitized_17_8_0 migration")
+            Log.info("[SettingsFile] Successfully completed storm_config_sanitized_17_9_0 migration")
         } catch (e: Exception) {
-            Log.warning("[SettingsFile] Migration storm_config_sanitized_17_8_0 failed: ${e.message}")
+            Log.warning("[SettingsFile] Migration storm_config_sanitized_17_9_0 failed: ${e.message}")
         }
     }
 

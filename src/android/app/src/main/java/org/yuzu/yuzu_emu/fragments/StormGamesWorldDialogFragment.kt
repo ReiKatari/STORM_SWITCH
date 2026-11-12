@@ -193,14 +193,14 @@ data class StormWorldGameItem(
                 val gSerial = match.groupValues[3].trim()
                 if (version.isEmpty() || version == "1.0.0") version = gVer
                 if (internalVersion.isEmpty() || internalVersion == "0") internalVersion = gIntVer
-                if (serialId.isEmpty() || serialId == "—" || serialId == "-") serialId = gSerial
+                if (serialId.isEmpty() || serialId == "-" || serialId == "-") serialId = gSerial
             } else {
                 val fallbackMatch = TITLE_INFO_FALLBACK_REGEX.find(titleToSearch) ?: TITLE_INFO_FALLBACK_REGEX.find(rawTitle)
                 if (fallbackMatch != null) {
                     val gVer = fallbackMatch.groupValues[1].trim()
                     val gSerial = fallbackMatch.groupValues[2].trim()
                     if (version.isEmpty() || version == "1.0.0") version = gVer
-                    if (serialId.isEmpty() || serialId == "—" || serialId == "-") serialId = gSerial
+                    if (serialId.isEmpty() || serialId == "-" || serialId == "-") serialId = gSerial
                 }
             }
 
@@ -1765,7 +1765,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
             fun recordInstalledFormat(tid: String, baseTid: String, title: String, cleanTitle: String, ext: String) {
                 val formatClean = ext.lowercase(Locale.ROOT).removePrefix(".").trim()
                 if (formatClean.isNotEmpty()) {
-                    if (tid.isNotEmpty() && tid != "0" && tid != "—" && tid != "-") {
+                    if (tid.isNotEmpty() && tid != "0" && tid != "-" && tid != "-") {
                         installedFormatsByTitleId.getOrPut(tid) { HashSet() }.add(formatClean)
                     }
                     if (baseTid.isNotEmpty()) {
@@ -2066,7 +2066,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     .trim()
                     .lowercase(Locale.ROOT)
 
-                val formatsForTid = if (tid.isNotEmpty() && tid != "0" && tid != "—" && tid != "-") installedFormatsByTitleId[tid] else null
+                val formatsForTid = if (tid.isNotEmpty() && tid != "0" && tid != "-" && tid != "-") installedFormatsByTitleId[tid] else null
                 val formatsForBaseTid = if (baseTid.isNotEmpty()) installedFormatsByTitleId[baseTid] else null
                 val formatsForTitle = if (normTitle.isNotEmpty()) installedFormatsByTitle[normTitle] else null
                 val formatsForFinal = if (normFinal.isNotEmpty()) installedFormatsByTitle[normFinal] else null
@@ -2087,7 +2087,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     }
                     val igPid = ig.programIdHex.lowercase(Locale.ROOT)
                     val igTitleNorm = ig.title.replace(Regex("""[\/:*?"<>|]"""), " ").trim().lowercase(Locale.ROOT)
-                    (tid.isNotEmpty() && tid != "0" && tid != "—" && tid != "-" && igPid == tid) ||
+                    (tid.isNotEmpty() && tid != "0" && tid != "-" && tid != "-" && igPid == tid) ||
                     (baseTid.isNotEmpty() && igPid.startsWith(baseTid.take(13))) ||
                     (cleanTitle.length >= 4 && (igTitleNorm == normTitle || igTitleNorm.contains(normTitle) || normTitle.contains(igTitleNorm)))
                 }
@@ -2096,7 +2096,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     if (entryFormat.isNotEmpty() && cand.extension.isNotEmpty() && cand.extension != entryFormat) {
                         return@any false
                     }
-                    val idMatch = (tid.isNotEmpty() && tid != "—" && tid != "-" && (cand.tid == tid || cand.name.contains(tid))) ||
+                    val idMatch = (tid.isNotEmpty() && tid != "-" && tid != "-" && (cand.tid == tid || cand.name.contains(tid))) ||
                                   (baseTid.isNotEmpty() && (cand.baseTid == baseTid || (cand.tid.isNotEmpty() && cand.tid.startsWith(baseTid.take(13))))) ||
                                   (cleanFinal.isNotEmpty() && (cand.stem == cleanFinal || cand.name.contains(cleanFinal))) ||
                                   (normFinal.isNotEmpty() && (cand.cleanTitle == normFinal || cand.cleanTitle.contains(normFinal))) ||
@@ -2129,7 +2129,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                         return@any false
                     }
 
-                    val hasSpecificVer = resolvedVer.isNotEmpty() && resolvedVer != "1.0.0" && resolvedVer != "—" && resolvedVer != "-"
+                    val hasSpecificVer = resolvedVer.isNotEmpty() && resolvedVer != "1.0.0" && resolvedVer != "-" && resolvedVer != "-"
                     val hasSpecificIntVer = resolvedIntVer.isNotEmpty() && resolvedIntVer != "0"
                     if (hasSpecificVer || hasSpecificIntVer) {
                         var verMatched = false
@@ -2218,7 +2218,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
 
         @JvmStatic
         fun localizeSizeString(sizeStr: String): String {
-            if (sizeStr.isBlank() || sizeStr == "—" || sizeStr == "-") return sizeStr
+            if (sizeStr.isBlank() || sizeStr == "-" || sizeStr == "-") return sizeStr
             val bytes = parseSizeToBytes(sizeStr)
             return if (bytes > 0L) {
                 formatSizeBytes(bytes)
@@ -2442,22 +2442,46 @@ class StormGamesWorldDialogFragment : DialogFragment() {
         private var memoryCachedCatalog: List<StormWorldGameItem>? = null
         @Volatile
         private var catalogIndexBySerial: Map<String, StormWorldGameItem>? = null
+        @Volatile
+        private var isWarmingCatalog = false
+
+        fun prewarmCatalogCache(context: Context, onReady: (() -> Unit)? = null) {
+            if (catalogIndexBySerial != null) {
+                onReady?.invoke()
+                return
+            }
+            if (isWarmingCatalog) return
+            isWarmingCatalog = true
+            kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+                try {
+                    val list = getCachedCatalog(context.applicationContext)
+                    val map = HashMap<String, StormWorldGameItem>(list.size)
+                    for (item in list) {
+                        val k = item.serialId.trim().uppercase(Locale.ROOT)
+                        if (k.isNotEmpty() && !map.containsKey(k)) {
+                            map[k] = item
+                        }
+                    }
+                    catalogIndexBySerial = map
+                    if (onReady != null) {
+                        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                            onReady()
+                        }
+                    }
+                } catch (_: Throwable) {
+                } finally {
+                    isWarmingCatalog = false
+                }
+            }
+        }
 
         fun getCachedCatalogItem(context: Context, serialIdHex: String): StormWorldGameItem? {
             val key = serialIdHex.trim().uppercase(Locale.ROOT)
             if (key.isEmpty()) return null
-            var index = catalogIndexBySerial
+            val index = catalogIndexBySerial
             if (index == null) {
-                val list = getCachedCatalog(context)
-                val map = HashMap<String, StormWorldGameItem>(list.size)
-                for (item in list) {
-                    val k = item.serialId.trim().uppercase(Locale.ROOT)
-                    if (k.isNotEmpty() && !map.containsKey(k)) {
-                        map[k] = item
-                    }
-                }
-                catalogIndexBySerial = map
-                index = map
+                prewarmCatalogCache(context)
+                return null
             }
             return index[key]
         }
@@ -2651,7 +2675,7 @@ class StormGamesWorldDialogFragment : DialogFragment() {
                     val sizeStr = localizeSizeString(obj.optString("size", "").trim())
 
                     // Exclude any game with missing flags or placeholder size
-                    if (platform == "Nintendo Switch" && platformType == "CONSOLES" && fileExists && hasFile && sizeStr.isNotEmpty() && sizeStr != "—") {
+                    if (platform == "Nintendo Switch" && platformType == "CONSOLES" && fileExists && hasFile && sizeStr.isNotEmpty() && sizeStr != "-") {
                         val regList = mutableListOf<String>()
                         val regArr = obj.optJSONArray("regions")
                         if (regArr != null) {

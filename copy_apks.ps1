@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
 $baseDir = Split-Path -Parent $PSScriptRoot
-$version = '17.8.0'
+$version = '17.9.0'
 if (Test-Path "$PSScriptRoot\GIT-RELEASE") {
     $v = (Get-Content "$PSScriptRoot\GIT-RELEASE" -Raw).Trim()
     if ($v) { $version = $v }
@@ -46,7 +46,7 @@ function Sign-ApkWithRotation([string]$apkPath) {
         }
     }
     if (-not (Test-Path $apkPath)) { return }
-    if ((Test-Path $propsFile) -and (Test-Path $oldKs) -and (Test-Path $lineage) -and ($null -ne $apksignerItem)) {
+    if ((Test-Path $propsFile) -and ($null -ne $apksignerItem)) {
         $props = @{}
         foreach ($line in (Get-Content $propsFile -Encoding UTF8)) {
             if ($line -match '^\s*([^#=\s]+)\s*=\s*(.+)\s*$') {
@@ -60,16 +60,12 @@ function Sign-ApkWithRotation([string]$apkPath) {
         $certPass = if ($props.ContainsKey("STORM_CERT_PASSWORD")) { $props["STORM_CERT_PASSWORD"] } else { $props["storePassword"] }
         $keyAlias = if ($props.ContainsKey("STORM_KEY_ALIAS")) { $props["STORM_KEY_ALIAS"] } else { $props["keyAlias"] }
 
-        Write-Host "Applying STORM SERTIFICATE + V3 Key Rotation Lineage to $(Split-Path $apkPath -Leaf)..."
+        Write-Host "Applying clean STORM SERTIFICATE (V1 + V2 + V3) to $(Split-Path $apkPath -Leaf)..."
         & $apksignerItem.FullName sign `
-            --v1-signing-enabled false `
+            --v1-signing-enabled true `
             --v2-signing-enabled true `
             --v3-signing-enabled true `
             --v4-signing-enabled false `
-            --rotation-min-sdk-version 28 `
-            --lineage $lineage `
-            --ks $oldKs --ks-key-alias androiddebugkey --ks-pass pass:android --key-pass pass:android `
-            --next-signer `
             --ks $certFile --ks-key-alias $keyAlias --ks-pass "pass:$certPass" --key-pass "pass:$certPass" `
             $apkPath
         if ($LASTEXITCODE -ne 0) {

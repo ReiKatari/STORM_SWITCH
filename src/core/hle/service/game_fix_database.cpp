@@ -755,57 +755,31 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Diablo II: Resurrected",
         "• Вылет при продолжении игры / загрузке персонажа (нехватка памяти)\n• Пропадание букв и текста интерфейса (глифы шрифтов)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя и графические артефакты\n• Просадки кадровой частоты (4 FPS / 200 ms)",
         "• Character load / continue game crash (memory exhaustion)\n• Missing UI text and font glyphs\n• Battle.net server handshake hang\n• Character flickering on selection screen and graphical artifacts\n• Frame drops (4 FPS / 200 ms)",
-        "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Точность ГПУ: Высокая (восстанавливает все буквы и текст интерфейса)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Быстрое время ГПУ: Отключено (устраняет пропуск рендеринга шрифтов)\n✓ Сжатие ASTC: Отключено (устраняет полосы и квадраты)\n✓ Точность ЦП: Авто (устранение заторможенности)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание персонажа)\n✓ Реактивный сброс: Включено (синхронизация атласа шрифтов)\n✓ Обратное чтение буферов ГПУ: Включено (стабильные 60 FPS)",
-        "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ GPU Accuracy: High (Restores UI text and font glyphs)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ Fast GPU Time: Disabled (Prevents font rendering skips)\n✓ ASTC Recompression: Uncompressed (Fixes decal artifacts)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes character flickering)\n✓ Reactive Flushing: Enabled (Syncs font atlases)\n✓ GPU Buffer Readback: Enabled (Stable 60 FPS)",
+        "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Точность ГПУ: Обычная (восстанавливает 60 FPS)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Быстрое время ГПУ: Включено (устраняет пропуск рендеринга шрифтов)\n✓ Сжатие ASTC: Отключено (устраняет полосы и квадраты)\n✓ Точность ЦП: Авто (устранение заторможенности)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено (плавный геймплей)\n✓ Реактивный сброс: Отключено\n✓ Обратное чтение буферов ГПУ: Отключено (стабильные 60 FPS)",
+        "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ GPU Accuracy: Normal (Restores 60 FPS)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ Fast GPU Time: Enabled (Prevents font rendering skips)\n✓ ASTC Recompression: Uncompressed (Fixes decal artifacts)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled (Smooth gameplay)\n✓ Reactive Flushing: Disabled\n✓ GPU Buffer Readback: Disabled (Stable 60 FPS)",
         {
-            {"System\\memory_layout_mode", "0"},
-            {"Core\\memory_layout_mode", "0"},
+            {"Core\\memory_layout_mode", "2"},
+            {"System\\memory_layout_mode", "2"},
+            {"Network\\airplane_mode", "true"},
             {"System\\airplane_mode", "true"},
             {"Services\\airplane_mode", "true"},
-            {"Renderer\\gpu_accuracy", "2"},
-            {"Renderer\\use_asynchronous_shaders", "false"},
-            {"Renderer\\use_reactive_flushing", "true"},
-            {"Renderer\\use_fast_gpu_time", "false"},
-            {"Renderer\\accelerate_astc", "1"},
-            {"Renderer\\astc_recompression", "0"},
-            {"Renderer\\barrier_feedback_loops", "true"},
-            {"Renderer\\enable_gpu_buffer_readback", "true"},
-            {"Renderer\\dma_accuracy", "3"},
-            {"Renderer\\early_release_fences", "false"},
-            {"Renderer\\enable_frame_skipping", "false"},
-            {"Renderer\\async_presentation", "true"},
-            {"Renderer\\vram_garbage_collection", "false"},
+            {"Renderer\\use_fast_gpu_time", "true"},
+            {"Renderer\\gpu_accuracy", "0"},
             {"Cpu\\cpu_accuracy", "0"},
+            {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\dyna_state", "1"},
+            {"Renderer\\barrier_feedback_loops", "false"},
+            {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\vram_garbage_collection", "true"},
+            {"Renderer\\vram_budget_governor", "true"},
+            {"Renderer\\early_release_fences", "true"},
+            {"Renderer\\async_presentation", "true"},
             {"Cpu\\cpuopt_fastmem", "true"},
-            {"Renderer\\vram_budget_governor", "false"},
-            {"Renderer\\use_asynchronous_gpu_emulation", "true"}
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\enable_gpu_buffer_readback", "false"}
         },
         {0x0100916014D8C000ULL, 0x0100726014352000ULL}
-,
-        {
-            {"adreno", {
-                {"Renderer\\gpu_accuracy", "2"},
-                {"Renderer\\use_fast_gpu_time", "false"},
-                {"Renderer\\astc_recompression", "0"},
-                {"Renderer\\accelerate_astc", "1"},
-                {"Renderer\\use_reactive_flushing", "true"},
-                {"Renderer\\enable_gpu_buffer_readback", "true"}
-            }},
-            {"intel", {
-                {"Renderer\\gpu_accuracy", "2"},
-                {"Renderer\\use_reactive_flushing", "true"},
-                {"Renderer\\use_fast_gpu_time", "false"},
-                {"Renderer\\astc_recompression", "0"},
-                {"Renderer\\enable_gpu_buffer_readback", "true"}
-            }},
-            {"amd", {
-                {"Renderer\\gpu_accuracy", "2"},
-                {"Renderer\\use_reactive_flushing", "true"},
-                {"Renderer\\use_fast_gpu_time", "false"},
-                {"Renderer\\astc_recompression", "0"},
-                {"Renderer\\enable_gpu_buffer_readback", "true"}
-            }}
-        }    },
+    },
     {
         0x010020D01AD24000ULL,
         "Animal Well",
@@ -4812,17 +4786,21 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Alan Wake Remastered",
         "• Искажение луча света фонарика и артефакты теней\n• Размытие и нечеткость шрифтов субтитров и интерфейса",
         "• Flashlight cone illumination artifacts and shadow glitch\n• Blurry subtitle fonts and distorted UI text rendering",
-        "✓ Точность ГПУ: Высокая\n✓ Сжатие ASTC: Отключено (четкие шрифты и интерфейс)\n✓ Обратное чтение буферов ГПУ: Включено\n✓ Барьеры ГПУ и точность DMA: Сбалансированный / Безопасная\n✓ Быстрое время ГПУ: Отключено\n✓ Память: 6 ГБ DRAM",
-        "✓ GPU Accuracy: High\n✓ ASTC Recompression: Uncompressed (sharp text and UI)\n✓ GPU Buffer Readback: Enabled\n✓ GPU Fence & DMA Accuracy: Balanced / Safe\n✓ Fast GPU Time: Disabled\n✓ Memory Layout: 6GB DRAM",
+        "✓ Точность ГПУ: Высокая\n✓ Сжатие ASTC: Отключено (четкие шрифты и интерфейс)\n✓ Динамическое состояние: EDS1\n✓ Обратное чтение буферов ГПУ: Включено\n✓ Барьеры ГПУ и точность DMA: Сбалансированный / Безопасная\n✓ Быстрое время ГПУ: Отключено\n✓ Память: 6 ГБ DRAM",
+        "✓ GPU Accuracy: High\n✓ ASTC Recompression: Uncompressed (sharp text and UI)\n✓ Dynamic State: EDS1\n✓ GPU Buffer Readback: Enabled\n✓ GPU Fence & DMA Accuracy: Balanced / Safe\n✓ Fast GPU Time: Disabled\n✓ Memory Layout: 6GB DRAM",
         {
-            {"System\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "1"},
+            {"Core\\memory_layout_mode", "1"},
             {"System\\airplane_mode", "true"},
+            {"Network\\airplane_mode", "true"},
+            {"Services\\airplane_mode", "true"},
             {"Renderer\\gpu_accuracy", "2"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\use_reactive_flushing", "true"},
             {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\accelerate_astc", "1"},
             {"Renderer\\astc_recompression", "0"},
+            {"Renderer\\dyna_state", "1"},
             {"Renderer\\barrier_feedback_loops", "true"},
             {"Renderer\\enable_gpu_buffer_readback", "true"},
             {"Renderer\\nvdec_emulation", "2"},
@@ -4839,7 +4817,7 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\scaling_filter", "1"},
             {"Renderer\\anti_aliasing", "0"}
         },
-        {0x0100F830138E6000ULL, 0x010074B01456A000ULL, 0x010065F014C5E000ULL, 0x0100AD6014FB8000ULL, 0x0100328014FB8000ULL}
+        {0x0100F830138E6000ULL, 0x010074B01456A000ULL, 0x010065F014C5E000ULL, 0x0100AD6014FB8000ULL, 0x0100328014FB8000ULL, 0x0100AD5013BB6000ULL}
     },
     {
         0x019232F2781D0000ULL,
@@ -6835,6 +6813,11 @@ const GameFixProfile* GameFixDatabase::GetProfileByTitleOrPath(u64 title_id, con
         }
 
         // Custom keyword matching
+        if (game_lower.find("alan wake") != std::string::npos &&
+            (lower.find("alan wake") != std::string::npos || lower.find("alan_wake") != std::string::npos ||
+             lower.find("0100ad5013bb6000") != std::string::npos || lower.find("0100236015b7a000") != std::string::npos)) {
+            return GetProfile(profile.title_id);
+        }
         if (game_lower.find("belmont") != std::string::npos &&
             (lower.find("belmont") != std::string::npos || lower.find("curse") != std::string::npos ||
              lower.find("01ff434243555253") != std::string::npos ||

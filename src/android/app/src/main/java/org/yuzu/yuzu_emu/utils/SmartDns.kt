@@ -12,20 +12,20 @@ import java.net.UnknownHostException
 
 /**
  * Robust DNS resolver for network requests.
- * Uses system DNS by default, but seamlessly falls back to static IP mapping
- * and DNS-over-HTTPS (DoH) if local ISP/cellular DNS fails or blocks resolution.
+ * Uses system DNS first. If system DNS fails or is blocked, queries DNS-over-HTTPS (DoH)
+ * via Cloudflare (1.1.1.1) and Google before falling back to static IP mapping.
  */
 object SmartDns : Dns {
     private val systemDns = Dns.SYSTEM
 
-    // Static fallback IPs for critical mirrors and GitHub to guarantee resolution
-    // even if local cellular DNS is completely poisoned, blocked or unreachable without VPN
+    // Static fallback IPs for hosts with stable unicast IPs.
+    // NOTE: objects.githubusercontent.com and release-assets.githubusercontent.com use AWS CloudFront / Azure CDN
+    // and must NEVER be mapped to static Fastly IPs.
     private val staticFallbackHosts = mapOf(
         "api.github.com" to listOf("140.82.121.6", "140.82.121.5", "140.82.112.6"),
         "github.com" to listOf("140.82.121.4", "140.82.121.3", "140.82.114.3"),
         "raw.githubusercontent.com" to listOf("185.199.108.133", "185.199.109.133", "185.199.110.133", "185.199.111.133"),
-        "objects.githubusercontent.com" to listOf("185.199.108.133", "185.199.109.133", "185.199.110.133", "185.199.111.133"),
-        "stormgamesworld.ru" to listOf("172.67.182.203", "104.21.58.172")
+        "stormgamesworld.ru" to listOf("87.255.6.63")
     )
 
     override fun lookup(hostname: String): List<InetAddress> {
@@ -36,10 +36,17 @@ object SmartDns : Dns {
                 return addresses
             }
         } catch (_: UnknownHostException) {
-            Log.info("[SmartDns] System DNS lookup failed for $hostname, trying fallback...")
+            Log.info("[SmartDns] System DNS lookup failed for $hostname, trying DoH...")
         }
 
-        // 2. Check static host table (zero network overhead, immune to DNS blocking)
+        // 2. Query public DNS-over-HTTPS (DoH) before any static table
+        val dohIps = queryDoH(hostname)
+        if (dohIps.isNotEmpty()) {
+            Log.info("[SmartDns] Resolved $hostname via DoH: $dohIps")
+            return dohIps
+        }
+
+        // 3. Fallback to static host table if DoH is blocked or unreachable
         val staticIps = staticFallbackHosts[hostname.lowercase()]
         if (!staticIps.isNullOrEmpty()) {
             val resolved = staticIps.mapNotNull { ip ->
@@ -56,18 +63,12 @@ object SmartDns : Dns {
             }
         }
 
-        // 3. Fallback to querying public DNS over HTTPS (DoH) via Google or Cloudflare
-        val dohIps = queryDoH(hostname)
-        if (dohIps.isNotEmpty()) {
-            Log.info("[SmartDns] Resolved $hostname via DoH: $dohIps")
-            return dohIps
-        }
-
         throw UnknownHostException("Unable to resolve host \"$hostname\": No address associated with hostname")
     }
 
     private fun queryDoH(hostname: String): List<InetAddress> {
         val dohEndpoints = listOf(
+            "https://1.1.1.1/dns-query?name=$hostname&type=A",
             "https://dns.google/resolve?name=$hostname&type=A",
             "https://cloudflare-dns.com/dns-query?name=$hostname&type=A"
         )
@@ -78,7 +79,7 @@ object SmartDns : Dns {
                 conn.connectTimeout = 3000
                 conn.readTimeout = 3000
                 conn.setRequestProperty("Accept", "application/dns-json")
-                conn.setRequestProperty("User-Agent", "STORM-SWITCH")
+                conn.setRequestProperty("User-Agent", "STORM-SWITCH-Updater")
                 if (conn.responseCode == 200) {
                     val jsonStr = conn.inputStream.bufferedReader().use { it.readText() }
                     val json = JSONObject(jsonStr)

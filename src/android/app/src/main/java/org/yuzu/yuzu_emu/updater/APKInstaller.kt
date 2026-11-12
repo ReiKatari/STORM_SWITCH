@@ -4,16 +4,12 @@
 package org.yuzu.yuzu_emu.updater
 
 import android.app.Activity
-import android.app.PendingIntent
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
-import android.content.pm.PackageInstaller
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
-import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import org.yuzu.yuzu_emu.R
 import org.yuzu.yuzu_emu.utils.Log
@@ -21,6 +17,11 @@ import java.io.File
 import java.io.IOException
 import java.lang.ref.WeakReference
 
+/**
+ * Play-Protect-clean native APK installer.
+ * Delegates installation cleanly to Android native system Package Installer UI
+ * via ACTION_VIEW and FileProvider, eliminating PHA:Dropper heuristics.
+ */
 class APKInstaller(private val context: Context) {
 
     fun install(
@@ -33,14 +34,11 @@ class APKInstaller(private val context: Context) {
 
     companion object {
         private const val TAG = "StormAPKInstaller"
-        private const val ACTION_INSTALL_STATUS = ".UPDATE_INSTALL_STATUS"
+        private const val APK_MIME = "application/vnd.android.package-archive"
 
         @Volatile
         var pendingApkFile: File? = null
             private set
-
-        @Volatile
-        private var isReceiverRegistered = false
 
         private var currentActivityRef: WeakReference<Activity>? = null
 
@@ -107,10 +105,10 @@ class APKInstaller(private val context: Context) {
 
             pendingApkFile = null
             try {
-                commitInstallSession(appContext, apkFile)
+                openSystemPackageInstaller(context, apkFile)
                 onComplete()
             } catch (e: Exception) {
-                Log.error("[$TAG] PackageInstaller session commit failed: ${e.message}")
+                Log.error("[$TAG] Native PackageInstaller handoff failed: ${e.message}")
                 onFailure(e)
             }
         }
@@ -126,7 +124,7 @@ class APKInstaller(private val context: Context) {
                 if (activity.packageManager.canRequestPackageInstalls()) {
                     pendingApkFile = null
                     try {
-                        commitInstallSession(activity.applicationContext, apk)
+                        openSystemPackageInstaller(activity, apk)
                     } catch (e: Exception) {
                         Log.error("[$TAG] resumePendingInstall failed: ${e.message}")
                     }
@@ -134,94 +132,31 @@ class APKInstaller(private val context: Context) {
             } else {
                 pendingApkFile = null
                 try {
-                    commitInstallSession(activity.applicationContext, apk)
+                    openSystemPackageInstaller(activity, apk)
                 } catch (e: Exception) {
                     Log.error("[$TAG] resumePendingInstall failed: ${e.message}")
                 }
             }
         }
 
-        private fun commitInstallSession(context: Context, apkFile: File) {
+        private fun openSystemPackageInstaller(context: Context, apkFile: File) {
             val appContext = context.applicationContext
-            val action = appContext.packageName + ACTION_INSTALL_STATUS
+            val fileUri = runCatching {
+                FileProvider.getUriForFile(appContext, "${appContext.packageName}.provider", apkFile)
+            }.getOrNull() ?: Uri.fromFile(apkFile)
 
-            registerStatusReceiver(appContext, action)
-
-            val packageInstaller = appContext.packageManager.packageInstaller
-            val params = PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL).apply {
-                setAppPackageName(appContext.packageName)
-                setSize(apkFile.length())
+            val installIntent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(fileUri, APK_MIME)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
             }
 
-            val sessionId = packageInstaller.createSession(params)
-            try {
-                packageInstaller.openSession(sessionId).use { session ->
-                    apkFile.inputStream().use { inStream ->
-                        session.openWrite("base.apk", 0, apkFile.length()).use { outStream ->
-                            inStream.copyTo(outStream)
-                            session.fsync(outStream)
-                        }
-                    }
-
-                    val intent = Intent(action).setPackage(appContext.packageName)
-                    val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
-                    val pendingIntent = PendingIntent.getBroadcast(appContext, sessionId, intent, flags)
-
-                    session.commit(pendingIntent.intentSender)
-                }
-                Log.info("[$TAG] PackageInstaller session $sessionId committed successfully")
-            } catch (e: Exception) {
-                try {
-                    packageInstaller.abandonSession(sessionId)
-                } catch (_: Throwable) {}
-                throw e
+            val activity = (context as? Activity) ?: currentActivityRef?.get()
+            if (activity != null && !activity.isFinishing && !activity.isDestroyed) {
+                activity.startActivity(installIntent)
+            } else {
+                appContext.startActivity(installIntent)
             }
-        }
-
-        @Synchronized
-        private fun registerStatusReceiver(appContext: Context, action: String) {
-            if (isReceiverRegistered) return
-            isReceiverRegistered = true
-
-            val receiver = object : BroadcastReceiver() {
-                override fun onReceive(context: Context, intent: Intent) {
-                    val status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_FAILURE)
-                    val message = intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE)
-
-                    when (status) {
-                        PackageInstaller.STATUS_PENDING_USER_ACTION -> {
-                            val confirmIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                intent.getParcelableExtra(Intent.EXTRA_INTENT, Intent::class.java)
-                            } else {
-                                @Suppress("DEPRECATION")
-                                intent.getParcelableExtra(Intent.EXTRA_INTENT)
-                            }
-                            if (confirmIntent != null) {
-                                confirmIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                val activity = currentActivityRef?.get()
-                                if (activity != null && !activity.isFinishing && !activity.isDestroyed) {
-                                    activity.startActivity(confirmIntent)
-                                } else {
-                                    context.startActivity(confirmIntent)
-                                }
-                            }
-                        }
-                        PackageInstaller.STATUS_SUCCESS -> {
-                            Log.info("[$TAG] Update installation finished successfully")
-                        }
-                        else -> {
-                            Log.warning("[$TAG] Installation status: $status, message: $message")
-                        }
-                    }
-                }
-            }
-
-            ContextCompat.registerReceiver(
-                appContext,
-                receiver,
-                IntentFilter(action),
-                ContextCompat.RECEIVER_NOT_EXPORTED
-            )
+            Log.info("[$TAG] System Package Installer launched cleanly via FileProvider URI")
         }
     }
 }

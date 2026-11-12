@@ -201,7 +201,7 @@ try
         scheduler.RegisterOnSubmit([this] { turbo_mode->QueueSubmitted(); });
     }
 
-    // Dynamic Performance Scaler — Atmosphere-style adaptive resolution
+    // Dynamic Performance Scaler - Atmosphere-style adaptive resolution
     if (Settings::values.dynamic_performance_scaler.GetValue()) {
         float target_fps = 60.0f;
         switch (Settings::values.frame_pacing_mode.GetValue()) {
@@ -306,7 +306,7 @@ void RendererVulkan::Composite(std::span<const Tegra::FramebufferConfig> framebu
     gpu.RendererFrameEndNotify();
     rasterizer.TickFrame();
 
-    // Dynamic Performance Scaler — feed frame time only when feature is enabled
+    // Dynamic Performance Scaler - feed frame time only when feature is enabled
     if (Settings::values.dynamic_performance_scaler.GetValue() && s_performance_scaler) {
         const auto end_time = std::chrono::steady_clock::now();
         if (s_last_composite_time.time_since_epoch().count() != 0) {
@@ -344,7 +344,12 @@ void RendererVulkan::Report() const {
     const VkDriverId driver_id = device.GetDriverID();
     std::string driver_summary;
     if (driver_id == VK_DRIVER_ID_MESA_TURNIP) {
-        driver_summary = fmt::format("STORM DRIVER {} (Turnip)", driver_version);
+        const std::string custom_display_name = Vulkan::GetCustomDriverDisplayName();
+        if (!custom_display_name.empty()) {
+            driver_summary = custom_display_name;
+        } else {
+            driver_summary = "Mesa Turnip";
+        }
     } else if (driver_id == VK_DRIVER_ID_QUALCOMM_PROPRIETARY) {
         driver_summary = fmt::format("Qualcomm {}", driver_version);
     } else {

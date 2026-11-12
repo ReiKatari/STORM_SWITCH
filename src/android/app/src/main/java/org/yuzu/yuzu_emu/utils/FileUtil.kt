@@ -91,18 +91,134 @@ object FileUtil {
      * @return file descriptor
      */
     @JvmStatic
+
+    private fun openRawPathViaSafTree(rawPath: String, openMode: String?): Int {
+        try {
+            val rel = rawPath
+                .removePrefix("/storage/emulated/0/")
+                .removePrefix("/sdcard/")
+                .removePrefix("/")
+            if (rel.isEmpty()) return -1
+
+            val resolver = context.contentResolver
+            val perms = resolver.persistedUriPermissions
+            val extPerms = perms.filter {
+                it.uri.authority == "com.android.externalstorage.documents" && it.isReadPermission
+            }
+            val docId = "primary:$rel"
+            val mode = openMode ?: "r"
+
+            for (p in extPerms) {
+                try {
+                    val treeUri = p.uri
+                    val docUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, docId)
+                    val pfd = resolver.openFileDescriptor(docUri, mode)
+                    if (pfd != null) {
+                        return pfd.detachFd()
+                    }
+                } catch (_: Throwable) {}
+            }
+        } catch (_: Throwable) {}
+        return -1
+    }
+
+    private fun existsRawPathViaSafTree(rawPath: String): Boolean {
+        try {
+            val rel = rawPath
+                .removePrefix("/storage/emulated/0/")
+                .removePrefix("/sdcard/")
+                .removePrefix("/")
+            if (rel.isEmpty()) return false
+
+            val resolver = context.contentResolver
+            val perms = resolver.persistedUriPermissions
+            val extPerms = perms.filter {
+                it.uri.authority == "com.android.externalstorage.documents" && it.isReadPermission
+            }
+            val docId = "primary:$rel"
+            val columns = arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
+
+            for (p in extPerms) {
+                var c: Cursor? = null
+                try {
+                    val treeUri = p.uri
+                    val docUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, docId)
+                    c = resolver.query(docUri, columns, null, null, null)
+                    if (c != null && c.count > 0) {
+                        return true
+                    }
+                } catch (_: Throwable) {
+                } finally {
+                    closeQuietly(c)
+                }
+            }
+        } catch (_: Throwable) {}
+        return false
+    }
+
+    private fun getFileSizeRawPathViaSafTree(rawPath: String): Long {
+        try {
+            val rel = rawPath
+                .removePrefix("/storage/emulated/0/")
+                .removePrefix("/sdcard/")
+                .removePrefix("/")
+            if (rel.isEmpty()) return 0L
+
+            val resolver = context.contentResolver
+            val perms = resolver.persistedUriPermissions
+            val extPerms = perms.filter {
+                it.uri.authority == "com.android.externalstorage.documents" && it.isReadPermission
+            }
+            val docId = "primary:$rel"
+            val columns = arrayOf(DocumentsContract.Document.COLUMN_SIZE)
+
+            for (p in extPerms) {
+                var c: Cursor? = null
+                try {
+                    val treeUri = p.uri
+                    val docUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, docId)
+                    c = resolver.query(docUri, columns, null, null, null)
+                    if (c != null && c.moveToNext()) {
+                        return c.getLong(0)
+                    }
+                } catch (_: Throwable) {
+                } finally {
+                    closeQuietly(c)
+                }
+            }
+        } catch (_: Throwable) {}
+        return 0L
+    }
+
+    @JvmStatic
     fun openContentUri(path: String?, openMode: String?): Int {
         try {
             if (path.isNullOrEmpty()) return -1
             if (path.startsWith("/") || path.startsWith("file://")) {
                 val cleanPath = if (path.startsWith("file://")) (Uri.parse(path).path ?: Uri.decode(path.substring(7))) else path
                 val f = File(cleanPath)
-                if (f.exists()) {
-                    val mode = when (openMode) {
-                        "rw", "rwa", "wa" -> ParcelFileDescriptor.MODE_READ_WRITE
-                        else -> ParcelFileDescriptor.MODE_READ_ONLY
+                if (f.exists() && f.canRead()) {
+                    try {
+                        val mode = when (openMode) {
+                            "rw", "rwa", "wa" -> ParcelFileDescriptor.MODE_READ_WRITE
+                            else -> ParcelFileDescriptor.MODE_READ_ONLY
+                        }
+                        return ParcelFileDescriptor.open(f, mode).detachFd()
+                    } catch (_: SecurityException) {
+                        // Fallback to SAF tree below
                     }
-                    return ParcelFileDescriptor.open(f, mode).detachFd()
+                }
+
+                // Direct file access failed under Scoped Storage!
+                // Resolve via persistedUriPermissions (com.android.externalstorage.documents)
+                val safFd = openRawPathViaSafTree(cleanPath, openMode)
+                if (safFd >= 0) {
+                    return safFd
+                }
+                val decoded = runCatching { Uri.decode(cleanPath) }.getOrDefault(cleanPath)
+                if (decoded != cleanPath) {
+                    val decodedSafFd = openRawPathViaSafTree(decoded, openMode)
+                    if (decodedSafFd >= 0) return decodedSafFd
                 }
             }
             val uri = Uri.parse(path)
@@ -285,9 +401,16 @@ object FileUtil {
             } else {
                 path
             }
-            if (File(clean).exists()) return true
+            val f = File(clean)
+            if (f.exists() && f.canRead()) return true
             val decoded = runCatching { Uri.decode(clean) }.getOrDefault(clean)
-            return File(decoded).exists()
+            val fDecoded = File(decoded)
+            if (fDecoded.exists() && fDecoded.canRead()) return true
+
+            // Scoped storage fallback via persistedUriPermissions
+            if (existsRawPathViaSafTree(clean) || (decoded != clean && existsRawPathViaSafTree(decoded))) {
+                return true
+            }
         }
         var c: Cursor? = null
         try {
@@ -390,7 +513,13 @@ object FileUtil {
     fun getFileSize(path: String): Long {
         if (path.startsWith("/") || path.startsWith("file://")) {
             val clean = if (path.startsWith("file://")) (Uri.parse(path).path ?: Uri.decode(path.substring(7))) else path
-            return File(clean).length()
+            val f = File(clean)
+            if (f.exists() && f.canRead() && f.length() > 0L) {
+                return f.length()
+            }
+            val safSize = getFileSizeRawPathViaSafTree(clean)
+            if (safSize > 0L) return safSize
+            return f.length()
         }
         val resolver = context.contentResolver
         val columns = arrayOf(

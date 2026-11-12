@@ -4,15 +4,15 @@
 package org.yuzu.yuzu_emu.updater
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.preference.PreferenceManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.progressindicator.LinearProgressIndicator
-import com.google.android.material.textview.MaterialTextView
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
@@ -42,7 +42,7 @@ object StormUpdateManager {
 
     fun parseVersionParts(versionStr: String): List<Int> {
         val clean = versionStr.trim().removePrefix("v").removePrefix("V").trim()
-        val parts = Regex("\\d+").findAll(clean).map { it.value.toIntOrNull() ?: 0 }.toMutableList()
+        val parts = Regex("\\\\d+").findAll(clean).map { it.value.toIntOrNull() ?: 0 }.toMutableList()
         while (parts.size < 3) {
             parts.add(0)
         }
@@ -173,7 +173,7 @@ object StormUpdateManager {
             .followSslRedirects(true)
             .build()
 
-        // Source 1: Official STORM GAMES WORLD API (fast direct endpoint in RU & Worldwide)
+        // Source 1: Official STORM GAMES WORLD API (fast direct endpoint in RU and Worldwide)
         try {
             val sgwReq = Request.Builder()
                 .url("https://stormgamesworld.ru/api/programs?repo=STORM_SWITCH")
@@ -253,11 +253,15 @@ object StormUpdateManager {
                             }
                         }
                         val sgwBase = "https://stormgamesworld.ru/uploads/programs/STORM_SWITCH"
+                        val ghBase = "https://github.com/ReiKatari/STORM_SWITCH/releases/download/$tag"
                         assetList.addAll(
                             listOf(
                                 "$sgwBase/STORM_SWITCH_$tag.apk",
                                 "$sgwBase/STORM_SWITCH_${tag}_LEGACY.apk",
-                                "$sgwBase/STORM_SWITCH_${tag}_SDK27.apk"
+                                "$sgwBase/STORM_SWITCH_${tag}_SDK27.apk",
+                                "$ghBase/STORM_SWITCH_$tag.apk",
+                                "$ghBase/STORM_SWITCH_${tag}_LEGACY.apk",
+                                "$ghBase/STORM_SWITCH_${tag}_SDK27.apk"
                             )
                         )
                         candidates.add(
@@ -283,19 +287,19 @@ object StormUpdateManager {
                     .build()
                 client.newCall(webReq).execute().use { resp ->
                     val finalUrl = resp.request.url.toString()
-                    val match = Regex("/releases/tag/(v?[0-9]+\\.[0-9]+(?:\\.[0-9]+)*)").find(finalUrl)
+                    val match = Regex("/releases/tag/(v?[0-9]+\\\\.[0-9]+(?:\\\\.[0-9]+)*)").find(finalUrl)
                     if (match != null) {
                         val rawTag = match.groupValues[1]
                         val cleanVer = rawTag.removePrefix("v").removePrefix("V")
                         val baseDl = "https://github.com/ReiKatari/STORM_SWITCH/releases/download/$rawTag"
                         val sgwDl = "https://stormgamesworld.ru/uploads/programs/STORM_SWITCH"
                         val assets = mutableListOf(
-                            "$baseDl/STORM_SWITCH_$cleanVer.apk",
-                            "$baseDl/STORM_SWITCH_${cleanVer}_LEGACY.apk",
-                            "$baseDl/STORM_SWITCH_${cleanVer}_SDK27.apk",
                             "$sgwDl/STORM_SWITCH_$cleanVer.apk",
                             "$sgwDl/STORM_SWITCH_${cleanVer}_LEGACY.apk",
-                            "$sgwDl/STORM_SWITCH_${cleanVer}_SDK27.apk"
+                            "$sgwDl/STORM_SWITCH_${cleanVer}_SDK27.apk",
+                            "$baseDl/STORM_SWITCH_$cleanVer.apk",
+                            "$baseDl/STORM_SWITCH_${cleanVer}_LEGACY.apk",
+                            "$baseDl/STORM_SWITCH_${cleanVer}_SDK27.apk"
                         )
                         candidates.add(
                             NativeLibrary.UpdateResult(
@@ -321,20 +325,22 @@ object StormUpdateManager {
             .lines()
             .map { it.trim() }
             .filter { it.isNotEmpty() && it != "---" }
-            .joinToString("\n") { line ->
+            .joinToString("\\n") { line ->
                 line.removePrefix("> ")
                     .replace("**", "")
                     .replace("*", "")
                     .replace("`", "")
+                    .replace("\u2014", "-")
+                    .replace("\u2013", "-")
             }
-        return if (cleaned.length > 650) cleaned.take(650) + "…" else cleaned
+        return if (cleaned.length > 650) cleaned.take(650) + "..." else cleaned
     }
 
     private fun showUpdateDialog(activity: Activity, release: NativeLibrary.UpdateResult) {
         val cleanTag = release.tag.trim().removePrefix("v").removePrefix("V").trim()
         val summary = extractCleanSummary(release.body)
         val baseMsg = activity.getString(R.string.update_available_description, release.title.ifBlank { "STORM SWITCH $cleanTag" })
-        val fullMsg = if (summary.isNotBlank()) "$baseMsg\n\n$summary" else baseMsg
+        val fullMsg = if (summary.isNotBlank()) "$baseMsg\\n\\n$summary" else baseMsg
 
         MaterialAlertDialogBuilder(activity)
             .setTitle(R.string.update_available)
@@ -349,37 +355,58 @@ object StormUpdateManager {
             .show()
     }
 
-    private fun selectMatchingApkUrls(release: NativeLibrary.UpdateResult): List<String> {
-        val flavor = BuildConfig.FLAVOR.lowercase()
-        val isOlderDevice = Build.VERSION.SDK_INT < 33
-        val apkAssets = release.assets.filter { it.endsWith(".apk", ignoreCase = true) }
+    private fun selectMatchingApkUrls(context: Context, release: NativeLibrary.UpdateResult): List<String> {
+        val pkg = context.packageName.lowercase()
+        val cleanVer = release.tag.trim().removePrefix("v").removePrefix("V").trim()
 
-        val matched = when {
-            flavor.contains("legacy") -> {
-                apkAssets.filter { it.contains("LEGACY", ignoreCase = true) }
-            }
-            flavor.contains("sdk27") || (Build.VERSION.SDK_INT in 27..32 && !flavor.contains("legacy")) -> {
-                apkAssets.filter { it.contains("SDK27", ignoreCase = true) }
-                    .ifEmpty { if (isOlderDevice) apkAssets.filter { it.contains("LEGACY", ignoreCase = true) } else emptyList() }
-            }
-            else -> {
-                if (isOlderDevice) {
-                    apkAssets.filter { it.contains("LEGACY", ignoreCase = true) || it.contains("SDK27", ignoreCase = true) }
-                } else {
-                    apkAssets.filter {
-                        !it.contains("LEGACY", ignoreCase = true) && !it.contains("SDK27", ignoreCase = true)
-                    }
-                }
+        val expectedFileName = when {
+            pkg.contains("legacy") -> "STORM_SWITCH_${cleanVer}_LEGACY.apk"
+            pkg.contains("sdk27") -> "STORM_SWITCH_${cleanVer}_SDK27.apk"
+            else -> "STORM_SWITCH_$cleanVer.apk"
+        }
+
+        val primaryMirror = "https://stormgamesworld.ru/uploads/programs/STORM_SWITCH/$expectedFileName"
+        val secondaryMirror = "https://github.com/ReiKatari/STORM_SWITCH/releases/download/$cleanVer/$expectedFileName"
+
+        val apkAssets = release.assets.filter { it.endsWith(".apk", ignoreCase = true) }
+        val matchedFromAssets = when {
+            pkg.contains("legacy") -> apkAssets.filter { it.endsWith("_LEGACY.apk", ignoreCase = true) }
+            pkg.contains("sdk27") -> apkAssets.filter { it.endsWith("_SDK27.apk", ignoreCase = true) }
+            else -> apkAssets.filter {
+                !it.endsWith("_LEGACY.apk", ignoreCase = true) && !it.endsWith("_SDK27.apk", ignoreCase = true)
             }
         }
-        return matched.distinct()
+
+        val result = mutableListOf<String>()
+        // 1. Primary fast mirror first
+        result.add(primaryMirror)
+        for (u in matchedFromAssets) {
+            if (u.contains("stormgamesworld.ru", ignoreCase = true)) {
+                if (!result.contains(u)) result.add(u)
+            }
+        }
+        // 2. Secondary GitHub Release mirror
+        if (!result.contains(secondaryMirror)) {
+            result.add(secondaryMirror)
+        }
+        for (u in matchedFromAssets) {
+            if (!result.contains(u)) result.add(u)
+        }
+
+        return result.distinct()
     }
 
     private fun downloadAndInstallUpdate(activity: Activity, release: NativeLibrary.UpdateResult) {
-        val matchingUrls = selectMatchingApkUrls(release)
+        val matchingUrls = selectMatchingApkUrls(activity, release)
         if (matchingUrls.isEmpty()) {
-            val targetUrl = release.url.ifBlank { "https://github.com/ReiKatari/STORM_SWITCH/releases/latest" }
-            openLink(activity, targetUrl)
+            MaterialAlertDialogBuilder(activity)
+                .setTitle(R.string.update_download_failed)
+                .setMessage(R.string.online_tools_err_all_sources)
+                .setPositiveButton(R.string.retry) { _, _ ->
+                    downloadAndInstallUpdate(activity, release)
+                }
+                .setNegativeButton(R.string.cancel, null)
+                .show()
             return
         }
 
@@ -437,7 +464,22 @@ object StormUpdateManager {
                 activity.runOnUiThread {
                     if (activity.isFinishing || activity.isDestroyed) return@runOnUiThread
                     progressDialog.dismiss()
-                    if (success && targetApk.exists() && APKDownloader.isValidApkFile(targetApk)) {
+
+                    val archiveInfo = runCatching {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            activity.packageManager.getPackageArchiveInfo(
+                                targetApk.absolutePath,
+                                PackageManager.PackageInfoFlags.of(0L)
+                            )
+                        } else {
+                            @Suppress("DEPRECATION")
+                            activity.packageManager.getPackageArchiveInfo(targetApk.absolutePath, 0)
+                        }
+                    }.getOrNull()
+
+                    val isPackageValid = archiveInfo != null && archiveInfo.packageName == activity.packageName
+
+                    if (success && targetApk.exists() && isPackageValid && APKDownloader.isValidApkFile(targetApk)) {
                         APKInstaller.installApk(
                             context = activity,
                             apkFile = targetApk,
@@ -459,22 +501,12 @@ object StormUpdateManager {
                             .setPositiveButton(R.string.retry) { _, _ ->
                                 downloadAndInstallUpdate(activity, release)
                             }
-                            .setNeutralButton(R.string.open_in_browser) { _, _ ->
-                                val targetUrl = release.url.ifBlank { "https://github.com/ReiKatari/STORM_SWITCH/releases/latest" }
-                                openLink(activity, targetUrl)
-                            }
                             .setNegativeButton(R.string.cancel, null)
+                            .setCancelable(false)
                             .show()
                     }
                 }
             }
         )
-    }
-
-    private fun openLink(activity: Activity, link: String) {
-        try {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(link))
-            activity.startActivity(intent)
-        } catch (_: Throwable) {}
     }
 }

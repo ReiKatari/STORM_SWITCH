@@ -22,9 +22,15 @@ class DocumentsTree {
     fun openContentUri(filepath: String?, openMode: String?): Int {
         if (filepath.isNullOrEmpty() || filepath.startsWith("content://")) return -1
         try {
-            val node = resolvePath(filepath) ?: return -1
-            val uriStr = node.uri?.toString() ?: return -1
-            return FileUtil.openContentUri(uriStr, openMode)
+            val node = resolvePath(filepath)
+            if (node != null) {
+                val uriStr = node.uri?.toString()
+                if (!uriStr.isNullOrEmpty()) {
+                    val fd = FileUtil.openContentUri(uriStr, openMode)
+                    if (fd >= 0) return fd
+                }
+            }
+            return FileUtil.openContentUri(filepath, openMode)
         } catch (_: Throwable) {
             return -1
         }
@@ -34,12 +40,14 @@ class DocumentsTree {
         if (filepath.isNullOrEmpty() || filepath.startsWith("content://")) return 0L
         try {
             val node = resolvePath(filepath)
-            return if (node == null || node.isDirectory) {
-                0L
-            } else {
-                val uriStr = node.uri?.toString() ?: return 0L
-                FileUtil.getFileSize(uriStr)
+            if (node != null && !node.isDirectory) {
+                val uriStr = node.uri?.toString()
+                if (!uriStr.isNullOrEmpty()) {
+                    val sz = FileUtil.getFileSize(uriStr)
+                    if (sz > 0L) return sz
+                }
             }
+            return FileUtil.getFileSize(filepath)
         } catch (_: Throwable) {
             return 0L
         }
@@ -48,7 +56,8 @@ class DocumentsTree {
     fun exists(filepath: String?): Boolean {
         if (filepath.isNullOrEmpty() || filepath.startsWith("content://")) return false
         try {
-            return resolvePath(filepath) != null
+            if (resolvePath(filepath) != null) return true
+            return FileUtil.exists(filepath, suppressLog = true)
         } catch (_: Throwable) {
             return false
         }

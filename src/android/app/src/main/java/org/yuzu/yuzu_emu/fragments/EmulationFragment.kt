@@ -752,6 +752,21 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         requireActivity().finish()
     }
 
+
+    private fun sanitizeDriverForHud(raw: String): String {
+        var d = raw.trim()
+        if (d.contains("STORM_DRIVER_12", ignoreCase = true) ||
+            d.contains("STORM DRIVER 12", ignoreCase = true) ||
+            d.contains("26.99.99")
+        ) {
+            return "STORM DRIVER 12.0.0"
+        }
+        d = d.replace("(Turnip)", "", ignoreCase = true)
+             .replace("Turnip", "", ignoreCase = true)
+             .trim()
+        return d
+    }
+
     private fun completeViewSetup() {
         if (_binding == null || game == null) {
             return
@@ -766,7 +781,8 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         val activeSummary = runCatching { NativeLibrary.getActiveVulkanDriverSummary() }.getOrDefault("")
         val driverTitle = driverViewModel.selectedDriverTitle.value
         val fallbackDriver = if (driverTitle.isNotEmpty()) driverTitle else driverViewModel.selectedDriverVersion.value
-        driverInUse = if (activeSummary.isNotBlank()) activeSummary else fallbackDriver
+        val rawDriver = if (activeSummary.isNotBlank()) activeSummary else fallbackDriver
+        driverInUse = sanitizeDriverForHud(rawDriver)
 
         updateQuickOverlayMenuEntry(BooleanSetting.SHOW_INPUT_OVERLAY.getBoolean())
         onPhysicalControllerStateChanged(InputHandler.androidControllers.isNotEmpty())
@@ -2907,7 +2923,17 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                     if (BooleanSetting.SHOW_DRIVER_VERSION.getBoolean()) {
                         val activeSummary = runCatching { NativeLibrary.getActiveVulkanDriverSummary() }.getOrDefault("")
                         val effectiveDriver = if (activeSummary.isNotBlank()) activeSummary else driverInUse
-                        appendWithPipe(effectiveDriver)
+                        val cleanDriver = sanitizeDriverForHud(effectiveDriver)
+                        if (cleanDriver.isNotEmpty()) {
+                            val line1 = sb.toString()
+                            if (line1.contains("STORM DRIVER 12.0.0") &&
+                                (cleanDriver == "STORM DRIVER 12.0.0" || cleanDriver.contains("26.99.99"))
+                            ) {
+                                // Omit redundant driver name or Mesa internal number if already displayed on line 1
+                            } else {
+                                appendWithPipe(cleanDriver)
+                            }
+                        }
                     }
 
                     if (BooleanSetting.SHOW_DEVICE_MODEL.getBoolean()) {

@@ -1311,4 +1311,7 @@ private:
 std::string GetActiveVulkanDriverSummary();
 void SetActiveVulkanDriverSummary(std::string summary);
 
+std::string GetCustomDriverDisplayName();
+void SetCustomDriverDisplayName(std::string name);
+
 } // namespace Vulkan

@@ -11,6 +11,7 @@
 #include "common/logging.h"
 #include "common/random.h"
 #include "common/settings.h"
+#include "common/string_util.h"
 #include "core/core.h"
 #include "core/file_sys/content_archive.h"
 #include "core/file_sys/control_metadata.h"
@@ -239,12 +240,44 @@ AppLoader_DeconstructedRomDirectory::AppLoader_DeconstructedRomDirectory(FileSys
     }
 }
 
+static FileSys::VirtualFile FindMainExeFsFile(const FileSys::VirtualDir& dir) {
+    if (!dir) {
+        return nullptr;
+    }
+    if (auto f = dir->GetFile("main")) {
+        return f;
+    }
+    for (const auto& file : dir->GetFiles()) {
+        const std::string lower = Common::ToLower(file->GetName());
+        if (lower == "main" || lower == "main.nso") {
+            return file;
+        }
+    }
+    if (auto exefs_sub = dir->GetSubdirectory("exefs")) {
+        if (auto f = exefs_sub->GetFile("main")) {
+            return f;
+        }
+        for (const auto& file : exefs_sub->GetFiles()) {
+            const std::string lower = Common::ToLower(file->GetName());
+            if (lower == "main" || lower == "main.nso") {
+                return file;
+            }
+        }
+    }
+    return nullptr;
+}
+
 AppLoader_DeconstructedRomDirectory::AppLoader_DeconstructedRomDirectory(
     FileSys::VirtualDir directory, bool override_update_)
-    : AppLoader(directory->GetFile("main"))
+    : AppLoader(FindMainExeFsFile(directory))
     , dir(std::move(directory))
     , override_update(override_update_)
 {
+    if (dir && !dir->GetFile("main") && dir->GetSubdirectory("exefs")) {
+        if (dir->GetSubdirectory("exefs")->GetFile("main") || FindMainExeFsFile(dir->GetSubdirectory("exefs"))) {
+            dir = dir->GetSubdirectory("exefs");
+        }
+    }
     romfs = FindLooseRomFS(dir);
 }
 
@@ -327,7 +360,7 @@ AppLoader_DeconstructedRomDirectory::LoadResult AppLoader_DeconstructedRomDirect
     const bool is_39bit =
         metadata.GetAddressSpaceType() == FileSys::ProgramAddressSpaceType::Is39Bit;
     const bool is_application = metadata.GetPoolPartition() == FileSys::PoolPartition::Application;
-    Settings::SetNceEnabled(is_39bit && !Settings::IsCurrentProgramSwitch2());
+    Settings::SetNceEnabled(is_39bit);
 
     const std::array static_modules = {"rtld",    "main",    "subsdk0", "subsdk1", "subsdk2",
                                        "subsdk3", "subsdk4", "subsdk5", "subsdk6", "subsdk7",

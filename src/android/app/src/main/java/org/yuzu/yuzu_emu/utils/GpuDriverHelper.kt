@@ -133,7 +133,7 @@ object GpuDriverHelper {
     }
 
     /**
-     * Detects Snapdragon 8 Elite Gen 5+ (SM8850 / SM8835 — Adreno 840 / 850+).
+     * Detects Snapdragon 8 Elite Gen 5+ (SM8850 / SM8835 - Adreno 840 / 850+).
      * Legacy A830-only Turnip / PurpleVK builds report 'Adreno (TM) 840 (...)/unknown' and write
      * A830 UBWC macrotile headers into A840 swapchain AHardwareBuffers, squishing the live viewport
      * to 2/3 top-left with bottom UBWC stripes unless the driver explicitly supports Adreno 840 / SM8850.
@@ -181,23 +181,16 @@ object GpuDriverHelper {
     }
 
     fun isPanVkDriverActive(): Boolean {
+        // Qualcomm Adreno hardware can NEVER use PanVK!
+        if (File("/sys/class/kgsl/kgsl-3d0/gpu_model").exists()) {
+            return false
+        }
         val metadata = installedCustomDriverData
         val libName = metadata.libraryName ?: ""
-        val vendor = metadata.vendor ?: ""
         val name = metadata.name ?: ""
-        val description = metadata.description ?: ""
-        val activeDriverZipPath = try { StringSetting.DRIVER_PATH.getString() } catch (_: Exception) { "" }
-        return name.contains("PanVK", ignoreCase = true) ||
-               name.contains("Panfrost", ignoreCase = true) ||
-               vendor.contains("Panfrost", ignoreCase = true) ||
-               vendor.contains("PanVK", ignoreCase = true) ||
-               libName.contains("panvk", ignoreCase = true) ||
+        return libName.contains("panvk", ignoreCase = true) ||
                libName.contains("panfrost", ignoreCase = true) ||
-               libName.contains("libvulkan_panfrost", ignoreCase = true) ||
-               description.contains("PanVK", ignoreCase = true) ||
-               activeDriverZipPath.contains("panvk", ignoreCase = true) ||
-               activeDriverZipPath.contains("panfrost", ignoreCase = true) ||
-               activeDriverZipPath.contains("libvulkan_panfrost", ignoreCase = true)
+               name.contains("PanVK", ignoreCase = true)
     }
 
     fun isDriverCompatibleWithAdreno8xx(metadata: GpuDriverMetadata): Boolean {
@@ -756,39 +749,16 @@ object GpuDriverHelper {
                 return
             }
 
-            // Ensure /storage/emulated/0/STORM SWITCH/gpu_drivers/ exists and copy from assets if missing
+            // If /storage/emulated/0/STORM SWITCH/gpu_drivers/STORM_DRIVER_12.0.0.zip exists, sync to internal storage
             val primaryExternalDir = File("/storage/emulated/0/STORM SWITCH/gpu_drivers")
             val primaryDriver12 = File(primaryExternalDir, driver12FileName)
-            if (!primaryDriver12.exists() || primaryDriver12.length() < 1024L) {
-                try {
-                    if (!primaryExternalDir.exists()) {
-                        primaryExternalDir.mkdirs()
-                    }
-                    context.assets.open("drivers/$driver12FileName").use { inStream ->
-                        java.io.FileOutputStream(primaryDriver12).use { outStream ->
-                            inStream.copyTo(outStream)
-                        }
-                    }
-                    Log.info("[GpuDriverHelper] Copied bundled $driver12FileName from APK assets to ${primaryDriver12.absolutePath}")
-                } catch (e: Throwable) {
-                    Log.warning("[GpuDriverHelper] Could not copy $driver12FileName to external storage: ${e.message}")
-                }
-            }
 
-            // Also copy to app internal driver storage if not yet present
             if (!targetDriver12.exists() || targetDriver12.length() < 1024L) {
                 if (primaryDriver12.exists() && primaryDriver12.length() > 1024L) {
                     try {
-                        primaryDriver12.copyTo(targetDriver12, overwrite = true)
-                    } catch (_: Throwable) {}
-                } else {
-                    try {
                         if (!storageDir.exists()) storageDir.mkdirs()
-                        context.assets.open("drivers/$driver12FileName").use { inStream ->
-                            java.io.FileOutputStream(targetDriver12).use { outStream ->
-                                inStream.copyTo(outStream)
-                            }
-                        }
+                        primaryDriver12.copyTo(targetDriver12, overwrite = true)
+                        Log.info("[GpuDriverHelper] Synced existing $driver12FileName from external storage to internal storage")
                     } catch (_: Throwable) {}
                 }
             }

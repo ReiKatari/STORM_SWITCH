@@ -943,87 +943,27 @@ GameFixProfile(
 GameFixProfile(
             0x01002A801458A000L,
             "Diablo II: Resurrected",
-            "• Вылет при продолжении игры / загрузке персонажа (OOM)\n• Пропадание букв и текста интерфейса (включая переход во II Акт)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя и графические артефакты\n• Просадки кадровой частоты (4 FPS / 200 ms)",
-            "• Character load / continue game crash (OOM)\n• Missing UI text and font glyphs (including after Act I)\n• Battle.net server handshake hang\n• Character flickering on selection screen and graphical artifacts\n• Frame drops (4 FPS / 200 ms)",
-            "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Точность ГПУ: Высокая (High / синхронизация буферов шрифта)\n✓ Быстрое время ГПУ: Отключено (100% отрисовка динамических глифов и букв шрифта)\n✓ Асинхронные шейдеры: Отключено (100% отрисовка всех букв и глифов без пропусков)\n✓ Реактивная очистка: Включено (синхронизация атласов шрифта во всех Актах)\n✓ Сборка мусора VRAM: Отключено (защита атласа букв от выгрузки после I Акта)\n✓ Точность ЦП: Авто (устранение задержек)\n✓ Обратное чтение буферов ГПУ: Включено (стабильные 60 FPS)\n✓ Сжатие текстур ASTC: Отключено (устраняет полосы и квадраты)\n✓ Обратная связь барьеров: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание)",
-            "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ GPU Accuracy: High (Buffer synchronization)\n✓ Fast GPU Time: Disabled (100% font glyph rendering and timing guarantee)\n✓ Asynchronous Shaders: Disabled (100% font glyph render guarantee)\n✓ Reactive Flushing: Enabled (Syncs font atlases across all Acts)\n✓ VRAM Garbage Collection: Disabled (Protects font atlas after Act I)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ GPU Buffer Readback: Disabled (Fixes 4 FPS drops)\n✓ ASTC Recompression: Uncompressed (Fixes decals and square artifacts)\n✓ Barrier Feedback Loops: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes flickering)",
+            "• Вылет при продолжении игры / загрузке персонажа (OOM)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя\n• Просадки кадровой частоты (4 FPS / 200 ms)",
+            "• Character load / continue game crash (OOM)\n• Battle.net server handshake hang\n• Character flickering on selection screen\n• Frame drops (4 FPS / 200 ms)",
+            "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полета: Включено (пропуск Battle.net)\n✓ Точность ГПУ: Нормальная (Normal)\n✓ Динамическое состояние: Базовое (DynaState=1)\n✓ Быстрое время ГПУ: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Реактивная очистка: Отключено\n✓ Обратная связь барьеров: Отключено\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Сжатие текстур ASTC: Отключено\n✓ Быстрая память (Fastmem): Включено",
+            "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ GPU Accuracy: Normal\n✓ Dynamic State: Basic (DynaState=1)\n✓ Fast GPU Time: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Disabled\n✓ GPU Buffer Readback: Disabled\n✓ ASTC Recompression: Uncompressed\n✓ Fastmem: Enabled",
             mapOf(
                 "System\\memory_layout_mode" to "2",
                 "System\\airplane_mode" to "true",
+                "Network\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
-                "Renderer\\gpu_accuracy" to "2",
-                "Renderer\\use_asynchronous_shaders" to "false",
-                "Renderer\\use_reactive_flushing" to "true",
-                "Renderer\\use_fast_gpu_time" to "false",
-                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\dyna_state" to "1",
+                "Renderer\\enable_gpu_buffer_readback" to "false",
+                "Renderer\\barrier_feedback_loops" to "false",
+                "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\barrier_feedback_loops" to "true",
-                "Renderer\\enable_gpu_buffer_readback" to "true",
-                "Renderer\\dma_accuracy" to "3",
-                "Renderer\\early_release_fences" to "false",
-                "Renderer\\async_presentation" to "true",
-                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
                 "Cpu\\cpu_accuracy" to "0",
-                "Cpu\\cpuopt_fastmem" to "true",
-                "Renderer\\vram_budget_governor" to "false",
-                "Renderer\\use_asynchronous_gpu_emulation" to "true"
-            )
-,
-            listOf(0x0100916014D8C000L, 0x0100726014352000L),
-            mapOf(
-                "adreno" to mapOf(
-                    "Renderer\\gpu_accuracy" to "2",
-                    "Renderer\\use_fast_gpu_time" to "false",
-                    "Renderer\\astc_recompression" to "0",
-                    "Renderer\\accelerate_astc" to "1",
-                    "Renderer\\use_reactive_flushing" to "true",
-                    "Renderer\\enable_gpu_buffer_readback" to "true",
-                    "Renderer\\early_release_fences" to "false",
-                    "Renderer\\vram_budget_governor" to "false"
-                ),
-                "intel" to mapOf(
-                    "Renderer\\gpu_accuracy" to "2",
-                    "Renderer\\use_reactive_flushing" to "true",
-                    "Renderer\\use_fast_gpu_time" to "false",
-                    "Renderer\\astc_recompression" to "0",
-                    "Renderer\\enable_gpu_buffer_readback" to "true"
-                ),
-                "amd" to mapOf(
-                    "Renderer\\gpu_accuracy" to "2",
-                    "Renderer\\use_reactive_flushing" to "true",
-                    "Renderer\\use_fast_gpu_time" to "false",
-                    "Renderer\\astc_recompression" to "0",
-                    "Renderer\\enable_gpu_buffer_readback" to "true"
-                )
-            )        ),
-        GameFixProfile(
-            0x0100916014D8C000L,
-            "Diablo II: Resurrected",
-            "• Вылет при продолжении игры / загрузке персонажа (OOM)\n• Пропадание букв и текста интерфейса (включая переход во II Акт)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя и графические артефакты\n• Просадки кадровой частоты (4 FPS / 200 ms)",
-            "• Character load / continue game crash (OOM)\n• Missing UI text and font glyphs (including after Act I)\n• Battle.net server handshake hang\n• Character flickering on selection screen and graphical artifacts\n• Frame drops (4 FPS / 200 ms)",
-            "✓ Память: 4GB DRAM (предотвращение вылета 1A80A)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Точность ГПУ: Высокая (High / синхронизация буферов шрифта)\n✓ Быстрое время ГПУ: Отключено (100% отрисовка динамических глифов и букв шрифта)\n✓ Асинхронные шейдеры: Отключено (100% отрисовка всех букв и глифов без пропусков)\n✓ Реактивная очистка: Включено (синхронизация атласов шрифта во всех Актах)\n✓ Сборка мусора VRAM: Отключено (защита атласа букв от выгрузки после I Акта)\n✓ Точность ЦП: Авто (устранение задержек)\n✓ Обратное чтение буферов ГПУ: Включено (стабильные 60 FPS)\n✓ Сжатие текстур ASTC: Отключено (устраняет полосы и квадраты)\n✓ Обратная связь барьеров: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание)",
-            "✓ Memory Layout: 4GB DRAM (Prevents 1A80A crash)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ GPU Accuracy: High (Buffer synchronization)\n✓ Fast GPU Time: Disabled (100% font glyph rendering and timing guarantee)\n✓ Asynchronous Shaders: Disabled (100% font glyph render guarantee)\n✓ Reactive Flushing: Enabled (Syncs font atlases across all Acts)\n✓ VRAM Garbage Collection: Disabled (Protects font atlas after Act I)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ GPU Buffer Readback: Enabled (Stable 60 FPS)\n✓ ASTC Recompression: Uncompressed (Fixes decals and square artifacts)\n✓ Barrier Feedback Loops: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes flickering)",
-            mapOf(
-                "System\\memory_layout_mode" to "0",
-                "System\\airplane_mode" to "true",
-                "Services\\airplane_mode" to "true",
-                "Renderer\\use_fast_gpu_time" to "false",
-                "Renderer\\gpu_accuracy" to "2",
-                "Renderer\\dma_accuracy" to "3",
-                "Cpu\\cpu_accuracy" to "0",
-                "Renderer\\enable_gpu_buffer_readback" to "true",
-                "Renderer\\astc_recompression" to "0",
-                "Renderer\\accelerate_astc" to "1",
-                "Renderer\\barrier_feedback_loops" to "true",
-                "Renderer\\use_reactive_flushing" to "true",
-                "Renderer\\vram_garbage_collection" to "false",
-                "Renderer\\vram_budget_governor" to "false",
-                "Renderer\\early_release_fences" to "false",
-                "Renderer\\async_presentation" to "true",
-                "Cpu\\cpuopt_fastmem" to "true",
-                "Renderer\\use_asynchronous_shaders" to "false",
-                "Renderer\\use_asynchronous_gpu_emulation" to "true"
-            )
+                "Cpu\\cpuopt_fastmem" to "true"
+            ),
+            listOf(0x0100916014D8C000L, 0x0100726014352000L)
         ),
         GameFixProfile(
             0x01008C3005A32000L,
@@ -1067,30 +1007,25 @@ GameFixProfile(
 GameFixProfile(
             0x0100726014352000L,
             "Diablo II: Resurrected",
-            "• Вылет при продолжении игры / загрузке персонажа (OOM)\n• Пропадание букв и текста интерфейса (включая переход во II Акт)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя и графические артефакты\n• Просадки кадровой частоты (4 FPS / 200 ms)",
-            "• Character load / continue game crash (OOM)\n• Missing UI text and font glyphs (including after Act I)\n• Battle.net server handshake hang\n• Character flickering on selection screen and graphical artifacts\n• Frame drops (4 FPS / 200 ms)",
-            "✓ Память: 4GB DRAM (предотвращение вылета 1A80A)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Точность ГПУ: Высокая (High / синхронизация буферов шрифта)\n✓ Быстрое время ГПУ: Отключено (100% отрисовка динамических глифов и букв шрифта)\n✓ Асинхронные шейдеры: Отключено (100% отрисовка всех букв и глифов без пропусков)\n✓ Реактивная очистка: Включено (синхронизация атласов шрифта во всех Актах)\n✓ Сборка мусора VRAM: Отключено (защита атласа букв от выгрузки после I Акта)\n✓ Точность ЦП: Авто (устранение задержек)\n✓ Обратное чтение буферов ГПУ: Включено (стабильные 60 FPS)\n✓ Сжатие текстур ASTC: Отключено (устраняет полосы и квадраты)\n✓ Обратная связь барьеров: Включено\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Отключено (устраняет мерцание)",
-            "✓ Memory Layout: 4GB DRAM (Prevents 1A80A crash)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ GPU Accuracy: High (Buffer synchronization)\n✓ Fast GPU Time: Disabled (100% font glyph rendering and timing guarantee)\n✓ Asynchronous Shaders: Disabled (100% font glyph render guarantee)\n✓ Reactive Flushing: Enabled (Syncs font atlases across all Acts)\n✓ VRAM Garbage Collection: Disabled (Protects font atlas after Act I)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ GPU Buffer Readback: Enabled (Stable 60 FPS)\n✓ ASTC Recompression: Uncompressed (Fixes decals and square artifacts)\n✓ Barrier Feedback Loops: Enabled\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Disabled (Fixes flickering)",
+            "• Вылет при продолжении игры / загрузке персонажа (OOM)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя\n• Просадки кадровой частоты (4 FPS / 200 ms)",
+            "• Character load / continue game crash (OOM)\n• Battle.net server handshake hang\n• Character flickering on selection screen\n• Frame drops (4 FPS / 200 ms)",
+            "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полета: Включено (пропуск Battle.net)\n✓ Точность ГПУ: Нормальная (Normal)\n✓ Динамическое состояние: Базовое (DynaState=1)\n✓ Быстрое время ГПУ: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Реактивная очистка: Отключено\n✓ Обратная связь барьеров: Отключено\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Сжатие текстур ASTC: Отключено\n✓ Быстрая память (Fastmem): Включено",
+            "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ GPU Accuracy: Normal\n✓ Dynamic State: Basic (DynaState=1)\n✓ Fast GPU Time: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Disabled\n✓ GPU Buffer Readback: Disabled\n✓ ASTC Recompression: Uncompressed\n✓ Fastmem: Enabled",
             mapOf(
-                "System\\memory_layout_mode" to "0",
+                "System\\memory_layout_mode" to "2",
                 "System\\airplane_mode" to "true",
+                "Network\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
-                "Renderer\\gpu_accuracy" to "2",
-                "Renderer\\use_asynchronous_shaders" to "false",
-                "Renderer\\use_reactive_flushing" to "true",
-                "Renderer\\use_fast_gpu_time" to "false",
-                "Renderer\\accelerate_astc" to "1",
+                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\dyna_state" to "1",
+                "Renderer\\enable_gpu_buffer_readback" to "false",
+                "Renderer\\barrier_feedback_loops" to "false",
+                "Renderer\\use_reactive_flushing" to "false",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\barrier_feedback_loops" to "true",
-                "Renderer\\enable_gpu_buffer_readback" to "true",
-                "Renderer\\dma_accuracy" to "3",
-                "Renderer\\early_release_fences" to "false",
-                "Renderer\\async_presentation" to "true",
-                "Renderer\\vram_garbage_collection" to "false",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_fast_gpu_time" to "true",
                 "Cpu\\cpu_accuracy" to "0",
-                "Cpu\\cpuopt_fastmem" to "true",
-                "Renderer\\vram_budget_governor" to "false",
-                "Renderer\\use_asynchronous_gpu_emulation" to "true"
+                "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
         GameFixProfile(
@@ -5491,9 +5426,9 @@ GameFixProfile(
                 "Cpu\\cpuopt_fastmem" to "true",
                 "Cpu\\cpuopt_ignore_memory_aborts" to "true",
                 "Renderer\\scaling_filter" to "1",
-                "Renderer\\anti_aliasing" to "0"
-            ),
-            listOf(0x0100F830138E6000L, 0x010074B01456A000L, 0x010065F014C5E000L, 0x0100AD6014FB8000L, 0x0100328014FB8000L)
+                "Renderer\\anti_aliasing" to "0",
+                "Renderer\\dyna_state" to "1"),
+            listOf(0x0100F830138E6000L, 0x010074B01456A000L, 0x010065F014C5E000L, 0x0100AD6014FB8000L, 0x0100328014FB8000L, 0x0100AD5013BB6000L)
         ),
         GameFixProfile(
             0x0100646009FBE000L,

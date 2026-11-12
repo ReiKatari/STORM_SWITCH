@@ -52,6 +52,19 @@ void SetActiveVulkanDriverSummary(std::string summary) {
     s_active_driver_summary = std::move(summary);
 }
 
+static std::mutex s_custom_driver_mutex;
+static std::string s_custom_driver_display_name;
+
+std::string GetCustomDriverDisplayName() {
+    std::lock_guard lock(s_custom_driver_mutex);
+    return s_custom_driver_display_name;
+}
+
+void SetCustomDriverDisplayName(std::string name) {
+    std::lock_guard lock(s_custom_driver_mutex);
+    s_custom_driver_display_name = std::move(name);
+}
+
 } // namespace Vulkan
 
 #ifdef _WIN32
@@ -474,7 +487,7 @@ std::vector<const char*> ExtensionListForVulkan(
 }
 
 constexpr std::array<char, 8> STATIC_CACHE_MAGIC_NUMBER{'e', 'd', 'e', 'n', 's', 't', 'p', 'c'};
-constexpr u32 STATIC_CACHE_VERSION = 2;
+constexpr u32 STATIC_CACHE_VERSION = 3;
 
 std::filesystem::path StaticPipelineCacheFilename() {
     const auto shader_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::ShaderDir);
@@ -651,7 +664,7 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
                                VK_KHR_SHADER_ATOMIC_INT64_EXTENSION_NAME);
         features.shader_atomic_int64.shaderBufferInt64Atomics = false;
         features.shader_atomic_int64.shaderSharedInt64Atomics = false;
-        // Do NOT disable features.features.shaderInt64 — Adreno 6xx/7xx/8xx supports 64-bit integer
+        // Do NOT disable features.features.shaderInt64 - Adreno 6xx/7xx/8xx supports 64-bit integer
         // arithmetic natively, which is required for SPIR-V global memory address calculations in BotW!
         LOG_INFO(Render_Vulkan, "Qualcomm drivers have broken workgroup memory explicit layout.");
         RemoveExtensionFeature(extensions.workgroup_memory_explicit_layout,
@@ -849,12 +862,12 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
     const auto dyna_state = Settings::values.dyna_state.GetValue();
     auto effective_dyna_state = dyna_state;
 
-    if (!is_turnip && (is_adreno_5xx || is_qualcomm || is_mali || is_xclipse || is_powervr)) {
+    if (!is_turnip && (is_adreno_5xx || is_adreno_6xx || is_qualcomm || is_mali || is_xclipse || is_powervr)) {
         LOG_INFO(Render_Vulkan, "Mobile GPU / driver auto-optimization: ExtendedDynamicState disabled for hardware pipeline stability");
         effective_dyna_state = Settings::ExtendedDynamicState::Disabled;
-    } else if (is_intel_windows && is_integrated &&
+    } else if ((is_turnip || (is_intel_windows && is_integrated)) &&
                effective_dyna_state > Settings::ExtendedDynamicState::EDS1) {
-        LOG_INFO(Render_Vulkan, "Intel iGPU auto-optimization: Clamping ExtendedDynamicState to EDS1 to ensure pipeline stability");
+        LOG_INFO(Render_Vulkan, "Turnip/Intel iGPU auto-optimization: Clamping ExtendedDynamicState to EDS1 to ensure pipeline stability");
         effective_dyna_state = Settings::ExtendedDynamicState::EDS1;
     }
 
@@ -892,7 +905,7 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
         break;
     }
 
-    // VK_EXT_vertex_input_dynamic_state — broken on Adreno 5xx/6xx/8xx/X1, Qualcomm proprietary, Mali, Xclipse, PowerVR
+    // VK_EXT_vertex_input_dynamic_state - broken on Adreno 5xx/6xx/8xx/X1, Qualcomm proprietary, Mali, Xclipse, PowerVR
     if (!Settings::values.vertex_input_dynamic_state.GetValue() || is_adreno_5xx || is_adreno_6xx || is_adreno_8xx || is_adreno_x1 || is_qualcomm || is_mali || is_xclipse || is_powervr) {
         RemoveExtensionFeature(extensions.vertex_input_dynamic_state, features.vertex_input_dynamic_state, VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME);
     }

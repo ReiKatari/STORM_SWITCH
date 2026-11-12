@@ -1284,7 +1284,7 @@ void ModManagerDialog::OnCnxBuildInstaller() {
         }
 
         nlohmann::json manifest;
-        manifest["generator"] = "STORM SWITCH 17.8.0 CNX Auto-Installer Builder";
+        manifest["generator"] = "STORM SWITCH 17.9.0 CNX Auto-Installer Builder";
         manifest["cnx_spec_version"] = "3.0";
         manifest["title_id"] = tid_hex.toStdString();
         manifest["name"] = pkg_name.toStdString();

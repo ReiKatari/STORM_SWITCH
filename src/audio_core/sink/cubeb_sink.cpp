@@ -9,6 +9,7 @@
 
 #include "audio_core/common/common.h"
 #include "audio_core/sink/cubeb_sink.h"
+#include "common/alignment.h"
 #include "audio_core/sink/sink_stream.h"
 #include "common/logging.h"
 #include "common/scope_exit.h"
@@ -113,6 +114,8 @@ public:
         }
 
         minimum_latency = (std::max)(minimum_latency, TargetSampleCount * 2);
+        // Align latency to integer multiple of TargetSampleCount (240 frames / 5ms) to prevent jitter and underruns
+        minimum_latency = Common::AlignUp(minimum_latency, TargetSampleCount);
 
         LOG_INFO(Service_Audio,
                  "Opening cubeb stream {} type {} with: rate {} channels {} (system channels {}) "
@@ -495,6 +498,7 @@ u32 GetCubebLatency() {
         latency = TargetSampleCount * 2;
     }
     latency = (std::max)(latency, TargetSampleCount * 2);
+    latency = Common::AlignUp(latency, TargetSampleCount);
     cubeb_destroy(ctx);
     return latency;
 }

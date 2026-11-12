@@ -101,19 +101,32 @@ AppLoader_NUP::AppLoader_NUP(FileSys::VirtualFile file_)
     // The program comes from the base package; a standalone update container
     // (SPEC §4.1.2) carries a complete patched tree and boots on its own.
     std::optional<std::size_t> program_index;
-    std::optional<std::size_t> exefs_index;
-    if (base_index && nup->GetExeFSDir(*base_index) != nullptr) {
-        program_index = base_index;
-        exefs_index = update_index && nup->GetExeFSDir(*update_index) != nullptr
-                          ? update_index
-                          : base_index;
+    FileSys::VirtualDir exefs;
+    if (base_index && update_index) {
+        const auto base_exefs = nup->GetExeFSDir(*base_index);
+        const auto update_exefs = nup->GetExeFSDir(*update_index);
+        if (base_exefs && update_exefs) {
+            exefs = FileSys::NupContainer::MergeShadowDirs(base_exefs, update_exefs);
+        } else if (update_exefs) {
+            exefs = update_exefs;
+        } else {
+            exefs = base_exefs;
+        }
     } else if (update_index && nup->GetExeFSDir(*update_index) != nullptr) {
         LOG_INFO(Loader,
                  "NUP container is a standalone update; booting the update program directly");
-        program_index = update_index;
-        exefs_index = update_index;
+        exefs = nup->GetExeFSDir(*update_index);
+    } else if (base_index) {
+        exefs = nup->GetExeFSDir(*base_index);
     }
-    if (!program_index || !exefs_index) {
+
+    if (base_index && nup->GetExeFSDir(*base_index) != nullptr) {
+        program_index = base_index;
+    } else if (update_index && nup->GetExeFSDir(*update_index) != nullptr) {
+        program_index = update_index;
+    }
+
+    if (!program_index || !exefs) {
         LOG_ERROR(Loader, "NUP container has no package with a usable ExeFS");
         return;
     }
@@ -122,9 +135,24 @@ AppLoader_NUP::AppLoader_NUP(FileSys::VirtualFile file_)
     base_title_id = program.title_id;
     has_program = true;
 
-    const auto exefs = nup->GetExeFSDir(*exefs_index);
-    if (exefs == nullptr || exefs->GetFile("main") == nullptr ||
-        exefs->GetFile("main.npdm") == nullptr) {
+    auto find_exefs_file = [](const FileSys::VirtualDir& dir, const std::string& name) -> FileSys::VirtualFile {
+        if (!dir) return nullptr;
+        if (auto f = dir->GetFile(name)) return f;
+        const std::string lower = Common::ToLower(name);
+        for (const auto& f : dir->GetFiles()) {
+            if (Common::ToLower(f->GetName()) == lower) return f;
+        }
+        return nullptr;
+    };
+
+    FileSys::VirtualFile main_file = find_exefs_file(exefs, "main");
+    if (!main_file) main_file = find_exefs_file(exefs, "Main");
+    if (!main_file) main_file = find_exefs_file(exefs, "main.nso");
+    if (!main_file) main_file = find_exefs_file(exefs, "rtld");
+
+    FileSys::VirtualFile npdm_file = find_exefs_file(exefs, "main.npdm");
+
+    if (exefs == nullptr || main_file == nullptr || npdm_file == nullptr) {
         LOG_ERROR(Loader, "NUP package has no usable ExeFS");
         return;
     }
