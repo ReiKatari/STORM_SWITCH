@@ -1790,6 +1790,30 @@ GameFixProfile(
             )
         ),
         GameFixProfile(
+            0x010067300B762000L,
+            "Mario + Rabbids: Kingdom Battle",
+            "• Диагональная полоса при запуске на полноэкранном кваде\n• Сильный пересвет и черные тени Snowdrop Engine\n• Мерцание текстур персонажей",
+            "• Diagonal line across fullscreen quad on startup\n• Severe overexposure and pitch-black shadows (Snowdrop Engine)\n• Character model flickering",
+            "✓ Точность ГПУ: Высокая (устранение пересвета и черных теней)\n✓ Обратные циклы барьеров: Включено\n✓ Реактивная очистка: Включено\n✓ Сжатие текстур ASTC: Отключено\n✓ Асинхронные шейдеры: Включено",
+            "✓ GPU Accuracy: High (Fixes bloom & black shadows)\n✓ Barrier Feedback Loops: Enabled\n✓ Reactive Flushing: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Asynchronous Shaders: Enabled",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\dma_accuracy" to "3",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\fix_bloom_effects" to "true",
+                "Renderer\\early_release_fences" to "false",
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\use_disk_shader_cache" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\enable_gpu_buffer_readback" to "true",
+                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\vram_garbage_collection" to "true",
+                "Renderer\\use_vulkan_driver_pipeline_cache" to "true"
+            )
+        ),
+        GameFixProfile(
             0x010067300059A000L,
             "Mario + Rabbids: Kingdom Battle",
             "• Диагональная полоса при запуске на полноэкранном кваде\n• Сильный пересвет и черные тени Snowdrop Engine\n• Мерцание текстур персонажей",
@@ -1802,7 +1826,7 @@ GameFixProfile(
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\fix_bloom_effects" to "false",
+                "Renderer\\fix_bloom_effects" to "true",
                 "Renderer\\early_release_fences" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true"
             )

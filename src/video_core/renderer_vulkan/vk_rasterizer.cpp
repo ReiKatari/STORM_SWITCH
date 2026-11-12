@@ -87,10 +87,13 @@ VkViewport GetViewportState(const Device& device, const Maxwell& regs, size_t in
                           src.swizzle.y == Maxwell::ViewportSwizzle::NegativeY;
 
     if (lower_left) {
-        // min() fixes 2D games (Unepic, Aggelos); otherwise flip by surface clip height.
         const float clip_height = conv(static_cast<f32>(regs.surface_clip.height));
         const float flip_height = (height > 0.0f && height < clip_height) ? height : clip_height;
-        y += flip_height;
+        if (src.scale_y < 0.0f && y >= clip_height) {
+            y = clip_height - y;
+        } else {
+            y += flip_height;
+        }
         height = -height;
     }
 
@@ -1017,7 +1020,11 @@ bool RasterizerVulkan::MustFlushRegion(DAddr addr, u64 size, VideoCommon::CacheT
             return true;
         }
     }
-    if (!Settings::IsGPULevelHigh() && !Settings::values.use_reactive_flushing.GetValue()) {
+    const bool is_d2r = (current_title_id == 0x0100726014352000ULL ||
+                         current_title_id == 0x01002A801458A000ULL ||
+                         current_title_id == 0x0100916014D8C000ULL);
+    if (!Settings::IsGPULevelHigh() && !Settings::IsGPULevelExtreme() &&
+        !Settings::values.use_reactive_flushing.GetValue() && !is_d2r) {
         return false;
     }
     if (True(which & VideoCommon::CacheType::TextureCache)) {
@@ -1174,7 +1181,11 @@ void RasterizerVulkan::ReleaseFences(bool force) {
 
 void RasterizerVulkan::FlushAndInvalidateRegion(DAddr addr, u64 size,
                                                 VideoCommon::CacheType which) {
-    if (Settings::IsGPULevelHigh() || Settings::values.use_reactive_flushing.GetValue()) {
+    const bool is_d2r = (current_title_id == 0x0100726014352000ULL ||
+                         current_title_id == 0x01002A801458A000ULL ||
+                         current_title_id == 0x0100916014D8C000ULL);
+    if (Settings::IsGPULevelHigh() || Settings::IsGPULevelExtreme() ||
+        Settings::values.use_reactive_flushing.GetValue() || is_d2r) {
         FlushRegion(addr, size, which);
     }
     InvalidateRegion(addr, size, which);
@@ -2020,7 +2031,9 @@ void RasterizerVulkan::UpdateDepthClampEnable(Tegra::Engines::Maxwell3D::Regs& r
     const bool is_enabled = !(regs.viewport_clip_control.geometry_clip ==
                                   Maxwell::ViewportClipControl::GeometryClip::FrustumXYZ ||
                               regs.viewport_clip_control.geometry_clip ==
-                                  Maxwell::ViewportClipControl::GeometryClip::FrustumZ);
+                                  Maxwell::ViewportClipControl::GeometryClip::FrustumZ ||
+                              regs.viewport_clip_control.geometry_clip ==
+                                  Maxwell::ViewportClipControl::GeometryClip::Passthrough);
     scheduler.Record(
         [is_enabled](vk::CommandBuffer cmdbuf) { cmdbuf.SetDepthClampEnableEXT(is_enabled); });
 }

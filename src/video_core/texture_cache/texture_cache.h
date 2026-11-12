@@ -24,6 +24,7 @@
 #include "video_core/texture_cache/samples_helper.h"
 #include "video_core/texture_cache/texture_cache_base.h"
 #include "video_core/texture_cache/memory_budget.h"
+#include "video_core/texture_cache/storm_mvcc_radix.h"
 #include "video_core/texture_cache/util.h"
 #include "video_core/textures/decoders.h"
 
@@ -159,6 +160,13 @@ void TextureCache<P>::RunGarbageCollector() {
         // Generational VRAM Recycling: Active (0) -> Standby (1) -> Eviction Candidate (2)
         // In normal load, transition images through a hysteresis Standby grace period
         // before destroying them, preventing expensive asset reloading hitches.
+        // Protect active 2D color RTs / dynamic UI font atlases from premature GC eviction
+        if (image.info.type == ImageType::e2D && (True(image.flags & ImageFlagBits::RenderTarget) || True(image.flags & ImageFlagBits::GpuModified))) {
+            if (frame_tick < image.modification_tick + RT_PROTECTION_WINDOW) {
+                lru_cache.Touch(image.lru_index, frame_tick);
+                return false;
+            }
+        }
         if (!aggressive_mode && image.generation < 2) {
             image.generation++;
             lru_cache.Touch(image.lru_index, frame_tick);
@@ -974,6 +982,7 @@ std::pair<typename P::ImageView*, bool> TextureCache<P>::TryFindFramebufferImage
     }
     const auto& image_map_ids = it->second;
     boost::container::small_vector<ImageId, 4> valid_image_ids;
+    boost::container::small_vector<StormMvccCandidate, 4> mvcc_cands;
     for (const ImageMapId map_id : image_map_ids) {
         const ImageMapView& map = slot_map_views[map_id];
         const ImageBase& image = slot_images[map.image_id];
@@ -984,6 +993,20 @@ std::pair<typename P::ImageView*, bool> TextureCache<P>::TryFindFramebufferImage
             continue;
         }
         valid_image_ids.push_back(map.image_id);
+
+        const bool gpu_mod = True(image.flags & (ImageFlagBits::GpuModified | ImageFlagBits::EverGpuModified));
+        const bool cpu_mod = True(image.flags & ImageFlagBits::CpuModified);
+        mvcc_cands.push_back(StormMvccCandidate{
+            .image_id = static_cast<u32>(map.image_id),
+            .cpu_addr = static_cast<u64>(image.cpu_addr),
+            .width = image.info.size.width,
+            .height = image.info.size.height,
+            .format_class = static_cast<u32>(image.info.format),
+            .cpu_tick = cpu_mod ? image.modification_tick : 0,
+            .gpu_tick = gpu_mod ? image.modification_tick : 0,
+            .gpu_modified = gpu_mod,
+            .cpu_modified = cpu_mod,
+        });
     }
 
     const auto view_format = [&]() {
@@ -1008,6 +1031,15 @@ std::pair<typename P::ImageView*, bool> TextureCache<P>::TryFindFramebufferImage
         return std::make_pair(&slot_image_views[FindOrEmplaceImageView(image_id, info)],
                               slot_images[image_id].IsRescaled());
     };
+
+    if (!mvcc_cands.empty()) {
+        const u32 chosen = SelectCausalFramebuffer(
+            mvcc_cands.data(), mvcc_cands.size(), static_cast<u64>(cpu_addr),
+            config.width, config.height, static_cast<u32>(view_format));
+        if (chosen != 0) {
+            return GetImageViewForFramebuffer(static_cast<ImageId>(chosen));
+        }
+    }
 
     if (!valid_image_ids.empty()) {
         ImageId best_id = valid_image_ids.front();
@@ -2354,7 +2386,10 @@ void TextureCache<P>::RegisterImage(ImageId image_id) {
         auto map_id =
             slot_map_views.insert(image.gpu_addr, image.cpu_addr, image.guest_size_bytes, image_id);
         ForEachCPUPage(image.cpu_addr, image.guest_size_bytes,
-                       [this, map_id](u64 page) { page_table[page].push_back(map_id); });
+                       [this, map_id, image_id](u64 page) {
+                           page_table[page].push_back(map_id);
+                           mvcc_radix_directory.RegisterPage(page << YUZU_PAGEBITS, static_cast<u32>(image_id));
+                       });
         image.map_view_id = map_id;
         return;
     }
@@ -2415,6 +2450,7 @@ void TextureCache<P>::UnregisterImage(ImageId image_id) {
                 return;
             }
             image_map_ids.erase(vector_it);
+            mvcc_radix_directory.UnregisterPage(page << YUZU_PAGEBITS, static_cast<u32>(image_id));
         });
         slot_map_views.erase(map_id);
         return;

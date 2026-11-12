@@ -112,6 +112,7 @@ using PFN_MapViewOfFile3 = _Ret_maybenull_ PVOID(WINAPI*)(
 
 using PFN_UnmapViewOfFile2 = BOOL(WINAPI*)(_In_ HANDLE Process, _In_ PVOID BaseAddress,
                                            _In_ ULONG UnmapFlags);
+using PFN_DiscardVirtualMemory = DWORD(WINAPI*)(_In_ PVOID VirtualAddress, _In_ SIZE_T Size);
 
 template <typename T>
 static void GetFuncAddress(Common::DynamicLibrary& dll, const char* name, T& pfn) {
@@ -144,12 +145,9 @@ public:
             return false;
         }
 
-        // Allocate backing file map: try SEC_COMMIT first, then SEC_RESERVE fallback if commit limit exceeded
-        backing_handle = pfn_CreateFileMapping2(INVALID_HANDLE_VALUE, nullptr, FILE_MAP_WRITE | FILE_MAP_READ, PAGE_READWRITE, SEC_COMMIT, backing_size, nullptr, nullptr, 0);
-        if (!backing_handle) {
-            LOG_WARNING(HW_Memory, "Failed to commit {} MiB of backing memory, falling back to SEC_RESERVE", backing_size >> 20);
-            backing_handle = pfn_CreateFileMapping2(INVALID_HANDLE_VALUE, nullptr, FILE_MAP_WRITE | FILE_MAP_READ, PAGE_READWRITE, SEC_RESERVE, backing_size, nullptr, nullptr, 0);
-        }
+        // Sparse on-demand backing: reserve section with SEC_RESERVE (0 upfront physical commit)
+        backing_handle = pfn_CreateFileMapping2(INVALID_HANDLE_VALUE, nullptr, FILE_MAP_WRITE | FILE_MAP_READ, PAGE_READWRITE, SEC_RESERVE, backing_size, nullptr, nullptr, 0);
+        backing_block_refs.assign((backing_size + 0xFFFFULL) >> 16, 0U);
         if (!backing_handle) {
             LOG_CRITICAL(HW_Memory, "Failed to allocate {} MiB of backing memory", backing_size >> 20);
             return false;
@@ -196,8 +194,40 @@ public:
         return ptr;
     }
 
+    void CommitBackingBlocks(size_t host_offset, size_t length) {
+        if (length == 0 || backing_block_refs.empty()) {
+            return;
+        }
+        const size_t first_blk = host_offset >> 16;
+        const size_t last_blk = (host_offset + length + 0xFFFFULL) >> 16;
+        for (size_t blk = first_blk; blk < last_blk && blk < backing_block_refs.size(); ++blk) {
+            if (backing_block_refs[blk]++ == 0U) {
+                const size_t off = blk << 16;
+                const size_t sz = (std::min)(size_t{0x10000}, backing_size - off);
+                VirtualAlloc(backing_base + off, sz, MEM_COMMIT, PAGE_READWRITE);
+            }
+        }
+    }
+
+    void DecommitBackingBlocks(size_t host_offset, size_t length) {
+        if (length == 0 || backing_block_refs.empty()) {
+            return;
+        }
+        const size_t first_blk = host_offset >> 16;
+        const size_t last_blk = (host_offset + length) >> 16;
+        for (size_t blk = first_blk; blk < last_blk && blk < backing_block_refs.size(); ++blk) {
+            if (backing_block_refs[blk] > 0U && --backing_block_refs[blk] == 0U) {
+                const size_t off = blk << 16;
+                const size_t sz = (std::min)(size_t{0x10000}, backing_size - off);
+                DiscardVirtualMemory(backing_base + off, sz);
+                VirtualFree(backing_base + off, sz, MEM_DECOMMIT);
+            }
+        }
+    }
+
     void Map(size_t virtual_offset, size_t host_offset, size_t length, MemoryPermission perms) {
         std::unique_lock lock{placeholder_mutex};
+        CommitBackingBlocks(host_offset, length);
         if (!IsNiechePlaceholder(virtual_offset, length)) {
             Split(virtual_offset, length);
         }
@@ -365,6 +395,7 @@ private:
             TrackPlaceholder(unmap_end, host_offset + unmap_end - placeholder_begin,
                              placeholder_end - unmap_end);
         }
+        DecommitBackingBlocks(host_offset + (unmap_begin - placeholder_begin), unmap_end - unmap_begin);
         return true;
     }
 
@@ -372,7 +403,9 @@ private:
         if (!pfn_MapViewOfFile3(backing_handle, process, virtual_base + virtual_offset, host_offset,
                                 length, MEM_REPLACE_PLACEHOLDER, PAGE_READWRITE, nullptr, 0)) {
             LOG_CRITICAL(HW_Memory, "Failed to map placeholder");
+            return;
         }
+        VirtualAlloc(virtual_base + virtual_offset, length, MEM_COMMIT, PAGE_READWRITE);
     }
 
     void Split(size_t virtual_offset, size_t length) {
@@ -422,6 +455,7 @@ private:
     std::mutex placeholder_mutex;                                 ///< Mutex for placeholders
     boost::icl::separate_interval_set<size_t> placeholders;       ///< Mapped placeholders
     ::Common::unordered_map<size_t, size_t> placeholder_host_pointers; ///< Placeholder backing offset
+    std::vector<u32> backing_block_refs; ///< 64 KiB physical block reference counts
 };
 
 #elif defined(__OPENORBIS__) || defined(__managarm__)
@@ -643,6 +677,11 @@ public:
         // Intersect the range with our address space.
         AdjustMap(&virtual_offset, &length);
 
+#ifdef MADV_DONTNEED
+        if (backing_base) {
+            madvise(backing_base + virtual_offset, length, MADV_DONTNEED);
+        }
+#endif
         // Merge with any adjacent placeholder mappings.
         auto [merged_pointer, merged_size] =
             free_manager.FreeBlock(virtual_base + virtual_offset, length);

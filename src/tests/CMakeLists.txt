@@ -27,6 +27,7 @@ add_executable(tests
     video_core/image_overlap.cpp
     video_core/pending_download.cpp
     video_core/memory_tracker.cpp
+    video_core/storm_nextgen_arch.cpp
     input_common/calibration_configuration_job.cpp
 )
 

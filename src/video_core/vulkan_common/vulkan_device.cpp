@@ -1446,10 +1446,19 @@ bool Device::GetSuitability(bool requires_swapchain) {
             VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_PROPERTIES_EXT;
         SetNext(next, properties.custom_border_color);
     }
+    VkPhysicalDeviceExternalMemoryHostPropertiesEXT ext_mem_host_props{};
+    if (extensions.external_memory_host) {
+        ext_mem_host_props.sType =
+            VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_HOST_PROPERTIES_EXT;
+        SetNext(next, ext_mem_host_props);
+    }
 
     // Perform the property fetch.
     physical.GetProperties2(properties2);
 
+    if (extensions.external_memory_host) {
+        min_imported_host_pointer_alignment = ext_mem_host_props.minImportedHostPointerAlignment;
+    }
     // Store base properties
     properties.properties = properties2.properties;
     const std::string marketing_name2 = GetGpuMarketingName(properties.properties.vendorID, properties.properties.deviceID);

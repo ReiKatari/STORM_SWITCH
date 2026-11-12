@@ -104,6 +104,7 @@ object PerGameDrircGenerator {
 
         // 2c. Mario + Rabbids Series (Snowdrop Engine Shadow Maps, Exposure & Fullscreen Quad)
         if (cleanId.startsWith("010067300059A") || // Mario + Rabbids: Kingdom Battle
+            cleanId.startsWith("010067300B762") || // Mario + Rabbids: Kingdom Battle (EU/Alt)
             cleanId.startsWith("0100760012E4A") || // Mario + Rabbids: Kingdom Battle Gold
             cleanId.startsWith("010032C00AC58") || // Mario + Rabbids: Sparks of Hope
             cleanId.startsWith("01005CA00F966") || // Mario + Rabbids: Sparks of Hope
@@ -492,8 +493,18 @@ object PerGameDrircGenerator {
             GameProfileType.ZELDA,
             GameProfileType.XENOBLADE,
             GameProfileType.POKEMON,
-            GameProfileType.ALAN_WAKE,
+            GameProfileType.ALAN_WAKE -> {
+                optionsBuilder.append("            <option name=\"tu_allow_concurrent_binning\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_enable_d24s8_border_color_workaround\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_allow_oob_indirect_ubo_loads\" value=\"true\" />\n")
+            }
             GameProfileType.MARIO_RABBIDS -> {
+                optionsBuilder.append("            <option name=\"disable_conservative_lrz\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"enable_lrz_fast_clear\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_dont_care_as_load\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"dual_color_blend_by_location\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"ubwc_coherency_quirk\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_override_uncached_as_cache_coherent\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_allow_concurrent_binning\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_enable_d24s8_border_color_workaround\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_allow_oob_indirect_ubo_loads\" value=\"true\" />\n")

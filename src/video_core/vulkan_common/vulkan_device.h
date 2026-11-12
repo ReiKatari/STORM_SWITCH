@@ -115,7 +115,8 @@ VK_DEFINE_HANDLE(VmaAllocator)
     EXTENSION(EXT, FILTER_CUBIC, filter_cubic)                                                     \
     EXTENSION(IMG, FILTER_CUBIC, filter_cubic_img)                                                 \
     EXTENSION(QCOM, FILTER_CUBIC_WEIGHTS, filter_cubic_weights)                                     \
-    EXTENSION(EXT, SWAPCHAIN_MAINTENANCE_1, swapchain_maintenance_1)
+    EXTENSION(EXT, SWAPCHAIN_MAINTENANCE_1, swapchain_maintenance_1) \
+    EXTENSION(EXT, EXTERNAL_MEMORY_HOST, external_memory_host)
 
 // Define extensions which must be supported.
 #define FOR_EACH_VK_MANDATORY_EXTENSION(EXTENSION_NAME)                                            \
@@ -999,6 +1000,14 @@ FN_MAX_LIMIT_LIST
         return features.depth_bias_control.depthBiasExact;
     }
 
+    bool HasExternalMemoryHost() const {
+        return extensions.external_memory_host;
+    }
+
+    u64 GetMinImportedHostPointerAlignment() const {
+        return min_imported_host_pointer_alignment;
+    }
+
     u32 GetMaxVertexInputAttributes() const {
         return properties.properties.limits.maxVertexInputAttributes;
     }
@@ -1269,6 +1278,7 @@ private:
     bool is_integrated{};                      ///< Is GPU an iGPU.
     bool is_virtual{};                         ///< Is GPU a virtual GPU.
     bool is_non_gpu{};                         ///< Is SoftwareRasterizer, FPGA, non-GPU device.
+    u64 min_imported_host_pointer_alignment{65536};
     bool has_broken_compute{};                 ///< Compute shaders can cause crashes
     bool has_broken_cube_compatibility{};      ///< Has broken cube compatibility bit
     bool has_broken_descriptor_aliasing{};     ///< Miscompiles descriptors aliased on one binding

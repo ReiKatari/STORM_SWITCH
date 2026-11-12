@@ -203,6 +203,10 @@ private:
         0x0100000000010000ULL, // Super Mario Odyssey
         0x010028600EBDA000ULL, // Super Mario 3D World + Bowser's Fury
         0x01004D701742A000ULL, // Paper Mario: The Thousand-Year Door
+        0x0100726014352000ULL, // Diablo II: Resurrected
+        0x01002A801458A000ULL, // Diablo II: Resurrected (Alt)
+        0x0100916014D8C000ULL, // Diablo II: Resurrected (Alt 2)
+        0x010067300B762000ULL, // Mario + Rabbids: Kingdom Battle
     };
     static constexpr size_t MAX_TEXTURES = 192;
     static constexpr size_t MAX_IMAGES = 48;

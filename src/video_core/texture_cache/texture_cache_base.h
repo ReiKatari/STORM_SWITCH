@@ -42,6 +42,7 @@
 #include "video_core/texture_cache/image_view_base.h"
 #include "video_core/texture_cache/render_targets.h"
 #include "video_core/texture_cache/types.h"
+#include "video_core/texture_cache/storm_mvcc_radix.h"
 #include "video_core/textures/texture.h"
 
 namespace Tegra {
@@ -454,6 +455,8 @@ private:
 
     ankerl::unordered_dense::map<RenderTargets, FramebufferId> framebuffers;
     ankerl::unordered_dense::map<u64, std::vector<ImageMapId>, Common::IdentityHash<u64>> page_table;
+    static constexpr u64 RT_PROTECTION_WINDOW = 720;
+    StormMvccRadixDirectory mvcc_radix_directory;
     ankerl::unordered_dense::map<ImageId, boost::container::small_vector<ImageViewId, 16>> sparse_views;
 
     DAddr virtual_invalid_space{};
