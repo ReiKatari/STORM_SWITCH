@@ -149,9 +149,9 @@ android {
 
         targetSdk = 35
 
-        versionName = "17.9.0"
+        versionName = "17.9.1"
 
-        versionCode = autoVersion
+        versionCode = 34300221
 
 
 

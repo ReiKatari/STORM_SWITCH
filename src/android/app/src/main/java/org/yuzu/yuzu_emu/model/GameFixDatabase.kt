@@ -1794,8 +1794,8 @@ GameFixProfile(
             "Mario + Rabbids: Kingdom Battle",
             "• Диагональная полоса при запуске на полноэкранном кваде\n• Сильный пересвет и черные тени Snowdrop Engine\n• Мерцание текстур персонажей",
             "• Diagonal line across fullscreen quad on startup\n• Severe overexposure and pitch-black shadows (Snowdrop Engine)\n• Character model flickering",
-            "✓ Точность ГПУ: Высокая (устранение пересвета и черных теней)\n✓ Обратные циклы барьеров: Включено\n✓ Реактивная очистка: Включено\n✓ Сжатие текстур ASTC: Отключено\n✓ Асинхронные шейдеры: Включено",
-            "✓ GPU Accuracy: High (Fixes bloom & black shadows)\n✓ Barrier Feedback Loops: Enabled\n✓ Reactive Flushing: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Asynchronous Shaders: Enabled",
+            "✓ Точность ГПУ: Высокая (устранение пересвета и черных теней)\n✓ Обратные циклы барьеров: Включено\n✓ Реактивная очистка: Включено\n✓ Сжатие текстур ASTC: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Исправление пересвета: Включено",
+            "✓ GPU Accuracy: High (Fixes bloom & black shadows)\n✓ Barrier Feedback Loops: Enabled\n✓ Reactive Flushing: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Asynchronous Shaders: Enabled\n✓ Fix Bloom Effects: Enabled",
             mapOf(
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\dma_accuracy" to "3",
@@ -1807,7 +1807,7 @@ GameFixProfile(
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_disk_shader_cache" to "true",
                 "Renderer\\use_fast_gpu_time" to "false",
-                "Renderer\\enable_gpu_buffer_readback" to "true",
+                "Renderer\\enable_gpu_buffer_readback" to "false",
                 "Renderer\\sync_memory_operations" to "true",
                 "Renderer\\vram_garbage_collection" to "true",
                 "Renderer\\use_vulkan_driver_pipeline_cache" to "true"
@@ -1818,8 +1818,8 @@ GameFixProfile(
             "Mario + Rabbids: Kingdom Battle",
             "• Диагональная полоса при запуске на полноэкранном кваде\n• Сильный пересвет и черные тени Snowdrop Engine\n• Мерцание текстур персонажей",
             "• Diagonal line across fullscreen quad on startup\n• Severe overexposure and pitch-black shadows (Snowdrop Engine)\n• Character model flickering",
-            "✓ Точность ГПУ: Высокая (устранение пересвета и черных теней)\n✓ Обратные циклы барьеров: Включено\n✓ Реактивная очистка: Включено\n✓ Сжатие текстур ASTC: Отключено\n✓ Асинхронные шейдеры: Включено",
-            "✓ GPU Accuracy: High (Fixes bloom & black shadows)\n✓ Barrier Feedback Loops: Enabled\n✓ Reactive Flushing: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Asynchronous Shaders: Enabled",
+            "✓ Точность ГПУ: Высокая (устранение пересвета и черных теней)\n✓ Обратные циклы барьеров: Включено\n✓ Реактивная очистка: Включено\n✓ Сжатие текстур ASTC: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Исправление пересвета: Включено",
+            "✓ GPU Accuracy: High (Fixes bloom & black shadows)\n✓ Barrier Feedback Loops: Enabled\n✓ Reactive Flushing: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Asynchronous Shaders: Enabled\n✓ Fix Bloom Effects: Enabled",
             mapOf(
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\dma_accuracy" to "3",
@@ -1828,7 +1828,8 @@ GameFixProfile(
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\fix_bloom_effects" to "true",
                 "Renderer\\early_release_fences" to "false",
-                "Renderer\\use_asynchronous_shaders" to "true"
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\enable_gpu_buffer_readback" to "false"
             )
         ),
         GameFixProfile(
@@ -5499,7 +5500,7 @@ GameFixProfile(
                 "Network\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
                 "Renderer\\gpu_accuracy" to "2",
-                "Renderer\\nvdec_emulation" to "2",
+                "Renderer\\nvdec_emulation" to "1",
                 "Renderer\\async_presentation" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
                 "Renderer\\use_disk_shader_cache" to "true",

@@ -2189,19 +2189,20 @@ static const std::vector<GameFixProfile> s_profiles = {
         "Mario + Rabbids: Kingdom Battle",
         "• Диагональная полоса при запуске на полноэкранном кваде\n• Сильный пересвет и черные тени Snowdrop Engine\n• Мерцание текстур персонажей",
         "• Diagonal line across fullscreen quad on startup\n• Severe overexposure and pitch-black shadows (Snowdrop Engine)\n• Character model flickering",
-        "✓ Точность ГПУ: Высокая (устранение пересвета и черных теней)\n✓ Обратные циклы барьеров: Включено\n✓ Реактивная очистка: Включено\n✓ Сжатие ASTC: Отключено\n✓ Асинхронные шейдеры: Включено",
-        "✓ GPU Accuracy: High (Fixes bloom & black shadows)\n✓ Barrier Feedback Loops: Enabled\n✓ Reactive Flushing: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Asynchronous Shaders: Enabled",
+        "✓ Точность ГПУ: Высокая (устранение пересвета и черных теней)\n✓ Обратные циклы барьеров: Включено\n✓ Реактивная очистка: Включено\n✓ Сжатие ASTC: Отключено\n✓ Асинхронные шейдеры: Включено\n✓ Исправление пересвета: Включено",
+        "✓ GPU Accuracy: High (Fixes bloom & black shadows)\n✓ Barrier Feedback Loops: Enabled\n✓ Reactive Flushing: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Asynchronous Shaders: Enabled\n✓ Fix Bloom Effects: Enabled",
         {
             {"Renderer\\gpu_accuracy", "2"},
             {"Renderer\\dma_accuracy", "3"},
             {"Renderer\\barrier_feedback_loops", "true"},
             {"Renderer\\use_reactive_flushing", "true"},
             {"Renderer\\astc_recompression", "0"},
-            {"Renderer\\fix_bloom_effects", "false"},
+            {"Renderer\\fix_bloom_effects", "true"},
             {"Renderer\\early_release_fences", "false"},
-            {"Renderer\\use_asynchronous_shaders", "true"}
+            {"Renderer\\use_asynchronous_shaders", "true"},
+            {"Renderer\\enable_gpu_buffer_readback", "false"}
         },
-        {0x0100760012E4A000ULL}
+        {0x0100760012E4A000ULL, 0x010067300B762000ULL}
     },
     {
         0x01005CA00F966000ULL,

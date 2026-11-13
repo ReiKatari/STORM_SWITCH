@@ -678,8 +678,12 @@ public:
         AdjustMap(&virtual_offset, &length);
 
 #ifdef MADV_DONTNEED
-        if (backing_base) {
-            madvise(backing_base + virtual_offset, length, MADV_DONTNEED);
+        const uintptr_t page_mask = static_cast<uintptr_t>(sysconf(_SC_PAGESIZE)) - 1;
+        const uintptr_t unmap_addr = reinterpret_cast<uintptr_t>(virtual_base + virtual_offset);
+        const uintptr_t aligned_addr = (unmap_addr + page_mask) & ~page_mask;
+        const uintptr_t end_addr = (unmap_addr + length) & ~page_mask;
+        if (end_addr > aligned_addr) {
+            madvise(reinterpret_cast<void*>(aligned_addr), end_addr - aligned_addr, MADV_DONTNEED);
         }
 #endif
         // Merge with any adjacent placeholder mappings.

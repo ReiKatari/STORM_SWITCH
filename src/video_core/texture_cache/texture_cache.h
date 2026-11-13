@@ -161,7 +161,7 @@ void TextureCache<P>::RunGarbageCollector() {
         // In normal load, transition images through a hysteresis Standby grace period
         // before destroying them, preventing expensive asset reloading hitches.
         // Protect active 2D color RTs / dynamic UI font atlases from premature GC eviction
-        if (image.info.type == ImageType::e2D && (True(image.flags & ImageFlagBits::RenderTarget) || True(image.flags & ImageFlagBits::GpuModified))) {
+        if (image.info.type == ImageType::e2D && (True(image.flags & ImageFlagBits::RenderTarget) || True(image.flags & (ImageFlagBits::GpuModified | ImageFlagBits::EverGpuModified)))) {
             if (frame_tick < image.modification_tick + RT_PROTECTION_WINDOW) {
                 lru_cache.Touch(image.lru_index, frame_tick);
                 return false;
@@ -1001,7 +1001,7 @@ std::pair<typename P::ImageView*, bool> TextureCache<P>::TryFindFramebufferImage
             .cpu_addr = static_cast<u64>(image.cpu_addr),
             .width = image.info.size.width,
             .height = image.info.size.height,
-            .format_class = static_cast<u32>(image.info.format),
+            .format_class = BytesPerBlock(image.info.format),
             .cpu_tick = cpu_mod ? image.modification_tick : 0,
             .gpu_tick = gpu_mod ? image.modification_tick : 0,
             .gpu_modified = gpu_mod,
@@ -1021,6 +1021,9 @@ std::pair<typename P::ImageView*, bool> TextureCache<P>::TryFindFramebufferImage
     }();
 
     const auto GetImageViewForFramebuffer = [&](ImageId image_id) {
+        if (True(slot_images[image_id].flags & ImageFlagBits::CpuModified)) {
+            SynchronizeImage(image_id);
+        }
         ImageViewInfo info{ImageViewType::e2D, view_format};
         if (config.blending == Tegra::BlendMode::Opaque) {
             info.x_source = static_cast<u8>(SwizzleSource::R);
@@ -1035,9 +1038,13 @@ std::pair<typename P::ImageView*, bool> TextureCache<P>::TryFindFramebufferImage
     if (!mvcc_cands.empty()) {
         const u32 chosen = SelectCausalFramebuffer(
             mvcc_cands.data(), mvcc_cands.size(), static_cast<u64>(cpu_addr),
-            config.width, config.height, static_cast<u32>(view_format));
+            config.width, config.height, BytesPerBlock(view_format));
         if (chosen != 0) {
-            return GetImageViewForFramebuffer(static_cast<ImageId>(chosen));
+            const ImageId chosen_id = static_cast<ImageId>(chosen);
+            if (True(slot_images[chosen_id].flags & ImageFlagBits::CpuModified)) {
+                SynchronizeImage(chosen_id);
+            }
+            return GetImageViewForFramebuffer(chosen_id);
         }
     }
 
@@ -2165,6 +2172,7 @@ ImageViewId TextureCache<P>::FindRenderTargetView(const ImageInfo& info, GPUVAdd
         return NULL_IMAGE_VIEW_ID;
     }
     Image& image = slot_images[image_id];
+    image.flags |= ImageFlagBits::RenderTarget;
     const ImageViewType view_type = RenderTargetImageViewType(info);
     SubresourceBase base;
     if (image.info.type == ImageType::Linear) {
@@ -2398,7 +2406,10 @@ void TextureCache<P>::RegisterImage(ImageId image_id) {
         image, [this, image_id, &sparse_maps](GPUVAddr gpu_addr, DAddr cpu_addr, size_t size) {
             auto map_id = slot_map_views.insert(gpu_addr, cpu_addr, size, image_id);
             ForEachCPUPage(cpu_addr, size,
-                           [this, map_id](u64 page) { page_table[page].push_back(map_id); });
+                           [this, map_id, image_id](u64 page) {
+                               page_table[page].push_back(map_id);
+                               mvcc_radix_directory.RegisterPage(page << YUZU_PAGEBITS, static_cast<u32>(image_id));
+                           });
             sparse_maps.push_back(map_id);
         });
     sparse_views.emplace(image_id, std::move(sparse_maps));
@@ -2483,6 +2494,7 @@ void TextureCache<P>::UnregisterImage(ImageId image_id) {
                     map.picked = true;
                 }
                 vector_it = image_map_ids.erase(vector_it);
+                mvcc_radix_directory.UnregisterPage(page << YUZU_PAGEBITS, static_cast<u32>(image_id));
             }
         });
         slot_map_views.erase(map_view_id);

@@ -19,9 +19,21 @@
 #define WIN32_LEAN_AND_MEAN
 #endif
 #include <windows.h>
+#define stormstorm_aligned_malloc(sz, al) storm_aligned_malloc((sz), (al))
+#define stormstorm_aligned_free(p) storm_aligned_free(p)
 #else
 #include <sys/mman.h>
 #include <stdlib.h>
+inline void* stormstorm_aligned_malloc(size_t sz, size_t al) {
+    void* p = nullptr;
+    if (posix_memalign(&p, al, sz) != 0) {
+        return nullptr;
+    }
+    return p;
+}
+inline void stormstorm_aligned_free(void* p) {
+    free(p);
+}
 #endif
 
 #include "common/common_types.h"
@@ -61,7 +73,7 @@ public:
 #endif
 
         for (size_t i = 0; i < NUM_PREPOOLED_OVERFLOW; ++i) {
-            overflow_slabs[i].ptr = static_cast<u8*>(_aligned_malloc(CHUNK_SIZE, 64));
+            overflow_slabs[i].ptr = static_cast<u8*>(storm_aligned_malloc(CHUNK_SIZE, 64));
             overflow_slabs[i].size = CHUNK_SIZE;
             overflow_slabs[i].epoch.store(0, std::memory_order_relaxed);
             overflow_slabs[i].in_use.store(false, std::memory_order_relaxed);
@@ -79,13 +91,13 @@ public:
         }
         for (size_t i = 0; i < NUM_PREPOOLED_OVERFLOW; ++i) {
             if (overflow_slabs[i].ptr) {
-                _aligned_free(overflow_slabs[i].ptr);
+                storm_aligned_free(overflow_slabs[i].ptr);
                 overflow_slabs[i].ptr = nullptr;
             }
         }
         for (auto& dyn : dynamic_overflow_list) {
             if (dyn.ptr) {
-                _aligned_free(dyn.ptr);
+                storm_aligned_free(dyn.ptr);
             }
         }
         dynamic_overflow_list.clear();
@@ -158,7 +170,7 @@ public:
                 auto it = dynamic_overflow_list.begin();
                 while (it != dynamic_overflow_list.end()) {
                     if (it->epoch <= completed_epoch) {
-                        _aligned_free(it->ptr);
+                        storm_aligned_free(it->ptr);
                         it = dynamic_overflow_list.erase(it);
                         overflow_active_count.fetch_sub(1, std::memory_order_relaxed);
                     } else {
@@ -266,7 +278,7 @@ private:
         }
 
         const size_t alloc_sz = (std::max)(size, CHUNK_SIZE);
-        u8* dyn = static_cast<u8*>(_aligned_malloc(alloc_sz, 64));
+        u8* dyn = static_cast<u8*>(storm_aligned_malloc(alloc_sz, 64));
         {
             std::scoped_lock lock{dynamic_overflow_mutex};
             dynamic_overflow_list.push_back({dyn, epoch});

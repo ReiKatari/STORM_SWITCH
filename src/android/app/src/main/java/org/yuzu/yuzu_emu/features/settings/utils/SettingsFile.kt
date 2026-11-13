@@ -66,12 +66,12 @@ object SettingsFile {
                 if (r4 != text) { text = r4; modified = true }
             }
 
-            // Mario + Rabbids: Kingdom Battle (010067300059A*)
-            if (cleanProg.startsWith("010067300059A")) {
-                val rBloom = text.replace(Regex("fix_bloom_effects\\s*=\\s*true", RegexOption.IGNORE_CASE), "fix_bloom_effects = false")
+            // Mario + Rabbids: Kingdom Battle (010067300059A*, 010067300B762*)
+            if (cleanProg.startsWith("010067300059A") || cleanProg.startsWith("010067300B762")) {
+                val rBloom = text.replace(Regex("fix_bloom_effects\\s*=\\s*false", RegexOption.IGNORE_CASE), "fix_bloom_effects = true")
                 if (rBloom != text) { text = rBloom; modified = true }
-                val rBloomGlobal = text.replace(Regex("fix_bloom_effects\\\\use_global\\s*=\\s*false", RegexOption.IGNORE_CASE), "fix_bloom_effects\\use_global = true")
-                if (rBloomGlobal != text) { text = rBloomGlobal; modified = true }
+                val rReadback = text.replace(Regex("enable_gpu_buffer_readback\\s*=\\s*true", RegexOption.IGNORE_CASE), "enable_gpu_buffer_readback = false")
+                if (rReadback != text) { text = rReadback; modified = true }
             }
 
             // Diablo II: Resurrected (0100726014352*, 01002A801458A*, 0100916014D8C*)
@@ -153,7 +153,7 @@ object SettingsFile {
 
     fun sanitizePoisonedConfigs(context: Context = YuzuApplication.appContext) {
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-        val PREF_SANITIZED_KEY = "storm_config_sanitized_17_9_0"
+        val PREF_SANITIZED_KEY = "storm_config_sanitized_17_9_1_tot"
         if (prefs.getBoolean(PREF_SANITIZED_KEY, false)) {
             return
         }
@@ -255,7 +255,10 @@ object SettingsFile {
                         "0100726014352000",
                         "01002a801458a000",
                         "0100916014d8c000",
-                        "0100ad5013bb6000"
+                        "0100ad5013bb6000",
+                        "010067300059a000",
+                        "010067300b762000",
+                        "0100a83022a22000"
                     )
 
                     customFiles?.forEach { customFile ->
