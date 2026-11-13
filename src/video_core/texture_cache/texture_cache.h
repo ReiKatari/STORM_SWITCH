@@ -2445,7 +2445,7 @@ void TextureCache<P>::UnregisterImage(ImageId image_id) {
     });
     if (False(image.flags & ImageFlagBits::Sparse)) {
         const auto map_id = image.map_view_id;
-        ForEachCPUPage(image.cpu_addr, image.guest_size_bytes, [this, map_id](u64 page) {
+        ForEachCPUPage(image.cpu_addr, image.guest_size_bytes, [this, map_id, image_id](u64 page) {
             const auto page_it = page_table.find(page);
             if (page_it == page_table.end()) {
                 ASSERT_MSG(false, "Unregistering unregistered page={:#x}", page << YUZU_PAGEBITS);
