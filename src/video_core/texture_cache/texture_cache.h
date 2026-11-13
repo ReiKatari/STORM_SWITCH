@@ -997,7 +997,7 @@ std::pair<typename P::ImageView*, bool> TextureCache<P>::TryFindFramebufferImage
         const bool gpu_mod = True(image.flags & (ImageFlagBits::GpuModified | ImageFlagBits::EverGpuModified));
         const bool cpu_mod = True(image.flags & ImageFlagBits::CpuModified);
         mvcc_cands.push_back(StormMvccCandidate{
-            .image_id = static_cast<u32>(map.image_id),
+            .image_id = map.image_id.index,
             .cpu_addr = static_cast<u64>(image.cpu_addr),
             .width = image.info.size.width,
             .height = image.info.size.height,
@@ -1022,7 +1022,8 @@ std::pair<typename P::ImageView*, bool> TextureCache<P>::TryFindFramebufferImage
 
     const auto GetImageViewForFramebuffer = [&](ImageId image_id) {
         if (True(slot_images[image_id].flags & ImageFlagBits::CpuModified)) {
-            SynchronizeImage(image_id);
+            RefreshContents(slot_images[image_id], image_id);
+            SynchronizeAliases(image_id);
         }
         ImageViewInfo info{ImageViewType::e2D, view_format};
         if (config.blending == Tegra::BlendMode::Opaque) {
@@ -1040,10 +1041,7 @@ std::pair<typename P::ImageView*, bool> TextureCache<P>::TryFindFramebufferImage
             mvcc_cands.data(), mvcc_cands.size(), static_cast<u64>(cpu_addr),
             config.width, config.height, BytesPerBlock(view_format));
         if (chosen != 0) {
-            const ImageId chosen_id = static_cast<ImageId>(chosen);
-            if (True(slot_images[chosen_id].flags & ImageFlagBits::CpuModified)) {
-                SynchronizeImage(chosen_id);
-            }
+            const ImageId chosen_id{chosen};
             return GetImageViewForFramebuffer(chosen_id);
         }
     }
@@ -2396,7 +2394,7 @@ void TextureCache<P>::RegisterImage(ImageId image_id) {
         ForEachCPUPage(image.cpu_addr, image.guest_size_bytes,
                        [this, map_id, image_id](u64 page) {
                            page_table[page].push_back(map_id);
-                           mvcc_radix_directory.RegisterPage(page << YUZU_PAGEBITS, static_cast<u32>(image_id));
+                           mvcc_radix_directory.RegisterPage(page << YUZU_PAGEBITS, image_id.index);
                        });
         image.map_view_id = map_id;
         return;
@@ -2408,7 +2406,7 @@ void TextureCache<P>::RegisterImage(ImageId image_id) {
             ForEachCPUPage(cpu_addr, size,
                            [this, map_id, image_id](u64 page) {
                                page_table[page].push_back(map_id);
-                               mvcc_radix_directory.RegisterPage(page << YUZU_PAGEBITS, static_cast<u32>(image_id));
+                               mvcc_radix_directory.RegisterPage(page << YUZU_PAGEBITS, image_id.index);
                            });
             sparse_maps.push_back(map_id);
         });
@@ -2461,7 +2459,7 @@ void TextureCache<P>::UnregisterImage(ImageId image_id) {
                 return;
             }
             image_map_ids.erase(vector_it);
-            mvcc_radix_directory.UnregisterPage(page << YUZU_PAGEBITS, static_cast<u32>(image_id));
+            mvcc_radix_directory.UnregisterPage(page << YUZU_PAGEBITS, image_id.index);
         });
         slot_map_views.erase(map_id);
         return;
@@ -2494,7 +2492,7 @@ void TextureCache<P>::UnregisterImage(ImageId image_id) {
                     map.picked = true;
                 }
                 vector_it = image_map_ids.erase(vector_it);
-                mvcc_radix_directory.UnregisterPage(page << YUZU_PAGEBITS, static_cast<u32>(image_id));
+                mvcc_radix_directory.UnregisterPage(page << YUZU_PAGEBITS, image_id.index);
             }
         });
         slot_map_views.erase(map_view_id);
