@@ -487,7 +487,7 @@ std::vector<const char*> ExtensionListForVulkan(
 }
 
 constexpr std::array<char, 8> STATIC_CACHE_MAGIC_NUMBER{'e', 'd', 'e', 'n', 's', 't', 'p', 'c'};
-constexpr u32 STATIC_CACHE_VERSION = 3;
+constexpr u32 STATIC_CACHE_VERSION = 4;
 
 std::filesystem::path StaticPipelineCacheFilename() {
     const auto shader_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::ShaderDir);
@@ -807,7 +807,8 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
     }
 
     if (features.shader_float16_int8.shaderFloat16 &&
-        !is_turnip && (is_qualcomm || is_adreno_5xx || is_adreno_8xx || is_adreno_x1 || is_mali || is_xclipse || is_powervr)) {
+        ((is_turnip && Settings::values.fix_bloom_effects.GetValue()) ||
+         (!is_turnip && (is_qualcomm || is_adreno_5xx || is_adreno_8xx || is_adreno_x1 || is_mali || is_xclipse || is_powervr)))) {
         LOG_WARNING(Render_Vulkan, "Mobile GPU auto-optimization: Disabling shaderFloat16 to prevent UE4 lighting and post-process artifacts");
         features.shader_float16_int8.shaderFloat16 = false;
     }

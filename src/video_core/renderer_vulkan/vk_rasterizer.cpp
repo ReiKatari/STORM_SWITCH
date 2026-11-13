@@ -87,13 +87,10 @@ VkViewport GetViewportState(const Device& device, const Maxwell& regs, size_t in
                           src.swizzle.y == Maxwell::ViewportSwizzle::NegativeY;
 
     if (lower_left) {
+        // min() fixes 2D games (Unepic, Aggelos); otherwise flip by surface clip height.
         const float clip_height = conv(static_cast<f32>(regs.surface_clip.height));
         const float flip_height = (height > 0.0f && height < clip_height) ? height : clip_height;
-        if (src.scale_y < 0.0f && y >= clip_height) {
-            y = clip_height - y;
-        } else {
-            y += flip_height;
-        }
+        y += flip_height;
         height = -height;
     }
 
@@ -2031,9 +2028,7 @@ void RasterizerVulkan::UpdateDepthClampEnable(Tegra::Engines::Maxwell3D::Regs& r
     const bool is_enabled = !(regs.viewport_clip_control.geometry_clip ==
                                   Maxwell::ViewportClipControl::GeometryClip::FrustumXYZ ||
                               regs.viewport_clip_control.geometry_clip ==
-                                  Maxwell::ViewportClipControl::GeometryClip::FrustumZ ||
-                              regs.viewport_clip_control.geometry_clip ==
-                                  Maxwell::ViewportClipControl::GeometryClip::Passthrough);
+                                  Maxwell::ViewportClipControl::GeometryClip::FrustumZ);
     scheduler.Record(
         [is_enabled](vk::CommandBuffer cmdbuf) { cmdbuf.SetDepthClampEnableEXT(is_enabled); });
 }

@@ -3074,16 +3074,35 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                         gpuUsagePercent = -1
                     }
 
-                    // 3. RAM Usage
+                    // 3. RAM Usage (Process VmRSS + System Total/Used)
                     var ramText = ""
                     context?.let { ctx ->
                         try {
+                            var appRssGb = -1.0
+                            try {
+                                val statusFile = File("/proc/self/status")
+                                if (statusFile.exists() && statusFile.canRead()) {
+                                    for (line in statusFile.readLines()) {
+                                        if (line.startsWith("VmRSS:")) {
+                                            val kb = line.replace(Regex("[^0-9]"), "").toLongOrNull()
+                                            if (kb != null && kb > 0L) {
+                                                appRssGb = kb / (1024.0 * 1024.0)
+                                            }
+                                            break
+                                        }
+                                    }
+                                }
+                            } catch (_: Exception) {}
                             val am = ctx.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
                             val memInfo = ActivityManager.MemoryInfo()
                             am.getMemoryInfo(memInfo)
-                            val usedGb = (memInfo.totalMem - memInfo.availMem) / (1024.0 * 1024.0 * 1024.0)
-                            val totalGb = memInfo.totalMem / (1024.0 * 1024.0 * 1024.0)
-                            ramText = String.format(java.util.Locale.US, "%.1f/%.1f GB", usedGb, totalGb)
+                            val sysUsedGb = (memInfo.totalMem - memInfo.availMem) / (1024.0 * 1024.0 * 1024.0)
+                            val sysTotalGb = memInfo.totalMem / (1024.0 * 1024.0 * 1024.0)
+                            ramText = if (appRssGb >= 0.0) {
+                                String.format(java.util.Locale.US, "%.2f GB (%.1f/%.1f)", appRssGb, sysUsedGb, sysTotalGb)
+                            } else {
+                                String.format(java.util.Locale.US, "%.1f/%.1f GB", sysUsedGb, sysTotalGb)
+                            }
                         } catch (e: Exception) {}
                     }
 

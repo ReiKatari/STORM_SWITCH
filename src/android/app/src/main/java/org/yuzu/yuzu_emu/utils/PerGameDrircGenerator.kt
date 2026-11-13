@@ -481,7 +481,14 @@ object PerGameDrircGenerator {
                 optionsBuilder.append("            <option name=\"tu_allow_concurrent_binning\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_allow_oob_indirect_ubo_loads\" value=\"true\" />\n")
             }
-            GameProfileType.DIABLO,
+            GameProfileType.DIABLO -> {
+                optionsBuilder.append("            <option name=\"disable_conservative_lrz\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"enable_lrz_fast_clear\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_allow_concurrent_binning\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_use_tex_coord_round_nearest_even_mode\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"dual_color_blend_by_location\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_allow_oob_indirect_ubo_loads\" value=\"true\" />\n")
+            }
             GameProfileType.ABSOLUM,
             GameProfileType.STREETS_OF_RAGE_4,
             GameProfileType.DISCO_ELYSIUM -> {

@@ -574,24 +574,22 @@ static void ApplyGameSpecificSafetyOverrides(u64 title_id, u64 host_ram_bytes,
                 Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_8Gb);
             }
         }
-        auto apply_android_safe = [](auto& setting, auto val) {
-            if (setting.UsingGlobal()) {
-                setting.SetGlobal(false);
-                setting.SetValue(val);
-            }
+        auto force_d2r = [](auto& setting, auto val) {
+            setting.SetGlobal(false);
+            setting.SetValue(val);
         };
-        apply_android_safe(Settings::values.gpu_accuracy, Settings::GpuAccuracy::Normal);
-        apply_android_safe(Settings::values.use_reactive_flushing, false);
-        apply_android_safe(Settings::values.use_fast_gpu_time, true);
-        apply_android_safe(Settings::values.vram_budget_governor, true);
-        apply_android_safe(Settings::values.vram_garbage_collection, true);
-        apply_android_safe(Settings::values.early_release_fences, true);
-        apply_android_safe(Settings::values.enable_frame_skipping, false);
-        apply_android_safe(Settings::values.barrier_feedback_loops, false);
-        apply_android_safe(Settings::values.airplane_mode, true);
-        apply_android_safe(Settings::values.sync_memory_operations, false);
-        apply_android_safe(Settings::values.enable_gpu_buffer_readback, false);
-        LOG_INFO(Frontend, "Guaranteed Diablo II: Resurrected safety overrides (8GB/6GB DRAM, GPU Normal, Fast GPU Time, airplane mode)");
+        force_d2r(Settings::values.gpu_accuracy, Settings::GpuAccuracy::High);
+        force_d2r(Settings::values.use_reactive_flushing, true);
+        force_d2r(Settings::values.use_fast_gpu_time, false);
+        force_d2r(Settings::values.vram_budget_governor, false);
+        force_d2r(Settings::values.vram_garbage_collection, false);
+        force_d2r(Settings::values.early_release_fences, false);
+        force_d2r(Settings::values.enable_frame_skipping, false);
+        force_d2r(Settings::values.barrier_feedback_loops, true);
+        force_d2r(Settings::values.airplane_mode, true);
+        force_d2r(Settings::values.sync_memory_operations, false);
+        force_d2r(Settings::values.enable_gpu_buffer_readback, false);
+        LOG_INFO(Frontend, "Guaranteed Diablo II: Resurrected safety overrides (8GB/6GB DRAM, GPU High, Feedback Loops ON, Reactive Flushing ON, Early Fences OFF, airplane mode)");
     }
 
     // 3) Unravel Two

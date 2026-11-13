@@ -3,8 +3,8 @@
 
 cmake_minimum_required(VERSION 3.22)
 
-project(yuzu VERSION 17.9.1)
-set(STORM_SWITCH_VERSION "17.9.1")
+project(yuzu VERSION 17.9.2)
+set(STORM_SWITCH_VERSION "17.9.2")
 add_compile_definitions(ZBIC_ZBIC_SUPPORT=1)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")

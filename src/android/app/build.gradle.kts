@@ -149,9 +149,9 @@ android {
 
         targetSdk = 35
 
-        versionName = "17.9.1"
+        versionName = "17.9.2"
 
-        versionCode = 34300221
+        versionCode = 34300222
 
 
 

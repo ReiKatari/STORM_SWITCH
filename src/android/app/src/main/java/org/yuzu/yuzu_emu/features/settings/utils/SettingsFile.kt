@@ -79,21 +79,28 @@ object SettingsFile {
                 cleanProg.startsWith("01002A801458A") ||
                 cleanProg.startsWith("0100916014D8C")
             ) {
-                val r1 = text.replace(Regex("memory_layout_mode\\s*=\\s*[12]"), "memory_layout_mode = 0")
+                // Heal corrupted keys from earlier unescaped backslash replacement
+                val rHealMem = text.replace(Regex("(?m)^memory_layout_modeuse_global\\s*=.*$"), Regex.escapeReplacement("memory_layout_mode\\use_global=false"))
+                if (rHealMem != text) { text = rHealMem; modified = true }
+                val rHealDyna = text.replace(Regex("(?m)^dyna_stateuse_global\\s*=.*$"), Regex.escapeReplacement("dyna_state\\use_global=false"))
+                if (rHealDyna != text) { text = rHealDyna; modified = true }
+                val r1 = text.replace(Regex("(?m)^\\s*memory_layout_mode\\s*=\\s*0\\s*$"), "memory_layout_mode=2")
                 if (r1 != text) { text = r1; modified = true }
-                val r1Global = text.replace(Regex("memory_layout_mode\\\\use_global\\s*=\\s*false", RegexOption.IGNORE_CASE), "memory_layout_mode\\use_global = true")
-                if (r1Global != text) { text = r1Global; modified = true }
-                val rDyna = text.replace(Regex("(?m)^\\s*dyna_state\\s*=\\s*0\\s*$"), "")
-                if (rDyna != text) { text = rDyna; modified = true }
-                val rDynaGlobal = text.replace(Regex("dyna_state\\\\use_global\\s*=\\s*false", RegexOption.IGNORE_CASE), "dyna_state\\use_global = true")
-                if (rDynaGlobal != text) { text = rDynaGlobal; modified = true }
-                val r2 = text.replace(Regex("gpu_accuracy\\s*=\\s*[01]"), "gpu_accuracy = 2")
+                val r2 = text.replace(Regex("(?m)^\\s*gpu_accuracy\\s*=\\s*[01]\\s*$"), "gpu_accuracy=2")
                 if (r2 != text) { text = r2; modified = true }
-                val r3 = text.replace(Regex("vram_budget_governor\\s*=\\s*true", RegexOption.IGNORE_CASE), "vram_budget_governor = false")
+                val rBfl = text.replace(Regex("barrier_feedback_loops\\s*=\\s*false", RegexOption.IGNORE_CASE), "barrier_feedback_loops=true")
+                if (rBfl != text) { text = rBfl; modified = true }
+                val rFlush = text.replace(Regex("use_reactive_flushing\\s*=\\s*false", RegexOption.IGNORE_CASE), "use_reactive_flushing=true")
+                if (rFlush != text) { text = rFlush; modified = true }
+                val rFast = text.replace(Regex("use_fast_gpu_time\\s*=\\s*true", RegexOption.IGNORE_CASE), "use_fast_gpu_time=false")
+                if (rFast != text) { text = rFast; modified = true }
+                val r3 = text.replace(Regex("vram_budget_governor\\s*=\\s*true", RegexOption.IGNORE_CASE), "vram_budget_governor=false")
                 if (r3 != text) { text = r3; modified = true }
-                val r4 = text.replace(Regex("early_release_fences\\s*=\\s*true", RegexOption.IGNORE_CASE), "early_release_fences = false")
+                val rGc = text.replace(Regex("vram_garbage_collection\\s*=\\s*true", RegexOption.IGNORE_CASE), "vram_garbage_collection=false")
+                if (rGc != text) { text = rGc; modified = true }
+                val r4 = text.replace(Regex("early_release_fences\\s*=\\s*true", RegexOption.IGNORE_CASE), "early_release_fences=false")
                 if (r4 != text) { text = r4; modified = true }
-                val r5 = text.replace(Regex("enable_frame_skipping\\s*=\\s*true", RegexOption.IGNORE_CASE), "enable_frame_skipping = false")
+                val r5 = text.replace(Regex("enable_frame_skipping\\s*=\\s*true", RegexOption.IGNORE_CASE), "enable_frame_skipping=false")
                 if (r5 != text) { text = r5; modified = true }
             }
 
@@ -153,7 +160,7 @@ object SettingsFile {
 
     fun sanitizePoisonedConfigs(context: Context = YuzuApplication.appContext) {
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-        val PREF_SANITIZED_KEY = "storm_config_sanitized_17_9_1_tot"
+        val PREF_SANITIZED_KEY = "storm_config_sanitized_17_9_2_tot"
         if (prefs.getBoolean(PREF_SANITIZED_KEY, false)) {
             return
         }
@@ -203,16 +210,16 @@ object SettingsFile {
                             } else if (trimmed.startsWith("sync_memory_operations", ignoreCase = true) && !trimmed.startsWith("sync_memory_operations\\default", ignoreCase = true)) {
                                 hasSyncMem = true
                                 val parts = trimmed.split("=", limit = 2)
-                                if (parts.size == 2 && parts[1].trim().equals("false", ignoreCase = true)) {
-                                    newLines.add("sync_memory_operations=true")
+                                if (parts.size == 2 && parts[1].trim().equals("true", ignoreCase = true)) {
+                                    newLines.add("sync_memory_operations=false")
                                     modified = true
                                     continue
                                 }
                             } else if (trimmed.startsWith("sync_memory_operations\\default", ignoreCase = true)) {
                                 hasSyncMemDefault = true
                                 val parts = trimmed.split("=", limit = 2)
-                                if (parts.size == 2 && parts[1].trim().equals("true", ignoreCase = true)) {
-                                    newLines.add("sync_memory_operations\\default=false")
+                                if (parts.size == 2 && parts[1].trim().equals("false", ignoreCase = true)) {
+                                    newLines.add("sync_memory_operations\\default=true")
                                     modified = true
                                     continue
                                 }
@@ -230,11 +237,11 @@ object SettingsFile {
                         }
 
                         if (!hasSyncMem) {
-                            newLines.add("sync_memory_operations=true")
-                            newLines.add("sync_memory_operations\\default=false")
+                            newLines.add("sync_memory_operations=false")
+                            newLines.add("sync_memory_operations\\default=true")
                             modified = true
                         } else if (!hasSyncMemDefault) {
-                            newLines.add("sync_memory_operations\\default=false")
+                            newLines.add("sync_memory_operations\\default=true")
                             modified = true
                         }
 
@@ -258,6 +265,7 @@ object SettingsFile {
                         "0100ad5013bb6000",
                         "010067300059a000",
                         "010067300b762000",
+                        "0100760012e4a000",
                         "0100a83022a22000"
                     )
 

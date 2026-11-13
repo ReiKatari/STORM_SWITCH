@@ -206,7 +206,9 @@ private:
         0x0100726014352000ULL, // Diablo II: Resurrected
         0x01002A801458A000ULL, // Diablo II: Resurrected (Alt)
         0x0100916014D8C000ULL, // Diablo II: Resurrected (Alt 2)
-        0x010067300B762000ULL, // Mario + Rabbids: Kingdom Battle
+        0x010067300059A000ULL, // Mario + Rabbids: Kingdom Battle (USA)
+        0x010067300B762000ULL, // Mario + Rabbids: Kingdom Battle (EU/Alt)
+        0x0100760012E4A000ULL, // Mario + Rabbids: Kingdom Battle Gold
     };
     static constexpr size_t MAX_TEXTURES = 192;
     static constexpr size_t MAX_IMAGES = 48;
