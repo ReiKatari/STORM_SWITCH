@@ -139,6 +139,18 @@ class InputOverlayDrawableDpad(
         return false
     }
 
+    fun cancelTouch(): Boolean {
+        if (trackId == -1) {
+            return false
+        }
+        trackId = -1
+        upButtonState = false
+        downButtonState = false
+        leftButtonState = false
+        rightButtonState = false
+        return true
+    }
+
     fun draw(canvas: Canvas) {
         val px = controlPositionX + width / 2
         val py = controlPositionY + height / 2

@@ -333,7 +333,7 @@ class OnlineToolsDialogFragment : DialogFragment() {
                     }
                     if (highestMasterKeyHex >= 0) {
                         return when {
-                            highestMasterKeyHex >= 0x16 -> "23.0.0"
+                            highestMasterKeyHex >= 0x16 -> "23.5.0"
                             highestMasterKeyHex == 0x15 -> "21.2.0"
                             highestMasterKeyHex == 0x14 -> "20.5.0"
                             highestMasterKeyHex == 0x13 -> "19.0.1"
@@ -389,6 +389,7 @@ class OnlineToolsDialogFragment : DialogFragment() {
         assets.clear()
         if (toolType == TYPE_FIRMWARE) {
             val list = listOf(
+                Pair("23.5.0", 358000000L),
                 Pair("20.0.1", 356052129L),
                 Pair("20.0.0", 356051105L),
                 Pair("19.0.1", 338082652L),
@@ -410,6 +411,7 @@ class OnlineToolsDialogFragment : DialogFragment() {
             }
         } else {
             val list = listOf(
+                Pair("23.5.0", 12177L),
                 Pair("23.0.0", 12177L),
                 Pair("22.5.0", 7423L),
                 Pair("22.1.0", 7407L),

@@ -153,8 +153,8 @@ void GameListSearchField::RetranslateUI() {
         const int cur_idx = sort_combobox->currentIndex();
         sort_combobox->blockSignals(true);
         sort_combobox->clear();
-        sort_combobox->addItem(tr("Имя (А–Я)"), 0);
-        sort_combobox->addItem(tr("Имя (Я–А)"), 1);
+        sort_combobox->addItem(tr("Имя (А-Я)"), 0);
+        sort_combobox->addItem(tr("Имя (Я-А)"), 1);
         sort_combobox->addItem(tr("Время игры"), 2);
         sort_combobox->addItem(tr("Размер файла"), 3);
         sort_combobox->addItem(tr("Switch 2 / 1"), 4);

@@ -448,7 +448,7 @@ Użyj opcji Boost (1700 MHz), aby uruchomić urządzenie z najwyższą natywną 
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="104" />
       <source>Set a custom value of CPU ticks. Higher values can increase performance, but may cause deadlocks. A range of 77-21000 is recommended.</source>
-      <translation>Ustaw niestandardową wartość taktów CPU. Wyższe wartości mogą zwiększyć wydajność, ale mogą też powodować zawieszanie się gry. Zalecany zakres to 77–21000.</translation>
+      <translation>Ustaw niestandardową wartość taktów CPU. Wyższe wartości mogą zwiększyć wydajność, ale mogą też powodować zawieszanie się gry. Zalecany zakres to 77-21000.</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="112" />
@@ -689,7 +689,7 @@ CPU asynchronicznie: użyj CPU do dekodowania na żądanie. Eliminuje zacięcia 
 BC1/BC3: The intermediate format will be recompressed to BC1 or BC3 format,
  saving VRAM but degrading image quality.</source>
       <translation>Większość GPU nie obsługuje natywnie tekstur ASTC i musi je zdekompresować do formatu pośredniego: RGBA8.
-BC1/BC3: format pośredni zostanie ponownie skompresowany do BC1 lub BC3 — oszczędza VRAM kosztem jakości obrazu.</translation>
+BC1/BC3: format pośredni zostanie ponownie skompresowany do BC1 lub BC3 - oszczędza VRAM kosztem jakości obrazu.</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="186" />
@@ -5723,7 +5723,7 @@ Przeciągnij punkty, aby zmienić pozycję, lub kliknij dwukrotnie komórki tabe
       <location filename="../../src/yuzu/configuration/configure_web.cpp" line="122" />
       <source>Must be 48 characters, and lowercase a-z</source>
       <comment>Tooltip</comment>
-      <translation>Musi mieć 48 znaków i składać się z małych liter a–z</translation>
+      <translation>Musi mieć 48 znaków i składać się z małych liter a-z</translation>
     </message>
   </context>
   <context>
@@ -9331,7 +9331,7 @@ p, li { white-space: pre-wrap; }
     <message>
       <location filename="../../src/qt_common/util/content.cpp" line="233" />
       <source>Firmware installation cancelled, firmware may be in a bad state or corrupted. File contents could not be checked for validity.</source>
-      <translation>Instalacja firmware’u została anulowana — firmware może być w złym stanie lub uszkodzony. Nie udało się sprawdzić poprawności zawartości plików.</translation>
+      <translation>Instalacja firmware’u została anulowana - firmware może być w złym stanie lub uszkodzony. Nie udało się sprawdzić poprawności zawartości plików.</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/content.cpp" line="240" />
@@ -9955,7 +9955,7 @@ Most mods are RomFS mods, but patches (.pchtxt) are typically ExeFS mods.</trans
     <message>
       <location filename="../../src/qt_common/qt_string_lookup.h" line="80" />
       <source>Unable to read key directory, aborting</source>
-      <translation>Nie można odczytać katalogu kluczy — przerywanie</translation>
+      <translation>Nie można odczytać katalogu kluczy - przerywanie</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/qt_string_lookup.h" line="81" />
@@ -9995,7 +9995,7 @@ Most mods are RomFS mods, but patches (.pchtxt) are typically ExeFS mods.</trans
     <message>
       <location filename="../../src/qt_common/qt_string_lookup.h" line="96" />
       <source>Firmware installation cancelled, firmware may be in a bad state or corrupted. Restart Eden or re-install firmware.</source>
-      <translation>Instalacja firmware’u została anulowana — firmware może być w złym stanie lub uszkodzony. Uruchom ponownie Eden lub zainstaluj firmware ponownie.</translation>
+      <translation>Instalacja firmware’u została anulowana - firmware może być w złym stanie lub uszkodzony. Uruchom ponownie Eden lub zainstaluj firmware ponownie.</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/qt_string_lookup.h" line="101" />
@@ -10509,7 +10509,7 @@ p, li { white-space: pre-wrap; }
 By selecting "From Eden", previous save data stored in Ryujinx will be deleted, and vice versa for "From Ryujinx".</source>
       <translation>Powiązanie danych zapisu z Ryujinx pozwala, aby zarówno Ryujinx, jak i Eden korzystały z tych samych plików zapisu dla Twoich gier.
 
-Wybierając „Z Eden”, dotychczasowe dane zapisu przechowywane w Ryujinx zostaną usunięte — i odwrotnie w przypadku „Z Ryujinx”.</translation>
+Wybierając „Z Eden”, dotychczasowe dane zapisu przechowywane w Ryujinx zostaną usunięte - i odwrotnie w przypadku „Z Ryujinx”.</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/ryujinx_dialog.ui" line="40" />

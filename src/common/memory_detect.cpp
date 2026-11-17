@@ -17,6 +17,10 @@
 #endif
 #endif
 
+#include <atomic>
+#include <chrono>
+#include <cstdio>
+
 #include "common/memory_detect.h"
 
 namespace Common {
@@ -67,6 +71,50 @@ static MemoryInfo Detect() {
 const MemoryInfo& GetMemInfo() {
     static MemoryInfo mem_info = Detect();
     return mem_info;
+}
+
+u64 GetAvailablePhysicalMemory() {
+#ifdef _WIN32
+    MEMORYSTATUSEX memorystatus;
+    memorystatus.dwLength = sizeof(memorystatus);
+    if (!GlobalMemoryStatusEx(&memorystatus)) {
+        return 0;
+    }
+    return memorystatus.ullAvailPhys;
+#elif defined(__linux__)
+    // MemAvailable counts the page cache the kernel can drop, which sysinfo's freeram doesn't.
+    std::FILE* const file = std::fopen("/proc/meminfo", "r");
+    if (file == nullptr) {
+        return 0;
+    }
+    u64 available_kib = 0;
+    char line[128];
+    while (std::fgets(line, sizeof(line), file) != nullptr) {
+        unsigned long long value = 0;
+        if (std::sscanf(line, "MemAvailable: %llu kB", &value) == 1) {
+            available_kib = value;
+            break;
+        }
+    }
+    std::fclose(file);
+    return available_kib * 1024;
+#else
+    return 0;
+#endif
+}
+
+bool IsHostLowOnMemory() {
+    using Clock = std::chrono::steady_clock;
+    static std::atomic<Clock::rep> checked_at{};
+    static std::atomic<bool> low{};
+    const Clock::rep now = Clock::now().time_since_epoch().count();
+    const Clock::rep last = checked_at.load(std::memory_order_relaxed);
+    if (last == 0 || now - last >= Clock::duration{std::chrono::seconds{1}}.count()) {
+        checked_at.store(now, std::memory_order_relaxed);
+        low.store(IsLowOnMemory(GetAvailablePhysicalMemory(), GetMemInfo().TotalPhysicalMemory),
+                  std::memory_order_relaxed);
+    }
+    return low.load(std::memory_order_relaxed);
 }
 
 } // namespace Common

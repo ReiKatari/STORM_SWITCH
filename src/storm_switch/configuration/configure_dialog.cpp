@@ -1058,7 +1058,7 @@ void ConfigureDialog::OnSearchTextChanged(const QString& text) {
                 titles << t;
                 blobs << t;
             }
-            values << (cb->isChecked() ? QStringLiteral("✓") : QStringLiteral("—"));
+            values << (cb->isChecked() ? QStringLiteral("✓") : QStringLiteral("-"));
             if (!cb->toolTip().isEmpty()) {
                 blobs << cb->toolTip();
             }
@@ -1119,7 +1119,7 @@ void ConfigureDialog::OnSearchTextChanged(const QString& text) {
                         }
                         const QString disp = val.isEmpty()
                             ? QStringLiteral("• [%1 › %2]  %3").arg(cat_name, tab_name, title)
-                            : QStringLiteral("• [%1 › %2]  %3  —  %4").arg(cat_name, tab_name, title, val);
+                            : QStringLiteral("• [%1 › %2]  %3  -  %4").arg(cat_name, tab_name, title, val);
                         candidates.push_back({score, row, t_idx, disp, sw->toolTip(), sw});
                     }
                 }
@@ -1136,7 +1136,7 @@ void ConfigureDialog::OnSearchTextChanged(const QString& text) {
                                   : (title.contains(query, Qt::CaseInsensitive) ? 65 : 20);
                         const QString disp = val.isEmpty()
                             ? QStringLiteral("• [%1 › %2]  %3").arg(cat_name, tab_name, title)
-                            : QStringLiteral("• [%1 › %2]  %3  —  %4").arg(cat_name, tab_name, title, val);
+                            : QStringLiteral("• [%1 › %2]  %3  -  %4").arg(cat_name, tab_name, title, val);
                         candidates.push_back({score, row, t_idx, disp, gb->toolTip(), gb});
                         added_subwidget = true;
                     }

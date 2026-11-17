@@ -32,6 +32,7 @@ bool Process::Initialize(Loader::AppLoader& loader, Loader::ResultStatus& out_lo
 
     // Ensure loading was successful.
     if (load_result != Loader::ResultStatus::Success) {
+        m_system.UnregisterCheatList(*process);
         return false;
     }
 
@@ -59,6 +60,7 @@ void Process::Finalize() {
 
     // Close the process.
     if (m_process) {
+        m_system.UnregisterCheatList(*m_process);
         m_process->Close(m_system.Kernel());
         // TODO: remove this, kernel already tracks this
         m_system.Kernel().RemoveProcess(m_process);

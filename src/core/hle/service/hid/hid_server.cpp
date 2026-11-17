@@ -5,6 +5,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <array>
+#include <cmath>
+#include <mutex>
+
+#include <fmt/ranges.h>
 
 #include "common/common_types.h"
 #include "common/logging.h"
@@ -132,9 +136,9 @@ IHidServer::IHidServer(Core::System& system_, std::shared_ptr<ResourceManager> r
         {210, C<&IHidServer::EndPermitVibrationSession>, "EndPermitVibrationSession"},
         {211, C<&IHidServer::IsVibrationDeviceMounted>, "IsVibrationDeviceMounted"},
         {212, C<&IHidServer::SendVibrationValueInBool>, "SendVibrationValueInBool"},
-        {213, C<&IHidServer::Unknown213>, "Unknown213"},
+        {213, C<&IHidServer::SendVibrationValueInMode>, "SendVibrationValueInMode"},
         {214, &IHidServer::DispatchVibration214, "SendNativeVibrationValues"},
-        {220, C<&IHidServer::Unknown220>, "Unknown220"},
+        {220, C<&IHidServer::IsOunceVibrationDeviceMounted>, "IsOunceVibrationDeviceMounted"},
         {300, C<&IHidServer::ActivateConsoleSixAxisSensor>, "ActivateConsoleSixAxisSensor"},
         {301, C<&IHidServer::StartConsoleSixAxisSensor>, "StartConsoleSixAxisSensor"},
         {302, C<&IHidServer::StopConsoleSixAxisSensor>, "StopConsoleSixAxisSensor"},
@@ -1104,14 +1108,59 @@ Result IHidServer::IsVibrationDeviceMounted(
     R_SUCCEED();
 }
 
-Result IHidServer::Unknown213() {
-    LOG_DEBUG(Service_HID, "(STUBBED) called");
+Result IHidServer::SendVibrationValueInMode(std::array<u8, 0x18> raw,
+                                            ClientAppletResourceUserId aruid) {
+    // Two layouts are proposed for the 0x18 bytes before the aruid, both with the value at 0x08:
+    // a mode at 0x00 and the handle at 0x04 (most decoders), or the handle at 0x00 and a u32 mode
+    // at 0x04. A handle's first byte is its npad style, which the modes seen in 214 (0 and 2)
+    // can't pass for, so the first offset holding a valid handle wins. Requests that fit neither
+    // are dropped, as 213 was before.
+    Core::HID::VibrationDeviceHandle handle{};
+    Core::HID::VibrationValue value{};
+    std::memcpy(&value, raw.data() + 0x08, sizeof(value));
+    const bool is_value_valid = std::isfinite(value.low_amplitude) &&
+                                std::isfinite(value.high_amplitude) &&
+                                std::isfinite(value.low_frequency) &&
+                                std::isfinite(value.high_frequency);
+    constexpr std::array<std::size_t, 2> handle_offsets{0x04, 0x00};
+    const bool has_handle = std::ranges::any_of(handle_offsets, [&](std::size_t offset) {
+        std::memcpy(&handle, raw.data() + offset, sizeof(handle));
+        return IsVibrationHandleValid(handle).IsSuccess();
+    });
+
+    static std::once_flag logged;
+    std::call_once(logged, [&raw] {
+        LOG_INFO(Service_HID, "first request: {:02x}", fmt::join(raw, ""));
+    });
+
+    if (!is_value_valid || !has_handle) {
+        R_SUCCEED();
+    }
+
+    const auto result = GetResourceManager()->SendVibrationValue(aruid.pid, handle, value);
+    if (result.IsError()) {
+        LOG_DEBUG(Service_HID, "failed to send vibration, result={:#x}", result.raw);
+    }
     R_SUCCEED();
 }
 
-Result IHidServer::Unknown220(Out<u8> out) {
-    LOG_DEBUG(Service_HID, "(STUBBED) called");
-    *out = 0;
+Result IHidServer::IsOunceVibrationDeviceMounted(
+    Out<bool> out_is_mounted, Core::HID::VibrationDeviceHandle vibration_device_handle,
+    ClientAppletResourceUserId aruid) {
+    LOG_DEBUG(Service_HID,
+              "called, npad_type={}, npad_id={}, device_index={}, applet_resource_user_id={}",
+              vibration_device_handle.npad_type, vibration_device_handle.npad_id,
+              vibration_device_handle.device_index, aruid.pid);
+
+    *out_is_mounted = false;
+    if (IsVibrationHandleValid(vibration_device_handle).IsSuccess()) {
+        const NpadVibrationBase* device =
+            GetResourceManager()->GetVibrationDevice(vibration_device_handle);
+        if (device != nullptr) {
+            *out_is_mounted = device->IsVibrationMounted();
+        }
+    }
+
     R_SUCCEED();
 }
 

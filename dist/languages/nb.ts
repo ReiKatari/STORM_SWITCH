@@ -2462,7 +2462,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/yuzu/configuration/configure_cpu_debug.ui" line="147" />
       <source>Enable Host MMU Emulation (general memory instructions)</source>
-      <translation>Slå på verts-MMU–emulering (generelle minneinstruksjoner)</translation>
+      <translation>Slå på verts-MMU-emulering (generelle minneinstruksjoner)</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_cpu_debug.ui" line="154" />
@@ -2472,9 +2472,9 @@ When a program attempts to open the controller applet, it is immediately closed.
             &lt;div style="white-space: nowrap"&gt;Disabling this forces all exclusive memory accesses to use Software MMU Emulation.&lt;/div&gt;
            </source>
       <translation>
-            &lt;div style="white-space: nowrap"&gt;Denne optimaliseringen gjør eksklusivt minne–aksess raskere for gjesteprogrammet.&lt;/div&gt;
+            &lt;div style="white-space: nowrap"&gt;Denne optimaliseringen gjør eksklusivt minne-aksess raskere for gjesteprogrammet.&lt;/div&gt;
             &lt;div style="white-space: nowrap"&gt;Å slå den på gjør at gjestens eksklusivt minne lese- og -skriveoperasjoner går direkte til minne og bruker vertens MMU.&lt;/div&gt;
-            &lt;div style="white-space: nowrap"&gt;Å slå den av tvinger all eksklusivt minne–aksess til å bruke programvarebasert MMU-emulering.&lt;/div&gt;
+            &lt;div style="white-space: nowrap"&gt;Å slå den av tvinger all eksklusivt minne-aksess til å bruke programvarebasert MMU-emulering.&lt;/div&gt;
            </translation>
     </message>
     <message>
@@ -2489,14 +2489,14 @@ When a program attempts to open the controller applet, it is immediately closed.
             &lt;div style="white-space: nowrap"&gt;Enabling it reduces the overhead of fastmem failure of exclusive memory accesses.&lt;/div&gt;
            </source>
       <translation>
-            &lt;div style="white-space: nowrap"&gt;Denne optimaliseringen gjør eksklusivt minne–aksess raskere for gjesteprogrammet.&lt;/div&gt;
-            &lt;div style="white-space: nowrap"&gt;Å slå den på reduserer kostnadene ved fastmem-feil ved eksklusivt minne–aksess.&lt;/div&gt;
+            &lt;div style="white-space: nowrap"&gt;Denne optimaliseringen gjør eksklusivt minne-aksess raskere for gjesteprogrammet.&lt;/div&gt;
+            &lt;div style="white-space: nowrap"&gt;Å slå den på reduserer kostnadene ved fastmem-feil ved eksklusivt minne-aksess.&lt;/div&gt;
            </translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_cpu_debug.ui" line="174" />
       <source>Enable recompilation of exclusive memory instructions</source>
-      <translation>Slå på rekompilering av ekslusivt minne–instruksjoner</translation>
+      <translation>Slå på rekompilering av ekslusivt minne-instruksjoner</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_cpu_debug.ui" line="181" />
@@ -2685,7 +2685,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="423" />
       <source>When checked, the graphics API enters a slower debugging mode</source>
-      <translation>Når dette er på går grafikk–API-et inn i en tregere feilsøkingsmodus</translation>
+      <translation>Når dette er på går grafikk-API-et inn i en tregere feilsøkingsmodus</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="426" />

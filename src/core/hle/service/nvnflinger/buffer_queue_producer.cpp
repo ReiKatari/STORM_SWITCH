@@ -221,12 +221,7 @@ Status BufferQueueProducer::WaitForFreeSlotThenRelock(bool async, s32* found, St
             }
         }
 
-        // If queue size exceeds max_buffer_count after a savestate rollback, drain stale queue items
-        if (core->queue.size() > static_cast<size_t>(max_buffer_count)) {
-            LOG_WARNING(Service_Nvnflinger, "draining {} stale queue items", core->queue.size());
-            core->queue.clear();
-        }
-        const bool too_many_buffers = false;
+        const bool too_many_buffers = core->queue.size() > static_cast<size_t>(max_buffer_count);
 
         // If no buffer is found, or if the queue has too many buffers outstanding, wait for a
         // buffer to be acquired or released, or for the max buffer count to change.

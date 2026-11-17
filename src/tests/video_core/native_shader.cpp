@@ -422,8 +422,8 @@ TEST_CASE("Native scalar texture sampling preserves coordinates and split output
     std::ranges::sort(reads);
     REQUIRE(reads == std::vector<u32>{4, 5});
     REQUIRE(writes == std::vector<u32>{0, 1, 2, 3});
-    // Reject unsupported LOD modes, a different cbuf bank, and sparse results.
-    for (u32 bit : {89U, 54U, 81U}) {
+    // Reject unsupported LOD modes, out-of-range cbuf banks (>= 18), and sparse results.
+    for (u32 bit : {89U, 58U, 81U}) {
         auto unsupported = input;
         unsupported[0].words[bit / 32] ^= 1U << (bit % 32);
         const auto rejected = Shader::Ampere::LowerToMaxwell(unsupported);
@@ -1005,6 +1005,7 @@ TEST_CASE("Native bitwise LUT forms preserve source bits without changing predic
         case Opcode::MOV_cbuf: visitor.MOV_cbuf(word); break;
         case Opcode::MOV32I: visitor.MOV32I(word); break;
         case Opcode::LOP_reg: visitor.LOP_reg(word); break;
+        case Opcode::LOP3_reg: visitor.LOP3_reg(word); break;
         case Opcode::EXIT: break;
         default: FAIL("Unexpected native bitwise LUT lowering");
         }
@@ -1255,6 +1256,7 @@ TEST_CASE("Native predicate-output LUTs preserve boolean bit tests", "[native-sh
         switch (Shader::Maxwell::Decode(word)) {
         case Opcode::MOV32I: visitor.MOV32I(word); break;
         case Opcode::LOP_reg: visitor.LOP_reg(word); break;
+        case Opcode::LOP3_reg: visitor.LOP3_reg(word); break;
         case Opcode::EXIT: break;
         default: FAIL("Unexpected predicate LUT lowering");
         }
@@ -1276,6 +1278,7 @@ TEST_CASE("Native predicate-output LUTs preserve boolean bit tests", "[native-sh
             case IR::Opcode::BitwiseAnd32: values[&inst] = arg(0) & arg(1); break;
             case IR::Opcode::BitwiseOr32: values[&inst] = arg(0) | arg(1); break;
             case IR::Opcode::BitwiseXor32: values[&inst] = arg(0) ^ arg(1); break;
+            case IR::Opcode::BitwiseNot32: values[&inst] = ~arg(0); break;
             case IR::Opcode::INotEqual: values[&inst] = arg(0) != arg(1); break;
             case IR::Opcode::SetPred: predicates[static_cast<u32>(inst.Arg(0).Pred())] = arg(1) != 0; break;
             default: FAIL("Unexpected predicate LUT IR " << IR::NameOf(inst.GetOpcode()));
@@ -1319,7 +1322,7 @@ TEST_CASE("Native cube sampling preserves XYZ, explicit LOD, and split RGB desti
     for (const auto& inst : block.Instructions()) {
         if (inst.GetOpcode() == IR::Opcode::SetRegister) {
             const u32 target = static_cast<u32>(inst.Arg(0).Reg());
-            if (target < 248) writes.push_back(target);
+            if (target < 246) writes.push_back(target);
             if (inst.Arg(1).Inst()->GetOpcode() == IR::Opcode::GetRegister)
                 copies.emplace_back(target, static_cast<u32>(inst.Arg(1).Inst()->Arg(0).Reg()));
         }
@@ -1331,12 +1334,14 @@ TEST_CASE("Native cube sampling preserves XYZ, explicit LOD, and split RGB desti
             for (u32 i = 0; i < 3; ++i)
                 REQUIRE(coords->Arg(i).Inst()->Arg(0).Inst()->Arg(0).Reg() == IR::Reg{250 + i});
             if (volume) REQUIRE(inst.Arg(2).F32() == 0.0f);
-            else REQUIRE(inst.Arg(2).Inst()->Arg(0).Inst()->Arg(0).Reg() == IR::Reg{9});
+            else REQUIRE(inst.Arg(2).Inst()->Arg(0).Inst()->Arg(0).Reg() == IR::Reg{246});
         }
     }
     REQUIRE(samples == 1);
     REQUIRE(writes == std::vector<u32>{0, 1, 3});
-    REQUIRE(copies == std::vector<std::pair<u32, u32>>{{250, 4}, {251, 5}, {252, 8}, {0, 250}, {1, 251}, {3, 252}});
+    REQUIRE(copies == (volume
+        ? std::vector<std::pair<u32, u32>>{{250, 4}, {251, 5}, {252, 8}, {0, 250}, {1, 251}, {3, 252}}
+        : std::vector<std::pair<u32, u32>>{{250, 4}, {251, 5}, {252, 8}, {246, 9}, {0, 250}, {1, 251}, {3, 252}}));
 }
 
 TEST_CASE("Native branch maps survive code caching and reject invalid addresses", "[native-shader]") {
@@ -1539,15 +1544,19 @@ void ExecuteNativeWarp(IR::Block& block, u32 active,
                 case IR::Opcode::SelectU32: case IR::Opcode::SelectU1: result[lane] = a ? b : c; break;
                 case IR::Opcode::BitwiseAnd32: result[lane] = a & b; break;
                 case IR::Opcode::BitwiseOr32: result[lane] = a | b; break;
+                case IR::Opcode::BitwiseXor32: result[lane] = a ^ b; break;
+                case IR::Opcode::BitwiseNot32: result[lane] = ~a; break;
                 case IR::Opcode::ShiftRightLogical32: result[lane] = b < 32 ? a >> b : 0; break;
                 case IR::Opcode::ShiftLeftLogical32: result[lane] = b < 32 ? a << b : 0; break;
                 case IR::Opcode::INeg32: result[lane] = 0U - a; break;
                 case IR::Opcode::IAdd32: result[lane] = a + b; break;
                 case IR::Opcode::FindUMsb32: result[lane] = a ? 31U - std::countl_zero(a) : ~0U; break;
-                case IR::Opcode::BitFieldUExtract: result[lane] = (a >> b) & ((1U << c) - 1); break;
+                case IR::Opcode::BitFieldUExtract: result[lane] = b < 32 ? ((a >> b) & (c >= 32 ? ~0U : (1U << c) - 1)) : 0; break;
                 case IR::Opcode::ULessThan: result[lane] = a < b; break;
+                case IR::Opcode::UGreaterThanEqual: result[lane] = a >= b; break;
                 case IR::Opcode::SLessThan: result[lane] = static_cast<s32>(a) < static_cast<s32>(b); break;
                 case IR::Opcode::IEqual: result[lane] = a == b; break;
+                case IR::Opcode::INotEqual: result[lane] = a != b; break;
                 case IR::Opcode::GetZeroFromOp: result[lane] = a == 0; break;
                 case IR::Opcode::LogicalAnd: result[lane] = a && b; break;
                 case IR::Opcode::LogicalNot: result[lane] = !a; break;
@@ -1599,6 +1608,10 @@ TEST_CASE("Native warp uniform transfers use the first selected active lane and 
         case Opcode::FLO_reg: visitor.FLO_reg(word); break;
         case Opcode::SHFL: visitor.SHFL(word); break;
         case Opcode::SEL_reg: visitor.SEL_reg(word); break;
+        case Opcode::SEL_imm: visitor.SEL_imm(word); break;
+        case Opcode::MOV_reg: visitor.MOV_reg(word); break;
+        case Opcode::BFE_imm: visitor.BFE_imm(word); break;
+        case Opcode::LOP3_reg: visitor.LOP3_reg(word); break;
         case Opcode::EXIT: break;
         default: FAIL("Unexpected warp-uniform lowering");
         }
@@ -2406,7 +2419,7 @@ TEST_CASE("Native formatted surface loads retain red data coordinates descriptor
     REQUIRE(loads == 1);
     REQUIRE(writes == 1);
     auto invalid = input;
-    invalid[0].words[2] ^= 0x200; // Reject other channel masks until implemented.
+    invalid[0].words[2] ^= 0x100; // Reject empty channel mask.
     REQUIRE_FALSE(Shader::Ampere::LowerToMaxwell(invalid));
 }
 
@@ -2581,7 +2594,7 @@ TEST_CASE("Native capture distinguishes forward branches from call targets beyon
     REQUIRE(multiple.Observe(Native{{0x08007950, 0, 0, 0}}, 9) == Capture::Result::Continue);
     REQUIRE(multiple.Observe(Native{{0x08007950, 0, 0, 0}}, 13) == Capture::Result::Complete);
     Capture invalid;
-    REQUIRE(invalid.Observe(Native{{0x7947, 1, 0x03800000, 0}}, 0) == Capture::Result::InvalidTarget);
+    REQUIRE(invalid.Observe(Native{{0x7947, 4, 0x03800000, 0}}, 0) == Capture::Result::InvalidTarget);
 }
 
 TEST_CASE("Native implicit volume sample preserves XYZ and all four split channels", "[native-shader]") {

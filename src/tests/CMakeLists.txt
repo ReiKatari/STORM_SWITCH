@@ -17,6 +17,7 @@ add_executable(tests
     common/undefined_fix.cpp
     common/unique_function.cpp
     core/core_timing.cpp
+    core/eden_pack_and_cheats.cpp
     core/program_metadata.cpp
     core/native_gpu_characteristics.cpp
     core/graphics_supervisor.cpp
@@ -27,6 +28,8 @@ add_executable(tests
     video_core/image_overlap.cpp
     video_core/pending_download.cpp
     video_core/memory_tracker.cpp
+    video_core/storm_nextgen_arch.cpp
+    video_core/syncpoint_actions.cpp
     input_common/calibration_configuration_job.cpp
 )
 

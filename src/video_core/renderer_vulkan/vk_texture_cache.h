@@ -75,6 +75,8 @@ public:
 
     bool CanReportMemoryUsage() const;
 
+    [[nodiscard]] bool UseOpaqueAstcFormat() const;
+
     bool CanDownloadMsaa(const VideoCommon::ImageInfo& info) const;
 
     [[nodiscard]] VkImage AcquireMsaaScratchImage(const VkImageCreateInfo& image_ci);

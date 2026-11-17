@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
 $baseDir = Split-Path -Parent $PSScriptRoot
-$version = '18.0.0'
+$version = '18.1.0'
 if (Test-Path "$PSScriptRoot\GIT-RELEASE") {
     $v = (Get-Content "$PSScriptRoot\GIT-RELEASE" -Raw).Trim()
     if ($v) { $version = $v }

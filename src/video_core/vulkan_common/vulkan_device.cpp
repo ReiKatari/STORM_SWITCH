@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <bitset>
 #include <chrono>
+#include <cstdlib>
+#include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <optional>
@@ -487,7 +489,14 @@ std::vector<const char*> ExtensionListForVulkan(
 }
 
 constexpr std::array<char, 8> STATIC_CACHE_MAGIC_NUMBER{'e', 'd', 'e', 'n', 's', 't', 'p', 'c'};
-constexpr u32 STATIC_CACHE_VERSION = 3;
+constexpr u32 STATIC_CACHE_VERSION = 7;
+
+struct StaticCacheFingerprint {
+    u32 vendor_id{};
+    u32 device_id{};
+    u32 driver_version{};
+    std::array<u8, VK_UUID_SIZE> uuid{};
+};
 
 std::filesystem::path StaticPipelineCacheFilename() {
     const auto shader_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::ShaderDir);
@@ -807,8 +816,9 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
     }
 
     if (features.shader_float16_int8.shaderFloat16 &&
-        !is_turnip && (is_qualcomm || is_adreno_5xx || is_adreno_8xx || is_adreno_x1 || is_mali || is_xclipse || is_powervr)) {
-        LOG_WARNING(Render_Vulkan, "Mobile GPU auto-optimization: Disabling shaderFloat16 to prevent UE4 lighting and post-process artifacts");
+        ((is_turnip && Settings::values.fix_bloom_effects.GetValue()) ||
+         (!is_turnip && (is_qualcomm || is_adreno_5xx || is_adreno_8xx || is_adreno_x1 || is_mali || is_xclipse || is_powervr)))) {
+        LOG_WARNING(Render_Vulkan, "Mobile GPU auto-optimization: Disabling shaderFloat16 to prevent FP16 lighting and post-process artifacts");
         features.shader_float16_int8.shaderFloat16 = false;
     }
 
@@ -840,7 +850,7 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
     // Adreno 6xx/7xx/8xx detection already performed above
 
     // Enforce 64-byte UBO/SSBO alignment floor for proprietary Adreno 8xx, Adreno X1, and ARM Mali
-    if (!is_turnip && (is_adreno_8xx || is_adreno_x1 || is_mali)) {
+    if ((!is_turnip && is_adreno_8xx) || is_adreno_x1 || (!is_turnip && is_mali)) {
         properties.properties.limits.minUniformBufferOffsetAlignment =
             (std::max)(properties.properties.limits.minUniformBufferOffsetAlignment, VkDeviceSize{64});
         properties.properties.limits.minStorageBufferOffsetAlignment =
@@ -862,7 +872,8 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
     const auto dyna_state = Settings::values.dyna_state.GetValue();
     auto effective_dyna_state = dyna_state;
 
-    if (!is_turnip && (is_adreno_5xx || is_adreno_6xx || is_qualcomm || is_mali || is_xclipse || is_powervr)) {
+    if ((!is_turnip && is_adreno_8xx) || is_adreno_x1 ||
+        (!is_turnip && (is_adreno_5xx || is_adreno_6xx || is_qualcomm || is_mali || is_xclipse || is_powervr))) {
         LOG_INFO(Render_Vulkan, "Mobile GPU / driver auto-optimization: ExtendedDynamicState disabled for hardware pipeline stability");
         effective_dyna_state = Settings::ExtendedDynamicState::Disabled;
     } else if ((is_turnip || (is_intel_windows && is_integrated)) &&
@@ -910,6 +921,11 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
         RemoveExtensionFeature(extensions.vertex_input_dynamic_state, features.vertex_input_dynamic_state, VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME);
     }
 
+    if (!is_turnip && (is_adreno_8xx || is_qualcomm)) {
+        RemoveExtensionFeature(extensions.depth_clip_enable, features.depth_clip_enable,
+                               VK_EXT_DEPTH_CLIP_ENABLE_EXTENSION_NAME);
+    }
+
     LOG_INFO(Render_Vulkan,
              "STORM GPU Matrix Profile: vendor={:#06x} ({}) device='{}' driverID={} driverVer={:#x} "
              "[EDS={}, VIDS={}, XFB={}, BCn={}, ASTC={}, FP16={}]",
@@ -954,6 +970,22 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
                                VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
     }
 
+#if defined(__ANDROID__)
+    std::string vkinit_marker_path;
+    if (const char* driver_dir = std::getenv("STORM_DRIVER_DIR");
+        driver_dir != nullptr && *driver_dir != '\0') {
+        vkinit_marker_path = std::string(driver_dir);
+        if (!vkinit_marker_path.empty() && vkinit_marker_path.back() != '/') {
+            vkinit_marker_path.push_back('/');
+        }
+        vkinit_marker_path += ".driver_inflight_vkinit";
+        if (std::ofstream f{vkinit_marker_path, std::ios::binary | std::ios::trunc}; f.is_open()) {
+            f << "vkCreateDevice\n";
+            f.flush();
+        }
+    }
+#endif
+
     logical = vk::Device::Create(physical, queue_cis, ExtensionListForVulkan(loaded_extensions), first_next, dld);
 
     graphics_queue = logical.GetQueue(graphics_family);
@@ -970,13 +1002,17 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
     if (extensions.buffer_device_address) {
         flags |= VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
     }
+#ifdef __ANDROID__
+    constexpr VkDeviceSize large_heap_block_size = 16u * 1024u * 1024u;
+#else
+    const VkDeviceSize large_heap_block_size =
+        is_integrated ? (64u * 1024u * 1024u) : (256u * 1024u * 1024u);
+#endif
     const VmaAllocatorCreateInfo allocator_info{
             .flags = flags,
             .physicalDevice = physical,
             .device = *logical,
-            .preferredLargeHeapBlockSize = is_integrated
-                                           ? (64u * 1024u * 1024u)
-                                           : (256u * 1024u * 1024u),
+            .preferredLargeHeapBlockSize = large_heap_block_size,
             .pAllocationCallbacks = nullptr,
             .pDeviceMemoryCallbacks = nullptr,
             .pHeapSizeLimit = nullptr,
@@ -990,6 +1026,13 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
 
     owns_static_pipeline_cache = surface != VkSurfaceKHR{};
     LoadStaticPipelineCache();
+
+#if defined(__ANDROID__)
+    if (!vkinit_marker_path.empty()) {
+        std::error_code ec;
+        std::filesystem::remove(vkinit_marker_path, ec);
+    }
+#endif
 
     // Initialize GPU logging if enabled
     InitializeGPULogging();
@@ -1032,19 +1075,50 @@ void Device::LoadStaticPipelineCache() {
         file.seekg(0, std::ios::beg);
         std::array<char, 8> magic{};
         u32 version{};
-        if (total < magic.size() + sizeof(version)) {
+        StaticCacheFingerprint fp{};
+        constexpr size_t prefix_size = magic.size() + sizeof(version) + sizeof(fp);
+        if (total < prefix_size + sizeof(VkPipelineCacheHeaderVersionOne)) {
+            Common::FS::RemoveFile(filename);
             create(0, nullptr);
             return;
         }
         file.read(magic.data(), magic.size())
-            .read(reinterpret_cast<char*>(&version), sizeof(version));
-        if (magic != STATIC_CACHE_MAGIC_NUMBER || version != STATIC_CACHE_VERSION) {
+            .read(reinterpret_cast<char*>(&version), sizeof(version))
+            .read(reinterpret_cast<char*>(&fp), sizeof(fp));
+        const bool fingerprint_matches =
+            fp.vendor_id == properties.properties.vendorID &&
+            fp.device_id == properties.properties.deviceID &&
+            fp.driver_version == properties.properties.driverVersion &&
+            std::memcmp(fp.uuid.data(), properties.properties.pipelineCacheUUID, VK_UUID_SIZE) == 0;
+        if (magic != STATIC_CACHE_MAGIC_NUMBER || version != STATIC_CACHE_VERSION ||
+            !fingerprint_matches) {
+            Common::FS::RemoveFile(filename);
             create(0, nullptr);
             return;
         }
-        data.resize(total - magic.size() - sizeof(version));
+        data.resize(total - prefix_size);
         file.read(data.data(), static_cast<std::streamsize>(data.size()));
-    } catch (const std::ios_base::failure& e) {
+        if (data.size() < sizeof(VkPipelineCacheHeaderVersionOne)) {
+            Common::FS::RemoveFile(filename);
+            create(0, nullptr);
+            return;
+        }
+        VkPipelineCacheHeaderVersionOne vk_hdr{};
+        std::memcpy(&vk_hdr, data.data(), sizeof(vk_hdr));
+        const bool vk_hdr_valid =
+            vk_hdr.headerSize >= sizeof(VkPipelineCacheHeaderVersionOne) &&
+            vk_hdr.headerVersion == VK_PIPELINE_CACHE_HEADER_VERSION_ONE &&
+            vk_hdr.vendorID == properties.properties.vendorID &&
+            vk_hdr.deviceID == properties.properties.deviceID &&
+            std::memcmp(vk_hdr.pipelineCacheUUID, properties.properties.pipelineCacheUUID,
+                        VK_UUID_SIZE) == 0;
+        if (!vk_hdr_valid) {
+            Common::FS::RemoveFile(filename);
+            create(0, nullptr);
+            return;
+        }
+    } catch (const std::ios_base::failure&) {
+        Common::FS::RemoveFile(filename);
         create(0, nullptr);
         return;
     }
@@ -1062,11 +1136,26 @@ void Device::SaveStaticPipelineCache() const {
     size_t size = 0;
     std::vector<char> data;
     static_pipeline_cache.Read(&size, nullptr);
-    if (size == 0) {
+    if (size < sizeof(VkPipelineCacheHeaderVersionOne)) {
         return;
     }
     data.resize(size);
     static_pipeline_cache.Read(&size, data.data());
+    if (size < sizeof(VkPipelineCacheHeaderVersionOne)) {
+        return;
+    }
+    VkPipelineCacheHeaderVersionOne vk_hdr{};
+    std::memcpy(&vk_hdr, data.data(), sizeof(vk_hdr));
+    if (vk_hdr.headerVersion != VK_PIPELINE_CACHE_HEADER_VERSION_ONE ||
+        vk_hdr.vendorID != properties.properties.vendorID ||
+        vk_hdr.deviceID != properties.properties.deviceID) {
+        return;
+    }
+    StaticCacheFingerprint fp{};
+    fp.vendor_id = properties.properties.vendorID;
+    fp.device_id = properties.properties.deviceID;
+    fp.driver_version = properties.properties.driverVersion;
+    std::memcpy(fp.uuid.data(), properties.properties.pipelineCacheUUID, VK_UUID_SIZE);
     try {
         std::ofstream file(filename, std::ios::binary | std::ios::trunc);
         file.exceptions(std::ofstream::failbit);
@@ -1076,8 +1165,9 @@ void Device::SaveStaticPipelineCache() const {
         file.write(STATIC_CACHE_MAGIC_NUMBER.data(), STATIC_CACHE_MAGIC_NUMBER.size())
             .write(reinterpret_cast<const char*>(&STATIC_CACHE_VERSION),
                    sizeof(STATIC_CACHE_VERSION))
+            .write(reinterpret_cast<const char*>(&fp), sizeof(fp))
             .write(data.data(), static_cast<std::streamsize>(size));
-    } catch (const std::ios_base::failure& e) {
+    } catch (const std::ios_base::failure&) {
         Common::FS::RemoveFile(filename);
     }
 }
@@ -1446,10 +1536,24 @@ bool Device::GetSuitability(bool requires_swapchain) {
             VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_PROPERTIES_EXT;
         SetNext(next, properties.custom_border_color);
     }
+    if (extensions.texel_buffer_alignment || instance_version >= VK_API_VERSION_1_3) {
+        properties.texel_buffer_alignment.sType =
+            VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TEXEL_BUFFER_ALIGNMENT_PROPERTIES;
+        SetNext(next, properties.texel_buffer_alignment);
+    }
+    VkPhysicalDeviceExternalMemoryHostPropertiesEXT ext_mem_host_props{};
+    if (extensions.external_memory_host) {
+        ext_mem_host_props.sType =
+            VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_HOST_PROPERTIES_EXT;
+        SetNext(next, ext_mem_host_props);
+    }
 
     // Perform the property fetch.
     physical.GetProperties2(properties2);
 
+    if (extensions.external_memory_host) {
+        min_imported_host_pointer_alignment = ext_mem_host_props.minImportedHostPointerAlignment;
+    }
     // Store base properties
     properties.properties = properties2.properties;
     const std::string marketing_name2 = GetGpuMarketingName(properties.properties.vendorID, properties.properties.deviceID);
@@ -1612,6 +1716,11 @@ void Device::RemoveUnsuitableExtensions() {
     RemoveExtensionFeatureIfUnsuitable(extensions.depth_clip_control, features.depth_clip_control,
                                        VK_EXT_DEPTH_CLIP_CONTROL_EXTENSION_NAME);
 
+    // VK_EXT_depth_clip_enable
+    extensions.depth_clip_enable = features.depth_clip_enable.depthClipEnable;
+    RemoveExtensionFeatureIfUnsuitable(extensions.depth_clip_enable, features.depth_clip_enable,
+                                       VK_EXT_DEPTH_CLIP_ENABLE_EXTENSION_NAME);
+
     // VK_EXT_descriptor_buffer
     extensions.descriptor_buffer = features.descriptor_buffer.descriptorBuffer;
     RemoveExtensionFeatureIfUnsuitable(extensions.descriptor_buffer, features.descriptor_buffer,
@@ -1765,6 +1874,12 @@ void Device::RemoveUnsuitableExtensions() {
     RemoveExtensionFeatureIfUnsuitable(extensions.shader_demote_to_helper_invocation,
                                        features.shader_demote_to_helper_invocation,
                                        VK_EXT_SHADER_DEMOTE_TO_HELPER_INVOCATION_EXTENSION_NAME);
+
+    // VK_EXT_texel_buffer_alignment
+    extensions.texel_buffer_alignment = features.texel_buffer_alignment.texelBufferAlignment;
+    RemoveExtensionFeatureIfUnsuitable(extensions.texel_buffer_alignment,
+                                       features.texel_buffer_alignment,
+                                       VK_EXT_TEXEL_BUFFER_ALIGNMENT_EXTENSION_NAME);
 
     // VK_EXT_subgroup_size_control
     extensions.subgroup_size_control =

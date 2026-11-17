@@ -124,6 +124,9 @@ private:
     // Watchpoint info
     const Kernel::DebugWatchpoint* m_halted_watchpoint{};
     Kernel::Svc::ThreadContext m_breakpoint_context{};
+
+    // Set when a branch to a null address should be skipped instead of killing the thread.
+    bool m_recover_null_exec{};
 };
 
 } // namespace Core

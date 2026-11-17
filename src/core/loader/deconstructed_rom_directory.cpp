@@ -89,6 +89,10 @@ FileSys::VirtualFile FindLooseRomFS(const FileSys::VirtualDir& exefs_dir) {
             return f;
         }
     }
+    if (const auto romfs_dir = exefs_dir->GetSubdirectory("romfs")) {
+        LOG_INFO(Loader, "Using RomFS directory inside the ExeFS");
+        return FileSys::CreateRomFS(romfs_dir);
+    }
     if (const auto parent = exefs_dir->GetParentDirectory()) {
         if (const auto romfs_dir = parent->GetSubdirectory("romfs")) {
             LOG_INFO(Loader, "Using RomFS directory next to the ExeFS");

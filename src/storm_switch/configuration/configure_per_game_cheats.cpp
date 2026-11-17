@@ -998,8 +998,8 @@ void ConfigurePerGameCheats::ApplyConfiguration() {
         }
     }
 
-    std::vector<Core::Memory::CheatEntry> active_cheat_entries;
-    const Core::Memory::TextCheatParser parser;
+    Core::Memory::CheatList active_cheat_list;
+    const Core::Memory::TextCheatParser parser{true};
 
     for (const auto& item : cheat_items) {
         if (!item.enabled) {
@@ -1007,18 +1007,16 @@ void ConfigurePerGameCheats::ApplyConfiguration() {
         } else {
             new_disabled.push_back("__ENABLED__:" + item.name.toStdString());
             std::string formatted = fmt::format("[{}]\n{}\n", item.name.toStdString(), item.code.toStdString());
-            auto parsed = parser.Parse(formatted);
-            for (auto& p : parsed) {
-                active_cheat_entries.push_back(std::move(p));
-            }
+            active_cheat_list.Append(parser.Parse(formatted));
         }
     }
 
     Settings::values.disabled_addons[title_id] = std::move(new_disabled);
 
     if (system.IsPoweredOn()) {
-        system.ReloadCheatList(active_cheat_entries);
+        const auto active_count = active_cheat_list.cheats.size();
+        system.ReloadCheatList(std::move(active_cheat_list));
         LOG_INFO(Common, "Dynamically reloaded {} active cheat entries during gameplay for title_id=0x{:016X}",
-                 active_cheat_entries.size(), title_id);
+                 active_count, title_id);
     }
 }

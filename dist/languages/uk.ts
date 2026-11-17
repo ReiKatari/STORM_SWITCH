@@ -35,7 +35,7 @@ hr { height: 1px; border-width: 0; }
 li.unchecked::marker { content: "\2610"; }
 li.checked::marker { content: "\2612"; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=" font-family:'Noto Sans'; font-size:9pt; font-weight:400; font-style:normal;"&gt;
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;&lt;span style=" font-family:'MS Shell Dlg 2'; font-size:12pt;"&gt;Eden — експериментальний емулятор із відкритим вихідним кодом для Nintendo Switch під ліцензією GPLv3.0+, який базується на емуляторі yuzu, розробка якого припинилася в березні 2024 року. &lt;br /&gt;&lt;br /&gt;Цією програмою не слід користуватися, щоб грати в ігри, які не були отримані легально.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;&lt;span style=" font-family:'MS Shell Dlg 2'; font-size:12pt;"&gt;Eden - експериментальний емулятор із відкритим вихідним кодом для Nintendo Switch під ліцензією GPLv3.0+, який базується на емуляторі yuzu, розробка якого припинилася в березні 2024 року. &lt;br /&gt;&lt;br /&gt;Цією програмою не слід користуватися, щоб грати в ігри, які не були отримані легально.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/aboutdialog.ui" line="131" />
@@ -217,7 +217,7 @@ This would ban both their forum username and their IP address.</source>
     <message>
       <location filename="../../src/yuzu/multiplayer/client_room.cpp" line="102" />
       <source>%1 - %2 (%3/%4 members) - connected</source>
-      <translation>%1 — %2 (учасники: %3/%4) — під’єднано</translation>
+      <translation>%1 - %2 (учасники: %3/%4) - під’єднано</translation>
     </message>
   </context>
   <context>
@@ -377,7 +377,7 @@ Doesn't affect performance/stability but may allow HD texture mods to load.</sou
 200% for a 30 FPS game is 60 FPS, and for a 60 FPS game it will be 120 FPS.
 Disabling it means unlocking the framerate to the maximum your PC can reach.</source>
       <translation>Керує максимальною швидкістю візуалізації гри. Деякі ігри можуть працювати з неправильною швидкістю.
-200% для гри з 30 к/с — це 60 к/с, а для гри з 60 к/с — 120 к/с.
+200% для гри з 30 к/с - це 60 к/с, а для гри з 60 к/с - 120 к/с.
 Вимкнення розблокує частоту кадрів до максимальної, на яку здатен здатен ваш комп’ютер.</translation>
     </message>
     <message>
@@ -448,7 +448,7 @@ Use Boost (1700MHz) to run at the Switch's highest native clock, or Fast (2000MH
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="104" />
       <source>Set a custom value of CPU ticks. Higher values can increase performance, but may cause deadlocks. A range of 77-21000 is recommended.</source>
-      <translation>Налаштування власного значення тактів ЦП. Більші значення можуть збільшити продуктивність, але також можуть спричинити блокування. Рекомендовані значення в діапазоні 77–21000.</translation>
+      <translation>Налаштування власного значення тактів ЦП. Більші значення можуть збільшити продуктивність, але також можуть спричинити блокування. Рекомендовані значення в діапазоні 77-21000.</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="112" />
@@ -688,7 +688,7 @@ stuttering but may present artifacts.</source>
       <source>Most GPUs lack support for ASTC textures and must decompress to anintermediate format: RGBA8.
 BC1/BC3: The intermediate format will be recompressed to BC1 or BC3 format,
  saving VRAM but degrading image quality.</source>
-      <translation>Більшість ГП не підтримують ASTC-текстури, тому їх потрібно перепаковувати у проміжний формат — RGBA8.
+      <translation>Більшість ГП не підтримують ASTC-текстури, тому їх потрібно перепаковувати у проміжний формат - RGBA8.
 BC1/BC3: Проміжний формат буде перепаковано у формат BC1 або BC3 для збереження відеопам’яті, але це негатривно вплине на якість зображення.</translation>
     </message>
     <message>
@@ -4521,7 +4521,7 @@ To invert the axes, first move your joystick vertically, and then horizontally.<
     <message>
       <location filename="../../src/yuzu/configuration/configure_motion_touch.cpp" line="170" />
       <source>Port has to be in range 0 and 65353</source>
-      <translation>Порт повинен бути в дівпазоні 0–65353</translation>
+      <translation>Порт повинен бути в дівпазоні 0-65353</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_motion_touch.cpp" line="174" />
@@ -4589,7 +4589,7 @@ To invert the axes, first move your joystick vertically, and then horizontally.<
     <message>
       <location filename="../../src/yuzu/configuration/configure_mouse_panning.ui" line="15" />
       <source>Can be toggled via a hotkey. Default hotkey is Ctrl + F9</source>
-      <translation>Можна перемикати сполученням клавіш. Стандартне — Ctrl + F9</translation>
+      <translation>Можна перемикати сполученням клавіш. Стандартне - Ctrl + F9</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_mouse_panning.ui" line="24" />
@@ -5722,13 +5722,13 @@ Drag points to change position, or double-click table cells to edit values.</sou
       <location filename="../../src/yuzu/configuration/configure_web.cpp" line="113" />
       <source>Must be between 4-20 characters</source>
       <comment>Tooltip</comment>
-      <translation>Повинно бути в межах 4–20 символів</translation>
+      <translation>Повинно бути в межах 4-20 символів</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_web.cpp" line="122" />
       <source>Must be 48 characters, and lowercase a-z</source>
       <comment>Tooltip</comment>
-      <translation>Повинно бути 48 символів a–z нижнього регістру</translation>
+      <translation>Повинно бути 48 символів a-z нижнього регістру</translation>
     </message>
   </context>
   <context>
@@ -5929,7 +5929,7 @@ Drag points to change position, or double-click table cells to edit values.</sou
     <message>
       <location filename="../../src/yuzu/multiplayer/message.cpp" line="19" />
       <source>Port must be a number between 0 to 65535.</source>
-      <translation>Порт повинен бути числом в діапазоні 0–65535.</translation>
+      <translation>Порт повинен бути числом в діапазоні 0-65535.</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/multiplayer/message.cpp" line="20" />

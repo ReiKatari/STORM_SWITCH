@@ -325,15 +325,15 @@ void ConfigurePerGameAmiibo::SetupUi() {
     m_image_label->setText(tr("Выберите фигурку"));
     details_layout->addWidget(m_image_label);
 
-    m_name_label = new QLabel(tr("Имя: —"), this);
+    m_name_label = new QLabel(tr("Имя: -"), this);
     const auto amiibo_pal = StormTheme::GetThemePalette();
     m_name_label->setStyleSheet(QStringLiteral("font-size: 11pt; font-weight: bold; color: %1;").arg(amiibo_pal.accent));
     details_layout->addWidget(m_name_label);
 
-    m_series_label = new QLabel(tr("Серия: —"), this);
+    m_series_label = new QLabel(tr("Серия: -"), this);
     details_layout->addWidget(m_series_label);
 
-    m_type_label = new QLabel(tr("Тип: —"), this);
+    m_type_label = new QLabel(tr("Тип: -"), this);
     details_layout->addWidget(m_type_label);
 
     m_status_badge = new QLabel(tr("Статус: Ожидание"), this);

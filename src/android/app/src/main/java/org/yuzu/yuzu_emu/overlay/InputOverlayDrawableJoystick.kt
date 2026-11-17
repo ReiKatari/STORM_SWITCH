@@ -118,6 +118,20 @@ class InputOverlayDrawableJoystick(
         boundsBoxBitmap.draw(canvas)
     }
 
+    fun cancelTouch(): Boolean {
+        if (trackId == -1) return false
+        pressedState = false
+        xAxis = 0.0f
+        yAxis = 0.0f
+        outerBitmap.alpha = opacity
+        boundsBoxBitmap.alpha = 0
+        virtBounds = Rect(origBounds)
+        bounds = Rect(origBounds)
+        setInnerBounds()
+        trackId = -1
+        return true
+    }
+
     fun updateStatus(event: MotionEvent): Boolean {
         val pointerIndex = event.actionIndex
         val xPosition = event.getX(pointerIndex).toInt()

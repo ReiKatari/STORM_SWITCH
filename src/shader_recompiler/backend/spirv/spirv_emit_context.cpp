@@ -16,6 +16,7 @@
 #include "common/common_types.h"
 #include "common/div_ceil.h"
 #include "shader_recompiler/backend/spirv/emit_spirv.h"
+#include "common/settings.h"
 #include "shader_recompiler/backend/spirv/spirv_emit_context.h"
 
 namespace Shader::Backend::SPIRV {
@@ -466,6 +467,10 @@ EmitContext::EmitContext(const Profile& profile_, const RuntimeInfo& runtime_inf
     : Sirit::Module(profile_.supported_spirv), profile{profile_}, runtime_info{runtime_info_},
       stage{program.stage}, texture_rescaling_index{bindings.texture_scaling_index},
       image_rescaling_index{bindings.image_scaling_index} {
+    gs_dedup = program.info.uses_gs_scratch;
+    if (gs_dedup) {
+        gs_scratch_ssbo = program.info.gs_scratch_ssbo;
+    }
     const bool is_unified{profile.unified_descriptor_binding};
     u32& uniform_binding{is_unified ? bindings.unified : bindings.uniform_buffer};
     u32& storage_binding{is_unified ? bindings.unified : bindings.storage_buffer};
@@ -487,9 +492,10 @@ EmitContext::EmitContext(const Profile& profile_, const RuntimeInfo& runtime_inf
     DefineImages(program.info, image_binding, bindings.image_scaling_index);
     DefineAttributeMemAccess(program.info);
     DefineWriteStorageCasLoopFunction(program.info);
-    DefineGlobalMemoryFunctions(program.info);
+    DefineGlobalMemoryFunctions(program);
     DefineRescalingInput(program.info);
     DefineRenderArea(program.info);
+    DefineGsGeneration();
 }
 
 EmitContext::~EmitContext() = default;
@@ -939,7 +945,8 @@ void EmitContext::DefineWriteStorageCasLoopFunction(const Info& info) {
     write_storage_cas_loop_func = func;
 }
 
-void EmitContext::DefineGlobalMemoryFunctions(const Info& info) {
+void EmitContext::DefineGlobalMemoryFunctions(const IR::Program& program) {
+    const Info& info{program.info};
     if (!info.uses_global_memory || !profile.support_int64) {
         return;
     }
@@ -962,6 +969,9 @@ void EmitContext::DefineGlobalMemoryFunctions(const Info& info) {
         const Id fallback_size_u64{Constant(U64, 0x800000ULL)};
         const size_t num_buffers{info.storage_buffers_descriptors.size()};
         for (size_t index = 0; index < num_buffers; ++index) {
+            if (info.uses_gs_scratch && index == info.gs_scratch_ssbo) {
+                continue;
+            }
             const auto& ssbo{info.storage_buffers_descriptors[index]};
             if (ssbo.cbuf_index >= Info::MAX_CBUFS ||
                 (info.constant_buffer_mask & (1U << ssbo.cbuf_index)) == 0) {
@@ -976,7 +986,7 @@ void EmitContext::DefineGlobalMemoryFunctions(const Info& info) {
                                      (ssbo.cbuf_offset < info.nvn_buffer_base + 16 * 0x10);
             if (is_nvn_cbuf) {
                 const size_t nvn_index = (ssbo.cbuf_offset - info.nvn_buffer_base) / 0x10;
-                if (nvn_index < 16 && info.nvn_buffer_used.any() && !info.nvn_buffer_used[nvn_index]) {
+                if (info.nvn_buffer_used.any() && !info.nvn_buffer_used[nvn_index]) {
                     continue;
                 }
             }
@@ -1092,6 +1102,7 @@ void EmitContext::DefineGlobalMemoryFunctions(const Info& info) {
             }
             AddLabel(else_label);
         }};
+        // Pass 1: exact explicit-size matches prevent an 8 MiB raw-pointer fallback from shadowing another SSBO
         for (const auto& entry : resolved) {
             if (!Sirit::ValidId(entry.has_valid_size)) {
                 continue;
@@ -1102,6 +1113,7 @@ void EmitContext::DefineGlobalMemoryFunctions(const Info& info) {
             const Id cond{OpLogicalAnd(U1, OpLogicalAnd(U1, entry.non_null, entry.has_valid_size), in_range)};
             emit_match(entry, cond);
         }
+        // Pass 2: 8 MiB fallback matches NVN/Snowdrop raw 64-bit pointers where +8..+15 is 0/OOB/invalid
         for (const auto& entry : resolved) {
             const Id fallback_end{OpIAdd(U64, entry.unaligned_addr, fallback_size_u64)};
             const Id in_fallback{OpLogicalAnd(U1, OpUGreaterThanEqual(U1, addr, entry.unaligned_addr),
@@ -1177,6 +1189,26 @@ void EmitContext::DefineGlobalMemoryFunctions(const Info& info) {
         define(&StorageDefinitions::U32x2, storage_types.U32x2, U32[2], sizeof(u32[2]));
     std::tie(load_global_func_u32x4, write_global_func_u32x4) =
         define(&StorageDefinitions::U32x4, storage_types.U32x4, U32[4], sizeof(u32[4]));
+
+    if (!std::ranges::any_of(program.blocks, [](const IR::Block* block) {
+            return std::ranges::any_of(block->Instructions(), [](const IR::Inst& inst) {
+                return inst.GetOpcode() == IR::Opcode::GlobalAtomicIAdd32;
+            });
+        })) {
+        return;
+    }
+    const Id function_type{TypeFunction(U32[1], U64, U32[1])};
+    atomic_add_global_func_u32 =
+        OpFunction(U32[1], spv::FunctionControlMask::MaskNone, function_type);
+    const Id address{OpFunctionParameter(U64)};
+    const Id value{OpFunctionParameter(U32[1])};
+    const Id scope{Const(static_cast<u32>(spv::Scope::Device))};
+    define_body(&StorageDefinitions::U32, address, storage_types.U32.element, 2, 1,
+                [&](Id pointer, size_t, Id, bool) {
+                    OpReturnValue(OpAtomicIAdd(U32[1], pointer, scope, u32_zero_value, value));
+                });
+    OpReturnValue(u32_zero_value);
+    OpFunctionEnd();
 }
 
 void EmitContext::DefineRescalingInput(const Info& info) {
@@ -1208,9 +1240,18 @@ void EmitContext::DefineRescalingInputPushConstant() {
         members.push_back(F32[1]);
         rescaling_downfactor_member_index = member_index++;
     }
+    if (gs_dedup) {
+        members.push_back(U32[1]);
+        gs_generation_member = member_index++;
+    }
     const Id push_constant_struct{TypeStruct(std::span(members.data(), members.size()))};
     Decorate(push_constant_struct, spv::Decoration::Block);
     Name(push_constant_struct, "ResolutionInfo");
+    if (gs_dedup) {
+        MemberDecorate(push_constant_struct, gs_generation_member, spv::Decoration::Offset,
+                       GS_GENERATION_LAYOUT_OFFSET);
+        MemberName(push_constant_struct, gs_generation_member, "gs_generation");
+    }
 
     MemberDecorate(push_constant_struct, rescaling_textures_member_index, spv::Decoration::Offset,
                    static_cast<u32>(offsetof(RescalingLayout, rescaling_textures)));
@@ -1229,6 +1270,9 @@ void EmitContext::DefineRescalingInputPushConstant() {
     const Id pointer_type{TypePointer(spv::StorageClass::PushConstant, push_constant_struct)};
     rescaling_push_constants = AddGlobalVariable(pointer_type, spv::StorageClass::PushConstant);
     Name(rescaling_push_constants, "rescaling_push_constants");
+    if (gs_dedup) {
+        gs_generation_block = rescaling_push_constants;
+    }
 
     if (profile.supported_spirv >= 0x00010400) {
         interfaces.push_back(rescaling_push_constants);
@@ -1252,11 +1296,16 @@ void EmitContext::DefineRenderArea(const Info& info) {
     }
 
     if (profile.unified_descriptor_binding) {
-        boost::container::static_vector<Id, 1> members{};
+        boost::container::static_vector<Id, 2> members{};
         u32 member_index{0};
 
         members.push_back(F32[4]);
         render_are_member_index = member_index++;
+        const bool add_gs_generation{gs_dedup && !Sirit::ValidId(gs_generation_block)};
+        if (add_gs_generation) {
+            members.push_back(U32[1]);
+            gs_generation_member = member_index++;
+        }
 
         const Id push_constant_struct{TypeStruct(std::span(members.data(), members.size()))};
         Decorate(push_constant_struct, spv::Decoration::Block);
@@ -1264,15 +1313,42 @@ void EmitContext::DefineRenderArea(const Info& info) {
 
         MemberDecorate(push_constant_struct, render_are_member_index, spv::Decoration::Offset, 0);
         MemberName(push_constant_struct, render_are_member_index, "render_area");
+        if (add_gs_generation) {
+            MemberDecorate(push_constant_struct, gs_generation_member, spv::Decoration::Offset,
+                           GS_GENERATION_LAYOUT_OFFSET);
+            MemberName(push_constant_struct, gs_generation_member, "gs_generation");
+        }
 
         const Id pointer_type{TypePointer(spv::StorageClass::PushConstant, push_constant_struct)};
         render_area_push_constant =
             AddGlobalVariable(pointer_type, spv::StorageClass::PushConstant);
         Name(render_area_push_constant, "render_area_push_constants");
+        if (add_gs_generation) {
+            gs_generation_block = render_area_push_constant;
+        }
 
         if (profile.supported_spirv >= 0x00010400) {
             interfaces.push_back(render_area_push_constant);
         }
+    }
+}
+
+void EmitContext::DefineGsGeneration() {
+    if (!gs_dedup || Sirit::ValidId(gs_generation_block)) {
+        return;
+    }
+    const Id member{U32[1]};
+    const Id push_constant_struct{TypeStruct(std::span(&member, 1))};
+    Decorate(push_constant_struct, spv::Decoration::Block);
+    Name(push_constant_struct, "GsGenerationInfo");
+    MemberDecorate(push_constant_struct, 0, spv::Decoration::Offset, GS_GENERATION_LAYOUT_OFFSET);
+    MemberName(push_constant_struct, 0, "gs_generation");
+    const Id pointer_type{TypePointer(spv::StorageClass::PushConstant, push_constant_struct)};
+    gs_generation_block = AddGlobalVariable(pointer_type, spv::StorageClass::PushConstant);
+    gs_generation_member = 0;
+    Name(gs_generation_block, "gs_generation_push_constants");
+    if (profile.supported_spirv >= 0x00010400) {
+        interfaces.push_back(gs_generation_block);
     }
 }
 
@@ -1489,40 +1565,36 @@ void EmitContext::DefineTextureBuffers(const Info& info, u32& binding) {
         return;
     }
     const spv::ImageFormat format{spv::ImageFormat::Unknown};
-    const Id f32_img_type{TypeImage(F32[1], spv::Dim::Buffer, 0U, false, false, 1, format)};
-    const Id f32_ptr_type{TypePointer(spv::StorageClass::UniformConstant, f32_img_type)};
-    image_buffer_type = f32_img_type;
-    Id u32_img_type{};
-    Id u32_ptr_type{};
-
     texture_buffers.reserve(info.texture_buffer_descriptors.size());
     for (const TextureBufferDescriptor& desc : info.texture_buffer_descriptors) {
-        Id img_type{f32_img_type};
-        Id ptr_type{f32_ptr_type};
-        if (desc.is_integer) {
-            if (!Sirit::ValidId(u32_img_type)) {
-                u32_img_type = TypeImage(U32[1], spv::Dim::Buffer, 0U, false, false, 1, format);
-                u32_ptr_type = TypePointer(spv::StorageClass::UniformConstant, u32_img_type);
-            }
-            img_type = u32_img_type;
-            ptr_type = u32_ptr_type;
+        const Id sampled_type{desc.is_integer ? U32[1] : F32[1]};
+        const Id image_type{TypeImage(sampled_type, spv::Dim::Buffer, 0U, false, false, 1, format)};
+        const Id pointer_type{TypePointer(spv::StorageClass::UniformConstant, image_type)};
+        Id var_pointer_type{pointer_type};
+        if (desc.count > 1) {
+            const Id array_type{TypeArray(image_type, Const(desc.count))};
+            var_pointer_type = TypePointer(spv::StorageClass::UniformConstant, array_type);
         }
-        const Id desc_type{DescType(*this, img_type, ptr_type, desc.count)};
-        const Id id{AddGlobalVariable(desc_type, spv::StorageClass::UniformConstant)};
+        const Id id{AddGlobalVariable(var_pointer_type, spv::StorageClass::UniformConstant)};
         Decorate(id, spv::Decoration::Binding, binding);
         Decorate(id, spv::Decoration::DescriptorSet, 0U);
         Name(id, NameOf(stage, desc, "texbuf"));
         texture_buffers.push_back({
             .id = id,
-            .image_type = img_type,
-            .pointer_type = ptr_type,
+            .image_type = image_type,
+            .pointer_type = pointer_type,
             .count = desc.count,
             .is_integer = desc.is_integer,
         });
+        if (desc.count > 1 && profile.support_uniform_texel_buffer_array_nonuniform_indexing) {
+            AddExtension("SPV_EXT_descriptor_indexing");
+            AddCapability(spv::Capability::ShaderNonUniformEXT);
+            AddCapability(spv::Capability::UniformTexelBufferArrayNonUniformIndexingEXT);
+        }
         if (profile.supported_spirv >= 0x00010400) {
             interfaces.push_back(id);
         }
-        ++binding;
+        binding += desc.count;
     }
 }
 
@@ -1545,6 +1617,11 @@ void EmitContext::DefineImageBuffers(const Info& info, u32& binding) {
             .count = desc.count,
             .is_integer = desc.is_integer,
         });
+        if (desc.count > 1 && profile.support_storage_texel_buffer_array_nonuniform_indexing) {
+            AddExtension("SPV_EXT_descriptor_indexing");
+            AddCapability(spv::Capability::ShaderNonUniformEXT);
+            AddCapability(spv::Capability::StorageTexelBufferArrayNonUniformIndexingEXT);
+        }
         if (profile.supported_spirv >= 0x00010400) {
             interfaces.push_back(id);
         }
@@ -1572,6 +1649,11 @@ void EmitContext::DefineTextures(const Info& info, u32& binding, u32& scaling_in
             .is_multisample = desc.is_multisample,
             .is_integer = desc.is_integer,
         });
+        if (desc.count > 1 && profile.support_sampled_image_array_nonuniform_indexing) {
+            AddExtension("SPV_EXT_descriptor_indexing");
+            AddCapability(spv::Capability::ShaderNonUniformEXT);
+            AddCapability(spv::Capability::SampledImageArrayNonUniformIndexingEXT);
+        }
         if (profile.supported_spirv >= 0x00010400) {
             interfaces.push_back(id);
         }
@@ -1600,6 +1682,11 @@ void EmitContext::DefineImages(const Info& info, u32& binding, u32& scaling_inde
             .count = desc.count,
             .is_integer = desc.is_integer,
         });
+        if (desc.count > 1 && profile.support_storage_image_array_nonuniform_indexing) {
+            AddExtension("SPV_EXT_descriptor_indexing");
+            AddCapability(spv::Capability::ShaderNonUniformEXT);
+            AddCapability(spv::Capability::StorageImageArrayNonUniformIndexingEXT);
+        }
         if (profile.supported_spirv >= 0x00010400) {
             interfaces.push_back(id);
         }
@@ -1678,7 +1765,7 @@ void EmitContext::DefineInputs(const IR::Program& program) {
         layer = DefineInput(*this, U32[1], false, spv::BuiltIn::Layer);
         Decorate(layer, spv::Decoration::Flat);
     }
-    if (loads.AnyComponent(IR::Attribute::PositionX)) {
+    if (loads.AnyComponent(IR::Attribute::PositionX) || runtime_info.depth_range) {
         const bool is_fragment{stage == Stage::Fragment};
         if (!is_fragment && profile.has_broken_spirv_position_input) {
             need_input_position_indirect = true;
@@ -1887,7 +1974,7 @@ void EmitContext::DefineOutputs(const IR::Program& program) {
                 Name(frag_color[index], fmt::format("frag_color{}", index));
             }
         }
-        if (info.stores_frag_depth) {
+        if (info.stores_frag_depth || runtime_info.depth_range) {
             frag_depth = DefineOutput(*this, F32[1], std::nullopt);
             Decorate(frag_depth, spv::Decoration::BuiltIn, spv::BuiltIn::FragDepth);
         }
@@ -1900,6 +1987,25 @@ void EmitContext::DefineOutputs(const IR::Program& program) {
     default:
         break;
     }
+}
+
+Id SanitizeFiniteF32(EmitContext& ctx, Id value, f32 max_abs, std::optional<f32> neg_inf_fallback) {
+    if (!Settings::values.fix_bloom_effects.GetValue()) {
+        return value;
+    }
+    const Id bits{ctx.OpBitcast(ctx.U32[1], value)};
+    const Id abs_bits{ctx.OpBitwiseAnd(ctx.U32[1], bits, ctx.Const(0x7FFFFFFFu))};
+    const Id is_finite{ctx.OpULessThan(ctx.U1, abs_bits, ctx.Const(0x7F800000u))};
+    Id sanitized{ctx.OpSelect(ctx.F32[1], is_finite, value, ctx.f32_zero_value)};
+    if (neg_inf_fallback.has_value()) {
+        const Id is_neg_inf{ctx.OpIEqual(ctx.U1, bits, ctx.Const(0xFF800000u))};
+        sanitized = ctx.OpSelect(ctx.F32[1], is_neg_inf, ctx.Const(*neg_inf_fallback), sanitized);
+    }
+    const Id min_f32{ctx.Const(-max_abs)};
+    const Id max_f32{ctx.Const(max_abs)};
+    return ctx.profile.has_broken_spirv_clamp
+               ? ctx.OpFMin(ctx.F32[1], max_f32, ctx.OpFMax(ctx.F32[1], min_f32, sanitized))
+               : ctx.OpFClamp(ctx.F32[1], sanitized, min_f32, max_f32);
 }
 
 } // namespace Shader::Backend::SPIRV

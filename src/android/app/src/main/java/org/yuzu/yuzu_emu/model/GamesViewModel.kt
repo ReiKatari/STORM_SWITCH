@@ -285,6 +285,7 @@ class GamesViewModel : ViewModel() {
                 }
                 NativeConfig.saveGlobalConfig()
                 getGameDirsAndExternalContent(reloadList = true)
+                org.yuzu.yuzu_emu.utils.GameFolderOperations.markGameFoldersChanged()
             }
         }
 
@@ -298,8 +299,13 @@ class GamesViewModel : ViewModel() {
                 prefs.edit().putStringSet("game_directories_backup", dirSet).apply()
                 NativeConfig.saveGlobalConfig()
                 getGameDirsAndExternalContent(reloadList = true)
+                org.yuzu.yuzu_emu.utils.GameFolderOperations.markGameFoldersChanged()
             }
         }
+
+    fun syncFoldersFromNativeConfig() {
+        getGameDirsAndExternalContent(reloadList = false)
+    }
 
     fun onOpenGameFoldersFragment() =
         viewModelScope.launch {

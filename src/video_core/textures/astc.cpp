@@ -1104,27 +1104,25 @@ static void UnquantizeTexelWeights(u32 out[2][144], const IntegerEncodedVector& 
     u32 Dt = (1024 + (blockHeight / 2)) / (blockHeight - 1);
 
     const u32 kPlaneScale = params.m_bDualPlane ? 2U : 1U;
-    for (u32 plane = 0; plane < kPlaneScale; plane++)
-        for (u32 t = 0; t < blockHeight; t++)
+    for (u32 plane = 0; plane < kPlaneScale; plane++) {
+        for (u32 t = 0; t < blockHeight; t++) {
+            const u32 ct = Dt * t;
+            const u32 gt = (ct * (params.m_Height - 1) + 32) >> 6;
+            const u32 jt = gt >> 4;
+            const u32 ft = gt & 0x0F;
+            const u32 jt_row = jt * params.m_Width;
             for (u32 s = 0; s < blockWidth; s++) {
-                u32 cs = Ds * s;
-                u32 ct = Dt * t;
+                const u32 cs = Ds * s;
+                const u32 gs = (cs * (params.m_Width - 1) + 32) >> 6;
+                const u32 js = gs >> 4;
+                const u32 fs = gs & 0xF;
 
-                u32 gs = (cs * (params.m_Width - 1) + 32) >> 6;
-                u32 gt = (ct * (params.m_Height - 1) + 32) >> 6;
+                const u32 w11 = (fs * ft + 8) >> 4;
+                const u32 w10 = ft - w11;
+                const u32 w01 = fs - w11;
+                const u32 w00 = 16 - fs - ft + w11;
 
-                u32 js = gs >> 4;
-                u32 fs = gs & 0xF;
-
-                u32 jt = gt >> 4;
-                u32 ft = gt & 0x0F;
-
-                u32 w11 = (fs * ft + 8) >> 4;
-                u32 w10 = ft - w11;
-                u32 w01 = fs - w11;
-                u32 w00 = 16 - fs - ft + w11;
-
-                u32 v0 = js + jt * params.m_Width;
+                const u32 v0 = js + jt_row;
 
 #define FIND_TEXEL(tidx, bidx)                                                                     \
     u32 p##bidx = 0;                                                                               \
@@ -1144,6 +1142,8 @@ static void UnquantizeTexelWeights(u32 out[2][144], const IntegerEncodedVector& 
                 out[plane][t * blockWidth + s] =
                     (p00 * w00 + p01 * w01 + p10 * w10 + p11 * w11 + 8) >> 4;
             }
+        }
+    }
 }
 
 // Transfers a bit as described in C.2.14
@@ -2036,6 +2036,71 @@ void Decompress(std::span<const uint8_t> data, uint32_t width, uint32_t height, 
         }
         workers.WaitForRequests();
     }
+}
+
+bool IsOpaque(std::span<const uint8_t> data) {
+    // Endpoint modes with an alpha channel: LDR luminance+alpha (4, 5), RGB scale + two alpha
+    // (10), LDR RGBA (12, 13) and HDR RGBA (14, 15).
+    constexpr u32 AlphaModes = (1U << 4) | (1U << 5) | (1U << 10) | (1U << 12) | (1U << 13) |
+                               (1U << 14) | (1U << 15);
+    for (size_t offset = 0; offset + 16 <= data.size(); offset += 16) {
+        const std::span<const u8> block = data.subspan(offset, 16);
+        InputBitStream strm(block);
+        const TexelWeightParams params = DecodeBlockInfo(strm);
+        if (params.m_bError) {
+            continue; // decodes to the opaque error colour
+        }
+        if (params.m_bVoidExtentLDR || params.m_bVoidExtentHDR) {
+            // One RGBA16 colour in bits 64-127: UNORM16, or FP16 for HDR.
+            const u32 alpha = block[14] | (u32{block[15]} << 8);
+            if (alpha != (params.m_bVoidExtentHDR ? 0x3C00U : 0xFFFFU)) {
+                return false;
+            }
+            continue;
+        }
+        const u32 partitions = strm.ReadBits<2>() + 1;
+        if (partitions == 4 && params.m_bDualPlane) {
+            continue;
+        }
+        if (partitions == 1) {
+            if ((AlphaModes >> strm.ReadBits<4>()) & 1) {
+                return false;
+            }
+            continue;
+        }
+        strm.ReadBits<10>(); // partition index
+        const u32 base_cem = strm.ReadBits<6>();
+        const u32 base_mode = base_cem & 3;
+        if (base_mode == 0) {
+            if ((AlphaModes >> (base_cem >> 2)) & 1) {
+                return false;
+            }
+            continue;
+        }
+        // The rest of the per-partition modes sit just below the weights (DecompressBlock).
+        const u32 weight_bits = params.GetPackedBitSize();
+        if (weight_bits < 24 || weight_bits > 96) {
+            continue;
+        }
+        const u32 extra_bits = partitions == 2 ? 2 : partitions == 3 ? 5 : 8;
+        const u32 extra_offset = 128 - weight_bits - extra_bits;
+        u32 extra = 0;
+        for (u32 bit = 0; bit < extra_bits; ++bit) {
+            const u32 position = extra_offset + bit;
+            extra |= ((block[position / 8] >> (position % 8)) & 1U) << bit;
+        }
+        u32 cem = ((extra << 6) | base_cem) >> 2;
+        const u32 classes = cem;
+        cem >>= partitions;
+        for (u32 i = 0; i < partitions; ++i) {
+            const u32 mode = ((base_mode - (((classes >> i) & 1) != 0 ? 0 : 1)) << 2) |
+                             ((cem >> (2 * i)) & 3);
+            if ((AlphaModes >> mode) & 1) {
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 } // namespace Tegra::Texture::ASTC

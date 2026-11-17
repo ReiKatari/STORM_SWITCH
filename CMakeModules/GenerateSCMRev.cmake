@@ -24,7 +24,7 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
 # Determine version priority:
 # 1. Always read fresh from GIT-RELEASE file on disk if available
 # 2. GIT_RELEASE / BUILD_VERSION / GIT_TAG CMake variables
-# 3. Fallback default 18.0.0
+# 3. Fallback default 18.1.0
 if (EXISTS "${CMAKE_SOURCE_DIR}/GIT-RELEASE")
     file(STRINGS "${CMAKE_SOURCE_DIR}/GIT-RELEASE" _storm_git_rel LIMIT_COUNT 1)
     string(STRIP "${_storm_git_rel}" BUILD_VERSION)
@@ -38,7 +38,7 @@ elseif (DEFINED BUILD_VERSION AND NOT BUILD_VERSION STREQUAL "")
 elseif (DEFINED GIT_TAG AND NOT GIT_TAG STREQUAL "")
     string(STRIP "${GIT_TAG}" BUILD_VERSION)
 else()
-    set(BUILD_VERSION "18.0.0")
+    set(BUILD_VERSION "18.1.0")
 endif()
 
 set(GIT_TAG "${BUILD_VERSION}")
@@ -60,6 +60,8 @@ set(BUILD_AUTO_UPDATE_STABLE_API_PATH "/repos/")
 
 set(BUILD_AUTO_UPDATE_WEBSITE "https://github.com")
 set(BUILD_AUTO_UPDATE_API "api.github.com")
+set(BUILD_AUTO_UPDATE_API_SECONDARY "stormgamesworld.ru/api")
+set(BUILD_AUTO_UPDATE_API_SECONDARY "stormgamesworld.ru/api")
 set(BUILD_AUTO_UPDATE_API_PATH "/repos/ReiKatari/STORM_SWITCH/releases/latest")
 set(BUILD_AUTO_UPDATE_REPO "ReiKatari/STORM_SWITCH")
 

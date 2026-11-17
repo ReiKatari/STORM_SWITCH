@@ -1,4 +1,3 @@
-#include "core/memory/dmnt_cheat_types.h"
 // SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -20,6 +19,7 @@
 #include "core/file_sys/vfs/vfs_types.h"
 #include "core/hle/service/os/event.h"
 #include "core/hle/service/kernel_helpers.h"
+#include "core/memory/dmnt_cheat_types.h"
 
 namespace Core::Frontend {
 class EmuWindow;
@@ -46,7 +46,8 @@ enum class ResultStatus : u16;
 } // namespace Loader
 
 namespace Core::Memory {
-struct CheatEntry;
+struct CheatList;
+struct RuntimeCheatInfo;
 class Memory;
 } // namespace Core::Memory
 
@@ -339,13 +340,18 @@ public:
 
     [[nodiscard]] FileSys::VirtualFilesystem GetFilesystem() const;
 
-    void RegisterCheatList(const std::vector<Memory::CheatEntry>& list,
+    /// Cheats of every process are kept, but only those of the application process run.
+    void RegisterCheatList(Kernel::KProcess& process, Memory::CheatList list,
                            const std::array<u8, 0x20>& build_id, u64 main_region_begin,
                            u64 main_region_size);
+    /// Must be called before the process is released.
+    void UnregisterCheatList(const Kernel::KProcess& process);
 
-    void ReloadCheatList(const std::vector<Memory::CheatEntry>& list);
+    void ReloadCheatList(Memory::CheatList list);
+    /// Cheats of the application process.
     [[nodiscard]] std::vector<Memory::RuntimeCheatInfo> GetRuntimeCheats() const;
-    bool SetCheatEnabled(u32 cheat_id, bool enabled);
+    /// Toggles a cheat, or every regular cheat in a submenu or in the whole menu (CHEAT_MENU_ROOT)
+    bool SetCheatEnabled(u32 id, bool enabled);
 
     void SetMainNsoParameters(u64 main_region_begin, u64 main_region_size);
     [[nodiscard]] u64 GetMainNsoBase() const;

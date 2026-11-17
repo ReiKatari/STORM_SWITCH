@@ -2722,7 +2722,7 @@ Schwächere CPUs können Leistungseinbußen erleiden und manche Spiele reagieren
         </message>
         <message>
             <source>Reduces CPU and GPU temperatures by 10-15°C during frame wait intervals without dropping target frame rate.</source>
-            <translation>Senkt CPU- und GPU-Temperaturen in Frame-Warteintervallen um 10–15 °C, ohne die Zielbildrate zu verringern.</translation>
+            <translation>Senkt CPU- und GPU-Temperaturen in Frame-Warteintervallen um 10-15 °C, ohne die Zielbildrate zu verringern.</translation>
         </message>
         <message>
             <source>Locks maximum performance for CPU and GPU, disables aggressive throttling and power saving.</source>
@@ -6683,7 +6683,7 @@ Ziehe die Punkte, um ihre Position zu ändern, oder doppelklicke auf Tabellenzel
         <message>
             <location filename="../../src/yuzu/configuration/configure_touchscreen_advanced.ui" line="26" />
             <source>Warning: The settings in this page affect the inner workings of Eden's emulated touchscreen. Changing them may result in undesirable behavior, such as the touchscreen partially or not working. You should only use this page if you know what you are doing.</source>
-            <translation>Warnung: Die Einstellungen auf dieser Seite beeinflussen die interne Funktionsweise des emulierten Berührungsbildschirms von Eden. Änderungen daran können zu unerwünschtem Verhalten führen – beispielsweise dazu, dass der Berührungsbildschirm nur teilweise oder gar nicht mehr funktioniert. Du solltest diese Seite nur verwenden, wenn du genau weist, was du tust.</translation>
+            <translation>Warnung: Die Einstellungen auf dieser Seite beeinflussen die interne Funktionsweise des emulierten Berührungsbildschirms von Eden. Änderungen daran können zu unerwünschtem Verhalten führen - beispielsweise dazu, dass der Berührungsbildschirm nur teilweise oder gar nicht mehr funktioniert. Du solltest diese Seite nur verwenden, wenn du genau weist, was du tust.</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_touchscreen_advanced.ui" line="52" />
@@ -9815,7 +9815,7 @@ Proceed anyway?</source>
         <message>
             <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="82" />
             <source>UUID must be 32 hex characters (0-9, A-F)</source>
-            <translation>Die UUID muss aus 32 Hexadezimalzeichen bestehen (0–9, A–F)</translation>
+            <translation>Die UUID muss aus 32 Hexadezimalzeichen bestehen (0-9, A-F)</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="89" />
@@ -9897,7 +9897,7 @@ Proceed anyway?</source>
             <location filename="../../src/yuzu/configuration/system/new_user_dialog.cpp" line="341" />
             <source>Must be 32 hex characters (0-9, a-f)</source>
             <comment>Tooltip</comment>
-            <translation>Muss aus 32 Hexadezimalzeichen bestehen (0–9, a–f)</translation>
+            <translation>Muss aus 32 Hexadezimalzeichen bestehen (0-9, a-f)</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/system/new_user_dialog.cpp" line="349" />
@@ -11265,7 +11265,7 @@ Die meisten Mods sind RomFS-Mods, während Patches (.pchtxt) in der Regel ExeFS-
         <message>
             <location filename="../../src/qt_common/qt_string_lookup.h" line="80" />
             <source>Unable to read key directory, aborting</source>
-            <translation>Schlüsselverzeichnis kann nicht gelesen werden – Abbruch.</translation>
+            <translation>Schlüsselverzeichnis kann nicht gelesen werden - Abbruch.</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/qt_string_lookup.h" line="81" />

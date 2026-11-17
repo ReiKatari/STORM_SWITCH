@@ -4,6 +4,7 @@
 #include <array>
 #include <atomic>
 #include <memory>
+#include <mutex>
 #include <unordered_map>
 #include <utility>
 
@@ -24,6 +25,7 @@
 #include "core/file_sys/content_archive.h"
 #include "core/file_sys/program_metadata.h"
 #include "core/file_sys/nup_container.h"
+#include "core/file_sys/vfs/vfs_edenpack.h"
 #include "video_core/nx2.h"
 #include "core/hle/service/nvdrv/devices/nx2_stub_device.h"
 #include "core/file_sys/card_image.h"
@@ -77,6 +79,9 @@
 #include "video_core/host1x/host1x.h"
 #include "video_core/renderer_base.h"
 #include "video_core/video_core.h"
+
+// This is defined by synchapi.h and conflicts with Timing::CreateEvent
+#undef CreateEvent
 
 namespace Core {
 
@@ -187,6 +192,17 @@ bool IsSwitch2Program(const FileSys::VirtualFile& file, u64 known_program_id = 0
     // Check packaged NUP (Switch 2 container)
     if (FileSys::NupContainer::IsNupFile(file)) {
         return true;
+    }
+
+    if (lower_name.ends_with(".edenpack")) {
+        const auto root = FileSys::EdenPackVfsFilesystem::Open(file);
+        const auto exefs = root ? root->GetSubdirectory("ExeFS") : nullptr;
+        const auto npdm = exefs ? exefs->GetFile("main.npdm") : nullptr;
+        FileSys::ProgramMetadata metadata;
+        if (npdm != nullptr && metadata.Load(npdm) == Loader::ResultStatus::Success &&
+            metadata.IsSwitch2()) {
+            return true;
+        }
     }
 
     // Check loose ExeFS directory when booting loose main / main.npdm
@@ -579,11 +595,6 @@ struct System::Impl {
         // All threads are started, begin main process execution, now that we're in the clear
         applet_manager.CreateAndInsertByFrontendAppletParameters(std::move(process), params);
 
-        // Initialize cheat engine after process is valid and registered (only if active cheats exist)
-        if (cheat_engine && !cheat_engine->IsCheatsEmpty()) {
-            cheat_engine->Initialize();
-        }
-
         if (Settings::values.gamecard_inserted) {
             if (Settings::values.gamecard_current_game) {
                 fs_controller.SetGameCard(GetGameFileFromPath(virtual_filesystem, filepath));
@@ -625,6 +636,11 @@ struct System::Impl {
         Settings::values.use_squashed_iterated_blend = false;
         Settings::RestoreGlobalState(false);
 
+        // Once powered off, services stop writing replies, so a guest thread whose IPC call
+        // completes would read its own request back and abort (2010-0212, a Userspace PANIC on
+        // every stop). Keep guest threads from running again first; the wait for running ones
+        // comes after the GPU has released any that it holds in host code.
+        kernel.RequestSuspendEmulation();
         const bool was_powered_on = is_powered_on.exchange(false);
         exit_locked = false;
         exit_requested = false;
@@ -641,15 +657,20 @@ struct System::Impl {
         }
         cpu_manager.Shutdown();
 
-        // Reset GPU and Audio before services so BufferQueue/nvnflinger are safe during GPU teardown
-        gpu_core.reset();
+        // Reset Host1x before GPU and Audio so video/VIC frame queue tears down before rasterizer
         host1x_core.reset();
+        gpu_core.reset();
         audio_core.reset();
 
         services.reset();
         service_manager.reset();
         fs_controller.Reset();
-        cheat_engine.reset();
+        {
+            std::scoped_lock lock{cheat_engines_mutex};
+            cheat_engines.clear();
+        }
+        main_nso_begin = 0;
+        main_nso_size = 0;
         core_timing.ClearPendingEvents();
         app_loader.reset();
         perf_stats.reset();
@@ -687,8 +708,27 @@ struct System::Impl {
         return perf_stats->GetAndResetStats(core_timing.GetGlobalTimeUs());
     }
 
+    // Cheats run only for the application process, which is also the one frontends show.
+    Memory::CheatEngine* FindApplicationCheatEngine() const {
+        const auto it = cheat_engines.find(kernel.ApplicationProcess());
+        return it != cheat_engines.end() ? it->second.get() : nullptr;
+    }
+
     Timing::CoreTiming core_timing;
     Kernel::KernelCore kernel;
+    // Outlive applet owners so process finalization can always unregister its engine.
+    mutable std::mutex cheat_engines_mutex;
+    std::unordered_map<const Kernel::KProcess*, std::unique_ptr<Memory::CheatEngine>> cheat_engines;
+    // Scheduled while any engine is registered.
+    std::shared_ptr<Timing::EventType> cheat_engines_event{Timing::CreateEvent(
+        "CheatEngine::FrameCallback",
+        [this](s64, std::chrono::nanoseconds) -> std::optional<std::chrono::nanoseconds> {
+            std::scoped_lock lock{cheat_engines_mutex};
+            if (auto* const engine = FindApplicationCheatEngine()) {
+                engine->Execute();
+            }
+            return std::nullopt;
+        })};
     /// RealVfsFilesystem instance
     FileSys::VirtualFilesystem virtual_filesystem;
     Service::FileSystem::FileSystemController fs_controller;
@@ -717,7 +757,6 @@ struct System::Impl {
     std::optional<Tegra::Host1x::Host1x> host1x_core;
     std::optional<Core::DeviceMemory> device_memory;
     std::optional<AudioCore::AudioCore> audio_core;
-    std::optional<Memory::CheatEngine> cheat_engine;
     std::optional<Tools::Freezer> memory_freezer;
     std::optional<Tools::RenderdocAPI> renderdoc_api;
     std::optional<Tegra::GPU> gpu_core;
@@ -1004,13 +1043,13 @@ FileSys::VirtualFilesystem System::GetFilesystem() const {
     return impl->virtual_filesystem;
 }
 
-void System::RegisterCheatList(const std::vector<Memory::CheatEntry>& list,
-                               const std::array<u8, 32>& build_id, u64 main_region_begin,
+void System::RegisterCheatList(Kernel::KProcess& process, Memory::CheatList list,
+                               const std::array<u8, 0x20>& build_id, u64 main_region_begin,
                                u64 main_region_size) {
-    if (list.empty()) {
-        if (impl->cheat_engine) {
-            impl->cheat_engine.reset();
-        }
+    constexpr auto CHEAT_ENGINE_NS = std::chrono::nanoseconds{1000000000 / 12};
+
+    if (list.cheats.empty() && list.menu.empty()) {
+        UnregisterCheatList(process);
         return;
     }
 
@@ -1021,60 +1060,53 @@ void System::RegisterCheatList(const std::vector<Memory::CheatEntry>& list,
     const u64 effective_begin = (main_region_begin != 0) ? main_region_begin : impl->main_nso_begin;
     const u64 effective_size = (main_region_size != 0) ? main_region_size : impl->main_nso_size;
 
-    if (impl->cheat_engine) {
-        if (effective_begin != 0) {
-            impl->cheat_engine->SetMainMemoryParameters(effective_begin, effective_size);
-        }
-        impl->cheat_engine->Reload(list);
-    } else {
-        impl->cheat_engine.emplace(*this, list, build_id);
-        if (effective_begin != 0) {
-            impl->cheat_engine->SetMainMemoryParameters(effective_begin, effective_size);
-        }
-        if (IsPoweredOn() && impl->kernel.ApplicationProcess()) {
-            impl->cheat_engine->Initialize();
-        }
+    auto engine = std::make_unique<Memory::CheatEngine>(*this, process, std::move(list), build_id,
+                                                        effective_begin, effective_size);
+    std::scoped_lock lock{impl->cheat_engines_mutex};
+    if (impl->cheat_engines.empty()) {
+        impl->core_timing.ScheduleLoopingEvent(CHEAT_ENGINE_NS, CHEAT_ENGINE_NS,
+                                               impl->cheat_engines_event);
+    }
+    impl->cheat_engines.insert_or_assign(&process, std::move(engine));
+}
+
+void System::UnregisterCheatList(const Kernel::KProcess& process) {
+    std::scoped_lock lock{impl->cheat_engines_mutex};
+    if (impl->cheat_engines.erase(&process) != 0 && impl->cheat_engines.empty()) {
+        impl->core_timing.UnscheduleEvent(impl->cheat_engines_event,
+                                          Timing::UnscheduleEventType::NoWait);
     }
 }
 
-void System::ReloadCheatList(const std::vector<Memory::CheatEntry>& list) {
-    if (impl->cheat_engine) {
-        if (impl->main_nso_begin != 0) {
-            impl->cheat_engine->SetMainMemoryParameters(impl->main_nso_begin, impl->main_nso_size);
-        }
-        impl->cheat_engine->Reload(list);
-    } else if (!list.empty()) {
-        const auto build_id = GetApplicationProcessBuildID();
-        impl->cheat_engine.emplace(*this, list, build_id);
-        if (impl->main_nso_begin != 0) {
-            impl->cheat_engine->SetMainMemoryParameters(impl->main_nso_begin, impl->main_nso_size);
-        }
-        if (IsPoweredOn() && impl->kernel.ApplicationProcess()) {
-            impl->cheat_engine->Initialize();
-        }
+void System::ReloadCheatList(Memory::CheatList list) {
+    auto* const process = impl->kernel.ApplicationProcess();
+    if (process == nullptr) {
+        return;
     }
+    if (list.cheats.empty() && list.menu.empty()) {
+        UnregisterCheatList(*process);
+        return;
+    }
+    const auto build_id = GetApplicationProcessBuildID();
+    RegisterCheatList(*process, std::move(list), build_id, impl->main_nso_begin,
+                      impl->main_nso_size);
 }
 
 std::vector<Memory::RuntimeCheatInfo> System::GetRuntimeCheats() const {
-    if (!impl->cheat_engine) {
-        return {};
-    }
-    return impl->cheat_engine->GetCheats();
+    std::scoped_lock lock{impl->cheat_engines_mutex};
+    const auto* const engine = impl->FindApplicationCheatEngine();
+    return engine != nullptr ? engine->GetCheats() : std::vector<Memory::RuntimeCheatInfo>{};
 }
 
-bool System::SetCheatEnabled(u32 cheat_id, bool enabled) {
-    if (!impl->cheat_engine) {
-        return false;
-    }
-    return impl->cheat_engine->SetCheatEnabled(cheat_id, enabled);
+bool System::SetCheatEnabled(u32 id, bool enabled) {
+    std::scoped_lock lock{impl->cheat_engines_mutex};
+    auto* const engine = impl->FindApplicationCheatEngine();
+    return engine != nullptr && engine->SetCheatEnabled(id, enabled);
 }
 
 void System::SetMainNsoParameters(u64 main_region_begin, u64 main_region_size) {
     impl->main_nso_begin = main_region_begin;
     impl->main_nso_size = main_region_size;
-    if (impl->cheat_engine && main_region_begin != 0) {
-        impl->cheat_engine->SetMainMemoryParameters(main_region_begin, main_region_size);
-    }
 }
 
 u64 System::GetMainNsoBase() const {
@@ -1086,7 +1118,8 @@ u64 System::GetMainNsoSize() const {
 }
 
 bool System::HasCheatEngine() const {
-    return impl->cheat_engine.has_value();
+    std::scoped_lock lock{impl->cheat_engines_mutex};
+    return impl->FindApplicationCheatEngine() != nullptr;
 }
 
 void System::SetFrontendAppletSet(Service::AM::Frontend::FrontendAppletSet&& set) {

@@ -239,6 +239,20 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
     }
 
     override fun onTouch(v: View, event: MotionEvent): Boolean {
+        if (!inEditMode && event.actionMasked == MotionEvent.ACTION_CANCEL) {
+            if (BooleanSetting.TOUCHSCREEN.getBoolean()) {
+                for (i in 0 until event.pointerCount) {
+                    val fingerId = event.getPointerId(i)
+                    if (!isTouchInputConsumed(fingerId)) {
+                        NativeInput.onTouchReleased(fingerId)
+                    }
+                }
+            }
+            releaseHeldControls()
+            invalidate()
+            return true
+        }
+
         if (event.actionMasked == MotionEvent.ACTION_DOWN) {
             v.requestUnbufferedDispatch(event)
         }
@@ -256,8 +270,13 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
             else -> 0
         }
 
-        // Sanitize stale trackIds from any missed ACTION_POINTER_UP / gesture preemption
-        if (event.actionMasked != MotionEvent.ACTION_CANCEL) {
+        // Sanitize stale trackIds only on pointer transitions (never on high-frequency ACTION_MOVE)
+        val actionMasked = event.actionMasked
+        if (actionMasked == MotionEvent.ACTION_DOWN ||
+            actionMasked == MotionEvent.ACTION_POINTER_DOWN ||
+            actionMasked == MotionEvent.ACTION_UP ||
+            actionMasked == MotionEvent.ACTION_POINTER_UP
+        ) {
             val count = event.pointerCount
             for (b in overlayButtons) {
                 if (b.trackId != -1) {
@@ -315,6 +334,13 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
             }
             playHaptics(event)
             invalidate(button.bounds)
+        }
+
+        if (event.actionMasked == MotionEvent.ACTION_MOVE &&
+            BooleanSetting.BUTTON_SLIDE.getBoolean() &&
+            slideFingersBetweenButtons(event, playerIndex)
+        ) {
+            shouldUpdateView = true
         }
 
         val dpadCount = overlayDpads.size
@@ -407,6 +433,68 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
         }
 
         return true
+    }
+
+    /** Tells the game that every control a finger is on has been let go of. */
+    fun releaseHeldControls() {
+        val playerIndex = when (NativeInput.getStyleIndex(0)) {
+            NpadStyleIndex.Handheld -> 8
+            else -> 0
+        }
+        for (button in overlayButtons) {
+            if (button.cancelTouch()) {
+                NativeInput.onOverlayButtonEvent(playerIndex, button.button, button.status)
+            }
+        }
+        for (dpad in overlayDpads) {
+            if (dpad.cancelTouch()) {
+                NativeInput.onOverlayButtonEvent(playerIndex, dpad.up, dpad.upStatus)
+                NativeInput.onOverlayButtonEvent(playerIndex, dpad.down, dpad.downStatus)
+                NativeInput.onOverlayButtonEvent(playerIndex, dpad.left, dpad.leftStatus)
+                NativeInput.onOverlayButtonEvent(playerIndex, dpad.right, dpad.rightStatus)
+            }
+        }
+        for (joystick in overlayJoysticks) {
+            if (joystick.cancelTouch()) {
+                NativeInput.onOverlayJoystickEvent(
+                    playerIndex,
+                    joystick.joystick,
+                    joystick.xAxis,
+                    joystick.realYAxis
+                )
+                NativeInput.onOverlayButtonEvent(playerIndex, joystick.button, joystick.buttonStatus)
+            }
+        }
+    }
+
+    /**
+     * A finger that started on a button moves to another one when it reaches it.
+     */
+    private fun slideFingersBetweenButtons(event: MotionEvent, playerIndex: Int): Boolean {
+        var changed = false
+        for (i in 0 until event.pointerCount) {
+            val fingerId = event.getPointerId(i)
+            val from = overlayButtons.firstOrNull { it.trackId == fingerId && it.canSlide }
+                ?: continue
+            val x = event.getX(i).toInt()
+            val y = event.getY(i).toInt()
+            if (from.bounds.contains(x, y)) {
+                continue
+            }
+            val to = overlayButtons.firstOrNull {
+                it.trackId == -1 && it.canSlide && it.bounds.contains(x, y)
+            } ?: continue
+
+            from.cancelTouch()
+            NativeInput.onOverlayButtonEvent(playerIndex, from.button, from.status)
+            to.pressWith(fingerId)
+            NativeInput.onOverlayButtonEvent(playerIndex, to.button, to.status)
+            playHaptics(event)
+            invalidate(from.bounds)
+            invalidate(to.bounds)
+            changed = true
+        }
+        return changed
     }
 
     private fun playHaptics(event: MotionEvent) {
@@ -1155,6 +1243,9 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
         if (gameless) {
             gamelessMode = true
         }
+
+        // The new controls will not know about a finger on the old ones.
+        releaseHeldControls()
 
         // Remove all the overlay buttons from the HashSet.
         overlayButtons.clear()

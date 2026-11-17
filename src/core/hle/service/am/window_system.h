@@ -61,6 +61,7 @@ public:
 
 private:
     void PruneTerminatedAppletsLocked();
+    void UpdateCurrentApplicationLocked();
     bool RestartAppletProcessLocked(Applet* applet);
     bool LockHomeMenuIntoForegroundLocked();
     void TerminateChildAppletsLocked(Applet* applet);

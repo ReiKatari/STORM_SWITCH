@@ -709,6 +709,42 @@ void BufferCacheRuntime::ReserveNullBuffer() {
     }
 }
 
+void BufferCacheRuntime::BindGsScratchStorageBuffer() {
+    static constexpr VkDeviceSize size = Shader::GS_SCRATCH_NUM_SLOTS * sizeof(u32);
+    if (!gs_scratch_buffer) {
+        VkBufferCreateInfo create_info{
+            .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+            .pNext = nullptr,
+            .flags = 0,
+            .size = size,
+            .usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                     (device.IsBufferDeviceAddressSupported()
+                          ? VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT
+                          : VkBufferUsageFlags{0}),
+            .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+            .queueFamilyIndexCount = 0,
+            .pQueueFamilyIndices = nullptr,
+        };
+        gs_scratch_buffer = memory_allocator.CreateBuffer(create_info, MemoryUsage::DeviceLocal);
+        if (device.IsExtDescriptorBufferSupported() && device.IsBufferDeviceAddressSupported()) {
+            gs_scratch_address = device.GetLogical().GetBufferDeviceAddress(*gs_scratch_buffer);
+        }
+        scheduler.RequestOutsideRenderPassOperationContext();
+        scheduler.Record([buffer = *gs_scratch_buffer](vk::CommandBuffer cmdbuf) {
+            cmdbuf.FillBuffer(buffer, 0, VK_WHOLE_SIZE, 0);
+            static constexpr VkMemoryBarrier BARRIER{
+                .sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER,
+                .pNext = nullptr,
+                .srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
+                .dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT,
+            };
+            cmdbuf.PipelineBarrier(VK_PIPELINE_STAGE_TRANSFER_BIT,
+                                   VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, BARRIER);
+        });
+    }
+    guest_descriptor_queue.AddBuffer(*gs_scratch_buffer, gs_scratch_address, 0, size);
+}
+
 vk::Buffer BufferCacheRuntime::CreateNullBuffer() {
     VkBufferCreateInfo create_info{
         .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,

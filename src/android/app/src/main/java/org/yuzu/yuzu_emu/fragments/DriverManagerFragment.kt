@@ -302,10 +302,18 @@ class DriverManagerFragment : Fragment() {
         val driverFile = File(driverPath)
         val isForGame = args.game != null
 
+        val isUsingSystemDefault = driverPath.isEmpty() || !driverFile.exists()
+        if (!isUsingSystemDefault) {
+            GpuDriverHelper.clearDriverBlacklist()
+        }
+
         if (globallyToAll) {
+            PreferenceManager.getDefaultSharedPreferences(requireContext()).edit {
+                putBoolean(GpuDriverHelper.PREF_USER_EXPLICIT_SYSTEM_DRIVER, isUsingSystemDefault)
+            }
             StringSetting.DRIVER_PATH.global = true
             StringSetting.DRIVER_PATH.setString(driverPath)
-            if (driverPath.isEmpty() || !driverFile.exists()) {
+            if (isUsingSystemDefault) {
                 GpuDriverHelper.installDefaultDriver()
             } else {
                 GpuDriverHelper.installCustomDriver(driverFile)
@@ -321,7 +329,7 @@ class DriverManagerFragment : Fragment() {
                 }
                 StringSetting.DRIVER_PATH.global = false
                 StringSetting.DRIVER_PATH.setString(driverPath)
-                if (driverPath.isEmpty() || !driverFile.exists()) {
+                if (isUsingSystemDefault) {
                     GpuDriverHelper.installDefaultDriver()
                 } else {
                     GpuDriverHelper.installCustomDriver(driverFile)
@@ -331,9 +339,12 @@ class DriverManagerFragment : Fragment() {
                 NativeConfig.savePerGameConfig()
                 org.yuzu.yuzu_emu.model.GameFixDatabase.markConfigAsUserCustom(targetGame)
             } else {
+                PreferenceManager.getDefaultSharedPreferences(requireContext()).edit {
+                    putBoolean(GpuDriverHelper.PREF_USER_EXPLICIT_SYSTEM_DRIVER, isUsingSystemDefault)
+                }
                 StringSetting.DRIVER_PATH.global = true
                 StringSetting.DRIVER_PATH.setString(driverPath)
-                if (driverPath.isEmpty() || !driverFile.exists()) {
+                if (isUsingSystemDefault) {
                     GpuDriverHelper.installDefaultDriver()
                 } else {
                     GpuDriverHelper.installCustomDriver(driverFile)

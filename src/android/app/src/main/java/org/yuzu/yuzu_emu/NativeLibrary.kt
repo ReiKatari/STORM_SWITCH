@@ -35,12 +35,20 @@ import org.yuzu.yuzu_emu.applets.web.WebBrowser
  */
 object NativeLibrary {
     @Keep
-    class RuntimeCheat(
+    data class RuntimeCheat(
         val id: Int,
         val name: String,
         val enabled: Boolean,
-        val isMaster: Boolean
-    )
+        val isMaster: Boolean,
+        val type: Int,
+        val parentId: Int
+    ) {
+        companion object {
+            const val CHEAT = 0
+            const val SUBMENU = 1
+            const val ROOT = -1
+        }
+    }
     @Keep
     data class UpdateResult(
         var tag: String = "",
@@ -57,9 +65,13 @@ object NativeLibrary {
     @JvmField
     var sEmulationActivity = WeakReference<EmulationActivity?>(null)
 
+    @Volatile
+    var isNativeLoaded: Boolean = false
+
     init {
         try {
             System.loadLibrary("yuzu-android")
+            isNativeLoaded = true
         } catch (ex: Throwable) {
             org.yuzu.yuzu_emu.utils.CrashHandler.recordException(
                 Thread.currentThread(),

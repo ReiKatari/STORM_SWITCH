@@ -134,7 +134,7 @@
     <string name="auto_correction_reset_toast">Settings restored to default profile</string>
     <string name="auto_correction_no_profile">Universal high performance profile is active</string>
     <string name="auto_correction_issues_content">• High GPU thermal load: high resolution rendering heats SoC above 40°C\n• Thermal throttling: SoC clock scaling triggers when device temperature exceeds 40°C, dropping FPS below 30\n• Memory bus saturation: uncompressed ASTC textures increase DRAM bandwidth and heat dissipation\n• Pipeline stalls: reactive flushing and strict synchronization stall render threads</string>
-    <string name="auto_correction_recommendations_content">✓ Resolution: 0.75X (540p / 810p) (reduces SoC temperature by 4–6°C and boosts FPS)\n✓ ASTC Recompression: Uncompressed (maximum texture quality with zero missing textures)\n✓ GPU Timings: Boost (eliminates GPU command latency and keeps stable 30+ FPS)\n✓ Reactive Flushing: Disabled (reduces GPU load and micro-stutter)\n✓ Host MMU Emulation (Fastmem): Enabled (maximum CPU performance with reduced heat)\n✓ Eco Thermal Mode and Pacing: Enabled (prevents SoC thermal throttling spikes)\n✓ Anisotropic Filtering: Default (eliminates redundant texture sampling overhead)</string>
+    <string name="auto_correction_recommendations_content">Resolution: 0.75X (540p / 810p) (reduces SoC temperature by 4-6°C and boosts FPS)\n ASTC Recompression: Uncompressed (maximum texture quality with zero missing textures)\n GPU Timings: Boost (eliminates GPU command latency and keeps stable 30+ FPS)\n Reactive Flushing: Disabled (reduces GPU load and micro-stutter)\n Host MMU Emulation (Fastmem): Enabled (maximum CPU performance with reduced heat)\n Eco Thermal Mode and Pacing: Enabled (prevents SoC thermal throttling spikes)\n Anisotropic Filtering: Default (eliminates redundant texture sampling overhead)</string>
 
     <!-- Optimize SPIRV output -->
     <string name="never">Never</string>
@@ -215,7 +215,7 @@
     <string name="multiplayer_required">Required</string>
     <string name="multiplayer_token_required">Web Token required, go to Advanced Settings -> System -> Network</string>
     <string name="multiplayer_ip_error">Invalid IP format</string>
-    <string name="multiplayer_username_error">Must be between 4–20 characters, and contain alphanumeric characters, periods, dashes, underscores, and spaces only</string>
+    <string name="multiplayer_username_error">Must be between 4-20 characters, and contain alphanumeric characters, periods, dashes, underscores, and spaces only</string>
     <string name="multiplayer_nickname_invalid">Username invalid, ensure it is set properly in System -> Network</string>
     <string name="multiplayer_token_error">Must be 48 characters, and lowercase a-z only</string>
     <string name="multiplayer_port_error">Must be between 1 and 65535</string>
@@ -489,11 +489,11 @@
     <!-- About screen strings -->
     <string name="gaia_is_not_real">Gaia isn\'t real</string>
     <string name="copied_to_clipboard">Copied to clipboard</string>
-    <string name="about_app_description">STORM SWITCH — Advanced High-Performance Fork of the Eden Nintendo Switch Emulator</string>
+    <string name="about_app_description">STORM SWITCH - Advanced High-Performance Fork of the Eden Nintendo Switch Emulator</string>
     <string name="about_fork_title">Eden Project Fork</string>
     <string name="about_fork_description">STORM SWITCH is a performance-focused fork of the Eden emulator. It integrates dedicated ARM64 NCE optimizations, custom GPU driver management (Turnip/Mesa), full GameBanana mod support, TitleDB metadata integration, and 10 exclusive STORM themes.</string>
     <string name="special_thanks_title">Special Thanks &amp; Acknowledgements</string>
-    <string name="special_thanks_description">[1. Core Emulators &amp; Architectural Foundation]\n• Eden Emulator Team (Camille LaVey, Crueter, and contributors) — open-source core, compiler, graphics, and HLE optimizations\n• Yuzu &amp; Citra Teams (Bunnei, Lioncache, Subv, BreadFish64, Blinkhawk, Morph, Rodrigo, MerryMage, byte[], FearlessTobi, ogniK, german77, toastUnlimited) — foundational Switch and 3DS emulation architecture\n• Ryujinx &amp; Ryubing Teams (gdkchan, Ac_K, Mary, riperiperi, Thog, LotP1, GreemDev) — Horizon OS, HLE services, audio, and Maxwell GPU research\n• jarrodnorwell &amp; Sudachi — modern title compatibility, applets, and firmware fixes\n• Citron Emulator Team (zephyron, BignBooty, EmuGamer) — Android stability and shader pipeline improvements\n• Ghael-V &amp; Lemon-Project — streaming NSZ/XCZ decompression, Vulkan barriers, and sparse savestates\n• Suyu, Torzu, Uzuy &amp; Sumi Teams — independent open-source community branches\n\n[2. Nintendo Switch 2 &amp; Next-Gen Research]\n• Eglantine Team — pioneering next-generation low-level syscall and architecture research\n• MythosOfs &amp; Orchid — Tegra T239 (Ampere), shader microcode translation, and next-gen HLE\n• zortos293 &amp; Lichii — kernel structures, pl:u system font service, NACP metadata, and .nup packages\n• moceure (BananaNative &amp; eden-nx2-android) — ARM64 NCE and virtual memory adaptation for NX2 on Android\n• sikoGD &amp; playDB-CNT — NPLN network protocol infrastructure and local multiplayer servers\n• Pound Team (pound-emu) &amp; 0xNikilite (Oboromi) — graphics pipeline, DLSS active regions, sparse tiles, and NX2 OS reverse engineering\n\n[3. GPU Drivers, CPU Compilers &amp; Kernel]\n• Rob Clark, Danylo Piliaiev, Connor Abbott, Samuel Iglesias Gonsálvez &amp; Mesa 3D / Turnip / Freedreno — open-source Qualcomm Adreno Vulkan drivers\n• Alyssa Rosenzweig, Boris Brezillon, Erik Faye-Lund, Collabora &amp; PanVK / Panfrost — open-source ARM Mali drivers and compilers\n• bylaws (Billy Laws) — libadrenotools custom Android GPU driver loader\n• K11MCH1, MrPurple666, Weab-chan, whitebelyash — custom Turnip / Qualcomm driver builds and profiling\n• MerryMage (merryhime) &amp; Dynarmic Contributors — ARM64/ARM32 dynamic JIT recompiler\n• Skyline &amp; Strato Teams (Mark, Billy Laws, Lynx), herumi (xbyak) &amp; Oak Authors — ARM64 NCE and runtime code emitters\n• SciresM, TuxSH, fincs, hexkyz, mtheall &amp; Atmosphère / Switchbrew — hardware docs, Mesosphere specs, and hactool / libnx\n\n[4. Formats, Multimedia &amp; System Libraries]\n• nicoboss (NSZ), Yann Collet &amp; Zstandard / LZ4 Teams — streamable game container and savestate compression\n• Khronos Group, AMD GPUOpen (FidelityFX FSR/CAS &amp; VMA) &amp; Sirit (Rodrigo) — Vulkan and SPIR-V ecosystem\n• The Qt Company, SDL (Sam Lantinga), Mozilla Cubeb, Google Oboe, FFmpeg, VideoLAN (dav1d), Opus, Boost, fmt, nlohmann/json, OpenSSL, MbedTLS, libusb, enet &amp; Inno Setup\n\n[5. Mods, Databases, Ecosystem &amp; Community]\n• GameBanana, blawar (TitleDB), N3evin (AmiiboAPI) &amp; 60 FPS / Dynamic FPS Patch Authors (ChanseyIsTheBest, StevensND, Fl4sh, KeatonTheBot, boy181)\n• STORM TEAM &amp; STORM GAMES WORLD — emulator engineering, STORM SAVE SYNC, GameFix Database, and STORM AURORA FLUID\n• Community Testers &amp; Bug Reporters across 4PDA, GitHub, Discord, and Forums — extensive game testing, logs, and feedback</string>
+    <string name="special_thanks_description">[1. Core Emulators &amp; Architectural Foundation]\n• Eden Emulator Team (Camille LaVey, Crueter, and contributors) - open-source core, compiler, graphics, and HLE optimizations\n• Yuzu &amp; Citra Teams (Bunnei, Lioncache, Subv, BreadFish64, Blinkhawk, Morph, Rodrigo, MerryMage, byte[], FearlessTobi, ogniK, german77, toastUnlimited) - foundational Switch and 3DS emulation architecture\n• Ryujinx &amp; Ryubing Teams (gdkchan, Ac_K, Mary, riperiperi, Thog, LotP1, GreemDev) - Horizon OS, HLE services, audio, and Maxwell GPU research\n• jarrodnorwell &amp; Sudachi - modern title compatibility, applets, and firmware fixes\n• Citron Emulator Team (zephyron, BignBooty, EmuGamer) - Android stability and shader pipeline improvements\n• Ghael-V &amp; Lemon-Project - streaming NSZ/XCZ decompression, Vulkan barriers, and sparse savestates\n• Suyu, Torzu, Uzuy &amp; Sumi Teams - independent open-source community branches\n\n[2. Nintendo Switch 2 &amp; Next-Gen Research]\n• Eglantine Team - pioneering next-generation low-level syscall and architecture research\n• MythosOfs &amp; Orchid - Tegra T239 (Ampere), shader microcode translation, and next-gen HLE\n• zortos293 &amp; Lichii - kernel structures, pl:u system font service, NACP metadata, and .nup packages\n• moceure (BananaNative &amp; eden-nx2-android) - ARM64 NCE and virtual memory adaptation for NX2 on Android\n• sikoGD &amp; playDB-CNT - NPLN network protocol infrastructure and local multiplayer servers\n• Pound Team (pound-emu) &amp; 0xNikilite (Oboromi) - graphics pipeline, DLSS active regions, sparse tiles, and NX2 OS reverse engineering\n\n[3. GPU Drivers, CPU Compilers &amp; Kernel]\n• Rob Clark, Danylo Piliaiev, Connor Abbott, Samuel Iglesias Gonsálvez &amp; Mesa 3D / Turnip / Freedreno - open-source Qualcomm Adreno Vulkan drivers\n• Alyssa Rosenzweig, Boris Brezillon, Erik Faye-Lund, Collabora &amp; PanVK / Panfrost - open-source ARM Mali drivers and compilers\n• bylaws (Billy Laws) - libadrenotools custom Android GPU driver loader\n• K11MCH1, MrPurple666, Weab-chan, whitebelyash - custom Turnip / Qualcomm driver builds and profiling\n• MerryMage (merryhime) &amp; Dynarmic Contributors - ARM64/ARM32 dynamic JIT recompiler\n• Skyline &amp; Strato Teams (Mark, Billy Laws, Lynx), herumi (xbyak) &amp; Oak Authors - ARM64 NCE and runtime code emitters\n• SciresM, TuxSH, fincs, hexkyz, mtheall &amp; Atmosphère / Switchbrew - hardware docs, Mesosphere specs, and hactool / libnx\n\n[4. Formats, Multimedia &amp; System Libraries]\n• nicoboss (NSZ), Yann Collet &amp; Zstandard / LZ4 Teams - streamable game container and savestate compression\n• Khronos Group, AMD GPUOpen (FidelityFX FSR/CAS &amp; VMA) &amp; Sirit (Rodrigo) - Vulkan and SPIR-V ecosystem\n• The Qt Company, SDL (Sam Lantinga), Mozilla Cubeb, Google Oboe, FFmpeg, VideoLAN (dav1d), Opus, Boost, fmt, nlohmann/json, OpenSSL, MbedTLS, libusb, enet &amp; Inno Setup\n\n[5. Mods, Databases, Ecosystem &amp; Community]\n• GameBanana, blawar (TitleDB), N3evin (AmiiboAPI) &amp; 60 FPS / Dynamic FPS Patch Authors (ChanseyIsTheBest, StevensND, Fl4sh, KeatonTheBot, boy181)\n• STORM TEAM &amp; STORM GAMES WORLD - emulator engineering, STORM SAVE SYNC, GameFix Database, and STORM AURORA FLUID\n• Community Testers &amp; Bug Reporters across 4PDA, GitHub, Discord, and Forums - extensive game testing, logs, and feedback</string>
     <string name="contributors">Contributors</string>
     <string name="contributors_description">People who make STORM SWITCH and Eden possible</string>
     <string name="contributors_link" translatable="false">https://git.eden-emu.dev/eden-emu/eden/activity/contributors</string>
@@ -546,7 +546,7 @@
     <string name="fast_cpu_time">CPU Clocks</string>
     <string name="fast_cpu_time_description">Raises the clock the emulated CPU reports, which removes some FPS limiters. Weaker CPUs may see reduced performance, and certain games may behave improperly.</string>
     <string name="custom_cpu_ticks">Custom CPU Ticks</string>
-    <string name="custom_cpu_ticks_description">Set a custom value of CPU ticks. Higher values can increase performance, but may also cause the game to freeze. A range of 77–21000 is recommended.</string>
+    <string name="custom_cpu_ticks_description">Set a custom value of CPU ticks. Higher values can increase performance, but may also cause the game to freeze. A range of 77-21000 is recommended.</string>
     <string name="cpu_ticks">Ticks</string>
     <string name="memory_layout">DRAM Size (Console Memory Layout)</string>
     <string name="memory_layout_description">(EXPERIMENTAL) Emulated Switch DRAM memory size: 4 / 6 / 8 / 12 GB. Increasing DRAM helps with demanding games, high-resolution texture packs, and mods. Only works on Dynarmic (JIT) and requires sufficient device RAM.</string>
@@ -557,7 +557,7 @@
     <string name="web_token">Web Token</string>
     <string name="web_token_description">Web token used for creating public lobbies. It is a 48-character string containing only lowercase a-z.</string>
     <string name="web_username">Web Username</string>
-    <string name="web_username_description">Username to be shown in multiplayer lobbies. It must be 4–20 characters, containing only alphanumeric characters, dashes, periods, underscores, and spaces.</string>
+    <string name="web_username_description">Username to be shown in multiplayer lobbies. It must be 4-20 characters, containing only alphanumeric characters, dashes, periods, underscores, and spaces.</string>
     <string name="network">Network</string>
     <string name="nx2_online_server">Switch 2 Online / NPLN Server</string>
     <string name="nx2_online_server_description">Stand-in loopback or LAN server IP address (e.g. 127.0.0.1) for Switch 2 NPLN and Network Tests (playDB-CNT).</string>
@@ -588,7 +588,7 @@
     <string name="accelerate_astc">ASTC Decoding Method</string>
     <string name="accelerate_astc_description">Pick how ASTC-compressed textures are decoded for rendering: CPU (slow, safe), GPU (fast, recommended), or CPU Async (no stutters, may cause issues)</string>
     <string name="astc_recompression">ASTC Texture Recompression</string>
-    <string name="astc_recompression_description" formatted="false">Recompresses ASTC textures to BC1, BC3, or BC5 formats on the fly to reduce RAM and VRAM usage by 50–80%.</string>
+    <string name="astc_recompression_description" formatted="false">Recompresses ASTC textures to BC1, BC3, or BC5 formats on the fly to reduce RAM and VRAM usage by 50-80%.</string>
     <string name="astc_recompression_uncompressed">Uncompressed (Highest Quality / Max RAM)</string>
     <string name="astc_recompression_bc1">BC1 (Low Quality / Max RAM Savings)</string>
     <string name="astc_recompression_bc3" formatted="false">BC3 (Medium Quality / 50% RAM Savings)</string>
@@ -687,6 +687,10 @@
     <string name="log">Logging</string>
     <string name="flush_by_line">Flush debug logs by line</string>
     <string name="flush_by_line_description">Flushes debugging logs on each line written, making debugging easier in cases of crashing or freezing.</string>
+    <string name="extended_logging">Enable extended logging</string>
+    <string name="extended_logging_description">Increases the maximum log file size from 100 MiB to 1 GiB.</string>
+    <string name="log_filter">Log filter</string>
+    <string name="log_filter_description">Controls emulator log categories. Example: *:Info Service.LM:Debug</string>
 
     <!-- GPU Logging strings -->
     <string name="gpu_logging_header">GPU Logging</string>
@@ -1033,6 +1037,7 @@
     <string name="emulation_toggle_controls">Toggle controls</string>
     <string name="emulation_rel_stick_center">Relative stick center</string>
     <string name="emulation_dpad_slide">D-pad slide</string>
+    <string name="emulation_button_slide">Button slide</string>
     <string name="emulation_haptics">Touch haptics</string>
     <string name="emulation_show_overlay">Show controller</string>
     <string name="emulation_hide_overlay">Hide controller</string>
@@ -1281,7 +1286,7 @@
     <string name="ratio_stretch">Stretch to window</string>
 
     <!-- CPU Backend -->
-    <string name="cpu_backend_nce">NCE (Native Code Execution — Recommended)</string>
+    <string name="cpu_backend_nce">NCE (Native Code Execution - Recommended)</string>
     <string name="cpu_backend_dynarmic">Dynarmic (JIT)</string>
 
     <!-- CPU Accuracy -->
@@ -1906,7 +1911,7 @@ DAMAGES.
     <string name="license_opus" translatable="false">Opus</string>
     <string name="license_opus_description" translatable="false">Modern audio compression for the internet</string>
     <string name="license_opus_link" translatable="false">https://github.com/xiph/opus</string>
-    <string name="license_opus_copyright" translatable="false">Copyright 2001–2011 Xiph.Org, Skype Limited, Octasic, Jean-Marc Valin, Timothy B. Terriberry, CSIRO, Gregory Maxwell, Mark Borgerding, Erik de Castro Lopo</string>
+    <string name="license_opus_copyright" translatable="false">Copyright 2001-2011 Xiph.Org, Skype Limited, Octasic, Jean-Marc Valin, Timothy B. Terriberry, CSIRO, Gregory Maxwell, Mark Borgerding, Erik de Castro Lopo</string>
     <string name="license_opus_text" translatable="false">
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -2096,8 +2101,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="cheat_name">Cheat Name</string>
     <string name="cheat_code">Atmosphere Cheat Code</string>
     <string name="cheat_status_active">Active in Game</string>
-    <string name="cheat_status_enabled">✅ Enabled</string>
-    <string name="cheat_status_disabled">⚪ Disabled</string>
+    <string name="cheat_status_enabled">Enabled</string>
+    <string name="cheat_status_disabled">Disabled</string>
     <string name="select_all">Select All</string>
     <string name="deselect_all">Deselect All</string>
     <string name="cheats_count_summary">Total cheats: %1$d | Enabled: %2$d</string>
@@ -2130,10 +2135,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="auto_optimization_apply">Apply Mode</string>
     <string name="auto_optimization_applied_toast">Auto-Configuration applied: \"%1$s\" profile!</string>
     <string name="auto_optimization_summary_title">Applied Settings</string>
-    <string name="auto_optimization_mode_default">🔄 Default Settings</string>
+    <string name="auto_optimization_mode_default">Default Settings</string>
     <string name="auto_optimization_mode_default_desc">Disable auto-optimization profiles and restore all emulator settings to factory defaults.</string>
     <string name="auto_optimization_reset_defaults">Reset to Defaults</string>
-    <string name="auto_optimization_defaults_restored_toast">🔄 Default settings successfully restored!</string>
+    <string name="auto_optimization_defaults_restored_toast">Default settings successfully restored!</string>
     <string name="show_device_load_overlay">Show Device Load Overlay</string>
     <string name="show_device_load_overlay_description">Displays real-time CPU, GPU, RAM utilization and 5-stage device temperature indicators.</string>
     <string name="game_fix_issues_header">Known Issues and Bugs</string>
@@ -2269,8 +2274,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="online_tools_connecting_format">Connecting and downloading %1$s...</string>
     <string name="online_tools_downloading_format">Downloading: %1$d%% (%2$s / %3$s)</string>
     <string name="online_tools_extracting">Unpacking and installing components into system...</string>
-    <string name="online_firmware_installed_success">✅ Firmware %1$s installed online successfully!</string>
-    <string name="online_keys_installed_success">✅ Keys %1$s installed online successfully!</string>
+    <string name="online_firmware_installed_success">Firmware %1$s installed online successfully!</string>
+    <string name="online_keys_installed_success">Keys %1$s installed online successfully!</string>
     <string name="unit_gb">GB</string>
     <string name="unit_mb">MB</string>
     <string name="unit_kb">KB</string>
@@ -2283,7 +2288,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="thermal_emergency_protection_description">Automatically pause emulation when the chipset or battery reaches a critical temperature to cool the device</string>
     <string name="thermal_emergency_limit">Thermal pause limit</string>
     <string name="thermal_emergency_limit_description">Threshold temperature for emergency pause</string>
-    <string name="thermal_emergency_pause_toast">🌡️ Emergency pause: chipset temperature %1$s°C. Cooling device down...</string>
+    <string name="thermal_emergency_pause_toast">Emergency pause: chipset temperature %1$s°C. Cooling device down...</string>
     <string name="storm_tier2_compiler">STORM Tier-2 JIT Compiler</string>
     <string name="storm_tier2_compiler_description">Zero-overhead instruction pre-optimizer and superblock JIT tuner (canonicalizes ARMv8.3 PAC/BTI hints and accelerates CNTVCT_EL0 counter reads)</string>
     <string name="ratio_32_9">32:9 (Super Ultrawide)</string>
@@ -2306,7 +2311,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="storm_sync_close">Close</string>
     <string name="storm_sync_device_key_label">This device key</string>
     <string name="storm_sync_copy">Copy</string>
-    <string name="storm_sync_server_active">🟢 Sync server active (Waiting for connections)</string>
+    <string name="storm_sync_server_active">Sync server active (Waiting for connections)</string>
     <string name="storm_sync_remote_connect_title">Connect to remote device</string>
     <string name="storm_sync_remote_key_hint">Enter key or IP:port...</string>
     <string name="storm_sync_btn_connect">Connect</string>
@@ -2336,17 +2341,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="storm_sync_remote_device_default">Remote device</string>
     <string name="storm_sync_remote_node_default">Remote node</string>
     <string name="storm_sync_node_default">node</string>
-    <string name="storm_sync_state_connected_client_fmt">🟢 Connected: %1$s [%2$s:%3$d]</string>
-    <string name="storm_sync_state_connected_remote_fmt">🟢 Connected: %1$s (%2$s) [%3$s:%4$d]</string>
-    <string name="storm_sync_state_self_key">⚠️ Entered key belongs to this device</string>
+    <string name="storm_sync_state_connected_client_fmt">Connected: %1$s [%2$s:%3$d]</string>
+    <string name="storm_sync_state_connected_remote_fmt">Connected: %1$s (%2$s) [%3$s:%4$d]</string>
+    <string name="storm_sync_state_self_key">Entered key belongs to this device</string>
     <string name="storm_sync_toast_self_key">You entered the key of the current device. Please enter the key of another device (PC or another phone).</string>
     <string name="storm_sync_state_connecting_fmt">Connecting to %1$s:%2$d...</string>
-    <string name="storm_sync_state_conn_error_fmt">❌ Connection error to %1$s:%2$d</string>
+    <string name="storm_sync_state_conn_error_fmt">Connection error to %1$s:%2$d</string>
     <string name="storm_sync_toast_conn_error_fmt">Failed to connect to %1$s:%2$d. Make sure STORM SAVE SYNC is running on the second device and port %2$d is open.</string>
     <string name="storm_sync_toast_identical">Saves are completely identical</string>
     <string name="storm_sync_conflict_game_fmt">Game: %1$s [%2$s]</string>
-    <string name="storm_sync_conflict_date_fmt">📅 Date &amp; time: %1$s</string>
-    <string name="storm_sync_conflict_size_fmt">📦 Data size: %1$s • Files: %2$d</string>
+    <string name="storm_sync_conflict_date_fmt">Date &amp; time: %1$s</string>
+    <string name="storm_sync_conflict_size_fmt">Data size: %1$s • Files: %2$d</string>
     <string name="storm_sync_toast_download_ok">Save downloaded successfully!</string>
     <string name="storm_sync_toast_download_err">Failed to download save</string>
     <string name="storm_sync_toast_upload_ok">Save sent to remote device successfully!</string>
@@ -2354,25 +2359,25 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="storm_sync_toast_all_synced_already">All saves are already synchronized!</string>
     <string name="storm_sync_toast_syncing_progress_fmt">Syncing (%1$d/%2$d): %3$s...</string>
     <string name="storm_sync_toast_sync_all_done">All saves synchronized successfully!</string>
-    <string name="storm_sync_item_local_info_fmt">📱 On this device: %1$s (%2$s, %3$d files)</string>
-    <string name="storm_sync_item_local_missing">📱 On this device: none</string>
-    <string name="storm_sync_item_remote_info_fmt">💻 On remote: %1$s (%2$s, %3$d files)</string>
-    <string name="storm_sync_item_remote_missing">💻 On remote: none</string>
-    <string name="storm_sync_badge_synced">🟢 Synchronized</string>
+    <string name="storm_sync_item_local_info_fmt">On this device: %1$s (%2$s, %3$d files)</string>
+    <string name="storm_sync_item_local_missing">On this device: none</string>
+    <string name="storm_sync_item_remote_info_fmt">On remote: %1$s (%2$s, %3$d files)</string>
+    <string name="storm_sync_item_remote_missing">On remote: none</string>
+    <string name="storm_sync_badge_synced">Synchronized</string>
     <string name="storm_sync_btn_synced">Synchronized</string>
-    <string name="storm_sync_badge_conflict">⚠️ Conflict</string>
+    <string name="storm_sync_badge_conflict">Conflict</string>
     <string name="storm_sync_btn_resolve_conflict">Resolve conflict</string>
-    <string name="storm_sync_badge_local_only">📤 Local only</string>
+    <string name="storm_sync_badge_local_only">Local only</string>
     <string name="storm_sync_btn_send">Send</string>
-    <string name="storm_sync_badge_remote_only">📥 Remote only</string>
+    <string name="storm_sync_badge_remote_only">Remote only</string>
     <string name="storm_sync_btn_download">Download</string>
     <string name="storm_sync_badge_unknown">Unknown</string>
     <string name="storm_world_subtitle">Nintendo Switch Games Catalog</string>
     <string name="storm_world_search_hint">Search games by title or ID...</string>
-    <string name="storm_world_filter_all_langs">🌐 All languages</string>
-    <string name="storm_world_filter_russian">🇷🇺 Russian</string>
-    <string name="storm_world_filter_dlc_mods">✨ DLC &amp; Mods</string>
-    <string name="storm_world_filter_all_formats">📦 All formats</string>
+    <string name="storm_world_filter_all_langs">All languages</string>
+    <string name="storm_world_filter_russian">Russian</string>
+    <string name="storm_world_filter_dlc_mods">DLC &amp; Mods</string>
+    <string name="storm_world_filter_all_formats">All formats</string>
     <string name="storm_world_btn_download_game">Download game</string>
     <string name="storm_world_btn_pause">Pause</string>
     <string name="storm_world_btn_resume">Resume</string>
@@ -2392,9 +2397,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="storm_world_dlc_subtitle">Official add-ons and content included with the game</string>
     <string name="storm_world_dlc_empty">Add-ons list is empty</string>
     <string name="storm_world_btn_got_it">Got it</string>
-    <string name="storm_world_badge_recommended">⭐ Recommended</string>
+    <string name="storm_world_badge_recommended">Recommended</string>
     <string name="storm_world_folder_default_name">Folder</string>
-    <string name="storm_world_folder_label_fmt">📁 Folder: %1$s ✏️</string>
+    <string name="storm_world_folder_label_fmt">Folder: %1$s</string>
     <string name="storm_world_toast_download_folder_fmt">Download folder: %1$s</string>
     <string name="storm_world_toast_bg_download">Game download continues in the background</string>
     <string name="storm_world_status_available_fmt">Available Nintendo Switch games: %1$d</string>
@@ -2408,17 +2413,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="storm_world_no_description">No description available</string>
     <string name="storm_world_dlc_fallback_fmt">Add-on %1$d</string>
     <string name="storm_world_dlc_official_fallback_fmt">Official add-on (DLC #%1$d)</string>
-    <string name="storm_world_pick_new_folder">📂 Select a new folder on device...</string>
-    <string name="storm_world_game_folder_item_fmt">📁 Games folder: %1$s</string>
-    <string name="storm_world_default_folder_option">🔄 Default (Download/STORM_SWITCH_GAMES)</string>
+    <string name="storm_world_pick_new_folder">Select a new folder on device...</string>
+    <string name="storm_world_game_folder_item_fmt">Games folder: %1$s</string>
+    <string name="storm_world_default_folder_option">Default (Download/STORM_SWITCH_GAMES)</string>
     <string name="storm_world_toast_folder_reset">Download folder reset to default</string>
     <string name="storm_world_dialog_folder_title">Game download folder</string>
     <string name="storm_world_bg_download_status_fmt">Background download: %1$s (%2$d%%)</string>
     <string name="storm_dl_error_default">Download error</string>
-    <string name="storm_dl_stats_error_fmt">❌ Error: %1$s</string>
+    <string name="storm_dl_stats_error_fmt">Error: %1$s</string>
     <string name="storm_dl_connecting">Connecting to download server...</string>
-    <string name="storm_dl_paused">⏸ Download paused</string>
-    <string name="storm_dl_paused_pct_fmt">⏸ Download paused (%1$d%%)</string>
+    <string name="storm_dl_paused">Download paused</string>
+    <string name="storm_dl_paused_pct_fmt">Download paused (%1$d%%)</string>
     <string name="storm_dl_cancelled">Download cancelled</string>
     <string name="storm_dl_err_open_dir">Failed to open save folder. Please select an accessible folder at the bottom of the game card.</string>
     <string name="storm_dl_err_open_file">Failed to open target file for writing</string>
@@ -2432,13 +2437,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="storm_dl_reconnecting_fmt">Reconnecting (%1$s). Attempt %2$d of %3$d...</string>
     <string name="storm_dl_err_connection_lost">Connection failed</string>
     <string name="storm_dl_stats_error_long_fmt">Download error: %1$s</string>
-    <string name="storm_dl_completed">✅ Game downloaded successfully!</string>
+    <string name="storm_dl_completed">Game downloaded successfully!</string>
     <string name="storm_dl_interrupted_resume">Download interrupted. Tap \"Resume\".</string>
     <string name="storm_dl_subtext_speed_eta_fmt">%1$s MB/s • ETA: %2$d min</string>
     <string name="storm_dl_progress_pct_fmt">Downloading: %1$d%%</string>
     <string name="storm_dl_game_fallback">Game</string>
 
-    <string name="auto_opt_detected_hw">🔍 Detected Hardware</string>
+    <string name="auto_opt_detected_hw">Detected Hardware</string>
     <string name="auto_opt_form_tablet">Tablet</string>
     <string name="auto_opt_form_phone">Smartphone</string>
     <string name="auto_opt_soc_fmt">%1$s (%2$d cores, %3$s)</string>
@@ -2453,25 +2458,25 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="cheats_search_hint">Search...</string>
     <string name="cheats_summary_zero">Total cheats: 0 | Enabled: 0</string>
     <string name="cheat_item_desc_placeholder">Description</string>
-    <string name="cheat_btn_edit_qty">✏️ Value</string>
+    <string name="cheat_btn_edit_qty">Value</string>
     <string name="cheat_header_version_prefix"> | Version: </string>
     <string name="cheat_header_in_game"> | In Game</string>
-    <string name="cheat_header_offline"> | ⚪ Offline</string>
+    <string name="cheat_header_offline">| Offline</string>
     <string name="cheat_header_dmnt_active">
 Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="cheat_build_all_versions">All versions</string>
     <string name="cheat_toast_activated_ingame">Cheat codes activated in game!</string>
-    <string name="cheat_toast_saved">✅ Cheat codes saved successfully</string>
+    <string name="cheat_toast_saved">Cheat codes saved successfully</string>
     <string name="cheat_add_name_hint">Cheat name (e.g. Infinite Lives)</string>
     <string name="cheat_add_code_hint">Atmosphere format code (04000000 12345678 ...)</string>
     <string name="cheat_toast_added">Cheat added!</string>
     <string name="cheat_current_val_fmt">Current value: %1$d (0x%2$s)</string>
     <string name="cheat_new_val_hint">Quantity / New value</string>
-    <string name="cheat_edit_val_title_fmt">✏️ Edit value: %1$s</string>
+    <string name="cheat_edit_val_title_fmt">Edit value: %1$s</string>
     <string name="cheat_toast_val_updated_fmt">Value updated: %1$d (0x%2$s)</string>
-    <string name="cheat_menu_edit_val">✏️ Edit quantity / value</string>
-    <string name="cheat_menu_copy_code">📋 Copy code</string>
-    <string name="cheat_menu_delete">🗑️ Delete cheat</string>
+    <string name="cheat_menu_edit_val">Edit quantity / value</string>
+    <string name="cheat_menu_copy_code">Copy code</string>
+    <string name="cheat_menu_delete">Delete cheat</string>
     <string name="cheat_toast_code_copied">Code copied</string>
     <string name="cheat_code_more_lines_fmt">%1$s (+%2$d lines)</string>
     <string name="cheat_desc_qty_suffix_fmt">%1$s (Qty: %2$d)</string>
@@ -2510,17 +2515,17 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="cheat_desc_mem_reg">Memory Register Patch</string>
     <string name="cheat_desc_mem_ptr">Memory Pointer / Offset Patch</string>
     <string name="cheat_desc_custom">Custom Atmosphere Cheat Code</string>
-    <string name="log_viewer_title">📜 Runtime Log (Emulator Logs)</string>
+    <string name="log_viewer_title">Runtime Log (Emulator Logs)</string>
     <string name="log_viewer_save_file">Save to file</string>
     <string name="log_viewer_share">Share</string>
     <string name="log_viewer_search_hint">Search logs (Error, Warning, Vulkan, NSO...)</string>
     <string name="log_viewer_chip_all">All</string>
-    <string name="log_viewer_chip_errors">🚨 Errors</string>
-    <string name="log_viewer_chip_warnings">⚠️ Warnings</string>
-    <string name="log_viewer_chip_info">ℹ️ Info</string>
+    <string name="log_viewer_chip_errors">Errors</string>
+    <string name="log_viewer_chip_warnings">Warnings</string>
+    <string name="log_viewer_chip_info">Info</string>
     <string name="log_viewer_status_ingame">In Game</string>
-    <string name="log_viewer_status_offline">⚪ Offline</string>
-    <string name="log_viewer_toast_refreshing">🔄 Refreshing log...</string>
+    <string name="log_viewer_status_offline">Offline</string>
+    <string name="log_viewer_toast_refreshing">Refreshing log...</string>
     <string name="log_viewer_stats_total_fmt">Total lines: %1$d | Size: %2$d KB</string>
     <string name="log_viewer_filter_errors">Errors</string>
     <string name="log_viewer_filter_warnings">Warnings</string>
@@ -2529,19 +2534,19 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="log_viewer_stats_filtered_fmt">Filtered (%1$s): %2$d of %3$d</string>
     <string name="log_viewer_empty_filtered">No entries match the selected filter</string>
     <string name="log_viewer_toast_empty">Log is empty</string>
-    <string name="log_viewer_toast_copied_fmt">📋 Log copied to clipboard (%1$d lines)</string>
+    <string name="log_viewer_toast_copied_fmt">Log copied to clipboard (%1$d lines)</string>
     <string name="log_viewer_toast_empty_save">Log is empty, nothing to save</string>
-    <string name="log_viewer_toast_saved_fmt">💾 Log saved successfully:
+    <string name="log_viewer_toast_saved_fmt">Log saved successfully:
 %1$s</string>
     <string name="log_viewer_toast_save_err_fmt">Failed to save log: %1$s</string>
     <string name="log_viewer_suffix_errors"> (Errors only)</string>
     <string name="log_viewer_suffix_warnings"> (Warnings only)</string>
     <string name="log_viewer_share_title">Share STORM SWITCH Log</string>
     <string name="log_viewer_toast_share_err_fmt">Share failed: %1$s</string>
-    <string name="log_viewer_share_header_fmt">📊 STORM SWITCH Runtime Log (Game: %1$s)
+    <string name="log_viewer_share_header_fmt">STORM SWITCH Runtime Log (Game: %1$s)
 
 </string>
-    <string name="log_viewer_share_tg_title">🚀 Send log to Telegram / MAX</string>
+    <string name="log_viewer_share_tg_title">Send log to Telegram / MAX</string>
     <string name="mapping_press_prompt">Press a button or move a stick on the controller</string>
     <string name="overlay_toggle_subtitle">Configure visibility of touch controls</string>
     <string name="online_tools_badge_active">ACTIVE</string>
@@ -2550,9 +2555,9 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="online_tools_btn_download_install">Download &amp; Install</string>
     <string name="online_tools_btn_reinstall">Reinstall</string>
     <string name="online_tools_btn_update">Update</string>
-    <string name="online_tools_badge_installed">🟢 INSTALLED</string>
-    <string name="online_tools_badge_top">🌟 TOP</string>
-    <string name="online_tools_badge_selected">✔ SELECTED</string>
+    <string name="online_tools_badge_installed">INSTALLED</string>
+    <string name="online_tools_badge_top">TOP</string>
+    <string name="online_tools_badge_selected">SELECTED</string>
     <string name="online_tools_status_unknown">Unknown</string>
     <string name="online_tools_installed_ver_fmt">Installed version: %1$s</string>
     <string name="online_tools_fw_installed">Switch firmware installed</string>
@@ -2578,7 +2583,7 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="translator_quick_now_desc">Instant capture and text overlay</string>
     <string name="translator_quick_auto_title">Auto-translate on frame change</string>
     <string name="translator_quick_auto_off">Status: Disabled (on tap)</string>
-    <string name="translator_quick_auto_on">Status: [ Enabled — auto-scan ]</string>
+    <string name="translator_quick_auto_on">Status: [ Enabled - auto-scan ]</string>
     <string name="translator_quick_model_title">Model / Neural Engine</string>
     <string name="translator_quick_roi_title">Screen scan regions</string>
     <string name="translator_quick_roi_desc">Configure subtitle and dialogue zones</string>
@@ -2590,25 +2595,25 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="translator_quick_float_desc">Display floating translate button on screen</string>
     <string name="translator_quick_float_on">Button: [ Visible ]</string>
     <string name="translator_quick_float_off">Button: Hidden</string>
-    <string name="translator_quick_all_settings">⚙️ All settings &amp; API keys...</string>
+    <string name="translator_quick_all_settings">All settings &amp; API keys...</string>
     <string name="translator_settings_subtitle">Real-time neural translation and speech synthesis</string>
-    <string name="translator_sec_engine_langs">🌐 TRANSLATION ENGINE &amp; LANGUAGES</string>
+    <string name="translator_sec_engine_langs">TRANSLATION ENGINE &amp; LANGUAGES</string>
     <string name="translator_lbl_service">Translation service:</string>
     <string name="translator_lbl_source_lang">Game language (Source):</string>
     <string name="translator_lbl_target_lang">Translation language:</string>
     <string name="translator_hint_api_key">API key (for DeepL / Custom AI)</string>
-    <string name="translator_sec_style">🖼️ SUBTITLE STYLE &amp; OVERLAY</string>
+    <string name="translator_sec_style">SUBTITLE STYLE &amp; OVERLAY</string>
     <string name="translator_lbl_overlay_style">Text overlay style:</string>
-    <string name="translator_sec_roi">📐 SCREEN SCAN REGIONS (ROI)</string>
+    <string name="translator_sec_roi">SCREEN SCAN REGIONS (ROI)</string>
     <string name="translator_lbl_roi_preset">Scan region preset:</string>
-    <string name="translator_btn_custom_roi">✏️ Configure screen zones (Multi-select)</string>
-    <string name="translator_sec_tts">🔊 TEXT-TO-SPEECH (TTS)</string>
+    <string name="translator_btn_custom_roi">Configure screen zones (Multi-select)</string>
+    <string name="translator_sec_tts">TEXT-TO-SPEECH (TTS)</string>
     <string name="translator_lbl_auto_tts">Automatic voice readout:</string>
-    <string name="translator_lbl_smart_voices">🎭 Smart character voices:</string>
+    <string name="translator_lbl_smart_voices">Smart character voices:</string>
     <string name="translator_lbl_tts_speed_default">Speech speed: 1.0x</string>
     <string name="translator_lbl_tts_speed_fmt">Speech speed: %1$sx</string>
-    <string name="translator_btn_test_voice">▶ Test voice</string>
-    <string name="translator_sec_floating_btn">🔘 FLOATING TRANSLATE BUTTON</string>
+    <string name="translator_btn_test_voice">Test voice</string>
+    <string name="translator_sec_floating_btn">FLOATING TRANSLATE BUTTON</string>
     <string name="translator_lbl_floating_show">Show translate button on screen:</string>
     <string name="translator_lbl_floating_opacity_default" formatted="false">Button opacity: 90%</string>
     <string name="translator_lbl_floating_opacity_fmt">Button opacity: %1$d%%</string>
@@ -2637,7 +2642,7 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="translator_roi_top">Top third (Quests, HUD &amp; hints)</string>
     <string name="translator_roi_custom">Custom regions (Manual selection)</string>
     <string name="translator_toast_capture_failed">Failed to capture game frame</string>
-    <string name="translator_toast_recognizing">🔍 Recognizing and translating...</string>
+    <string name="translator_toast_recognizing">Recognizing and translating...</string>
     <string name="translator_toast_no_text_region">No text found in selected region</string>
     <string name="translator_toast_no_text_screen">No text detected on screen</string>
     <string name="translator_overlay_region_fmt">Region %1$d</string>
@@ -2647,16 +2652,16 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="translator_overlay_btn_close">Close</string>
     <string name="translator_snack_auto_on">Auto-translation enabled</string>
     <string name="translator_snack_auto_off">Auto-translation disabled</string>
-    <string name="translator_snack_tts_on">🔊 TTS voice readout enabled</string>
-    <string name="translator_snack_tts_off">🔇 TTS voice readout disabled</string>
-    <string name="translator_snack_float_on">👁️ Floating button shown</string>
-    <string name="translator_snack_float_off">🙈 Floating button hidden</string>
-    <string name="translator_dialog_select_model">🤖 Select translation model</string>
+    <string name="translator_snack_tts_on">TTS voice readout enabled</string>
+    <string name="translator_snack_tts_off">TTS voice readout disabled</string>
+    <string name="translator_snack_float_on">Floating button shown</string>
+    <string name="translator_snack_float_off">Floating button hidden</string>
+    <string name="translator_dialog_select_model">Select translation model</string>
     <string name="translator_toast_model_selected_fmt">Translation model: %1$s</string>
-    <string name="sysinfo_sec_device">📱  DEVICE &amp; SYSTEM</string>
+    <string name="sysinfo_sec_device">DEVICE &amp; SYSTEM</string>
     <string name="sysinfo_sec_cpu"> PROCESSOR (CPU / SOC)</string>
-    <string name="sysinfo_sec_gpu">🎮  GRAPHICS (GPU &amp; VULKAN)</string>
-    <string name="sysinfo_sec_ram">💾  SYSTEM MEMORY (RAM)</string>
+    <string name="sysinfo_sec_gpu">GRAPHICS (GPU &amp; VULKAN)</string>
+    <string name="sysinfo_sec_ram">SYSTEM MEMORY (RAM)</string>
     <string name="sysinfo_lbl_manufacturer">• Manufacturer: </string>
     <string name="sysinfo_lbl_model">• Model: </string>
     <string name="sysinfo_lbl_product">• Product: </string>
@@ -2676,13 +2681,13 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="sysinfo_lbl_total_ram">• Total RAM: </string>
     <string name="sysinfo_lbl_avail_ram">• Available RAM: </string>
     <string name="sysinfo_lbl_low_mem_thresh">• Low Memory Threshold: </string>
-    <string name="emulation_cooling_paused_title">❄️ Game paused — cooling down device</string>
-    <string name="emulation_cooling_temp_default">🌡️ Temperature: --°C ➔ Target: 36.5°C</string>
+    <string name="emulation_cooling_paused_title">Game paused - cooling down device</string>
+    <string name="emulation_cooling_temp_default">Temperature: --°C -> Target: 36.5°C</string>
     <string name="emulation_cooling_chipset_unloaded">Chipset load removed (&lt; 1 W)</string>
-    <string name="emulation_cooling_done_fmt">✅ Cooling complete: %1$s°C</string>
-    <string name="emulation_cooling_temp_fmt">🌡️ Temperature: %1$s°C ➔ Target: %2$s°C</string>
-    <string name="emulation_cooling_in_progress">🌡️ Cooling down chipset</string>
-    <string name="emulation_screenshot_saved_fmt">📸 Screenshot saved to Gallery: %1$s</string>
+    <string name="emulation_cooling_done_fmt">Cooling complete: %1$s°C</string>
+    <string name="emulation_cooling_temp_fmt">Temperature: %1$s°C -> Target: %2$s°C</string>
+    <string name="emulation_cooling_in_progress">Cooling down chipset</string>
+    <string name="emulation_screenshot_saved_fmt">Screenshot saved to Gallery: %1$s</string>
     <string name="emulation_screenshot_err_fmt">Screenshot error: %1$s</string>
     <string name="emulation_hud_cpu">CPU:</string>
     <string name="emulation_hud_gpu">GPU:</string>
@@ -2704,7 +2709,7 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="amiibo_installed_total_fmt">Total: %1$s</string>
     <string name="gamebanana_no_mod_desc">No mod description available.</string>
     <string name="gamebanana_avail_files_header">
-📦 Available files for download:</string>
+ Available files for download:</string>
     <string name="game_fix_toast_autofix_custom">Auto-Fix: Applied with your custom settings preserved</string>
     <string name="game_fix_toast_autofix_clean">Auto-Fix: Clean reference profile applied</string>
     <string name="game_fix_toast_custom_saved">Auto-Fix: Custom settings preserved</string>
@@ -2838,7 +2843,7 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <!-- Save State System (SESS v2) -->
     <string name="menu_quick_save">Quick Save (Slot 1)</string>
     <string name="menu_quick_load">Quick Load (Slot 1)</string>
-    <string name="menu_save_state_manager">Save State Manager (Slots 1–5)</string>
+    <string name="menu_save_state_manager">Save State Manager (Slots 1-5)</string>
     <string name="menu_toggle_quick_save_load_overlay">On-Screen Quick Save/Load Buttons (F5/F7)</string>
     <string name="save_state_manager_title">SAVE STATE MANAGER (SESS v2)</string>
     <string name="save_state_slot_fmt">Slot %1$d</string>
@@ -2849,7 +2854,7 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="save_state_delete">Delete</string>
     <string name="save_state_saved_toast">Quick Save (Slot %1$d) created successfully!</string>
     <string name="save_state_loaded_toast">Quick Save (Slot %1$d) loaded successfully!</string>
-    <string name="save_state_deleted_toast">🗑️ Save state for Slot %1$d deleted</string>
+    <string name="save_state_deleted_toast">Save state for Slot %1$d deleted</string>
     <string name="save_state_save_failed">Failed to save state to Slot %1$d</string>
     <string name="save_state_load_failed">Slot %1$d is empty or corrupted</string>
     <string name="save_state_confirm_delete">Are you sure you want to delete save state for Slot %1$d?</string>
@@ -2922,8 +2927,8 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="performance_preset_description">Select an optimization profile to balance performance, battery life, and visual quality</string>
     <string name="performance_preset_battery">Battery Saver</string>
     <string name="performance_preset_balanced">Balanced (Recommended)</string>
-    <string name="performance_preset_quality">🚀 Maximum Quality</string>
-    <string name="performance_preset_custom">⚙️ Custom</string>
+    <string name="performance_preset_quality">Maximum Quality</string>
+    <string name="performance_preset_custom">Custom</string>
     <string name="performance_preset_applied">Performance preset applied</string>
     <string name="setting_conflict_warning">Setting Conflict Detected</string>
     <string name="setting_conflict_fix">Fix</string>
@@ -2938,7 +2943,7 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="tier_high_midrange">HIGH-END</string>
     <string name="tier_midrange">MID-RANGE</string>
     <string name="tier_budget">BUDGET</string>
-    <string name="auto_opt_hw_summary">✓ Dynamic State • NCE • Reactive Flushing • CPU Affinity Pinning • Fast GPU Time</string>
+    <string name="auto_opt_hw_summary">Dynamic State • NCE • Reactive Flushing • CPU Affinity Pinning • Fast GPU Time</string>
     <string name="freedreno_reset_recommended">Reset to Recommended</string>
     <string name="freedreno_reset_recommended_desc">Reset all Freedreno debug variables to maximum performance defaults</string>
     <string name="freedreno_reset_done_toast">Freedreno settings reset to recommended defaults</string>
@@ -2970,7 +2975,7 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="storm_folder_picker_up">.. (Parent Folder)</string>
     <string name="storm_folder_picker_internal">Internal Storage</string>
     <string name="storm_folder_picker_sd_card">SD / External (%1$s)</string>
-    <string name="storm_folder_picker_empty">No subfolders inside — tap "Select This Folder" below to use this directory.</string>
+    <string name="storm_folder_picker_empty">No subfolders inside - tap "Select This Folder" below to use this directory.</string>
     <string name="storm_folder_picker_grant_permission">Grant All Files Access to view folders in root storage</string>
     <string name="storm_folder_picker_grant_btn">Grant Access</string>
     <string name="storm_folder_picker_stats_games">%1$d folders • %2$d game files</string>
@@ -2985,6 +2990,19 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="enable_all_cheats">Enable All Cheats</string>
     <string name="disable_all_cheats">Disable All Cheats</string>
     <string name="unnamed_cheat">Unnamed Cheat</string>
+    <string name="cheat_submenu_expanded">Expanded</string>
+    <string name="cheat_submenu_collapsed">Collapsed</string>
+    <string name="nand_migration">NAND Content</string>
+    <string name="nand_migration_question">Would you like to copy the content of the old folder to the new one?</string>
+    <string name="nand_migration_replace_question">The new folder already has content. Would you like to copy the content of the old folder and replace what is in the new one?</string>
+    <string name="nand_migration_copying">Copying NAND content...</string>
+    <string name="nand_migration_failed">Could not copy the content.</string>
+    <string name="nand_migration_done">Content copied successfully.</string>
+    <string name="nand_migration_no_space">Not enough space to copy the content. Needed: %1$s, Available: %2$s</string>
+    <string name="nand_migration_game_running">Cannot change NAND folder while a game is running.</string>
+    <string name="nand_migration_free_space">Free space</string>
+    <string name="nand_migration_free_space_question">Content copied successfully. Would you like to delete the old copy to free up %1$s of space?</string>
+    <string name="nand_migration_keep">Keep</string>
     <string name="enable_cheats_by_default">Enable cheats by default</string>
     <string name="enable_cheats_by_default_description">Enable regular cheats when a game starts</string>
     <string name="storm_thermal_governor">STORM Thermal Governor</string>

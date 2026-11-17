@@ -4,9 +4,13 @@
 // SPDX-FileCopyrightText: Copyright 2020 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include <algorithm>
 #include <chrono>
 #include <cstdlib>
 #include <thread>
+#if defined(__x86_64__) || defined(_M_X64)
+#include <emmintrin.h>
+#endif
 #include "common/scope_exit.h"
 #include "common/settings.h"
 #include "core/core.h"
@@ -230,13 +234,19 @@ void PhysicalCore::Idle() {
     // many microseconds before blocking.
     static const auto spin = std::chrono::microseconds{[] {
         const char* text = std::getenv("EDEN_NX2_IDLE_SPIN_US");
-        return text ? std::strtoll(text, nullptr, 10) : 0LL;
+        return text ? std::clamp(std::strtoll(text, nullptr, 10), 0LL, 50LL) : 0LL;
     }()};
     if (spin.count() > 0) {
         const auto deadline = std::chrono::steady_clock::now() + spin;
         while (!m_is_interrupted &&
                std::chrono::steady_clock::now() < deadline) {
+#if defined(__aarch64__) && !defined(_MSC_VER)
+            asm volatile("yield" ::: "memory");
+#elif defined(__x86_64__) || defined(_M_X64)
+            _mm_pause();
+#else
             std::this_thread::yield();
+#endif
         }
     }
     std::unique_lock lk{m_guard};

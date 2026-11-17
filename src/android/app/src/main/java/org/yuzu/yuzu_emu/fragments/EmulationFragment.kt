@@ -78,6 +78,7 @@ import kotlinx.coroutines.withContext
 import org.yuzu.yuzu_emu.HomeNavigationDirections
 import org.yuzu.yuzu_emu.NativeLibrary
 import org.yuzu.yuzu_emu.R
+import org.yuzu.yuzu_emu.YuzuApplication
 import org.yuzu.yuzu_emu.activities.EmulationActivity
 import org.yuzu.yuzu_emu.databinding.DialogOverlayAdjustBinding
 import org.yuzu.yuzu_emu.databinding.FragmentEmulationBinding
@@ -90,6 +91,7 @@ import org.yuzu.yuzu_emu.features.settings.model.Settings
 import org.yuzu.yuzu_emu.features.settings.model.Settings.EmulationOrientation
 import org.yuzu.yuzu_emu.features.settings.model.Settings.EmulationVerticalAlignment
 import org.yuzu.yuzu_emu.features.settings.model.ShortSetting
+import org.yuzu.yuzu_emu.features.settings.model.StringSetting
 import org.yuzu.yuzu_emu.features.settings.model.view.SettingsItem
 import org.yuzu.yuzu_emu.features.settings.utils.SettingsFile
 import org.yuzu.yuzu_emu.model.DriverViewModel
@@ -165,6 +167,11 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
 
     private var perfStatsRunnable: Runnable? = null
     private var socRunnable: Runnable? = null
+    private var lastSocTextSizeSp = -1f
+    private var lastSocBgRes = -1
+    private var lastLoadTextSizeSp = -1f
+    private var lastLoadBgRes = -1
+    private var lastPerfBgRes = -1
     private var sessionStartTime: Long = 0L
     private var isAmiiboPickerOpen = false
     private var amiiboLoadJob: Job? = null
@@ -423,6 +430,8 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
             val currentGame = game ?: return
             val programIdHex = currentGame.programIdHex
             val gameTitle = game?.title ?: ""
+            GpuDriverHelper.activeGameProgramId = programIdHex
+            GpuDriverHelper.activeGameTitle = gameTitle
 
             if (GpuDriverHelper.isAdrenoGpu()) {
                 if (NativeFreedrenoConfig.loadPerGameConfigWithGlobalFallback(programIdHex)) {
@@ -779,9 +788,14 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         val buildVersion = NativeLibrary.getBuildVersion()
         buildId = "STORM SWITCH $buildVersion"
         val activeSummary = runCatching { NativeLibrary.getActiveVulkanDriverSummary() }.getOrDefault("")
-        val driverTitle = driverViewModel.selectedDriverTitle.value
-        val fallbackDriver = if (driverTitle.isNotEmpty()) driverTitle else driverViewModel.selectedDriverVersion.value
-        val rawDriver = if (activeSummary.isNotBlank()) activeSummary else fallbackDriver
+        val rawDriver = if (activeSummary.isNotBlank() && !activeSummary.equals("System Vulkan", ignoreCase = true)) {
+            activeSummary
+        } else if (StringSetting.DRIVER_PATH.getString().isNotEmpty()) {
+            val driverTitle = driverViewModel.selectedDriverTitle.value
+            if (driverTitle.isNotEmpty()) driverTitle else driverViewModel.selectedDriverVersion.value
+        } else {
+            activeSummary.ifBlank { getString(R.string.system_gpu_driver) }
+        }
         driverInUse = sanitizeDriverForHud(rawDriver)
 
         updateQuickOverlayMenuEntry(BooleanSetting.SHOW_INPUT_OVERLAY.getBoolean())
@@ -1324,6 +1338,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 socRunnable?.let { runnable -> socUpdateHandler.removeCallbacks(runnable) }
                 emulationState.changeProgram(emulationViewModel.programChanged.value)
                 emulationViewModel.setProgramChanged(-1)
+                GpuDriverHelper.clearInflightDriverMarker()
                 emulationViewModel.setEmulationStopped(false)
             }
         }
@@ -1339,6 +1354,14 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 }
 
                 updateScreenLayout()
+
+                game?.let { g ->
+                    GpuDriverHelper.activeGameProgramId = g.programIdHex
+                    GpuDriverHelper.activeGameTitle = g.title
+                    GpuDriverHelper.applyPerGameDriverConfig(g.programIdHex, g.title)
+                }
+
+                GpuDriverHelper.ensureStormDriverReadyForLaunch(requireContext())
 
                 // Final safety: ensure per-game driver config is applied right before launch
                 game?.let { g ->
@@ -1405,39 +1428,38 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
             return
         }
 
-        val names = cheats.map { it.name.ifEmpty { getString(R.string.unnamed_cheat) } }.toTypedArray()
-        lateinit var dialog: androidx.appcompat.app.AlertDialog
-        dialog = com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+        val adapter = org.yuzu.yuzu_emu.adapters.RuntimeCheatAdapter(cheats.toList())
+        val dialogBinding = org.yuzu.yuzu_emu.databinding.DialogListBinding.inflate(layoutInflater)
+        dialogBinding.dialogList.apply {
+            layoutManager = androidx.recyclerview.widget.LinearLayoutManager(requireContext())
+            this.adapter = adapter
+        }
+        val dialog = com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.cheats)
-            .setMultiChoiceItems(names, cheats.map { it.enabled || it.isMaster }.toBooleanArray()) { _, which, enabled ->
-                if (cheats[which].isMaster) {
-                    dialog.listView.setItemChecked(which, true)
-                } else if (!NativeLibrary.setRuntimeCheatEnabled(cheats[which].id, enabled)) {
-                    dialog.listView.setItemChecked(which, !enabled)
-                }
-            }
-            .setNegativeButton(R.string.disable_all_cheats) { _, _ ->
-                cheats.forEach {
-                    if (!it.isMaster) NativeLibrary.setRuntimeCheatEnabled(it.id, false)
-                }
-            }
-            .setNeutralButton(R.string.enable_all_cheats) { _, _ ->
-                cheats.forEach {
-                    if (!it.isMaster) NativeLibrary.setRuntimeCheatEnabled(it.id, true)
-                }
-            }
+            .setView(dialogBinding.root)
+            .setNegativeButton(R.string.disable_all_cheats, null)
+            .setNeutralButton(R.string.enable_all_cheats, null)
             .setPositiveButton(R.string.close, null)
             .create()
         dialog.setOnShowListener {
-            val listView = dialog.listView
-            fun updateMasterVisuals() = repeat(listView.childCount) { index ->
-                listView.getChildAt(index).alpha =
-                    if (cheats[listView.firstVisiblePosition + index].isMaster) 0.38f else 1f
+            dialog.getButton(android.content.DialogInterface.BUTTON_NEGATIVE).setOnClickListener {
+                adapter.setAllEnabled(false)
             }
-            listView.setOnScrollChangeListener { _, _, _, _, _ -> updateMasterVisuals() }
-            updateMasterVisuals()
+            dialog.getButton(android.content.DialogInterface.BUTTON_NEUTRAL).setOnClickListener {
+                adapter.setAllEnabled(true)
+            }
         }
         dialog.show()
+    }
+
+    private fun updateCheatsMenuEntry() {
+        val b = _binding ?: return
+        val item = b.inGameMenu.menu.findItem(R.id.menu_cheats) ?: return
+        item.isVisible = try {
+            NativeLibrary.getRuntimeCheats().isNotEmpty()
+        } catch (_: Throwable) {
+            false
+        } || (game != null || args.game != null)
     }
 
     private fun addQuickSettings() {
@@ -2518,6 +2540,11 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
 
     override fun onPause() {
         gameTranslatorManager?.pauseTranslation()
+        if (emulationActivity?.isInPictureInPictureMode != true) {
+            perfStatsRunnable?.let { perfStatsUpdateHandler.removeCallbacks(it) }
+            socRunnable?.let { socUpdateHandler.removeCallbacks(it) }
+            loadStatsRunnable?.let { loadStatsUpdateHandler.removeCallbacks(it) }
+        }
         if (this::emulationState.isInitialized) {
             if (emulationState.isRunning && emulationActivity?.isInPictureInPictureMode != true) {
                 pauseEmulationAndCaptureFrame()
@@ -2529,6 +2556,11 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
     }
 
     override fun onStop() {
+        if (emulationActivity?.isInPictureInPictureMode != true) {
+            perfStatsRunnable?.let { perfStatsUpdateHandler.removeCallbacks(it) }
+            socRunnable?.let { socUpdateHandler.removeCallbacks(it) }
+            loadStatsRunnable?.let { loadStatsUpdateHandler.removeCallbacks(it) }
+        }
         if (this::emulationState.isInitialized) {
             if (emulationState.isRunning && emulationActivity?.isInPictureInPictureMode != true) {
                 emulationState.pause()
@@ -2588,6 +2620,27 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         val b = _binding ?: return
         updateStatsPosition(IntSetting.PERF_OVERLAY_POSITION.getInt())
         updateSocPosition(IntSetting.SOC_OVERLAY_POSITION.getInt())
+
+        if (emulationViewModel.emulationStarted.value && !emulationViewModel.isEmulationStopping.value) {
+            if (BooleanSetting.SHOW_PERFORMANCE_OVERLAY.getBoolean()) {
+                perfStatsRunnable?.let {
+                    perfStatsUpdateHandler.removeCallbacks(it)
+                    perfStatsUpdateHandler.post(it)
+                }
+            }
+            if (BooleanSetting.SHOW_SOC_OVERLAY.getBoolean()) {
+                socRunnable?.let {
+                    socUpdateHandler.removeCallbacks(it)
+                    socUpdateHandler.post(it)
+                }
+            }
+            if (BooleanSetting.SHOW_DEVICE_LOAD_OVERLAY.getBoolean()) {
+                loadStatsRunnable?.let {
+                    loadStatsUpdateHandler.removeCallbacks(it)
+                    loadStatsUpdateHandler.post(it)
+                }
+            }
+        }
 
         if (this::emulationState.isInitialized) {
             b.inGameMenu.post {
@@ -2744,12 +2797,14 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                         sessionStartTime = android.os.SystemClock.elapsedRealtime()
                     }
 
-                    if (BooleanSetting.PERF_OVERLAY_BACKGROUND.getBoolean(needsGlobal)) {
-                        binding.showStatsOverlayText.setBackgroundResource(
-                            R.color.yuzu_transparent_black
-                        )
+                    val targetPerfBg = if (BooleanSetting.PERF_OVERLAY_BACKGROUND.getBoolean(needsGlobal)) {
+                        R.color.yuzu_transparent_black
                     } else {
-                        binding.showStatsOverlayText.setBackgroundResource(0)
+                        0
+                    }
+                    if (lastPerfBgRes != targetPerfBg) {
+                        lastPerfBgRes = targetPerfBg
+                        binding.showStatsOverlayText.setBackgroundResource(targetPerfBg)
                     }
 
                     binding.showStatsOverlayText.text = sb.toString()
@@ -2922,7 +2977,11 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
 
                     if (BooleanSetting.SHOW_DRIVER_VERSION.getBoolean()) {
                         val activeSummary = runCatching { NativeLibrary.getActiveVulkanDriverSummary() }.getOrDefault("")
-                        val effectiveDriver = if (activeSummary.isNotBlank()) activeSummary else driverInUse
+                        val effectiveDriver = if (activeSummary.isNotBlank() && !activeSummary.equals("System Vulkan", ignoreCase = true)) {
+                            activeSummary
+                        } else {
+                            driverInUse
+                        }
                         val cleanDriver = sanitizeDriverForHud(effectiveDriver)
                         if (cleanDriver.isNotEmpty()) {
                             val line1 = sb.toString()
@@ -2957,17 +3016,20 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                     val dm = resources.displayMetrics
                     val widthDp = dm.widthPixels / dm.density
                     val textSizeSp = if (widthDp < 600) 9.5f else if (widthDp < 750) 10.5f else 11.5f
-                    binding.showSocOverlayText.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, textSizeSp)
+                    if (lastSocTextSizeSp != textSizeSp) {
+                        lastSocTextSizeSp = textSizeSp
+                        binding.showSocOverlayText.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, textSizeSp)
+                    }
                     binding.showSocOverlayText.text = sb.toString()
 
-
-
-                    if (BooleanSetting.SOC_OVERLAY_BACKGROUND.getBoolean()) {
-                        binding.showSocOverlayText.setBackgroundResource(
-                            R.color.yuzu_transparent_black
-                        )
+                    val targetSocBg = if (BooleanSetting.SOC_OVERLAY_BACKGROUND.getBoolean()) {
+                        R.color.yuzu_transparent_black
                     } else {
-                        binding.showSocOverlayText.setBackgroundResource(0)
+                        0
+                    }
+                    if (lastSocBgRes != targetSocBg) {
+                        lastSocBgRes = targetSocBg
+                        binding.showSocOverlayText.setBackgroundResource(targetSocBg)
                     }
                 }
 
@@ -3074,16 +3136,35 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                         gpuUsagePercent = -1
                     }
 
-                    // 3. RAM Usage
+                    // 3. RAM Usage (Process VmRSS + System Total/Used)
                     var ramText = ""
                     context?.let { ctx ->
                         try {
+                            var appRssGb = -1.0
+                            try {
+                                val statusFile = File("/proc/self/status")
+                                if (statusFile.exists() && statusFile.canRead()) {
+                                    for (line in statusFile.readLines()) {
+                                        if (line.startsWith("VmRSS:")) {
+                                            val kb = line.replace(Regex("[^0-9]"), "").toLongOrNull()
+                                            if (kb != null && kb > 0L) {
+                                                appRssGb = kb / (1024.0 * 1024.0)
+                                            }
+                                            break
+                                        }
+                                    }
+                                }
+                            } catch (_: Exception) {}
                             val am = ctx.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
                             val memInfo = ActivityManager.MemoryInfo()
                             am.getMemoryInfo(memInfo)
-                            val usedGb = (memInfo.totalMem - memInfo.availMem) / (1024.0 * 1024.0 * 1024.0)
-                            val totalGb = memInfo.totalMem / (1024.0 * 1024.0 * 1024.0)
-                            ramText = String.format(java.util.Locale.US, "%.1f/%.1f GB", usedGb, totalGb)
+                            val sysUsedGb = (memInfo.totalMem - memInfo.availMem) / (1024.0 * 1024.0 * 1024.0)
+                            val sysTotalGb = memInfo.totalMem / (1024.0 * 1024.0 * 1024.0)
+                            ramText = if (appRssGb >= 0.0) {
+                                String.format(java.util.Locale.US, "%.2f GB (%.1f/%.1f)", appRssGb, sysUsedGb, sysTotalGb)
+                            } else {
+                                String.format(java.util.Locale.US, "%.1f/%.1f GB", sysUsedGb, sysTotalGb)
+                            }
                         } catch (e: Exception) {}
                     }
 
@@ -3133,18 +3214,23 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                     params.setMargins(0, topMargin, resources.getDimensionPixelSize(R.dimen.spacing_large), 0)
                     binding.showLoadOverlayText.layoutParams = params
 
-                    if (BooleanSetting.SOC_OVERLAY_BACKGROUND.getBoolean()) {
-                        binding.showLoadOverlayText.setBackgroundResource(
-                            R.color.yuzu_transparent_black
-                        )
+                    val targetLoadBg = if (BooleanSetting.SOC_OVERLAY_BACKGROUND.getBoolean()) {
+                        R.color.yuzu_transparent_black
                     } else {
-                        binding.showLoadOverlayText.setBackgroundResource(0)
+                        0
+                    }
+                    if (lastLoadBgRes != targetLoadBg) {
+                        lastLoadBgRes = targetLoadBg
+                        binding.showLoadOverlayText.setBackgroundResource(targetLoadBg)
                     }
 
                     val dm = resources.displayMetrics
                     val widthDp = dm.widthPixels / dm.density
                     val textSizeSp = if (widthDp < 600) 9.5f else if (widthDp < 750) 10.5f else 11.5f
-                    binding.showLoadOverlayText.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, textSizeSp)
+                    if (lastLoadTextSizeSp != textSizeSp) {
+                        lastLoadTextSizeSp = textSizeSp
+                        binding.showLoadOverlayText.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, textSizeSp)
+                    }
                     binding.showLoadOverlayText.text = sb.toString()
                 }
 
@@ -3204,7 +3290,6 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
             params.gravity = Gravity.CENTER
             b.surfaceEmulation.layoutParams = params
         }
-        NativeLibrary.applySettings()
         if (!isQuickSettingsMenuOpen) {
             emulationActivity?.buildPictureInPictureParams()
             updateOrientation()
@@ -3403,6 +3488,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
             findItem(R.id.menu_rel_stick_center).isChecked =
                 BooleanSetting.JOYSTICK_REL_CENTER.getBoolean()
             findItem(R.id.menu_dpad_slide).isChecked = BooleanSetting.DPAD_SLIDE.getBoolean()
+            findItem(R.id.menu_button_slide).isChecked = BooleanSetting.BUTTON_SLIDE.getBoolean()
             findItem(R.id.menu_snap_to_grid).isChecked =
                 BooleanSetting.OVERLAY_SNAP_TO_GRID.getBoolean()
             findItem(R.id.menu_haptics).isChecked = BooleanSetting.HAPTIC_FEEDBACK.getBoolean()
@@ -3477,6 +3563,12 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 R.id.menu_dpad_slide -> {
                     it.isChecked = !it.isChecked
                     BooleanSetting.DPAD_SLIDE.setBoolean(it.isChecked)
+                    true
+                }
+
+                R.id.menu_button_slide -> {
+                    it.isChecked = !it.isChecked
+                    BooleanSetting.BUTTON_SLIDE.setBoolean(it.isChecked)
                     true
                 }
 
@@ -3729,6 +3821,9 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         fun changeProgram(programIndex: Int) {
             emulationThread.join()
             emulationThread = Thread({
+                try {
+                    kotlinx.coroutines.runBlocking { YuzuApplication.driverInitDeferred.await() }
+                } catch (_: Throwable) {}
                 Log.debug("[EmulationFragment] Starting emulation thread.")
                 NativeLibrary.run(gamePath, programIndex, false)
             }, "NativeEmulation")
@@ -3808,6 +3903,9 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 State.STOPPED -> {
                     NativeLibrary.surfaceChanged(currentSurface, surfaceWidth, surfaceHeight)
                     emulationThread = Thread({
+                        try {
+                            kotlinx.coroutines.runBlocking { YuzuApplication.driverInitDeferred.await() }
+                        } catch (_: Throwable) {}
                         Log.debug("[EmulationFragment] Starting emulation thread.")
                         NativeLibrary.run(gamePath, programIndex, true)
                     }, "NativeEmulation")

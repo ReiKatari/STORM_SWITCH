@@ -9,6 +9,7 @@
 #include <functional>
 #include <list>
 #include <mutex>
+#include <optional>
 
 #include "common/common_types.h"
 
@@ -27,12 +28,13 @@ public:
     }
 
     struct RegisteredAction {
-        explicit RegisteredAction(u32 expected_value_, std::function<void()>&& action_)
-            : expected_value{expected_value_}, action{std::move(action_)} {}
+        explicit RegisteredAction(u32 expected_value_, u64 id_, std::function<void()>&& action_)
+            : expected_value{expected_value_}, id{id_}, action{std::move(action_)} {}
         u32 expected_value;
+        u64 id;
         std::function<void()> action;
     };
-    using ActionHandle = std::list<RegisteredAction>::iterator;
+    using ActionHandle = u64;
 
     template <typename Func>
     ActionHandle RegisterGuestAction(u32 syncpoint_id, u32 expected_value, Func&& action) {
@@ -51,6 +53,21 @@ public:
     void DeregisterHostAction(u32 syncpoint_id, const ActionHandle& handle);
 
     void IncrementGuest(u32 syncpoint_id);
+
+    /// Called with a syncpoint's new guest value on every guest increment, before the value is
+    /// published and the actions it meets run (empty to stop). Switch 2 clients read syncpoint
+    /// values from a page the gsv service fills, and an action may wake a client that reads it
+    /// right away.
+    using GuestMirror = std::function<void(u32 syncpoint_id, u32 value)>;
+    void SetGuestMirror(GuestMirror mirror);
+
+    /// Runs func with guest increments held off, so a copy of the guest values it makes can't
+    /// overwrite a newer value the mirror wrote.
+    template <typename Func>
+    void WithGuestValuesStable(Func&& func) {
+        std::scoped_lock lk(guard);
+        func();
+    }
 
     void IncrementHost(u32 syncpoint_id);
 
@@ -74,7 +91,8 @@ public:
 
 private:
     void Increment(std::atomic<u32>& syncpoint, std::condition_variable& wait_cv,
-                   std::list<RegisteredAction>& action_storage);
+                   std::list<RegisteredAction>& action_storage,
+                   std::optional<u32> mirrored_id = std::nullopt);
 
     ActionHandle RegisterAction(std::atomic<u32>& syncpoint,
                                 std::list<RegisteredAction>& action_storage, u32 expected_value,
@@ -93,6 +111,8 @@ private:
     std::array<std::list<RegisteredAction>, NUM_MAX_SYNCPOINTS> host_action_storage;
 
     std::mutex guard;
+    u64 last_action_id{};
+    GuestMirror guest_mirror; ///< Guarded by `guard`.
     std::condition_variable wait_guest_cv;
     std::condition_variable wait_host_cv;
 };

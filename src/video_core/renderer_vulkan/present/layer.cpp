@@ -97,6 +97,8 @@ void Layer::ConfigureDraw(const Device& device, PresentPushConstants* out_push_c
     const u32 scaled_width = texture_info ? texture_info->scaled_width : texture_width;
     const u32 scaled_height = texture_info ? texture_info->scaled_height : texture_height;
     const bool use_accelerated = texture_info.has_value();
+    const bool is_applet =
+        (framebuffer.layer_stack_mask & (1U << 3)) == 0;
 
     RefreshResources(device, framebuffer);
 
@@ -140,8 +142,11 @@ void Layer::ConfigureDraw(const Device& device, PresentPushConstants* out_push_c
         source_image_view = fsr->Draw(device, scheduler, image_index, source_image, source_image_view, current_render_extent, crop_rect);
         crop_rect = {0, 0, 1, 1};
     } else if (auto* sgsr = std::get_if<SGSR>(&sr_filter)) {
-        source_image_view = sgsr->Draw(device, scheduler, image_index, source_image, source_image_view, current_render_extent, crop_rect);
-        crop_rect = {0, 0, 1, 1};
+        if (!is_applet) {
+            source_image_view = sgsr->Draw(device, scheduler, image_index, source_image,
+                                           source_image_view, current_render_extent, crop_rect);
+            crop_rect = {0, 0, 1, 1};
+        }
     }
 
     SetMatrixData(device, *out_push_constants, layout);
@@ -182,13 +187,20 @@ void Layer::CreateRawImages(const Device& device, const Tegra::FramebufferConfig
     raw_images.resize(image_count);
     raw_image_views.resize(image_count);
 
+    const VkComponentMapping raw_components{
+        .r = VK_COMPONENT_SWIZZLE_IDENTITY,
+        .g = VK_COMPONENT_SWIZZLE_IDENTITY,
+        .b = VK_COMPONENT_SWIZZLE_IDENTITY,
+        .a = VK_COMPONENT_SWIZZLE_ONE,
+    };
+
     const VkExtent2D raw_extent{
         .width = (std::max)(1u, framebuffer.width),
         .height = (std::max)(1u, framebuffer.height),
     };
     for (size_t i = 0; i < image_count; ++i) {
         raw_images[i] = CreateWrappedImage(memory_allocator, raw_extent, format);
-        raw_image_views[i] = CreateWrappedImageView(device, raw_images[i], format);
+        raw_image_views[i] = CreateWrappedImageView(device, raw_images[i], format, raw_components);
     }
 }
 

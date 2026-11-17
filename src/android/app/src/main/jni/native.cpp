@@ -19,6 +19,8 @@
 #include <string_view>
 #include <thread>
 #include <vector>
+#include <cstdio>
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include "video_core/vulkan_common/vulkan_device.h"
@@ -202,7 +204,7 @@ void EmulationSession::SetNativeWindow(ANativeWindow* native_window) {
 }
 #endif
 
-static void UpdateCustomDriverDisplayNameFromMeta(const std::string& custom_driver_dir) {
+[[maybe_unused]] static void UpdateCustomDriverDisplayNameFromMeta(const std::string& custom_driver_dir) {
     if (custom_driver_dir.empty()) {
         Vulkan::SetCustomDriverDisplayName("");
         return;
@@ -274,7 +276,14 @@ void EmulationSession::InitializeGpuDriver(const std::string& hook_lib_dir,
     if (!safe_custom_driver_dir.empty() && safe_custom_driver_dir.back() != '/') {
         safe_custom_driver_dir.push_back('/');
     }
-    UpdateCustomDriverDisplayNameFromMeta(safe_custom_driver_dir);
+    Vulkan::SetCustomDriverDisplayName("");
+    unsetenv("STORM_DRIVER_INFLIGHT_PATH");
+    unsetenv("STORM_DRIVER_DIR");
+    bool custom_driver_loaded = false;
+    const std::string blacklisted_path =
+        safe_custom_driver_dir.empty() ? std::string{} : (safe_custom_driver_dir + ".driver_blacklisted");
+    const std::string dlopen_inflight_path =
+        safe_custom_driver_dir.empty() ? std::string{} : (safe_custom_driver_dir + ".driver_inflight_dlopen");
     std::string safe_hook_lib_dir = hook_lib_dir;
     if (!safe_hook_lib_dir.empty() && safe_hook_lib_dir.back() != '/') {
         safe_hook_lib_dir.push_back('/');
@@ -328,6 +337,9 @@ void EmulationSession::InitializeGpuDriver(const std::string& hook_lib_dir,
 
             if (is_gen8 && access((safe_custom_driver_dir + "vulkan.adreno_gen8.so").c_str(), R_OK) == 0) {
                 effective_custom_driver_name = "vulkan.adreno_gen8.so";
+            } else if (is_gen8) {
+                LOG_INFO(Frontend, "Adreno Gen8 detected without dedicated vulkan.adreno_gen8.so; falling back to system Vulkan");
+                effective_custom_driver_name.clear();
             } else if ((gpu_model.find("Adreno6") != std::string::npos ||
                         gpu_model.find("Adreno7") != std::string::npos ||
                         gpu_model.find("Adreno (TM) 6") != std::string::npos ||
@@ -343,13 +355,49 @@ void EmulationSession::InitializeGpuDriver(const std::string& hook_lib_dir,
             }
         }
 
+        if (!effective_custom_driver_name.empty() && !blacklisted_path.empty() &&
+            access(blacklisted_path.c_str(), R_OK) == 0) {
+            std::ifstream bf(blacklisted_path);
+            std::string bl_content((std::istreambuf_iterator<char>(bf)), std::istreambuf_iterator<char>());
+            if (bl_content.find(effective_custom_driver_name) != std::string::npos ||
+                bl_content == "crashed_custom_driver") {
+                LOG_WARNING(Frontend, "[GpuDriver] Skipping blacklisted custom driver '{}'",
+                            effective_custom_driver_name);
+                effective_custom_driver_name.clear();
+            }
+        }
+        if (!effective_custom_driver_name.empty() && !dlopen_inflight_path.empty() &&
+            access(dlopen_inflight_path.c_str(), F_OK) == 0) {
+            LOG_ERROR(Frontend,
+                      "[GpuDriver] Detected prior native crash while loading '{}'; blacklisting and "
+                      "falling back to System Vulkan",
+                      effective_custom_driver_name);
+            if (!blacklisted_path.empty()) {
+                std::ofstream bf(blacklisted_path, std::ios::app);
+                bf << effective_custom_driver_name << "\n";
+            }
+            std::remove(dlopen_inflight_path.c_str());
+            effective_custom_driver_name.clear();
+        }
+
         // Try to load a custom driver.
         if (!effective_custom_driver_name.empty()) {
+            if (!dlopen_inflight_path.empty()) {
+                std::ofstream df(dlopen_inflight_path, std::ios::trunc);
+                df << effective_custom_driver_name << "\n";
+                df.flush();
+            }
             handle = adrenotools_open_libvulkan(
                 RTLD_NOW, featureFlags | ADRENOTOOLS_DRIVER_CUSTOM, nullptr,
                 safe_hook_lib_dir.empty() ? nullptr : safe_hook_lib_dir.c_str(),
                 safe_custom_driver_dir.c_str(), effective_custom_driver_name.c_str(),
                 file_redirect_dir_, nullptr);
+            if (!dlopen_inflight_path.empty()) {
+                std::remove(dlopen_inflight_path.c_str());
+            }
+            if (handle) {
+                custom_driver_loaded = true;
+            }
         }
 
         // Try to load the system driver via adrenotools.
@@ -357,10 +405,11 @@ void EmulationSession::InitializeGpuDriver(const std::string& hook_lib_dir,
             handle = adrenotools_open_libvulkan(
                 RTLD_NOW, featureFlags, nullptr, safe_hook_lib_dir.c_str(),
                 nullptr, nullptr, file_redirect_dir_, nullptr);
+            custom_driver_loaded = false;
         }
 
-        LOG_INFO(Frontend, "[GpuDriver] adrenotools_open_libvulkan dir='{}' lib='{}' gpu='{}' -> {}",
-                 safe_custom_driver_dir, effective_custom_driver_name, gpu_model,
+        LOG_INFO(Frontend, "[GpuDriver] adrenotools_open_libvulkan dir='{}' lib='{}' gpu='{}' custom={} -> {}",
+                 safe_custom_driver_dir, effective_custom_driver_name, gpu_model, custom_driver_loaded,
                  handle ? "SUCCESS" : "FAILED (fallback to system Vulkan)");
     }
 
@@ -379,14 +428,32 @@ void EmulationSession::InitializeGpuDriver(const std::string& hook_lib_dir,
     // Try to load a custom driver directly if adrenotools failed or on non-KGSL hardware (e.g. Mali PanVK)
     if (!handle && !effective_custom_driver_name.empty() && !safe_custom_driver_dir.empty()) {
         std::string full_custom_driver_path = safe_custom_driver_dir + effective_custom_driver_name;
+        if (!dlopen_inflight_path.empty()) {
+            std::ofstream df(dlopen_inflight_path, std::ios::trunc);
+            df << effective_custom_driver_name << "\n";
+            df.flush();
+        }
         handle = dlopen(full_custom_driver_path.c_str(), RTLD_NOW | RTLD_LOCAL);
+        if (!dlopen_inflight_path.empty()) {
+            std::remove(dlopen_inflight_path.c_str());
+        }
         if (handle) {
+            custom_driver_loaded = true;
             LOG_INFO(Frontend, "Loaded custom Vulkan driver directly via dlopen: {}", full_custom_driver_path);
         }
     }
 
+    // Validate driver handle exports Vulkan entrypoint; drop invalid/incompatible driver so system fallback engages cleanly
+    if (handle && !dlsym(handle, "vkGetInstanceProcAddr")) {
+        LOG_WARNING(Frontend, "Custom or hooked driver does not export vkGetInstanceProcAddr, falling back to system libvulkan.so");
+        dlclose(handle);
+        handle = nullptr;
+        custom_driver_loaded = false;
+    }
+
     // Direct system libvulkan.so loader for Mali/Dimensity/Exynos/Tensor and fallback
     if (!handle) {
+        custom_driver_loaded = false;
         handle = dlopen("libvulkan.so", RTLD_NOW | RTLD_LOCAL);
         if (!handle) {
             handle = dlopen("libvulkan.so.1", RTLD_NOW | RTLD_LOCAL);
@@ -395,6 +462,35 @@ void EmulationSession::InitializeGpuDriver(const std::string& hook_lib_dir,
             LOG_INFO(Frontend, "Loaded native system libvulkan.so via direct dlopen");
         } else {
             LOG_CRITICAL(Frontend, "Failed to dlopen libvulkan.so: {}", dlerror());
+        }
+    }
+
+    if (custom_driver_loaded && handle != nullptr) {
+        UpdateCustomDriverDisplayNameFromMeta(safe_custom_driver_dir);
+        std::string drirc_dir = safe_custom_driver_dir;
+        if (!drirc_dir.empty() && drirc_dir.back() == '/') {
+            drirc_dir.pop_back();
+        }
+        if (!drirc_dir.empty() &&
+            (access((safe_custom_driver_dir + "00-storm.conf").c_str(), R_OK) == 0 ||
+             access((safe_custom_driver_dir + "drirc").c_str(), R_OK) == 0)) {
+            setenv("DRIRC_CONFIGDIR", drirc_dir.c_str(), 1);
+            setenv("MESA_DRIRC_DIR", drirc_dir.c_str(), 1);
+        }
+        setenv("STORM_DRIVER_DIR", safe_custom_driver_dir.c_str(), 1);
+    } else {
+        Vulkan::SetCustomDriverDisplayName("");
+        unsetenv("STORM_DRIVER_INFLIGHT_PATH");
+        unsetenv("STORM_DRIVER_DIR");
+        unsetenv("DRIRC_CONFIGDIR");
+        unsetenv("MESA_DRIRC_DIR");
+        unsetenv("MESA_DRIRC_FILE");
+        unsetenv("TU_DEBUG");
+        unsetenv("IR3_SHADER_DEBUG");
+        unsetenv("FD_DEV_FEATURES");
+        if (!safe_custom_driver_dir.empty()) {
+            std::remove((safe_custom_driver_dir + ".driver_inflight").c_str());
+            std::remove((safe_custom_driver_dir + ".driver_inflight_vkinit").c_str());
         }
     }
 
@@ -447,7 +543,9 @@ void EmulationSession::ConfigureFilesystemProvider(const std::string& filepath) 
             return;
         }
 
-        if (m_manual_provider->AddEntriesFromContainer(file)) {
+        const auto extension =
+            Common::ToLower(std::string(Common::FS::GetExtensionFromFilename(file->GetName())));
+        if (extension != "edenpack" && extension != "epk" && m_manual_provider->AddEntriesFromContainer(file)) {
             return;
         }
 
@@ -566,32 +664,29 @@ static void ApplyGameSpecificSafetyOverrides(u64 title_id, u64 host_ram_bytes,
     // 2) Diablo II: Resurrected
     if (title_id == 0x0100726014352000ULL || title_id == 0x01002A801458A000ULL || title_id == 0x0100916014D8C000ULL ||
         base_tid == 0x0100726014352000ULL || base_tid == 0x01002A801458A000ULL || base_tid == 0x0100916014D8C000ULL) {
-        if (Settings::values.memory_layout_mode.GetValue() == Settings::MemoryLayout::Memory_4Gb) {
-            Settings::values.memory_layout_mode.SetGlobal(false);
-            if (host_ram_bytes > 0 && host_ram_bytes < 7ULL * 1024ULL * 1024ULL * 1024ULL) {
-                Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_6Gb);
-            } else {
-                Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_8Gb);
-            }
-        }
-        auto apply_android_safe = [](auto& setting, auto val) {
-            if (setting.UsingGlobal()) {
-                setting.SetGlobal(false);
-                setting.SetValue(val);
-            }
+        auto force_d2r = [](auto& setting, auto val) {
+            setting.SetGlobal(false);
+            setting.SetValue(val);
         };
-        apply_android_safe(Settings::values.gpu_accuracy, Settings::GpuAccuracy::Normal);
-        apply_android_safe(Settings::values.use_reactive_flushing, false);
-        apply_android_safe(Settings::values.use_fast_gpu_time, true);
-        apply_android_safe(Settings::values.vram_budget_governor, true);
-        apply_android_safe(Settings::values.vram_garbage_collection, true);
-        apply_android_safe(Settings::values.early_release_fences, true);
-        apply_android_safe(Settings::values.enable_frame_skipping, false);
-        apply_android_safe(Settings::values.barrier_feedback_loops, false);
-        apply_android_safe(Settings::values.airplane_mode, true);
-        apply_android_safe(Settings::values.sync_memory_operations, false);
-        apply_android_safe(Settings::values.enable_gpu_buffer_readback, false);
-        LOG_INFO(Frontend, "Guaranteed Diablo II: Resurrected safety overrides (8GB/6GB DRAM, GPU Normal, Fast GPU Time, airplane mode)");
+        force_d2r(Settings::values.memory_layout_mode, Settings::MemoryLayout::Memory_6Gb);
+        force_d2r(Settings::values.gpu_accuracy, Settings::GpuAccuracy::Normal);
+        force_d2r(Settings::values.dyna_state, Settings::ExtendedDynamicState::EDS1);
+        force_d2r(Settings::values.fix_bloom_effects, false);
+        force_d2r(Settings::values.use_asynchronous_shaders, true);
+        force_d2r(Settings::values.async_presentation, true);
+        force_d2r(Settings::values.use_vulkan_driver_pipeline_cache, false);
+        force_d2r(Settings::values.use_reactive_flushing, false);
+        force_d2r(Settings::values.use_fast_gpu_time, false);
+        force_d2r(Settings::values.vram_budget_governor, true);
+        force_d2r(Settings::values.vram_garbage_collection, true);
+        force_d2r(Settings::values.early_release_fences, false);
+        force_d2r(Settings::values.enable_frame_skipping, false);
+        force_d2r(Settings::values.barrier_feedback_loops, false);
+        force_d2r(Settings::values.airplane_mode, true);
+        force_d2r(Settings::values.sync_memory_operations, true);
+        force_d2r(Settings::values.enable_gpu_buffer_readback, false);
+        force_d2r(Settings::values.dma_accuracy, Settings::DmaAccuracy::Safe);
+        LOG_INFO(Frontend, "Guaranteed Diablo II: Resurrected overrides (6GB DRAM, GPU Normal, EDS1, DMA Safe, SyncMem ON, FixBloom OFF, AsyncShaders/AsyncPresent ON, FastGpuTime/FeedbackLoops/ReactiveFlush/Readback/VkPipelineCache OFF)");
     }
 
     // 3) Unravel Two
@@ -611,6 +706,56 @@ static void ApplyGameSpecificSafetyOverrides(u64 title_id, u64 host_ram_bytes,
         Settings::values.cpuopt_ignore_memory_aborts.SetGlobal(false);
         Settings::values.cpuopt_ignore_memory_aborts.SetValue(true);
         LOG_INFO(Frontend, "Guaranteed Switch 2 safety overrides (ignore memory aborts for PAuth)");
+    }
+
+    // 5) Mario + Rabbids: Kingdom Battle
+    if (title_id == 0x010067300059A000ULL || title_id == 0x010067300B762000ULL ||
+        base_tid == 0x010067300059A000ULL || base_tid == 0x010067300B762000ULL) {
+        auto force_mr = [](auto& setting, auto val) {
+            setting.SetGlobal(false);
+            setting.SetValue(val);
+        };
+        force_mr(Settings::values.memory_layout_mode, Settings::MemoryLayout::Memory_4Gb);
+        force_mr(Settings::values.fix_bloom_effects, true);
+        force_mr(Settings::values.airplane_mode, true);
+        force_mr(Settings::values.enable_gpu_buffer_readback, true);
+        force_mr(Settings::values.sync_memory_operations, true);
+        force_mr(Settings::values.gpu_accuracy, Settings::GpuAccuracy::High);
+        force_mr(Settings::values.dma_accuracy, Settings::DmaAccuracy::Safe);
+        force_mr(Settings::values.use_asynchronous_shaders, false);
+        force_mr(Settings::values.async_presentation, false);
+        force_mr(Settings::values.use_fast_gpu_time, false);
+        force_mr(Settings::values.barrier_feedback_loops, true);
+        force_mr(Settings::values.use_reactive_flushing, true);
+        force_mr(Settings::values.vram_garbage_collection, true);
+        force_mr(Settings::values.vram_budget_governor, true);
+        force_mr(Settings::values.early_release_fences, false);
+        LOG_INFO(Frontend, "Guaranteed Mario + Rabbids: Kingdom Battle overrides (4GB DRAM, FixBloom ON, Airplane ON, GPU High, DMA Safe, AsyncShaders/AsyncPresent OFF, Readback/Sync ON)");
+    }
+
+    // 6) Absolum
+    if (title_id == 0x0100A83022A22000ULL || base_tid == 0x0100A83022A22000ULL) {
+        auto force_abs = [](auto& setting, auto val) {
+            setting.SetGlobal(false);
+            setting.SetValue(val);
+        };
+        force_abs(Settings::values.memory_layout_mode, Settings::MemoryLayout::Memory_4Gb);
+        force_abs(Settings::values.gpu_accuracy, Settings::GpuAccuracy::High);
+        force_abs(Settings::values.fix_bloom_effects, true);
+        force_abs(Settings::values.nvdec_emulation, Settings::NvdecEmulation::Gpu);
+        force_abs(Settings::values.async_presentation, false);
+        force_abs(Settings::values.use_asynchronous_shaders, true);
+        force_abs(Settings::values.use_fast_gpu_time, false);
+        force_abs(Settings::values.enable_gpu_buffer_readback, true);
+        force_abs(Settings::values.sync_memory_operations, true);
+        force_abs(Settings::values.use_reactive_flushing, true);
+        force_abs(Settings::values.barrier_feedback_loops, true);
+        force_abs(Settings::values.vram_garbage_collection, true);
+        force_abs(Settings::values.vram_budget_governor, true);
+        force_abs(Settings::values.early_release_fences, false);
+        force_abs(Settings::values.dma_accuracy, Settings::DmaAccuracy::Safe);
+        force_abs(Settings::values.airplane_mode, true);
+        LOG_INFO(Frontend, "Guaranteed Absolum golden overrides (4GB DRAM, GPU High, FixBloom ON, NVDEC GPU, AsyncPresent & FastGpuTime OFF, DMA Safe, Readback/Sync ON)");
     }
 }
 
@@ -671,8 +816,6 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
     }
 #endif
 
-    ApplyGameSpecificSafetyOverrides(early_title_id, host_ram_bytes, !early_title.empty() ? std::string_view{early_title} : std::string_view{filepath});
-
     if (Core::GameFixDatabase::AreFixesEnabled()) {
         bool applied_early = false;
         if (early_title_id != 0) {
@@ -696,6 +839,7 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
         }
     }
     Core::GameFixDatabase::SanitizeSettingsForHostHardware();
+    ApplyGameSpecificSafetyOverrides(early_title_id, host_ram_bytes, !early_title.empty() ? std::string_view{early_title} : std::string_view{filepath});
 
 #ifdef __ANDROID__
     // Guard Android RAM: clamp 8GB DRAM -> 6GB DRAM on devices with <= 8GB host RAM to prevent OS OOM kills,
@@ -714,7 +858,9 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
     }
 #endif
 
+    m_shutting_down.store(false, std::memory_order_release);
     m_system.SetShuttingDown(false);
+    Settings::SetSpeedMode(Settings::SpeedMode::Standard);
     m_system.ApplySettings();
     Settings::LogSettings();
     m_system.HIDCore().ReloadInputDevices();
@@ -782,6 +928,8 @@ Core::SystemResultStatus EmulationSession::InitializeEmulation(const std::string
 }
 
 void EmulationSession::ShutdownEmulation() {
+    m_shutting_down.store(true, std::memory_order_release);
+    std::scoped_lock hid_lock(m_hid_lifecycle_mutex);
     std::scoped_lock lock(m_mutex);
 
     if (m_next_program_index != -1) {
@@ -815,6 +963,7 @@ void EmulationSession::ShutdownEmulation() {
     m_load_result = Core::SystemResultStatus::ErrorNotInitialized;
     m_window.reset();
     OnEmulationStopped(result);
+    m_shutting_down.store(false, std::memory_order_release);
 }
 
 void EmulationSession::PauseEmulation() {
@@ -1026,6 +1175,7 @@ constexpr CpuPartInfo s_cpu_list[] = {
     {0x51, 0xc00, "Falkor"},
     {0x51, 0xc01, "Saphira"},
     {0x51, 0x001, "Oryon"},
+    {0x51, 0x002, "Oryon"},
 };
 
 const char* find_cpu_name(u32 vendor, u32 part) {
@@ -1296,7 +1446,7 @@ void JNICALL Java_org_yuzu_yuzu_1emu_NativeLibrary_initializeGpuDriver(JNIEnv* e
     if (!safe_driver_dir.empty() && safe_driver_dir.back() != '/') {
         safe_driver_dir.push_back('/');
     }
-    UpdateCustomDriverDisplayNameFromMeta(safe_driver_dir);
+    Vulkan::SetCustomDriverDisplayName("");
 
     std::string safe_hook_dir = hook_lib_dir_str;
     if (!safe_hook_dir.empty() && safe_hook_dir.back() != '/') {
@@ -1368,6 +1518,10 @@ jobjectArray Java_org_yuzu_yuzu_1emu_utils_GpuDriverHelper_getSystemDriverInfo(
             handle = adrenotools_open_libvulkan(RTLD_NOW, featureFlags, nullptr, hook_lib_dir.c_str(),
                                                  nullptr, nullptr, file_redirect_dir_, nullptr);
         }
+        if (handle && !dlsym(handle, "vkGetInstanceProcAddr")) {
+            dlclose(handle);
+            handle = nullptr;
+        }
         if (!handle) {
             handle = dlopen("libvulkan.so", RTLD_NOW | RTLD_LOCAL);
             if (!handle) {
@@ -1423,6 +1577,29 @@ jobjectArray Java_org_yuzu_yuzu_1emu_utils_GpuDriverHelper_getSystemDriverInfo(
 
 jstring Java_org_yuzu_yuzu_1emu_utils_GpuDriverHelper_getGpuModel(JNIEnv *env, jobject j_obj, jobject j_surf, jstring j_hook_lib_dir) {
 #ifdef ARCHITECTURE_arm64
+    // Read sysfs kgsl gpu_model directly when available so worker threads never call adrenotools_open_libvulkan.
+    if (std::ifstream kgsl_file{"/sys/class/kgsl/kgsl-3d0/gpu_model"}; kgsl_file.is_open()) {
+        std::string kgsl_model;
+        if (std::getline(kgsl_file, kgsl_model)) {
+            while (!kgsl_model.empty() &&
+                   (kgsl_model.back() == '\r' || kgsl_model.back() == '\n' ||
+                    kgsl_model.back() == '\0' || kgsl_model.back() == ' ' ||
+                    kgsl_model.back() == '\t')) {
+                kgsl_model.pop_back();
+            }
+            size_t start = 0;
+            while (start < kgsl_model.size() &&
+                   (kgsl_model[start] == ' ' || kgsl_model[start] == '\t')) {
+                ++start;
+            }
+            if (start > 0) {
+                kgsl_model.erase(0, start);
+            }
+            if (!kgsl_model.empty()) {
+                return Common::Android::ToJString(env, kgsl_model);
+            }
+        }
+    }
     std::string model_name = "Adreno";
     try {
         const char* file_redirect_dir_{};
@@ -1435,6 +1612,10 @@ jstring Java_org_yuzu_yuzu_1emu_utils_GpuDriverHelper_getGpuModel(JNIEnv *env, j
         if (SupportsCustomDriver() && hook_lib_dir.size()) {
             handle = adrenotools_open_libvulkan(RTLD_NOW, featureFlags, nullptr, hook_lib_dir.c_str(),
                                                  nullptr, nullptr, file_redirect_dir_, nullptr);
+        }
+        if (handle && !dlsym(handle, "vkGetInstanceProcAddr")) {
+            dlclose(handle);
+            handle = nullptr;
         }
         if (!handle) {
             handle = dlopen("libvulkan.so", RTLD_NOW | RTLD_LOCAL);
@@ -1495,14 +1676,16 @@ jboolean Java_org_yuzu_yuzu_1emu_NativeLibrary_isPaused(JNIEnv* env, jclass claz
 jobjectArray Java_org_yuzu_yuzu_1emu_NativeLibrary_getRuntimeCheats(JNIEnv* env, jclass clazz) {
     const auto cheats = EmulationSession::GetInstance().System().GetRuntimeCheats();
     const auto runtime_cheat_class = env->FindClass("org/yuzu/yuzu_emu/NativeLibrary$RuntimeCheat");
-    const auto constructor = env->GetMethodID(runtime_cheat_class, "<init>", "(ILjava/lang/String;ZZ)V");
+    const auto constructor = env->GetMethodID(runtime_cheat_class, "<init>", "(ILjava/lang/String;ZZII)V");
     auto result = env->NewObjectArray(static_cast<jsize>(cheats.size()), runtime_cheat_class, nullptr);
     for (jsize i = 0; i < static_cast<jsize>(cheats.size()); ++i) {
         const auto& cheat = cheats[i];
         const auto name = Common::Android::ToJString(env, cheat.name);
         const auto item = env->NewObject(runtime_cheat_class, constructor, static_cast<jint>(cheat.id), name,
                                          static_cast<jboolean>(cheat.enabled),
-                                         static_cast<jboolean>(cheat.is_master));
+                                         static_cast<jboolean>(cheat.is_master),
+                                         static_cast<jint>(cheat.type),
+                                         static_cast<jint>(cheat.parent_id));
         env->SetObjectArrayElement(result, i, item);
         env->DeleteLocalRef(name);
         env->DeleteLocalRef(item);
@@ -2091,14 +2274,16 @@ void Java_org_yuzu_yuzu_1emu_NativeLibrary_reloadCheats(JNIEnv* env, jclass claz
     }
     const auto build_id = system.GetApplicationProcessBuildID();
     const auto patch_manager = FileSys::PatchManager(title_id, system.GetFileSystemController(), system.GetContentProvider());
-    const auto cheats = patch_manager.CreateCheatList(build_id);
+    auto cheats = patch_manager.CreateCheatList(build_id);
+    const size_t cheat_count = cheats.cheats.size();
 
     if (system.HasCheatEngine()) {
-        system.ReloadCheatList(cheats);
-    } else if (system.ApplicationProcess()) {
-        system.RegisterCheatList(cheats, build_id, system.GetMainNsoBase(), system.GetMainNsoSize());
+        system.ReloadCheatList(std::move(cheats));
+    } else if (auto* const process = system.ApplicationProcess(); process != nullptr) {
+        system.RegisterCheatList(*process, std::move(cheats), build_id, system.GetMainNsoBase(),
+                                 system.GetMainNsoSize());
     }
-    LOG_INFO(Frontend, "Reloaded {} cheats for title_id={:016X}", cheats.size(), title_id);
+    LOG_INFO(Frontend, "Reloaded {} cheats for title_id={:016X}", cheat_count, title_id);
 }
 
 bool isFirmwarePresent() {

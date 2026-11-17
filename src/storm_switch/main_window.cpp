@@ -52,6 +52,14 @@
 #include "core/save_state_whitelist.h"
 
 #include "updater/update_dialog.h"
+#include "storm_switch/util/runtime_cheat_menu.h"
+#ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#include <psapi.h>
+#endif
 
 
 
@@ -3246,11 +3254,24 @@ void MainWindow::InitializeWidgets() {
         QStringLiteral("मिलीसेकंड में एक Switch फ़्रेम का अनुकरण करने में लगा समय। 60 FPS के लिए यह अधिकतम 16.67 ms होना चाहिए।")));
     emu_frametime_label->setProperty("stormStatusCapsule", true);
 
-
+    emu_ram_label = new QLabel();
+    emu_ram_label->setObjectName(QStringLiteral("EmuRamLabel"));
+    emu_ram_label->setToolTip(StormLangStorm11(
+        QStringLiteral("Реально используемая оперативная память: процесс эмулятора (Working Set) и общее потребление ОЗУ системы."),
+        QStringLiteral("Actual RAM usage in real time: emulator process Working Set and total system RAM usage."),
+        QStringLiteral("Tatsächliche RAM-Auslastung in Echtzeit: Emulator-Prozess und gesamter Systemspeicher."),
+        QStringLiteral("Mémoire vive réellement utilisée : processus de l'émulateur et mémoire totale du système."),
+        QStringLiteral("实时实际内存占用：模拟器进程工作集与系统总内存使用量。"),
+        QStringLiteral("실시간 실제 RAM 사용량: 에뮬레이터 프로세스 및 전체 시스템 메모리 사용량."),
+        QStringLiteral("実際のリアルタイムメモリ使用量：エミュレータプロセスとシステム全体のRAM使用量。"),
+        QStringLiteral("Uso real de memoria RAM en tiempo real: proceso del emulador y memoria total del sistema."),
+        QStringLiteral("Utilizzo reale della RAM in tempo reale: processo dell'emulatore e memoria di sistema totale."),
+        QStringLiteral("Uso real de memória RAM em tempo real: processo do emulador e memória total do sistema."),
+        QStringLiteral("वास्तविक समय में वास्तविक RAM उपयोग: एमुलेटर प्रक्रिया और कुल सिस्टम मेमोरी।")));
+    emu_ram_label->setProperty("stormStatusCapsule", true);
 
     for (auto& label : {shader_building_label, res_scale_label, emu_speed_label, game_fps_label,
-
-                        emu_frametime_label}) {
+                        emu_frametime_label, emu_ram_label}) {
 
         label->setVisible(false);
 
@@ -8065,7 +8086,6 @@ void MainWindow::OnAppFocusStateChanged(Qt::ApplicationState state) {
 
 
 void MainWindow::ConnectWidgetEvents() {
-    ui->menu_Cheats->installEventFilter(this);
     ui->menu_Cheats->menuAction()->setVisible(false);
     ui->menu_Cheats->setTitle(StormLangStorm11(
         QStringLiteral("&Читы"), QStringLiteral("&Cheats"),
@@ -8253,83 +8273,21 @@ void MainWindow::RefreshRuntimeCheats() {
         return;
     }
 
-    const auto cheats = QtCommon::system->GetRuntimeCheats();
-    const QString disable_text = StormLangStorm11(
-        QStringLiteral("Отключить все читы"), QStringLiteral("Disable All Cheats"),
-        QStringLiteral("Alle Cheats deaktivieren"), QStringLiteral("Désactiver tous les codes de triche"),
-        QStringLiteral("禁用所有作弊码"), QStringLiteral("모든 치트 비활성화"),
-        QStringLiteral("すべてのチートを無効化"), QStringLiteral("Desactivar todos los trucos"),
-        QStringLiteral("Disabilita tutti i trucchi"), QStringLiteral("Desativar todas as trapaças"),
-        QStringLiteral("सभी चीट्स अक्षम करें"));
-    auto* disable_all = ui->menu_Cheats->addAction(disable_text);
-    connect(disable_all, &QAction::triggered, this, [this] {
-        for (auto* action : runtime_cheat_actions) {
-            if (action->isEnabled()) {
-                action->setChecked(false);
-            }
-        }
-    });
-
-    const QString enable_text = StormLangStorm11(
-        QStringLiteral("Включить все читы"), QStringLiteral("Enable All Cheats"),
-        QStringLiteral("Alle Cheats aktivieren"), QStringLiteral("Activer tous les codes de triche"),
-        QStringLiteral("启用所有作弊码"), QStringLiteral("모든 치트 활성화"),
-        QStringLiteral("すべてのチートを有効化"), QStringLiteral("Activar todos los trucos"),
-        QStringLiteral("Abilita tutti i trucchi"), QStringLiteral("Ativar todas as trapaças"),
-        QStringLiteral("सभी चीट्स सक्षम करें"));
-    auto* enable_all = ui->menu_Cheats->addAction(enable_text);
-    connect(enable_all, &QAction::triggered, this, [this] {
-        for (auto* action : runtime_cheat_actions) {
-            if (action->isEnabled()) {
-                action->setChecked(true);
-            }
-        }
-    });
-
-    ui->menu_Cheats->addSeparator();
-    runtime_cheat_actions.reserve(cheats.size());
-    for (const auto& cheat : cheats) {
-        const QString unnamed_text = StormLangStorm11(
-            QStringLiteral("Безымянный чит-код"), QStringLiteral("Unnamed Cheat"),
-            QStringLiteral("Unbenannter Cheat"), QStringLiteral("Code de triche sans nom"),
-            QStringLiteral("未命名作弊码"), QStringLiteral("이름 없는 치트"),
-            QStringLiteral("名前のないチート"), QStringLiteral("Truco sin nombre"),
-            QStringLiteral("Trucco senza nome"), QStringLiteral("Trapaça sem nome"),
-            QStringLiteral("अनाम चीट"));
-        const QString name = cheat.name.empty() ? unnamed_text
-                                                : QString::fromUtf8(cheat.name.data(), static_cast<qsizetype>(cheat.name.size()));
-        auto* action = ui->menu_Cheats->addAction(name);
-        action->setCheckable(true);
-        action->setChecked(cheat.enabled || cheat.is_master);
-        action->setEnabled(!cheat.is_master);
-        connect(action, &QAction::toggled, this, [action, id = cheat.id](bool enabled) {
-            if (!QtCommon::system->SetCheatEnabled(id, enabled)) {
-                const QSignalBlocker blocker{action};
-                action->setChecked(!enabled);
-            }
-        });
-        runtime_cheat_actions.push_back(action);
+    auto cheats = QtCommon::system->GetRuntimeCheats();
+    if (!cheats.empty()) {
+        runtime_cheat_menu = std::make_unique<RuntimeCheatMenu>(*ui->menu_Cheats, *QtCommon::system,
+                                                                std::move(cheats));
     }
-
-    ui->menu_Cheats->menuAction()->setVisible(!runtime_cheat_actions.empty());
+    ui->menu_Cheats->menuAction()->setVisible(runtime_cheat_menu != nullptr);
 }
 
 void MainWindow::ClearRuntimeCheats() {
+    runtime_cheat_menu.reset();
     ui->menu_Cheats->clear();
-    runtime_cheat_actions.clear();
     ui->menu_Cheats->menuAction()->setVisible(false);
 }
 
 bool MainWindow::eventFilter(QObject* watched, QEvent* event) {
-    if (watched == ui->menu_Cheats && event->type() == QEvent::MouseButtonRelease) {
-        const auto* mouse_event = static_cast<QMouseEvent*>(event);
-        auto* action = ui->menu_Cheats->actionAt(mouse_event->pos());
-        if (mouse_event->button() == Qt::LeftButton && action && action->isEnabled() &&
-            action->isCheckable()) {
-            action->trigger();
-            return true;
-        }
-    }
     return QMainWindow::eventFilter(watched, event);
 }
 
@@ -10814,6 +10772,7 @@ bool MainWindow::OnShutdownBegin() {
     game_fps_label->setVisible(false);
 
     emu_frametime_label->setVisible(false);
+        if (emu_ram_label) emu_ram_label->setVisible(false);
 
 
 
@@ -11128,6 +11087,7 @@ void MainWindow::OnEmulationStopped() {
     game_fps_label->setVisible(false);
 
     emu_frametime_label->setVisible(false);
+        if (emu_ram_label) emu_ram_label->setVisible(false);
 
     renderer_status_button->setEnabled(!UISettings::values.has_broken_vulkan);
 
@@ -21288,13 +21248,51 @@ void MainWindow::UpdateStatusBar() {
 
 
 
+    double proc_ram_gb = 0.0;
+    double sys_used_gb = 0.0;
+    double sys_total_gb = 0.0;
+#ifdef _WIN32
+    {
+        PROCESS_MEMORY_COUNTERS pmc{};
+        pmc.cb = sizeof(pmc);
+        if (K32GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc))) {
+            proc_ram_gb = static_cast<double>(pmc.WorkingSetSize) / (1024.0 * 1024.0 * 1024.0);
+        }
+        MEMORYSTATUSEX mst{};
+        mst.dwLength = sizeof(mst);
+        if (GlobalMemoryStatusEx(&mst)) {
+            sys_total_gb = static_cast<double>(mst.ullTotalPhys) / (1024.0 * 1024.0 * 1024.0);
+            sys_used_gb = static_cast<double>(mst.ullTotalPhys - mst.ullAvailPhys) / (1024.0 * 1024.0 * 1024.0);
+        }
+    }
+#endif
+    if (emu_ram_label) {
+        const QString p_gb = QString::number(proc_ram_gb, 'f', 2);
+        const QString u_gb = QString::number(sys_used_gb, 'f', 1);
+        const QString t_gb = QString::number(sys_total_gb, 'f', 1);
+        emu_ram_label->setText(StormLangStorm11(
+            QStringLiteral("ОЗУ: %1 ГБ (%2/%3)").arg(p_gb, u_gb, t_gb),
+            QStringLiteral("RAM: %1 GB (%2/%3)").arg(p_gb, u_gb, t_gb),
+            QStringLiteral("RAM: %1 GB (%2/%3)").arg(p_gb, u_gb, t_gb),
+            QStringLiteral("RAM : %1 Go (%2/%3)").arg(p_gb, u_gb, t_gb),
+            QStringLiteral("内存: %1 GB (%2/%3)").arg(p_gb, u_gb, t_gb),
+            QStringLiteral("RAM: %1 GB (%2/%3)").arg(p_gb, u_gb, t_gb),
+            QStringLiteral("RAM: %1 GB (%2/%3)").arg(p_gb, u_gb, t_gb),
+            QStringLiteral("RAM: %1 GB (%2/%3)").arg(p_gb, u_gb, t_gb),
+            QStringLiteral("RAM: %1 GB (%2/%3)").arg(p_gb, u_gb, t_gb),
+            QStringLiteral("RAM: %1 GB (%2/%3)").arg(p_gb, u_gb, t_gb),
+            QStringLiteral("RAM: %1 GB (%2/%3)").arg(p_gb, u_gb, t_gb)));
+        emu_ram_label->setStyleSheet(QStringLiteral(
+            "QLabel { background-color: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.32); "
+            "border-radius: 4px; padding: 2px 6px; font-size: 7.2pt; font-weight: 700; }"));
+        emu_ram_label->setVisible(true);
+    }
+
     emu_speed_label->setVisible(!Settings::values.use_multi_core.GetValue());
 
     game_fps_label->setVisible(true);
 
     emu_frametime_label->setVisible(true);
-
-
 
     static u32 s_fps_log_counter = 0;
 
@@ -21302,7 +21300,8 @@ void MainWindow::UpdateStatusBar() {
 
         s_fps_log_counter = 0;
 
-        LOG_INFO(Frontend, "Performance: FPS: {:.1f} | Frametime: {:.2f} ms | Speed: {:.0f}%", display_fps, ft_ms, results.emulation_speed * 100.0);
+        LOG_INFO(Frontend, "Performance: FPS: {:.1f} | Frametime: {:.2f} ms | Speed: {:.0f}% | RAM: {:.2f} GB ({:.1f}/{:.1f} GB)",
+                 display_fps, ft_ms, results.emulation_speed * 100.0, proc_ram_gb, sys_used_gb, sys_total_gb);
 
     }
 

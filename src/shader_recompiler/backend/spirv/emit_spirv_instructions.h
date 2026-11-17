@@ -90,10 +90,10 @@ Id EmitUndefU8(EmitContext& ctx);
 Id EmitUndefU16(EmitContext& ctx);
 Id EmitUndefU32(EmitContext& ctx);
 Id EmitUndefU64(EmitContext& ctx);
-void EmitLoadGlobalU8(EmitContext& ctx);
-void EmitLoadGlobalS8(EmitContext& ctx);
-void EmitLoadGlobalU16(EmitContext& ctx);
-void EmitLoadGlobalS16(EmitContext& ctx);
+Id EmitLoadGlobalU8(EmitContext& ctx, Id address);
+Id EmitLoadGlobalS8(EmitContext& ctx, Id address);
+Id EmitLoadGlobalU16(EmitContext& ctx, Id address);
+Id EmitLoadGlobalS16(EmitContext& ctx, Id address);
 Id EmitLoadGlobal32(EmitContext& ctx, Id address);
 Id EmitLoadGlobal64(EmitContext& ctx, Id address);
 Id EmitLoadGlobal128(EmitContext& ctx, Id address);
@@ -415,7 +415,7 @@ Id EmitStorageAtomicMaxF16x2(EmitContext& ctx, const IR::Value& binding, const I
                              Id value);
 Id EmitStorageAtomicMaxF32x2(EmitContext& ctx, const IR::Value& binding, const IR::Value& offset,
                              Id value);
-Id EmitGlobalAtomicIAdd32(EmitContext& ctx);
+Id EmitGlobalAtomicIAdd32(EmitContext& ctx, const IR::Value& address, Id value);
 Id EmitGlobalAtomicSMin32(EmitContext& ctx);
 Id EmitGlobalAtomicUMin32(EmitContext& ctx);
 Id EmitGlobalAtomicSMax32(EmitContext& ctx);

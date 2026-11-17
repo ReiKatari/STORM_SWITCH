@@ -683,7 +683,7 @@ void EmitContext::SetupTextures(Bindings& bindings) {
     texture_buffers.reserve(info.texture_buffer_descriptors.size());
     for (const auto& desc : info.texture_buffer_descriptors) {
         texture_buffers.push_back({bindings.texture, desc.count});
-        const auto sampler_type{desc.is_integer ? "usamplerBuffer"
+        const auto sampler_type{desc.is_integer ? std::string_view{"usamplerBuffer"}
                                                 : ColorSamplerType(TextureType::Buffer)};
         const auto array_decorator{desc.count > 1 ? fmt::format("[{}]", desc.count) : ""};
         header += fmt::format("layout(binding={}) uniform {} tex{}{};", bindings.texture,

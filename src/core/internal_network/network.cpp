@@ -742,6 +742,10 @@ std::string IPv4AddressToString(IPv4Address ip_addr) {
     return std::string(buf.data());
 }
 
+bool TryParseIPv4Literal(const std::string& host, IPv4Address& out) {
+    return inet_pton(AF_INET, host.c_str(), out.data()) == 1;
+}
+
 u32 IPv4AddressToInteger(IPv4Address ip_addr) {
     return static_cast<u32>(ip_addr[0]) << 24 | static_cast<u32>(ip_addr[1]) << 16 |
            static_cast<u32>(ip_addr[2]) << 8 | static_cast<u32>(ip_addr[3]);

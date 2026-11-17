@@ -751,34 +751,39 @@ static const std::vector<GameFixProfile> s_profiles = {
     },
         // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/3673
 {
-        0x01002A801458A000ULL,
+        0x0100726014352000ULL,
         "Diablo II: Resurrected",
         "• Вылет при продолжении игры / загрузке персонажа (нехватка памяти)\n• Пропадание букв и текста интерфейса (глифы шрифтов)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя и графические артефакты\n• Просадки кадровой частоты (4 FPS / 200 ms)",
         "• Character load / continue game crash (memory exhaustion)\n• Missing UI text and font glyphs\n• Battle.net server handshake hang\n• Character flickering on selection screen and graphical artifacts\n• Frame drops (4 FPS / 200 ms)",
-        "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Точность ГПУ: Обычная (восстанавливает 60 FPS)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Быстрое время ГПУ: Включено (устраняет пропуск рендеринга шрифтов)\n✓ Сжатие ASTC: Отключено (устраняет полосы и квадраты)\n✓ Точность ЦП: Авто (устранение заторможенности)\n✓ Быстрая память: Включено\n✓ Асинхронные шейдеры: Включено (плавный геймплей)\n✓ Реактивный сброс: Отключено\n✓ Обратное чтение буферов ГПУ: Отключено (стабильные 60 FPS)",
-        "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ GPU Accuracy: Normal (Restores 60 FPS)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ Fast GPU Time: Enabled (Prevents font rendering skips)\n✓ ASTC Recompression: Uncompressed (Fixes decal artifacts)\n✓ CPU Accuracy: Auto (Eliminates sluggishness)\n✓ Fastmem: Enabled\n✓ Asynchronous Shaders: Enabled (Smooth gameplay)\n✓ Reactive Flushing: Disabled\n✓ GPU Buffer Readback: Disabled (Stable 60 FPS)",
+        "✓ Память: 6GB DRAM (запас кучи для потоковой загрузки Актов без роста PSS)\n✓ Точность ГПУ: Обычная (Normal - плавные FPS без просадок)\n✓ Режим полёта: Включено (пропуск Battle.net)\n✓ Динамическое состояние: EDS1 (без фризов пересборки конвейеров)\n✓ Fix Bloom Effects: Отключено (сохраняет шрифты Slug и аппаратный FP16)\n✓ Быстрое время ГПУ, VkPipelineCache, барьеры и обратное чтение: Отключено (100% глифы в 1-м и 2-м запуске)\n✓ Асинхронные шейдеры и вывод: Включено (2D UI/шрифты синхронно, 3D без статтеров)\n✓ Sync Memory Ops: Включено + DMA Accuracy: Безопасная (Safe=3) + GC VRAM: Включено\n✓ Сжатие ASTC: Отключено",
+        "✓ Memory Layout: 6GB DRAM (Act I+ streaming headroom without PSS bloat)\n✓ GPU Accuracy: Normal (Smooth FPS without pipeline stalls)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ Dynamic State: EDS1 (Eliminates PSO hitching on Turnip)\n✓ Fix Bloom Effects: Disabled (Preserves Slug fonts and native FP16 speed)\n✓ Fast GPU Time, VkPipelineCache, Feedback Loops, Reactive Flush & Readback: Disabled (100% glyphs across Run 1 & 2)\n✓ Async Shaders & Presentation: Enabled (2D UI/fonts stay synchronous, 3D stutter-free)\n✓ Sync Memory Ops: Enabled + DMA Accuracy: Safe (3) + VRAM GC: Enabled\n✓ ASTC Recompression: Uncompressed",
         {
-            {"Core\\memory_layout_mode", "2"},
-            {"System\\memory_layout_mode", "2"},
+            {"Core\\memory_layout_mode", "1"},
+            {"System\\memory_layout_mode", "1"},
             {"Network\\airplane_mode", "true"},
             {"System\\airplane_mode", "true"},
             {"Services\\airplane_mode", "true"},
-            {"Renderer\\use_fast_gpu_time", "true"},
-            {"Renderer\\gpu_accuracy", "0"},
+            {"Renderer\\use_fast_gpu_time", "false"},
+            {"Renderer\\gpu_accuracy", "1"},
+            {"Renderer\\dma_accuracy", "3"},
             {"Cpu\\cpu_accuracy", "0"},
             {"Renderer\\astc_recompression", "0"},
             {"Renderer\\dyna_state", "1"},
+            {"Renderer\\fix_bloom_effects", "false"},
             {"Renderer\\barrier_feedback_loops", "false"},
             {"Renderer\\use_reactive_flushing", "false"},
+            {"Renderer\\sync_memory_operations", "true"},
             {"Renderer\\vram_garbage_collection", "true"},
             {"Renderer\\vram_budget_governor", "true"},
-            {"Renderer\\early_release_fences", "true"},
+            {"Renderer\\early_release_fences", "false"},
+            {"Renderer\\enable_frame_skipping", "false"},
             {"Renderer\\async_presentation", "true"},
+            {"Renderer\\use_vulkan_driver_pipeline_cache", "false"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Renderer\\use_asynchronous_shaders", "true"},
             {"Renderer\\enable_gpu_buffer_readback", "false"}
         },
-        {0x0100916014D8C000ULL, 0x0100726014352000ULL}
+        {0x01002A801458A000ULL, 0x0100916014D8C000ULL}
     },
     {
         0x010020D01AD24000ULL,
@@ -1119,23 +1124,6 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\fsr_sharpening_slider", "85"}
         },
         {0x0100BFF00E256000ULL, 0x0100E67012924000ULL}
-    },
-        // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/4150
-{
-        0x0100760012E4A000ULL,
-        "Mario + Rabbids Sparks of Hope",
-        "• Вылет движка Snowdrop при переходе в тактический бой",
-        "• Snowdrop engine crash on tactical combat transition",
-        "✓ Точность DMA: Safe\n✓ Точность ГПУ: Высокая\n✓ Barrier Feedback Loops: Включено",
-        "✓ DMA Accuracy: Safe\n✓ GPU Accuracy: High\n✓ Barrier Feedback Loops: Enabled",
-        {
-            {"Renderer\\gpu_accuracy", "2"},
-            {"Renderer\\use_reactive_flushing", "true"},
-            {"Renderer\\use_fast_gpu_time", "false"},
-            {"Renderer\\astc_recompression", "0"},
-            {"Renderer\\barrier_feedback_loops", "true"},
-            {"Renderer\\dma_accuracy", "3"}
-        }
     },
         // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/4190
 {
@@ -2187,21 +2175,32 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x010067300059A000ULL,
         "Mario + Rabbids: Kingdom Battle",
-        "• Диагональная полоса при запуске на полноэкранном кваде\n• Сильный пересвет и черные тени Snowdrop Engine\n• Мерцание текстур персонажей",
-        "• Diagonal line across fullscreen quad on startup\n• Severe overexposure and pitch-black shadows (Snowdrop Engine)\n• Character model flickering",
-        "✓ Точность ГПУ: Высокая (устранение пересвета и черных теней)\n✓ Обратные циклы барьеров: Включено\n✓ Реактивная очистка: Включено\n✓ Сжатие ASTC: Отключено\n✓ Асинхронные шейдеры: Включено",
-        "✓ GPU Accuracy: High (Fixes bloom & black shadows)\n✓ Barrier Feedback Loops: Enabled\n✓ Reactive Flushing: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Asynchronous Shaders: Enabled",
+        "• Диагональная полоса при запуске на полноэкранном кваде\n• Сильный пересвет и срез 3D-колонн Snowdrop Engine\n• Мерцание текстур персонажей",
+        "• Diagonal line across fullscreen quad on startup\n• Severe overexposure and 3D pillar clipping (Snowdrop Engine)\n• Character model flickering",
+        "✓ Память: 4GB DRAM + Режим полета\n✓ Точность ГПУ: Высокая (High)\n✓ DMA Accuracy: Безопасная (Safe=3) + Fix Bloom: Включено\n✓ Обратные циклы барьеров и Реактивная очистка: Включено\n✓ Асинхронные шейдеры и вывод: Отключено (синхронный тонемап HDR Snowdrop)\n✓ Обратное чтение буферов и Sync Memory Ops: Включено (автоэкспозиция Snowdrop)\n✓ Сжатие ASTC: Отключено",
+        "✓ Memory Layout: 4GB DRAM + Airplane Mode\n✓ GPU Accuracy: High\n✓ DMA Accuracy: Safe (3) + Fix Bloom Effects: Enabled\n✓ Barrier Feedback Loops & Reactive Flushing: Enabled\n✓ Async Shaders & Async Presentation: Disabled (synchronous Snowdrop HDR tonemapping)\n✓ GPU Buffer Readback & Sync Memory Ops: Enabled (Snowdrop auto-exposure)\n✓ ASTC Recompression: Uncompressed",
         {
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
+            {"System\\airplane_mode", "true"},
+            {"Network\\airplane_mode", "true"},
+            {"Services\\airplane_mode", "true"},
             {"Renderer\\gpu_accuracy", "2"},
             {"Renderer\\dma_accuracy", "3"},
+            {"Renderer\\sync_memory_operations", "true"},
+            {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\barrier_feedback_loops", "true"},
             {"Renderer\\use_reactive_flushing", "true"},
             {"Renderer\\astc_recompression", "0"},
-            {"Renderer\\fix_bloom_effects", "false"},
+            {"Renderer\\fix_bloom_effects", "true"},
             {"Renderer\\early_release_fences", "false"},
-            {"Renderer\\use_asynchronous_shaders", "true"}
+            {"Renderer\\vram_garbage_collection", "true"},
+            {"Renderer\\vram_budget_governor", "true"},
+            {"Renderer\\use_asynchronous_shaders", "false"},
+            {"Renderer\\async_presentation", "false"},
+            {"Renderer\\enable_gpu_buffer_readback", "true"}
         },
-        {0x0100760012E4A000ULL}
+        {0x010067300B762000ULL}
     },
     {
         0x01005CA00F966000ULL,
@@ -4920,13 +4919,16 @@ static const std::vector<GameFixProfile> s_profiles = {
     {
         0x0100A83022A22000ULL,
         "Absolum",
-        "• Рассинхронизация 2D-презентации кадров при асинхронном выводе\n• Сбои декодирования вступительных видеороликов NVDEC на ГПУ\n• Микрофризы и артефакты спрайтов при динамическом масштабировании",
-        "• 2D presentation desync with asynchronous presentation\n• GPU NVDEC video decoding stutter\n• Micro-stutter and sprite artifacts with dynamic rescaling",
-        "✓ Точность ГПУ: Высокая\n✓ NVDEC: Аппаратный (GPU)\n✓ Синхронизация памяти: Включено\n✓ Асинхронная презентация: Отключено\n✓ Режим полета: Включено",
-        "✓ GPU Accuracy: High\n✓ NVDEC: Hardware (GPU)\n✓ Memory Sync: Enabled\n✓ Async Presentation: Disabled\n✓ Airplane Mode: Enabled",
+        "• Рассинхронизация 2D-презентации кадров и чёрный фон за 2D-сценой\n• Задержка вступительных роликов\n• Излишний нагрев из-за принудительных барьеров памяти",
+        "• 2D presentation desync and black 2D background artwork\n• Intro video startup delay\n• Excessive heat from forced memory sync stalls",
+        "✓ Память: 4GB DRAM + Режим полета\n✓ Точность ГПУ: Высокая (High) + Fix Bloom + NVDEC ГПУ\n✓ Асинхронный вывод и быстрое время ГПУ: Отключено (0% рассинхронизации 2D-слоёв)\n✓ Обратное чтение и Sync Memory Ops: Включено (DMA Safe=3)\n✓ Асинхронные шейдеры, реактивная очистка, барьеры и GC VRAM: Включено",
+        "✓ Memory Layout: 4GB DRAM + Airplane Mode\n✓ GPU Accuracy: High + Fix Bloom + GPU NVDEC\n✓ Async Presentation & Fast GPU Time: Disabled (0% 2D layer desync)\n✓ GPU Buffer Readback & Sync Memory Ops: Enabled (DMA Safe=3)\n✓ Asynchronous Shaders, Reactive Flushing, Barrier Loops & VRAM GC: Enabled",
         {
+            {"Core\\memory_layout_mode", "0"},
+            {"System\\memory_layout_mode", "0"},
             {"Renderer\\gpu_accuracy", "2"},
-            {"Renderer\\nvdec_emulation", "1"},
+            {"Renderer\\fix_bloom_effects", "true"},
+            {"Renderer\\nvdec_emulation", "2"},
             {"Renderer\\drs_resolution_lock", "false"},
             {"Renderer\\accelerate_astc", "1"},
             {"Renderer\\astc_recompression", "0"},
@@ -4935,15 +4937,20 @@ static const std::vector<GameFixProfile> s_profiles = {
             {"Renderer\\use_fast_gpu_time", "false"},
             {"Renderer\\async_presentation", "false"},
             {"Renderer\\sync_memory_operations", "true"},
+            {"Renderer\\enable_gpu_buffer_readback", "true"},
             {"Renderer\\use_reactive_flushing", "true"},
+            {"Renderer\\barrier_feedback_loops", "true"},
             {"Renderer\\vram_garbage_collection", "true"},
+            {"Renderer\\vram_budget_governor", "true"},
             {"Renderer\\early_release_fences", "false"},
             {"Renderer\\gpu_fence_behavior", "0"},
             {"Renderer\\dma_accuracy", "3"},
             {"Cpu\\cpu_accuracy", "0"},
             {"Cpu\\cpuopt_fastmem", "true"},
             {"Cpu\\cpuopt_ignore_memory_aborts", "true"},
-            {"System\\airplane_mode", "true"}
+            {"System\\airplane_mode", "true"},
+            {"Network\\airplane_mode", "true"},
+            {"Services\\airplane_mode", "true"}
         }
     },
     {

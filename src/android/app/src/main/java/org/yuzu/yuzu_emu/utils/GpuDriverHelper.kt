@@ -24,6 +24,16 @@ import org.yuzu.yuzu_emu.features.settings.utils.SettingsFile
 
 object GpuDriverHelper {
     private const val META_JSON_FILENAME = "meta.json"
+    private const val ACTIVE_DRIVER_MARKER = "active_driver_zip.txt"
+    private const val PREF_DRIVER_MIGRATED_12_V1 = "storm_driver_migrated_12_v3"
+    const val PREF_USER_EXPLICIT_SYSTEM_DRIVER = "storm_user_explicit_system_driver"
+    private val driverLock = Any()
+    @Volatile
+    var activeGameProgramId: String = ""
+    @Volatile
+    var activeGameTitle: String = ""
+    @Volatile
+    private var lastNativeDriverInitSignature: String? = null
     private var fileRedirectionPath: String? = null
     var driverInstallationPath: String? = null
         get() {
@@ -231,7 +241,7 @@ object GpuDriverHelper {
         return false
     }
 
-    fun initializeDriverParameters() {
+    fun initializeDriverParameters() = synchronized(driverLock) {
         try {
             val extDir = YuzuApplication.appContext.getExternalFilesDir(null)
             val baseDir = extDir ?: YuzuApplication.appContext.filesDir
@@ -264,25 +274,64 @@ object GpuDriverHelper {
                 null,
                 fileRedirectionPath
             )
-            return
+            return@synchronized
         }
 
         NativeFreedrenoConfig.reloadFreedrenoConfig()
 
-        // Auto-restore selected driver from config if installation folder is missing files
+        // Keep driverInstallationPath strictly synchronized with StringSetting.DRIVER_PATH
         val activeDriverZipPath = try { StringSetting.DRIVER_PATH.getString() } catch (_: Exception) { "" }
-        if (installedCustomDriverData.libraryName.isNullOrEmpty() && activeDriverZipPath.isNotEmpty()) {
+        val installDir = File(driverInstallationPath!!)
+        val markerFile = File(installDir, ACTIVE_DRIVER_MARKER)
+        val recordedZip = if (markerFile.exists()) {
+            try { markerFile.readText(Charsets.UTF_8).trim() } catch (_: Exception) { "" }
+        } else {
+            ""
+        }
+
+        if (activeDriverZipPath.isEmpty()) {
+            if (!installedCustomDriverData.libraryName.isNullOrEmpty() ||
+                markerFile.exists() ||
+                File(installDir, META_JSON_FILENAME).exists()
+            ) {
+                try {
+                    installDir.deleteRecursively()
+                    installDir.mkdirs()
+                } catch (_: Exception) {}
+            }
+        } else {
             val activeDriverFile = File(activeDriverZipPath)
-            if (activeDriverFile.exists()) {
+            val currentInstalled = installedCustomDriverData
+            val needsSync = when {
+                currentInstalled.libraryName.isNullOrEmpty() -> true
+                recordedZip.isNotEmpty() -> !recordedZip.equals(activeDriverZipPath, ignoreCase = true)
+                activeDriverFile.exists() -> {
+                    val targetMeta = getMetadataFromZip(activeDriverFile)
+                    val mismatch = targetMeta.name != null &&
+                        (currentInstalled.name != targetMeta.name ||
+                            currentInstalled.version != targetMeta.version ||
+                            currentInstalled.libraryName != targetMeta.libraryName)
+                    if (!mismatch && targetMeta.name != null) {
+                        writeActiveDriverMarker(activeDriverFile.absolutePath)
+                    }
+                    mismatch
+                }
+                else -> false
+            }
+
+            if (needsSync && activeDriverFile.exists()) {
                 val metadata = getMetadataFromZip(activeDriverFile)
                 if (metadata.name != null && metadata.minApi <= Build.VERSION.SDK_INT &&
                     (!isAdreno8xx() || isDriverCompatibleWithAdreno8xx(metadata))) {
                     try {
+                        installDir.deleteRecursively()
+                        installDir.mkdirs()
                         FileUtil.unzipToInternalStorage(
                             activeDriverFile.path,
-                            File(driverInstallationPath!!)
+                            installDir
                         )
-                        extractAllDriverFiles(activeDriverFile, File(driverInstallationPath!!))
+                        extractAllDriverFiles(activeDriverFile, installDir)
+                        writeActiveDriverMarker(activeDriverFile.absolutePath)
                     } catch (_: Exception) {
                     }
                 }
@@ -311,34 +360,40 @@ object GpuDriverHelper {
             val turnipActive = isTurnipDriverActive()
 
             if (isStorm8 || panVkActive) {
-                val drircFile = File(installDir, "drirc.xml")
-                val drircConfFile = File(installDir, "00-storm.conf")
-                val fallbackConf = if (drircConfFile.exists()) drircConfFile else if (drircFile.exists()) drircFile else null
+                // Generate clean per-game driconf XML rather than copying raw zip 00-storm.conf (which may carry tu_dont_care_as_load=true)
+                val generatedFile = PerGameDrircGenerator.generateForGame(activeGameProgramId, activeGameTitle)
+                val configBytes = generatedFile.readBytes()
+                try {
+                    val redirDir = File(fileRedirectionPath!!)
+                    if (!redirDir.exists()) redirDir.mkdirs()
+                    File(redirDir, "drirc.xml").writeBytes(configBytes)
+                    File(redirDir, "drirc").writeBytes(configBytes)
+                    File(redirDir, "00-storm.conf").writeBytes(configBytes)
+                    File(redirDir, "drirc.conf").writeBytes(configBytes)
 
-                if (fallbackConf != null && fallbackConf.exists()) {
-                    val configBytes = fallbackConf.readBytes()
-                    try {
-                        val redirDir = File(fileRedirectionPath!!)
-                        if (!redirDir.exists()) redirDir.mkdirs()
-                        File(redirDir, "drirc.xml").writeBytes(configBytes)
-                        File(redirDir, "drirc").writeBytes(configBytes)
-                        File(redirDir, "00-storm.conf").writeBytes(configBytes)
-                        File(redirDir, "drirc.conf").writeBytes(configBytes)
+                    File(installDir, "drirc.xml").writeBytes(configBytes)
+                    File(installDir, "00-storm.conf").writeBytes(configBytes)
+                    File(installDir, "drirc.conf").writeBytes(configBytes)
+                    File(installDir, "drirc").writeBytes(configBytes)
 
-                        File(installDir, "00-storm.conf").writeBytes(configBytes)
-                        File(installDir, "drirc.conf").writeBytes(configBytes)
-                        File(installDir, "drirc").writeBytes(configBytes)
+                    val homeDir = YuzuApplication.appContext.filesDir
+                    File(homeDir, ".drirc").writeBytes(configBytes)
+                } catch (_: Throwable) {}
 
-                        // Also write to $HOME/.drirc for Mesa driconf loader
-                        val homeDir = YuzuApplication.appContext.filesDir
-                        File(homeDir, ".drirc").writeBytes(configBytes)
-                    } catch (_: Throwable) {}
-
-                    NativeFreedrenoConfig.setFreedrenoEnv("DRIRC_CONFIGDIR", driverInstallationPath!!)
-                    NativeFreedrenoConfig.setFreedrenoEnv("MESA_DRIRC_DIR", driverInstallationPath!!)
-                    NativeFreedrenoConfig.setFreedrenoEnv("MESA_DRIRC_FILE", fallbackConf.absolutePath)
-                    NativeFreedrenoConfig.setFreedrenoEnv("HOME", YuzuApplication.appContext.filesDir.absolutePath)
+                val targetDrircDir = if (activeGameProgramId.isNotBlank()) {
+                    generatedFile.parentFile ?: installDir
+                } else {
+                    installDir
                 }
+                val drircXmlFile = if (activeGameProgramId.isNotBlank()) {
+                    generatedFile
+                } else {
+                    File(installDir, "drirc.xml")
+                }
+                NativeFreedrenoConfig.setFreedrenoEnv("DRIRC_CONFIGDIR", targetDrircDir.absolutePath)
+                NativeFreedrenoConfig.setFreedrenoEnv("MESA_DRIRC_DIR", targetDrircDir.absolutePath)
+                NativeFreedrenoConfig.setFreedrenoEnv("MESA_DRIRC_FILE", drircXmlFile.absolutePath)
+                NativeFreedrenoConfig.setFreedrenoEnv("HOME", YuzuApplication.appContext.filesDir.absolutePath)
             } else if (turnipActive) {
                 // Issue #94: Third-party Turnip driver (e.g. MrPurple T30, Kimchi, Weab-chan)
                 // Set DRIRC_CONFIGDIR and MESA_DRIRC_DIR to installDir (preserving bundled .conf / sysmem config),
@@ -354,9 +409,9 @@ object GpuDriverHelper {
                 }
             }
 
-            // 4GB Monolithic Shader Cache for Mesa Turnip and PanVK
-            NativeFreedrenoConfig.setFreedrenoEnv("MESA_SHADER_CACHE_MAX_SIZE", "4294967296")
-            NativeFreedrenoConfig.setFreedrenoEnv("MESA_DISK_CACHE_SINGLE_FILE", "1")
+            // Sparse multi-file Mesa shader cache capped at 128M (bounds RAM mmap footprint)
+            NativeFreedrenoConfig.setFreedrenoEnv("MESA_SHADER_CACHE_MAX_SIZE", "128M")
+            NativeFreedrenoConfig.clearFreedrenoEnv("MESA_DISK_CACHE_SINGLE_FILE")
 
             var model = ""
             try {
@@ -376,23 +431,67 @@ object GpuDriverHelper {
             NativeFreedrenoConfig.clearFreedrenoEnv("DRIRC_CONFIGDIR")
             NativeFreedrenoConfig.clearFreedrenoEnv("MESA_DRIRC_DIR")
             NativeFreedrenoConfig.clearFreedrenoEnv("MESA_DRIRC_FILE")
+            NativeFreedrenoConfig.clearFreedrenoEnv("TU_DEBUG")
             NativeFreedrenoConfig.clearFreedrenoEnv("PAN_MESA_DEBUG")
             NativeFreedrenoConfig.clearFreedrenoEnv("PAN_I_WANT_A_BROKEN_VULKAN_DRIVER")
             NativeFreedrenoConfig.clearFreedrenoEnv("MESA_NO_ERROR")
         }
 
-        NativeLibrary.initializeGpuDriver(
-            hookLibPath,
-            driverInstallationPath,
-            customLib,
-            fileRedirectionPath
-        )
+        // Preserve per_game_drirc and per-TID TU_DEBUG whenever a game TID is already active
+        if (!customLib.isNullOrEmpty() && (isTurnipDriverActive() || isPanVkDriverActive()) &&
+            activeGameProgramId.isNotBlank()) {
+            applyPerGameDriverConfig(activeGameProgramId, activeGameTitle)
+        }
+
+        val initSignature = listOf(
+            hookLibPath ?: "",
+            driverInstallationPath ?: "",
+            customLib ?: "",
+            fileRedirectionPath ?: ""
+        ).joinToString("|")
+        if (initSignature != lastNativeDriverInitSignature) {
+            lastNativeDriverInitSignature = initSignature
+            NativeLibrary.initializeGpuDriver(
+                hookLibPath,
+                driverInstallationPath,
+                customLib,
+                fileRedirectionPath
+            )
+        }
     }
 
     // Per-TID Turnip driver hints (verified real TU_DEBUG flags only: nolrz, sysmem, gmem, nobin, noubwc, flushall, syncdraw)
-    val PER_TID_TURNIP_DEBUG_HINTS: Map<String, List<String>> = emptyMap()
+    val PER_TID_TURNIP_DEBUG_HINTS: Map<String, List<String>> = mapOf(
+        "0100726014352000" to listOf("nolrz", "noubwc"), // Diablo II: Resurrected
+        "01002A801458A000" to listOf("nolrz", "noubwc"), // Diablo II: Resurrected (US)
+        "0100916014D8C000" to listOf("nolrz", "noubwc"), // Diablo II: Resurrected (EU)
+        "0100A83022A22000" to listOf("nolrz"), // Absolum (nolrz fixes Gen8 coarse LRZ cutouts; GMEM preserved)
+        "010067300059A000" to listOf("nolrz", "noubwc"), // Mario + Rabbids: Kingdom Battle
+        "010067300B762000" to listOf("nolrz", "noubwc")  // Mario + Rabbids: Kingdom Battle (EU)
+    )
 
-    fun applyPerGameDriverConfig(programIdHex: String, gameTitle: String) {
+    private fun resolvePerTidTurnipHints(programIdHex: String, isStorm8: Boolean): List<String> {
+        var rawId = programIdHex.trim().uppercase()
+        if (rawId.startsWith("0X")) {
+            rawId = rawId.substring(2)
+        }
+        val cleanId = if (rawId.length == 16) rawId.substring(0, 13) + "000" else rawId
+        if (!isStorm8 && cleanId == "01007EF00011E000") {
+            return emptyList()
+        }
+        val baseFlags = PER_TID_TURNIP_DEBUG_HINTS[cleanId] ?: emptyList()
+        if (baseFlags.isEmpty()) {
+            return emptyList()
+        }
+        if (!isAdreno8xx()) {
+            return listOf("nolrz")
+        }
+        return baseFlags
+    }
+
+    fun applyPerGameDriverConfig(programIdHex: String, gameTitle: String) = synchronized(driverLock) {
+        activeGameProgramId = programIdHex
+        activeGameTitle = gameTitle
         val customLib = installedCustomDriverData.libraryName
         val turnipActive = isTurnipDriverActive()
         val panVkActive = isPanVkDriverActive()
@@ -400,7 +499,7 @@ object GpuDriverHelper {
             NativeFreedrenoConfig.clearFreedrenoEnv("DRIRC_CONFIGDIR")
             NativeFreedrenoConfig.clearFreedrenoEnv("MESA_DRIRC_DIR")
             NativeFreedrenoConfig.clearFreedrenoEnv("MESA_DRIRC_FILE")
-            return
+            return@synchronized
         }
 
         try {
@@ -412,46 +511,36 @@ object GpuDriverHelper {
                 val generatedConfigFile = PerGameDrircGenerator.generateForGame(programIdHex, gameTitle)
                 val configBytes = generatedConfigFile.readBytes()
                 val stormConfFile = File(installDir, "00-storm.conf")
-                val isDiablo = profileType == PerGameDrircGenerator.GameProfileType.DIABLO ||
-                    programIdHex.equals("0100726014352000", ignoreCase = true) ||
-                    gameTitle.contains("diablo", ignoreCase = true)
                 val isMarioRabbids = profileType == PerGameDrircGenerator.GameProfileType.MARIO_RABBIDS ||
                     programIdHex.equals("010067300059A000", ignoreCase = true) ||
-                    programIdHex.equals("0100760012E4A000", ignoreCase = true) ||
+                    programIdHex.equals("010067300B762000", ignoreCase = true) ||
+                    programIdHex.equals("0100317013770000", ignoreCase = true) ||
                     programIdHex.equals("010032C00AC58000", ignoreCase = true) ||
                     programIdHex.equals("01005CA00F966000", ignoreCase = true) ||
                     gameTitle.contains("rabbids", ignoreCase = true)
 
                 val selectedDriverPath = try { StringSetting.DRIVER_PATH.getString() } catch (_: Exception) { "" }
 
-                if (isStorm8 && stormConfFile.exists()) {
-                    val currentConf = try { stormConfFile.readText() } catch (_: Exception) { "" }
-                    if (!currentConf.contains("<application name=\"Tier ")) {
-                        if (selectedDriverPath.isNotEmpty()) {
-                            val activeZip = File(selectedDriverPath)
-                            if (activeZip.exists()) {
-                                try {
-                                    java.util.zip.ZipFile(activeZip).use { zf ->
-                                        val entry = zf.getEntry("00-storm.conf") ?: zf.entries().asSequence().firstOrNull { it.name.endsWith("00-storm.conf") }
-                                        if (entry != null) {
-                                            zf.getInputStream(entry).use { input ->
-                                                stormConfFile.writeBytes(input.readBytes())
-                                            }
-                                            Log.info("[GpuDriverHelper] Self-healed 00-storm.conf from ${activeZip.name}")
-                                        }
-                                    }
-                                } catch (e: Exception) {
-                                    Log.error("[GpuDriverHelper] Failed to self-heal 00-storm.conf: ${e.message}")
-                                }
-                            }
-                        }
-                    }
-                }
-
                 val perGameDir = File(installDir, "per_game_drirc")
                 if (!perGameDir.exists()) perGameDir.mkdirs()
                 val perGameDrircFile = File(perGameDir, "drirc.xml")
                 perGameDrircFile.writeBytes(configBytes)
+                File(perGameDir, "00-storm.conf").writeBytes(configBytes)
+                File(perGameDir, "drirc.conf").writeBytes(configBytes)
+                stormConfFile.writeBytes(configBytes)
+                File(installDir, "drirc.xml").writeBytes(configBytes)
+                File(installDir, "drirc.conf").writeBytes(configBytes)
+                File(installDir, "drirc").writeBytes(configBytes)
+
+                val redirPath = fileRedirectionPath
+                if (!redirPath.isNullOrEmpty()) {
+                    val redirDir = File(redirPath)
+                    if (!redirDir.exists()) redirDir.mkdirs()
+                    File(redirDir, "drirc.xml").writeBytes(configBytes)
+                    File(redirDir, "drirc").writeBytes(configBytes)
+                    File(redirDir, "00-storm.conf").writeBytes(configBytes)
+                    File(redirDir, "drirc.conf").writeBytes(configBytes)
+                }
 
                 val homeDir = YuzuApplication.appContext.filesDir
                 File(homeDir, ".drirc").writeBytes(configBytes)
@@ -461,14 +550,10 @@ object GpuDriverHelper {
                 NativeFreedrenoConfig.setFreedrenoEnv("MESA_DRIRC_FILE", perGameDrircFile.absolutePath)
                 NativeFreedrenoConfig.setFreedrenoEnv("HOME", YuzuApplication.appContext.filesDir.absolutePath)
 
-                if (isDiablo || isMarioRabbids) {
+                if (NativeFreedrenoConfig.isFreedrenoEnvSet("MESA_VK_DYNAMIC_ATTACHMENT_FEEDBACK_LOOP_ENABLE")) {
                     NativeFreedrenoConfig.clearFreedrenoEnv("MESA_VK_DYNAMIC_ATTACHMENT_FEEDBACK_LOOP_ENABLE")
-                } else {
-                    if (NativeFreedrenoConfig.isFreedrenoEnvSet("MESA_VK_DYNAMIC_ATTACHMENT_FEEDBACK_LOOP_ENABLE")) {
-                        NativeFreedrenoConfig.clearFreedrenoEnv("MESA_VK_DYNAMIC_ATTACHMENT_FEEDBACK_LOOP_ENABLE")
-                    }
                 }
-                Log.info("[GpuDriverHelper] Successfully applied per-game driver config for $gameTitle ($programIdHex) -> ${generatedConfigFile.absolutePath}")
+                Log.info("[GpuDriverHelper] Successfully applied per-game driver config for $gameTitle ($programIdHex) -> ${perGameDrircFile.absolutePath}")
             } else {
                 // Issue #94: Third-party Turnip driver (turnipActive && !isStorm8, e.g. MrPurple T30, Kimchi, Weab-chan)
                 // Set DRIRC_CONFIGDIR and MESA_DRIRC_DIR to installDir (preserving bundled .conf / sysmem config),
@@ -492,40 +577,24 @@ object GpuDriverHelper {
             val isMaliOrPanVk = panVkActive || isMaliGpu()
             org.yuzu.yuzu_emu.model.GameFixDatabase.setDetectedGpuVendor(if (isMaliOrPanVk) "mali" else "adreno")
             if (!turnipActive) {
-                return
+                return@synchronized
             }
 
             val normalizedTid = programIdHex.uppercase()
-            // On third-party Turnip drivers for BOTW (01007EF00011E000), let the driver's native 00-mesa-defaults.conf / user sysmem config run cleanly without forced nolrz
-            val perTidHints = if (!isStorm8 && normalizedTid == "01007EF00011E000") {
-                null
-            } else {
-                PER_TID_TURNIP_DEBUG_HINTS[normalizedTid]
-            }
-
-            val existingTuDebug = if (NativeFreedrenoConfig.isFreedrenoEnvSet("TU_DEBUG")) NativeFreedrenoConfig.getFreedrenoEnv("TU_DEBUG") else ""
-            val flags = existingTuDebug.split(",").map { it.trim() }.filter { it.isNotEmpty() && it != "noconcurrentunresolves" }.toMutableSet()
+            val perTidHints = resolvePerTidTurnipHints(normalizedTid, isStorm8)
+            val flags = linkedSetOf<String>()
             if (isAdreno840OrNewer()) {
                 flags.add("noubwc")
             }
+            flags.addAll(perTidHints)
 
-            if (perTidHints != null && perTidHints.isNotEmpty()) {
-                flags.addAll(perTidHints)
-                NativeFreedrenoConfig.setFreedrenoEnv("TU_DEBUG", flags.joinToString(","))
-                Log.info("[GpuDriverHelper] Applied verified per-TID Turnip driver hints for $normalizedTid ($gameTitle): TU_DEBUG=${flags.joinToString(",")}")
+            if (flags.isNotEmpty()) {
+                val tuDebugStr = flags.joinToString(",")
+                NativeFreedrenoConfig.setFreedrenoEnv("TU_DEBUG", tuDebugStr)
+                Log.info("[GpuDriverHelper] Applied clean per-TID Turnip TU_DEBUG for $normalizedTid ($gameTitle): TU_DEBUG=$tuDebugStr")
             } else {
-                // Do NOT overwrite or strip sysmem / gmem from TU_DEBUG!
-                // Only clean transient per-game flags: nobin, nolrz, noubwc (if not A840+), flushall, syncdraw
-                val specialFlags = mutableSetOf("nobin", "nolrz", "flushall", "syncdraw")
-                if (!isAdreno840OrNewer()) {
-                    specialFlags.add("noubwc")
-                }
-                val cleanedFlags = flags.filter { !specialFlags.contains(it) }
-                if (cleanedFlags.isEmpty()) {
-                    NativeFreedrenoConfig.clearFreedrenoEnv("TU_DEBUG")
-                } else {
-                    NativeFreedrenoConfig.setFreedrenoEnv("TU_DEBUG", cleanedFlags.joinToString(","))
-                }
+                NativeFreedrenoConfig.clearFreedrenoEnv("TU_DEBUG")
+                Log.info("[GpuDriverHelper] Cleared TU_DEBUG for $normalizedTid ($gameTitle)")
             }
         } catch (t: Throwable) {
             Log.error("[GpuDriverHelper] Failed to apply per-game driver config: ${t.message}")
@@ -546,9 +615,18 @@ object GpuDriverHelper {
         return drivers
     }
 
-    fun installDefaultDriver() {
-        // Removing the installed driver will result in the backend using the default system driver.
-        File(driverInstallationPath!!).deleteRecursively()
+    private fun resetDriverInstallDirOnly() {
+        lastNativeDriverInitSignature = null
+        driverInstallationPath?.let { path ->
+            val dir = File(path)
+            dir.deleteRecursively()
+            dir.mkdirs()
+        }
+        clearVulkanPipelineCaches()
+    }
+
+    fun installDefaultDriver() = synchronized(driverLock) {
+        resetDriverInstallDirOnly()
         initializeDriverParameters()
     }
 
@@ -578,27 +656,25 @@ object GpuDriverHelper {
      * Copies driver zip into user data directory so that it can be exported along with
      * other user data and also unzipped into the installation directory
      */
-    fun installCustomDriver(driverUri: Uri): Boolean {
-        // Revert to system default in the event the specified driver is bad.
-        installDefaultDriver()
-
-        // Ensure we have directories.
+    fun installCustomDriver(driverUri: Uri): Boolean = synchronized(driverLock) {
+        // Ensure we have directories and clean old files without resetting native driver to null mid-install.
         initializeDirectories()
+        resetDriverInstallDirOnly()
 
         // Copy the zip file URI to user data
         val copiedFile =
-            FileUtil.copyUriToInternalStorage(driverUri, driverStoragePath) ?: return false
+            FileUtil.copyUriToInternalStorage(driverUri, driverStoragePath) ?: return@synchronized false
 
         // Validate driver
         val metadata = getMetadataFromZip(copiedFile)
         if (metadata.name == null) {
             copiedFile.delete()
-            return false
+            return@synchronized false
         }
 
         if (metadata.minApi > Build.VERSION.SDK_INT) {
             copiedFile.delete()
-            return false
+            return@synchronized false
         }
 
         // Unzip the driver.
@@ -608,31 +684,32 @@ object GpuDriverHelper {
                 File(driverInstallationPath!!)
             )
             extractAllDriverFiles(copiedFile, File(driverInstallationPath!!))
+            writeActiveDriverMarker(copiedFile.absolutePath)
+            clearInflightDriverMarker()
+            clearVulkanPipelineCaches()
         } catch (e: SecurityException) {
-            return false
+            return@synchronized false
         }
 
         // Initialize the driver parameters.
         initializeDriverParameters()
 
-        return true
+        return@synchronized true
     }
 
     /**
      * Unzips driver into installation directory
      */
-    fun installCustomDriver(driver: File): Boolean {
-        // Revert to system default in the event the specified driver is bad.
-        installDefaultDriver()
-
-        // Ensure we have directories.
+    fun installCustomDriver(driver: File): Boolean = synchronized(driverLock) {
+        // Ensure we have directories and clean old files without resetting native driver to null mid-install.
         initializeDirectories()
+        resetDriverInstallDirOnly()
 
         // Validate driver
         val metadata = getMetadataFromZip(driver)
         if (metadata.name == null) {
             driver.delete()
-            return false
+            return@synchronized false
         }
 
         // Unzip the driver to the private installation directory
@@ -642,14 +719,17 @@ object GpuDriverHelper {
                 File(driverInstallationPath!!)
             )
             extractAllDriverFiles(driver, File(driverInstallationPath!!))
+            writeActiveDriverMarker(driver.absolutePath)
+            clearInflightDriverMarker()
+            clearVulkanPipelineCaches()
         } catch (e: SecurityException) {
-            return false
+            return@synchronized false
         }
 
         // Initialize the driver parameters.
         initializeDriverParameters()
 
-        return true
+        return@synchronized true
     }
 
     /**
@@ -704,15 +784,231 @@ object GpuDriverHelper {
         } catch (_: Throwable) {}
     }
 
+    private fun writeActiveDriverMarker(zipPath: String) {
+        try {
+            val installPath = driverInstallationPath ?: return
+            val installDir = File(installPath)
+            if (!installDir.exists()) installDir.mkdirs()
+            File(installDir, ACTIVE_DRIVER_MARKER).writeText(zipPath, Charsets.UTF_8)
+        } catch (_: Throwable) {}
+    }
+
+    fun isDriverBlacklisted(driverNameOrPath: String): Boolean {
+        if (driverNameOrPath.isBlank()) return false
+        return try {
+            val installPath = driverInstallationPath ?: return false
+            val blacklistFile = File(installPath, ".driver_blacklisted")
+            if (!blacklistFile.exists()) return false
+            val recorded = blacklistFile.readText(Charsets.UTF_8)
+            val baseName = File(driverNameOrPath).name
+            recorded.contains(driverNameOrPath, ignoreCase = true) ||
+                (baseName.isNotEmpty() && recorded.contains(baseName, ignoreCase = true))
+        } catch (_: Throwable) {
+            false
+        }
+    }
+
+    fun clearDriverBlacklist() {
+        try {
+            val installPath = driverInstallationPath ?: return
+            File(installPath, ".driver_blacklisted").delete()
+            File(installPath, ".driver_inflight").delete()
+            File(installPath, ".driver_inflight_dlopen").delete()
+            File(installPath, ".driver_inflight_vkinit").delete()
+        } catch (_: Throwable) {}
+    }
+
+    fun prepareInflightDriverMarker(): File? {
+        return try {
+            val installPath = driverInstallationPath ?: return null
+            val activePath = try { StringSetting.DRIVER_PATH.getString() } catch (_: Throwable) { "" }
+            if (activePath.isBlank()) return null
+            val installDir = File(installPath)
+            if (!installDir.exists()) installDir.mkdirs()
+            val marker = File(installDir, ".driver_inflight")
+            val libName = installedCustomDriverData.libraryName ?: ""
+            marker.writeText("$activePath\n$libName\n", Charsets.UTF_8)
+            marker
+        } catch (_: Throwable) {
+            null
+        }
+    }
+
+    fun clearInflightDriverMarker() {
+        try {
+            val installPath = driverInstallationPath ?: return
+            File(installPath, ".driver_inflight").delete()
+            File(installPath, ".driver_inflight_dlopen").delete()
+            File(installPath, ".driver_inflight_vkinit").delete()
+        } catch (_: Throwable) {}
+    }
+
+    fun recoverFromInflightDriverCrashIfNeeded(context: Context = YuzuApplication.appContext): Boolean = synchronized(driverLock) {
+        return@synchronized try {
+            val installPath = driverInstallationPath ?: return@synchronized false
+            val installDir = File(installPath)
+            // Legacy session-wide .driver_inflight markers can remain after am force-stop; purge silently.
+            val legacyMarker = File(installDir, ".driver_inflight")
+            if (legacyMarker.exists()) {
+                runCatching { legacyMarker.delete() }
+            }
+            val mDlopen = File(installDir, ".driver_inflight_dlopen")
+            val mVkInit = File(installDir, ".driver_inflight_vkinit")
+            if (!mDlopen.exists() && !mVkInit.exists()) return@synchronized false
+
+            val failedInfo = buildString {
+                if (mDlopen.exists()) appendLine(runCatching { mDlopen.readText(Charsets.UTF_8) }.getOrDefault(""))
+                if (mVkInit.exists()) appendLine(runCatching { mVkInit.readText(Charsets.UTF_8) }.getOrDefault(""))
+                val currentPath = runCatching { StringSetting.DRIVER_PATH.getString() }.getOrDefault("")
+                if (currentPath.isNotBlank()) appendLine(currentPath)
+            }.trim()
+
+            mDlopen.delete()
+            mVkInit.delete()
+            Log.warning("[GpuDriverHelper] Detected previous custom driver init crash; blacklisting failing driver and falling back to System Vulkan: $failedInfo")
+            StringSetting.DRIVER_PATH.global = true
+            StringSetting.DRIVER_PATH.setString("")
+            NativeConfig.saveGlobalConfig()
+            installDefaultDriver()
+            if (!installDir.exists()) installDir.mkdirs()
+            val blacklistFile = File(installDir, ".driver_blacklisted")
+            if (failedInfo.isNotEmpty()) {
+                blacklistFile.writeText(failedInfo, Charsets.UTF_8)
+            } else {
+                blacklistFile.writeText("crashed_custom_driver", Charsets.UTF_8)
+            }
+            true
+        } catch (t: Throwable) {
+            Log.warning("[GpuDriverHelper] recoverFromInflightDriverCrashIfNeeded failed: ${t.message}")
+            false
+        }
+    }
+
+    fun clearVulkanPipelineCaches(context: Context = YuzuApplication.appContext) {
+        val targets = linkedSetOf<File>()
+        val roots = listOfNotNull(
+            DirectoryInitialization.rawUserPath?.let { File(it) },
+            DirectoryInitialization.userDirectory?.let { File(it) },
+            context.getExternalFilesDir(null),
+            context.cacheDir,
+            context.filesDir
+        ).distinct()
+
+        for (root in roots) {
+            targets.add(File(root, "vulkan_pipelines.bin"))
+            targets.add(File(root, "vulkan_static_pipelines.bin"))
+            targets.add(File(root, "cache/vulkan_pipelines.bin"))
+            targets.add(File(root, "cache/vulkan_static_pipelines.bin"))
+            targets.add(File(root, "shader/vulkan_static_pipelines.bin"))
+            targets.add(File(root, "cache/shader/vulkan_static_pipelines.bin"))
+            for (shaderBase in listOf(File(root, "shader"), File(root, "cache/shader"))) {
+                if (shaderBase.exists() && shaderBase.isDirectory) {
+                    shaderBase.listFiles()?.forEach { sub ->
+                        if (sub.isDirectory) {
+                            targets.add(File(sub, "vulkan_pipelines.bin"))
+                        }
+                    }
+                }
+            }
+        }
+
+        for (target in targets) {
+            try {
+                if (target.exists() && target.isFile) {
+                    target.delete()
+                }
+            } catch (_: Throwable) {}
+        }
+    }
+
+    fun clearShaderAndPipelineCaches(context: Context = YuzuApplication.appContext) {
+        val targets = linkedSetOf<File>()
+        val userDir = DirectoryInitialization.rawUserPath ?: DirectoryInitialization.userDirectory
+        if (!userDir.isNullOrEmpty()) {
+            targets.add(File(userDir, "cache/shader"))
+            targets.add(File(userDir, "shader"))
+            targets.add(File(userDir, "cache/mesa_shader_cache"))
+            targets.add(File(userDir, "mesa_shader_cache"))
+            targets.add(File(userDir, "cache/vulkan_pipelines.bin"))
+            targets.add(File(userDir, "cache/vulkan_static_pipelines.bin"))
+        }
+        val extFiles = context.getExternalFilesDir(null)
+        if (extFiles != null) {
+            targets.add(File(extFiles, "shader"))
+            targets.add(File(extFiles, "cache/shader"))
+            targets.add(File(extFiles, "mesa_shader_cache"))
+            targets.add(File(extFiles, "cache/mesa_shader_cache"))
+            targets.add(File(extFiles, "vulkan_pipelines.bin"))
+            targets.add(File(extFiles, "vulkan_static_pipelines.bin"))
+        }
+        val cacheDir = context.cacheDir
+        if (cacheDir != null) {
+            targets.add(File(cacheDir, "shader"))
+            targets.add(File(cacheDir, "mesa_shader_cache"))
+            targets.add(File(cacheDir, "vulkan_pipelines.bin"))
+            targets.add(File(cacheDir, "vulkan_static_pipelines.bin"))
+        }
+        val filesDir = context.filesDir
+        if (filesDir != null) {
+            targets.add(File(filesDir, "shader"))
+            targets.add(File(filesDir, "cache/shader"))
+            targets.add(File(filesDir, "mesa_shader_cache"))
+            targets.add(File(filesDir, "gpu/vk_file_redirect/mesa_shader_cache"))
+            targets.add(File(filesDir, "vulkan_pipelines.bin"))
+            targets.add(File(filesDir, "vulkan_static_pipelines.bin"))
+        }
+
+        for (target in targets) {
+            try {
+                if (target.exists()) {
+                    if (target.isDirectory) {
+                        target.deleteRecursively()
+                    } else {
+                        target.delete()
+                    }
+                    Log.info("[GpuDriverHelper] Deleted shader cache target: ${target.absolutePath}")
+                }
+            } catch (e: Throwable) {
+                Log.error("[GpuDriverHelper] Failed to delete shader cache target ${target.absolutePath}: ${e.message}")
+            }
+        }
+    }
+
     /**
      * Checks if STORM_DRIVER_12.0.0.zip is present or if user had 10.0.0/11.0.0 selected,
-     * automatically upgrading and refreshing custom driver files.
+     * running at most once per device migration so manual driver selection is never overridden.
      */
-    fun checkAndAutoUpgradeStormDriver(context: Context = YuzuApplication.appContext) {
+    fun checkAndAutoUpgradeStormDriver(context: Context = YuzuApplication.appContext) = synchronized(driverLock) {
         try {
+            initializeDirectories()
+            if (recoverFromInflightDriverCrashIfNeeded(context)) {
+                return@synchronized
+            }
+            val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
+            val migratedV3 = prefs.getBoolean(PREF_DRIVER_MIGRATED_12_V1, false)
+            if (!migratedV3 && !isMaliGpu() && !isXclipseGpu()) {
+                val storageDirCheck = File(driverStoragePath)
+                val driver12Present = listOf(
+                    File("/storage/emulated/0/STORM SWITCH/gpu_drivers", "STORM_DRIVER_12.0.0.zip"),
+                    File("/sdcard/STORM SWITCH/gpu_drivers", "STORM_DRIVER_12.0.0.zip"),
+                    File(storageDirCheck, "STORM_DRIVER_12.0.0.zip")
+                ).any { it.exists() && it.length() > 1024L }
+                if (driver12Present) {
+                    clearDriverBlacklist()
+                    prefs.edit().putBoolean(PREF_USER_EXPLICIT_SYSTEM_DRIVER, false).apply()
+                }
+            }
+            if (prefs.getBoolean(PREF_USER_EXPLICIT_SYSTEM_DRIVER, false)) {
+                return@synchronized
+            }
+            if (migratedV3) {
+                return@synchronized
+            }
+
             // Guard against Mali / Samsung Xclipse devices - never activate Turnip custom drivers
             if (isMaliGpu() || isXclipseGpu()) {
                 Log.info("[GpuDriverHelper] Mali or Samsung Xclipse GPU detected; skipping Turnip custom driver auto-upgrade.")
+                prefs.edit().putBoolean(PREF_DRIVER_MIGRATED_12_V1, true).apply()
                 return
             }
 
@@ -746,7 +1042,7 @@ object GpuDriverHelper {
 
             val isEligible = kgslExists || hardwareQcom || socQcom || adrenoGpu || hadStormInstalled
             if (!isEligible) {
-                return
+                return@synchronized
             }
 
             // If /storage/emulated/0/STORM SWITCH/gpu_drivers/STORM_DRIVER_12.0.0.zip exists, sync to internal storage
@@ -791,6 +1087,13 @@ object GpuDriverHelper {
                 File(driverInstallationPath!!, "meta.json").exists()
 
             if (foundDriver12 != null) {
+                if (isDriverBlacklisted(foundDriver12.absolutePath) ||
+                    isDriverBlacklisted("STORM_DRIVER_12") ||
+                    isDriverBlacklisted("vulkan.adreno_gen8.so")
+                ) {
+                    Log.warning("[GpuDriverHelper] Skipping auto-upgrade to STORM DRIVER 12.0.0 because it previously crashed and is blacklisted")
+                    return@synchronized
+                }
                 val shouldActivate = hadOlderStormSelected || isSystemDefault || !is12Installed
                 if (shouldActivate) {
                     val finalDriverFile = if (foundDriver12.canonicalPath == targetDriver12.canonicalPath) {
@@ -807,21 +1110,86 @@ object GpuDriverHelper {
                     if (installCustomDriver(finalDriverFile)) {
                         val destDir = File(driverInstallationPath!!)
                         extractAllDriverFiles(finalDriverFile, destDir)
+                        writeActiveDriverMarker(finalDriverFile.absolutePath)
+                        StringSetting.DRIVER_PATH.global = true
                         StringSetting.DRIVER_PATH.setString(finalDriverFile.absolutePath)
                         NativeConfig.saveGlobalConfig()
                         try {
-                            androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
+                            prefs
                                 .edit()
                                 .putString("driver_path", finalDriverFile.absolutePath)
                                 .putString("driver_data", finalDriverFile.absolutePath)
+                                .putBoolean(PREF_DRIVER_MIGRATED_12_V1, true)
                                 .apply()
                         } catch (_: Throwable) {}
                         Log.info("[GpuDriverHelper] Auto-upgraded to STORM DRIVER 12.0.0 at ${finalDriverFile.absolutePath}")
                     }
+                } else if (is12Installed && !isSystemDefault) {
+                    prefs.edit().putBoolean(PREF_DRIVER_MIGRATED_12_V1, true).apply()
                 }
             }
         } catch (e: Throwable) {
             Log.warning("[GpuDriverHelper] checkAndAutoUpgradeStormDriver failed: ${e.message}")
+        }
+    }
+
+    /**
+     * Verifies driver extraction & inflight crash protection immediately before launching a game.
+     */
+    fun ensureStormDriverReadyForLaunch(context: Context = YuzuApplication.appContext): Boolean = synchronized(driverLock) {
+        return@synchronized try {
+            initializeDirectories()
+            if (recoverFromInflightDriverCrashIfNeeded(context)) {
+                return@synchronized false
+            }
+
+            val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
+            var currentPath = try { StringSetting.DRIVER_PATH.getString() } catch (_: Throwable) { "" }
+            if (currentPath.isBlank() &&
+                (!prefs.getBoolean(PREF_USER_EXPLICIT_SYSTEM_DRIVER, false) ||
+                    !prefs.getBoolean(PREF_DRIVER_MIGRATED_12_V1, false)) &&
+                !isMaliGpu() && !isXclipseGpu()
+            ) {
+                checkAndAutoUpgradeStormDriver(context)
+                currentPath = try { StringSetting.DRIVER_PATH.getString() } catch (_: Throwable) { "" }
+            }
+
+            if (currentPath.isBlank()) {
+                initializeDriverParameters()
+                return@synchronized false
+            }
+
+            if (isDriverBlacklisted(currentPath)) {
+                Log.warning("[GpuDriverHelper] Active driver is blacklisted after previous crash; falling back to System Vulkan")
+                StringSetting.DRIVER_PATH.global = true
+                StringSetting.DRIVER_PATH.setString("")
+                NativeConfig.saveGlobalConfig()
+                installDefaultDriver()
+                return@synchronized false
+            }
+
+            val driverFile = File(currentPath)
+            if (!driverFile.exists()) {
+                initializeDriverParameters()
+                return@synchronized false
+            }
+
+            val installDir = driverInstallationPath?.let { File(it) }
+            val hasSo = installDir?.listFiles()?.any { f -> f.isFile && f.name.endsWith(".so", ignoreCase = true) } == true
+            val markerMatches = installDir?.let {
+                val m = File(it, ACTIVE_DRIVER_MARKER)
+                m.exists() && runCatching { m.readText(Charsets.UTF_8).trim().equals(driverFile.absolutePath, ignoreCase = true) }.getOrDefault(false)
+            } == true
+
+            if (!hasSo || !markerMatches || installedCustomDriverData.libraryName.isNullOrEmpty()) {
+                installCustomDriver(driverFile)
+            } else {
+                initializeDriverParameters()
+            }
+            true
+        } catch (t: Throwable) {
+            Log.warning("[GpuDriverHelper] ensureStormDriverReadyForLaunch failed: ${t.message}")
+            false
         }
     }
 

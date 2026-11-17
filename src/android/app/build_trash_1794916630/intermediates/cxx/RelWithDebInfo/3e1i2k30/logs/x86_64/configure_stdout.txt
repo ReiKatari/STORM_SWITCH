@@ -1,0 +1,207 @@
+-- The C compiler identification is Clang 19.0.0
+-- The CXX compiler identification is Clang 19.0.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: C:/Users/ReiKa/AppData/Local/Android/Sdk/ndk/28.0.13004108/toolchains/llvm/prebuilt/windows-x86_64/bin/clang.exe - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: C:/Users/ReiKa/AppData/Local/Android/Sdk/ndk/28.0.13004108/toolchains/llvm/prebuilt/windows-x86_64/bin/clang++.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- [DetectArchitecture] Target architecture: x86_64
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+-- Check if compiler accepts -pthread
+-- Check if compiler accepts -pthread - yes
+-- Found Threads: TRUE
+-- Could NOT find RenderDoc (missing: RenderDoc_INCLUDE_DIR) 
+-- [CPMUtil] Using bundled package OpenSSL@v4.0.0-11b7b6ea3b
+-- Fetching needed dependencies with CPM
+-- [CPMUtil] Using bundled package Boost@boost-1.90.0
+-- Boost: RelWithDebInfo build, static libraries, MPI OFF, Python OFF, testing OFF
+-- Boost: libraries included: algorithm;icl;pool;container;heap;asio;headers;process;filesystem;crc;variant
+-- Performing Test BOOST_ATOMIC_TARGET_X86
+-- Performing Test BOOST_ATOMIC_TARGET_X86 - Success
+-- Performing Test BOOST_ATOMIC_COMPILER_HAS_SSE2
+-- Performing Test BOOST_ATOMIC_COMPILER_HAS_SSE2 - Success
+-- Performing Test BOOST_ATOMIC_COMPILER_HAS_SSE41
+-- Performing Test BOOST_ATOMIC_COMPILER_HAS_SSE41 - Success
+-- Performing Test BOOST_ATOMIC_HAS_PTHREAD_COND_CLOCKWAIT
+-- Performing Test BOOST_ATOMIC_HAS_PTHREAD_COND_CLOCKWAIT - Failed
+-- Boost.Context: architecture x86_64, binary format elf, ABI sysv, assembler gas, suffix .S, implementation fcontext
+-- The ASM compiler identification is Clang with GNU-like command-line
+-- Found assembler: C:/Users/ReiKa/AppData/Local/Android/Sdk/ndk/28.0.13004108/toolchains/llvm/prebuilt/windows-x86_64/bin/clang.exe
+-- Performing Test BOOST_FILESYSTEM_HAS_INIT_PRIORITY
+-- Performing Test BOOST_FILESYSTEM_HAS_INIT_PRIORITY - Success
+-- Performing Test BOOST_FILESYSTEM_HAS_CXX20_ATOMIC_REF
+-- Performing Test BOOST_FILESYSTEM_HAS_CXX20_ATOMIC_REF - Failed
+-- Performing Test BOOST_FILESYSTEM_HAS_STAT_ST_BLKSIZE
+-- Performing Test BOOST_FILESYSTEM_HAS_STAT_ST_BLKSIZE - Success
+-- Performing Test BOOST_FILESYSTEM_HAS_STAT_ST_MTIM
+-- Performing Test BOOST_FILESYSTEM_HAS_STAT_ST_MTIM - Success
+-- Performing Test BOOST_FILESYSTEM_HAS_STAT_ST_MTIMENSEC
+-- Performing Test BOOST_FILESYSTEM_HAS_STAT_ST_MTIMENSEC - Success
+-- Performing Test BOOST_FILESYSTEM_HAS_STAT_ST_MTIMESPEC
+-- Performing Test BOOST_FILESYSTEM_HAS_STAT_ST_MTIMESPEC - Failed
+-- Performing Test BOOST_FILESYSTEM_HAS_STAT_ST_BIRTHTIMENSEC
+-- Performing Test BOOST_FILESYSTEM_HAS_STAT_ST_BIRTHTIMENSEC - Failed
+-- Performing Test BOOST_FILESYSTEM_HAS_STAT_ST_BIRTHTIMESPEC
+-- Performing Test BOOST_FILESYSTEM_HAS_STAT_ST_BIRTHTIMESPEC - Failed
+-- Performing Test BOOST_FILESYSTEM_HAS_STATX
+-- Performing Test BOOST_FILESYSTEM_HAS_STATX - Failed
+-- Performing Test BOOST_FILESYSTEM_HAS_STATX_SYSCALL
+-- Performing Test BOOST_FILESYSTEM_HAS_STATX_SYSCALL - Failed
+-- Performing Test BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW
+-- Performing Test BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW - Success
+-- Performing Test BOOST_FILESYSTEM_HAS_DIRENT_D_TYPE
+-- Performing Test BOOST_FILESYSTEM_HAS_DIRENT_D_TYPE - Success
+-- Performing Test BOOST_FILESYSTEM_HAS_POSIX_AT_APIS
+-- Performing Test BOOST_FILESYSTEM_HAS_POSIX_AT_APIS - Success
+-- Performing Test BOOST_FILESYSTEM_HAS_FALLOCATE
+-- Performing Test BOOST_FILESYSTEM_HAS_FALLOCATE - Success
+-- [CPMUtil] Using bundled package fmt@12.1.0
+-- {fmt} version: 12.1.0
+-- Build type: RelWithDebInfo
+-- Performing Test HAS_NULLPTR_WARNING
+-- Performing Test HAS_NULLPTR_WARNING - Success
+-- [CPMUtil] Using bundled package lz4@ebb370ca83
+-- Creating build script for LZ4 version: 1.10.0
+-- Performing Test CFLAG_pedantic_errors
+-- Performing Test CFLAG_pedantic_errors - Success
+-- Performing Test CFLAG_Wall
+-- Performing Test CFLAG_Wall - Success
+-- Performing Test CFLAG_Wextra
+-- Performing Test CFLAG_Wextra - Success
+-- Performing Test CFLAG_Wundef
+-- Performing Test CFLAG_Wundef - Success
+-- Performing Test CFLAG_Wcast_qual
+-- Performing Test CFLAG_Wcast_qual - Success
+-- Performing Test CFLAG_Wcast_align
+-- Performing Test CFLAG_Wcast_align - Success
+-- Performing Test CFLAG_Wshadow
+-- Performing Test CFLAG_Wshadow - Success
+-- Performing Test CFLAG_Wswitch_enum
+-- Performing Test CFLAG_Wswitch_enum - Success
+-- Performing Test CFLAG_Wdeclaration_after_statement
+-- Performing Test CFLAG_Wdeclaration_after_statement - Success
+-- Performing Test CFLAG_Wstrict_prototypes
+-- Performing Test CFLAG_Wstrict_prototypes - Success
+-- Performing Test CFLAG_Wpointer_arith
+-- Performing Test CFLAG_Wpointer_arith - Success
+-- [CPMUtil] Using bundled package zstd@b8d6101fba
+-- ZSTD VERSION: 1.5.8
+-- CMAKE_INSTALL_PREFIX: C:/Program Files (x86)/yuzu
+-- CMAKE_INSTALL_LIBDIR: lib
+-- ZSTD_LEGACY_SUPPORT enabled
+-- Multi-threading support disabled
+-- Performing Test C_FLAG_WALL
+-- Performing Test C_FLAG_WALL - Success
+-- Performing Test CXX_FLAG_WALL
+-- Performing Test CXX_FLAG_WALL - Success
+-- Performing Test C_FLAG_WEXTRA
+-- Performing Test C_FLAG_WEXTRA - Success
+-- Performing Test CXX_FLAG_WEXTRA
+-- Performing Test CXX_FLAG_WEXTRA - Success
+-- Performing Test C_FLAG_WUNDEF
+-- Performing Test C_FLAG_WUNDEF - Success
+-- Performing Test CXX_FLAG_WUNDEF
+-- Performing Test CXX_FLAG_WUNDEF - Success
+-- Performing Test C_FLAG_WSHADOW
+-- Performing Test C_FLAG_WSHADOW - Success
+-- Performing Test CXX_FLAG_WSHADOW
+-- Performing Test CXX_FLAG_WSHADOW - Success
+-- Performing Test C_FLAG_WCAST_ALIGN
+-- Performing Test C_FLAG_WCAST_ALIGN - Success
+-- Performing Test CXX_FLAG_WCAST_ALIGN
+-- Performing Test CXX_FLAG_WCAST_ALIGN - Success
+-- Performing Test C_FLAG_WCAST_QUAL
+-- Performing Test C_FLAG_WCAST_QUAL - Success
+-- Performing Test CXX_FLAG_WCAST_QUAL
+-- Performing Test CXX_FLAG_WCAST_QUAL - Success
+-- Performing Test C_FLAG_WSTRICT_PROTOTYPES
+-- Performing Test C_FLAG_WSTRICT_PROTOTYPES - Success
+-- Performing Test LD_FLAG_WL_Z_NOEXECSTACK
+-- Performing Test LD_FLAG_WL_Z_NOEXECSTACK - Success
+-- Performing Test C_FLAG_QUNUSED_ARGUMENTS
+-- Performing Test C_FLAG_QUNUSED_ARGUMENTS - Success
+-- Performing Test CXX_FLAG_QUNUSED_ARGUMENTS
+-- Performing Test CXX_FLAG_QUNUSED_ARGUMENTS - Success
+-- Performing Test C_FLAG_WA_NOEXECSTACK
+-- Performing Test C_FLAG_WA_NOEXECSTACK - Success
+-- Performing Test CXX_FLAG_WA_NOEXECSTACK
+-- Performing Test CXX_FLAG_WA_NOEXECSTACK - Success
+-- [CPMUtil] Using bundled package nlohmann_json@v3.12.0
+-- Using the multi-header code from F:/STORM SWITCH/Build/.cache/cpm/nlohmann_json/v3.12.0/include/
+-- [CPMUtil] Using bundled package ZLIB@v1.3.2
+-- Looking for sys/types.h
+-- Looking for sys/types.h - found
+-- Looking for stdint.h
+-- Looking for stdint.h - found
+-- Looking for stddef.h
+-- Looking for stddef.h - found
+-- Check size of off64_t
+-- Check size of off64_t - done
+-- Looking for fseeko
+-- Looking for fseeko - found
+-- Looking for stdarg.h
+-- Looking for stdarg.h - found
+-- Looking for unistd.h
+-- Looking for unistd.h - found
+-- Performing Test HAVE___ATTR__VIS_HIDDEN
+-- Performing Test HAVE___ATTR__VIS_HIDDEN - Success
+-- [CPMUtil] Using bundled package Opus@a3f0ec02b3
+-- Found Git: C:/Users/ReiKa/AppData/Local/Programs/MinGit/cmd/git.exe (found version "2.56.0.windows.2")
+-- Opus project version: 0
+-- Performing Test VLA_SUPPORTED
+-- Performing Test VLA_SUPPORTED -- success
+-- Looking for alloca.h
+-- Looking for alloca.h - found
+-- Looking for alloca
+-- Looking for alloca - found
+-- Looking for floor in m
+-- Looking for floor in m - found
+-- Looking for lrintf
+-- Looking for lrintf - found
+-- Looking for lrint
+-- Looking for lrint - found
+-- Looking for elf_aux_info
+-- Looking for elf_aux_info - not found
+-- Check CPU arch: CMAKE_GENERATOR_PLATFORM= CMAKE_SYSTEM_PROCESSOR=x86_64
+-- Performing Test CPU_INFO_BY_ASM_SUPPORTED
+-- Performing Test CPU_INFO_BY_ASM_SUPPORTED -- success
+-- Looking for cpuid.h
+-- Looking for cpuid.h - found
+-- Performing Test CPU_INFO_BY_C_SUPPORTED
+-- Performing Test CPU_INFO_BY_C_SUPPORTED -- success
+-- Check SIMD support by compiler
+-- Looking for xmmintrin.h
+-- Looking for xmmintrin.h - found
+-- Performing Test SSE1_SUPPORTED
+-- Performing Test SSE1_SUPPORTED - Success
+-- Looking for emmintrin.h
+-- Looking for emmintrin.h - found
+-- Performing Test SSE2_SUPPORTED
+-- Performing Test SSE2_SUPPORTED - Success
+-- Looking for smmintrin.h
+-- Looking for smmintrin.h - found
+-- Performing Test SSE4_1_SUPPORTED
+-- Performing Test SSE4_1_SUPPORTED - Success
+-- Looking for immintrin.h
+-- Looking for immintrin.h - found
+-- Performing Test AVX2_SUPPORTED
+-- Performing Test AVX2_SUPPORTED - Success
+-- Performing Test FAST_MATH_SUPPORTED
+-- Performing Test FAST_MATH_SUPPORTED - Success
+-- Performing Test STACK_PROTECTOR_SUPPORTED
+-- Performing Test STACK_PROTECTOR_SUPPORTED - Success
+-- Performing Test HIDDEN_VISIBILITY_SUPPORTED
+-- Performing Test HIDDEN_VISIBILITY_SUPPORTED - Success
+-- Performing Test Wall_SUPPORTED
+-- Performing Test Wall_SUPPORTED - Success
+-- Performing Test W_SUPPORTED
+-- Performing Test W_SUPPORTED - Success
+-- Performing Test Wstrictprototypes_SUPPORTED
+-- Performing Test Wstrictprototypes_SUPPORTED - Success
+-- Performing Test Wextra_SUPPORTED

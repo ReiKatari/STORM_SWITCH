@@ -6,6 +6,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
+#include "common/address_space.h"
 #include "common/host_memory.h"
 #include "common/literals.h"
 
@@ -208,4 +209,88 @@ TEST_CASE("HostMemory: Partial sparse middle unmap and check bindings", "[common
 
     REQUIRE(ptr[0x0000] == 19);
     REQUIRE(ptr[0x3fff] == 12);
+}
+
+TEST_CASE("HostMemory: ClearBackingRegion handles sparse unmapped and mapped zeroes", "[common]") {
+    HostMemory mem(BACKING_SIZE, VIRTUAL_SIZE);
+    REQUIRE(mem.BackingBasePointer() != nullptr);
+
+    // Clearing a large uncommitted backing region with 0 must remain a no-fault sparse op.
+    mem.ClearBackingRegion(0x20000, 0x1000000, 0);
+
+    mem.Map(0x5000, 0x3000, 0x2000, PERMS, HEAP);
+    volatile u8* const data = mem.VirtualBasePointer() + 0x5000;
+    data[0] = 50;
+    data[0x1000] = 77;
+    REQUIRE(data[0] == 50);
+    REQUIRE(data[0x1000] == 77);
+
+    mem.ClearBackingRegion(0x3000, 0x2000, 0);
+    REQUIRE(data[0] == 0);
+    REQUIRE(data[0x1000] == 0);
+
+    mem.ClearBackingRegion(0x3000, 0x1000, 0xA5U);
+    REQUIRE(data[0] == 0xA5);
+    REQUIRE(data[0x1000] == 0);
+}
+
+TEST_CASE("HostMemory: MappedBytes tracks map, protect, and unmap operations", "[common]") {
+    const u64 baseline = HostMemory::MappedBytes();
+    HostMemory mem(BACKING_SIZE, VIRTUAL_SIZE);
+    REQUIRE(mem.BackingBasePointer() != nullptr);
+
+    mem.Map(0x5000, 0x3000, 0x2000, PERMS, HEAP);
+    const u64 after_map = HostMemory::MappedBytes();
+    REQUIRE(after_map >= baseline + 0x2000);
+
+    mem.Protect(0x5000, 0x1000, Common::MemoryPermission::Read);
+    const u64 after_protect = HostMemory::MappedBytes();
+    REQUIRE(after_protect >= after_map + 0x1000);
+
+    mem.Unmap(0x5000, 0x2000, HEAP);
+    REQUIRE(HostMemory::MappedBytes() >= after_protect + 0x2000);
+}
+
+TEST_CASE("Common::FlatAllocator: Exhaustion and wraparound reallocation", "[common]") {
+    Common::FlatAllocator<u32, 0, 32> alloc(0x1000, 0x3000);
+
+    const u32 a = alloc.Allocate(0x1000);
+    const u32 b = alloc.Allocate(0x1000);
+    REQUIRE(a == 0x1000);
+    REQUIRE(b == 0x2000);
+
+    // Space [0x1000, 0x3000) is full; allocation must return unmapped sentinel (0) without infinite loop.
+    REQUIRE(alloc.Allocate(0x1000) == 0);
+
+    alloc.Free(a, 0x1000);
+    REQUIRE(alloc.Allocate(0x1000) == 0x1000);
+    REQUIRE(alloc.Allocate(0x1000) == 0);
+}
+
+TEST_CASE("HostMemory: Unmap preserves backing physical memory contents", "[common]") {
+    HostMemory mem(BACKING_SIZE, VIRTUAL_SIZE);
+    REQUIRE(mem.BackingBasePointer() != nullptr);
+
+    constexpr size_t virtual_offset = 0x10000;
+    constexpr size_t host_offset = 0x10000;
+    constexpr size_t size = 0x20000; // 128 KiB across two 64 KiB backing blocks
+
+    mem.Map(virtual_offset, host_offset, size, PERMS, HEAP);
+
+    volatile u8* const vptr = mem.VirtualBasePointer() + virtual_offset;
+    vptr[0x0000] = 0x5AU;
+    vptr[0x10000] = 0xA5U;
+    vptr[size - 1] = 0x3CU;
+
+    mem.Unmap(virtual_offset, size, HEAP);
+
+    const volatile u8* const bptr = mem.BackingBasePointer() + host_offset;
+    REQUIRE(bptr[0x0000] == 0x5AU);
+    REQUIRE(bptr[0x10000] == 0xA5U);
+    REQUIRE(bptr[size - 1] == 0x3CU);
+
+    mem.ClearBackingRegion(host_offset, size, 0);
+    REQUIRE(bptr[0x0000] == 0);
+    REQUIRE(bptr[0x10000] == 0);
+    REQUIRE(bptr[size - 1] == 0);
 }

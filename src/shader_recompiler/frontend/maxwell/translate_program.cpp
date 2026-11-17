@@ -58,6 +58,39 @@ void RemoveUnreachableBlocks(IR::Program& program) {
     program.blocks.erase(std::remove_if(begin, end, pred), end);
 }
 
+// Adreno runs a geometry shader once per output vertex, so its memory writes and atomics
+// happen once per vertex instead of once per primitive. Shaders that have any get a scratch
+// buffer where the copies of each primitive claim it; only the winner does them.
+void AddGeometryScratchBuffer(IR::Program& program, const HostTranslateInfo& host_info) {
+    if (program.stage != Stage::Geometry || !host_info.gs_replicates_side_effects) {
+        return;
+    }
+    const auto has_side_effects = [&] {
+        for (IR::Block* const block : program.blocks) {
+            for (const IR::Inst& inst : block->Instructions()) {
+                if (IR::IsGeometrySideEffect(inst.GetOpcode())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+    auto& descs{program.info.storage_buffers_descriptors};
+    if (!has_side_effects() || descs.size() >= descs.capacity()) {
+        return;
+    }
+    program.info.gs_scratch_ssbo = static_cast<u32>(descs.size());
+    descs.push_back({
+        .cbuf_index = GS_SCRATCH_CBUF_INDEX,
+        .cbuf_offset = 0,
+        .count = 1,
+        .is_written = true,
+    });
+    program.info.uses_gs_scratch = true;
+    program.info.used_storage_buffer_types |= IR::Type::U32;
+    program.info.loads.Set(IR::Attribute::PrimitiveId);
+}
+
 void CollectInterpolationInfo(Environment& env, IR::Program& program) {
     if (program.stage != Stage::Fragment) {
         return;
@@ -97,67 +130,6 @@ void CollectInterpolationInfo(Environment& env, IR::Program& program) {
     }
 }
 
-void AddNVNStorageBuffers(IR::Program& program) {
-    if (!program.info.uses_global_memory) {
-        return;
-    }
-    const u32 driver_cbuf{0};
-    const u32 descriptor_size{0x10};
-    const u32 num_buffers{16};
-    const u32 base{[&] {
-        switch (program.stage) {
-        case Stage::VertexA:
-        case Stage::VertexB:
-            return 0x110u;
-        case Stage::TessellationControl:
-            return 0x210u;
-        case Stage::TessellationEval:
-            return 0x310u;
-        case Stage::Geometry:
-            return 0x410u;
-        case Stage::Fragment:
-            return 0x510u;
-        case Stage::Compute:
-            return 0x310u;
-        }
-        throw InvalidArgument("Invalid stage {}", program.stage);
-    }()};
-    auto& descs{program.info.storage_buffers_descriptors};
-    if (program.info.nvn_buffer_used.none() && descs.empty()) {
-        program.info.nvn_buffer_used.set();
-    }
-    for (u32 index = 0; index < num_buffers; ++index) {
-        if (!program.info.nvn_buffer_used[index]) {
-            continue;
-        }
-        const u32 offset{base + index * descriptor_size};
-        const auto it{std::ranges::find(descs, offset, &StorageBufferDescriptor::cbuf_offset)};
-        if (it != descs.end()) {
-            it->is_written |= program.info.stores_global_memory;
-            continue;
-        }
-        descs.push_back({
-            .cbuf_index = driver_cbuf,
-            .cbuf_offset = offset,
-            .count = 1,
-            .is_written = program.info.stores_global_memory,
-        });
-    }
-    for (const auto& desc : descs) {
-        if ((program.info.constant_buffer_mask & (1U << desc.cbuf_index)) == 0) {
-            program.info.constant_buffer_mask |= 1U << desc.cbuf_index;
-            auto& cbufs{program.info.constant_buffer_descriptors};
-            cbufs.insert(
-                std::ranges::lower_bound(cbufs, desc.cbuf_index, {}, &ConstantBufferDescriptor::index),
-                ConstantBufferDescriptor{
-                    .index = desc.cbuf_index,
-                    .count = 1,
-                });
-        }
-        u32& cbuf_size{program.info.constant_buffer_used_sizes[desc.cbuf_index]};
-        cbuf_size = Common::AlignUp((std::max)(cbuf_size, desc.cbuf_offset + descriptor_size), 16u);
-    }
-}
 
 using IR::IsLegacyAttribute; //rescoped to attribute.h to make it visible in load_store_attribute.cpp IPA
 
@@ -333,6 +305,74 @@ void TightenOutputVertices([[maybe_unused]] IR::Program& program) {
 }
 } // Anonymous namespace
 
+void AddNVNStorageBuffers(IR::Program& program) {
+    if (!program.info.uses_global_memory) {
+        return;
+    }
+    const u32 driver_cbuf{0};
+    const u32 descriptor_size{0x10};
+    const u32 num_buffers{16};
+    const u32 base{[&] {
+        switch (program.stage) {
+        case Stage::VertexA:
+        case Stage::VertexB:
+            return 0x110u;
+        case Stage::TessellationControl:
+            return 0x210u;
+        case Stage::TessellationEval:
+            return 0x310u;
+        case Stage::Geometry:
+            return 0x410u;
+        case Stage::Fragment:
+            return 0x510u;
+        case Stage::Compute:
+            return 0x310u;
+        }
+        throw InvalidArgument("Invalid stage {}", program.stage);
+    }()};
+    auto& descs{program.info.storage_buffers_descriptors};
+    // Shaders reaching here use untracked global memory pointers (e.g. Snowdrop pointer-table
+    // chasing from SSBO slot 0 into slots 1..15). Bind all 16 NVN stage SSBO slots so
+    // DefineGlobalMemoryFunctions can resolve the runtime GPU address against all bound descriptors.
+    program.info.nvn_buffer_used.set();
+    for (u32 index = 0; index < num_buffers; ++index) {
+        if (!program.info.nvn_buffer_used[index]) {
+            continue;
+        }
+        const u32 offset{base + index * descriptor_size};
+        const auto it{std::ranges::find_if(descs, [&](const StorageBufferDescriptor& d) {
+            return d.cbuf_index == driver_cbuf && d.cbuf_offset == offset;
+        })};
+        if (it != descs.end()) {
+            it->is_written |= program.info.stores_global_memory;
+            continue;
+        }
+        if (descs.size() >= descs.max_size()) {
+            break;
+        }
+        descs.push_back({
+            .cbuf_index = driver_cbuf,
+            .cbuf_offset = offset,
+            .count = 1,
+            .is_written = program.info.stores_global_memory,
+        });
+    }
+    for (const auto& desc : descs) {
+        if ((program.info.constant_buffer_mask & (1U << desc.cbuf_index)) == 0) {
+            program.info.constant_buffer_mask |= 1U << desc.cbuf_index;
+            auto& cbufs{program.info.constant_buffer_descriptors};
+            cbufs.insert(
+                std::ranges::lower_bound(cbufs, desc.cbuf_index, {}, &ConstantBufferDescriptor::index),
+                ConstantBufferDescriptor{
+                    .index = desc.cbuf_index,
+                    .count = 1,
+                });
+        }
+        u32& cbuf_size{program.info.constant_buffer_used_sizes[desc.cbuf_index]};
+        cbuf_size = Common::AlignUp((std::max)(cbuf_size, desc.cbuf_offset + descriptor_size), 16u);
+    }
+}
+
 IR::Program TranslateProgram(ObjectPool<IR::Inst>& inst_pool, ObjectPool<IR::Block>& block_pool,
                              Environment& env, Flow::CFG& cfg, const HostTranslateInfo& host_info) {
     HostTranslateInfo normalized_host_info{host_info};
@@ -419,6 +459,7 @@ IR::Program TranslateProgram(ObjectPool<IR::Inst>& inst_pool, ObjectPool<IR::Blo
 
     CollectInterpolationInfo(env, program);
     AddNVNStorageBuffers(program);
+    AddGeometryScratchBuffer(program, normalized_host_info);
     return program;
 }
 

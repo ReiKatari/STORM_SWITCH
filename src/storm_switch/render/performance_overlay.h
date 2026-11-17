@@ -127,6 +127,7 @@ private:
     QLabel* m_compact_fps = nullptr;
     QLabel* m_compact_ft = nullptr;
     QLabel* m_compact_dps = nullptr;
+    QLabel* m_compact_ram = nullptr;
     FpsGraphWidget* m_compact_fpsGraph = nullptr;
 
     // Expanded Mode UI (Tesla OSD)
@@ -148,6 +149,7 @@ private:
     QLabel* m_lbl_res = nullptr;
     QLabel* m_lbl_lsfg = nullptr;
     QLabel* m_lbl_shaders = nullptr;
+    QLabel* m_lbl_ram = nullptr;
     FpsGraphWidget* m_fpsGraph = nullptr;
 
     // Cheats tab

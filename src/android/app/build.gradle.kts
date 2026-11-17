@@ -57,7 +57,7 @@ plugins {
 
  */
 
-val autoVersion = maxOf((((System.currentTimeMillis() / 1000) - 1451606400) / 10).toInt(), 34300230)
+val autoVersion = maxOf((((System.currentTimeMillis() / 1000) - 1451606400) / 10).toInt(), 34300240)
 
 
 
@@ -149,7 +149,7 @@ android {
 
         targetSdk = 35
 
-        versionName = "18.0.0"
+        versionName = "18.1.0"
 
         versionCode = autoVersion
 

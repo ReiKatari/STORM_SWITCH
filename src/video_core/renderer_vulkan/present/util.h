@@ -53,6 +53,9 @@ vk::PipelineLayout CreateWrappedPipelineLayout(const Device& device,
 vk::Pipeline CreateWrappedPipeline(const Device& device, vk::RenderPass& renderpass,
                                    vk::PipelineLayout& layout,
                                    std::tuple<vk::ShaderModule&, vk::ShaderModule&> shaders);
+vk::Pipeline CreateWrappedOpaquePresentPipeline(
+    const Device& device, vk::RenderPass& renderpass, vk::PipelineLayout& layout,
+    std::tuple<vk::ShaderModule&, vk::ShaderModule&> shaders);
 vk::Pipeline CreateWrappedComputePipeline(const Device& device, vk::PipelineLayout& layout,
                                           VkShaderModule shader);
 vk::Pipeline CreateWrappedPremultipliedBlendingPipeline(

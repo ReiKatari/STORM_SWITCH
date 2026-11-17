@@ -131,7 +131,13 @@ void FixedPipelineState::Refresh(Tegra::Engines::Maxwell3D& maxwell3d, DynamicFe
     topology.Assign(top_idx < TOPOLOGY_CLASS_REPRESENTATIVE_LUT.size()
                         ? (can_collapse_topology_class ? TOPOLOGY_CLASS_REPRESENTATIVE_LUT[top_idx] : topology_)
                         : Maxwell::PrimitiveTopology::Triangles);
-    msaa_mode.Assign(regs.anti_alias_samples_mode);
+    // Target-independent rasterization rasterizes (and depth tests) at the raster sample count
+    if (regs.tir_mode == Maxwell::TIRMode::RasterNTargetM &&
+        regs.anti_alias_raster != Maxwell::AntiAliasRaster::Mode1x1) {
+        msaa_mode.Assign(static_cast<Tegra::Texture::MsaaMode>(regs.anti_alias_raster));
+    } else {
+        msaa_mode.Assign(regs.anti_alias_samples_mode);
+    }
     attachment0_dual_source_blend.Assign(ComputeAttachment0DualSourceBlend(regs) ? 1 : 0);
 
     raw2 = 0;
@@ -362,16 +368,29 @@ void FixedPipelineState::DynamicState::Refresh2(const Maxwell& regs,
     depth_bias_enable.Assign(enabled_lut[POLYGON_OFFSET_ENABLE_LUT[topology_index]] != 0 ? 1 : 0);
 }
 
+DepthClampClip MaxwellDepthClampClip(const Maxwell& regs, bool has_depth_clip_enable) {
+    using GeometryClip = Maxwell::ViewportClipControl::GeometryClip;
+    const auto& control = regs.viewport_clip_control;
+    const bool clips_z = control.geometry_clip == GeometryClip::FrustumXYZ ||
+                         control.geometry_clip == GeometryClip::FrustumZ;
+    if (!has_depth_clip_enable) {
+        return {.clamp = !clips_z, .clip = clips_z};
+    }
+    const bool clamp = !clips_z || control.pixel_min_z == 0 || control.pixel_max_z == 0;
+    return {.clamp = clamp, .clip = clips_z};
+}
+
 void FixedPipelineState::DynamicState::Refresh3(const Maxwell& regs,
                                                 const DynamicFeatures& features) {
     if (!features.has_dynamic_state3_logic_op_enable) {
         logic_op_enable.Assign(regs.logic_op.enable != 0 ? 1 : 0);
     }
+    const auto depth = MaxwellDepthClampClip(regs, features.has_depth_clip_enable);
     if (!features.has_dynamic_state3_depth_clamp_enable) {
-        depth_clamp_disabled.Assign(regs.viewport_clip_control.geometry_clip ==
-                                        Maxwell::ViewportClipControl::GeometryClip::FrustumXYZ ||
-                                    regs.viewport_clip_control.geometry_clip ==
-                                        Maxwell::ViewportClipControl::GeometryClip::FrustumZ);
+        depth_clamp_disabled.Assign(depth.clamp ? 0 : 1);
+    }
+    if (features.has_depth_clip_enable) {
+        depth_clip_disabled.Assign(depth.clip ? 0 : 1);
     }
     if (!features.has_dynamic_state3_line_stipple_enable) {
         line_stipple_enable.Assign(regs.line_stipple_enable);

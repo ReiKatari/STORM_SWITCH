@@ -14,15 +14,15 @@ inline volatile int* GetExclusiveMonitorLockPointer(ExclusiveMonitor* monitor) {
 }
 
 inline size_t GetExclusiveMonitorProcessorCount(ExclusiveMonitor* monitor) {
-    return monitor->exclusive_addresses.size();
+    return monitor->reservations.size();
 }
 
 inline VAddr* GetExclusiveMonitorAddressPointer(ExclusiveMonitor* monitor, size_t index) {
-    return monitor->exclusive_addresses.data() + index;
+    return &monitor->reservations[index].address;
 }
 
 inline Vector* GetExclusiveMonitorValuePointer(ExclusiveMonitor* monitor, size_t index) {
-    return monitor->exclusive_values.data() + index;
+    return &monitor->reservations[index].value;
 }
 
 }  // namespace Dynarmic

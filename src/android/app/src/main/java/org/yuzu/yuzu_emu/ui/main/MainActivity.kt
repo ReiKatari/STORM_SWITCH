@@ -336,6 +336,12 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
         ThemeHelper.setCorrectTheme(this)
         super.onResume()
         applyFullscreenPreference()
+        binding.root.post {
+            if (org.yuzu.yuzu_emu.utils.GameFolderOperations.consumeGameFoldersChanged()) {
+                gamesViewModel.syncFoldersFromNativeConfig()
+                gamesViewModel.reloadGames(directoriesChanged = true)
+            }
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             if (android.os.Environment.isExternalStorageManager()) {
                 DirectoryInitialization.initializeSharedStorage()

@@ -1,0 +1,15 @@
+CMake Deprecation Warning at .cache/cpm/lz4/ebb370ca83/build/cmake/CMakeLists.txt:11 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+CMake Warning at .cache/cpm/opus/a3f0ec02b3/cmake/OpusPackageVersion.cmake:61 (message):
+  Could not get package version.
+Call Stack (most recent call first):
+  .cache/cpm/opus/a3f0ec02b3/CMakeLists.txt:5 (get_package_version)
+
+

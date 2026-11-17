@@ -315,6 +315,12 @@ FormatInfo SurfaceFormat(const Device& device, FormatType format_type, bool with
             tuple.format = is_srgb ? VK_FORMAT_A8B8G8R8_SRGB_PACK32 : VK_FORMAT_A8B8G8R8_UNORM_PACK32;
         }
     }
+    if (pixel_format == PixelFormat::B10G11R11_FLOAT && format_type != FormatType::Buffer) {
+        if (!device.IsFormatSupported(tuple.format, VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT,
+                                      format_type)) {
+            tuple.usage &= ~usage_storage;
+        }
+    }
     bool const attachable = (tuple.usage & usage_attachable) != 0;
     bool const storage = (tuple.usage & usage_storage) != 0;
     VkFormatFeatureFlags usage{};

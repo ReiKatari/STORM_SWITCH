@@ -80,6 +80,10 @@ struct Profile {
     bool need_gather_subpixel_offset{};
 
     /// OpFClamp is broken and OpFMax + OpFMin should be used instead
+        /// Geometry shaders run once per output vertex (Adreno), repeating their memory writes and
+    /// atomics; they are made to claim each primitive so those happen once
+    bool gs_replicates_side_effects{};
+
     bool has_broken_spirv_clamp{};
     /// The Position builtin needs to be wrapped in a struct when used as an input
     bool has_broken_spirv_position_input{};

@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <algorithm>
+#include <cmath>
 #include <cstddef>
 #include <fstream>
 #include <iostream>
@@ -67,7 +68,7 @@ using VideoCommon::FileEnvironment;
 using VideoCommon::GenericEnvironment;
 using VideoCommon::GraphicsEnvironment;
 
-constexpr u32 CACHE_VERSION = 26;
+constexpr u32 CACHE_VERSION = 36;
 constexpr size_t VULKAN_CACHE_FLUSH_PIPELINES = 128;
 constexpr size_t VULKAN_CACHE_FLUSH_MIN_SECONDS = 45;
 constexpr std::array<char, 8> VULKAN_CACHE_MAGIC_NUMBER{'y', 'u', 'z', 'u', 'v', 'k', 'c', 'h'};
@@ -347,6 +348,10 @@ size_t GetTotalPipelineWorkers(const Device& device) {
         num_workers = std::clamp<size_t>(num_workers, 1ULL, 2ULL);
     }
 
+#ifdef __ANDROID__
+    num_workers = std::min<size_t>(num_workers, 4ULL);
+#endif
+
     return num_workers;
 }
 
@@ -503,6 +508,8 @@ PipelineCache::PipelineCache(Tegra::MaxwellDeviceMemoryManager& device_memory_,
         .has_broken_spirv_subgroup_mask_vector_extract_dynamic =
             driver_id == VK_DRIVER_ID_QUALCOMM_PROPRIETARY ||
             driver_id == VK_DRIVER_ID_ARM_PROPRIETARY,
+        .max_subgroup_size =
+            device.GetMaxSubgroupSize() > 0U ? device.GetMaxSubgroupSize() : 32U,
         .has_broken_robust =
             device.IsNvidia() && device.GetNvidiaArch() <= NvidiaArchitecture::Arch_Pascal,
         .min_ssbo_alignment = device.GetStorageBufferAlignment(),
@@ -576,6 +583,7 @@ PipelineCache::PipelineCache(Tegra::MaxwellDeviceMemoryManager& device_memory_,
     dynamic_features.has_dynamic_state3_depth_clamp_enable =
         dynamic_features.has_extended_dynamic_state_3_enables &&
         device.SupportsDynamicState3DepthClampEnable();
+    dynamic_features.has_depth_clip_enable = device.IsExtDepthClipEnableSupported();
     dynamic_features.has_dynamic_state3_logic_op_enable =
         dynamic_features.has_extended_dynamic_state_3_enables &&
         device.SupportsDynamicState3LogicOpEnable();
@@ -613,6 +621,8 @@ GraphicsPipeline* PipelineCache::CurrentGraphicsPipeline() {
         return nullptr;
     }
     graphics_key.state.Refresh(*maxwell3d, dynamic_features);
+    graphics_key.state.depth_range_scale = 0;
+    graphics_key.state.depth_range_offset = 0;
 
     if (current_pipeline) {
         GraphicsPipeline* const next{current_pipeline->Next(graphics_key)};
@@ -895,6 +905,9 @@ void PipelineCache::QueueVulkanPipelineCacheFlush() {
 GraphicsPipeline* PipelineCache::CurrentGraphicsPipelineSlowPath() {
     {
         std::scoped_lock lock{cache_mutex};
+        if (failed_graphics_keys.contains(graphics_key)) {
+            return nullptr;
+        }
         auto it = graphics_cache.find(graphics_key);
         if (it != graphics_cache.end()) {
             if (current_pipeline) {
@@ -905,8 +918,13 @@ GraphicsPipeline* PipelineCache::CurrentGraphicsPipelineSlowPath() {
         }
     }
 
-    auto pipeline = CreateGraphicsPipeline();
+    bool shader_failed = false;
+    auto pipeline = CreateGraphicsPipeline(&shader_failed);
     if (!pipeline) {
+        if (shader_failed) {
+            std::scoped_lock lock{cache_mutex};
+            failed_graphics_keys.insert(graphics_key);
+        }
         return nullptr;
     }
     GraphicsPipeline* raw_pipeline = pipeline.get();
@@ -938,9 +956,18 @@ GraphicsPipeline* PipelineCache::BuiltPipeline(GraphicsPipeline* pipeline) const
     {
         const auto& rt0 = maxwell3d->regs.rt[0];
         const u64 area = u64{rt0.width} * u64{rt0.height};
-        if (rt0.width != 0 && area < u64{640} * 360) {
+        if (rt0.width != 0 && (area < u64{640} * 360 || rt0.depth > 1 || rt0.width == rt0.height)) {
             return pipeline;
         }
+    }
+    // A draw that writes memory (vertex data computed in a vertex shader, transform feedback, a
+    // draw with the rasterizer off) is used by later draws: skipping it breaks them for the
+    // session, not one frame (Super Mario Party Jamboree's characters after a fresh shader cache).
+    const auto& regs = maxwell3d->regs;
+    const bool side_effects{pipeline->HasSideEffects() || regs.transform_feedback_enabled != 0 ||
+                            regs.rasterize_enable == 0};
+    if (side_effects) {
+        return pipeline;
     }
     // If games are using a small index count, we can assume these are full screen quads.
     // Usually these shaders are only used once for building textures so we can assume they
@@ -968,7 +995,7 @@ GraphicsPipeline* PipelineCache::BuiltPipeline(GraphicsPipeline* pipeline) const
 std::unique_ptr<GraphicsPipeline> PipelineCache::CreateGraphicsPipeline(
     ShaderPools& pools, const GraphicsPipelineCacheKey& key,
     std::span<Shader::Environment* const> envs, PipelineStatistics* statistics,
-    bool build_in_parallel) try {
+    bool build_in_parallel, bool* shader_failed) try {
     auto hash = key.Hash();
     LOG_DEBUG(Render_Vulkan, "{:#016x}", hash);
     size_t env_index{0};
@@ -1092,21 +1119,24 @@ std::unique_ptr<GraphicsPipeline> PipelineCache::CreateGraphicsPipeline(
         Shader::Environment& env{*envs[env_index]};
         ++env_index;
 
-        const u32 cfg_offset{static_cast<u32>(env.StartAddress() + sizeof(Shader::ProgramHeader))};
-        Shader::Maxwell::Flow::CFG cfg(env, pools.flow_block, cfg_offset, index == 0);
+        // Do not rebuild the CFG here: it re-walks the code that just threw, on a block pool the
+        // unwind left mid-allocation.
         env.Dump(hash, key.unique_hashes[index]);
     }
     LOG_ERROR(Render_Vulkan, "{}", exception.what());
+    if (shader_failed) {
+        *shader_failed = true;
+    }
     return nullptr;
 }
 
-std::unique_ptr<GraphicsPipeline> PipelineCache::CreateGraphicsPipeline() {
+std::unique_ptr<GraphicsPipeline> PipelineCache::CreateGraphicsPipeline(bool* shader_failed) {
     GraphicsEnvironments environments;
     GetGraphicsEnvironments(environments, graphics_key.unique_hashes);
 
     main_pools.ReleaseContents();
-    auto pipeline{
-        CreateGraphicsPipeline(main_pools, graphics_key, environments.Span(), nullptr, true)};
+    auto pipeline{CreateGraphicsPipeline(main_pools, graphics_key, environments.Span(), nullptr,
+                                         true, shader_failed)};
     if (!pipeline || pipeline_cache_filename.empty()) {
         return pipeline;
     }

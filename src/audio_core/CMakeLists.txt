@@ -244,7 +244,13 @@ target_sources(audio_core PRIVATE
 
 target_link_libraries(audio_core PRIVATE SDL3::SDL3)
 if (ANDROID)
-    target_link_libraries(audio_core PRIVATE aaudio OpenSLES)
+    # Try linking aaudio, if fail it might be missing for some ABI targets
+    find_library(aaudio_lib aaudio)
+    if (aaudio_lib)
+        target_link_libraries(audio_core PRIVATE ${aaudio_lib} OpenSLES)
+    else()
+        target_link_libraries(audio_core PRIVATE OpenSLES)
+    endif()
 endif()
 target_compile_definitions(audio_core PRIVATE HAVE_SDL3)
 

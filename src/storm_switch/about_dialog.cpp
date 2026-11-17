@@ -48,17 +48,17 @@ AboutDialog::AboutDialog(QWidget* parent)
     const bool is_ru = (lang.rfind("ru", 0) == 0 || lang.rfind("be", 0) == 0 || lang.rfind("uk", 0) == 0);
 
     setWindowTitle(StormLangStorm11(
-        QStringLiteral("О программе — STORM SWITCH"),
-        QStringLiteral("About — STORM SWITCH"),
-        QStringLiteral("Über — STORM SWITCH"),
-        QStringLiteral("À propos — STORM SWITCH"),
-        QStringLiteral("关于 — STORM SWITCH"),
-        QStringLiteral("정보 — STORM SWITCH"),
-        QStringLiteral("バージョン情報 — STORM SWITCH"),
-        QStringLiteral("Acerca de — STORM SWITCH"),
-        QStringLiteral("Informazioni — STORM SWITCH"),
-        QStringLiteral("Sobre — STORM SWITCH"),
-        QStringLiteral("के बारे में — STORM SWITCH")
+        QStringLiteral("О программе - STORM SWITCH"),
+        QStringLiteral("About - STORM SWITCH"),
+        QStringLiteral("Über - STORM SWITCH"),
+        QStringLiteral("À propos - STORM SWITCH"),
+        QStringLiteral("关于 - STORM SWITCH"),
+        QStringLiteral("정보 - STORM SWITCH"),
+        QStringLiteral("バージョン情報 - STORM SWITCH"),
+        QStringLiteral("Acerca de - STORM SWITCH"),
+        QStringLiteral("Informazioni - STORM SWITCH"),
+        QStringLiteral("Sobre - STORM SWITCH"),
+        QStringLiteral("के बारे में - STORM SWITCH")
     ));
 
     ui->labelYuzu->setText(QStringLiteral(
@@ -70,7 +70,7 @@ AboutDialog::AboutDialog(QWidget* parent)
                                        QString::fromUtf8(Common::g_build_date).left(10)));
 
     const QString about_body = StormLangStorm11(
-        QStringLiteral("STORM SWITCH — высокопроизводительный мультиплатформенный эмулятор Nintendo Switch и Nintendo Switch 2 на базе Eden, созданный для максимальной производительности, стабильности конвейера Vulkan, потокового запуска сжатых архивов (NSZ/NCZ/XCZ и .nup), облачной синхронизации сохранений STORM SAVE SYNC и глубокой кастомизации.<br/><br/>"
+        QStringLiteral("STORM SWITCH - высокопроизводительный мультиплатформенный эмулятор Nintendo Switch и Nintendo Switch 2 на базе Eden, созданный для максимальной производительности, стабильности конвейера Vulkan, потокового запуска сжатых архивов (NSZ/NCZ/XCZ и .nup), облачной синхронизации сохранений STORM SAVE SYNC и глубокой кастомизации.<br/><br/>"
                        "STORM SWITCH распространяется под открытой лицензией GPLv3.0+ и включает расширенную базу автопрофилей GameFix Database, поддержку модов GameBanana, менеджер читов и Amiibo.<br/><br/>"
                        "Данное программное обеспечение предназначено исключительно для запуска легально полученных копий игр."),
         QStringLiteral("STORM SWITCH is an advanced high-performance multi-platform Nintendo Switch and Nintendo Switch 2 emulator built atop Eden for maximum speed, Vulkan pipeline stability, on-the-fly compressed container streaming (NSZ/NCZ/XCZ and .nup), STORM SAVE SYNC cloud synchronization, and deep customization.<br/><br/>"
@@ -164,92 +164,92 @@ AboutDialog::AboutDialog(QWidget* parent)
         "<div style='font-size:9.5pt; line-height:1.45; color:%1;'>"
         "<p>Проект <b>STORM SWITCH</b> создан благодаря многолетнему труду, открытым исследованиям и инженерному мастерству разработчиков мирового сообщества эмуляции и свободного ПО. Выражаем глубокую признательность всем авторам, командам и участникам:</p>"
         "<h4 style='color:%2; margin-bottom:4px;'>1. Базовые эмуляторы и фундамент архитектуры</h4><ul>"
-        "<li><b>Команда Eden Emulator (Camille LaVey, Crueter и все контрибьюторы Eden)</b> — за открытую кодовую базу, независимое развитие ядра, продвинутые оптимизации компилятора, графического стека и системных сервисов.</li>"
-        "<li><b>Команда Yuzu и Citra (Bunnei, Lioncache, Subv, BreadFish64, Blinkhawk, Morph, Rodrigo, MerryMage, byte[], FearlessTobi, ogniK, german77, toastUnlimited и контрибьюторы)</b> — за создание фундаментальной открытой архитектуры эмуляции Nintendo Switch и Nintendo 3DS.</li>"
-        "<li><b>Команда Ryujinx и Ryubing (gdkchan, Ac_K, Mary, riperiperi, Thog, LotP1, GreemDev и контрибьюторы)</b> — за эталонную точность эмуляции, фундаментальные исследования Horizon OS, сервисов HLE, аудиоподсистемы и GPU Maxwell.</li>"
-        "<li><b>jarrodnorwell и проект Sudachi</b> — за ключевые исправления совместимости современных игр, апплетов, сервисов HLE и прошивок.</li>"
-        "<li><b>Команда Citron Emulator (zephyron, BignBooty, EmuGamer)</b> — за развитие мобильной и настольной платформ, управление шейдерами и стабильность на Android.</li>"
-        "<li><b>Ghael-V и команда Lemon-Project</b> — за исследования потоковой декомпрессии NSZ и XCZ, барьеров синхронизации Vulkan и разреженных быстрых сохранений.</li>"
-        "<li><b>Команды Suyu, Torzu, Uzuy и Sumi</b> — за сохранение, аудит и развитие независимых открытых ветвей эмуляции.</li></ul>"
+        "<li><b>Команда Eden Emulator (Camille LaVey, Crueter и все контрибьюторы Eden)</b> - за открытую кодовую базу, независимое развитие ядра, продвинутые оптимизации компилятора, графического стека и системных сервисов.</li>"
+        "<li><b>Команда Yuzu и Citra (Bunnei, Lioncache, Subv, BreadFish64, Blinkhawk, Morph, Rodrigo, MerryMage, byte[], FearlessTobi, ogniK, german77, toastUnlimited и контрибьюторы)</b> - за создание фундаментальной открытой архитектуры эмуляции Nintendo Switch и Nintendo 3DS.</li>"
+        "<li><b>Команда Ryujinx и Ryubing (gdkchan, Ac_K, Mary, riperiperi, Thog, LotP1, GreemDev и контрибьюторы)</b> - за эталонную точность эмуляции, фундаментальные исследования Horizon OS, сервисов HLE, аудиоподсистемы и GPU Maxwell.</li>"
+        "<li><b>jarrodnorwell и проект Sudachi</b> - за ключевые исправления совместимости современных игр, апплетов, сервисов HLE и прошивок.</li>"
+        "<li><b>Команда Citron Emulator (zephyron, BignBooty, EmuGamer)</b> - за развитие мобильной и настольной платформ, управление шейдерами и стабильность на Android.</li>"
+        "<li><b>Ghael-V и команда Lemon-Project</b> - за исследования потоковой декомпрессии NSZ и XCZ, барьеров синхронизации Vulkan и разреженных быстрых сохранений.</li>"
+        "<li><b>Команды Suyu, Torzu, Uzuy и Sumi</b> - за сохранение, аудит и развитие независимых открытых ветвей эмуляции.</li></ul>"
         "<h4 style='color:%2; margin-bottom:4px;'>2. Исследования архитектуры Nintendo Switch 2 и Next-Gen проектов</h4><ul>"
-        "<li><b>Команда Eglantine</b> — за пионерские исследования низкоуровневых механизмов, системных вызовов и архитектуры консоли нового поколения.</li>"
-        "<li><b>MythosOfs и проект Orchid</b> — за глубокие изыскания в области архитектуры Tegra T239 (Ampere), трансляции шейдерного микрокода, HLE-сервисов и графических интерфейсов следующего поколения.</li>"
-        "<li><b>zortos293 и проект Lichii</b> — за инновационные исследования структур ядра, сервиса системных шрифтов pl:u, метаданных NACP и формата пакетов .nup.</li>"
-        "<li><b>moceure (BananaNative &amp; eden-nx2-android)</b> — за выдающиеся достижения в адаптации Native Code Execution (NCE), виртуальной памяти и мобильной эмуляции NX2 на Android.</li>"
-        "<li><b>sikoGD и проект playDB-CNT</b> — за разработку инфраструктуры сетевого протокола NPLN и stand-in серверов локального мультиплеера.</li>"
-        "<li><b>Команда Pound (pound-emu)</b> — за открытые исследования, декомпиляцию и анализ алгоритмов графического конвейера, активных областей DLSS и тайловой памяти нового поколения.</li>"
-        "<li><b>0xNikilite и проект Oboromi</b> — за неоценимый вклад в реверс-инжиниринг и анализ подсистем операционной системы NX2.</li></ul>"
+        "<li><b>Команда Eglantine</b> - за пионерские исследования низкоуровневых механизмов, системных вызовов и архитектуры консоли нового поколения.</li>"
+        "<li><b>MythosOfs и проект Orchid</b> - за глубокие изыскания в области архитектуры Tegra T239 (Ampere), трансляции шейдерного микрокода, HLE-сервисов и графических интерфейсов следующего поколения.</li>"
+        "<li><b>zortos293 и проект Lichii</b> - за инновационные исследования структур ядра, сервиса системных шрифтов pl:u, метаданных NACP и формата пакетов .nup.</li>"
+        "<li><b>moceure (BananaNative &amp; eden-nx2-android)</b> - за выдающиеся достижения в адаптации Native Code Execution (NCE), виртуальной памяти и мобильной эмуляции NX2 на Android.</li>"
+        "<li><b>sikoGD и проект playDB-CNT</b> - за разработку инфраструктуры сетевого протокола NPLN и stand-in серверов локального мультиплеера.</li>"
+        "<li><b>Команда Pound (pound-emu)</b> - за открытые исследования, декомпиляцию и анализ алгоритмов графического конвейера, активных областей DLSS и тайловой памяти нового поколения.</li>"
+        "<li><b>0xNikilite и проект Oboromi</b> - за неоценимый вклад в реверс-инжиниринг и анализ подсистем операционной системы NX2.</li></ul>"
         "<h4 style='color:%2; margin-bottom:4px;'>3. Графические драйверы, компиляторы ЦП и низкоуровневое ядро</h4><ul>"
-        "<li><b>Rob Clark, Danylo Piliaiev, Connor Abbott, Samuel Iglesias Gonsálvez и разработчики Mesa 3D / Turnip / Freedreno</b> — за открытый мобильный драйвер Vulkan под Qualcomm Adreno.</li>"
-        "<li><b>Alyssa Rosenzweig, Boris Brezillon, Erik Faye-Lund, команда Collabora и разработчики PanVK / Panfrost</b> — за открытые драйверы и компиляторы шейдеров для архитектур ARM Mali (Bifrost, Valhall, Immortals).</li>"
-        "<li><b>bylaws (Billy Laws)</b> — за создание библиотеки libadrenotools и динамической подгрузки пользовательских GPU-драйверов на Android.</li>"
-        "<li><b>K11MCH1, MrPurple666, Weab-chan, whitebelyash и мейнтейнеры сборок Turnip / Qualcomm</b> — за регулярную сборку, патчинг и тестирование мобильных видеодрайверов.</li>"
-        "<li><b>MerryMage (merryhime) и контрибьюторы Dynarmic</b> — за высокоскоростной и эталонный динамический JIT-компилятор ARM64 и ARM32.</li>"
-        "<li><b>Команда Skyline и Strato (Mark, Billy Laws, Lynx и контрибьюторы)</b> — за фундаментальные наработки по прямому исполнению гостевого кода ARM64 NCE на Android.</li>"
-        "<li><b>Mitsunari Shigeo (herumi / xbyak) и авторы Oak</b> — за высокопроизводительные генераторы машинного кода x86_64 и AArch64.</li>"
-        "<li><b>SciresM, TuxSH, fincs, hexkyz, mtheall и команды Atmosphère &amp; Switchbrew</b> — за документацию аппаратной платформы, спецификации ядра Mesosphere, криптографии NCA и инструментарий hactool / libnx.</li></ul>"
+        "<li><b>Rob Clark, Danylo Piliaiev, Connor Abbott, Samuel Iglesias Gonsálvez и разработчики Mesa 3D / Turnip / Freedreno</b> - за открытый мобильный драйвер Vulkan под Qualcomm Adreno.</li>"
+        "<li><b>Alyssa Rosenzweig, Boris Brezillon, Erik Faye-Lund, команда Collabora и разработчики PanVK / Panfrost</b> - за открытые драйверы и компиляторы шейдеров для архитектур ARM Mali (Bifrost, Valhall, Immortals).</li>"
+        "<li><b>bylaws (Billy Laws)</b> - за создание библиотеки libadrenotools и динамической подгрузки пользовательских GPU-драйверов на Android.</li>"
+        "<li><b>K11MCH1, MrPurple666, Weab-chan, whitebelyash и мейнтейнеры сборок Turnip / Qualcomm</b> - за регулярную сборку, патчинг и тестирование мобильных видеодрайверов.</li>"
+        "<li><b>MerryMage (merryhime) и контрибьюторы Dynarmic</b> - за высокоскоростной и эталонный динамический JIT-компилятор ARM64 и ARM32.</li>"
+        "<li><b>Команда Skyline и Strato (Mark, Billy Laws, Lynx и контрибьюторы)</b> - за фундаментальные наработки по прямому исполнению гостевого кода ARM64 NCE на Android.</li>"
+        "<li><b>Mitsunari Shigeo (herumi / xbyak) и авторы Oak</b> - за высокопроизводительные генераторы машинного кода x86_64 и AArch64.</li>"
+        "<li><b>SciresM, TuxSH, fincs, hexkyz, mtheall и команды Atmosphère &amp; Switchbrew</b> - за документацию аппаратной платформы, спецификации ядра Mesosphere, криптографии NCA и инструментарий hactool / libnx.</li></ul>"
         "<h4 style='color:%2; margin-bottom:4px;'>4. Форматы данных, графические технологии, аудио и системные библиотеки</h4><ul>"
-        "<li><b>nicoboss и контрибьюторы проекта NSZ</b> — за спецификацию и алгоритмы потоково-совместимого сжатия контейнеров NSZ / NCZ / XCZ.</li>"
-        "<li><b>Yann Collet и команды Zstandard (Meta) &amp; LZ4</b> — за эталонные сверхбыстрые алгоритмы сжатия и декомпрессии данных.</li>"
-        "<li><b>Команда Khronos Group</b> — за спецификации стандарта Vulkan, SPIR-V, Vulkan-Headers, glslang и SPIRV-Cross.</li>"
-        "<li><b>Команда AMD GPUOpen (FidelityFX &amp; Vulkan Memory Allocator)</b> — за технологии масштабирования FidelityFX Super Resolution (FSR) / CAS и библиотеку управления видеопамятью VMA.</li>"
-        "<li><b>Команда Sirit (Rodrigo и контрибьюторы)</b> — за быструю библиотеку динамической генерации модулей SPIR-V.</li>"
-        "<li><b>The Qt Company и контрибьюторы проекта Qt</b> — за кроссплатформенный графический фреймворк настольного интерфейса.</li>"
-        "<li><b>Sam Lantinga и команда Simple DirectMedia Layer (SDL), Mozilla (Cubeb) и Google Oboe / OpenAL</b> — за кроссплатформенный стек контроллеров, датчиков движения, HD-Rumble и аудио с низкой задержкой.</li>"
-        "<li><b>Команды FFmpeg, VideoLAN (dav1d) и Xiph (Opus)</b> — за декодирование мультимедийных потоков H.264 / VP9 / AV1 и многоканального звука.</li>"
-        "<li><b>Авторы библиотек Boost, fmt (Victor Zverovich), nlohmann/json, OpenSSL, MbedTLS, libusb, enet и Inno Setup (Jordan Russell)</b> — за надёжный фундамент системного программирования, сети и установщика.</li></ul>"
+        "<li><b>nicoboss и контрибьюторы проекта NSZ</b> - за спецификацию и алгоритмы потоково-совместимого сжатия контейнеров NSZ / NCZ / XCZ.</li>"
+        "<li><b>Yann Collet и команды Zstandard (Meta) &amp; LZ4</b> - за эталонные сверхбыстрые алгоритмы сжатия и декомпрессии данных.</li>"
+        "<li><b>Команда Khronos Group</b> - за спецификации стандарта Vulkan, SPIR-V, Vulkan-Headers, glslang и SPIRV-Cross.</li>"
+        "<li><b>Команда AMD GPUOpen (FidelityFX &amp; Vulkan Memory Allocator)</b> - за технологии масштабирования FidelityFX Super Resolution (FSR) / CAS и библиотеку управления видеопамятью VMA.</li>"
+        "<li><b>Команда Sirit (Rodrigo и контрибьюторы)</b> - за быструю библиотеку динамической генерации модулей SPIR-V.</li>"
+        "<li><b>The Qt Company и контрибьюторы проекта Qt</b> - за кроссплатформенный графический фреймворк настольного интерфейса.</li>"
+        "<li><b>Sam Lantinga и команда Simple DirectMedia Layer (SDL), Mozilla (Cubeb) и Google Oboe / OpenAL</b> - за кроссплатформенный стек контроллеров, датчиков движения, HD-Rumble и аудио с низкой задержкой.</li>"
+        "<li><b>Команды FFmpeg, VideoLAN (dav1d) и Xiph (Opus)</b> - за декодирование мультимедийных потоков H.264 / VP9 / AV1 и многоканального звука.</li>"
+        "<li><b>Авторы библиотек Boost, fmt (Victor Zverovich), nlohmann/json, OpenSSL, MbedTLS, libusb, enet и Inno Setup (Jordan Russell)</b> - за надёжный фундамент системного программирования, сети и установщика.</li></ul>"
         "<h4 style='color:%2; margin-bottom:4px;'>5. Модификации, базы метаданных, экосистема и сообщество</h4><ul>"
-        "<li><b>Платформа GameBanana и авторы модификаций сообщества</b> — за открытый API и крупнейший каталог пользовательских модов и графических улучшений.</li>"
-        "<li><b>blawar и контрибьюторы TitleDB, а также N3evin и проект AmiiboAPI</b> — за открытые базы идентификаторов игр, обложек, обновлений и метаданных фигурок Amiibo.</li>"
-        "<li><b>Авторы технических патчей 60 FPS, Dynamic FPS и Ultrawide (ChanseyIsTheBest, StevensND, Fl4sh, KeatonTheBot, boy181 и др.)</b> — за развитие патчей производительности и совместимости.</li>"
-        "<li><b>Команда STORM TEAM &amp; портал STORM GAMES WORLD</b> — за инженерное развитие эмулятора, облако STORM SAVE SYNC, базу автопрофилей GameFix Database, дизайн STORM AURORA FLUID и инфраструктуру экосистемы.</li>"
-        "<li><b>Участники сообщества, авторы баг-репортов и тестировщики с 4PDA, GitHub, Discord и профильных форумов</b> — за тестирование сотен игр, подробные отчёты, логи и неоценимую обратную связь.</li></ul>"
+        "<li><b>Платформа GameBanana и авторы модификаций сообщества</b> - за открытый API и крупнейший каталог пользовательских модов и графических улучшений.</li>"
+        "<li><b>blawar и контрибьюторы TitleDB, а также N3evin и проект AmiiboAPI</b> - за открытые базы идентификаторов игр, обложек, обновлений и метаданных фигурок Amiibo.</li>"
+        "<li><b>Авторы технических патчей 60 FPS, Dynamic FPS и Ultrawide (ChanseyIsTheBest, StevensND, Fl4sh, KeatonTheBot, boy181 и др.)</b> - за развитие патчей производительности и совместимости.</li>"
+        "<li><b>Команда STORM TEAM &amp; портал STORM GAMES WORLD</b> - за инженерное развитие эмулятора, облако STORM SAVE SYNC, базу автопрофилей GameFix Database, дизайн STORM AURORA FLUID и инфраструктуру экосистемы.</li>"
+        "<li><b>Участники сообщества, авторы баг-репортов и тестировщики с 4PDA, GitHub, Discord и профильных форумов</b> - за тестирование сотен игр, подробные отчёты, логи и неоценимую обратную связь.</li></ul>"
         "</div>").arg(pal.textPrimary, pal.accent);
 
     const QString credits_en = QStringLiteral(
         "<div style='font-size:9.5pt; line-height:1.45; color:%1;'>"
         "<p><b>STORM SWITCH</b> is made possible by the dedication, open research, and engineering excellence of the global emulation and open-source software community. We extend our sincere gratitude to all teams, researchers, and contributors:</p>"
         "<h4 style='color:%2; margin-bottom:4px;'>1. Core Emulators &amp; Architectural Foundation</h4><ul>"
-        "<li><b>Eden Emulator Team (Camille LaVey, Crueter, and all Eden contributors)</b> — open-source foundation, independent core evolution, compiler optimizations, graphics stack, and HLE services.</li>"
-        "<li><b>Yuzu &amp; Citra Teams (Bunnei, Lioncache, Subv, BreadFish64, Blinkhawk, Morph, Rodrigo, MerryMage, byte[], FearlessTobi, ogniK, german77, toastUnlimited, and contributors)</b> — pioneering open-source Nintendo Switch and 3DS emulation architecture.</li>"
-        "<li><b>Ryujinx &amp; Ryubing Teams (gdkchan, Ac_K, Mary, riperiperi, Thog, LotP1, GreemDev, and contributors)</b> — reference accuracy, deep Horizon OS research, HLE services, audio subsystem, and Maxwell GPU documentation.</li>"
-        "<li><b>jarrodnorwell &amp; Sudachi</b> — modern title compatibility fixes, system applets, HLE services, and firmware support.</li>"
-        "<li><b>Citron Emulator Team (zephyron, BignBooty, EmuGamer)</b> — Android and desktop innovations, shader pipeline management, and mobile stability.</li>"
-        "<li><b>Ghael-V &amp; Lemon-Project</b> — streaming NSZ/XCZ decompression research, Vulkan synchronization barriers, and sparse savestate optimizations.</li>"
-        "<li><b>Suyu, Torzu, Uzuy &amp; Sumi Teams</b> — preserving, auditing, and advancing independent community emulation branches.</li></ul>"
+        "<li><b>Eden Emulator Team (Camille LaVey, Crueter, and all Eden contributors)</b> - open-source foundation, independent core evolution, compiler optimizations, graphics stack, and HLE services.</li>"
+        "<li><b>Yuzu &amp; Citra Teams (Bunnei, Lioncache, Subv, BreadFish64, Blinkhawk, Morph, Rodrigo, MerryMage, byte[], FearlessTobi, ogniK, german77, toastUnlimited, and contributors)</b> - pioneering open-source Nintendo Switch and 3DS emulation architecture.</li>"
+        "<li><b>Ryujinx &amp; Ryubing Teams (gdkchan, Ac_K, Mary, riperiperi, Thog, LotP1, GreemDev, and contributors)</b> - reference accuracy, deep Horizon OS research, HLE services, audio subsystem, and Maxwell GPU documentation.</li>"
+        "<li><b>jarrodnorwell &amp; Sudachi</b> - modern title compatibility fixes, system applets, HLE services, and firmware support.</li>"
+        "<li><b>Citron Emulator Team (zephyron, BignBooty, EmuGamer)</b> - Android and desktop innovations, shader pipeline management, and mobile stability.</li>"
+        "<li><b>Ghael-V &amp; Lemon-Project</b> - streaming NSZ/XCZ decompression research, Vulkan synchronization barriers, and sparse savestate optimizations.</li>"
+        "<li><b>Suyu, Torzu, Uzuy &amp; Sumi Teams</b> - preserving, auditing, and advancing independent community emulation branches.</li></ul>"
         "<h4 style='color:%2; margin-bottom:4px;'>2. Nintendo Switch 2 &amp; Next-Gen Architecture Research</h4><ul>"
-        "<li><b>Eglantine Team</b> — pioneering research into next-generation low-level mechanisms, syscalls, and console architecture.</li>"
-        "<li><b>MythosOfs &amp; Orchid</b> — deep research into Tegra T239 (Ampere), shader microcode translation, HLE services, and next-gen graphics interfaces.</li>"
-        "<li><b>zortos293 &amp; Lichii</b> — innovative kernel structure research, pl:u system font service, NACP metadata, and .nup package format support.</li>"
-        "<li><b>moceure (BananaNative &amp; eden-nx2-android)</b> — outstanding achievements adapting Native Code Execution (NCE), virtual memory, and mobile NX2 emulation on Android.</li>"
-        "<li><b>sikoGD &amp; playDB-CNT</b> — NPLN network protocol infrastructure and local multiplayer stand-in servers.</li>"
-        "<li><b>Pound Team (pound-emu)</b> — open graphics pipeline analysis, DLSS active regions, and next-gen sparse tile mapping research.</li>"
-        "<li><b>0xNikilite &amp; Oboromi</b> — reverse engineering and analysis of NX2 operating system subsystems.</li></ul>"
+        "<li><b>Eglantine Team</b> - pioneering research into next-generation low-level mechanisms, syscalls, and console architecture.</li>"
+        "<li><b>MythosOfs &amp; Orchid</b> - deep research into Tegra T239 (Ampere), shader microcode translation, HLE services, and next-gen graphics interfaces.</li>"
+        "<li><b>zortos293 &amp; Lichii</b> - innovative kernel structure research, pl:u system font service, NACP metadata, and .nup package format support.</li>"
+        "<li><b>moceure (BananaNative &amp; eden-nx2-android)</b> - outstanding achievements adapting Native Code Execution (NCE), virtual memory, and mobile NX2 emulation on Android.</li>"
+        "<li><b>sikoGD &amp; playDB-CNT</b> - NPLN network protocol infrastructure and local multiplayer stand-in servers.</li>"
+        "<li><b>Pound Team (pound-emu)</b> - open graphics pipeline analysis, DLSS active regions, and next-gen sparse tile mapping research.</li>"
+        "<li><b>0xNikilite &amp; Oboromi</b> - reverse engineering and analysis of NX2 operating system subsystems.</li></ul>"
         "<h4 style='color:%2; margin-bottom:4px;'>3. GPU Drivers, CPU Compilers &amp; Low-Level Kernel</h4><ul>"
-        "<li><b>Rob Clark, Danylo Piliaiev, Connor Abbott, Samuel Iglesias Gonsálvez &amp; Mesa 3D / Turnip / Freedreno Developers</b> — open-source Vulkan drivers for Qualcomm Adreno GPUs.</li>"
-        "<li><b>Alyssa Rosenzweig, Boris Brezillon, Erik Faye-Lund, Collabora &amp; PanVK / Panfrost Developers</b> — open-source drivers and shader compilers for ARM Mali GPUs (Bifrost, Valhall, Immortals).</li>"
-        "<li><b>bylaws (Billy Laws)</b> — libadrenotools custom GPU driver loading on Android without root access.</li>"
-        "<li><b>K11MCH1, MrPurple666, Weab-chan, whitebelyash &amp; Turnip / Qualcomm Driver Maintainers</b> — building, patching, profiling, and testing custom mobile GPU drivers.</li>"
-        "<li><b>MerryMage (merryhime) &amp; Dynarmic Contributors</b> — blazing-fast ARM64 and ARM32 dynamic JIT recompiler.</li>"
-        "<li><b>Skyline &amp; Strato Teams (Mark, Billy Laws, Lynx, and contributors)</b> — foundational ARM64 Native Code Execution (NCE) engineering on Android.</li>"
-        "<li><b>Mitsunari Shigeo (herumi / xbyak) &amp; Oak Authors</b> — high-speed x86_64 and AArch64 runtime code generators.</li>"
-        "<li><b>SciresM, TuxSH, fincs, hexkyz, mtheall &amp; Atmosphère / Switchbrew Teams</b> — hardware documentation, Mesosphere kernel specs, NCA cryptography, and hactool / libnx tooling.</li></ul>"
+        "<li><b>Rob Clark, Danylo Piliaiev, Connor Abbott, Samuel Iglesias Gonsálvez &amp; Mesa 3D / Turnip / Freedreno Developers</b> - open-source Vulkan drivers for Qualcomm Adreno GPUs.</li>"
+        "<li><b>Alyssa Rosenzweig, Boris Brezillon, Erik Faye-Lund, Collabora &amp; PanVK / Panfrost Developers</b> - open-source drivers and shader compilers for ARM Mali GPUs (Bifrost, Valhall, Immortals).</li>"
+        "<li><b>bylaws (Billy Laws)</b> - libadrenotools custom GPU driver loading on Android without root access.</li>"
+        "<li><b>K11MCH1, MrPurple666, Weab-chan, whitebelyash &amp; Turnip / Qualcomm Driver Maintainers</b> - building, patching, profiling, and testing custom mobile GPU drivers.</li>"
+        "<li><b>MerryMage (merryhime) &amp; Dynarmic Contributors</b> - blazing-fast ARM64 and ARM32 dynamic JIT recompiler.</li>"
+        "<li><b>Skyline &amp; Strato Teams (Mark, Billy Laws, Lynx, and contributors)</b> - foundational ARM64 Native Code Execution (NCE) engineering on Android.</li>"
+        "<li><b>Mitsunari Shigeo (herumi / xbyak) &amp; Oak Authors</b> - high-speed x86_64 and AArch64 runtime code generators.</li>"
+        "<li><b>SciresM, TuxSH, fincs, hexkyz, mtheall &amp; Atmosphère / Switchbrew Teams</b> - hardware documentation, Mesosphere kernel specs, NCA cryptography, and hactool / libnx tooling.</li></ul>"
         "<h4 style='color:%2; margin-bottom:4px;'>4. Data Formats, Graphics Tech, Audio &amp; System Libraries</h4><ul>"
-        "<li><b>nicoboss &amp; NSZ Contributors</b> — streamable NSZ / NCZ / XCZ compressed game container specifications and tooling.</li>"
-        "<li><b>Yann Collet &amp; Zstandard (Meta) / LZ4 Teams</b> — reference ultra-fast real-time compression algorithms.</li>"
-        "<li><b>Khronos Group</b> — Vulkan API specifications, SPIR-V, Vulkan-Headers, glslang, and SPIRV-Cross.</li>"
-        "<li><b>AMD GPUOpen (FidelityFX &amp; Vulkan Memory Allocator)</b> — FidelityFX Super Resolution (FSR) / CAS upscaling and VMA GPU memory management.</li>"
-        "<li><b>Sirit Team (Rodrigo and contributors)</b> — fast runtime SPIR-V module emitter.</li>"
-        "<li><b>The Qt Company &amp; Qt Contributors</b> — cross-platform desktop UI framework.</li>"
-        "<li><b>Sam Lantinga &amp; SDL Team, Mozilla (Cubeb), and Google Oboe / OpenAL</b> — cross-platform controller, motion gyro, HD-Rumble, and low-latency audio stack.</li>"
-        "<li><b>FFmpeg, VideoLAN (dav1d) &amp; Xiph (Opus) Teams</b> — high-performance H.264 / VP9 / AV1 video and multichannel audio decoding.</li>"
-        "<li><b>Boost, fmt (Victor Zverovich), nlohmann/json, OpenSSL, MbedTLS, libusb, enet &amp; Inno Setup (Jordan Russell)</b> — rock-solid C++ systems, networking, and installer foundations.</li></ul>"
+        "<li><b>nicoboss &amp; NSZ Contributors</b> - streamable NSZ / NCZ / XCZ compressed game container specifications and tooling.</li>"
+        "<li><b>Yann Collet &amp; Zstandard (Meta) / LZ4 Teams</b> - reference ultra-fast real-time compression algorithms.</li>"
+        "<li><b>Khronos Group</b> - Vulkan API specifications, SPIR-V, Vulkan-Headers, glslang, and SPIRV-Cross.</li>"
+        "<li><b>AMD GPUOpen (FidelityFX &amp; Vulkan Memory Allocator)</b> - FidelityFX Super Resolution (FSR) / CAS upscaling and VMA GPU memory management.</li>"
+        "<li><b>Sirit Team (Rodrigo and contributors)</b> - fast runtime SPIR-V module emitter.</li>"
+        "<li><b>The Qt Company &amp; Qt Contributors</b> - cross-platform desktop UI framework.</li>"
+        "<li><b>Sam Lantinga &amp; SDL Team, Mozilla (Cubeb), and Google Oboe / OpenAL</b> - cross-platform controller, motion gyro, HD-Rumble, and low-latency audio stack.</li>"
+        "<li><b>FFmpeg, VideoLAN (dav1d) &amp; Xiph (Opus) Teams</b> - high-performance H.264 / VP9 / AV1 video and multichannel audio decoding.</li>"
+        "<li><b>Boost, fmt (Victor Zverovich), nlohmann/json, OpenSSL, MbedTLS, libusb, enet &amp; Inno Setup (Jordan Russell)</b> - rock-solid C++ systems, networking, and installer foundations.</li></ul>"
         "<h4 style='color:%2; margin-bottom:4px;'>5. Mods, Metadata Databases, Ecosystem &amp; Community</h4><ul>"
-        "<li><b>GameBanana &amp; Community Mod Authors</b> — open API and the largest repository of community mods, visual upgrades, and translations.</li>"
-        "<li><b>blawar &amp; TitleDB Contributors, and N3evin &amp; AmiiboAPI</b> — open title metadata, cover art, update databases, and Amiibo figurine APIs.</li>"
-        "<li><b>60 FPS, Dynamic FPS &amp; Ultrawide Patch Authors (ChanseyIsTheBest, StevensND, Fl4sh, KeatonTheBot, boy181, and others)</b> — technical performance and compatibility patches.</li>"
-        "<li><b>STORM TEAM &amp; STORM GAMES WORLD</b> — emulator engineering, STORM SAVE SYNC cloud service, GameFix Database, STORM AURORA FLUID design system, and ecosystem infrastructure.</li>"
-        "<li><b>Community Testers &amp; Bug Reporters across 4PDA, GitHub, Discord, and Forums</b> — testing hundreds of games across diverse PC and mobile hardware and providing detailed logs and feedback.</li></ul>"
+        "<li><b>GameBanana &amp; Community Mod Authors</b> - open API and the largest repository of community mods, visual upgrades, and translations.</li>"
+        "<li><b>blawar &amp; TitleDB Contributors, and N3evin &amp; AmiiboAPI</b> - open title metadata, cover art, update databases, and Amiibo figurine APIs.</li>"
+        "<li><b>60 FPS, Dynamic FPS &amp; Ultrawide Patch Authors (ChanseyIsTheBest, StevensND, Fl4sh, KeatonTheBot, boy181, and others)</b> - technical performance and compatibility patches.</li>"
+        "<li><b>STORM TEAM &amp; STORM GAMES WORLD</b> - emulator engineering, STORM SAVE SYNC cloud service, GameFix Database, STORM AURORA FLUID design system, and ecosystem infrastructure.</li>"
+        "<li><b>Community Testers &amp; Bug Reporters across 4PDA, GitHub, Discord, and Forums</b> - testing hundreds of games across diverse PC and mobile hardware and providing detailed logs and feedback.</li></ul>"
         "</div>").arg(pal.textPrimary, pal.accent);
 
     credits_browser->setHtml(is_ru ? credits_ru : credits_en);

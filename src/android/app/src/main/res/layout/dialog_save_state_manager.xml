@@ -45,7 +45,7 @@
                 android:layout_height="wrap_content"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="12sp"
-                tools:text="Game Title • SESS v2 (Слоты 1–5)"
+                tools:text="Game Title • SESS v2 (Слоты 1-5)"
     android:breakStrategy="simple"
     android:hyphenationFrequency="none"/>
         </LinearLayout>

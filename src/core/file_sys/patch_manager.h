@@ -15,7 +15,7 @@
 #include "common/common_types.h"
 #include "core/file_sys/nca_metadata.h"
 #include "core/file_sys/vfs/vfs_types.h"
-#include "core/memory/dmnt_cheat_types.h"
+#include "core/memory/cheat_parser.h"
 
 namespace Core {
 class System;
@@ -81,8 +81,8 @@ public:
     [[nodiscard]] bool HasNSOPatch(const BuildID& build_id, std::string_view name) const;
 
     // Creates a CheatList object with all
-    [[nodiscard]] std::vector<Core::Memory::CheatEntry> CreateCheatList(
-        const BuildID& build_id) const;
+    // Loads executable cheats and their separate GUI metadata.
+    [[nodiscard]] Core::Memory::CheatList CreateCheatList(const BuildID& build_id) const;
 
     // Currently tracked RomFS patches:
     // - Game Updates

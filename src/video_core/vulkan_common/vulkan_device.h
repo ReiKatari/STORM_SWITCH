@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <atomic>
 #include <optional>
 #include <set>
@@ -58,6 +59,7 @@ VK_DEFINE_HANDLE(VmaAllocator)
     FEATURE(EXT, CustomBorderColor, CUSTOM_BORDER_COLOR, custom_border_color)                      \
     FEATURE(EXT, DepthBiasControl, DEPTH_BIAS_CONTROL, depth_bias_control)                         \
     FEATURE(EXT, DepthClipControl, DEPTH_CLIP_CONTROL, depth_clip_control)                         \
+    FEATURE(EXT, DepthClipEnable, DEPTH_CLIP_ENABLE, depth_clip_enable)                         \
     FEATURE(EXT, DescriptorBuffer, DESCRIPTOR_BUFFER, descriptor_buffer)                           \
     FEATURE(EXT, ExtendedDynamicState, EXTENDED_DYNAMIC_STATE, extended_dynamic_state)             \
     FEATURE(EXT, ExtendedDynamicState2, EXTENDED_DYNAMIC_STATE_2, extended_dynamic_state2)         \
@@ -69,6 +71,7 @@ VK_DEFINE_HANDLE(VmaAllocator)
             primitive_topology_list_restart)                                                       \
     FEATURE(EXT, ProvokingVertex, PROVOKING_VERTEX, provoking_vertex)                              \
     FEATURE(EXT, Robustness2, ROBUSTNESS_2, robustness2)                                           \
+    FEATURE(EXT, TexelBufferAlignment, TEXEL_BUFFER_ALIGNMENT, texel_buffer_alignment)             \
     FEATURE(EXT, TransformFeedback, TRANSFORM_FEEDBACK, transform_feedback)                        \
     FEATURE(EXT, VertexInputDynamicState, VERTEX_INPUT_DYNAMIC_STATE, vertex_input_dynamic_state)  \
     FEATURE(KHR, DynamicRenderingLocalRead, DYNAMIC_RENDERING_LOCAL_READ, dynamic_rendering_local_read) \
@@ -115,7 +118,8 @@ VK_DEFINE_HANDLE(VmaAllocator)
     EXTENSION(EXT, FILTER_CUBIC, filter_cubic)                                                     \
     EXTENSION(IMG, FILTER_CUBIC, filter_cubic_img)                                                 \
     EXTENSION(QCOM, FILTER_CUBIC_WEIGHTS, filter_cubic_weights)                                     \
-    EXTENSION(EXT, SWAPCHAIN_MAINTENANCE_1, swapchain_maintenance_1)
+    EXTENSION(EXT, SWAPCHAIN_MAINTENANCE_1, swapchain_maintenance_1) \
+    EXTENSION(EXT, EXTERNAL_MEMORY_HOST, external_memory_host)
 
 // Define extensions which must be supported.
 #define FOR_EACH_VK_MANDATORY_EXTENSION(EXTENSION_NAME)                                            \
@@ -385,6 +389,8 @@ public:
     FN_MAX_LIMIT_ELEM(ComputeSharedMemorySize) \
     FN_MAX_LIMIT_ELEM(PerStageDescriptorSampledImages) \
     FN_MAX_LIMIT_ELEM(PerStageResources) \
+    FN_MAX_LIMIT_ELEM(PerStageDescriptorStorageBuffers) \
+    FN_MAX_LIMIT_ELEM(PerStageDescriptorSamplers) \
     FN_MAX_LIMIT_ELEM(DescriptorSetSamplers) \
     FN_MAX_LIMIT_ELEM(DescriptorSetUniformBuffers) \
     FN_MAX_LIMIT_ELEM(DescriptorSetUniformBuffersDynamic) \
@@ -501,6 +507,20 @@ FN_MAX_LIMIT_LIST
 
     VkShaderStageFlags GetSubgroupSupportedStages() const {
         return properties.subgroup_properties.supportedStages;
+    }
+
+    /// Returns the device's native subgroup size.
+    u32 GetSubgroupSize() const {
+        return properties.subgroup_properties.subgroupSize;
+    }
+
+    /// Returns the maximum subgroup size supported by the device.
+    u32 GetMaxSubgroupSize() const {
+        if (properties.subgroup_size_control.maxSubgroupSize > 0) {
+            return (std::max)(properties.subgroup_properties.subgroupSize,
+                              properties.subgroup_size_control.maxSubgroupSize);
+        }
+        return properties.subgroup_properties.subgroupSize;
     }
 
     /// Returns the maximum number of push descriptors.
@@ -670,6 +690,11 @@ FN_MAX_LIMIT_LIST
     /// Returns true if the device supports VK_EXT_depth_clip_control.
     bool IsExtDepthClipControlSupported() const {
         return extensions.depth_clip_control;
+    }
+
+    /// Returns true if the device supports VK_EXT_depth_clip_enable.
+    bool IsExtDepthClipEnableSupported() const {
+        return extensions.depth_clip_enable;
     }
 
     /// Returns true if the device supports VK_EXT_depth_bias_control.
@@ -999,6 +1024,14 @@ FN_MAX_LIMIT_LIST
         return features.depth_bias_control.depthBiasExact;
     }
 
+    bool HasExternalMemoryHost() const {
+        return extensions.external_memory_host;
+    }
+
+    u64 GetMinImportedHostPointerAlignment() const {
+        return min_imported_host_pointer_alignment;
+    }
+
     u32 GetMaxVertexInputAttributes() const {
         return properties.properties.limits.maxVertexInputAttributes;
     }
@@ -1250,6 +1283,7 @@ private:
         VkPhysicalDeviceMaintenance5PropertiesKHR maintenance5{};
         VkPhysicalDeviceDepthStencilResolveProperties depth_stencil_resolve{};
         VkPhysicalDeviceCustomBorderColorPropertiesEXT custom_border_color{};
+        VkPhysicalDeviceTexelBufferAlignmentProperties texel_buffer_alignment{};
 
         VkPhysicalDeviceProperties properties{};
     };
@@ -1269,6 +1303,7 @@ private:
     bool is_integrated{};                      ///< Is GPU an iGPU.
     bool is_virtual{};                         ///< Is GPU a virtual GPU.
     bool is_non_gpu{};                         ///< Is SoftwareRasterizer, FPGA, non-GPU device.
+    u64 min_imported_host_pointer_alignment{65536};
     bool has_broken_compute{};                 ///< Compute shaders can cause crashes
     bool has_broken_cube_compatibility{};      ///< Has broken cube compatibility bit
     bool has_broken_descriptor_aliasing{};     ///< Miscompiles descriptors aliased on one binding

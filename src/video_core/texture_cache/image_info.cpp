@@ -259,13 +259,27 @@ ImageInfo::ImageInfo(const Fermi2D::Surface& config) noexcept {
             .height = config.block_height,
             .depth = config.block_depth,
         };
-        // 3D blits with more than once slice are not implemented for now
-        // Render to individual slices
-        size = Extent3D{
-            .width = config.width,
-            .height = config.height,
-            .depth = 1,
-        };
+        // Support multi-slice/layer blits without assigning 3D depth to 2D array surfaces
+        const u32 total_slices = (std::max)(1U, (std::max)(config.depth, config.layer + 1U));
+        if (type == ImageType::e3D) {
+            size = Extent3D{
+                .width = config.width,
+                .height = config.height,
+                .depth = total_slices,
+            };
+            resources.levels = 1;
+            resources.layers = 1;
+        } else {
+            size = Extent3D{
+                .width = config.width,
+                .height = config.height,
+                .depth = 1,
+            };
+            resources.levels = 1;
+            resources.layers = static_cast<s32>(total_slices);
+            layer_stride = CalculateLayerStride(*this);
+            maybe_unaligned_layer_stride = layer_stride;
+        }
         rescaleable = block.depth == 0 && size.height > RescaleHeightThreshold;
         if (num_samples > 1 && GetFormatType(format) != SurfaceType::ColorTexture) {
             rescaleable = false;

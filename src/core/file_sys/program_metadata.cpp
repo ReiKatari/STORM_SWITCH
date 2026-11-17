@@ -21,43 +21,80 @@ ProgramMetadata::ProgramMetadata() = default;
 ProgramMetadata::~ProgramMetadata() = default;
 
 Loader::ResultStatus ProgramMetadata::Load(VirtualFile file) {
+    is_switch2 = false;
+    if (!file) {
+        return Loader::ResultStatus::ErrorBadNPDMHeader;
+    }
+
     const std::size_t total_size = file->GetSize();
     if (total_size < sizeof(Header)) {
         return Loader::ResultStatus::ErrorBadNPDMHeader;
     }
 
-    if (sizeof(Header) != file->ReadObject(&npdm_header)) {
+    if (sizeof(Header) != file->ReadObject(&npdm_header) ||
+        npdm_header.magic != std::array{'M', 'E', 'T', 'A'}) {
         return Loader::ResultStatus::ErrorBadNPDMHeader;
     }
 
-    if (sizeof(AcidHeader) != file->ReadObject(&acid_header, npdm_header.acid_offset)) {
+    const auto contains = [](u64 offset, u64 size, u64 total) {
+        return offset <= total && size <= total - offset;
+    };
+
+    const u64 acid_offset = npdm_header.acid_offset;
+    const u64 acid_size = npdm_header.acid_size;
+    const u64 aci_offset = npdm_header.aci_offset;
+    const u64 aci_size = npdm_header.aci_size;
+    if (acid_offset < sizeof(Header) || !contains(acid_offset, acid_size, total_size)) {
         return Loader::ResultStatus::ErrorBadACIDHeader;
     }
 
-    // Switch 2 ACID blocks have a 0x300-byte signature/key area instead of 0x200, so the
-    // header starts 0x100 bytes later. Offsets inside the header are unchanged.
-    if (std::memcmp(acid_header.magic.data(), "ACID", 4) != 0) {
-        constexpr std::size_t acid_sig_size_v1 = 0x200;
-        constexpr std::size_t acid_sig_size_v2 = 0x300;
-        constexpr std::size_t acid_body_size = sizeof(AcidHeader) - acid_sig_size_v1;
+    constexpr std::size_t acid_sig_size_v1 = 0x200;
+    constexpr std::size_t acid_sig_size_v2 = 0x300;
+    constexpr std::size_t acid_body_size = sizeof(AcidHeader) - acid_sig_size_v1;
+    const auto read_acid_body = [&](std::size_t sig_size) {
+        if (!contains(sig_size, acid_body_size, acid_size)) {
+            return false;
+        }
         auto* const body = reinterpret_cast<u8*>(&acid_header) + acid_sig_size_v1;
-        if (file->ReadBytes(body, acid_body_size, npdm_header.acid_offset + acid_sig_size_v2) !=
-                acid_body_size ||
-            std::memcmp(acid_header.magic.data(), "ACID", 4) != 0) {
+        return file->ReadBytes(body, acid_body_size, acid_offset + sig_size) == acid_body_size &&
+               std::memcmp(acid_header.magic.data(), "ACID", 4) == 0;
+    };
+    acid_header = {};
+    if (contains(0, sizeof(AcidHeader), acid_size) &&
+        file->ReadObject(&acid_header, acid_offset) == sizeof(AcidHeader) &&
+        std::memcmp(acid_header.magic.data(), "ACID", 4) == 0) {
+        // Legacy v1 ACID loaded cleanly with signature + modulus.
+    } else if (!read_acid_body(acid_sig_size_v1)) {
+        if (!read_acid_body(acid_sig_size_v2)) {
             return Loader::ResultStatus::ErrorBadACIDHeader;
         }
         LOG_INFO(Loader, "NPDM uses the Switch 2 ACID layout");
         is_switch2 = true;
     }
 
-    if (sizeof(AciHeader) != file->ReadObject(&aci_header, npdm_header.aci_offset)) {
+    if (aci_offset < sizeof(Header) || !contains(aci_offset, aci_size, total_size) ||
+        aci_size < sizeof(AciHeader) ||
+        sizeof(AciHeader) != file->ReadObject(&aci_header, aci_offset) ||
+        aci_header.magic != std::array{'A', 'C', 'I', '0'}) {
         return Loader::ResultStatus::ErrorBadACIHeader;
+    }
+
+    constexpr u64 fac_read_size =
+        4 + sizeof(FileAccessControl::permissions) + sizeof(FileAccessControl::unknown);
+    if (acid_header.fac_size < fac_read_size ||
+        !contains(acid_header.fac_offset, acid_header.fac_size, acid_size)) {
+        return Loader::ResultStatus::ErrorBadFileAccessControl;
+    }
+    constexpr u64 fah_read_size = 4 + sizeof(FileAccessHeader::permissions) + 4 * sizeof(u32);
+    if (aci_header.fah_size < fah_read_size ||
+        !contains(aci_header.fah_offset, aci_header.fah_size, aci_size)) {
+        return Loader::ResultStatus::ErrorBadFileAccessHeader;
     }
 
     // Load acid_file_access per-component instead of the entire struct, since this struct does not
     // reflect the layout of the real data.
     // FAC/FAH offsets are relative to the start of the ACID/ACI block, like the KAC offsets.
-    std::size_t current_offset = npdm_header.acid_offset + acid_header.fac_offset;
+    std::size_t current_offset = acid_offset + acid_header.fac_offset;
     if (sizeof(FileAccessControl::version) != file->ReadBytes(&acid_file_access.version,
                                                               sizeof(FileAccessControl::version),
                                                               current_offset)) {
@@ -107,9 +144,13 @@ Loader::ResultStatus ProgramMetadata::Load(VirtualFile file) {
         return Loader::ResultStatus::ErrorBadFileAccessHeader;
     }
 
+    if (aci_header.kac_size % sizeof(u32) != 0 ||
+        !contains(aci_header.kac_offset, aci_header.kac_size, aci_size)) {
+        return Loader::ResultStatus::ErrorBadKernelCapabilityDescriptors;
+    }
     aci_kernel_capabilities.resize(aci_header.kac_size / sizeof(u32));
     const u64 read_size = aci_header.kac_size;
-    const u64 read_offset = npdm_header.aci_offset + aci_header.kac_offset;
+    const u64 read_offset = aci_offset + aci_header.kac_offset;
     if (file->ReadBytes(aci_kernel_capabilities.data(), read_size, read_offset) != read_size) {
         return Loader::ResultStatus::ErrorBadKernelCapabilityDescriptors;
     }
@@ -146,6 +187,7 @@ void ProgramMetadata::LoadManual(bool is_64_bit, ProgramAddressSpaceType address
                                  u32 main_thread_stack_size, u64 title_id,
                                  u64 filesystem_permissions, u32 system_resource_size,
                                  KernelCapabilityDescriptors capabilities) {
+    is_switch2 = false;
     npdm_header.has_64_bit_instructions.Assign(is_64_bit);
     npdm_header.address_space_type.Assign(address_space);
     npdm_header.main_thread_priority = static_cast<u8>(main_thread_prio);

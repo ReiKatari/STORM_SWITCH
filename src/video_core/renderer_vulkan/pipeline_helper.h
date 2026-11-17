@@ -350,6 +350,11 @@ public:
     std::array<f32, 4> words{};
 };
 
+class GsScratchPushConstant {
+public:
+    u32 generation{};
+};
+
 inline void PushImageDescriptors(TextureCache& texture_cache,
                                  GuestDescriptorQueue& guest_descriptor_queue,
                                  const Shader::Info& info, RescalingPushConstant& rescaling,

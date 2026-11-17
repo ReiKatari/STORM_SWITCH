@@ -69,16 +69,16 @@ void Fermi2D::Blit() {
         LOG_WARNING(HW_GPU, "Fermi2D Blit: Operation is not copy ({})", static_cast<u32>(regs.operation));
     }
     if (regs.src.layer != 0) {
-        LOG_WARNING(HW_GPU, "Fermi2D Blit: Source layer is not zero ({})", regs.src.layer);
+        LOG_DEBUG(HW_GPU, "Fermi2D Blit: Source layer ({})", regs.src.layer);
     }
     if (regs.dst.layer != 0) {
-        LOG_WARNING(HW_GPU, "Fermi2D Blit: Destination layer is not zero ({})", regs.dst.layer);
+        LOG_DEBUG(HW_GPU, "Fermi2D Blit: Destination layer ({})", regs.dst.layer);
     }
     if (regs.src.depth != 1 && regs.src.depth != 0) {
         static bool warned_depth = false;
         if (!warned_depth) {
             warned_depth = true;
-            LOG_WARNING(HW_GPU, "Fermi2D Blit: Source depth is not one (depth={})", regs.src.depth);
+            LOG_DEBUG(HW_GPU, "Fermi2D Blit: Source depth (depth={})", regs.src.depth);
         }
     }
     if (regs.clip_enable != 0) {
@@ -138,6 +138,13 @@ void Fermi2D::Blit() {
 
     memory_manager.FlushCaching();
     if (!rasterizer->AccelerateSurfaceCopy(src, regs.dst, config)) {
+        const auto src_bytes_per_pixel = BytesPerBlock(PixelFormatFromRenderTargetFormat(src.format));
+        const u32 effective_depth = std::max(src.depth, src.layer + 1);
+        const size_t src_size = (src.linear == Fermi2D::MemoryLayout::BlockLinear)
+            ? Texture::CalculateSize(true, src_bytes_per_pixel, src.width, src.height,
+                                     effective_depth, src.block_height, src.block_depth)
+            : static_cast<size_t>(src.pitch * src.height);
+        memory_manager.FlushRegion(src.Address(), src_size);
         sw_blitter->Blit(src, regs.dst, config);
     }
 }

@@ -88,20 +88,56 @@ bool VectorViewIsExact(EmitContext& ctx, const IR::Value& offset, u32 size) {
 
 } // Anonymous namespace
 
-void EmitLoadGlobalU8(EmitContext&) {
-    throw NotImplementedException("SPIR-V Instruction");
+Id EmitLoadGlobalU8(EmitContext& ctx, Id address) {
+    if (!ctx.profile.support_int64) {
+        LOG_WARNING(Shader_SPIRV, "Int64 not supported, ignoring memory operation");
+        return ctx.Const(0u);
+    }
+    const Id aligned_addr{ctx.OpBitwiseAnd(ctx.U64, address, ctx.Constant(ctx.U64, ~u64{3}))};
+    const Id word{ctx.OpFunctionCall(ctx.U32[1], ctx.load_global_func_u32, aligned_addr)};
+    const Id low_addr{ctx.OpUConvert(ctx.U32[1], address)};
+    const Id byte_offset{ctx.OpBitwiseAnd(ctx.U32[1], low_addr, ctx.Const(3u))};
+    const Id bit_offset{ctx.OpShiftLeftLogical(ctx.U32[1], byte_offset, ctx.Const(3u))};
+    return ctx.OpBitFieldUExtract(ctx.U32[1], word, bit_offset, ctx.Const(8u));
 }
 
-void EmitLoadGlobalS8(EmitContext&) {
-    throw NotImplementedException("SPIR-V Instruction");
+Id EmitLoadGlobalS8(EmitContext& ctx, Id address) {
+    if (!ctx.profile.support_int64) {
+        LOG_WARNING(Shader_SPIRV, "Int64 not supported, ignoring memory operation");
+        return ctx.Const(0u);
+    }
+    const Id aligned_addr{ctx.OpBitwiseAnd(ctx.U64, address, ctx.Constant(ctx.U64, ~u64{3}))};
+    const Id word{ctx.OpFunctionCall(ctx.U32[1], ctx.load_global_func_u32, aligned_addr)};
+    const Id low_addr{ctx.OpUConvert(ctx.U32[1], address)};
+    const Id byte_offset{ctx.OpBitwiseAnd(ctx.U32[1], low_addr, ctx.Const(3u))};
+    const Id bit_offset{ctx.OpShiftLeftLogical(ctx.U32[1], byte_offset, ctx.Const(3u))};
+    return ctx.OpBitFieldSExtract(ctx.U32[1], word, bit_offset, ctx.Const(8u));
 }
 
-void EmitLoadGlobalU16(EmitContext&) {
-    throw NotImplementedException("SPIR-V Instruction");
+Id EmitLoadGlobalU16(EmitContext& ctx, Id address) {
+    if (!ctx.profile.support_int64) {
+        LOG_WARNING(Shader_SPIRV, "Int64 not supported, ignoring memory operation");
+        return ctx.Const(0u);
+    }
+    const Id aligned_addr{ctx.OpBitwiseAnd(ctx.U64, address, ctx.Constant(ctx.U64, ~u64{3}))};
+    const Id word{ctx.OpFunctionCall(ctx.U32[1], ctx.load_global_func_u32, aligned_addr)};
+    const Id low_addr{ctx.OpUConvert(ctx.U32[1], address)};
+    const Id byte_offset{ctx.OpBitwiseAnd(ctx.U32[1], low_addr, ctx.Const(2u))};
+    const Id bit_offset{ctx.OpShiftLeftLogical(ctx.U32[1], byte_offset, ctx.Const(3u))};
+    return ctx.OpBitFieldUExtract(ctx.U32[1], word, bit_offset, ctx.Const(16u));
 }
 
-void EmitLoadGlobalS16(EmitContext&) {
-    throw NotImplementedException("SPIR-V Instruction");
+Id EmitLoadGlobalS16(EmitContext& ctx, Id address) {
+    if (!ctx.profile.support_int64) {
+        LOG_WARNING(Shader_SPIRV, "Int64 not supported, ignoring memory operation");
+        return ctx.Const(0u);
+    }
+    const Id aligned_addr{ctx.OpBitwiseAnd(ctx.U64, address, ctx.Constant(ctx.U64, ~u64{3}))};
+    const Id word{ctx.OpFunctionCall(ctx.U32[1], ctx.load_global_func_u32, aligned_addr)};
+    const Id low_addr{ctx.OpUConvert(ctx.U32[1], address)};
+    const Id byte_offset{ctx.OpBitwiseAnd(ctx.U32[1], low_addr, ctx.Const(2u))};
+    const Id bit_offset{ctx.OpShiftLeftLogical(ctx.U32[1], byte_offset, ctx.Const(3u))};
+    return ctx.OpBitFieldSExtract(ctx.U32[1], word, bit_offset, ctx.Const(16u));
 }
 
 Id EmitLoadGlobal32(EmitContext& ctx, Id address) {

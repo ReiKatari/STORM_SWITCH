@@ -348,7 +348,11 @@ std::vector<Release> GetReleases() {
 std::optional<Release> GetLatestRelease() {
     std::optional<Release> gh_rel;
     const auto releases_path = Common::g_build_auto_update_api_path;
-    const auto url = fmt::format("https://{}", Common::g_build_auto_update_api);
+        // Try GitHub first, then Storm Games World API
+    const auto url_primary = fmt::format("https://{}", Common::g_build_auto_update_api);
+    const auto url_secondary = fmt::format("https://{}", Common::g_build_auto_update_api_secondary);
+    auto url = url_primary; // Default to primary
+
 
     const auto body = MakeRequest(url, releases_path);
     if (body) {

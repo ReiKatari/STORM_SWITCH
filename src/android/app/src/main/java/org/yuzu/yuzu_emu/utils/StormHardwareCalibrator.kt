@@ -426,7 +426,7 @@ object StormHardwareCalibrator {
             }
 
             // 3. Extended Dynamic State (EDS) & Vertex Input Dynamic State Hardware/Driver Guard
-            val canUseEds1 = profile.isAdreno && !profile.isAdreno6xx && isTurnip
+            val canUseEds1 = profile.isAdreno && !profile.isAdreno6xx && !profile.isAdreno830 && isTurnip
             val currentDyna = IntSetting.RENDERER_DYNA_STATE.getInt()
             if (!canUseEds1 && currentDyna != 0) {
                 IntSetting.RENDERER_DYNA_STATE.setInt(0)
@@ -467,7 +467,7 @@ object StormHardwareCalibrator {
         try {
             val profile = detectHardware(context)
             val isTurnip = GpuDriverHelper.isTurnipDriverActive()
-            val canUseEds1 = profile.isAdreno && !profile.isAdreno6xx && isTurnip
+            val canUseEds1 = profile.isAdreno && !profile.isAdreno6xx && !profile.isAdreno830 && isTurnip
 
             // 1. Dynamic State protection per GPU / Driver
             val dynaVal = settings["Renderer\\dyna_state"]
@@ -527,7 +527,7 @@ object StormHardwareCalibrator {
      */
     private fun applyDeviceDefaultPreset(profile: DeviceHardwareProfile) {
         val isTurnip = GpuDriverHelper.isTurnipDriverActive()
-        val canUseEds1 = profile.isAdreno && !profile.isAdreno6xx && isTurnip
+        val canUseEds1 = profile.isAdreno && !profile.isAdreno6xx && !profile.isAdreno830 && isTurnip
 
         // 1. Renderer / Video Defaults
         IntSetting.RENDERER_BACKEND.setInt(1) // Vulkan
@@ -627,7 +627,7 @@ object StormHardwareCalibrator {
      */
     private fun applyDeviceFastPreset(profile: DeviceHardwareProfile) {
         val isTurnip = GpuDriverHelper.isTurnipDriverActive()
-        val canUseEds1 = profile.isAdreno && !profile.isAdreno6xx && isTurnip
+        val canUseEds1 = profile.isAdreno && !profile.isAdreno6xx && !profile.isAdreno830 && isTurnip
 
         IntSetting.RENDERER_BACKEND.setInt(1)
         val res = if (profile.isAdreno830) 3 else if (profile.tier >= HardwareTier.MIDRANGE && !profile.isAdreno6xx && profile.totalRamGb >= 6.0) 2 else 1
@@ -684,7 +684,7 @@ object StormHardwareCalibrator {
      */
     private fun applyDeviceNormalPreset(profile: DeviceHardwareProfile) {
         val isTurnip = GpuDriverHelper.isTurnipDriverActive()
-        val canUseEds1 = profile.isAdreno && !profile.isAdreno6xx && isTurnip
+        val canUseEds1 = profile.isAdreno && !profile.isAdreno6xx && !profile.isAdreno830 && isTurnip
 
         IntSetting.RENDERER_BACKEND.setInt(1)
         val res = if (profile.totalRamGb < 5.0) 1 else if (profile.isDimensity9400 || profile.isDimensity9300Or9200 || profile.isAdreno6xx || (profile.tier <= HardwareTier.MIDRANGE)) 2 else 3
@@ -738,7 +738,7 @@ object StormHardwareCalibrator {
 
     private fun applyDeviceBatteryPreset(profile: DeviceHardwareProfile) {
         val isTurnip = GpuDriverHelper.isTurnipDriverActive()
-        val canUseEds1 = profile.isAdreno && !profile.isAdreno6xx && isTurnip
+        val canUseEds1 = profile.isAdreno && !profile.isAdreno6xx && !profile.isAdreno830 && isTurnip
 
         IntSetting.RENDERER_BACKEND.setInt(1)
         val res = if (profile.totalRamGb < 6.5) 2 else 3
@@ -791,7 +791,7 @@ object StormHardwareCalibrator {
      */
     private fun applyDeviceAccuratePreset(profile: DeviceHardwareProfile) {
         val isTurnip = GpuDriverHelper.isTurnipDriverActive()
-        val canUseEds1 = profile.isAdreno && !profile.isAdreno6xx && isTurnip
+        val canUseEds1 = profile.isAdreno && !profile.isAdreno6xx && !profile.isAdreno830 && isTurnip
 
         IntSetting.RENDERER_BACKEND.setInt(1)
         // 1.5X for Flagship Adreno 7xx+ with >=12GB RAM, 0.75X for Adreno 6xx/Low-RAM, 1X for others

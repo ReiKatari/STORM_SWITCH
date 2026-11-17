@@ -51,7 +51,8 @@ void WindowAdaptPass::Draw(const Device& device, RasterizerVulkan& rasterizer, S
 
     auto layer_it = layers.begin();
     for (size_t i = 0; i < layer_count; i++) {
-        switch (configs[i].blending) {
+        const auto blending = (i == 0) ? Tegra::BlendMode::Opaque : configs[i].blending;
+        switch (blending) {
         case Tegra::BlendMode::Opaque:
         default:
             graphics_pipelines[i] = *opaque_pipeline;
@@ -148,8 +149,8 @@ void WindowAdaptPass::CreateRenderPass(const Device& device, VkFormat frame_form
 }
 
 void WindowAdaptPass::CreatePipelines(const Device& device) {
-    opaque_pipeline = CreateWrappedPipeline(device, render_pass, pipeline_layout,
-                                            std::tie(vertex_shader, fragment_shader));
+    opaque_pipeline = CreateWrappedOpaquePresentPipeline(device, render_pass, pipeline_layout,
+                                                         std::tie(vertex_shader, fragment_shader));
     premultiplied_pipeline = CreateWrappedPremultipliedBlendingPipeline(
         device, render_pass, pipeline_layout, std::tie(vertex_shader, fragment_shader));
     coverage_pipeline = CreateWrappedCoverageBlendingPipeline(

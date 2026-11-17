@@ -13,6 +13,7 @@
 #include <stdexcept>
 
 #include "common/range_sets.inc"
+#include "shader_recompiler/shader_info.h"
 #include "video_core/buffer_cache/buffer_cache_base.h"
 #include "video_core/guest_memory.h"
 #include "video_core/host1x/gpu_device_memory_manager.h"
@@ -55,6 +56,12 @@ BufferCache<P>::BufferCache(Tegra::MaxwellDeviceMemoryManager& device_memory_, R
     critical_memory = static_cast<u64>(
         (std::max)((std::min)(device_local_memory - min_vacancy_critical, min_spacing_critical),
                  DEFAULT_CRITICAL_MEMORY));
+#ifdef __ANDROID__
+    // On UMA mobile devices (8-16 GiB shared RAM), prevent desktop budget formulas from
+    // letting dead buffers accumulate into multi-gigabyte RSS/Swap bloat.
+    minimum_memory = (std::min)(minimum_memory, static_cast<u64>(384_MiB));
+    critical_memory = (std::min)(critical_memory, static_cast<u64>(640_MiB));
+#endif
 }
 
 template <class P>
@@ -136,10 +143,17 @@ void BufferCache<P>::TickFrame() {
         }
     } else {
         const bool vram_gc = Settings::values.vram_garbage_collection.GetValue();
+#ifdef __ANDROID__
+        const u64 gc_threshold = vram_gc ? minimum_memory : critical_memory;
+        if (buffer_bytes >= gc_threshold) {
+            RunGarbageCollector(buffer_bytes >= critical_memory);
+        }
+#else
         const u64 gc_threshold = vram_gc ? minimum_memory : critical_memory;
         if (total_used_memory >= gc_threshold) {
             RunGarbageCollector(total_used_memory >= critical_memory);
         }
+#endif
     }
     ++frame_tick;
     delayed_destruction_ring.Tick();
@@ -334,11 +348,17 @@ bool BufferCache<P>::DMACopy(GPUVAddr src_address, GPUVAddr dest_address, u64 am
     runtime.CopyBuffer(dest_buffer, src_buffer, copies, true);
     if (has_new_downloads) {
         memory_tracker.MarkRegionAsGpuModified(*cpu_dest_address, amount);
+        const bool should_sync = Settings::IsGPUFenceBehaviorBalanced() || Settings::IsGPUFenceBehaviorAccurate();
+        if (should_sync) {
+            runtime.Finish();
+        }
     }
 
-    Tegra::Memory::DeviceGuestMemoryScoped<u8, Tegra::Memory::GuestMemoryFlags::UnsafeReadWrite>
-        tmp(device_memory, *cpu_src_address, amount, &tmp_buffer);
-    tmp.SetAddressAndSize(*cpu_dest_address, amount);
+    if (!has_new_downloads) {
+        Tegra::Memory::DeviceGuestMemoryScoped<u8, Tegra::Memory::GuestMemoryFlags::UnsafeReadWrite>
+            tmp(device_memory, *cpu_src_address, amount, &tmp_buffer);
+        tmp.SetAddressAndSize(*cpu_dest_address, amount);
+    }
     return true;
 }
 
@@ -516,6 +536,7 @@ void BufferCache<P>::UnbindGraphicsStorageBuffers(size_t stage) {
     }
     channel_state->enabled_storage_buffers[stage] = 0;
     channel_state->written_storage_buffers[stage] = 0;
+    channel_state->scratch_storage_buffers[stage] = 0;
 }
 
 template <class P>
@@ -540,6 +561,12 @@ bool BufferCache<P>::BindGraphicsStorageBuffer(size_t stage, size_t ssbo_index, 
         if (runtime.ShouldLimitDynamicStorageBuffers() && !already_enabled) {
             ++channel_state->total_graphics_storage_buffers;
         }
+    }
+
+    if (cbuf_index == Shader::GS_SCRATCH_CBUF_INDEX) {
+        // Not guest memory: BindHostGraphicsStorageBuffers binds the host's scratch buffer.
+        channel_state->scratch_storage_buffers[stage] |= 1U << ssbo_index;
+        return true;
     }
 
     const auto& cbufs = maxwell3d->state.shader_stages[stage];
@@ -1123,6 +1150,15 @@ template <class P>
 void BufferCache<P>::BindHostGraphicsStorageBuffers(size_t stage) {
     u32 binding_index = 0;
     ForEachEnabledBit(channel_state->enabled_storage_buffers[stage], [&](u32 index) {
+        if (((channel_state->scratch_storage_buffers[stage] >> index) & 1) != 0) {
+            if constexpr (requires { runtime.BindGsScratchStorageBuffer(); }) {
+                runtime.BindGsScratchStorageBuffer();
+            }
+            if constexpr (NEEDS_BIND_STORAGE_INDEX) {
+                ++binding_index;
+            }
+            return;
+        }
         const Binding& binding = channel_state->storage_buffers[stage][index];
         Buffer& buffer = slot_buffers[binding.buffer_id];
         TouchBuffer(buffer, binding.buffer_id);

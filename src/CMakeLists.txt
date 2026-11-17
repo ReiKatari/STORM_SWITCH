@@ -1,3 +1,4 @@
+set(ANDROID_ABI arm64-v8a)
 # SPDX-FileCopyrightText: Copyright 2026 Eden Emulator Project
 # SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -85,7 +86,7 @@ if (MSVC AND NOT CXX_CLANG)
     # /Zc:preprocessor    - Enable standards-conforming preprocessor
     # /Zc:throwingNew     - Let codegen assume `operator new` (without std::nothrow) will never return null
     # /GT                 - Supports fiber safety for data allocated using static thread-local storage
-    add_compile_options(
+    add_compile_options(-Wno-deprecated-declarations
         /MP1
         /Zm200
         /Zo
@@ -134,7 +135,7 @@ if (MSVC AND NOT CXX_CLANG)
     )
 
     if (NOT CXX_CLANG)
-        add_compile_options(
+        add_compile_options(-Wno-deprecated-declarations
             # Warnings
             /W4
             /WX-
@@ -142,14 +143,14 @@ if (MSVC AND NOT CXX_CLANG)
     endif()
 
     if (ARCHITECTURE_x86_64)
-        add_compile_options(/QIntel-jcc-erratum)
+        add_compile_options(-Wno-deprecated-declarations /QIntel-jcc-erratum)
     endif()
 
     set(CMAKE_EXE_LINKER_FLAGS_DEBUG   "/DEBUG /MANIFEST:NO" CACHE STRING "" FORCE)
     set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /MANIFEST:NO /INCREMENTAL:NO /OPT:REF /OPT:ICF=3" CACHE STRING "" FORCE)
 else()
     if (NOT MSVC)
-        add_compile_options(
+        add_compile_options(-Wno-deprecated-declarations
             $<$<COMPILE_LANGUAGE:C,CXX>:-fwrapv>
             $<$<COMPILE_LANGUAGE:C,CXX>:-pipe>
             # Disable RTTI (C++ only)
@@ -157,14 +158,14 @@ else()
     endif()
 
     if (ENABLE_WERROR)
-        add_compile_options(
+        add_compile_options(-Wno-deprecated-declarations
             $<$<COMPILE_LANGUAGE:C,CXX>:-Werror=all>
             $<$<COMPILE_LANGUAGE:C,CXX>:-Werror=extra>
             $<$<COMPILE_LANGUAGE:C,CXX>:-Werror=missing-declarations>
             $<$<COMPILE_LANGUAGE:C,CXX>:-Werror=shadow>
             $<$<COMPILE_LANGUAGE:C,CXX>:-Werror=unused>)
     else()
-        add_compile_options(
+        add_compile_options(-Wno-deprecated-declarations
             $<$<COMPILE_LANGUAGE:C,CXX>:-Wall>
             $<$<COMPILE_LANGUAGE:C,CXX>:-Wextra>
             $<$<COMPILE_LANGUAGE:C,CXX>:-Wmissing-declarations>
@@ -173,7 +174,7 @@ else()
             # Some compilers could particularly misbehave :)
             $<$<COMPILE_LANGUAGE:C,CXX>:-Wno-error-all>)
     endif()
-    add_compile_options(
+    add_compile_options(-Wno-deprecated-declarations
         $<$<COMPILE_LANGUAGE:C,CXX>:-Wno-attributes>
         $<$<COMPILE_LANGUAGE:C,CXX>:-Wno-invalid-offsetof>
         $<$<COMPILE_LANGUAGE:C,CXX>:-Wno-unused-parameter>
@@ -181,37 +182,37 @@ else()
 
     if (CXX_CLANG OR CXX_ICC OR CXX_APPLE) # Clang, AppleClang, or Intel C++
         if (NOT MSVC)
-            add_compile_options(
+            add_compile_options(-Wno-deprecated-declarations
                 $<$<COMPILE_LANGUAGE:C,CXX>:-Wshadow-uncaptured-local>
                 $<$<COMPILE_LANGUAGE:C,CXX>:-Wimplicit-fallthrough>
                 $<$<COMPILE_LANGUAGE:C,CXX>:-Wtype-limits>)
         endif()
-        add_compile_options(
+        add_compile_options(-Wno-deprecated-declarations
             $<$<COMPILE_LANGUAGE:C,CXX>:-Wno-braced-scalar-init>
             $<$<COMPILE_LANGUAGE:C,CXX>:-Wno-unused-private-field>
             $<$<COMPILE_LANGUAGE:C,CXX>:-Wno-nullability-completeness>)
     endif()
 
     if (ARCHITECTURE_x86_64)
-        add_compile_options($<$<COMPILE_LANGUAGE:C,CXX>:-mcx16>)
+        add_compile_options(-Wno-deprecated-declarations $<$<COMPILE_LANGUAGE:C,CXX>:-mcx16>)
         if (LINUX OR FREEBSD)
-            add_compile_options($<$<COMPILE_LANGUAGE:C,CXX>:-mtls-dialect=gnu2>)
+            add_compile_options(-Wno-deprecated-declarations $<$<COMPILE_LANGUAGE:C,CXX>:-mtls-dialect=gnu2>)
         endif()
     endif()
 
     if (APPLE AND CXX_CLANG)
-        add_compile_options($<$<COMPILE_LANGUAGE:C,CXX>:-stdlib=libc++>)
+        add_compile_options(-Wno-deprecated-declarations $<$<COMPILE_LANGUAGE:C,CXX>:-stdlib=libc++>)
     endif()
 
     if (ANDROID AND CXX_CLANG)
         # Safe High-Impact Clang Optimization Upgrades for Android (Release & RelWithDebInfo)
-        add_compile_options(
+        add_compile_options(-Wno-deprecated-declarations
             $<$<AND:$<COMPILE_LANGUAGE:C,CXX>,$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>>>:-O2>
             $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>>>:-fvisibility-inlines-hidden>
             $<$<AND:$<COMPILE_LANGUAGE:C,CXX>,$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>>>:-fno-semantic-interposition>
         )
         if (ARCHITECTURE_arm64)
-            add_compile_options(
+            add_compile_options(-Wno-deprecated-declarations
                 $<$<AND:$<COMPILE_LANGUAGE:C,CXX>,$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>>>:-moutline-atomics>
             )
         endif()
@@ -226,7 +227,7 @@ else()
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "11" AND CXX_GCC)
         # These diagnostics would be great if they worked, but are just completely broken
         # and produce bogus errors on external libraries like fmt.
-        add_compile_options(
+        add_compile_options(-Wno-deprecated-declarations
             $<$<COMPILE_LANGUAGE:C,CXX>:-Wno-array-bounds>
             $<$<COMPILE_LANGUAGE:C,CXX>:-Wno-stringop-overread>
             $<$<COMPILE_LANGUAGE:C,CXX>:-Wno-stringop-overflow>)
@@ -242,7 +243,7 @@ else()
     endif()
 
     if (YUZU_STATIC_BUILD AND NOT APPLE AND NOT MSVC)
-        add_compile_options(-static)
+        add_compile_options(-Wno-deprecated-declarations -static)
 
         # yuzu-cmd requires us to explicitly link libpthread, libgcc, and libstdc++ as static
         add_link_options(-Wl,-Bstatic -static -lpthread)
@@ -254,7 +255,7 @@ else()
 
         # Only windows has this requirement
         if (WIN32 AND ARCHITECTURE_x86_64)
-            add_compile_options("-msse4.1")
+            add_compile_options(-Wno-deprecated-declarations "-msse4.1")
         endif()
     endif()
 
