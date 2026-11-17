@@ -1414,7 +1414,8 @@ bool AccelerateDMA::DmaBufferImageCopy(const Tegra::DMA::ImageCopy& copy_info,
                                        const Tegra::DMA::ImageOperand& image_operand) {
     std::scoped_lock lock{buffer_cache.mutex, texture_cache.mutex};
     const auto image_id = texture_cache.DmaImageId(image_operand, IS_IMAGE_UPLOAD);
-    if (image_id == VideoCommon::NULL_IMAGE_ID) {
+    if (image_id == VideoCommon::NULL_IMAGE_ID ||
+        !texture_cache.CanDmaBufferImageCopy(copy_info, buffer_operand, image_operand, image_id)) {
         return false;
     }
     const u32 buffer_size = static_cast<u32>(buffer_operand.pitch * buffer_operand.height);
@@ -1423,6 +1424,10 @@ bool AccelerateDMA::DmaBufferImageCopy(const Tegra::DMA::ImageCopy& copy_info,
                                          : VideoCommon::ObtainBufferOperation::MarkAsWritten;
     const auto [buffer, offset] =
         buffer_cache.ObtainBuffer(buffer_operand.address, buffer_size, sync_info, post_op);
+    if (!texture_cache.CanDmaBufferImageCopy(copy_info, buffer_operand, image_operand, image_id,
+                                             offset)) {
+        return false;
+    }
 
     const auto [image, copy] = texture_cache.DmaBufferImageCopy(
         copy_info, buffer_operand, image_operand, image_id, IS_IMAGE_UPLOAD);
@@ -1432,9 +1437,6 @@ bool AccelerateDMA::DmaBufferImageCopy(const Tegra::DMA::ImageCopy& copy_info,
         texture_cache.PrepareImage(image_id, true, false);
         image->UploadMemory(buffer->Handle(), offset, copy_span);
     } else {
-        if (offset % BytesPerBlock(image->info.format)) {
-            return false;
-        }
         texture_cache.DownloadImageIntoBuffer(image, buffer->Handle(), offset, copy_span,
                                               buffer_operand.address, buffer_size);
     }

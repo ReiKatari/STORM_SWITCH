@@ -792,7 +792,7 @@
                         android:maxLines="2"
                         android:textColor="?attr/colorOnSurfaceVariant"
                         android:textSize="10sp"
-                        tools:text="📁 Папка: /storage/emulated/0/Switch"
+                        tools:text="Папка: /storage/emulated/0/Switch"
     android:breakStrategy="simple"
     android:hyphenationFrequency="none"/>
 

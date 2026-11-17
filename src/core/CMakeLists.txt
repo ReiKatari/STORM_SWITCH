@@ -174,6 +174,8 @@ add_library(core STATIC
     file_sys/vfs/vfs_cached.h
     file_sys/vfs/vfs_concat.cpp
     file_sys/vfs/vfs_concat.h
+    file_sys/vfs/vfs_edenpack.cpp
+    file_sys/vfs/vfs_edenpack.h
     file_sys/vfs/vfs_layered.cpp
     file_sys/vfs/vfs_layered.h
     file_sys/vfs/vfs_offset.cpp
@@ -1187,6 +1189,8 @@ add_library(core STATIC
     memory_region_scan.h
     memory/cheat_engine.cpp
     memory/cheat_engine.h
+    memory/cheat_parser.cpp
+    memory/cheat_parser.h
     memory/dmnt_cheat_types.h
     memory/dmnt_cheat_vm.cpp
     memory/dmnt_cheat_vm.h

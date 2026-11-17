@@ -6,6 +6,7 @@
 #pragma once
 
 #include <atomic>
+#include <chrono>
 #include <condition_variable>
 #include <cstddef>
 #include <mutex>
@@ -36,6 +37,28 @@ public:
 
     bool TryPop(T& t) noexcept {
         return Pop<PopMode::Try>(t);
+    }
+
+    template <typename Rep, typename Period>
+    bool TryPopWait(T& t, const std::chrono::duration<Rep, Period>& timeout,
+                    std::stop_token stop_token = {}) noexcept {
+        const std::size_t read_index = consumer.index.load(std::memory_order::relaxed);
+        if (read_index == producer.index.load(std::memory_order::acquire)) {
+            std::unique_lock lock{consumer.cv_mutex};
+            const bool ready = consumer.cv.wait_for(
+                lock, stop_token, timeout, [this, read_index] {
+                    return read_index != producer.index.load(std::memory_order::acquire);
+                });
+            if (!ready) {
+                return false;
+            }
+        }
+        const std::size_t pos = read_index % Capacity;
+        t = std::move(m_data[pos]);
+        ++consumer.index;
+        std::scoped_lock lock{producer.cv_mutex};
+        producer.cv.notify_one();
+        return true;
     }
 
     void PopWait(T& t) noexcept {
@@ -169,6 +192,12 @@ public:
 
     bool TryPop(T& t) {
         return spsc_queue.TryPop(t);
+    }
+
+    template <typename Rep, typename Period>
+    bool TryPopWait(T& t, const std::chrono::duration<Rep, Period>& timeout,
+                    std::stop_token stop_token = {}) {
+        return spsc_queue.TryPopWait(t, timeout, stop_token);
     }
 
     void PopWait(T& t) {

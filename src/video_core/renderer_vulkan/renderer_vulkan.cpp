@@ -369,6 +369,8 @@ void RendererVulkan::Report() const {
     LOG_INFO(Render_Vulkan, "Vulkan: {}", api_version);
     LOG_INFO(Render_Vulkan, "Physical VRAM: {:.2f} GiB", physical_vram);
     LOG_INFO(Render_Vulkan, "Available VRAM: {:.2f} GiB", available_vram);
+    LOG_INFO(Render_Vulkan, "Depth clip enable (VK_EXT_depth_clip_enable): {}",
+             device.IsExtDepthClipEnableSupported() ? "supported" : "not supported");
 }
 
 vk::Buffer RendererVulkan::RenderToBuffer(std::span<const Tegra::FramebufferConfig> framebuffers,

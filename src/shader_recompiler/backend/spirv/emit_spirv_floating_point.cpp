@@ -88,6 +88,9 @@ Id EmitFPFma64(EmitContext& ctx, IR::Inst* inst, Id a, Id b, Id c) {
 }
 
 Id EmitFPMax32(EmitContext& ctx, Id a, Id b) {
+    if (Settings::values.fix_bloom_effects.GetValue() || ctx.profile.has_broken_fp16_float_controls) {
+        return ctx.OpNMax(ctx.F32[1], a, b);
+    }
     return ctx.OpFMax(ctx.F32[1], a, b);
 }
 
@@ -96,6 +99,9 @@ Id EmitFPMax64(EmitContext& ctx, Id a, Id b) {
 }
 
 Id EmitFPMin32(EmitContext& ctx, Id a, Id b) {
+    if (Settings::values.fix_bloom_effects.GetValue() || ctx.profile.has_broken_fp16_float_controls) {
+        return ctx.OpNMin(ctx.F32[1], a, b);
+    }
     return ctx.OpFMin(ctx.F32[1], a, b);
 }
 
@@ -136,15 +142,15 @@ Id EmitFPCos(EmitContext& ctx, Id value) {
 }
 
 Id EmitFPExp2(EmitContext& ctx, Id value) {
-    return ctx.OpExp2(ctx.F32[1], value);
+    return SanitizeFiniteF32(ctx, ctx.OpExp2(ctx.F32[1], value));
 }
 
 Id EmitFPLog2(EmitContext& ctx, Id value) {
-    return ctx.OpLog2(ctx.F32[1], value);
+    return SanitizeFiniteF32(ctx, ctx.OpLog2(ctx.F32[1], value), 65000.0f, -65000.0f);
 }
 
 Id EmitFPRecip32(EmitContext& ctx, Id value) {
-    return ctx.OpFDiv(ctx.F32[1], ctx.Const(1.0f), value);
+    return SanitizeFiniteF32(ctx, ctx.OpFDiv(ctx.F32[1], ctx.Const(1.0f), value));
 }
 
 Id EmitFPRecip64(EmitContext& ctx, Id value) {
@@ -152,7 +158,7 @@ Id EmitFPRecip64(EmitContext& ctx, Id value) {
 }
 
 Id EmitFPRecipSqrt32(EmitContext& ctx, Id value) {
-    return ctx.OpInverseSqrt(ctx.F32[1], value);
+    return SanitizeFiniteF32(ctx, ctx.OpInverseSqrt(ctx.F32[1], value));
 }
 
 Id EmitFPRecipSqrt64(EmitContext& ctx, Id value) {

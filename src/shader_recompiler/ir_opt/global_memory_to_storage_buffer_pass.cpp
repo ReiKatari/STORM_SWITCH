@@ -4,6 +4,7 @@
 // SPDX-FileCopyrightText: Copyright 2021 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include <algorithm>
 #include <optional>
 #include <unordered_map>
 
@@ -290,52 +291,154 @@ bool MeetsBias(const StorageBufferAddr& storage_buffer, const Bias& bias) noexce
 struct LowAddrInfo {
     IR::U32 value;
     s32 imm_offset;
+    bool exact_low_addr;
 };
 
-/// Tries to track the first 32-bits of a global memory instruction
-std::optional<LowAddrInfo> TrackLowAddress(IR::Inst* inst) {
-    // The first argument is the low level GPU pointer to the global memory instruction
-    const IR::Value addr{inst->Arg(0)};
-    if (addr.IsImmediate()) {
-        // Not much we can do if it's an immediate
+constexpr size_t kMaxAddrTrackSteps = 256;
+
+std::optional<LowAddrInfo> ExtractExactLowAddr(const IR::Value& addr, s32 imm_offset, u32 depth = 0) {
+    if (depth >= 24 || addr.IsImmediate()) {
         return std::nullopt;
     }
-    // This address is expected to either be a PackUint2x32, a IAdd64, or a CompositeConstructU32x2
-    IR::Inst* addr_inst{addr.InstRecursive()};
-    s32 imm_offset{0};
-    if (addr_inst->GetOpcode() == IR::Opcode::IAdd64) {
-        // If it's an IAdd64, get the immediate offset it is applying and grab the address
-        // instruction. This expects for the instruction to be canonicalized having the address on
-        // the first argument and the immediate offset on the second one.
-        const IR::U64 imm_offset_value{addr_inst->Arg(1)};
-        if (!imm_offset_value.IsImmediate()) {
-            return std::nullopt;
+    const IR::Inst* const inst{addr.InstRecursive()};
+    switch (inst->GetOpcode()) {
+    case IR::Opcode::IAdd64: {
+        const IR::Value arg0{inst->Arg(0)};
+        const IR::Value arg1{inst->Arg(1)};
+        if (arg1.IsImmediate()) {
+            const s32 delta = static_cast<s32>(static_cast<s64>(arg1.U64()));
+            const u32 sum = static_cast<u32>(imm_offset) + static_cast<u32>(delta);
+            return ExtractExactLowAddr(arg0, static_cast<s32>(sum), depth + 1);
         }
-        imm_offset = static_cast<s32>(static_cast<s64>(imm_offset_value.U64()));
-        const IR::U64 iadd_addr{addr_inst->Arg(0)};
-        if (iadd_addr.IsImmediate()) {
-            return std::nullopt;
+        if (arg0.IsImmediate()) {
+            const s32 delta = static_cast<s32>(static_cast<s64>(arg0.U64()));
+            const u32 sum = static_cast<u32>(imm_offset) + static_cast<u32>(delta);
+            return ExtractExactLowAddr(arg1, static_cast<s32>(sum), depth + 1);
         }
-        addr_inst = iadd_addr.InstRecursive();
+        return std::nullopt;
     }
-    // With IAdd64 handled, now PackUint2x32 is expected
-    if (addr_inst->GetOpcode() == IR::Opcode::PackUint2x32) {
-        // PackUint2x32 is expected to be generated from a vector
-        const IR::Value vector{addr_inst->Arg(0)};
+    case IR::Opcode::ISub64: {
+        const IR::Value arg0{inst->Arg(0)};
+        const IR::Value arg1{inst->Arg(1)};
+        if (arg1.IsImmediate()) {
+            const s32 delta = static_cast<s32>(static_cast<s64>(arg1.U64()));
+            const u32 diff = static_cast<u32>(imm_offset) - static_cast<u32>(delta);
+            return ExtractExactLowAddr(arg0, static_cast<s32>(diff), depth + 1);
+        }
+        return std::nullopt;
+    }
+    case IR::Opcode::ConvertU64U32:
+        return LowAddrInfo{
+            .value{IR::U32{inst->Arg(0)}},
+            .imm_offset = imm_offset,
+            .exact_low_addr = true,
+        };
+    case IR::Opcode::PackUint2x32: {
+        const IR::Value vector{inst->Arg(0)};
         if (vector.IsImmediate()) {
             return std::nullopt;
         }
-        addr_inst = vector.InstRecursive();
-    }
-    // The vector is expected to be a CompositeConstructU32x2
-    if (addr_inst->GetOpcode() != IR::Opcode::CompositeConstructU32x2) {
+        const IR::Inst* const vec_inst{vector.InstRecursive()};
+        if (vec_inst->GetOpcode() == IR::Opcode::CompositeConstructU32x2) {
+            return LowAddrInfo{
+                .value{IR::U32{vec_inst->Arg(0)}},
+                .imm_offset = imm_offset,
+                .exact_low_addr = true,
+            };
+        }
         return std::nullopt;
     }
-    // Grab the first argument from the CompositeConstructU32x2, this is the low address.
-    return LowAddrInfo{
-        .value{IR::U32{addr_inst->Arg(0)}},
-        .imm_offset = imm_offset,
-    };
+    case IR::Opcode::CompositeConstructU32x2:
+        return LowAddrInfo{
+            .value{IR::U32{inst->Arg(0)}},
+            .imm_offset = imm_offset,
+            .exact_low_addr = true,
+        };
+    default:
+        return std::nullopt;
+    }
+}
+
+/// Tries to track the first 32-bits of a global memory instruction (exact low-32 fast path)
+std::optional<LowAddrInfo> TrackLowAddress(IR::Inst* inst) {
+    return ExtractExactLowAddr(inst->Arg(0), 0);
+}
+
+std::optional<u32> ExtractCbufBaseOffset(const IR::Value& value, u32 depth = 0) {
+    if (value.IsImmediate()) {
+        return value.U32();
+    }
+    if (depth >= 24) {
+        return std::nullopt;
+    }
+    const IR::Inst* const inst{value.InstRecursive()};
+    if (!inst) {
+        return std::nullopt;
+    }
+    switch (inst->GetOpcode()) {
+    case IR::Opcode::Identity:
+        return ExtractCbufBaseOffset(inst->Arg(0), depth + 1);
+    case IR::Opcode::IAdd32: {
+        const auto lhs = ExtractCbufBaseOffset(inst->Arg(0), depth + 1);
+        const auto rhs = ExtractCbufBaseOffset(inst->Arg(1), depth + 1);
+        if (lhs && rhs) {
+            return *lhs + *rhs;
+        }
+        return std::nullopt;
+    }
+    case IR::Opcode::ISub32: {
+        const auto lhs = ExtractCbufBaseOffset(inst->Arg(0), depth + 1);
+        const auto rhs = ExtractCbufBaseOffset(inst->Arg(1), depth + 1);
+        if (lhs && rhs) {
+            return *lhs - *rhs;
+        }
+        return std::nullopt;
+    }
+    case IR::Opcode::ShiftLeftLogical32: {
+        const auto lhs = ExtractCbufBaseOffset(inst->Arg(0), depth + 1);
+        const auto rhs = ExtractCbufBaseOffset(inst->Arg(1), depth + 1);
+        if (lhs && rhs && *rhs < 32U) {
+            return *lhs << *rhs;
+        }
+        return std::nullopt;
+    }
+    case IR::Opcode::BitwiseAnd32: {
+        const auto lhs = ExtractCbufBaseOffset(inst->Arg(0), depth + 1);
+        const auto rhs = ExtractCbufBaseOffset(inst->Arg(1), depth + 1);
+        if (lhs && rhs) {
+            return *lhs & *rhs;
+        }
+        return std::nullopt;
+    }
+    case IR::Opcode::BitwiseOr32: {
+        const auto lhs = ExtractCbufBaseOffset(inst->Arg(0), depth + 1);
+        const auto rhs = ExtractCbufBaseOffset(inst->Arg(1), depth + 1);
+        if (lhs && rhs) {
+            return *lhs | *rhs;
+        }
+        return std::nullopt;
+    }
+    case IR::Opcode::Phi: {
+        if (inst->NumArgs() == 0) {
+            return std::nullopt;
+        }
+        std::optional<u32> agreed;
+        for (size_t i = 0; i < inst->NumArgs(); ++i) {
+            const auto branch = ExtractCbufBaseOffset(inst->Arg(i), depth + 1);
+            if (!branch) {
+                return std::nullopt;
+            }
+            if (!agreed) {
+                agreed = *branch;
+            } else if (*agreed != *branch) {
+                return std::nullopt;
+            }
+        }
+        return agreed;
+    }
+    default:
+        return std::nullopt;
+    }
 }
 
 /// Tries to track the storage buffer address used by a global memory instruction
@@ -353,13 +456,14 @@ std::optional<StorageBufferAddr> Track(const IR::Value& value, const Bias* bias)
             // non-immediate index
             return std::nullopt;
         }
-        if (!offset.IsImmediate()) {
-            // TODO: Support SSBO arrays
+        const std::optional<u32> extracted_offset{ExtractCbufBaseOffset(offset)};
+        if (!extracted_offset) {
             return std::nullopt;
         }
+        const u32 offset_val{*extracted_offset};
         const StorageBufferAddr storage_buffer{
             .index = index.U32(),
-            .offset = offset.U32(),
+            .offset = offset_val,
         };
         const u32 alignment{bias ? bias->alignment : 8U};
         if (!Common::IsAligned(storage_buffer.offset, alignment)) {
@@ -386,15 +490,11 @@ void CollectStorageBuffers(IR::Block& block, IR::Inst& inst, StorageInfo& info) 
         .offset_end = 0x700,
         .alignment = 16,
     };
-    // Track the low address of the instruction
-    const std::optional<LowAddrInfo> low_addr_info{TrackLowAddress(&inst)};
-    if (!low_addr_info) {
-        // Failed to track the low address, use NVN fallbacks
+    const IR::Value addr{inst.Arg(0)};
+    if (addr.IsImmediate()) {
         return;
     }
-    // First try to find storage buffers in the NVN address
-    const IR::U32 low_addr{low_addr_info->value};
-    const auto cached_track = [&](const Bias* bias, auto& cache) {
+    const auto cached_track = [&](const IR::Value& low_addr, const Bias* bias, auto& cache) {
         if (low_addr.IsImmediate()) {
             return Track(low_addr, bias);
         }
@@ -406,10 +506,225 @@ void CollectStorageBuffers(IR::Block& block, IR::Inst& inst, StorageInfo& info) 
         cache.emplace(start, result);
         return result;
     };
-    std::optional<StorageBufferAddr> storage_buffer{cached_track(&nvn_bias, info.biased_tracks)};
+    enum class ResolveStatus : u8 { Failed, Cycle, Resolved };
+    struct ResolveResult {
+        ResolveStatus status{ResolveStatus::Failed};
+        StorageBufferAddr addr{};
+    };
+    auto resolve_expr = [&](auto& self, const IR::Value& value, const Bias* bias, auto& cache,
+                            boost::container::small_vector<const IR::Inst*, 64>& on_stack,
+                            size_t& steps, bool allow_u32_ptr) -> ResolveResult {
+        if (value.IsImmediate() || steps >= kMaxAddrTrackSteps) {
+            return {};
+        }
+        const IR::Inst* const node{value.InstRecursive()};
+        if (std::ranges::find(on_stack, node) != on_stack.end()) {
+            return {.status = ResolveStatus::Cycle};
+        }
+        ++steps;
+        on_stack.push_back(node);
+        struct PopGuard {
+            boost::container::small_vector<const IR::Inst*, 64>& s;
+            ~PopGuard() { s.pop_back(); }
+        } pop{on_stack};
+
+        switch (node->GetOpcode()) {
+        case IR::Opcode::IAdd64: {
+            const IR::Value arg0{node->Arg(0)};
+            const IR::Value arg1{node->Arg(1)};
+            if (arg1.IsImmediate()) {
+                return self(self, arg0, bias, cache, on_stack, steps, allow_u32_ptr);
+            }
+            if (arg0.IsImmediate()) {
+                return self(self, arg1, bias, cache, on_stack, steps, allow_u32_ptr);
+            }
+            const ResolveResult lhs = self(self, arg0, bias, cache, on_stack, steps, false);
+            const ResolveResult rhs = self(self, arg1, bias, cache, on_stack, steps, false);
+            if (lhs.status == ResolveStatus::Resolved && rhs.status == ResolveStatus::Resolved) {
+                return lhs.addr == rhs.addr ? lhs : ResolveResult{};
+            }
+            if (lhs.status == ResolveStatus::Resolved) {
+                return lhs;
+            }
+            if (rhs.status == ResolveStatus::Resolved) {
+                return rhs;
+            }
+            if (lhs.status == ResolveStatus::Cycle || rhs.status == ResolveStatus::Cycle) {
+                return {.status = ResolveStatus::Cycle};
+            }
+            return {};
+        }
+        case IR::Opcode::ISub64: {
+            const IR::Value arg0{node->Arg(0)};
+            const IR::Value arg1{node->Arg(1)};
+            if (arg1.IsImmediate()) {
+                return self(self, arg0, bias, cache, on_stack, steps, allow_u32_ptr);
+            }
+            const ResolveResult lhs = self(self, arg0, bias, cache, on_stack, steps, false);
+            if (lhs.status == ResolveStatus::Resolved || lhs.status == ResolveStatus::Cycle) {
+                return lhs;
+            }
+            return {};
+        }
+        case IR::Opcode::SelectU64:
+        case IR::Opcode::Phi: {
+            const size_t start_idx = node->GetOpcode() == IR::Opcode::SelectU64 ? 1 : 0;
+            const size_t count = node->NumArgs();
+            std::optional<StorageBufferAddr> agreed;
+            for (size_t i = start_idx; i < count; ++i) {
+                const ResolveResult br =
+                    self(self, node->Arg(i), bias, cache, on_stack, steps, allow_u32_ptr);
+                if (br.status == ResolveStatus::Failed) {
+                    return {};
+                }
+                if (br.status == ResolveStatus::Resolved) {
+                    if (!agreed) {
+                        agreed = br.addr;
+                    } else if (*agreed != br.addr) {
+                        return {};
+                    }
+                }
+            }
+            return agreed ? ResolveResult{ResolveStatus::Resolved, *agreed}
+                          : ResolveResult{ResolveStatus::Cycle};
+        }
+        case IR::Opcode::ConvertU64U32: {
+            if (!allow_u32_ptr) {
+                return {};
+            }
+            const auto found = cached_track(IR::U32{node->Arg(0)}, bias, cache);
+            return found ? ResolveResult{ResolveStatus::Resolved, *found} : ResolveResult{};
+        }
+        case IR::Opcode::BitCastU64F64: {
+            return self(self, node->Arg(0), bias, cache, on_stack, steps, allow_u32_ptr);
+        }
+        case IR::Opcode::ShiftLeftLogical64: {
+            if (node->Arg(1).IsImmediate() && node->Arg(1).U64() == 0ULL) {
+                return self(self, node->Arg(0), bias, cache, on_stack, steps, allow_u32_ptr);
+            }
+            return {};
+        }
+        case IR::Opcode::IMul32: {
+            if (!allow_u32_ptr) {
+                return {};
+            }
+            if (node->Arg(0).IsImmediate()) {
+                const auto found = cached_track(IR::U32{node->Arg(1)}, bias, cache);
+                return found ? ResolveResult{ResolveStatus::Resolved, *found} : ResolveResult{};
+            }
+            if (node->Arg(1).IsImmediate()) {
+                const auto found = cached_track(IR::U32{node->Arg(0)}, bias, cache);
+                return found ? ResolveResult{ResolveStatus::Resolved, *found} : ResolveResult{};
+            }
+            return {};
+        }
+        case IR::Opcode::PackUint2x32: {
+            auto resolve_u32x2 = [&](auto& u_self, const IR::Value& vec_val) -> ResolveResult {
+                if (vec_val.IsImmediate() || steps >= kMaxAddrTrackSteps) {
+                    return {};
+                }
+                const IR::Inst* const vec_inst{vec_val.InstRecursive()};
+                if (!vec_inst) {
+                    return {};
+                }
+                if (std::ranges::find(on_stack, vec_inst) != on_stack.end()) {
+                    return {.status = ResolveStatus::Cycle};
+                }
+                ++steps;
+                on_stack.push_back(vec_inst);
+                PopGuard vec_pop{on_stack};
+                if (vec_inst->GetOpcode() == IR::Opcode::GetCbufU32x2) {
+                    const auto found = cached_track(vec_val, bias, cache);
+                    return found ? ResolveResult{ResolveStatus::Resolved, *found} : ResolveResult{};
+                }
+                if (vec_inst->GetOpcode() == IR::Opcode::CompositeConstructU32x2) {
+                    const auto found = cached_track(IR::U32{vec_inst->Arg(0)}, bias, cache);
+                    return found ? ResolveResult{ResolveStatus::Resolved, *found} : ResolveResult{};
+                }
+                if (vec_inst->GetOpcode() == IR::Opcode::UnpackUint2x32) {
+                    return self(self, vec_inst->Arg(0), bias, cache, on_stack, steps,
+                                allow_u32_ptr);
+                }
+                if (vec_inst->GetOpcode() == IR::Opcode::CompositeInsertU32x2) {
+                    if (!vec_inst->Arg(2).IsImmediate()) {
+                        return {};
+                    }
+                    const u32 elem{vec_inst->Arg(2).U32()};
+                    if (elem == 0) {
+                        const auto found = cached_track(IR::U32{vec_inst->Arg(1)}, bias, cache);
+                        return found ? ResolveResult{ResolveStatus::Resolved, *found}
+                                     : ResolveResult{};
+                    }
+                    if (elem == 1) {
+                        return u_self(u_self, vec_inst->Arg(0));
+                    }
+                    return {};
+                }
+                if (vec_inst->GetOpcode() == IR::Opcode::Phi) {
+                    std::optional<StorageBufferAddr> agreed;
+                    for (size_t i = 0; i < vec_inst->NumArgs(); ++i) {
+                        const ResolveResult br = u_self(u_self, vec_inst->Arg(i));
+                        if (br.status == ResolveStatus::Failed) {
+                            return {};
+                        }
+                        if (br.status == ResolveStatus::Resolved) {
+                            if (!agreed) {
+                                agreed = br.addr;
+                            } else if (*agreed != br.addr) {
+                                return {};
+                            }
+                        }
+                    }
+                    return agreed ? ResolveResult{ResolveStatus::Resolved, *agreed}
+                                  : ResolveResult{ResolveStatus::Cycle};
+                }
+                return {};
+            };
+            return resolve_u32x2(resolve_u32x2, node->Arg(0));
+        }
+        case IR::Opcode::GetCbufU32x2: {
+            const auto found = cached_track(value, bias, cache);
+            return found ? ResolveResult{ResolveStatus::Resolved, *found} : ResolveResult{};
+        }
+        case IR::Opcode::CompositeInsertU32x2: {
+            if (!node->Arg(2).IsImmediate()) {
+                return {};
+            }
+            const u32 elem{node->Arg(2).U32()};
+            if (elem == 0) {
+                const auto found = cached_track(IR::U32{node->Arg(1)}, bias, cache);
+                return found ? ResolveResult{ResolveStatus::Resolved, *found} : ResolveResult{};
+            }
+            if (elem == 1) {
+                return self(self, node->Arg(0), bias, cache, on_stack, steps, allow_u32_ptr);
+            }
+            return {};
+        }
+        case IR::Opcode::UnpackUint2x32: {
+            return self(self, node->Arg(0), bias, cache, on_stack, steps, allow_u32_ptr);
+        }
+        case IR::Opcode::CompositeConstructU32x2: {
+            const auto found = cached_track(IR::U32{node->Arg(0)}, bias, cache);
+            return found ? ResolveResult{ResolveStatus::Resolved, *found} : ResolveResult{};
+        }
+        default:
+            return {};
+        }
+    };
+    auto resolve_with_bias = [&](const Bias* bias, auto& cache) -> std::optional<StorageBufferAddr> {
+        boost::container::small_vector<const IR::Inst*, 64> on_stack;
+        size_t steps = 0;
+        const ResolveResult res =
+            resolve_expr(resolve_expr, addr, bias, cache, on_stack, steps, true);
+        if (res.status == ResolveStatus::Resolved) {
+            return res.addr;
+        }
+        return std::nullopt;
+    };
+    std::optional<StorageBufferAddr> storage_buffer{resolve_with_bias(&nvn_bias, info.biased_tracks)};
     if (!storage_buffer) {
         // If it fails, track without a bias
-        storage_buffer = cached_track(nullptr, info.unbiased_tracks);
+        storage_buffer = resolve_with_bias(nullptr, info.unbiased_tracks);
         if (!storage_buffer) {
             // If that also fails, use NVN fallbacks
             LOG_WARNING(Shader, "Storage buffer failed to track, using global memory fallbacks");
@@ -434,7 +749,8 @@ void CollectStorageBuffers(IR::Block& block, IR::Inst& inst, StorageInfo& info) 
 IR::U32 StorageOffset(IR::Block& block, IR::Inst& inst, StorageBufferAddr buffer, u32 alignment) {
     IR::IREmitter ir{block, IR::Block::InstructionList::s_iterator_to(inst)};
     IR::U32 offset;
-    if (const std::optional<LowAddrInfo> low_addr{TrackLowAddress(&inst)}) {
+    if (const std::optional<LowAddrInfo> low_addr{TrackLowAddress(&inst)};
+        low_addr && low_addr->exact_low_addr) {
         offset = low_addr->value;
         if (low_addr->imm_offset != 0) {
             offset = ir.IAdd(offset, ir.Imm32(low_addr->imm_offset));

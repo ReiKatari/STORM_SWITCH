@@ -661,7 +661,7 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
 
         if (setting->Id() == Settings::values.gpu_accuracy.Id()) {
             widget->setToolTip(StormLang(
-                QStringLiteral("Точность вычислений GPU (в Ryujinx: GPU Buffer Reads).\n«Нормальный/Быстрый» — расслабленная синхронизация буферов для максимального FPS.\n«Высокий» — попиксельная точность FP32 и строгие барьеры обратной связи буферов, исправляет темные текстуры и графические артефакты."),
+                QStringLiteral("Точность вычислений GPU (в Ryujinx: GPU Buffer Reads).\n«Нормальный/Быстрый» - расслабленная синхронизация буферов для максимального FPS.\n«Высокий» - попиксельная точность FP32 и строгие барьеры обратной связи буферов, исправляет темные текстуры и графические артефакты."),
                 QStringLiteral("GPU Calculation Accuracy (Ryujinx equivalent: GPU Buffer Reads).\n'Normal/Fast' uses relaxed buffer synchronization for higher framerates.\n'High' enforces strict FP32 precision and memory feedback barriers, fixing missing lighting and black textures.")));
         } else if (setting->Id() == Settings::values.use_asynchronous_gpu_emulation.Id()) {
             widget->setToolTip(StormLang(

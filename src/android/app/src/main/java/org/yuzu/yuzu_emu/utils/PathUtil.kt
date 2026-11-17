@@ -122,6 +122,86 @@ object PathUtil {
         return dir.exists() && dir.listFiles()?.isNotEmpty() == true
     }
 
+    /** The folders of a NAND directory that hold what the user installed and saved. */
+    val NAND_CONTENT_FOLDERS = listOf("system", "user")
+
+    enum class CopyResult { COPIED, CANCELLED, FAILED }
+
+    fun directorySize(directory: File): Long =
+        directory.walkTopDown().filter { it.isFile }.sumOf { it.length() }
+
+    /** Whether [path] is [parent] or a folder inside it. */
+    fun isSameOrInside(path: String, parent: String): Boolean {
+        val root = File(parent).canonicalFile
+        return generateSequence(File(path).canonicalFile) { it.parentFile }.any { it == root }
+    }
+
+    /**
+     * Copies the folders called [names] from [sourceRoot] into [destinationRoot].
+     */
+    fun copyFolders(
+        sourceRoot: File,
+        destinationRoot: File,
+        names: List<String>,
+        shouldStop: (copiedBytes: Long) -> Boolean
+    ): CopyResult {
+        val copy = FolderCopy(shouldStop)
+        val copied = try {
+            names.all { name ->
+                val source = File(sourceRoot, name)
+                !source.exists() || copy.copy(source, File(destinationRoot, name))
+            }
+        } catch (_: Exception) {
+            false
+        }
+        if (copied) {
+            return CopyResult.COPIED
+        }
+        copy.created.asReversed().forEach { it.delete() }
+        return if (copy.stopped) CopyResult.CANCELLED else CopyResult.FAILED
+    }
+
+    private class FolderCopy(private val shouldStop: (Long) -> Boolean) {
+        val created = ArrayList<File>()
+        var stopped = false
+        private var copiedBytes = 0L
+        private val buffer = ByteArray(1024 * 1024)
+
+        fun copy(source: File, destination: File): Boolean {
+            if (source.isDirectory) {
+                if (!destination.exists()) {
+                    if (!destination.mkdirs()) {
+                        return false
+                    }
+                    created.add(destination)
+                }
+                val children = source.listFiles() ?: return false
+                return children.all { copy(it, File(destination, it.name)) }
+            }
+
+            if (!destination.exists()) {
+                created.add(destination)
+            }
+            source.inputStream().use { input ->
+                destination.outputStream().use { output ->
+                    while (true) {
+                        val read = input.read(buffer)
+                        if (read < 0) {
+                            break
+                        }
+                        output.write(buffer, 0, read)
+                        copiedBytes += read
+                        if (shouldStop(copiedBytes)) {
+                            stopped = true
+                            return false
+                        }
+                    }
+                }
+            }
+            return destination.length() == source.length()
+        }
+    }
+
 
     fun truncatePathForDisplay(path: String, maxLength: Int = 45): String {
         return if (path.length > maxLength) {

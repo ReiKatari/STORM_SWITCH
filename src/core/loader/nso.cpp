@@ -341,8 +341,11 @@ bool AppLoader_NSO::InstallModule(Kernel::KProcess& process, Core::System& syste
     if (pm) {
         if (is_main_module || system.GetApplicationProcessBuildID() == Core::System::CurrentBuildProcessID{}) {
             system.SetApplicationProcessBuildID(nso_header.build_id);
-            const auto cheats = pm->CreateCheatList(nso_header.build_id);
-            system.RegisterCheatList(cheats, nso_header.build_id, load_base, image_size);
+            auto cheat_list = pm->CreateCheatList(nso_header.build_id);
+            if (!cheat_list.cheats.empty()) {
+                system.RegisterCheatList(process, std::move(cheat_list), nso_header.build_id, load_base,
+                                         image_size);
+            }
         }
     }
 

@@ -34,6 +34,10 @@ object GameHelper {
     private const val KEY_OLD_GAME_PATH = "game_path"
     const val KEY_GAMES = "Games"
 
+    fun reinitializeSystem() {
+        NativeLibrary.initializeSystem(true)
+    }
+
     private val ignoredDirectoryNames: Set<String> = setOf(
         "work", "romfs", "cheats", "mods", "load", "atmosphere",
         ".git", "cache", "shaders", "screenshots", "backup", "textures",

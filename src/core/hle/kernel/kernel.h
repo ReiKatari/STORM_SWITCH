@@ -266,6 +266,9 @@ public:
     /// Suspend/unsuspend emulated processes.
     void SuspendEmulation(bool suspend);
 
+    /// Asks every emulated thread to suspend, without waiting for running ones to stop.
+    void RequestSuspendEmulation();
+
     /// Exceptional exit application process.
     void ExceptionalExitApplication();
 

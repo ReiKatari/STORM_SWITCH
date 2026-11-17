@@ -32,40 +32,62 @@ TEST_CASE("Native GPU characteristics replace topology with ioctl interface leve
     std::memcpy(&native_impl, native.data() + 4, sizeof(native_impl));
     REQUIRE(static_cast<u32>(native_arch) == 0x170);
     REQUIRE(static_cast<u32>(native_impl) == 0xe);
-    REQUIRE(std::equal(legacy.begin() + 8, legacy.begin() + 0x28, native.begin() + 8));
-    REQUIRE(std::equal(legacy.begin() + 0x2c, legacy.begin() + 0x34, native.begin() + 0x2c));
-    REQUIRE(std::equal(legacy.begin() + 0x38, legacy.begin() + 0x3c, native.begin() + 0x38));
+    REQUIRE(std::equal(legacy.begin() + 8, legacy.begin() + 0x20, native.begin() + 8));
+    REQUIRE(std::equal(legacy.begin() + 0x24, legacy.begin() + 0x3c, native.begin() + 0x24));
     REQUIRE(std::equal(legacy.begin() + 0x44, legacy.begin() + 0x50, native.begin() + 0x44));
-    REQUIRE(std::equal(legacy.begin() + 0x58, legacy.begin() + 0x70, native.begin() + 0x58));
-    u32_le sm_version, spa_version;
+    u32_le num_tpc, sm_version, spa_version;
+    std::memcpy(&num_tpc, native.data() + 0x20, sizeof(num_tpc));
     std::memcpy(&sm_version, native.data() + 0x3c, sizeof(sm_version));
     std::memcpy(&spa_version, native.data() + 0x40, sizeof(spa_version));
-    REQUIRE(static_cast<u32>(sm_version) == 0x807);
-    REQUIRE(static_cast<u32>(spa_version) == 0x807);
+    REQUIRE(static_cast<u32>(num_tpc) == 6);
+    REQUIRE(static_cast<u32>(sm_version) == 0x808);
+    REQUIRE(static_cast<u32>(spa_version) == 0x808);
     u32_le available_sizes;
     std::memcpy(&available_sizes, native.data() + 0x34, sizeof(available_sizes));
-    REQUIRE(static_cast<u32>(available_sizes) == 0x11000);
-    u32_le big_page_size;
-    std::memcpy(&big_page_size, native.data() + 0x28, sizeof(big_page_size));
-    REQUIRE(static_cast<u32>(big_page_size) == 0x1000);
+    REQUIRE(static_cast<u32>(available_sizes) == 0x30000);
+    u32_le twod_class, threed_class, compute_class, gpfifo_class, inline_class, dma_copy_class;
+    std::memcpy(&twod_class, native.data() + 0x58, sizeof(twod_class));
+    std::memcpy(&threed_class, native.data() + 0x5c, sizeof(threed_class));
+    std::memcpy(&compute_class, native.data() + 0x60, sizeof(compute_class));
+    std::memcpy(&gpfifo_class, native.data() + 0x64, sizeof(gpfifo_class));
+    std::memcpy(&inline_class, native.data() + 0x68, sizeof(inline_class));
+    std::memcpy(&dma_copy_class, native.data() + 0x6c, sizeof(dma_copy_class));
+    REQUIRE(static_cast<u32>(twod_class) == 0x902D);
+    REQUIRE(static_cast<u32>(threed_class) == 0xC797);
+    REQUIRE(static_cast<u32>(compute_class) == 0xC7C0);
+    REQUIRE(static_cast<u32>(gpfifo_class) == 0xC56F);
+    REQUIRE(static_cast<u32>(inline_class) == 0xA140);
+    REQUIRE(static_cast<u32>(dma_copy_class) == 0xC7B5);
     const auto level = [&](size_t offset) {
         u16_le value;
         std::memcpy(&value, native.data() + offset, sizeof(value));
         return static_cast<s16>(static_cast<u16>(value));
     };
-    REQUIRE(level(0x70) == 0x1c);
-    REQUIRE(level(0x72) == 2);
+    REQUIRE(level(0x70) == 0x1f);
+    REQUIRE(level(0x72) == 0x0f);
     u64_le flags;
     std::memcpy(&flags, native.data() + 0x50, sizeof(flags));
-    REQUIRE((static_cast<u64>(flags) & (1ULL << 8)) != 0);
-    REQUIRE((static_cast<u64>(flags) & ~((1ULL << 8) | (1ULL << 26) | (1ULL << 34) | (0xfULL << 40))) == (0xccccccccccccccccULL & ~((1ULL << 8) | (1ULL << 26) | (1ULL << 34) | (0xfULL << 40))));
-    REQUIRE((static_cast<u64>(flags) & (0xfULL << 40)) == (0xfULL << 40));
-    REQUIRE((static_cast<u64>(flags) & (1ULL << 34)) != 0);
+    constexpr u64 added_flags = (1ULL << 8) | (1ULL << 22) | (1ULL << 26) | (1ULL << 34) | (0xfULL << 40);
+    REQUIRE((static_cast<u64>(flags) & added_flags) == added_flags);
+    REQUIRE((static_cast<u64>(flags) & ~added_flags) == (0xccccccccccccccccULL & ~added_flags));
     REQUIRE(level(0x74) == -1);
     REQUIRE(level(0x76) == 0x1d);
     // The captured SDK rejects the old topology value 2 here, requiring >= 6.
     REQUIRE(level(0x78) == 0x14);
-    REQUIRE(std::all_of(native.begin() + 0x7a, native.end(), [](u8 b) { return b == 0; }));
+    REQUIRE(level(0x7a) == 0x0a);
+    REQUIRE(level(0x7c) == 0x0a);
+    REQUIRE(level(0x7e) == 0x0a);
+    REQUIRE(level(0x80) == 0x0a);
+    REQUIRE(std::equal(legacy.begin() + 0x82, legacy.begin() + 0x90, native.begin() + 0x82));
+    u64_le chipname;
+    std::memcpy(&chipname, native.data() + 0x90, sizeof(chipname));
+    REQUIRE(static_cast<u64>(chipname) == 0x6631306167ULL);
+    REQUIRE(std::equal(legacy.begin() + 0x98, legacy.begin() + 0xa0, native.begin() + 0x98));
+    REQUIRE(std::all_of(native.begin() + 0xa0, native.begin() + 0xb4, [](u8 b) { return b == 0; }));
+    u32_le max_subcontexts;
+    std::memcpy(&max_subcontexts, native.data() + 0xb4, sizeof(max_subcontexts));
+    REQUIRE(static_cast<u32>(max_subcontexts) == 64);
+    REQUIRE(std::all_of(native.begin() + 0xb8, native.end(), [](u8 b) { return b == 0; }));
 }
 
 TEST_CASE("Native GPU VA layout accommodates the captured NVN bootstrap reservation",
@@ -153,7 +175,12 @@ TEST_CASE("Native mappings report the actual selected memory kind", "[native-gpu
     REQUIRE_FALSE(SelectNativeMemoryKind(0xc, 6));
     REQUIRE_FALSE(SelectNativeMemoryKind(8, 8));
     REQUIRE_FALSE(SelectNativeMemoryKind(8, 0));
-    REQUIRE_FALSE(SelectNativeMemoryKind(9, 6));
+    const auto plc_disabled = SelectNativeMemoryKind(9, 6);
+    REQUIRE(plc_disabled.has_value());
+    REQUIRE(plc_disabled->selected == 6);
+    REQUIRE(plc_disabled->backend == normal->backend);
+    REQUIRE_FALSE(SelectNativeMemoryKind(9, 0));
+    REQUIRE_FALSE(SelectNativeMemoryKind(0xe, 6));
 }
 
 TEST_CASE("Native GPU context allocations classify explicit known engine identities", "[native-gpu]") {

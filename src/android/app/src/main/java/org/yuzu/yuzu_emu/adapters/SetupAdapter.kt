@@ -132,7 +132,6 @@ class SetupAdapter(val activity: AppCompatActivity, pages: List<SetupPage>) :
                 } else {
                     button.text = activity.resources.getString(pageButton.titleId)
                 }
-                val primaryColor = org.yuzu.yuzu_emu.utils.ThemeHelper.getColorFromAttr(activity, com.google.android.material.R.attr.colorPrimary)
                 val greenList = ColorStateList.valueOf(primaryColor)
                 button.strokeColor = greenList
                 button.iconTint = greenList

@@ -140,7 +140,7 @@ static QString GetLocalizedTipText(int idx) {
             QStringLiteral("자동 수정 세션 격리: 최적화 프로필은 게임 세션 동안만 적용되며 종료 시 전역 설정이 자동으로 복원됩니다."));
     case 4:
         return StormLang(
-            QStringLiteral("Полноэкранный режим и курсор: нажмите <b>F11</b> или <b>Alt+Enter</b> для переключения полного экрана, а <b>F9</b> — для захвата мыши в камере."),
+            QStringLiteral("Полноэкранный режим и курсор: нажмите <b>F11</b> или <b>Alt+Enter</b> для переключения полного экрана, а <b>F9</b> - для захвата мыши в камере."),
             QStringLiteral("Fullscreen & Mouse Panning: press <b>F11</b> or <b>Alt+Enter</b> to toggle fullscreen, and <b>F9</b> to toggle mouse camera panning."),
             QStringLiteral("Vollbild & Maus-Kamera: Drücken Sie <b>F11</b> oder <b>Alt+Enter</b> für Vollbild und <b>F9</b> für Maus-Kamerasteuerung."),
             QStringLiteral("Plein écran et souris : appuyez sur <b>F11</b> ou <b>Alt+Enter</b> pour le plein écran, et <b>F9</b> pour la caméra souris."),

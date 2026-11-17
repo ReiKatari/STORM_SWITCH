@@ -102,6 +102,23 @@ class InputOverlayDrawableButton(
         return false
     }
 
+    fun cancelTouch(): Boolean {
+        if (trackId == -1) {
+            return false
+        }
+        pressedState = false
+        trackId = -1
+        return true
+    }
+
+    val canSlide: Boolean
+        get() = true
+
+    fun pressWith(pointerId: Int) {
+        pressedState = true
+        trackId = pointerId
+    }
+
     fun setPosition(x: Int, y: Int) {
         buttonPositionX = x
         buttonPositionY = y

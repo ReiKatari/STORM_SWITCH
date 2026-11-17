@@ -4,12 +4,11 @@
 // SPDX-FileCopyrightText: Copyright 2018 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include <locale>
-#include "common/hex_util.h"
+#include <utility>
+#include "common/logging.h"
 #include "common/swap.h"
 #include "core/arm/debug.h"
 #include "core/core.h"
-#include "core/core_timing.h"
 #include "core/hle/kernel/k_page_table.h"
 #include "core/hle/kernel/k_process.h"
 #include "core/hle/kernel/k_process_page_table.h"
@@ -23,46 +22,40 @@
 
 namespace Core::Memory {
 namespace {
-constexpr auto CHEAT_ENGINE_NS = std::chrono::nanoseconds{1000000000 / 60};
-} // namespace
+// Whether the menu entry is the group or nested inside it; every entry is inside the root.
+bool IsInGroup(const std::vector<RuntimeCheatInfo>& menu, u32 id, u32 group) {
+    while (id != group && id != CHEAT_MENU_ROOT) {
+        id = menu[id].parent_id;
+    }
+    return id == group;
+}
+} // Anonymous namespace
 
-StandardVmCallbacks::StandardVmCallbacks(System& system_, const CheatProcessMetadata& metadata_)
-    : metadata{metadata_}, system{system_} {}
+StandardVmCallbacks::StandardVmCallbacks(System& system_, Kernel::KProcess& process_,
+                                         const CheatProcessMetadata& metadata_)
+    : metadata{metadata_}, system{system_}, process{process_} {
+}
 
 StandardVmCallbacks::~StandardVmCallbacks() = default;
 
 void StandardVmCallbacks::MemoryReadUnsafe(VAddr address, void* data, u64 size) {
-    if (address == 0 || size == 0 || data == nullptr) {
-        if (data != nullptr && size > 0) {
-            std::memset(data, 0, size);
-        }
-        return;
-    }
-
-    if (!system.ApplicationMemory().IsValidVirtualAddressRange(address, size)) {
+    // Return zero on invalid address
+    if (!IsAddressInRange(address) || !process.GetMemory().IsValidVirtualAddress(address)) {
         std::memset(data, 0, size);
         return;
     }
 
-    system.ApplicationMemory().ReadBlockUnsafe(address, data, size);
+    process.GetMemory().ReadBlock(address, data, size);
 }
 
 void StandardVmCallbacks::MemoryWriteUnsafe(VAddr address, const void* data, u64 size) {
-    if (address == 0 || size == 0 || data == nullptr) {
+    // Skip invalid memory write address
+    if (!IsAddressInRange(address) || !process.GetMemory().IsValidVirtualAddress(address)) {
         return;
     }
 
-    if (!system.ApplicationMemory().IsValidVirtualAddressRange(address, size)) {
-        return;
-    }
-
-    if (system.ApplicationMemory().WriteBlockUnsafe(address, data, size)) {
-        auto* proc = system.ApplicationProcess();
-        if (proc && metadata.main_nso_extents.base != 0 &&
-            address >= metadata.main_nso_extents.base &&
-            address < metadata.main_nso_extents.base + metadata.main_nso_extents.size) {
-            Core::InvalidateInstructionCacheRange(proc, address, size);
-        }
+    if (process.GetMemory().WriteBlock(address, data, size)) {
+        Core::InvalidateInstructionCacheRange(&process, address, size);
     }
 }
 
@@ -85,14 +78,14 @@ u64 StandardVmCallbacks::HidKeysDown() {
 }
 
 void StandardVmCallbacks::PauseProcess() {
-    if (!system.ApplicationProcess()->IsSuspended()) {
-        system.ApplicationProcess()->SetActivity(system.Kernel(), Kernel::Svc::ProcessActivity::Paused);
+    if (!process.IsSuspended()) {
+        process.SetActivity(system.Kernel(), Kernel::Svc::ProcessActivity::Paused);
     }
 }
 
 void StandardVmCallbacks::ResumeProcess() {
-    if (system.ApplicationProcess()->IsSuspended()) {
-        system.ApplicationProcess()->SetActivity(system.Kernel(), Kernel::Svc::ProcessActivity::Runnable);
+    if (process.IsSuspended()) {
+        process.SetActivity(system.Kernel(), Kernel::Svc::ProcessActivity::Runnable);
     }
 }
 
@@ -102,7 +95,7 @@ void StandardVmCallbacks::DebugLog(u8 id, u64 value) {
 
 void StandardVmCallbacks::CommandLog(std::string_view data) {
     LOG_DEBUG(CheatEngine, "[DmntCheatVm]: {}",
-              !data.empty() && data.back() == '\n' ? data.substr(0, data.size() - 1) : data);
+              data.back() == '\n' ? data.substr(0, data.size() - 1) : data);
 }
 
 bool StandardVmCallbacks::IsCommandLogEnabled() const {
@@ -111,332 +104,104 @@ bool StandardVmCallbacks::IsCommandLogEnabled() const {
 }
 
 bool StandardVmCallbacks::IsAddressInRange(VAddr in) const {
-    if (in == 0) {
-        return false;
+    if ((in < metadata.main_nso_extents.base ||
+         in >= metadata.main_nso_extents.base + metadata.main_nso_extents.size) &&
+        (in < metadata.heap_extents.base ||
+         in >= metadata.heap_extents.base + metadata.heap_extents.size) &&
+        (in < metadata.alias_extents.base ||
+         in >= metadata.alias_extents.base + metadata.alias_extents.size) &&
+        (in < metadata.aslr_extents.base ||
+         in >= metadata.aslr_extents.base + metadata.aslr_extents.size)) {
+        LOG_DEBUG(CheatEngine,
+                  "Cheat attempting to access memory at invalid address={:016X}, if this "
+                  "persists, "
+                  "the cheat may be incorrect. However, this may be normal early in execution if "
+                  "the game has not properly set up yet.",
+                  in);
+        return false; ///< Invalid addresses will hard crash
     }
-    if ((metadata.main_nso_extents.base != 0 && in >= metadata.main_nso_extents.base &&
-         in < metadata.main_nso_extents.base + metadata.main_nso_extents.size) ||
-        (metadata.heap_extents.base != 0 && in >= metadata.heap_extents.base &&
-         in < metadata.heap_extents.base + metadata.heap_extents.size) ||
-        (metadata.alias_extents.base != 0 && in >= metadata.alias_extents.base &&
-         in < metadata.alias_extents.base + metadata.alias_extents.size) ||
-        (metadata.aslr_extents.base != 0 && in >= metadata.aslr_extents.base &&
-         in < metadata.aslr_extents.base + metadata.aslr_extents.size)) {
-        return true;
-    }
-    return system.ApplicationMemory().IsValidVirtualAddress(in);
+
+    return true;
 }
 
-CheatParser::~CheatParser() = default;
-
-TextCheatParser::~TextCheatParser() = default;
-
-std::vector<CheatEntry> TextCheatParser::Parse(std::string_view data) const {
-    if (data.empty()) {
-        return {};
-    }
-
-    // Skip UTF-8 BOM if present
-    if (data.size() >= 3 && static_cast<u8>(data[0]) == 0xEF &&
-        static_cast<u8>(data[1]) == 0xBB && static_cast<u8>(data[2]) == 0xBF) {
-        data.remove_prefix(3);
-    }
-
-    std::vector<CheatEntry> result;
-    CheatEntry current{};
-    bool in_entry = false;
-
-    std::size_t pos = 0;
-    while (pos < data.size()) {
-        // Read one line
-        std::size_t end_line = data.find('\n', pos);
-        if (end_line == std::string_view::npos) {
-            end_line = data.size();
-        }
-
-        std::string_view line = data.substr(pos, end_line - pos);
-        pos = (end_line < data.size()) ? end_line + 1 : data.size();
-
-        // Trim leading and trailing whitespace / carriage return
-        while (!line.empty() && (line.front() == ' ' || line.front() == '\t' || line.front() == '\r')) {
-            line.remove_prefix(1);
-        }
-        while (!line.empty() && (line.back() == ' ' || line.back() == '\t' || line.back() == '\r')) {
-            line.remove_suffix(1);
-        }
-
-        if (line.empty() || line.starts_with('#') || line.starts_with("//") || line.starts_with(';')) {
-            continue;
-        }
-
-        // Section header: [Cheat Name] or {Cheat Name}
-        if ((line.front() == '[' && line.find(']') != std::string_view::npos) ||
-            (line.front() == '{' && line.find('}') != std::string_view::npos)) {
-            if (in_entry && !current.definition.opcodes.empty()) {
-                current.enabled = true;
-                current.cheat_id = static_cast<u32>(result.size());
-                result.push_back(current);
-            }
-
-            current = CheatEntry{};
-            if (line.front() == '{') {
-                current.is_master = true;
-            }
-            char close_char = (line.front() == '[') ? ']' : '}';
-            std::size_t close_idx = line.find(close_char);
-            std::string_view name = line.substr(1, close_idx - 1);
-
-            // Trim name
-            while (!name.empty() && (name.front() == ' ' || name.front() == '\t')) name.remove_prefix(1);
-            while (!name.empty() && (name.back() == ' ' || name.back() == '\t')) name.remove_suffix(1);
-
-            std::size_t copy_len = std::min<std::size_t>(name.size(), current.definition.readable_name.size() - 1);
-            std::memcpy(current.definition.readable_name.data(), name.data(), copy_len);
-            current.definition.readable_name[copy_len] = '\0';
-            in_entry = true;
-            continue;
-        }
-
-        // Parse opcode line (e.g. "04000000 01234567 00000001" or "580F0000 01234568 // comment")
-        if (!in_entry) {
-            // Unnamed first cheat fallback
-            current = CheatEntry{};
-            const std::string default_name = "Cheat " + std::to_string(result.size() + 1);
-            std::memcpy(current.definition.readable_name.data(), default_name.data(),
-                        std::min(default_name.size(), current.definition.readable_name.size() - 1));
-            in_entry = true;
-        }
-
-        // Strip inline comments
-        auto comment_pos = line.find("//");
-        if (comment_pos != std::string_view::npos) {
-            line = line.substr(0, comment_pos);
-        }
-        comment_pos = line.find('#');
-        if (comment_pos != std::string_view::npos) {
-            line = line.substr(0, comment_pos);
-        }
-        comment_pos = line.find(';');
-        if (comment_pos != std::string_view::npos) {
-            line = line.substr(0, comment_pos);
-        }
-
-        // Tokenize line by whitespace
-        std::size_t token_start = 0;
-        while (token_start < line.size()) {
-            while (token_start < line.size() && (line[token_start] == ' ' || line[token_start] == '\t')) {
-                token_start++;
-            }
-            if (token_start >= line.size()) break;
-
-            std::size_t token_end = token_start;
-            while (token_end < line.size() && line[token_end] != ' ' && line[token_end] != '\t') {
-                token_end++;
-            }
-
-            std::string_view token = line.substr(token_start, token_end - token_start);
-            token_start = token_end;
-
-            // Check if token has hex characters (supporting 8-char, 16-char, 32-char words and 0x/$ prefixes)
-            std::string_view hex_token = token;
-            if (hex_token.starts_with("0x") || hex_token.starts_with("0X")) {
-                hex_token.remove_prefix(2);
-            }
-            if (hex_token.starts_with('$')) {
-                hex_token.remove_prefix(1);
-            }
-
-            while (!hex_token.empty() && std::all_of(hex_token.begin(), hex_token.end(), ::isxdigit)) {
-                std::size_t word_len = std::min<std::size_t>(hex_token.size(), 8);
-                std::string hex_str(hex_token.substr(0, word_len));
-                hex_token.remove_prefix(word_len);
-
-                u32 val = static_cast<u32>(std::strtoul(hex_str.c_str(), nullptr, 16));
-                current.definition.opcodes.push_back(val);
-            }
-        }
-    }
-
-    if (in_entry && !current.definition.opcodes.empty()) {
-        current.enabled = true;
-        current.cheat_id = static_cast<u32>(result.size());
-        result.push_back(current);
-    }
-
-    return result;
-}
-
-CheatEngine::CheatEngine(System& system_, std::vector<CheatEntry> cheats_,
-                         const std::array<u8, 0x20>& build_id_)
-    : vm{std::make_unique<StandardVmCallbacks>(system_, metadata)},
-      cheats{std::move(cheats_)}, core_timing{system_.CoreTiming()}, system{system_} {
+CheatEngine::CheatEngine(System& system_, Kernel::KProcess& process_, CheatList cheats_,
+                         const std::array<u8, 0x20>& build_id_, VAddr main_region_begin,
+                         u64 main_region_size)
+    : vm{std::make_unique<StandardVmCallbacks>(system_, process_, metadata)},
+      cheats(std::move(cheats_.cheats)), menu(std::move(cheats_.menu)), process{process_} {
     metadata.main_nso_build_id = build_id_;
-    metadata.process_id = 0;
-    metadata.title_id = 0;
-
-    for (u32 i = 0; i < cheats.size(); ++i) {
-        cheats[i].cheat_id = i;
-        cheats[i].enabled = cheats[i].is_master || cheats[i].enabled;
+    for (auto& cheat : cheats) {
+        cheat.enabled = cheat.is_master || cheat.enabled;
     }
 
-    vm.LoadProgram(cheats);
-}
+    metadata.process_id = process.GetProcessId();
+    metadata.title_id = process.GetProgramId();
+    metadata.main_nso_extents = {
+        .base = main_region_begin,
+        .size = main_region_size,
+    };
 
-CheatEngine::~CheatEngine() {
-    if (event) {
-        core_timing.UnscheduleEvent(event);
-    } else {
-        LOG_DEBUG(CheatEngine, "~CheatEngine before event was registered");
-    }
-}
-
-void CheatEngine::Initialize() {
-    if (event != nullptr) {
-        return;
-    }
-    event = Core::Timing::CreateEvent(
-        "CheatEngine::FrameCallback",
-        [this](s64 time, std::chrono::nanoseconds ns_late) -> std::optional<std::chrono::nanoseconds> {
-            FrameCallback(ns_late);
-            return CHEAT_ENGINE_NS;
-        });
-    core_timing.ScheduleLoopingEvent(CHEAT_ENGINE_NS, CHEAT_ENGINE_NS, event);
-    LOG_INFO(CheatEngine, "CheatEngine initialized and scheduled at 60Hz frame timing");
-}
-
-void CheatEngine::SetMainMemoryParameters(VAddr main_region_begin, u64 main_region_size) {
-    if (main_region_begin != 0) {
-        metadata.main_nso_extents = {
-            .base = main_region_begin,
-            .size = main_region_size,
-        };
-    }
-}
-
-void CheatEngine::Reload(std::vector<CheatEntry> reload_cheats) {
-    {
-        std::scoped_lock lock{cheats_mutex};
-        cheats = std::move(reload_cheats);
-        for (u32 i = 0; i < cheats.size(); ++i) {
-            cheats[i].cheat_id = i;
-            cheats[i].enabled = cheats[i].is_master || cheats[i].enabled;
-        }
-        vm.LoadProgram(cheats);
-    }
-    is_pending_reload.store(false);
-
-    if (!cheats.empty() && event == nullptr && system.IsPoweredOn() && system.ApplicationProcess()) {
-        Initialize();
-    }
+    const auto& page_table = process.GetPageTable();
+    metadata.heap_extents = {
+        .base = GetInteger(page_table.GetHeapRegionStart()),
+        .size = page_table.GetHeapRegionSize(),
+    };
+    metadata.aslr_extents = {
+        .base = GetInteger(page_table.GetAliasCodeRegionStart()),
+        .size = page_table.GetAliasCodeRegionSize(),
+    };
+    metadata.alias_extents = {
+        .base = GetInteger(page_table.GetAliasRegionStart()),
+        .size = page_table.GetAliasRegionSize(),
+    };
 }
 
 std::vector<RuntimeCheatInfo> CheatEngine::GetCheats() const {
-    std::scoped_lock lock{cheats_mutex};
-    std::vector<RuntimeCheatInfo> result;
-    result.reserve(cheats.size());
+    auto result = menu;
     for (const auto& cheat : cheats) {
-        if (cheat.definition.opcodes.empty()) {
-            continue;
-        }
-        result.push_back({
-            .id = cheat.cheat_id,
-            .name = cheat.definition.readable_name.data(),
-            .enabled = cheat.enabled || cheat.is_master,
-            .is_master = cheat.is_master,
-        });
+        result[cheat.cheat_id].enabled = cheat.enabled;
     }
     return result;
 }
 
-bool CheatEngine::SetCheatEnabled(u32 cheat_id, bool enabled) {
-    std::scoped_lock lock{cheats_mutex};
-    const auto entry = std::find_if(cheats.begin(), cheats.end(), [cheat_id](const auto& cheat) {
-        return cheat.cheat_id == cheat_id && !cheat.definition.opcodes.empty();
-    });
-    if (entry == cheats.end()) {
-        return false;
+bool CheatEngine::SetCheatEnabled(u32 id, bool enabled) {
+    if (id != CHEAT_MENU_ROOT) {
+        if (id >= menu.size()) {
+            return false;
+        }
+        if (menu[id].is_master) {
+            // Master codes cannot be disabled.
+            return enabled;
+        }
     }
-    if (entry->is_master) {
-        return enabled;
-    }
-    if (entry->enabled != enabled) {
-        entry->enabled = enabled;
-        is_pending_reload.store(true);
+    for (auto& cheat : cheats) {
+        if (!cheat.is_master && cheat.enabled != enabled && IsInGroup(menu, cheat.cheat_id, id)) {
+            cheat.enabled = enabled;
+            is_pending_reload = true;
+        }
     }
     return true;
 }
 
-void CheatEngine::FrameCallback(std::chrono::nanoseconds ns_late) {
-    if (is_pending_reload.exchange(false)) {
-        std::scoped_lock lock{cheats_mutex};
+void CheatEngine::Execute() {
+    // Modules register before loading finishes, and an exited application stays current until
+    // AM removes it. Only execute against a running process.
+    const auto state = process.GetState();
+    if (state != Kernel::KProcess::State::Running &&
+        state != Kernel::KProcess::State::RunningAttached &&
+        state != Kernel::KProcess::State::DebugBreak) {
+        return;
+    }
+
+    if (std::exchange(is_pending_reload, false)) {
         vm.LoadProgram(cheats);
     }
 
-    if (cheats.empty()) {
+    if (vm.GetProgramSize() == 0) {
         return;
     }
 
-    if (!system.IsPoweredOn()) {
-        return;
-    }
-
-    auto* proc = system.ApplicationProcess();
-    if (proc == nullptr || proc->IsSuspended()) {
-        return;
-    }
-
-    if (metadata.main_nso_extents.base == 0) {
-        if (system.GetMainNsoBase() != 0) {
-            metadata.main_nso_extents = {
-                .base = system.GetMainNsoBase(),
-                .size = system.GetMainNsoSize(),
-            };
-        } else {
-            metadata.main_nso_extents = {
-                .base = GetInteger(proc->GetPageTable().GetCodeRegionStart()),
-                .size = proc->GetPageTable().GetCodeRegionSize(),
-            };
-        }
-        if (metadata.main_nso_extents.base == 0) {
-            return;
-        }
-    }
-
-    // Continuously sync dynamic memory region extents (heap, alias, aslr) as the game allocates/expands memory
-    const u64 heap_start = GetInteger(proc->GetPageTable().GetHeapRegionStart());
-    const u64 heap_size = proc->GetPageTable().GetHeapRegionSize();
-    if (heap_start != 0 && (metadata.heap_extents.base == 0 || metadata.heap_extents.size != heap_size)) {
-        metadata.heap_extents = {
-            .base = heap_start,
-            .size = heap_size,
-        };
-    }
-
-    const u64 alias_start = GetInteger(proc->GetPageTable().GetAliasRegionStart());
-    const u64 alias_size = proc->GetPageTable().GetAliasRegionSize();
-    if (alias_start != 0 && (metadata.alias_extents.base == 0 || metadata.alias_extents.size != alias_size)) {
-        metadata.alias_extents = {
-            .base = alias_start,
-            .size = alias_size,
-        };
-    }
-
-    const u64 aslr_start = GetInteger(proc->GetPageTable().GetAddressSpaceStart());
-    const u64 aslr_size = proc->GetPageTable().GetAddressSpaceSize();
-    if (aslr_start != 0 && (metadata.aslr_extents.base == 0 || metadata.aslr_extents.size != aslr_size)) {
-        metadata.aslr_extents = {
-            .base = aslr_start,
-            .size = aslr_size,
-        };
-    }
-
-    try {
-        vm.Execute(metadata);
-    } catch (const std::exception& e) {
-        LOG_ERROR(CheatEngine, "Exception during cheat execution: {}", e.what());
-    } catch (...) {
-        LOG_ERROR(CheatEngine, "Unknown exception during cheat execution");
-    }
+    vm.Execute(metadata);
 }
 
 } // namespace Core::Memory

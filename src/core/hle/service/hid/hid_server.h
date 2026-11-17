@@ -186,12 +186,10 @@ private:
         return SendVibrationValues(aruid, handles, values);
     }
 
-    // 213 (32 bytes, aruid): sent per controller every frame by Kirby Air Riders (tens of
-    // thousands of auto stub log lines a run); no reply data. Accepted and dropped like 214.
-    Result Unknown213();
-    // 220 (16 bytes, aruid): replies one byte (meaning unknown); answer 0 instead of leaving it to
-    // the message buffer's leftovers.
-    Result Unknown220(Out<u8> out);
+    Result SendVibrationValueInMode(std::array<u8, 0x18> raw, ClientAppletResourceUserId aruid);
+    Result IsOunceVibrationDeviceMounted(Out<bool> out_is_mounted,
+                                         Core::HID::VibrationDeviceHandle vibration_device_handle,
+                                         ClientAppletResourceUserId aruid);
 
     Result SendNativeVibrationValues(
         u16 flags, AppletResourceUserId aruid,

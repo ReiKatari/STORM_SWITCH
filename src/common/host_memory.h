@@ -54,6 +54,9 @@ public:
 
     void ClearBackingRegion(size_t physical_offset, size_t length, u32 fill_value);
 
+    /// Bytes Map, Unmap and Protect have covered since start.
+    static u64 MappedBytes() noexcept;
+
     [[nodiscard]] u8* BackingBasePointer() noexcept {
         return backing_base;
     }

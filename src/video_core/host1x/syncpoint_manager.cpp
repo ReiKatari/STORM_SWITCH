@@ -35,15 +35,18 @@ SyncpointManager::ActionHandle SyncpointManager::RegisterAction(
         }
         ++it;
     }
-    return action_storage.emplace(it, expected_value, std::move(action));
+    return action_storage.emplace(it, expected_value, ++last_action_id, std::move(action))->id;
 }
 
 void SyncpointManager::DeregisterAction(std::list<RegisteredAction>& action_storage,
                                         const ActionHandle& handle) {
+    if (handle == 0) {
+        return;
+    }
     std::scoped_lock lk(guard);
 
     for (auto it = action_storage.begin(); it != action_storage.end(); it++) {
-        if (it == handle) {
+        if (it->id == handle) {
             action_storage.erase(it);
             return;
         }
@@ -59,10 +62,23 @@ void SyncpointManager::DeregisterHostAction(u32 syncpoint_id, const ActionHandle
 }
 
 void SyncpointManager::IncrementGuest(u32 syncpoint_id) {
-    Increment(syncpoints_guest[syncpoint_id], wait_guest_cv, guest_action_storage[syncpoint_id]);
+    if (syncpoint_id >= NUM_MAX_SYNCPOINTS) {
+        LOG_ERROR(HW_GPU, "Ignoring increment of invalid syncpoint {:#x}", syncpoint_id);
+        return;
+    }
+    Increment(syncpoints_guest[syncpoint_id], wait_guest_cv, guest_action_storage[syncpoint_id],
+              syncpoint_id);
+}
+
+void SyncpointManager::SetGuestMirror(GuestMirror mirror) {
+    std::scoped_lock lk(guard);
+    guest_mirror = std::move(mirror);
 }
 
 void SyncpointManager::IncrementHost(u32 syncpoint_id) {
+    if (syncpoint_id >= NUM_MAX_SYNCPOINTS) {
+        return;
+    }
     Increment(syncpoints_host[syncpoint_id], wait_host_cv, host_action_storage[syncpoint_id]);
 }
 
@@ -109,12 +125,16 @@ void SyncpointManager::FastForwardSyncpoint(u32 syncpoint_id, u32 target_value) 
 }
 
 void SyncpointManager::Increment(std::atomic<u32>& syncpoint, std::condition_variable& wait_cv,
-                                 std::list<RegisteredAction>& action_storage) {
-    auto new_value{syncpoint.fetch_add(1, std::memory_order_acq_rel) + 1};
-
+                                 std::list<RegisteredAction>& action_storage,
+                                 std::optional<u32> mirrored_id) {
     std::vector<std::function<void()>> ready_actions;
     {
         std::scoped_lock lk(guard);
+        if (mirrored_id && guest_mirror) {
+            // Mirror before publishing the increment so lock-free readers do not observe it ahead of the page.
+            guest_mirror(*mirrored_id, syncpoint.load(std::memory_order_relaxed) + 1);
+        }
+        const u32 new_value{syncpoint.fetch_add(1, std::memory_order_acq_rel) + 1};
         auto it = action_storage.begin();
         while (it != action_storage.end()) {
             if (it->expected_value > new_value) {

@@ -60,8 +60,8 @@ inline const std::vector<RetroArchShaderEntry>& GetRetroArchShaderCatalog() {
         {"none", "None",
          "🚫 0. Без шейдера (Стандартный рендер)",
          "🚫 0. No Shader (Standard Native Output)",
-         "Без шейдера (Чистый рендер — По умолчанию)",
-         "None (Clean Native Render — Default)",
+         "Без шейдера (Чистый рендер - По умолчанию)",
+         "None (Clean Native Render - Default)",
          Settings::ScalingFilter::Bilinear, 80},
 
         // 1..15. CRT & Scanlines
@@ -264,7 +264,7 @@ inline const std::vector<RetroArchShaderEntry>& GetRetroArchShaderCatalog() {
         {"fsr-easu-rcas", "FSR EASU+RCAS",
          "🎬 3. Аниме, нейросети и супер-разрешение (Anime, AI & Super-Resolution)",
          "🎬 3. Anime, Neural Networks & Super-Resolution (Anime, AI & Super-Res)",
-         "AMD FSR 1.0 EASU + RCAS (FidelityFX Super Resolution — Адаптивный апскейл)",
+         "AMD FSR 1.0 EASU + RCAS (FidelityFX Super Resolution - Адаптивный апскейл)",
          "AMD FSR 1.0 EASU + RCAS (FidelityFX Super Resolution)",
          Settings::ScalingFilter::Fsr, 85},
         {"sgsr-v2", "SGSR v2",
@@ -396,7 +396,7 @@ inline const std::vector<RetroArchShaderEntry>& GetRetroArchShaderCatalog() {
         {"amd-cas", "AMD CAS",
          "⚡ 6. Повышение резкости и микроконтраста (Sharpening & Clarity)",
          "⚡ 6. Image Sharpening & Micro-Contrast (Sharpening & Clarity)",
-         "AMD CAS (Contrast Adaptive Sharpening — Адаптивная резкость текстур)",
+         "AMD CAS (Contrast Adaptive Sharpening - Адаптивная резкость текстур)",
          "AMD CAS (Contrast Adaptive Sharpening)",
          Settings::ScalingFilter::Fsr, 90},
         {"lumasharpen", "LumaSharpen",
@@ -428,7 +428,7 @@ inline const std::vector<RetroArchShaderEntry>& GetRetroArchShaderCatalog() {
         {"smaa-ultra", "SMAA Ultra",
          "🎨 7. Сглаживание граней, дизеринг и устранение бандинга (AA & Deband)",
          "🎨 7. Anti-Aliasing, De-Dithering & Debanding (AA & Deband)",
-         "SMAA Ultra (Subpixel Morphological Anti-Aliasing — Морфологическое сглаживание)",
+         "SMAA Ultra (Subpixel Morphological Anti-Aliasing - Морфологическое сглаживание)",
          "SMAA Ultra (Subpixel Morphological Anti-Aliasing)",
          Settings::ScalingFilter::Bicubic, 80},
         {"fxaa-quality", "FXAA Quality",
@@ -508,7 +508,7 @@ inline const std::vector<RetroArchShaderEntry>& GetRetroArchShaderCatalog() {
         {"sepia-vintage", "Sepia Vintage",
          "🎞️ 8. Киноэффекты, цветокоррекция, HDR и ретро-стилизации (Cinema & Retro FX)",
          "🎞️ 8. Cinema FX, Color Grading, HDR & Retro Styling (Cinema & Retro FX)",
-         "Sepia Vintage (Тёплая старинная фотография — Сепия)",
+         "Sepia Vintage (Тёплая старинная фотография - Сепия)",
          "Sepia Vintage (Warm Antique Photograph Toning)",
          Settings::ScalingFilter::Bicubic, 80},
         {"night-vision-nvg", "Night Vision",
@@ -617,11 +617,11 @@ inline QString GetLocalizedName(const RetroArchShaderEntry& entry) {
             QString::fromUtf8(entry.name_ru),
             QString::fromUtf8(entry.name_en),
             QStringLiteral("Kein Shader (Sauberer Standard-Render)"),
-            QStringLiteral("Aucun shader (Rendu natif propre — Par défaut)"),
-            QStringLiteral("无着色器（纯净原生渲染 — 默认）"),
-            QStringLiteral("シェーダーなし（クリーン標準レンダー — デフォルト）"),
-            QStringLiteral("بدون مظلل (عرض أصلي نظيف — افتراضي)"),
-            QStringLiteral("Sin sombreador (Renderizado nativo limpio — Predeterminado)"));
+            QStringLiteral("Aucun shader (Rendu natif propre - Par défaut)"),
+            QStringLiteral("无着色器（纯净原生渲染 - 默认）"),
+            QStringLiteral("シェーダーなし（クリーン標準レンダー - デフォルト）"),
+            QStringLiteral("بدون مظلل (عرض أصلي نظيف - افتراضي)"),
+            QStringLiteral("Sin sombreador (Renderizado nativo limpio - Predeterminado)"));
     }
     return StormLang(QString::fromUtf8(entry.name_ru), QString::fromUtf8(entry.name_en));
 }

@@ -43,7 +43,7 @@
 #include "core/hle/service/set/settings_server.h"
 #include "core/loader/loader.h"
 #include "core/loader/nso.h"
-#include "core/memory/cheat_engine.h"
+#include "core/memory/cheat_parser.h"
 
 namespace FileSys {
 namespace {
@@ -138,7 +138,7 @@ VirtualDir FindSubdirectoryCaseless(const VirtualDir dir, std::string_view name)
     return toggles;
 }
 
-std::optional<std::vector<Core::Memory::CheatEntry>> ReadCheatFileFromFolder(
+std::optional<Core::Memory::CheatList> ReadCheatFileFromFolder(
     u64 title_id, const PatchManager::BuildID& build_id_, const VirtualDir& base_path, bool upper) {
     const auto build_id_raw = Common::HexToString(build_id_, true);
     const auto build_id = build_id_raw.substr(0, sizeof(u64) * 2);
@@ -169,7 +169,7 @@ std::optional<std::vector<Core::Memory::CheatEntry>> ReadCheatFileFromFolder(
         return std::nullopt;
     }
 
-    const Core::Memory::TextCheatParser parser;
+    const Core::Memory::TextCheatParser parser{Settings::values.enable_cheats_by_default.GetValue()};
     return parser.Parse(std::string_view(reinterpret_cast<const char*>(data.data()), data.size()));
 }
 
@@ -735,7 +735,7 @@ bool PatchManager::HasNSOPatch(const BuildID& build_id_, std::string_view name) 
     return !CollectPatches(patch_dirs, build_id).empty();
 }
 
-std::vector<Core::Memory::CheatEntry> PatchManager::CreateCheatList(const BuildID& build_id_) const {
+Core::Memory::CheatList PatchManager::CreateCheatList(const BuildID& build_id_) const {
     const auto patch_dirs = GetPatchDirs();
     if (patch_dirs.empty()) {
         LOG_DEBUG(Loader, "Cannot load mods for title_id={:016X}", title_id);
@@ -759,7 +759,7 @@ std::vector<Core::Memory::CheatEntry> PatchManager::CreateCheatList(const BuildI
     });
 
     // <mod dir> / <folder> / cheats / <build id>.txt
-    std::vector<Core::Memory::CheatEntry> out;
+    Core::Memory::CheatList out;
     for (const auto& subdir : patch_dirs) {
         if (std::find(disabled.cbegin(), disabled.cend(), subdir->GetName()) == disabled.cend()) {
             if (auto cheats_dir = FindSubdirectoryCaseless(subdir, "cheats"); cheats_dir != nullptr) {
@@ -785,7 +785,7 @@ std::vector<Core::Memory::CheatEntry> PatchManager::CreateCheatList(const BuildI
                         }
                     }
 
-                    for (auto& entry : *res) {
+                    for (auto& entry : res->cheats) {
                         const std::string cheat_name(entry.definition.readable_name.data());
                         if (cheat_name.empty()) continue;
 
@@ -800,22 +800,16 @@ std::vector<Core::Memory::CheatEntry> PatchManager::CreateCheatList(const BuildI
                             }
                         } else {
                             const auto mod_name = subdir->GetName();
-                            if (res->size() <= 2 && mod_name != "Cheats" && mod_name != "OnlineCheats") {
+                            if (res->cheats.size() <= 2 && mod_name != "Cheats" && mod_name != "OnlineCheats") {
                                 is_active = true;
                             } else {
                                 is_active = false;
                             }
                         }
 
-                        if (is_active) {
-                            bool already_exists = std::any_of(out.begin(), out.end(), [&](const Core::Memory::CheatEntry& existing) {
-                                return std::string_view(existing.definition.readable_name.data()) == cheat_name;
-                            });
-                            if (!already_exists) {
-                                out.push_back(std::move(entry));
-                            }
-                        }
+                        entry.enabled = is_active;
                     }
+                    out.Append(std::move(*res));
                 }
             }
         }
@@ -829,9 +823,8 @@ std::vector<Core::Memory::CheatEntry> PatchManager::CreateCheatList(const BuildI
             if (name.starts_with("cheat_") && std::find(disabled.cbegin(), disabled.cend(), name) == disabled.cend()) {
                 std::vector<u8> data(f->GetSize());
                 if (f->Read(data.data(), data.size()) == data.size()) {
-                    const Core::Memory::TextCheatParser parser;
-                    auto const res = parser.Parse(std::string_view(reinterpret_cast<const char*>(data.data()), data.size()));
-                    std::copy(res.begin(), res.end(), std::back_inserter(out));
+                    const Core::Memory::TextCheatParser parser{Settings::values.enable_cheats_by_default.GetValue()};
+                    out.Append(parser.Parse(std::string_view(reinterpret_cast<const char*>(data.data()), data.size())));
                 } else {
                     LOG_INFO(Common_Filesystem, "Failed to read cheats file for title_id={:016X}", title_id);
                 }
@@ -928,9 +921,10 @@ std::vector<Core::Memory::CheatEntry> PatchManager::CreateCheatList(const BuildI
             if (cfile.IsOpen()) {
                 std::vector<u8> data(cfile.GetSize());
                 if (cfile.Read(data) == data.size()) {
-                    const Core::Memory::TextCheatParser parser;
+                    const Core::Memory::TextCheatParser parser{Settings::values.enable_cheats_by_default.GetValue()};
                     auto res = parser.Parse(std::string_view(reinterpret_cast<const char*>(data.data()), data.size()));
-                    for (auto& entry : res) {
+                    bool has_new_entries = false;
+                    for (auto& entry : res.cheats) {
                         const std::string cheat_name(entry.definition.readable_name.data());
                         if (cheat_name.empty()) continue;
 
@@ -946,15 +940,18 @@ std::vector<Core::Memory::CheatEntry> PatchManager::CreateCheatList(const BuildI
                             is_active = false;
                         }
 
-                        if (is_active) {
-                            // Check if already added
-                            bool already_exists = std::any_of(out.begin(), out.end(), [&](const Core::Memory::CheatEntry& existing) {
-                                return std::string_view(existing.definition.readable_name.data()) == cheat_name;
-                            });
-                            if (!already_exists) {
-                                out.push_back(std::move(entry));
-                            }
+                        const bool already_exists = std::any_of(out.cheats.begin(), out.cheats.end(), [&](const Core::Memory::CheatEntry& existing) {
+                            return std::string_view(existing.definition.readable_name.data()) == cheat_name;
+                        });
+                        if (!already_exists) {
+                            entry.enabled = is_active;
+                            has_new_entries = true;
+                        } else {
+                            entry.enabled = false;
                         }
+                    }
+                    if (has_new_entries) {
+                        out.Append(std::move(res));
                     }
                 }
             }

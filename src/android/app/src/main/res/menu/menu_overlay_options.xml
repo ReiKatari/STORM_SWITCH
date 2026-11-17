@@ -58,6 +58,12 @@
         android:checkable="true" />
 
     <item
+        android:id="@+id/menu_button_slide"
+        android:icon="@drawable/ic_arrow_forward"
+        android:title="@string/emulation_button_slide"
+        android:checkable="true" />
+
+    <item
         android:id="@+id/menu_haptics"
         android:icon="@drawable/ic_notification"
         android:title="@string/emulation_haptics"

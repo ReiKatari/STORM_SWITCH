@@ -4,6 +4,7 @@
 // SPDX-FileCopyrightText: Copyright 2021 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include "common/settings.h"
 #include "shader_recompiler/backend/spirv/emit_spirv_instructions.h"
 #include "shader_recompiler/backend/spirv/spirv_emit_context.h"
 
@@ -151,6 +152,9 @@ Id EmitConvertU32U64(EmitContext& ctx, Id value) {
 }
 
 Id EmitConvertF16F32(EmitContext& ctx, Id value) {
+    if (Settings::values.fix_bloom_effects.GetValue()) {
+        return ctx.OpFConvert(ctx.F16[1], SanitizeFiniteF32(ctx, value, 65504.0f));
+    }
 #ifdef __ANDROID__
     return ctx.OpFConvert(ctx.F16[1], value);
 #else

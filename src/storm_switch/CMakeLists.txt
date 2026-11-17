@@ -241,7 +241,9 @@ add_executable(yuzu
     util/controller_navigation.cpp
     util/controller_navigation.h
     util/limitable_input_dialog.cpp
+    util/runtime_cheat_menu.cpp
     util/limitable_input_dialog.h
+    util/runtime_cheat_menu.h
     util/overlay_dialog.cpp
     util/overlay_dialog.h
     util/overlay_dialog.ui

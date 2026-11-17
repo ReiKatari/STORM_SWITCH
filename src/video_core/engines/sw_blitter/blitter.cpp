@@ -176,8 +176,9 @@ bool SoftwareBlitEngine::Blit(Fermi2D::Surface& src, Fermi2D::Surface& dst,
                               Fermi2D::Config& config) {
     const auto get_surface_size = [](Fermi2D::Surface& surface, u32 bytes_per_pixel) {
         if (surface.linear == Fermi2D::MemoryLayout::BlockLinear) {
+            const u32 effective_depth = std::max(surface.depth, surface.layer + 1);
             return CalculateSize(true, bytes_per_pixel, surface.width, surface.height,
-                                 surface.depth, surface.block_height, surface.block_depth);
+                                 effective_depth, surface.block_height, surface.block_depth);
         }
         return static_cast<size_t>(surface.pitch * surface.height);
     };
@@ -239,9 +240,11 @@ bool SoftwareBlitEngine::Blit(Fermi2D::Surface& src, Fermi2D::Surface& dst,
 
     impl->dst_buffer.resize_destructive(dst_copy_size);
     if (src.linear == Fermi2D::MemoryLayout::BlockLinear) {
+        const u32 effective_src_depth = (std::max)(1U, (std::max)(src.depth, src.layer + 1U));
         UnswizzleSubrect(impl->src_buffer, tmp_buffer, src_bytes_per_pixel, src.width, src.height,
-                         src.depth, config.src_x0, config.src_y0, src_extent_x, src_extent_y,
-                         src.block_height, src.block_depth, src_extent_x * src_bytes_per_pixel);
+                         effective_src_depth, config.src_x0, config.src_y0, src_extent_x, src_extent_y,
+                         src.block_height, src.block_depth, src_extent_x * src_bytes_per_pixel,
+                         false, src.layer);
     } else {
         ProcessPitchLinear<false>(tmp_buffer, impl->src_buffer, src_extent_x, src_extent_y,
                                   src.pitch, config.src_x0, config.src_y0, src_bytes_per_pixel);
@@ -263,9 +266,11 @@ bool SoftwareBlitEngine::Blit(Fermi2D::Surface& src, Fermi2D::Surface& dst,
         tmp_buffer2(memory_manager, dst.Address(), dst_size, &impl->tmp_buffer);
 
     if (dst.linear == Fermi2D::MemoryLayout::BlockLinear) {
+        const u32 effective_dst_depth = (std::max)(1U, (std::max)(dst.depth, dst.layer + 1U));
         SwizzleSubrect(tmp_buffer2, impl->dst_buffer, dst_bytes_per_pixel, dst.width, dst.height,
-                       dst.depth, config.dst_x0, config.dst_y0, dst_extent_x, dst_extent_y,
-                       dst.block_height, dst.block_depth, dst_extent_x * dst_bytes_per_pixel);
+                       effective_dst_depth, config.dst_x0, config.dst_y0, dst_extent_x, dst_extent_y,
+                       dst.block_height, dst.block_depth, dst_extent_x * dst_bytes_per_pixel,
+                       false, dst.layer);
     } else {
         ProcessPitchLinear<true>(impl->dst_buffer, tmp_buffer2, dst_extent_x, dst_extent_y,
                                  dst.pitch, config.dst_x0, config.dst_y0,

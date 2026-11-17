@@ -152,19 +152,17 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
                         thermalLevel = 2
                         isThermalThrottled = true
                         NativeLibrary.setThermalThrottle(true)
-                        NativeLibrary.setSlowSpeedLimit(true)
                         updateSustainedPerformance(false)
-                        Log.info("[ThermalMonitor] Graduated thermal throttle: SEVERE (status=$status). Eco mode ON, slow speed limit ON, sustained perf OFF")
+                        Log.info("[ThermalMonitor] Graduated thermal throttle: SEVERE (status=$status). Eco mode ON, sustained perf OFF")
                     }
                 }
                 status == PowerManager.THERMAL_STATUS_MODERATE -> {
                     if (thermalLevel != 1) {
                         thermalLevel = 1
-                        isThermalThrottled = true
+                        isThermalThrottled = false
                         NativeLibrary.setThermalThrottle(false)
-                        NativeLibrary.setSlowSpeedLimit(true)
                         updateSustainedPerformance(false)
-                        Log.info("[ThermalMonitor] Graduated thermal throttle: MODERATE (status=$status). Slow speed limit ON, sustained perf OFF")
+                        Log.info("[ThermalMonitor] Graduated thermal throttle: MODERATE (status=$status). Full speed preserved, sustained perf OFF")
                     }
                 }
                 else -> {
@@ -172,7 +170,6 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
                         thermalLevel = 0
                         isThermalThrottled = false
                         NativeLibrary.setThermalThrottle(false)
-                        NativeLibrary.setStandardSpeedLimit(true)
                         updateSustainedPerformance(true)
                         Log.info("[ThermalMonitor] Thermal back-off: Normal performance restored (status=$status)")
                     }
@@ -233,6 +230,12 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
         }
 
         super.onCreate(savedInstanceState)
+
+        if (!YuzuApplication.driverInitDeferred.isCompleted) {
+            try {
+                runBlocking { YuzuApplication.driverInitDeferred.await() }
+            } catch (_: Throwable) {}
+        }
 
         val startupGame = getLaunchGame()
         NativeConfig.reloadGlobalConfig()
@@ -1105,16 +1108,18 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
     private var threeFingerStartX2 = 0f
     private var threeFingerStartTime = 0L
     private var isThreeFingerGestureCandidate = false
+    private var cachedEmulationFragment: java.lang.ref.WeakReference<org.yuzu.yuzu_emu.fragments.EmulationFragment>? = null
+    private var lastTouchDecorHeight = -1
+    private var cachedMinSwipeDistance = 0f
+    private var cachedMaxHorizontalDrift = 0f
 
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
-        val navHostFragment = supportFragmentManager.findFragmentById(R.id.fragment_container) as? NavHostFragment
-        val emulationFragment = navHostFragment?.childFragmentManager?.fragments?.firstOrNull() as? org.yuzu.yuzu_emu.fragments.EmulationFragment
+        val emulationFragment = cachedEmulationFragment?.get()?.takeIf { it.isAdded } ?: (
+            (supportFragmentManager.findFragmentById(R.id.fragment_container) as? NavHostFragment)
+                ?.childFragmentManager?.fragments?.firstOrNull() as? org.yuzu.yuzu_emu.fragments.EmulationFragment
+            )?.also { cachedEmulationFragment = java.lang.ref.WeakReference(it) }
 
         emulationFragment?.let { fragment ->
-            val dm = resources.displayMetrics
-            val screenHeight = dm.heightPixels.toFloat()
-            val bottomThreshold = screenHeight - (60 * dm.density)
-
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
                     touchDownTime = System.currentTimeMillis()
@@ -1160,11 +1165,16 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
                             val elapsed = System.currentTimeMillis() - threeFingerStartTime
 
                             // Upward swipe requiring all 3 fingers to swipe up
-                            val minSwipeDistance = 28 * dm.density
-                            val maxHorizontalDrift = 180 * dm.density
+                            val decorHeight = window.decorView.height
+                            if (decorHeight != lastTouchDecorHeight || cachedMinSwipeDistance <= 0f) {
+                                lastTouchDecorHeight = decorHeight
+                                val density = resources.displayMetrics.density
+                                cachedMinSwipeDistance = 28 * density
+                                cachedMaxHorizontalDrift = 180 * density
+                            }
 
-                            if (deltaY0 > minSwipeDistance && deltaY1 > minSwipeDistance && deltaY2 > minSwipeDistance &&
-                                deltaX0 < maxHorizontalDrift && deltaX1 < maxHorizontalDrift && deltaX2 < maxHorizontalDrift &&
+                            if (deltaY0 > cachedMinSwipeDistance && deltaY1 > cachedMinSwipeDistance && deltaY2 > cachedMinSwipeDistance &&
+                                deltaX0 < cachedMaxHorizontalDrift && deltaX1 < cachedMaxHorizontalDrift && deltaX2 < cachedMaxHorizontalDrift &&
                                 elapsed in 50..1500) {
                                 if (!fragment.isQuickSettingsOpen() && !emulationViewModel.drawerOpen.value) {
                                     fragment.openQuickSettingsMenu()

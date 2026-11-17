@@ -608,16 +608,23 @@ u32 CalculateUnswizzledSizeBytes(const ImageInfo& info) noexcept {
     return NumBlocksPerLayer(info, tile_size) * info.resources.layers * BytesPerBlock(info.format);
 }
 
+bool AstcDataLooksOpaque(std::span<const u8> data) noexcept {
+    return Tegra::Texture::ASTC::IsOpaque(data);
+}
+
 u32 CalculateConvertedSizeBytes(const ImageInfo& info) noexcept {
     if (info.type == ImageType::Buffer) {
         return info.size.width * BytesPerBlock(info.format);
     }
     static constexpr Extent2D TILE_SIZE{1, 1};
-    if (IsPixelFormatASTC(info.format) && Settings::values.astc_recompression.GetValue() !=
-                                              Settings::AstcRecompression::Uncompressed) {
+    const auto recompression_setting = Settings::values.astc_recompression.GetValue();
+    if (IsPixelFormatASTC(info.format) &&
+        recompression_setting != Settings::AstcRecompression::Uncompressed) {
         const u32 bpp_div =
-            Settings::values.astc_recompression.GetValue() == Settings::AstcRecompression::Bc1 ? 2
-                                                                                               : 1;
+            recompression_setting == Settings::AstcRecompression::Bc1 ||
+                    (recompression_setting == Settings::AstcRecompression::Bc3 && info.astc_opaque)
+                ? 2
+                : 1;
         // NumBlocksPerLayer doesn't account for this correctly, so we have to do it manually.
         u32 output_size = 0;
         for (s32 i = 0; i < info.resources.levels; i++) {
@@ -960,13 +967,16 @@ void ConvertImage(std::span<const u8> input, const ImageInfo& info, std::span<u8
         } else if (astc) {
             // BC1 uses 0.5 bytes per texel
             // BC3 and BC5 use 1 byte per texel
+            const bool use_bc1 =
+                recompression_setting == Settings::AstcRecompression::Bc1 ||
+                (recompression_setting == Settings::AstcRecompression::Bc3 && info.astc_opaque);
             auto compress = Tegra::Texture::BCN::CompressBC3;
-            if (recompression_setting == Settings::AstcRecompression::Bc1) {
+            if (use_bc1) {
                 compress = Tegra::Texture::BCN::CompressBC1;
             } else if (recompression_setting == Settings::AstcRecompression::Bc5) {
                 compress = Tegra::Texture::BCN::CompressBC5;
             }
-            const auto bpp_div = recompression_setting == Settings::AstcRecompression::Bc1 ? 2 : 1;
+            const auto bpp_div = use_bc1 ? 2 : 1;
 
             const u32 plane_dim = copy.image_extent.width * copy.image_extent.height;
             const u32 level_size = plane_dim * copy.image_extent.depth *
@@ -1134,8 +1144,10 @@ bool IsBlockLinearSizeCompatibleBPPRelaxed(const ImageInfo& lhs, const ImageInfo
     ASSERT(rhs.type != ImageType::Linear);
     const auto lhs_bpp = BytesPerBlock(lhs.format);
     const auto rhs_bpp = BytesPerBlock(rhs.format);
-    const Extent3D lhs_size = AdjustMipSize(lhs.size, lhs_level);
-    const Extent3D rhs_size = AdjustMipSize(rhs.size, rhs_level);
+    const Extent3D lhs_size =
+        AdjustTileSize(AdjustMipSize(lhs.size, lhs_level), DefaultBlockSize(lhs.format));
+    const Extent3D rhs_size =
+        AdjustTileSize(AdjustMipSize(rhs.size, rhs_level), DefaultBlockSize(rhs.format));
     return Common::AlignUpLog2(lhs_size.width * lhs_bpp, GOB_SIZE_X_SHIFT) ==
                Common::AlignUpLog2(rhs_size.width * rhs_bpp, GOB_SIZE_X_SHIFT) &&
            Common::AlignUpLog2(lhs_size.height, GOB_SIZE_Y_SHIFT) ==

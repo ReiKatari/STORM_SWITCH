@@ -51,6 +51,10 @@ void State::ProcessData(const u32 data, const bool is_last_call) {
         }
         return;
     }
+    if (write_offset < copy_size || flushed_offset >= copy_size) {
+        return;
+    }
+    flushed_offset = copy_size;
     ProcessData(inner_buffer);
 }
 
@@ -65,8 +69,23 @@ void State::ProcessData(const u32* data, size_t num_data) {
         }
         return;
     }
-    std::span<const u8> read_buffer(reinterpret_cast<const u8*>(data), num_data * sizeof(u32));
-    ProcessData(read_buffer);
+    const size_t incoming_bytes = num_data * sizeof(u32);
+    if (write_offset == 0 && incoming_bytes >= copy_size && flushed_offset < copy_size) {
+        write_offset = copy_size;
+        flushed_offset = copy_size;
+        std::span<const u8> read_buffer(reinterpret_cast<const u8*>(data), copy_size);
+        ProcessData(read_buffer);
+        return;
+    }
+    if (write_offset < copy_size && incoming_bytes > 0) {
+        const u32 sub_copy_size = static_cast<u32>(std::min<size_t>(incoming_bytes, copy_size - write_offset));
+        std::memcpy(&inner_buffer[write_offset], data, sub_copy_size);
+        write_offset += sub_copy_size;
+    }
+    if (write_offset >= copy_size && flushed_offset < copy_size) {
+        flushed_offset = copy_size;
+        ProcessData(inner_buffer);
+    }
 }
 
 void State::ProcessData(std::span<const u8> read_buffer) {
@@ -96,17 +115,19 @@ void State::ProcessData(std::span<const u8> read_buffer) {
         x_elements >>= bpp_shift;
         x_offset >>= bpp_shift;
         const u32 bytes_per_pixel = 1U << bpp_shift;
+        const u32 effective_width = (std::max)(width, x_offset + x_elements);
+        const u32 effective_height = (std::max)(regs.dest.height, regs.dest.y + regs.line_count);
         const std::size_t dst_size = Tegra::Texture::CalculateSize(
-            true, bytes_per_pixel, width, regs.dest.height, regs.dest.depth,
+            true, bytes_per_pixel, effective_width, effective_height, regs.dest.depth,
             regs.dest.BlockHeight(), regs.dest.BlockDepth());
 
         Tegra::Memory::GpuGuestMemoryScoped<u8,
                                             Tegra::Memory::GuestMemoryFlags::SafeReadCachedWrite>
             tmp(memory_manager, address, dst_size, &tmp_buffer);
 
-        Tegra::Texture::SwizzleSubrect(tmp, read_buffer, bytes_per_pixel, width, regs.dest.height,
-                                       regs.dest.depth, x_offset, regs.dest.y, x_elements,
-                                       regs.line_count, regs.dest.BlockHeight(),
+        Tegra::Texture::SwizzleSubrect(tmp, read_buffer, bytes_per_pixel, effective_width,
+                                       effective_height, regs.dest.depth, x_offset, regs.dest.y,
+                                       x_elements, regs.line_count, regs.dest.BlockHeight(),
                                        regs.dest.BlockDepth(), regs.line_length_in);
     }
 }

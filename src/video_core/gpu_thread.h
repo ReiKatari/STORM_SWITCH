@@ -132,7 +132,8 @@ private:
     u64 PushCommand(CommandData&& command_data, bool block, bool is_async);
 
     Core::System& system;
-    VideoCore::RasterizerInterface* rasterizer = nullptr;
+    std::atomic<VideoCore::RasterizerInterface*> rasterizer{nullptr};
+    std::atomic<bool> shutting_down{false};
     SynchState state;
     std::jthread thread;
 };

@@ -125,7 +125,8 @@ void Vic::Execute() noexcept {
         if (decoded_frame) {
             has_decoded_frame = true;
         } else if (!has_decoded_frame) {
-            return;
+            // Fill the frame with black instead of dropping frame 0 before guest output is clean
+            std::fill(output_surface.begin(), output_surface.end(), Pixel{});
         }
     } else {
         // Fill the frame with black, as otherwise they can have random data and be very glitchy.
@@ -869,6 +870,8 @@ void Vic::WriteY8__V8U8_N420(const OutputSurfaceConfig& output_surface_config) n
         Tegra::Memory::GpuGuestMemoryScoped<u8, Core::Memory::GuestMemoryFlags::SafeWrite> out_chroma(host1x.gmmu_manager, regs.output_surface.chroma_u.Address(), out_chroma_swizzle_size, &swizzle_scratch);
         Texture::SwizzleTexture(out_luma, luma_scratch, BytesPerPixel, out_luma_width, out_luma_height, 1, block_height, 0, 1);
         Texture::SwizzleTexture(out_chroma, chroma_scratch, BytesPerPixel * 2, out_chroma_width, out_chroma_height, 1, block_height, 0, 1);
+        host1x.gmmu_manager.InvalidateRegion(regs.output_surface.luma.Address(), out_luma_swizzle_size);
+        host1x.gmmu_manager.InvalidateRegion(regs.output_surface.chroma_u.Address(), out_chroma_swizzle_size);
     } break;
     case BlkKind::Pitch: {
         LOG_TRACE(HW_GPU, "Writing Y8__V8U8_N420 swizzled frame\n"
@@ -891,11 +894,14 @@ void Vic::WriteY8__V8U8_N420(const OutputSurfaceConfig& output_surface_config) n
         Decode(luma_scratch.data(), chroma_scratch.data());
         host1x.gmmu_manager.WriteBlock(regs.output_surface.luma.Address(), luma_scratch.data(), out_luma_size);
         host1x.gmmu_manager.WriteBlock(regs.output_surface.chroma_u.Address(), chroma_scratch.data(), out_chroma_size);
+        host1x.gmmu_manager.InvalidateRegion(regs.output_surface.luma.Address(), out_luma_size);
+        host1x.gmmu_manager.InvalidateRegion(regs.output_surface.chroma_u.Address(), out_chroma_size);
     } break;
     default:
         LOG_ERROR(HW_GPU, "Unhandled VIC block kind in WriteYUV: {}", static_cast<u32>(output_surface_config.out_block_kind.Value()));
         break;
     }
+    host1x.gmmu_manager.FlushCaching();
 }
 
 void Vic::WriteABGR(const OutputSurfaceConfig& output_surface_config, VideoPixelFormat format) noexcept {
@@ -1027,6 +1033,7 @@ void Vic::WriteABGR(const OutputSurfaceConfig& output_surface_config, VideoPixel
 
         Tegra::Memory::GpuGuestMemoryScoped<u8, Core::Memory::GuestMemoryFlags::SafeWrite> out_luma(host1x.gmmu_manager, regs.output_surface.luma.Address(), out_swizzle_size, &swizzle_scratch);
         Texture::SwizzleTexture(out_luma, luma_scratch, BytesPerPixel, out_luma_width, out_luma_height, 1, block_height, 0, 1);
+        host1x.gmmu_manager.InvalidateRegion(regs.output_surface.luma.Address(), out_swizzle_size);
     } break;
     case BlkKind::Pitch: {
         LOG_TRACE(HW_GPU, "Writing ABGR pitch frame\n"
@@ -1038,11 +1045,13 @@ void Vic::WriteABGR(const OutputSurfaceConfig& output_surface_config, VideoPixel
         luma_scratch.resize_destructive(out_luma_size);
         Tegra::Memory::GpuGuestMemoryScoped<u8, Core::Memory::GuestMemoryFlags::SafeWrite> out_luma(host1x.gmmu_manager, regs.output_surface.luma.Address(), out_luma_size, &luma_scratch);
         Decode(out_luma.data(), output_surface.data());
+        host1x.gmmu_manager.InvalidateRegion(regs.output_surface.luma.Address(), out_luma_size);
     } break;
     default:
         LOG_ERROR(HW_GPU, "Unhandled VIC block kind in WriteABGR: {}", static_cast<u32>(output_surface_config.out_block_kind.Value()));
         break;
     }
+    host1x.gmmu_manager.FlushCaching();
 }
 
 } // namespace Tegra::Host1x

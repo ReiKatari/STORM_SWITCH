@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <array>
+#include <bit>
 #include <thread>
 #include <chrono>
 #include <condition_variable>
@@ -1080,6 +1081,7 @@ public:
             {1, &INx2Vi2Session::ReturnOne, "Unknown1"},
             {3, &INx2Vi2Session::ReturnOne, "GetDisplayCount (guessed)"},
             {5, &INx2Vi2Session::GetTimestampRecorderCount, "GetTimestampRecorderCount (guessed)"},
+            {53, &INx2Vi2Session::GetRecordedTimestamps, "GetRecordedTimestamps"},
             {11, &INx2Vi2Session::ReturnEvent, "Unknown11"},
             {31, &INx2Vi2Session::GetVsyncEvent, "GetVsyncEvent (guessed)"},
             {32, &INx2Vi2Session::GetVsyncEvent, "GetDisplayVsyncEvent (guessed)"},
@@ -1170,6 +1172,9 @@ private:
             PaceToVblank();
         }
         const auto paced = std::chrono::steady_clock::now();
+        if (const u32 recorder = w[18] & 0xf; recorder != 0) {
+            m_recorded_ticks[recorder - 1] = system.CoreTiming().GetClockTicks();
+        }
         // Where each frame's time goes on the present thread, averaged per 600 presents: the
         // game is blocked here while Eden's GPU thread catches up (fence) and composites.
         {
@@ -1579,6 +1584,30 @@ private:
         TipcReplyWords(ctx, {7});
     }
 
+    // 53(B buffer, u32 recorder, u64 checkpoint bits, u64 max count): one u64 tick per checkpoint
+    // bit, in bit order, then the u64 byte count written and a u8 "still pending". A present names
+    // its recorder in word 18 (bits 0-3, recorder + 1). nn::vi::ListFrameHistory reports a frame as
+    // shown only once its recorder has a tick, and Unreal's frame flip tracking waits for that:
+    // Orbitals froze after the Unreal logo and aborted on its 70 s render fence timeout while this
+    // replied nothing.
+    void GetRecordedTimestamps(HLERequestContext& ctx) {
+        const auto* w = ctx.CommandBuffer();
+        const u32 recorder = w[5];
+        const u64 checkpoints = (u64{w[6]} | (u64{w[7]} << 32)) & 0x1f;
+        const u64 max_count = u64{w[8]} | (u64{w[9]} << 32);
+        if (recorder >= m_recorded_ticks.size() || !m_recorded_ticks[recorder]) {
+            TipcReplyWords(ctx, {0, 0, 1});
+            return;
+        }
+        std::vector<u64> ticks(std::min<u64>(std::popcount(checkpoints), max_count),
+                               *m_recorded_ticks[recorder]);
+        const size_t size = std::min(ticks.size() * sizeof(u64), ctx.GetWriteBufferSize(0));
+        if (size != 0) {
+            ctx.WriteBufferB(ticks.data(), size, 0);
+        }
+        TipcReplyWords(ctx, {static_cast<u32>(size), 0, 0});
+    }
+
     void ReturnEvent(HLERequestContext& ctx) {
         LOG_WARNING(Service, "(STUBBED) nx2:vi2 TIPC {} [2]={:#x} [3]={:#x}, returning an event",
                     ctx.GetCommand(), ctx.CommandBuffer()[2], ctx.CommandBuffer()[3]);
@@ -1640,6 +1669,7 @@ private:
     u32 m_release_syncpoint{~0U};
     u32 m_release_value{};
     u64 m_presents{};
+    std::array<std::optional<u64>, 15> m_recorded_ticks{}; ///< 53's recorders, by present word 18
     u64 m_shown_layout{}; // image and crop size last logged
     std::shared_ptr<std::atomic<bool>> m_capture_pending = std::make_shared<std::atomic<bool>>(false);
 };
@@ -2207,6 +2237,9 @@ public:
     }
 
     ~INx2GraphicsSystemSession() override {
+        if (m_syncpt_memory != nullptr) {
+            system.Host1x().GetSyncpointManager().SetGuestMirror({});
+        }
         if (m_syncpt_poll) {
             system.CoreTiming().UnscheduleEvent(m_syncpt_poll);
         }
@@ -2355,6 +2388,17 @@ private:
             memory.Write32(m_syncpt_ro + 0x18, SyncptRwBitsOffset);
             memory.Write32(m_syncpt_ro + 0x1c, SyncptRoBitsOffset);
             UpdateSyncptValues();
+            // Mirror each guest increment as it happens, before the waits it meets are answered:
+            // the client's TryWaitNativeSync reads this page, and a client woken by an answered
+            // wait (nx2:syncpt 201) before the next poll read the old value. Yoshi and the
+            // Mysterious Book's movie player then aborted on purpose (2162-0001) a few minutes in.
+            system.Host1x().GetSyncpointManager().SetGuestMirror(
+                [memory = m_syncpt_memory, values = m_syncpt_ro + SyncptValuesOffset,
+                 count = std::min(m_syncpt_count, HostSyncpoints)](u32 id, u32 value) {
+                    if (id < count) {
+                        memory->Write64(values + u64{id} * 8, value);
+                    }
+                });
             if (!m_syncpt_poll) {
                 m_syncpt_poll = Core::Timing::CreateEvent(
                     "nx2:gsv:SyncptPoll",

@@ -24,7 +24,7 @@ class Scheduler {
 public:
     void Push(GPU& gpu, s32 channel, CommandList&& entries);
 
-    void ResumePending(GPU& gpu);
+    bool ResumePending(GPU& gpu);
     [[nodiscard]] bool HasPendingNativeChannels() const {
         std::scoped_lock lock{scheduling_guard};
         return !pending_native_channels.empty();

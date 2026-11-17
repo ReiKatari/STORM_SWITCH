@@ -24,6 +24,7 @@
 #include "common/scope_exit.h"
 
 #if defined(__linux__)
+#include <linux/falloc.h>
 #include <sys/random.h>
 #elif defined(__APPLE__)
 #include <sys/types.h>
@@ -51,8 +52,11 @@
 
 #endif // ^^^ POSIX ^^^
 
+#include <algorithm>
+#include <map>
 #include <mutex>
 #include <random>
+#include <vector>
 
 #include "common/alignment.h"
 #include "common/assert.h"
@@ -144,11 +148,16 @@ public:
             return false;
         }
 
-        // Allocate backing file map: try SEC_COMMIT first, then SEC_RESERVE fallback if commit limit exceeded
+        // Windows: core code writes guest physical memory directly through backing_base (not only via Map),
+        // so prefer a fully committed section. Sparse SEC_RESERVE tracking is only a fallback when the
+        // system commit limit is exceeded.
         backing_handle = pfn_CreateFileMapping2(INVALID_HANDLE_VALUE, nullptr, FILE_MAP_WRITE | FILE_MAP_READ, PAGE_READWRITE, SEC_COMMIT, backing_size, nullptr, nullptr, 0);
-        if (!backing_handle) {
-            LOG_WARNING(HW_Memory, "Failed to commit {} MiB of backing memory, falling back to SEC_RESERVE", backing_size >> 20);
+        if (backing_handle) {
+            backing_block_committed.assign((backing_size + 0xFFFFULL) >> 16, 1U);
+        } else {
+            LOG_WARNING(HW_Memory, "Failed to commit {} MiB of backing memory, falling back to sparse SEC_RESERVE", backing_size >> 20);
             backing_handle = pfn_CreateFileMapping2(INVALID_HANDLE_VALUE, nullptr, FILE_MAP_WRITE | FILE_MAP_READ, PAGE_READWRITE, SEC_RESERVE, backing_size, nullptr, nullptr, 0);
+            backing_block_committed.assign((backing_size + 0xFFFFULL) >> 16, 0U);
         }
         if (!backing_handle) {
             LOG_CRITICAL(HW_Memory, "Failed to allocate {} MiB of backing memory", backing_size >> 20);
@@ -196,8 +205,25 @@ public:
         return ptr;
     }
 
+    void CommitBackingBlocks(size_t host_offset, size_t length) {
+        if (length == 0 || backing_block_committed.empty()) {
+            return;
+        }
+        const size_t first_blk = host_offset >> 16;
+        const size_t last_blk = (host_offset + length + 0xFFFFULL) >> 16;
+        for (size_t blk = first_blk; blk < last_blk && blk < backing_block_committed.size(); ++blk) {
+            if (backing_block_committed[blk] == 0U) {
+                const size_t off = blk << 16;
+                const size_t sz = (std::min)(size_t{0x10000}, backing_size - off);
+                VirtualAlloc(backing_base + off, sz, MEM_COMMIT, PAGE_READWRITE);
+                backing_block_committed[blk] = 1U;
+            }
+        }
+    }
+
     void Map(size_t virtual_offset, size_t host_offset, size_t length, MemoryPermission perms) {
         std::unique_lock lock{placeholder_mutex};
+        CommitBackingBlocks(host_offset, length);
         if (!IsNiechePlaceholder(virtual_offset, length)) {
             Split(virtual_offset, length);
         }
@@ -244,6 +270,37 @@ public:
     void EnableDirectMappedAddress() {
         // TODO
         UNREACHABLE();
+    }
+
+    void ClearBackingRegion(size_t physical_offset, size_t length, u32 fill_value) {
+        if (length == 0 || !backing_base || physical_offset >= backing_size) {
+            return;
+        }
+        const size_t clamped_len = (std::min)(length, backing_size - physical_offset);
+        const u8 fill_byte = static_cast<u8>(fill_value);
+        const size_t end_off = physical_offset + clamped_len;
+        const size_t first_blk = physical_offset >> 16;
+        const size_t last_blk = (end_off - 1) >> 16;
+
+        std::scoped_lock lock{placeholder_mutex};
+        for (size_t blk = first_blk; blk <= last_blk && blk < backing_block_committed.size(); ++blk) {
+            const size_t blk_begin = blk << 16;
+            const size_t blk_sz = (std::min)(size_t{0x10000}, backing_size - blk_begin);
+            const size_t ov_begin = (std::max)(physical_offset, blk_begin);
+            const size_t ov_end = (std::min)(end_off, blk_begin + blk_sz);
+            if (ov_end <= ov_begin) {
+                continue;
+            }
+            if (backing_block_committed[blk] == 0U) {
+                if (fill_byte == 0U) {
+                    // Block is uncommitted SEC_RESERVE; next MEM_COMMIT guarantees OS zero pages.
+                    continue;
+                }
+                VirtualAlloc(backing_base + blk_begin, blk_sz, MEM_COMMIT, PAGE_READWRITE);
+                backing_block_committed[blk] = 1U;
+            }
+            std::memset(backing_base + ov_begin, fill_byte, ov_end - ov_begin);
+        }
     }
 
     const size_t backing_size; ///< Size of the backing memory in bytes
@@ -372,7 +429,9 @@ private:
         if (!pfn_MapViewOfFile3(backing_handle, process, virtual_base + virtual_offset, host_offset,
                                 length, MEM_REPLACE_PLACEHOLDER, PAGE_READWRITE, nullptr, 0)) {
             LOG_CRITICAL(HW_Memory, "Failed to map placeholder");
+            return;
         }
+        VirtualAlloc(virtual_base + virtual_offset, length, MEM_COMMIT, PAGE_READWRITE);
     }
 
     void Split(size_t virtual_offset, size_t length) {
@@ -422,6 +481,7 @@ private:
     std::mutex placeholder_mutex;                                 ///< Mutex for placeholders
     boost::icl::separate_interval_set<size_t> placeholders;       ///< Mapped placeholders
     ::Common::unordered_map<size_t, size_t> placeholder_host_pointers; ///< Placeholder backing offset
+    std::vector<u8> backing_block_committed; ///< 64 KiB physical backing block commit state
 };
 
 #elif defined(__OPENORBIS__) || defined(__managarm__)
@@ -594,8 +654,22 @@ public:
             LOG_CRITICAL(HW_Memory, "mmap failed: {}", strerror(errno));
             return false;
         }
+
 #if defined(__linux__)
+#if defined(MADV_NOHUGEPAGE)
+        if (!use_anon) {
+            // Preserve 64 KiB FALLOC_FL_PUNCH_HOLE granularity instead of promoting memfd holes into 2 MiB THP pages.
+            madvise(virtual_base, virtual_size, MADV_NOHUGEPAGE);
+        } else {
+#if !defined(__ANDROID__)
+            madvise(virtual_base, virtual_size, MADV_HUGEPAGE);
+#else
+            madvise(virtual_base, virtual_size, MADV_NOHUGEPAGE);
+#endif
+        }
+#elif !defined(__ANDROID__)
         madvise(virtual_base, virtual_size, MADV_HUGEPAGE);
+#endif
 #endif
         free_manager.SetAddressSpace(virtual_base, virtual_size);
         return true;
@@ -615,7 +689,14 @@ public:
 
     void Map(size_t virtual_offset, size_t host_offset, size_t length, MemoryPermission perms) {
         // Intersect the range with our address space.
+        const size_t orig_voff = virtual_offset;
         AdjustMap(&virtual_offset, &length);
+        if (length == 0) {
+            return;
+        }
+        host_offset += (virtual_offset - orig_voff);
+
+        std::scoped_lock lock{mapping_mutex};
 
         // We are removing a placeholder.
         free_manager.AllocateBlock(virtual_base + virtual_offset, length);
@@ -642,7 +723,23 @@ public:
 
         // Intersect the range with our address space.
         AdjustMap(&virtual_offset, &length);
+        if (length == 0) {
+            return;
+        }
 
+        std::scoped_lock lock{mapping_mutex};
+
+#ifdef MADV_DONTNEED
+        if (fd < 0) {
+            const uintptr_t page_mask = static_cast<uintptr_t>(sysconf(_SC_PAGESIZE)) - 1;
+            const uintptr_t unmap_addr = reinterpret_cast<uintptr_t>(virtual_base + virtual_offset);
+            const uintptr_t aligned_addr = (unmap_addr + page_mask) & ~page_mask;
+            const uintptr_t end_addr = (unmap_addr + length) & ~page_mask;
+            if (end_addr > aligned_addr) {
+                madvise(reinterpret_cast<void*>(aligned_addr), end_addr - aligned_addr, MADV_DONTNEED);
+            }
+        }
+#endif
         // Merge with any adjacent placeholder mappings.
         auto [merged_pointer, merged_size] =
             free_manager.FreeBlock(virtual_base + virtual_offset, length);
@@ -693,6 +790,76 @@ public:
         virtual_base = nullptr;
     }
 
+    void ClearBackingRegion(size_t physical_offset, size_t length, u32 fill_value) {
+        if (length == 0 || backing_base == MAP_FAILED || physical_offset >= backing_size) {
+            return;
+        }
+        const size_t clamped_len = (std::min)(length, backing_size - physical_offset);
+        const u8 fill_byte = static_cast<u8>(fill_value);
+        if (fill_byte == 0U) {
+            if (fd >= 0) {
+#if defined(__linux__) && defined(FALLOC_FL_PUNCH_HOLE) && defined(FALLOC_FL_KEEP_SIZE)
+                {
+                    std::scoped_lock lock{mapping_mutex};
+                    if (punch_hole_supported) {
+                        int ret = 0;
+                        do {
+                            ret = fallocate(fd, FALLOC_FL_PUNCH_HOLE | FALLOC_FL_KEEP_SIZE,
+                                            static_cast<off_t>(physical_offset),
+                                            static_cast<off_t>(clamped_len));
+                        } while (ret != 0 && errno == EINTR);
+                        if (ret == 0) {
+                            return;
+                        }
+                        if (errno == EOPNOTSUPP || errno == ENOSYS) {
+                            punch_hole_supported = false;
+                        }
+                    }
+                }
+#endif
+#if defined(__linux__) && defined(MADV_REMOVE)
+                const size_t page_size = static_cast<size_t>(sysconf(_SC_PAGESIZE));
+                const size_t page_mask = page_size - 1;
+                const uintptr_t base_addr = reinterpret_cast<uintptr_t>(backing_base + physical_offset);
+                const uintptr_t end_addr = base_addr + clamped_len;
+                const uintptr_t aligned_begin = (base_addr + page_mask) & ~page_mask;
+                const uintptr_t aligned_end = end_addr & ~page_mask;
+                if (aligned_end > aligned_begin &&
+                    madvise(reinterpret_cast<void*>(aligned_begin), aligned_end - aligned_begin,
+                            MADV_REMOVE) == 0) {
+                    if (aligned_begin > base_addr) {
+                        std::memset(reinterpret_cast<void*>(base_addr), 0, aligned_begin - base_addr);
+                    }
+                    if (end_addr > aligned_end) {
+                        std::memset(reinterpret_cast<void*>(aligned_end), 0, end_addr - aligned_end);
+                    }
+                    return;
+                }
+#endif
+            } else {
+#ifdef MADV_DONTNEED
+                const size_t page_size = static_cast<size_t>(sysconf(_SC_PAGESIZE));
+                const size_t page_mask = page_size - 1;
+                const uintptr_t base_addr = reinterpret_cast<uintptr_t>(backing_base + physical_offset);
+                const uintptr_t end_addr = base_addr + clamped_len;
+                const uintptr_t aligned_begin = (base_addr + page_mask) & ~page_mask;
+                const uintptr_t aligned_end = end_addr & ~page_mask;
+                if (aligned_end > aligned_begin) {
+                    if (aligned_begin > base_addr) {
+                        std::memset(reinterpret_cast<void*>(base_addr), 0, aligned_begin - base_addr);
+                    }
+                    madvise(reinterpret_cast<void*>(aligned_begin), aligned_end - aligned_begin, MADV_DONTNEED);
+                    if (end_addr > aligned_end) {
+                        std::memset(reinterpret_cast<void*>(aligned_end), 0, end_addr - aligned_end);
+                    }
+                    return;
+                }
+#endif
+            }
+        }
+        std::memset(backing_base + physical_offset, fill_byte, clamped_len);
+    }
+
     const size_t backing_size; ///< Size of the backing memory in bytes
     const size_t virtual_size; ///< Size of the virtual address placeholder in bytes
 
@@ -741,6 +908,8 @@ private:
     }
 
     int fd{-1}; // memfd file descriptor, -1 is the error value of memfd_create
+    bool punch_hole_supported{true};
+    std::mutex mapping_mutex{};
     FreeRegionManager free_manager{};
 };
 
@@ -791,6 +960,10 @@ HostMemory::HostMemory(HostMemory&&) noexcept = default;
 
 HostMemory& HostMemory::operator=(HostMemory&&) noexcept = default;
 
+namespace {
+std::atomic<u64> g_mapped_bytes{};
+} // namespace
+
 void HostMemory::Map(size_t virtual_offset, size_t host_offset, size_t length, MemoryPermission perms, bool separate_heap) {
 #if !(defined(__OPENORBIS__) || defined(__managarm__))
     ASSERT(virtual_offset % PageAlignment == 0);
@@ -801,6 +974,7 @@ void HostMemory::Map(size_t virtual_offset, size_t host_offset, size_t length, M
     if (length == 0 || !virtual_base || !impl) {
         return;
     }
+    g_mapped_bytes.fetch_add(length, std::memory_order_relaxed);
     impl->Map(virtual_offset + virtual_base_offset, host_offset, length, perms);
 #endif
 }
@@ -813,6 +987,7 @@ void HostMemory::Unmap(size_t virtual_offset, size_t length, bool separate_heap)
     if (length == 0 || !virtual_base || !impl) {
         return;
     }
+    g_mapped_bytes.fetch_add(length, std::memory_order_relaxed);
     impl->Unmap(virtual_offset + virtual_base_offset, length);
 #endif
 }
@@ -828,12 +1003,43 @@ void HostMemory::Protect(size_t virtual_offset, size_t length, MemoryPermission 
     const bool read = True(perm & MemoryPermission::Read);
     const bool write = True(perm & MemoryPermission::Write);
     const bool execute = True(perm & MemoryPermission::Execute);
+    g_mapped_bytes.fetch_add(length, std::memory_order_relaxed);
     impl->Protect(virtual_offset + virtual_base_offset, length, read, write, execute);
 #endif
 }
 
 void HostMemory::ClearBackingRegion(size_t physical_offset, size_t length, u32 fill_value) {
-    std::memset(backing_base + physical_offset, fill_value, length);
+#if !(defined(__OPENORBIS__) || defined(__managarm__))
+    if (impl) {
+        impl->ClearBackingRegion(physical_offset, length, fill_value);
+        return;
+    }
+#endif
+    if (length == 0 || !backing_base || physical_offset >= backing_size) {
+        return;
+    }
+    const size_t clamped_len = (std::min)(length, backing_size - physical_offset);
+#if defined(__linux__) && defined(MADV_DONTNEED)
+    if (static_cast<u8>(fill_value) == 0U) {
+        const size_t page_size = static_cast<size_t>(sysconf(_SC_PAGESIZE));
+        const size_t page_mask = page_size - 1;
+        const uintptr_t base_addr = reinterpret_cast<uintptr_t>(backing_base + physical_offset);
+        const uintptr_t end_addr = base_addr + clamped_len;
+        const uintptr_t aligned_begin = (base_addr + page_mask) & ~page_mask;
+        const uintptr_t aligned_end = end_addr & ~page_mask;
+        if (aligned_end > aligned_begin) {
+            if (aligned_begin > base_addr) {
+                std::memset(reinterpret_cast<void*>(base_addr), 0, aligned_begin - base_addr);
+            }
+            madvise(reinterpret_cast<void*>(aligned_begin), aligned_end - aligned_begin, MADV_DONTNEED);
+            if (end_addr > aligned_end) {
+                std::memset(reinterpret_cast<void*>(aligned_end), 0, end_addr - aligned_end);
+            }
+            return;
+        }
+    }
+#endif
+    std::memset(backing_base + physical_offset, static_cast<int>(fill_value & 0xFFU), clamped_len);
 }
 
 void HostMemory::EnableDirectMappedAddress() {
@@ -843,6 +1049,10 @@ void HostMemory::EnableDirectMappedAddress() {
         virtual_size += reinterpret_cast<uintptr_t>(virtual_base);
     }
 #endif
+}
+
+u64 HostMemory::MappedBytes() noexcept {
+    return g_mapped_bytes.load(std::memory_order_relaxed);
 }
 
 } // namespace Common

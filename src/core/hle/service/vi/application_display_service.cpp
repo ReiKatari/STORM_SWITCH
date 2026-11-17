@@ -38,6 +38,7 @@ IApplicationDisplayService::IApplicationDisplayService(Core::System& system_,
         {2031, C<&IApplicationDisplayService::DestroyStrayLayer>, "DestroyStrayLayer"},
         {2101, C<&IApplicationDisplayService::SetLayerScalingMode>, "SetLayerScalingMode"},
         {2102, C<&IApplicationDisplayService::ConvertScalingMode>, "ConvertScalingMode"},
+        {2103, C<&IApplicationDisplayService::Cmd2103>, "Cmd2103"},
         {2450, C<&IApplicationDisplayService::GetIndirectLayerImageMap>, "GetIndirectLayerImageMap"},
         {2451, nullptr, "GetIndirectLayerImageCropMap"},
         {2460, C<&IApplicationDisplayService::GetIndirectLayerImageRequiredMemoryInfo>, "GetIndirectLayerImageRequiredMemoryInfo"},
@@ -287,6 +288,12 @@ Result IApplicationDisplayService::ConvertScalingMode(Out<ConvertedScaleMode> ou
         LOG_ERROR(Service_VI, "Invalid scaling mode specified, mode={}", mode);
         R_THROW(VI::ResultOperationFailed);
     }
+}
+
+Result IApplicationDisplayService::Cmd2103(Out<std::array<u8, 0x18>> out_unk18) {
+    LOG_WARNING(Service_VI, "(stubbed)");
+    *out_unk18 = {};
+    R_SUCCEED();
 }
 
 Result IApplicationDisplayService::GetIndirectLayerImageMap(

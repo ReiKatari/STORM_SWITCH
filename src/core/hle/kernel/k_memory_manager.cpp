@@ -513,27 +513,46 @@ bool KMemoryManager::Impl::ProcessOptimizedAllocation(KernelCore& kernel, KPhysi
     // We want to return whether any pages were newly allocated.
     bool any_new = false;
 
-    // Get the range we're processing.
+    // Coalesce contiguous runs of uninitialized pages so zero-fills punch/decommit sparse
+    // memfd pages in bulk instead of faulting every 4 KiB page into physical RAM (PSS).
     size_t offset = this->GetPageOffset(block);
-    const size_t last = offset + num_pages - 1;
+    const size_t end = offset + num_pages;
+    const u64 base_phys = GetInteger(m_heap.GetAddress()) - Core::DramMemoryMap::Base;
 
-    // Process.
-    while (offset <= last) {
-        // Check if the page has been optimized-allocated before.
-        if ((optimize_map[offset / Common::BitSize<u64>()] &
-             (u64(1) << (offset % Common::BitSize<u64>()))) == 0) {
-            // If not, it's new.
-            any_new = true;
-
-            // Fill the page.
-            auto* ptr = device_memory.GetPointer<u8>(m_heap.GetAddress());
-            std::memset(ptr + offset * PageSize, fill_pattern, PageSize);
+    while (offset < end) {
+        const size_t word_idx = offset / Common::BitSize<u64>();
+        const size_t bit_idx = offset % Common::BitSize<u64>();
+        if (bit_idx == 0 && (end - offset) >= Common::BitSize<u64>() &&
+            optimize_map[word_idx] == ~u64(0)) {
+            offset += Common::BitSize<u64>();
+            continue;
         }
 
+        if ((optimize_map[word_idx] & (u64(1) << bit_idx)) != 0) {
+            offset++;
+            continue;
+        }
+
+        any_new = true;
+        const size_t run_start = offset;
         offset++;
+        while (offset < end) {
+            const size_t w = offset / Common::BitSize<u64>();
+            const size_t b = offset % Common::BitSize<u64>();
+            if (b == 0 && (end - offset) >= Common::BitSize<u64>() && optimize_map[w] == 0) {
+                offset += Common::BitSize<u64>();
+                continue;
+            }
+            if ((optimize_map[w] & (u64(1) << b)) != 0) {
+                break;
+            }
+            offset++;
+        }
+
+        device_memory.buffer.ClearBackingRegion(base_phys + run_start * PageSize,
+                                                (offset - run_start) * PageSize, fill_pattern);
     }
 
-    // Return the number of pages we processed.
     return any_new;
 }
 

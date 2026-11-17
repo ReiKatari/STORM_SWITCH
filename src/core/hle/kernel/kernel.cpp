@@ -1197,25 +1197,32 @@ const Kernel::KSharedMemory& KernelCore::GetHidBusSharedMem() const {
     return *impl->hidbus_shared_mem;
 }
 
+void KernelCore::RequestSuspendEmulation() {
+    for (auto& process : GetProcessList()) {
+        KScopedLightLock ll{process->GetListLock()};
+
+        for (auto& thread : process->GetThreadList()) {
+            thread.RequestSuspend(*this, SuspendType::System);
+        }
+    }
+}
+
 void KernelCore::SuspendEmulation(bool suspended) {
     const bool should_suspend{exception_exited || suspended};
     auto processes = GetProcessList();
 
-    for (auto& process : processes) {
-        KScopedLightLock ll{process->GetListLock()};
+    if (!should_suspend) {
+        for (auto& process : processes) {
+            KScopedLightLock ll{process->GetListLock()};
 
-        for (auto& thread : process->GetThreadList()) {
-            if (should_suspend) {
-                thread.RequestSuspend(*this, SuspendType::System);
-            } else {
+            for (auto& thread : process->GetThreadList()) {
                 thread.Resume(*this, SuspendType::System);
             }
         }
-    }
-
-    if (!should_suspend) {
         return;
     }
+
+    RequestSuspendEmulation();
 
     // Wait for process execution to stop.
     // KernelCore::SuspendEmulation must be called from locked context,

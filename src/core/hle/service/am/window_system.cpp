@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "core/core.h"
+#include "core/hle/kernel/kernel.h"
 #include "core/hle/service/am/am_results.h"
 #include "core/hle/service/am/applet.h"
 #include "core/hle/service/am/applet_manager.h"
@@ -334,6 +335,20 @@ void WindowSystem::PruneTerminatedAppletsLocked() {
     }
 }
 
+void WindowSystem::UpdateCurrentApplicationLocked() {
+    const Applet* const candidate = m_application != nullptr ? m_application : m_home_menu;
+    if (candidate == nullptr || !candidate->process) {
+        return;
+    }
+
+    auto* const process = candidate->process->GetHandle();
+    if (process == nullptr || process == m_system.Kernel().ApplicationProcess()) {
+        return;
+    }
+
+    m_system.Kernel().MakeApplicationProcess(process);
+}
+
 bool WindowSystem::RestartAppletProcessLocked(Applet* applet) {
     if (!ReinitializeProcess(m_system, *applet->process, applet->program_id)) {
         LOG_ERROR(Service_AM, "Failed to restart winding applet_id={}",
@@ -353,6 +368,9 @@ bool WindowSystem::RestartAppletProcessLocked(Applet* applet) {
     applet->launch_reason.flag = 1;
 
     m_event_observer->TrackAppletProcess(*applet);
+
+    // The application process must not keep pointing at the terminated process.
+    this->UpdateCurrentApplicationLocked();
     return true;
 }
 

@@ -26,7 +26,7 @@ FloatingTranslateButton::FloatingTranslateButton(QWidget* parent)
     setAttribute(Qt::WA_TranslucentBackground);
     setAttribute(Qt::WA_ShowWithoutActivating);
     resize(60, 60);
-    setWindowTitle(QStringLiteral("STORM SWITCH — Translate"));
+    setWindowTitle(QStringLiteral("STORM SWITCH - Translate"));
     setToolTip(tr("🌐 Перевод экрана STORM SWITCH\n• Клик: мгновенный перевод экрана\n• Долгое нажатие / ПКМ: настройки и субтитры"));
 }
 

@@ -5,9 +5,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <bit>
+#include <limits>
 #include <tuple>
 #include <utility>
 
+#include "common/settings.h"
 #include "shader_recompiler/backend/spirv/emit_spirv_instructions.h"
 #include "shader_recompiler/backend/spirv/spirv_emit_context.h"
 
@@ -336,13 +338,19 @@ Id EmitGetAttribute(EmitContext& ctx, IR::Attribute attr, Id vertex) {
     case IR::Attribute::PositionX:
     case IR::Attribute::PositionY:
     case IR::Attribute::PositionZ:
-    case IR::Attribute::PositionW:
-        return ctx.OpLoad(
+    case IR::Attribute::PositionW: {
+        const Id value{ctx.OpLoad(
             ctx.F32[1],
             ctx.need_input_position_indirect
                 ? AttrPointer(ctx, ctx.input_f32, vertex, ctx.input_position, ctx.u32_zero_value,
                               ctx.Const(element))
-                : AttrPointer(ctx, ctx.input_f32, vertex, ctx.input_position, ctx.Const(element)));
+                : AttrPointer(ctx, ctx.input_f32, vertex, ctx.input_position, ctx.Const(element)))};
+        if (attr == IR::Attribute::PositionZ && ctx.runtime_info.depth_range) {
+            const auto& range = *ctx.runtime_info.depth_range;
+            return ctx.OpFma(ctx.F32[1], value, ctx.Const(range[0]), ctx.Const(range[1]));
+        }
+        return value;
+    }
     case IR::Attribute::InstanceId:
         if (ctx.profile.support_vertex_instance_id) {
             return ctx.OpBitcast(ctx.F32[1], ctx.OpLoad(ctx.U32[1], ctx.instance_id));
@@ -486,10 +494,15 @@ void EmitSetPatch(EmitContext& ctx, IR::Patch patch, Id value) {
     ctx.OpStore(pointer, value);
 }
 
+static Id SanitizeFragColor(EmitContext& ctx, Id value) {
+    return SanitizeFiniteF32(ctx, value);
+}
+
 void EmitSetFragColor(EmitContext& ctx, u32 index, u32 component, Id value) {
     const Id component_id{ctx.Const(component)};
     const AttributeType type{ctx.runtime_info.color_output_types[index]};
     if (type == AttributeType::Float) {
+        value = SanitizeFragColor(ctx, value);
         const Id pointer{ctx.OpAccessChain(ctx.output_f32, ctx.frag_color.at(index), component_id)};
         ctx.OpStore(pointer, value);
     } else if (type == AttributeType::UnsignedInt) {
@@ -501,6 +514,7 @@ void EmitSetFragColor(EmitContext& ctx, u32 index, u32 component, Id value) {
         ctx.OpStore(pointer, ctx.OpBitcast(ctx.S32[1], value));
     } else {
         // Disabled or unknown, treat as float
+        value = SanitizeFragColor(ctx, value);
         const Id pointer{ctx.OpAccessChain(ctx.output_f32, ctx.frag_color.at(index), component_id)};
         ctx.OpStore(pointer, value);
     }

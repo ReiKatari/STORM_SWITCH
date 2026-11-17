@@ -134,18 +134,35 @@ class YuzuApplication : Application() {
             DirectoryInitialization.start()
             kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
                 try {
-                    org.yuzu.yuzu_emu.model.GameFixSessionState.cleanupAllTemporaryFixes()
-                } catch (t: Throwable) {
-                    Log.error("[YuzuApplication] cleanupAllTemporaryFixes error: ${t.message}")
-                }
-                try {
-                    GpuDriverHelper.initializeFreedrenoConfigEarly()
-                    GpuDriverHelper.initializeDriverParameters()
-                } catch (t: Throwable) {
-                    Log.error("[YuzuApplication] GpuDriverHelper async init error: ${t.message}")
+                    try {
+                        org.yuzu.yuzu_emu.model.GameFixSessionState.cleanupAllTemporaryFixes()
+                    } catch (t: Throwable) {
+                        Log.error("[YuzuApplication] cleanupAllTemporaryFixes error: ${t.message}")
+                    }
+                    try {
+                        val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(this@YuzuApplication)
+                        val prefVersionKey = "storm_last_apk_version_code"
+                        val currentVersionCode = BuildConfig.VERSION_CODE
+                        if (prefs.getInt(prefVersionKey, -1) != currentVersionCode) {
+                            GpuDriverHelper.clearShaderAndPipelineCaches(this@YuzuApplication)
+                            prefs.edit().putInt(prefVersionKey, currentVersionCode).apply()
+                            Log.info("[YuzuApplication] Wiped stale shader/mesa caches for APK versionCode=$currentVersionCode")
+                        }
+                    } catch (t: Throwable) {
+                        Log.error("[YuzuApplication] APK upgrade cache cleanup error: ${t.message}")
+                    }
+                    try {
+                        GpuDriverHelper.initializeFreedrenoConfigEarly()
+                        GpuDriverHelper.initializeDriverParameters()
+                    } catch (t: Throwable) {
+                        Log.error("[YuzuApplication] GpuDriverHelper async init error: ${t.message}")
+                    }
+                } finally {
+                    driverInitDeferred.complete(Unit)
                 }
             }
         } catch (t: Throwable) {
+            driverInitDeferred.complete(Unit)
             org.yuzu.yuzu_emu.utils.CrashHandler.logError(this, "DirectoryInitialization", t)
         }
 
@@ -195,6 +212,7 @@ class YuzuApplication : Application() {
     companion object {
         var documentsTree: DocumentsTree? = null
         lateinit var application: YuzuApplication
+        val driverInitDeferred = kotlinx.coroutines.CompletableDeferred<Unit>()
 
         val appContext: Context
             get() = application.applicationContext
@@ -243,12 +261,14 @@ class YuzuApplication : Application() {
             val savedIdx = prefs?.getInt("app_language", -1) ?: -1
             val languageIndex = if (savedIdx >= 0) {
                 savedIdx
-            } else {
+            } else if (org.yuzu.yuzu_emu.NativeLibrary.isNativeLoaded) {
                 try {
                     IntSetting.APP_LANGUAGE.getInt()
                 } catch (_: Throwable) {
                     0
                 }
+            } else {
+                0
             }
 
             val langCode = if (languageIndex in LANGUAGE_CODES.indices) {

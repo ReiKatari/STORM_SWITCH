@@ -40,6 +40,12 @@ public:
 
     bool IsRunning() const;
     bool IsPaused() const;
+    bool IsShuttingDown() const {
+        return m_shutting_down.load(std::memory_order_acquire);
+    }
+    std::recursive_mutex& GetHidLifecycleMutex() {
+        return m_hid_lifecycle_mutex;
+    }
     void PauseEmulation();
     void UnPauseEmulation();
     void HaltEmulation();
@@ -74,15 +80,16 @@ private:
     u32 m_surface_width{0};
     u32 m_surface_height{0};
 
-    // Core emulation
-    Core::System m_system;
+    // Declare InputSubsystem before Core::System so System/HIDCore tears down before InputSubsystem on destruction
     InputCommon::InputSubsystem m_input_subsystem;
+    Core::System m_system;
     Core::PerfStatsResults m_perf_stats{};
     int m_shaders_building{0};
     std::shared_ptr<FileSys::VfsFilesystem> m_vfs;
     Core::SystemResultStatus m_load_result{Core::SystemResultStatus::ErrorNotInitialized};
     std::atomic<bool> m_is_running = false;
     std::atomic<bool> m_is_paused = false;
+    std::atomic<bool> m_shutting_down = false;
     Common::Android::SoftwareKeyboard::AndroidKeyboard* m_software_keyboard{};
     std::unique_ptr<FileSys::ManualContentProvider> m_manual_provider;
     int m_applet_id{1};
@@ -93,6 +100,7 @@ private:
     // Synchronization
     std::condition_variable_any m_cv;
     mutable std::mutex m_mutex;
+    mutable std::recursive_mutex m_hid_lifecycle_mutex;
 
     // Program index for next boot
     std::atomic<s32> m_next_program_index = -1;

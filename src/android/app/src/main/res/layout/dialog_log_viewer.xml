@@ -54,7 +54,7 @@
                     android:textSize="11sp"
                     android:maxLines="3"
                     android:ellipsize="end"
-                    tools:text="Diablo II | 0100726014352000 | ⚡ В игре"
+                    tools:text="Diablo II | 0100726014352000 | В игре"
     android:breakStrategy="simple"
     android:hyphenationFrequency="none"/>
             </LinearLayout>

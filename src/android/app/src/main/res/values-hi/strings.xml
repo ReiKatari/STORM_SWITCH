@@ -134,7 +134,7 @@
     <string name="auto_correction_reset_toast">Settings restored to डिफ़ॉल्ट profile</string>
     <string name="auto_correction_no_profile">Universal उच्च प्रदर्शन profile is active</string>
     <string name="auto_correction_issues_content">• उच्च GPU thermal लोड करें: उच्च रिज़ॉल्यूशन rendering heats SoC above 40°C\n• Thermal throttling: SoC clock scaling triggers when device temperature exceeds 40°C, dropping FPS below 30\n• मेमोरी bus saturation: uncompressed ASTC textures increase DRAM bandwidth and heat dissipation\n• Pipeline stalls: reactive flushing and strict synchronization stall render threads</string>
-    <string name="auto_correction_recommendations_content">✓ रिज़ॉल्यूशन: 0.75X (540p / 810p) (reduces SoC temperature by 4–6°C and boosts FPS)\n✓ ASTC Recompression: Uncompressed (maximum texture quality with zero missing textures)\n✓ GPU Timings: Boost (eliminates GPU command latency and keeps stable 30+ FPS)\n✓ Reactive Flushing: अक्षम (reduces GPU लोड करें and micro-stutter)\n✓ Host MMU Emulation (Fastmem): सक्षम (maximum CPU प्रदर्शन with reduced heat)\n✓ Eco Thermal Mode and Pacing: सक्षम (prevents SoC thermal throttling spikes)\n✓ एनिस्ट्रॉपिक फ़िल्टरिंग: डिफ़ॉल्ट (eliminates redundant texture sampling overhead)</string>
+    <string name="auto_correction_recommendations_content">रिज़ॉल्यूशन: 0.75X (540p / 810p) (reduces SoC temperature by 4-6°C and boosts FPS)\n ASTC Recompression: Uncompressed (maximum texture quality with zero missing textures)\n GPU Timings: Boost (eliminates GPU command latency and keeps stable 30+ FPS)\n Reactive Flushing: अक्षम (reduces GPU लोड करें and micro-stutter)\n Host MMU Emulation (Fastmem): सक्षम (maximum CPU प्रदर्शन with reduced heat)\n Eco Thermal Mode and Pacing: सक्षम (prevents SoC thermal throttling spikes)\n एनिस्ट्रॉपिक फ़िल्टरिंग: डिफ़ॉल्ट (eliminates redundant texture sampling overhead)</string>
 
     <!-- Optimize SPIRV output -->
     <string name="never">Never</string>
@@ -215,7 +215,7 @@
     <string name="multiplayer_required">Required</string>
     <string name="multiplayer_token_required">Web Token required, go to उन्नत सेटिंग्स -> System -> Network</string>
     <string name="multiplayer_ip_error">Invalid IP format</string>
-    <string name="multiplayer_username_error">Must be between 4–20 characters, and contain alphanumeric characters, periods, dashes, underscores, and spaces only</string>
+    <string name="multiplayer_username_error">Must be between 4-20 characters, and contain alphanumeric characters, periods, dashes, underscores, and spaces only</string>
     <string name="multiplayer_nickname_invalid">Username invalid, ensure it is set properly in System -> Network</string>
     <string name="multiplayer_token_error">Must be 48 characters, and lowercase a-z only</string>
     <string name="multiplayer_port_error">Must be between 1 and 65535</string>
@@ -489,11 +489,11 @@
     <!-- About screen strings -->
     <string name="gaia_is_not_real">Gaia isn\'t real</string>
     <string name="copied_to_clipboard">Copied to clipboard</string>
-    <string name="about_app_description">STORM SWITCH — Advanced उच्च-प्रदर्शन Fork of the Eden Nintendo Switch Emulator</string>
+    <string name="about_app_description">STORM SWITCH - Advanced उच्च-प्रदर्शन Fork of the Eden Nintendo Switch Emulator</string>
     <string name="about_fork_title">Eden Project Fork</string>
     <string name="about_fork_description">STORM SWITCH is a प्रदर्शन-focused fork of the Eden emulator. It integrates dedicated ARM64 NCE optimizations, कस्टम GPU ड्राइवर management (Turnip/Mesa), full GameBanana mod support, TitleDB metadata integration, and 10 exclusive STORM themes.</string>
     <string name="special_thanks_title">Special Thanks &amp; Acknowledgements</string>
-    <string name="special_thanks_description">• Eden Project &amp; Team — original project &amp; core emulator foundation\n• Yuzu &amp; Citra Teams — groundbreaking emulation codebase\n• Ryujinx Team — invaluable reverse engineering &amp; Switch HLE research\n• Skyline / Strato Team — ARM64 NCE and Android प्रदर्शन techniques\n• Mesa, Freedreno &amp; Turnip Teams — open-source Vulkan driver development\n• Global open-source emulation contributors</string>
+    <string name="special_thanks_description">• Eden Project &amp; Team - original project &amp; core emulator foundation\n• Yuzu &amp; Citra Teams - groundbreaking emulation codebase\n• Ryujinx Team - invaluable reverse engineering &amp; Switch HLE research\n• Skyline / Strato Team - ARM64 NCE and Android प्रदर्शन techniques\n• Mesa, Freedreno &amp; Turnip Teams - open-source Vulkan driver development\n• Global open-source emulation contributors</string>
     <string name="contributors">Contributors</string>
     <string name="contributors_description">People who make STORM SWITCH and Eden possible</string>
     <string name="contributors_link" translatable="false">https://git.eden-emu.dev/eden-emu/eden/activity/contributors</string>
@@ -546,7 +546,7 @@
     <string name="fast_cpu_time">CPU Clocks</string>
     <string name="fast_cpu_time_description">Raises the clock the emulated CPU reports, which removes some FPS limiters. Weaker CPUs may see reduced प्रदर्शन, and certain games may behave improperly.</string>
     <string name="custom_cpu_ticks">कस्टम CPU Ticks</string>
-    <string name="custom_cpu_ticks_description">Set a कस्टम value of CPU ticks. Higher values can increase प्रदर्शन, but may also cause the game to freeze. A range of 77–21000 is recommended.</string>
+    <string name="custom_cpu_ticks_description">Set a कस्टम value of CPU ticks. Higher values can increase प्रदर्शन, but may also cause the game to freeze. A range of 77-21000 is recommended.</string>
     <string name="cpu_ticks">Ticks</string>
     <string name="memory_layout">DRAM Size (Console मेमोरी Layout)</string>
     <string name="memory_layout_description">(EXPERIMENTAL) Emulated Switch DRAM मेमोरी size: 4 / 6 / 8 / 12 GB. Increasing DRAM helps with demanding games, उच्च-रिज़ॉल्यूशन texture packs, and mods. Only works on Dynarmic (JIT) and requires sufficient device RAM.</string>
@@ -557,7 +557,7 @@
     <string name="web_token">Web Token</string>
     <string name="web_token_description">Web token used for creating public lobbies. It is a 48-character string containing only lowercase a-z.</string>
     <string name="web_username">Web Username</string>
-    <string name="web_username_description">Username to be shown in multiplayer lobbies. It must be 4–20 characters, containing only alphanumeric characters, dashes, periods, underscores, and spaces.</string>
+    <string name="web_username_description">Username to be shown in multiplayer lobbies. It must be 4-20 characters, containing only alphanumeric characters, dashes, periods, underscores, and spaces.</string>
     <string name="network">Network</string>
 
     <!-- Graphics settings strings -->
@@ -584,7 +584,7 @@
     <string name="accelerate_astc">ASTC Decoding Method</string>
     <string name="accelerate_astc_description">Pick how ASTC-compressed textures are decoded for rendering: CPU (slow, सुरक्षित), GPU (तेज़, recommended), or CPU Async (नहीं stutters, may cause issues)</string>
     <string name="astc_recompression">ASTC Texture Recompression</string>
-    <string name="astc_recompression_description" formatted="false">Recompresses ASTC textures to BC1, BC3, or BC5 formats on the fly to reduce RAM and VRAM usage by 50–80%.</string>
+    <string name="astc_recompression_description" formatted="false">Recompresses ASTC textures to BC1, BC3, or BC5 formats on the fly to reduce RAM and VRAM usage by 50-80%.</string>
     <string name="astc_recompression_uncompressed">Uncompressed (Highest Quality / Max RAM)</string>
     <string name="astc_recompression_bc1">BC1 (निम्न Quality / Max RAM Savings)</string>
     <string name="astc_recompression_bc3" formatted="false">BC3 (मध्यम Quality / 50% RAM Savings)</string>
@@ -879,7 +879,7 @@
     <string name="quick_settings">Quick settings</string>
     <string name="enable_quick_settings">Quick settings</string>
     <string name="enable_quick_settings_description">Access quick settings during gameplay via three-finger upward swipe or in-game menu</string>
-    <string name="quick_settings_gesture_hint">💡 Quick settings: 3-finger swipe up</string>
+    <string name="quick_settings_gesture_hint">Quick settings: 3-finger swipe up</string>
     <string name="preferences_audio">Audio</string>
     <string name="preferences_audio_description">Output engine, ध्वनि</string>
     <string name="preferences_controls">Controls</string>
@@ -1047,7 +1047,7 @@
     <string name="lock_drawer">Lock drawer</string>
     <string name="unlock_drawer">Unlock drawer</string>
     <string name="reset">Reset</string>
-    <string name="game_fix_manual_override_warning">⚠️ Manual settings prioritized: %s. स्वतः-fix partially overridden.</string>
+    <string name="game_fix_manual_override_warning">Manual settings prioritized: %s. स्वतः-fix partially overridden.</string>
 
     <!-- Amiibo -->
     <string name="amiibo_title">Amiibo</string>
@@ -1277,7 +1277,7 @@
     <string name="ratio_stretch">Stretch to window</string>
 
     <!-- CPU Backend -->
-    <string name="cpu_backend_nce">NCE (Native Code Execution — Recommended)</string>
+    <string name="cpu_backend_nce">NCE (Native Code Execution - Recommended)</string>
     <string name="cpu_backend_dynarmic">Dynarmic (JIT)</string>
 
     <!-- CPU Accuracy -->
@@ -1899,7 +1899,7 @@ DAMAGES.
     <string name="license_opus" translatable="false">Opus</string>
     <string name="license_opus_description" translatable="false">Modern audio compression for the internet</string>
     <string name="license_opus_link" translatable="false">https://github.com/xiph/opus</string>
-    <string name="license_opus_copyright" translatable="false">Copyright 2001–2011 Xiph.Org, Skype Limited, Octasic, Jean-Marc Valin, Timothy B. Terriberry, CSIRO, Gregory Maxwell, Mark Borgerding, Erik de Castro Lopo</string>
+    <string name="license_opus_copyright" translatable="false">Copyright 2001-2011 Xiph.Org, Skype Limited, Octasic, Jean-Marc Valin, Timothy B. Terriberry, CSIRO, Gregory Maxwell, Mark Borgerding, Erik de Castro Lopo</string>
     <string name="license_opus_text" translatable="false">
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -2089,8 +2089,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="cheat_name">Cheat Name</string>
     <string name="cheat_code">Atmosphere Cheat Code</string>
     <string name="cheat_status_active">Active in Game</string>
-    <string name="cheat_status_enabled">✅ सक्षम</string>
-    <string name="cheat_status_disabled">⚪ अक्षम</string>
+    <string name="cheat_status_enabled">सक्षम</string>
+    <string name="cheat_status_disabled">अक्षम</string>
     <string name="select_all">Select सभी</string>
     <string name="deselect_all">Deselect सभी</string>
     <string name="cheats_count_summary">Total चीट्स: %1$d | सक्षम: %2$d</string>
@@ -2123,13 +2123,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="auto_optimization_apply">मोड लागू करें</string>
     <string name="auto_optimization_applied_toast">स्वतः कॉन्फ़िगरेशन लागू: «%1$s» प्रोफाइल!</string>
     <string name="auto_optimization_summary_title">लागू सेटिंग्स</string>
-    <string name="auto_optimization_mode_default">🔄 डिफ़ॉल्ट सेटिंग्स</string>
+    <string name="auto_optimization_mode_default">डिफ़ॉल्ट सेटिंग्स</string>
     <string name="auto_optimization_mode_default_desc">स्वतः-अनुकूलन प्रोफाइल को अक्षम करें और सभी एम्यूलेटर सेटिंग्स को फ़ैक्टरी डिफ़ॉल्ट पर पुनर्स्थापित करें।</string>
     <string name="auto_optimization_reset_defaults">डिफ़ॉल्ट पर रीसेट करें</string>
-    <string name="auto_optimization_defaults_restored_toast">🔄 डिफ़ॉल्ट सेटिंग्स सफलतापूर्वक पुनर्स्थापित की गईं!</string>
+    <string name="auto_optimization_defaults_restored_toast">डिफ़ॉल्ट सेटिंग्स सफलतापूर्वक पुनर्स्थापित की गईं!</string>
     <string name="show_device_load_overlay">Show Device लोड करें Overlay</string>
     <string name="show_device_load_overlay_description">Displays real-time CPU, GPU, RAM utilization and 5-stage device temperature indicators.</string>
-    <string name="game_fix_issues_header">⚠️ Known Issues and Bugs</string>
+    <string name="game_fix_issues_header">Known Issues and Bugs</string>
     <string name="game_fix_recommended_header">Recommended Fixes and Settings</string>
     <string name="game_fix_dont_ask_again">Don\'t ask again for this game</string>
     <string name="game_fix_apply_and_launch">Apply Fixes and Launch</string>
@@ -2262,8 +2262,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="online_tools_connecting_format">Connecting and downloading %1$s...</string>
     <string name="online_tools_downloading_format">Downloading: %1$d%% (%2$s / %3$s)</string>
     <string name="online_tools_extracting">Unpacking and installing components into system...</string>
-    <string name="online_firmware_installed_success">✅ Firmware %1$s installed online सफलतापूर्वक!</string>
-    <string name="online_keys_installed_success">✅ Keys %1$s installed online सफलतापूर्वक!</string>
+    <string name="online_firmware_installed_success">Firmware %1$s installed online सफलतापूर्वक!</string>
+    <string name="online_keys_installed_success">Keys %1$s installed online सफलतापूर्वक!</string>
     <string name="unit_gb">GB</string>
     <string name="unit_mb">MB</string>
     <string name="unit_kb">KB</string>
@@ -2276,7 +2276,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="thermal_emergency_protection_description">Automatically pause emulation when the chipset or battery reaches a critical temperature to cool the device</string>
     <string name="thermal_emergency_limit">Thermal pause limit</string>
     <string name="thermal_emergency_limit_description">Threshold temperature for emergency pause</string>
-    <string name="thermal_emergency_pause_toast">🌡️ Emergency pause: chipset temperature %1$s°C. Cooling device down...</string>
+    <string name="thermal_emergency_pause_toast">Emergency pause: chipset temperature %1$s°C. Cooling device down...</string>
     <string name="storm_tier2_compiler">STORM Tier-2 JIT Compiler</string>
     <string name="storm_tier2_compiler_description">Zero-overhead instruction pre-optimizer and superblock JIT tuner (canonicalizes ARMv8.3 PAC/BTI hints and accelerates CNTVCT_EL0 counter reads)</string>
     <string name="ratio_32_9">32:9 (Super Ultrawide)</string>
@@ -2299,7 +2299,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="storm_sync_close">बंद करें</string>
     <string name="storm_sync_device_key_label">This device key</string>
     <string name="storm_sync_copy">Copy</string>
-    <string name="storm_sync_server_active">🟢 Sync server active (Waiting for connections)</string>
+    <string name="storm_sync_server_active">Sync server active (Waiting for connections)</string>
     <string name="storm_sync_remote_connect_title">Connect to remote device</string>
     <string name="storm_sync_remote_key_hint">Enter key or IP:port...</string>
     <string name="storm_sync_btn_connect">Connect</string>
@@ -2329,17 +2329,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="storm_sync_remote_device_default">Remote device</string>
     <string name="storm_sync_remote_node_default">Remote node</string>
     <string name="storm_sync_node_default">node</string>
-    <string name="storm_sync_state_connected_client_fmt">🟢 Connected: %1$s [%2$s:%3$d]</string>
-    <string name="storm_sync_state_connected_remote_fmt">🟢 Connected: %1$s (%2$s) [%3$s:%4$d]</string>
-    <string name="storm_sync_state_self_key">⚠️ Entered key belongs to this device</string>
+    <string name="storm_sync_state_connected_client_fmt">Connected: %1$s [%2$s:%3$d]</string>
+    <string name="storm_sync_state_connected_remote_fmt">Connected: %1$s (%2$s) [%3$s:%4$d]</string>
+    <string name="storm_sync_state_self_key">Entered key belongs to this device</string>
     <string name="storm_sync_toast_self_key">You entered the key of the current device. Please enter the key of another device (PC or another phone).</string>
     <string name="storm_sync_state_connecting_fmt">Connecting to %1$s:%2$d...</string>
-    <string name="storm_sync_state_conn_error_fmt">❌ Connection त्रुटि to %1$s:%2$d</string>
+    <string name="storm_sync_state_conn_error_fmt">Connection त्रुटि to %1$s:%2$d</string>
     <string name="storm_sync_toast_conn_error_fmt">करने में विफल: connect to %1$s:%2$d. Make sure STORM सहेजें SYNC is running on the second device and port %2$d is open.</string>
     <string name="storm_sync_toast_identical">Saves are completely identical</string>
     <string name="storm_sync_conflict_game_fmt">Game: %1$s [%2$s]</string>
-    <string name="storm_sync_conflict_date_fmt">📅 Date &amp; time: %1$s</string>
-    <string name="storm_sync_conflict_size_fmt">📦 Data size: %1$s • Files: %2$d</string>
+    <string name="storm_sync_conflict_date_fmt">Date &amp; time: %1$s</string>
+    <string name="storm_sync_conflict_size_fmt">Data size: %1$s • Files: %2$d</string>
     <string name="storm_sync_toast_download_ok">सहेजें downloaded सफलतापूर्वक!</string>
     <string name="storm_sync_toast_download_err">करने में विफल: डाउनलोड करें सहेजें</string>
     <string name="storm_sync_toast_upload_ok">सहेजें sent to remote device सफलतापूर्वक!</string>
@@ -2347,25 +2347,25 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="storm_sync_toast_all_synced_already">सभी saves are already synchronized!</string>
     <string name="storm_sync_toast_syncing_progress_fmt">Syncing (%1$d/%2$d): %3$s...</string>
     <string name="storm_sync_toast_sync_all_done">सभी saves synchronized सफलतापूर्वक!</string>
-    <string name="storm_sync_item_local_info_fmt">📱 On this device: %1$s (%2$s, %3$d files)</string>
-    <string name="storm_sync_item_local_missing">📱 On this device: कोई नहीं</string>
-    <string name="storm_sync_item_remote_info_fmt">💻 On remote: %1$s (%2$s, %3$d files)</string>
-    <string name="storm_sync_item_remote_missing">💻 On remote: कोई नहीं</string>
-    <string name="storm_sync_badge_synced">🟢 Synchronized</string>
+    <string name="storm_sync_item_local_info_fmt">On this device: %1$s (%2$s, %3$d files)</string>
+    <string name="storm_sync_item_local_missing">On this device: कोई नहीं</string>
+    <string name="storm_sync_item_remote_info_fmt">On remote: %1$s (%2$s, %3$d files)</string>
+    <string name="storm_sync_item_remote_missing">On remote: कोई नहीं</string>
+    <string name="storm_sync_badge_synced">Synchronized</string>
     <string name="storm_sync_btn_synced">Synchronized</string>
-    <string name="storm_sync_badge_conflict">⚠️ Conflict</string>
+    <string name="storm_sync_badge_conflict">Conflict</string>
     <string name="storm_sync_btn_resolve_conflict">Resolve conflict</string>
-    <string name="storm_sync_badge_local_only">📤 Local only</string>
+    <string name="storm_sync_badge_local_only">Local only</string>
     <string name="storm_sync_btn_send">Send</string>
-    <string name="storm_sync_badge_remote_only">📥 Remote only</string>
+    <string name="storm_sync_badge_remote_only">Remote only</string>
     <string name="storm_sync_btn_download">डाउनलोड करें</string>
     <string name="storm_sync_badge_unknown">Unknown</string>
     <string name="storm_world_subtitle">Nintendo Switch Games Catalog</string>
     <string name="storm_world_search_hint">खोजें games by title or ID...</string>
-    <string name="storm_world_filter_all_langs">🌐 सभी languages</string>
-    <string name="storm_world_filter_russian">🇷🇺 Russian</string>
-    <string name="storm_world_filter_dlc_mods">✨ DLC &amp; Mods</string>
-    <string name="storm_world_filter_all_formats">📦 सभी formats</string>
+    <string name="storm_world_filter_all_langs">सभी languages</string>
+    <string name="storm_world_filter_russian">Russian</string>
+    <string name="storm_world_filter_dlc_mods">DLC &amp; Mods</string>
+    <string name="storm_world_filter_all_formats">सभी formats</string>
     <string name="storm_world_btn_download_game">डाउनलोड करें game</string>
     <string name="storm_world_btn_pause">Pause</string>
     <string name="storm_world_btn_resume">Resume</string>
@@ -2385,9 +2385,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="storm_world_dlc_subtitle">Official add-ons and content included with the game</string>
     <string name="storm_world_dlc_empty">Add-ons list is empty</string>
     <string name="storm_world_btn_got_it">Got it</string>
-    <string name="storm_world_badge_recommended">⭐ Recommended</string>
+    <string name="storm_world_badge_recommended">Recommended</string>
     <string name="storm_world_folder_default_name">फ़ोल्डर</string>
-    <string name="storm_world_folder_label_fmt">📁 फ़ोल्डर: %1$s ✏️</string>
+    <string name="storm_world_folder_label_fmt">फ़ोल्डर: %1$s</string>
     <string name="storm_world_toast_download_folder_fmt">डाउनलोड करें फ़ोल्डर: %1$s</string>
     <string name="storm_world_toast_bg_download">Game डाउनलोड करें continues in the background</string>
     <string name="storm_world_status_available_fmt">Available Nintendo Switch games: %1$d</string>
@@ -2401,17 +2401,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="storm_world_no_description">नहीं description available</string>
     <string name="storm_world_dlc_fallback_fmt">Add-on %1$d</string>
     <string name="storm_world_dlc_official_fallback_fmt">Official add-on (DLC #%1$d)</string>
-    <string name="storm_world_pick_new_folder">📂 Select a new फ़ोल्डर on device...</string>
-    <string name="storm_world_game_folder_item_fmt">📁 Games फ़ोल्डर: %1$s</string>
-    <string name="storm_world_default_folder_option">🔄 डिफ़ॉल्ट (डाउनलोड करें/STORM_SWITCH_GAMES)</string>
+    <string name="storm_world_pick_new_folder">Select a new फ़ोल्डर on device...</string>
+    <string name="storm_world_game_folder_item_fmt">Games फ़ोल्डर: %1$s</string>
+    <string name="storm_world_default_folder_option">डिफ़ॉल्ट (डाउनलोड करें/STORM_SWITCH_GAMES)</string>
     <string name="storm_world_toast_folder_reset">डाउनलोड करें फ़ोल्डर reset to डिफ़ॉल्ट</string>
     <string name="storm_world_dialog_folder_title">Game डाउनलोड करें फ़ोल्डर</string>
     <string name="storm_world_bg_download_status_fmt">Background डाउनलोड करें: %1$s (%2$d%%)</string>
     <string name="storm_dl_error_default">डाउनलोड करें त्रुटि</string>
-    <string name="storm_dl_stats_error_fmt">❌ त्रुटि: %1$s</string>
+    <string name="storm_dl_stats_error_fmt">त्रुटि: %1$s</string>
     <string name="storm_dl_connecting">Connecting to डाउनलोड करें server...</string>
-    <string name="storm_dl_paused">⏸ डाउनलोड करें paused</string>
-    <string name="storm_dl_paused_pct_fmt">⏸ डाउनलोड करें paused (%1$d%%)</string>
+    <string name="storm_dl_paused">डाउनलोड करें paused</string>
+    <string name="storm_dl_paused_pct_fmt">डाउनलोड करें paused (%1$d%%)</string>
     <string name="storm_dl_cancelled">डाउनलोड करें cancelled</string>
     <string name="storm_dl_err_open_dir">करने में विफल: open सहेजें फ़ोल्डर. Please select an accessible फ़ोल्डर at the bottom of the game card.</string>
     <string name="storm_dl_err_open_file">करने में विफल: open target file for writing</string>
@@ -2425,13 +2425,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="storm_dl_reconnecting_fmt">Reconnecting (%1$s). Attempt %2$d of %3$d...</string>
     <string name="storm_dl_err_connection_lost">Connection failed</string>
     <string name="storm_dl_stats_error_long_fmt">डाउनलोड करें त्रुटि: %1$s</string>
-    <string name="storm_dl_completed">✅ Game downloaded सफलतापूर्वक!</string>
+    <string name="storm_dl_completed">Game downloaded सफलतापूर्वक!</string>
     <string name="storm_dl_interrupted_resume">डाउनलोड करें interrupted. Tap \"Resume\".</string>
     <string name="storm_dl_subtext_speed_eta_fmt">%1$s MB/s • ETA: %2$d min</string>
     <string name="storm_dl_progress_pct_fmt">Downloading: %1$d%%</string>
     <string name="storm_dl_game_fallback">Game</string>
 
-    <string name="auto_opt_detected_hw">🔍 पहचाना गया हार्डवेयर</string>
+    <string name="auto_opt_detected_hw">पहचाना गया हार्डवेयर</string>
     <string name="auto_opt_form_tablet">टैबलेट</string>
     <string name="auto_opt_form_phone">स्मार्टफ़ोन</string>
     <string name="auto_opt_soc_fmt">%1$s (%2$d कोर, %3$s)</string>
@@ -2446,25 +2446,25 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="cheats_search_hint">खोजें...</string>
     <string name="cheats_summary_zero">Total चीट्स: 0 | सक्षम: 0</string>
     <string name="cheat_item_desc_placeholder">Description</string>
-    <string name="cheat_btn_edit_qty">✏️ Value</string>
+    <string name="cheat_btn_edit_qty">Value</string>
     <string name="cheat_header_version_prefix"> | Version: </string>
     <string name="cheat_header_in_game"> | In Game</string>
-    <string name="cheat_header_offline"> | ⚪ Offline</string>
+    <string name="cheat_header_offline">| Offline</string>
     <string name="cheat_header_dmnt_active">
 Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="cheat_build_all_versions">सभी versions</string>
     <string name="cheat_toast_activated_ingame">Cheat codes activated in game!</string>
-    <string name="cheat_toast_saved">✅ Cheat codes saved सफलतापूर्वक</string>
+    <string name="cheat_toast_saved">Cheat codes saved सफलतापूर्वक</string>
     <string name="cheat_add_name_hint">Cheat name (e.g. Infinite Lives)</string>
     <string name="cheat_add_code_hint">Atmosphere format code (04000000 12345678 ...)</string>
     <string name="cheat_toast_added">Cheat added!</string>
     <string name="cheat_current_val_fmt">वर्तमान मान: %1$d (0x%2$s)</string>
     <string name="cheat_new_val_hint">Quantity / New value</string>
-    <string name="cheat_edit_val_title_fmt">✏️ मान संपादित करें: %1$s</string>
+    <string name="cheat_edit_val_title_fmt">मान संपादित करें: %1$s</string>
     <string name="cheat_toast_val_updated_fmt">Value updated: %1$d (0x%2$s)</string>
-    <string name="cheat_menu_edit_val">✏️ Edit quantity / value</string>
-    <string name="cheat_menu_copy_code">📋 Copy code</string>
-    <string name="cheat_menu_delete">🗑️ हटाएं cheat</string>
+    <string name="cheat_menu_edit_val">Edit quantity / value</string>
+    <string name="cheat_menu_copy_code">Copy code</string>
+    <string name="cheat_menu_delete">हटाएं cheat</string>
     <string name="cheat_toast_code_copied">Code copied</string>
     <string name="cheat_code_more_lines_fmt">%1$s (+%2$d लाइनें)</string>
     <string name="cheat_desc_qty_suffix_fmt">%1$s (मात्रा: %2$d)</string>
@@ -2503,17 +2503,17 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="cheat_desc_mem_reg">मेमोरी Register Patch</string>
     <string name="cheat_desc_mem_ptr">मेमोरी Pointer / Offset Patch</string>
     <string name="cheat_desc_custom">कस्टम Atmosphere Cheat Code</string>
-    <string name="log_viewer_title">📜 Runtime Log (Emulator Logs)</string>
+    <string name="log_viewer_title">Runtime Log (Emulator Logs)</string>
     <string name="log_viewer_save_file">सहेजें to file</string>
     <string name="log_viewer_share">Share</string>
     <string name="log_viewer_search_hint">खोजें logs (त्रुटि, चेतावनी, Vulkan, NSO...)</string>
     <string name="log_viewer_chip_all">सभी</string>
-    <string name="log_viewer_chip_errors">🚨 Errors</string>
-    <string name="log_viewer_chip_warnings">⚠️ Warnings</string>
-    <string name="log_viewer_chip_info">ℹ️ Info</string>
+    <string name="log_viewer_chip_errors">Errors</string>
+    <string name="log_viewer_chip_warnings">Warnings</string>
+    <string name="log_viewer_chip_info">Info</string>
     <string name="log_viewer_status_ingame">In Game</string>
-    <string name="log_viewer_status_offline">⚪ Offline</string>
-    <string name="log_viewer_toast_refreshing">🔄 Refreshing log...</string>
+    <string name="log_viewer_status_offline">Offline</string>
+    <string name="log_viewer_toast_refreshing">Refreshing log...</string>
     <string name="log_viewer_stats_total_fmt">Total lines: %1$d | Size: %2$d KB</string>
     <string name="log_viewer_filter_errors">Errors</string>
     <string name="log_viewer_filter_warnings">Warnings</string>
@@ -2522,19 +2522,19 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="log_viewer_stats_filtered_fmt">Filtered (%1$s): %2$d of %3$d</string>
     <string name="log_viewer_empty_filtered">नहीं entries match the selected फ़िल्टर</string>
     <string name="log_viewer_toast_empty">Log is empty</string>
-    <string name="log_viewer_toast_copied_fmt">📋 Log copied to clipboard (%1$d lines)</string>
+    <string name="log_viewer_toast_copied_fmt">Log copied to clipboard (%1$d lines)</string>
     <string name="log_viewer_toast_empty_save">Log is empty, nothing to सहेजें</string>
-    <string name="log_viewer_toast_saved_fmt">💾 Log saved सफलतापूर्वक:
+    <string name="log_viewer_toast_saved_fmt">Log saved सफलतापूर्वक:
 %1$s</string>
     <string name="log_viewer_toast_save_err_fmt">करने में विफल: सहेजें log: %1$s</string>
     <string name="log_viewer_suffix_errors"> (Errors only)</string>
     <string name="log_viewer_suffix_warnings"> (Warnings only)</string>
     <string name="log_viewer_share_title">Share STORM SWITCH Log</string>
     <string name="log_viewer_toast_share_err_fmt">Share failed: %1$s</string>
-    <string name="log_viewer_share_header_fmt">📊 STORM SWITCH Runtime Log (Game: %1$s)
+    <string name="log_viewer_share_header_fmt">STORM SWITCH Runtime Log (Game: %1$s)
 
 </string>
-    <string name="log_viewer_share_tg_title">🚀 Send log to Telegram / MAX</string>
+    <string name="log_viewer_share_tg_title">Send log to Telegram / MAX</string>
     <string name="mapping_press_prompt">Press a button or move a stick on the कंट्रोलर</string>
     <string name="overlay_toggle_subtitle">Configure visibility of touch controls</string>
     <string name="online_tools_badge_active">ACTIVE</string>
@@ -2543,9 +2543,9 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="online_tools_btn_download_install">डाउनलोड करें &amp; इंस्टॉल करें</string>
     <string name="online_tools_btn_reinstall">Reinstall</string>
     <string name="online_tools_btn_update">अपडेट करें</string>
-    <string name="online_tools_badge_installed">🟢 INSTALLED</string>
-    <string name="online_tools_badge_top">🌟 TOP</string>
-    <string name="online_tools_badge_selected">✔ SELECTED</string>
+    <string name="online_tools_badge_installed">INSTALLED</string>
+    <string name="online_tools_badge_top">TOP</string>
+    <string name="online_tools_badge_selected">SELECTED</string>
     <string name="online_tools_status_unknown">Unknown</string>
     <string name="online_tools_installed_ver_fmt">Installed version: %1$s</string>
     <string name="online_tools_fw_installed">Switch firmware installed</string>
@@ -2571,7 +2571,7 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="translator_quick_now_desc">Instant capture and text overlay</string>
     <string name="translator_quick_auto_title">स्वतः-translate on frame change</string>
     <string name="translator_quick_auto_off">Status: अक्षम (on tap)</string>
-    <string name="translator_quick_auto_on">Status: [ सक्षम — स्वतः-scan ]</string>
+    <string name="translator_quick_auto_on">Status: [ सक्षम - स्वतः-scan ]</string>
     <string name="translator_quick_model_title">Model / Neural Engine</string>
     <string name="translator_quick_roi_title">Screen scan regions</string>
     <string name="translator_quick_roi_desc">Configure subtitle and dialogue zones</string>
@@ -2583,25 +2583,25 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="translator_quick_float_desc">Display floating translate button on screen</string>
     <string name="translator_quick_float_on">Button: [ Visible ]</string>
     <string name="translator_quick_float_off">Button: Hidden</string>
-    <string name="translator_quick_all_settings">⚙️ सभी settings &amp; API keys...</string>
+    <string name="translator_quick_all_settings">सभी settings &amp; API keys...</string>
     <string name="translator_settings_subtitle">Real-time neural translation and speech synthesis</string>
-    <string name="translator_sec_engine_langs">🌐 TRANSLATION ENGINE &amp; LANGUAGES</string>
+    <string name="translator_sec_engine_langs">TRANSLATION ENGINE &amp; LANGUAGES</string>
     <string name="translator_lbl_service">Translation service:</string>
     <string name="translator_lbl_source_lang">Game भाषा (Source):</string>
     <string name="translator_lbl_target_lang">Translation भाषा:</string>
     <string name="translator_hint_api_key">API key (for DeepL / कस्टम AI)</string>
-    <string name="translator_sec_style">🖼️ SUBTITLE STYLE &amp; OVERLAY</string>
+    <string name="translator_sec_style">SUBTITLE STYLE &amp; OVERLAY</string>
     <string name="translator_lbl_overlay_style">Text overlay style:</string>
-    <string name="translator_sec_roi">📐 SCREEN SCAN REGIONS (ROI)</string>
+    <string name="translator_sec_roi">SCREEN SCAN REGIONS (ROI)</string>
     <string name="translator_lbl_roi_preset">Scan region preset:</string>
-    <string name="translator_btn_custom_roi">✏️ Configure screen zones (Multi-select)</string>
-    <string name="translator_sec_tts">🔊 TEXT-TO-SPEECH (TTS)</string>
+    <string name="translator_btn_custom_roi">Configure screen zones (Multi-select)</string>
+    <string name="translator_sec_tts">TEXT-TO-SPEECH (TTS)</string>
     <string name="translator_lbl_auto_tts">Automatic voice readout:</string>
-    <string name="translator_lbl_smart_voices">🎭 Smart character voices:</string>
+    <string name="translator_lbl_smart_voices">Smart character voices:</string>
     <string name="translator_lbl_tts_speed_default">Speech speed: 1.0x</string>
     <string name="translator_lbl_tts_speed_fmt">Speech speed: %1$sx</string>
-    <string name="translator_btn_test_voice">▶ Test voice</string>
-    <string name="translator_sec_floating_btn">🔘 FLOATING TRANSLATE BUTTON</string>
+    <string name="translator_btn_test_voice">Test voice</string>
+    <string name="translator_sec_floating_btn">FLOATING TRANSLATE BUTTON</string>
     <string name="translator_lbl_floating_show">Show translate button on screen:</string>
     <string name="translator_lbl_floating_opacity_default" formatted="false">Button opacity: 90%</string>
     <string name="translator_lbl_floating_opacity_fmt">Button opacity: %1$d%%</string>
@@ -2630,26 +2630,26 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="translator_roi_top">Top third (Quests, HUD &amp; hints)</string>
     <string name="translator_roi_custom">कस्टम regions (Manual selection)</string>
     <string name="translator_toast_capture_failed">करने में विफल: capture game frame</string>
-    <string name="translator_toast_recognizing">🔍 Recognizing and translating...</string>
+    <string name="translator_toast_recognizing">Recognizing and translating...</string>
     <string name="translator_toast_no_text_region">नहीं text found in selected region</string>
     <string name="translator_toast_no_text_screen">नहीं text detected on screen</string>
     <string name="translator_overlay_region_fmt">Region %1$d</string>
     <string name="translator_overlay_btn_add">+ Add region</string>
-    <string name="translator_overlay_btn_clear">🧹 साफ़ करें</string>
-    <string name="translator_overlay_btn_save">💾 सहेजें</string>
-    <string name="translator_overlay_btn_close">✕ बंद करें</string>
+    <string name="translator_overlay_btn_clear">साफ़ करें</string>
+    <string name="translator_overlay_btn_save">सहेजें</string>
+    <string name="translator_overlay_btn_close">बंद करें</string>
     <string name="translator_snack_auto_on">स्वतः-translation सक्षम</string>
     <string name="translator_snack_auto_off">स्वतः-translation अक्षम</string>
-    <string name="translator_snack_tts_on">🔊 TTS voice readout सक्षम</string>
-    <string name="translator_snack_tts_off">🔇 TTS voice readout अक्षम</string>
-    <string name="translator_snack_float_on">👁️ Floating button shown</string>
-    <string name="translator_snack_float_off">🙈 Floating button hidden</string>
-    <string name="translator_dialog_select_model">🤖 Select translation model</string>
+    <string name="translator_snack_tts_on">TTS voice readout सक्षम</string>
+    <string name="translator_snack_tts_off">TTS voice readout अक्षम</string>
+    <string name="translator_snack_float_on">Floating button shown</string>
+    <string name="translator_snack_float_off">Floating button hidden</string>
+    <string name="translator_dialog_select_model">Select translation model</string>
     <string name="translator_toast_model_selected_fmt">Translation model: %1$s</string>
-    <string name="sysinfo_sec_device">📱  DEVICE &amp; SYSTEM</string>
+    <string name="sysinfo_sec_device">DEVICE &amp; SYSTEM</string>
     <string name="sysinfo_sec_cpu"> PROCESSOR (CPU / SOC)</string>
-    <string name="sysinfo_sec_gpu">🎮  GRAPHICS (GPU &amp; Vulkan)</string>
-    <string name="sysinfo_sec_ram">💾  SYSTEM मेमोरी (RAM)</string>
+    <string name="sysinfo_sec_gpu">GRAPHICS (GPU &amp; Vulkan)</string>
+    <string name="sysinfo_sec_ram">SYSTEM मेमोरी (RAM)</string>
     <string name="sysinfo_lbl_manufacturer">• Manufacturer: </string>
     <string name="sysinfo_lbl_model">• Model: </string>
     <string name="sysinfo_lbl_product">• Product: </string>
@@ -2669,13 +2669,13 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="sysinfo_lbl_total_ram">• Total RAM: </string>
     <string name="sysinfo_lbl_avail_ram">• Available RAM: </string>
     <string name="sysinfo_lbl_low_mem_thresh">• निम्न मेमोरी Threshold: </string>
-    <string name="emulation_cooling_paused_title">❄️ Game paused — cooling down device</string>
-    <string name="emulation_cooling_temp_default">🌡️ Temperature: --°C ➔ Target: 36.5°C</string>
+    <string name="emulation_cooling_paused_title">Game paused - cooling down device</string>
+    <string name="emulation_cooling_temp_default">Temperature: --°C -> Target: 36.5°C</string>
     <string name="emulation_cooling_chipset_unloaded">Chipset लोड करें removed (&lt; 1 W)</string>
-    <string name="emulation_cooling_done_fmt">✅ Cooling complete: %1$s°C</string>
-    <string name="emulation_cooling_temp_fmt">🌡️ Temperature: %1$s°C ➔ Target: %2$s°C</string>
-    <string name="emulation_cooling_in_progress">🌡️ Cooling down chipset</string>
-    <string name="emulation_screenshot_saved_fmt">📸 Screenshot saved to Gallery: %1$s</string>
+    <string name="emulation_cooling_done_fmt">Cooling complete: %1$s°C</string>
+    <string name="emulation_cooling_temp_fmt">Temperature: %1$s°C -> Target: %2$s°C</string>
+    <string name="emulation_cooling_in_progress">Cooling down chipset</string>
+    <string name="emulation_screenshot_saved_fmt">Screenshot saved to Gallery: %1$s</string>
     <string name="emulation_screenshot_err_fmt">Screenshot त्रुटि: %1$s</string>
     <string name="emulation_hud_cpu">CPU:</string>
     <string name="emulation_hud_gpu">GPU:</string>
@@ -2697,12 +2697,12 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="amiibo_installed_total_fmt">कुल: %1$s</string>
     <string name="gamebanana_no_mod_desc">नहीं mod description available.</string>
     <string name="gamebanana_avail_files_header">
-📦 Available files for डाउनलोड करें:</string>
+ Available files for डाउनलोड करें:</string>
     <string name="game_fix_toast_autofix_custom">स्वतः-Fix: Applied with your कस्टम settings preserved</string>
     <string name="game_fix_toast_autofix_clean">स्वतः-Fix: Clean reference profile applied</string>
     <string name="game_fix_toast_custom_saved">स्वतः-Fix: कस्टम settings preserved</string>
-    <string name="game_fix_toast_launch_custom">🎮 कस्टम Settings: Launching with your profile</string>
-    <string name="game_fix_toast_launch_global">🌐 Global Settings: Launching with global settings</string>
+    <string name="game_fix_toast_launch_custom">कस्टम Settings: Launching with your profile</string>
+    <string name="game_fix_toast_launch_global">Global Settings: Launching with global settings</string>
     <string name="overlay_style_neon_glow">Neon Cyber Glow (3D)</string>
     <string name="overlay_style_joycon">Original Joy-Con Style (3D)</string>
     <string name="overlay_style_frost_glass">Frost Glass (3D)</string>
@@ -2831,20 +2831,20 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <!-- Save State System (SESS v2) -->
     <string name="menu_quick_save">त्वरित सहेजें (स्लॉट 1)</string>
     <string name="menu_quick_load">त्वरित लोड (स्लॉट 1)</string>
-    <string name="menu_save_state_manager">सेव स्टेट मैनेजर (स्लॉट 1–5)</string>
+    <string name="menu_save_state_manager">सेव स्टेट मैनेजर (स्लॉट 1-5)</string>
     <string name="menu_toggle_quick_save_load_overlay">स्क्रीन पर त्वरित सेव/लोड बटन (F5/F7)</string>
     <string name="save_state_manager_title">सेव स्टेट मैनेजर (SESS v2)</string>
     <string name="save_state_slot_fmt">स्लॉट %1$d</string>
     <string name="save_state_empty">[खाली स्लॉट]</string>
     <string name="save_state_no_preview">कोई पूर्वावलोकन नहीं</string>
-    <string name="save_state_save">💾 सहेजें</string>
-    <string name="save_state_load">📂 लोड करें</string>
+    <string name="save_state_save">सहेजें</string>
+    <string name="save_state_load">लोड करें</string>
     <string name="save_state_delete">हटाएं</string>
-    <string name="save_state_saved_toast">💾 त्वरित सहेजें (स्लॉट %1$d) सफलतापूर्वक बनाया गया!</string>
-    <string name="save_state_loaded_toast">📂 त्वरित लोड (स्लॉट %1$d) सफलतापूर्वक लोड हुआ!</string>
-    <string name="save_state_deleted_toast">🗑️ स्लॉट %1$d का सेव स्टेट हटा दिया गया</string>
-    <string name="save_state_save_failed">❌ स्लॉट %1$d में स्थिति सहेजने में विफल</string>
-    <string name="save_state_load_failed">⚠️ स्लॉट %1$d खाली या दूषित है</string>
+    <string name="save_state_saved_toast">त्वरित सहेजें (स्लॉट %1$d) सफलतापूर्वक बनाया गया!</string>
+    <string name="save_state_loaded_toast">त्वरित लोड (स्लॉट %1$d) सफलतापूर्वक लोड हुआ!</string>
+    <string name="save_state_deleted_toast">स्लॉट %1$d का सेव स्टेट हटा दिया गया</string>
+    <string name="save_state_save_failed">स्लॉट %1$d में स्थिति सहेजने में विफल</string>
+    <string name="save_state_load_failed">स्लॉट %1$d खाली या दूषित है</string>
     <string name="save_state_confirm_delete">क्या आप वाकई स्लॉट %1$d के लिए सेव स्टेट हटाना चाहते हैं?</string>
     <string name="update">अपडेट करें</string>
     <string name="fsr2_quality_mode">FSR 2.0 गुणवत्ता मोड</string>
@@ -2915,8 +2915,8 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="performance_preset_description">प्रदर्शन, बैटरी और दृश्य गुणवत्ता को संतुलित करने के लिए अनुकूलित प्रीसेट चुनें</string>
     <string name="performance_preset_battery">बैटरी सेवर</string>
     <string name="performance_preset_balanced">संतुलित (अनुशंसित)</string>
-    <string name="performance_preset_quality">🚀 अधिकतम गुणवत्ता</string>
-    <string name="performance_preset_custom">⚙️ कस्टम</string>
+    <string name="performance_preset_quality">अधिकतम गुणवत्ता</string>
+    <string name="performance_preset_custom">कस्टम</string>
     <string name="performance_preset_applied">प्रदर्शन प्रीसेट लागू किया गया</string>
     <string name="setting_conflict_warning">सेटिंग्स टकराव का पता चला</string>
     <string name="setting_conflict_fix">ठीक करें</string>
@@ -2932,4 +2932,104 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="ui_design_style_aurora">STORM AURORA QUANTUM</string>
     <string name="ui_design_style_orbital">STORM ORBITAL SPATIAL UI</string>
     <string name="ui_design_style_chrono">STORM CHRONO-NEXUS COMMANDER</string>
+    <string name="nx2_online_server">Switch 2 ऑनलाइन / NPLN सर्वर</string>
+    <string name="nx2_online_server_description">Switch 2 NPLN और नेटवर्क परीक्षण (playDB-CNT) के लिए स्टैंड-इन लूपबैक या LAN सर्वर IP पता (उदा. 127.0.0.1)।</string>
+    <string name="nx2_online_hosts">Switch 2 ऑनलाइन होस्ट मास्क</string>
+    <string name="nx2_online_hosts_description">स्टैंड-इन सर्वर पर पुनर्निर्देशित अल्पविराम से अलग किए गए डोमेन पैटर्न (उदा. *.fromsoftware-game.net,*.srv.nintendo.net,*.npln.srv.nintendo.net)।</string>
+    <string name="extended_logging">विस्तृत लॉगिंग सक्षम करें</string>
+    <string name="extended_logging_description">लॉग फ़ाइल का अधिकतम आकार 100 MiB से बढ़ाकर 1 GiB करता है।</string>
+    <string name="log_filter">लॉग फ़िल्टर</string>
+    <string name="log_filter_description">एमुलेटर लॉग श्रेणियों को नियंत्रित करता है। उदाहरण: *:Info Service.LM:Debug</string>
+    <string name="emulation_button_slide">बटन स्लाइड</string>
+    <string name="install_mod_title">मॉड या चीट्स इंस्टॉल करें</string>
+    <string name="install_mod_from_archive">आर्काइव (.zip / .7z / .rar) से इंस्टॉल करें</string>
+    <string name="install_mod_from_folder">फ़ोल्डर से इंस्टॉल करें</string>
+    <string name="profile_empty_state">कोई सहेजा गया सेटिंग प्रोफ़ाइल नहीं है\nनया बनाने के लिए \"प्रोफ़ाइल सहेजें\" पर टैप करें</string>
+    <string name="barrier_feedback_loops">बैरियर फ़ीडबैक लूप्स</string>
+    <string name="barrier_feedback_loops_description">Unravel Two जैसे खेलों में पारदर्शिता और गहराई फ़ीडबैक प्रभावों की रेंडरिंग को बेहतर बनाता है</string>
+    <string name="game_fix_status_badge">ऑटो-फ़िक्स</string>
+    <string name="tier_flagship_elite">अल्ट्रा-फ्लैगशिप</string>
+    <string name="tier_flagship">फ्लैगशिप</string>
+    <string name="tier_high_midrange">हाई-एंड</string>
+    <string name="tier_midrange">मिड-रेंज</string>
+    <string name="tier_budget">बजट</string>
+    <string name="auto_opt_hw_summary">Dynamic State • NCE • Reactive Flushing • CPU Affinity Pinning • Fast GPU Time</string>
+    <string name="freedreno_reset_recommended">अनुशंसित पर रीसेट करें</string>
+    <string name="freedreno_reset_recommended_desc">सभी Freedreno डिबग वेरिएबल्स को अधिकतम प्रदर्शन डिफ़ॉल्ट पर रीसेट करें</string>
+    <string name="freedreno_reset_done_toast">Freedreno सेटिंग्स अनुशंसित डिफ़ॉल्ट पर रीसेट हो गईं</string>
+    <string name="tab_driver_all">सभी ड्राइवर</string>
+    <string name="tab_driver_storm">STORM ड्राइवर</string>
+    <string name="tab_driver_turnip">Turnip (Adreno)</string>
+    <string name="tab_driver_panvk">PanVK (Mali / Immortalis)</string>
+    <string name="tab_driver_qualcomm">क्वालकॉम प्रोप्राइटरी</string>
+    <string name="install_storm_driver_10">STORM DRIVER 12.0.0 डाउनलोड करें</string>
+    <string name="storm_driver_10_recommendation">GPU: %1$s • अनुशंसित: %2$s</string>
+    <string name="storm_driver_downloading">STORM DRIVER 12.0.0 डाउनलोड हो रहा है...</string>
+    <string name="apply_driver_msg">चयनित GPU ड्राइवर लागू करें?</string>
+    <string name="apply_driver_negative">रद्द करें</string>
+    <string name="apply_driver_positive">लागू करें</string>
+    <string name="game_fix_launch_method">लॉन्च विधि</string>
+    <string name="storm_folder_picker_title">फ़ोल्डर चुनें</string>
+    <string name="storm_folder_picker_select_current">यह फ़ोल्डर चुनें</string>
+    <string name="storm_folder_picker_system_saf">सिस्टम पिकर</string>
+    <string name="storm_folder_picker_up">.. (मूल फ़ोल्डर)</string>
+    <string name="storm_folder_picker_internal">आंतरिक संग्रहण</string>
+    <string name="storm_folder_picker_sd_card">SD / बाहरी (%1$s)</string>
+    <string name="storm_folder_picker_empty">अंदर कोई सबफ़ोल्डर नहीं है - इस डायरेक्टरी का उपयोग करने के लिए नीचे \"यह फ़ोल्डर चुनें\" पर टैप करें।</string>
+    <string name="storm_folder_picker_grant_permission">रूट स्टोरेज में फ़ोल्डर देखने के लिए सभी फ़ाइलों तक पहुँच की अनुमति दें</string>
+    <string name="storm_folder_picker_grant_btn">पहुँच प्रदान करें</string>
+    <string name="storm_folder_picker_stats_games">%1$d फ़ोल्डर • %2$d गेम फ़ाइलें</string>
+    <string name="storm_folder_picker_stats_folders">%1$d सबफ़ोल्डर</string>
+    <string name="storm_folder_picker_select_multiple">फ़ोल्डर चुनें (%1$d)</string>
+    <string name="storm_folder_picker_add_current">+ वर्तमान</string>
+    <string name="storm_folder_picker_selected_header">चयनित और जोड़े गए फ़ोल्डर (%1$d):</string>
+    <string name="storm_folder_picker_deep_scan">सबफ़ोल्डर को स्वचालित रूप से स्कैन करें</string>
+    <string name="storm_folder_picker_added_count">गेम फ़ोल्डर जोड़े गए: %1$d</string>
+    <string name="storm_setup_games_multi_status">गेम (फ़ोल्डर: %1$d)</string>
+    <string name="enable_all_cheats">सभी चीट्स सक्षम करें</string>
+    <string name="disable_all_cheats">सभी चीट्स अक्षम करें</string>
+    <string name="unnamed_cheat">अनाम चीट</string>
+    <string name="cheat_submenu_expanded">विस्तृत</string>
+    <string name="cheat_submenu_collapsed">संकुचित</string>
+    <string name="nand_migration">NAND सामग्री</string>
+    <string name="nand_migration_question">क्या आप पुराने फ़ोल्डर की सामग्री को नए फ़ोल्डर में कॉपी करना चाहते हैं?</string>
+    <string name="nand_migration_replace_question">नए फ़ोल्डर में पहले से ही सामग्री है। क्या आप पुराने फ़ोल्डर की सामग्री कॉपी करके नए फ़ोल्डर की सामग्री को बदलना चाहते हैं?</string>
+    <string name="nand_migration_copying">NAND सामग्री कॉपी की जा रही है...</string>
+    <string name="nand_migration_failed">सामग्री कॉपी नहीं की जा सकी।</string>
+    <string name="nand_migration_done">सामग्री सफलतापूर्वक कॉपी हो गई।</string>
+    <string name="nand_migration_no_space">सामग्री कॉपी करने के लिए पर्याप्त स्थान नहीं है। आवश्यक: %1$s, उपलब्ध: %2$s</string>
+    <string name="nand_migration_game_running">गेम चलने के दौरान NAND फ़ोल्डर को बदला नहीं जा सकता।</string>
+    <string name="nand_migration_free_space">स्थान खाली करें</string>
+    <string name="nand_migration_free_space_question">सामग्री सफलतापूर्वक कॉपी हो गई। क्या आप %1$s स्थान खाली करने के लिए पुरानी प्रति हटाना चाहते हैं?</string>
+    <string name="nand_migration_keep">रखें</string>
+    <string name="enable_cheats_by_default">डिफ़ॉल्ट रूप से चीट्स सक्षम करें</string>
+    <string name="enable_cheats_by_default_description">गेम शुरू होने पर सामान्य चीट्स सक्षम करें</string>
+    <string name="storm_thermal_governor">STORM थर्मल गवर्नर</string>
+    <string name="storm_thermal_governor_description">फ़्रेम स्पाइक्स के बिना अधिकतम स्थिर क्लॉक बनाए रखने वाली बुद्धिमान थर्मल सुरक्षा</string>
+    <string name="storm_lowend_turbo">STORM लो-एंड टर्बो</string>
+    <string name="storm_lowend_turbo_description">बजट उपकरणों के लिए अनुकूलित थ्रेड शेड्यूलिंग और बफ़र प्रबंधन</string>
+    <string name="auto_60fps_unlock">ऑटो 60 FPS अनलॉक</string>
+    <string name="auto_60fps_unlock_description">समर्थित खेलों में स्वचालित रूप से 60 FPS अनलॉक करें</string>
+    <string name="auto_aspect_ratio_patch">ऑटो आस्पेक्ट रेशियो पैच</string>
+    <string name="auto_aspect_ratio_patch_description">रेंडरिंग ज्यामिति को चौड़ी और अल्ट्रा-वाइड स्क्रीन के लिए स्वचालित रूप से अनुकूलित करें</string>
+    <string name="storm_prof_presets_count_default">तैयार प्रीसेट: 4 • कस्टम: 0</string>
+    <string name="save_state_slot_restored_success">स्लॉट %1$d बैकअप से सफलतापूर्वक पुनर्स्थापित हो गया!</string>
+    <string name="save_state_slot_restore_error">स्लॉट पुनर्स्थापित करने में त्रुटि: %1$s</string>
+    <string name="save_state_undo_action">पूर्ववत करें</string>
+    <string name="save_state_slot_empty_undo_available">खाली • पूर्ववत उपलब्ध है (कार्ड दबाए रखें)</string>
+    <string name="save_state_restore_slot_title">स्लॉट %1$d पुनर्स्थापित करें</string>
+    <string name="save_state_restore_slot_message">क्या बैकअप (.undo.bak) से स्लॉट %1$d के लिए सेव स्टेट पुनर्स्थापित करें?</string>
+    <string name="save_state_restore_button">पुनर्स्थापित करें</string>
+    <string name="storm_driver_10_active">STORM DRIVER 12.0.0 (सक्रिय)</string>
+    <string name="storm_driver_already_active">STORM DRIVER 12.0.0 पहले से ही सक्रिय है!</string>
+    <string name="added">जोड़ा गया</string>
+    <string name="pagination_first">&lt;&lt;</string>
+    <string name="pagination_prev">&lt;</string>
+    <string name="pagination_next">&gt;</string>
+    <string name="copy">कॉपी करें</string>
+    <string name="allow_install_unknown_apps_title">अपडेट की स्थापना की अनुमति दें</string>
+    <string name="allow_install_unknown_apps_desc">अपडेट इंस्टॉल करने के लिए, सिस्टम सेटिंग्स में STORM SWITCH को अज्ञात ऐप इंस्टॉल करने की अनुमति दें, फिर ऐप पर वापस आएं।</string>
+    <string name="open_settings">सेटिंग्स खोलें</string>
+    <string name="open_in_browser">ब्राउज़र में खोलें</string>
+    <string name="retry">पुनः प्रयास करें</string>
 </resources>

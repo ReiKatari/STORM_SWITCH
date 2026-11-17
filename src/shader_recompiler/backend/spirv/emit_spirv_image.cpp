@@ -4,6 +4,8 @@
 // SPDX-FileCopyrightText: Copyright 2021 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include <limits>
+
 #include <boost/container/static_vector.hpp>
 
 #include "common/settings.h"
@@ -15,57 +17,9 @@
 namespace Shader::Backend::SPIRV {
 namespace {
 
-enum class NonUniformKind {
-    SampledImage,
-    StorageImage,
-    UniformTexelBuffer,
-    StorageTexelBuffer,
-};
-
-[[nodiscard]] bool IsNonUniformSupported(const Profile& profile, NonUniformKind kind) noexcept {
-    switch (kind) {
-    case NonUniformKind::SampledImage:
-        return profile.support_sampled_image_array_nonuniform_indexing;
-    case NonUniformKind::StorageImage:
-        return profile.support_storage_image_array_nonuniform_indexing;
-    case NonUniformKind::UniformTexelBuffer:
-        return profile.support_uniform_texel_buffer_array_nonuniform_indexing;
-    case NonUniformKind::StorageTexelBuffer:
-        return profile.support_storage_texel_buffer_array_nonuniform_indexing;
-    }
-    return false;
-}
-
-void DecorateNonUniform(EmitContext& ctx, Id object) {
-    if (ctx.non_uniform_ids.contains(object.value)) {
-        return;
-    }
-    ctx.Decorate(object, spv::Decoration::NonUniform);
-    ctx.non_uniform_ids.insert(object.value);
-}
-
-[[nodiscard]] bool MarkNonUniform(EmitContext& ctx, Id idx, const IR::Value& index,
-                                  NonUniformKind kind) {
-    if (index.IsImmediate() || !IsNonUniformSupported(ctx.profile, kind)) {
-        return false;
-    }
-    DecorateNonUniform(ctx, idx);
-    switch (kind) {
-    case NonUniformKind::SampledImage:
-        ctx.uses_nonuniform_sampled_image = true;
-        break;
-    case NonUniformKind::StorageImage:
-        ctx.uses_nonuniform_storage_image = true;
-        break;
-    case NonUniformKind::UniformTexelBuffer:
-        ctx.uses_nonuniform_uniform_texel_buffer = true;
-        break;
-    case NonUniformKind::StorageTexelBuffer:
-        ctx.uses_nonuniform_storage_texel_buffer = true;
-        break;
-    }
-    return true;
-}
+// Forward-declared: used by Texture()/TextureImage()/Image() below its definition.
+Id BindlessArrayIndex(EmitContext& ctx, const IR::Value& index, bool supported);
+void DecorateNonUniform(EmitContext& ctx, Id id);
 
 class ImageOperands {
 public:
@@ -239,14 +193,17 @@ private:
     spv::ImageOperandsMask mask{};
 };
 
-Id Texture(EmitContext& ctx, IR::TextureInstInfo info, [[maybe_unused]] const IR::Value& index) {
+Id Texture(EmitContext& ctx, IR::TextureInstInfo info, const IR::Value& index) {
     const TextureDefinition& def{ctx.textures.at(info.descriptor_index)};
     if (def.count > 1) {
-        auto const idx = index.IsImmediate() ? ctx.Const(index.U32()) : ctx.Def(index);
-        const bool non_uniform{MarkNonUniform(ctx, idx, index, NonUniformKind::SampledImage)};
+        const bool is_non_uniform{!index.IsImmediate()};
+        const bool supported{ctx.profile.support_sampled_image_array_nonuniform_indexing};
+        const Id idx{is_non_uniform ? BindlessArrayIndex(ctx, index, supported)
+                                    : ctx.Const(index.U32())};
         const Id pointer{ctx.OpAccessChain(def.pointer_type, def.id, idx)};
         const Id object{ctx.OpLoad(def.sampled_type, pointer)};
-        if (non_uniform) {
+        if (is_non_uniform && supported) {
+            ctx.uses_nonuniform_sampled_image = true;
             DecorateNonUniform(ctx, pointer);
             DecorateNonUniform(ctx, object);
         }
@@ -260,12 +217,14 @@ Id TextureImage(EmitContext& ctx, IR::TextureInstInfo info, const IR::Value& ind
     if (info.type == TextureType::Buffer) {
         const TextureBufferDefinition& def{ctx.texture_buffers.at(info.descriptor_index)};
         if (def.count > 1) {
-            const Id idx{index.IsImmediate() ? ctx.Const(index.U32()) : ctx.Def(index)};
-            const bool non_uniform{
-                MarkNonUniform(ctx, idx, index, NonUniformKind::UniformTexelBuffer)};
+            const bool is_non_uniform{!index.IsImmediate()};
+            const bool supported{ctx.profile.support_uniform_texel_buffer_array_nonuniform_indexing};
+            const Id idx{is_non_uniform ? BindlessArrayIndex(ctx, index, supported)
+                                        : ctx.Const(index.U32())};
             const Id ptr{ctx.OpAccessChain(def.pointer_type, def.id, idx)};
             const Id object{ctx.OpLoad(def.image_type, ptr)};
-            if (non_uniform) {
+            if (is_non_uniform && supported) {
+                ctx.uses_nonuniform_uniform_texel_buffer = true;
                 DecorateNonUniform(ctx, ptr);
                 DecorateNonUniform(ctx, object);
             }
@@ -275,50 +234,82 @@ Id TextureImage(EmitContext& ctx, IR::TextureInstInfo info, const IR::Value& ind
     } else {
         const TextureDefinition& def{ctx.textures.at(info.descriptor_index)};
         if (def.count > 1) {
-            auto const idx = index.IsImmediate() ? ctx.Const(index.U32()) : ctx.Def(index);
-            const bool non_uniform{MarkNonUniform(ctx, idx, index, NonUniformKind::SampledImage)};
-            const Id ptr = ctx.OpAccessChain(def.pointer_type, def.id, idx);
-            const Id object = ctx.OpLoad(def.sampled_type, ptr);
-            const Id image = ctx.OpImage(def.image_type, object);
-            if (non_uniform) {
+            const bool is_non_uniform{!index.IsImmediate()};
+            const bool supported{ctx.profile.support_sampled_image_array_nonuniform_indexing};
+            const Id idx{is_non_uniform ? BindlessArrayIndex(ctx, index, supported)
+                                        : ctx.Const(index.U32())};
+            const Id ptr{ctx.OpAccessChain(def.pointer_type, def.id, idx)};
+            const Id loaded{ctx.OpLoad(def.sampled_type, ptr)};
+            const Id img{ctx.OpImage(def.image_type, loaded)};
+            if (is_non_uniform && supported) {
+                ctx.uses_nonuniform_sampled_image = true;
                 DecorateNonUniform(ctx, ptr);
-                DecorateNonUniform(ctx, object);
-                DecorateNonUniform(ctx, image);
+                DecorateNonUniform(ctx, loaded);
+                DecorateNonUniform(ctx, img);
             }
-            return image;
+            return img;
         }
         return ctx.OpImage(def.image_type, ctx.OpLoad(def.sampled_type, def.id));
     }
+}
+
+void DecorateNonUniform(EmitContext& ctx, Id id) {
+    if (Sirit::ValidId(id) && ctx.non_uniform_ids.insert(id.value).second) {
+        ctx.Decorate(id, spv::Decoration::NonUniform);
+    }
+}
+
+// Decorates divergent bindless indices NonUniform, per descriptor class
+// (`supported`). non_uniform_ids dedups repeated use of the same index.
+Id BindlessArrayIndex(EmitContext& ctx, const IR::Value& index, bool supported) {
+    const Id idx{ctx.Def(index)};
+    const bool already_decorated{ctx.non_uniform_ids.contains(idx.value)};
+    if (supported) {
+        DecorateNonUniform(ctx, idx);
+        return idx;
+    }
+    if (already_decorated) {
+        // Already decorated for a different, unsupported class here - reuse
+        // would apply it to an access chain with no matching capability.
+        // OpIAdd 0 as a cheap copy; OpCopyObject isn't confirmed in Sirit.
+        return ctx.OpIAdd(ctx.U32[1], idx, ctx.Const(0u));
+    }
+    return idx;
 }
 
 std::pair<Id, bool> Image(EmitContext& ctx, const IR::Value& index, IR::TextureInstInfo info) {
     if (info.type == TextureType::Buffer) {
         const ImageBufferDefinition def{ctx.image_buffers.at(info.descriptor_index)};
         if (def.count > 1) {
-            const Id idx{index.IsImmediate() ? ctx.Const(index.U32()) : ctx.Def(index)};
-            const bool non_uniform{
-                MarkNonUniform(ctx, idx, index, NonUniformKind::StorageTexelBuffer)};
+            const bool is_non_uniform{!index.IsImmediate()};
+            const bool supported{ctx.profile.support_storage_texel_buffer_array_nonuniform_indexing};
+            const Id idx{is_non_uniform ? BindlessArrayIndex(ctx, index, supported)
+                                        : ctx.Const(index.U32())};
             const Id ptr{ctx.OpAccessChain(def.pointer_type, def.id, idx)};
-            const Id image{ctx.OpLoad(def.image_type, ptr)};
-            if (non_uniform) {
+            const Id object{ctx.OpLoad(def.image_type, ptr)};
+            if (is_non_uniform && supported) {
+                ctx.uses_nonuniform_storage_texel_buffer = true;
                 DecorateNonUniform(ctx, ptr);
-                DecorateNonUniform(ctx, image);
+                DecorateNonUniform(ctx, object);
             }
-            return {image, def.is_integer};
+            return {object, def.is_integer};
         }
         return {ctx.OpLoad(def.image_type, def.id), def.is_integer};
     } else {
         const ImageDefinition def{ctx.images.at(info.descriptor_index)};
         if (def.count > 1) {
-            const Id idx{index.IsImmediate() ? ctx.Const(index.U32()) : ctx.Def(index)};
-            const bool non_uniform{MarkNonUniform(ctx, idx, index, NonUniformKind::StorageImage)};
+            const bool is_non_uniform{!index.IsImmediate()};
+            const bool supported{ctx.profile.support_storage_image_array_nonuniform_indexing};
+            const Id idx{is_non_uniform ? BindlessArrayIndex(ctx, index, supported)
+                                        : ctx.Const(index.U32())};
             const Id ptr{ctx.OpAccessChain(def.pointer_type, def.id, idx)};
-            const Id image{ctx.OpLoad(def.image_type, ptr)};
-            if (non_uniform) {
+            const Id object{ctx.OpLoad(def.image_type, ptr)};
+            if (is_non_uniform && supported) {
+                ctx.uses_nonuniform_storage_image = true;
                 DecorateNonUniform(ctx, ptr);
-                DecorateNonUniform(ctx, image);
+                DecorateNonUniform(ctx, object);
             }
-            return {image, def.is_integer};
+            return {object, def.is_integer};
         }
         return {ctx.OpLoad(def.image_type, def.id), def.is_integer};
     }
@@ -555,6 +546,28 @@ Id EmitBoundImageWrite(EmitContext&) {
     throw LogicError("Unreachable instruction");
 }
 
+static Id SanitizeBloomSample(EmitContext& ctx, Id result, bool is_integer) {
+    if (!Settings::values.fix_bloom_effects.GetValue() || is_integer) {
+        return result;
+    }
+    const Id bvec4 = ctx.TypeVector(ctx.U1, 4);
+    const Id bits = ctx.OpBitcast(ctx.U32[4], result);
+    const Id abs_mask = ctx.Const(0x7FFFFFFFu, 0x7FFFFFFFu, 0x7FFFFFFFu, 0x7FFFFFFFu);
+    const Id inf_bits = ctx.Const(0x7F800000u, 0x7F800000u, 0x7F800000u, 0x7F800000u);
+    const Id is_finite =
+        ctx.OpULessThan(bvec4, ctx.OpBitwiseAnd(ctx.U32[4], bits, abs_mask), inf_bits);
+    const Id zero_f32 = ctx.Const(0.0f);
+    const Id zero_vec = ctx.ConstantComposite(ctx.F32[4], zero_f32, zero_f32, zero_f32, zero_f32);
+    const Id clamped = ctx.OpSelect(ctx.F32[4], is_finite, result, zero_vec);
+    const Id min_f32 = ctx.Const(-65000.0f);
+    const Id min_vec = ctx.ConstantComposite(ctx.F32[4], min_f32, min_f32, min_f32, min_f32);
+    const Id max_f32 = ctx.Const(65000.0f);
+    const Id max_vec = ctx.ConstantComposite(ctx.F32[4], max_f32, max_f32, max_f32, max_f32);
+    return ctx.profile.has_broken_spirv_clamp
+               ? ctx.OpFMin(ctx.F32[4], max_vec, ctx.OpFMax(ctx.F32[4], min_vec, clamped))
+               : ctx.OpFClamp(ctx.F32[4], clamped, min_vec, max_vec);
+}
+
 Id EmitImageSampleImplicitLod(EmitContext& ctx, IR::Inst* inst, const IR::Value& index, Id coords,
                               Id bias_lc, const IR::Value& offset) {
     const auto info{inst->Flags<IR::TextureInstInfo>()};
@@ -577,6 +590,7 @@ Id EmitImageSampleImplicitLod(EmitContext& ctx, IR::Inst* inst, const IR::Value&
                     &EmitContext::OpImageSampleExplicitLod, ctx, inst, result_type,
                     Texture(ctx, info, index), coords, operands.Mask(), operands.Span());
     }
+    color = SanitizeBloomSample(ctx, color, is_integer);
     return is_integer ? ctx.OpBitcast(ctx.F32[4], color) : color;
 }
 
@@ -590,13 +604,7 @@ Id EmitImageSampleExplicitLod(EmitContext& ctx, IR::Inst* inst, const IR::Value&
     Id result = Emit(&EmitContext::OpImageSparseSampleExplicitLod,
                      &EmitContext::OpImageSampleExplicitLod, ctx, inst, result_type,
                      Texture(ctx, info, index), coords, operands.Mask(), operands.Span());
-    if (Settings::values.fix_bloom_effects.GetValue() && !is_integer) {
-        const Id min_hdr = ctx.ConstantComposite(ctx.F32[4], ctx.Const(-65000.0f), ctx.Const(-65000.0f),
-                                                 ctx.Const(-65000.0f), ctx.Const(-65000.0f));
-        const Id max_hdr = ctx.ConstantComposite(ctx.F32[4], ctx.Const(65000.0f), ctx.Const(65000.0f),
-                                                 ctx.Const(65000.0f), ctx.Const(65000.0f));
-        result = ctx.OpFMin(ctx.F32[4], max_hdr, ctx.OpFMax(ctx.F32[4], min_hdr, result));
-    }
+    result = SanitizeBloomSample(ctx, result, is_integer);
     return is_integer ? ctx.OpBitcast(ctx.F32[4], result) : result;
 }
 
@@ -639,10 +647,11 @@ Id EmitImageGather(EmitContext& ctx, IR::Inst* inst, const IR::Value& index, Id 
     if (ctx.profile.need_gather_subpixel_offset) {
         coords = ImageGatherSubpixelOffset(ctx, info, TextureImage(ctx, info, index), coords);
     }
-    const Id color{Emit(&EmitContext::OpImageSparseGather, &EmitContext::OpImageGather, ctx, inst,
-                        result_type, Texture(ctx, info, index), coords,
-                        ctx.Const(info.gather_component), operands.MaskOptional(),
-                        operands.Span())};
+    Id color{Emit(&EmitContext::OpImageSparseGather, &EmitContext::OpImageGather, ctx, inst,
+                  result_type, Texture(ctx, info, index), coords,
+                  ctx.Const(info.gather_component), operands.MaskOptional(),
+                  operands.Span())};
+    color = SanitizeBloomSample(ctx, color, is_integer);
     return is_integer ? ctx.OpBitcast(ctx.F32[4], color) : color;
 }
 
@@ -655,9 +664,10 @@ Id EmitImageGatherDref(EmitContext& ctx, IR::Inst* inst, const IR::Value& index,
     if (ctx.profile.need_gather_subpixel_offset) {
         coords = ImageGatherSubpixelOffset(ctx, info, TextureImage(ctx, info, index), coords);
     }
-    const Id color{Emit(&EmitContext::OpImageSparseDrefGather, &EmitContext::OpImageDrefGather,
-                        ctx, inst, result_type, Texture(ctx, info, index), coords, dref,
-                        operands.MaskOptional(), operands.Span())};
+    Id color{Emit(&EmitContext::OpImageSparseDrefGather, &EmitContext::OpImageDrefGather,
+                  ctx, inst, result_type, Texture(ctx, info, index), coords, dref,
+                  operands.MaskOptional(), operands.Span())};
+    color = SanitizeBloomSample(ctx, color, is_integer);
     return is_integer ? ctx.OpBitcast(ctx.F32[4], color) : color;
 }
 
@@ -675,9 +685,9 @@ Id EmitImageFetch(EmitContext& ctx, IR::Inst* inst, const IR::Value& index, Id c
         lod = Id{};
     }
     const ImageOperands operands(lod, ms);
-    const Id color{Emit(&EmitContext::OpImageSparseFetch, &EmitContext::OpImageFetch, ctx, inst,
-                        result_type, TextureImage(ctx, info, index), coords,
-                        operands.MaskOptional(), operands.Span())};
+    Id color{Emit(&EmitContext::OpImageSparseFetch, &EmitContext::OpImageFetch, ctx, inst,
+                  result_type, TextureImage(ctx, info, index), coords,
+                  operands.MaskOptional(), operands.Span())};
     return is_integer ? ctx.OpBitcast(ctx.F32[4], color) : color;
 }
 
@@ -730,9 +740,10 @@ Id EmitImageGradient(EmitContext& ctx, IR::Inst* inst, const IR::Value& index, I
                                               ctx.Def(offset), {}, lod_clamp)
                               : ImageOperands(ctx, info.has_lod_clamp != 0, derivatives,
                                               info.num_derivatives, offset, lod_clamp);
-    const Id color{Emit(&EmitContext::OpImageSparseSampleExplicitLod,
-                        &EmitContext::OpImageSampleExplicitLod, ctx, inst, result_type,
-                        Texture(ctx, info, index), coords, operands.Mask(), operands.Span())};
+    Id color{Emit(&EmitContext::OpImageSparseSampleExplicitLod,
+                  &EmitContext::OpImageSampleExplicitLod, ctx, inst, result_type,
+                  Texture(ctx, info, index), coords, operands.Mask(), operands.Span())};
+    color = SanitizeBloomSample(ctx, color, is_integer);
     return is_integer ? ctx.OpBitcast(ctx.F32[4], color) : color;
 }
 

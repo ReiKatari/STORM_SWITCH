@@ -553,6 +553,26 @@ vk::Pipeline CreateWrappedPipeline(const Device& device, vk::RenderPass& renderp
                                      color_blend_attachment_disabled);
 }
 
+vk::Pipeline CreateWrappedOpaquePresentPipeline(
+    const Device& device, vk::RenderPass& renderpass, vk::PipelineLayout& layout,
+    std::tuple<vk::ShaderModule&, vk::ShaderModule&> shaders) {
+    // Preserve cleared 1.0f swapchain alpha so SurfaceFlinger never composites game pixels as black
+    constexpr VkPipelineColorBlendAttachmentState color_blend_attachment_opaque_rgb{
+        .blendEnable = VK_FALSE,
+        .srcColorBlendFactor = VK_BLEND_FACTOR_ZERO,
+        .dstColorBlendFactor = VK_BLEND_FACTOR_ZERO,
+        .colorBlendOp = VK_BLEND_OP_ADD,
+        .srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
+        .dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
+        .alphaBlendOp = VK_BLEND_OP_ADD,
+        .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+                          VK_COLOR_COMPONENT_B_BIT,
+    };
+
+    return CreateWrappedPipelineImpl(device, renderpass, layout, shaders,
+                                     color_blend_attachment_opaque_rgb);
+}
+
 vk::Pipeline CreateWrappedPremultipliedBlendingPipeline(
     const Device& device, vk::RenderPass& renderpass, vk::PipelineLayout& layout,
     std::tuple<vk::ShaderModule&, vk::ShaderModule&> shaders) {
@@ -561,8 +581,8 @@ vk::Pipeline CreateWrappedPremultipliedBlendingPipeline(
         .srcColorBlendFactor = VK_BLEND_FACTOR_ONE,
         .dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
         .colorBlendOp = VK_BLEND_OP_ADD,
-        .srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE,
-        .dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
+        .srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
+        .dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE,
         .alphaBlendOp = VK_BLEND_OP_ADD,
         .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
                           VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
@@ -580,8 +600,8 @@ vk::Pipeline CreateWrappedCoverageBlendingPipeline(
         .srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA,
         .dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
         .colorBlendOp = VK_BLEND_OP_ADD,
-        .srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE,
-        .dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
+        .srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
+        .dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE,
         .alphaBlendOp = VK_BLEND_OP_ADD,
         .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
                           VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,

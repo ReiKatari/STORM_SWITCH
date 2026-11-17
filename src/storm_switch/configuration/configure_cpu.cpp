@@ -99,7 +99,7 @@ void ConfigureCpu::Setup(const ConfigurationShared::Builder& builder) {
             accuracy_layout->addWidget(widget);
             accuracy_combobox = widget->combobox;
             widget->setToolTip(StormLang(
-                QStringLiteral("Точность эмуляции процессора и модель памяти (в Ryujinx: Safe Memory Manager).\n«Авто/Точно» — строгая эмуляция MMU с защитой страниц памяти.\n«Небезопасно» — прямой доступ JIT без проверок для максимальной скорости."),
+                QStringLiteral("Точность эмуляции процессора и модель памяти (в Ryujinx: Safe Memory Manager).\n«Авто/Точно» - строгая эмуляция MMU с защитой страниц памяти.\n«Небезопасно» - прямой доступ JIT без проверок для максимальной скорости."),
                 QStringLiteral("CPU Emulation Accuracy & Memory Model (Ryujinx equivalent: Safe Memory Manager).\n'Auto/Accurate' enforces strict hardware MMU page tables.\n'Unsafe' enables direct JIT memory access for maximum performance.")));
         } else if (setting->Id() == Settings::values.cpu_backend.Id()) {
             backend_layout->addWidget(widget);

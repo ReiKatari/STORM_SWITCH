@@ -43,12 +43,14 @@ std::size_t CalculateSize(bool tiled, u32 bytes_per_pixel, u32 width, u32 height
 /// Copies an untiled subrectangle into a tiled surface.
 void SwizzleSubrect(std::span<u8> output, std::span<const u8> input, u32 bytes_per_pixel, u32 width,
                     u32 height, u32 depth, u32 origin_x, u32 origin_y, u32 extent_x, u32 extent_y,
-                    u32 block_height, u32 block_depth, u32 pitch_linear, bool native_tiling = false);
+                    u32 block_height, u32 block_depth, u32 pitch_linear, bool native_tiling = false,
+                    u32 origin_z = 0);
 
 /// Copies a tiled subrectangle into a linear surface.
 void UnswizzleSubrect(std::span<u8> output, std::span<const u8> input, u32 bytes_per_pixel,
                       u32 width, u32 height, u32 depth, u32 origin_x, u32 origin_y, u32 extent_x,
-                      u32 extent_y, u32 block_height, u32 block_depth, u32 pitch_linear, bool native_tiling = false);
+                      u32 extent_y, u32 block_height, u32 block_depth, u32 pitch_linear,
+                      bool native_tiling = false, u32 origin_z = 0);
 
 /// Obtains the offset of the gob for positions 'dst_x' & 'dst_y'
 u64 GetGOBOffset(u32 width, u32 height, u32 dst_x, u32 dst_y, u32 block_height,

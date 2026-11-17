@@ -271,7 +271,7 @@ MAP_MEMBER(void)::UnmapLocked(VaType virt, VaType size) {
         }
     } else if (block_start_predecessor->Unmapped()) {
         // If the previous block is unmapped
-        blocks.erase(block_start_successor, block_end_predecessor);
+        blocks.erase(block_start_successor, block_end_successor);
     } else {
         // Erase overwritten blocks, skipping the first one as we have written the unmapped start
         // block there
@@ -293,6 +293,12 @@ ALLOC_MEMBER_CONST()::FlatAllocator(VaType virt_start_, VaType va_limit_)
 
 ALLOC_MEMBER(VaType)::Allocate(VaType size) {
     std::scoped_lock lock(this->block_mutex);
+
+    // Once the linear pass runs out, restart it where the free space at the end of the map begins.
+    // The gap search below never looks past the last block, and needs a mapped block to search.
+    if (current_linear_alloc_end + size > this->va_limit && this->blocks.back().Unmapped()) {
+        current_linear_alloc_end = std::max(virt_start, this->blocks.back().virt);
+    }
 
     VaType alloc_start{UnmappedVa};
     VaType alloc_end{current_linear_alloc_end + size};
@@ -335,22 +341,28 @@ ALLOC_MEMBER(VaType)::Allocate(VaType size) {
     if (alloc_start != UnmappedVa) {
         current_linear_alloc_end = alloc_start + size;
     } else { // If linear allocation overflows the AS then find a gap
-        if (this->blocks.size() <= 2) {
-            ASSERT_MSG(false, "Unexpected allocator state!");
+        if (this->blocks.size() < 2) {
+            return {}; // Nothing to search between: the linear pass already tried the free space
         }
 
-        auto search_predecessor{std::next(this->blocks.begin())};
+        auto search_predecessor{this->blocks.begin()};
         auto search_successor{std::next(search_predecessor)};
 
-        while (search_successor != this->blocks.end() &&
-               (search_successor->virt - search_predecessor->virt < size ||
-                search_predecessor->Mapped())) {
-            search_predecessor = search_successor++;
+        while (search_predecessor != this->blocks.end()) {
+            const VaType gap_start = std::max(search_predecessor->virt, virt_start);
+            const VaType gap_end =
+                search_successor != this->blocks.end() ? search_successor->virt : this->va_limit;
+            if (!search_predecessor->Mapped() && gap_end > gap_start && gap_end - gap_start >= size) {
+                alloc_start = gap_start;
+                break;
+            }
+            search_predecessor = search_successor;
+            if (search_successor != this->blocks.end()) {
+                ++search_successor;
+            }
         }
 
-        if (search_successor != this->blocks.end()) {
-            alloc_start = search_predecessor->virt;
-        } else {
+        if (alloc_start == UnmappedVa) {
             return {}; // AS is full
         }
     }

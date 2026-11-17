@@ -697,7 +697,14 @@ void Initialize(JavaVM* vm, JNIEnv *env) {
     s_on_program_changed = GetStaticMethodIDSafe(env, s_native_library_class, "onProgramChanged", "(I)V");
 
     s_game_class = FindClassSafe(env, "org/yuzu/yuzu_emu/model/Game");
-    s_game_constructor = GetMethodIDSafe(env, s_game_class, "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)V");
+    // Game primary constructor has 10 Kotlin parameters; probe safely without noisy warnings.
+    s_game_constructor = s_game_class
+        ? env->GetMethodID(s_game_class, "<init>",
+                           "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)V")
+        : nullptr;
+    if (env->ExceptionCheck()) {
+        env->ExceptionClear();
+    }
     s_game_title_field = GetFieldIDSafe(env, s_game_class, "title", "Ljava/lang/String;");
     s_game_path_field = GetFieldIDSafe(env, s_game_class, "path", "Ljava/lang/String;");
     s_game_program_id_field = GetFieldIDSafe(env, s_game_class, "programId", "Ljava/lang/String;");

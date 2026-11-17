@@ -941,29 +941,38 @@ GameFixProfile(
         ),
                 // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/3673
 GameFixProfile(
-            0x01002A801458A000L,
+            0x0100726014352000L,
             "Diablo II: Resurrected",
-            "• Вылет при продолжении игры / загрузке персонажа (OOM)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя\n• Просадки кадровой частоты (4 FPS / 200 ms)",
-            "• Character load / continue game crash (OOM)\n• Battle.net server handshake hang\n• Character flickering on selection screen\n• Frame drops (4 FPS / 200 ms)",
-            "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полета: Включено (пропуск Battle.net)\n✓ Точность ГПУ: Нормальная (Normal)\n✓ Динамическое состояние: Базовое (DynaState=1)\n✓ Быстрое время ГПУ: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Реактивная очистка: Отключено\n✓ Обратная связь барьеров: Отключено\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Сжатие текстур ASTC: Отключено\n✓ Быстрая память (Fastmem): Включено",
-            "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ GPU Accuracy: Normal\n✓ Dynamic State: Basic (DynaState=1)\n✓ Fast GPU Time: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Disabled\n✓ GPU Buffer Readback: Disabled\n✓ ASTC Recompression: Uncompressed\n✓ Fastmem: Enabled",
+            "• Вылет при продолжении игры / загрузке персонажа (OOM)\n• Зависание при опросе серверов Battle.net\n• Отсутствие 3D-моделей героев, искажение шрифтов и наложение кадров",
+            "• Character load / continue game crash (OOM)\n• Battle.net server handshake hang\n• Missing 3D hero models, glyph corruption, and stale frame layering",
+            "✓ Память: 6GB DRAM (запас для Актов без роста PSS)\n✓ Режим полета: Включено (пропуск Battle.net)\n✓ Точность ГПУ: Обычная (Normal - плавные FPS)\n✓ Динамическое состояние: EDS1 (стабильные конвейеры на Turnip)\n✓ Fix Bloom Effects: Отключено (сохраняет шрифты Slug и FP16) + DMA Accuracy: Безопасная (Safe=3)\n✓ Быстрое время ГПУ, VkPipelineCache, барьеры, Flush и Readback: Отключено\n✓ Асинхронные шейдеры и вывод: Включено (2D UI/шрифты синхронно, 3D без статтеров)\n✓ Sync Memory Ops: Включено + GC VRAM: Включено",
+            "✓ Memory Layout: 6GB DRAM (Act I+ streaming headroom without PSS bloat)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ GPU Accuracy: Normal (Smooth FPS without stalls)\n✓ Dynamic State: EDS1 (Eliminates PSO hitching on Turnip)\n✓ Fix Bloom Effects: Disabled (Preserves Slug fonts & FP16) + DMA Accuracy: Safe (3)\n✓ Fast GPU Time, VkPipelineCache, Barrier Loops, Reactive Flush & Readback: Disabled\n✓ Async Shaders & Presentation: Enabled (2D UI/fonts synchronous, 3D stutter-free)\n✓ Sync Memory Ops: Enabled + VRAM GC: Enabled",
             mapOf(
-                "System\\memory_layout_mode" to "2",
+                "Core\\memory_layout_mode" to "1",
+                "System\\memory_layout_mode" to "1",
                 "System\\airplane_mode" to "true",
                 "Network\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
-                "Renderer\\gpu_accuracy" to "0",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\dma_accuracy" to "3",
                 "Renderer\\dyna_state" to "1",
+                "Renderer\\fix_bloom_effects" to "false",
                 "Renderer\\enable_gpu_buffer_readback" to "false",
+                "Renderer\\sync_memory_operations" to "true",
                 "Renderer\\barrier_feedback_loops" to "false",
                 "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\early_release_fences" to "false",
+                "Renderer\\vram_budget_governor" to "true",
+                "Renderer\\vram_garbage_collection" to "true",
+                "Renderer\\async_presentation" to "true",
+                "Renderer\\use_vulkan_driver_pipeline_cache" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
                 "Cpu\\cpu_accuracy" to "0",
                 "Cpu\\cpuopt_fastmem" to "true"
             ),
-            listOf(0x0100916014D8C000L, 0x0100726014352000L)
+            listOf(0x01002A801458A000L, 0x0100916014D8C000L)
         ),
         GameFixProfile(
             0x01008C3005A32000L,
@@ -1001,31 +1010,6 @@ GameFixProfile(
                 "Renderer\\use_fast_gpu_time" to "false",
                 "Renderer\\astc_recompression" to "0",
                 "Renderer\\barrier_feedback_loops" to "true"
-            )
-        ),
-                // src: https://github.com/ReiKatari/STORM_SWITCH/issues/30
-GameFixProfile(
-            0x0100726014352000L,
-            "Diablo II: Resurrected",
-            "• Вылет при продолжении игры / загрузке персонажа (OOM)\n• Зависание при опросе серверов Battle.net\n• Мерцание персонажа на экране выбора героя\n• Просадки кадровой частоты (4 FPS / 200 ms)",
-            "• Character load / continue game crash (OOM)\n• Battle.net server handshake hang\n• Character flickering on selection screen\n• Frame drops (4 FPS / 200 ms)",
-            "✓ Память: 8GB DRAM (критично для загрузки персонажа!)\n✓ Режим полета: Включено (пропуск Battle.net)\n✓ Точность ГПУ: Нормальная (Normal)\n✓ Динамическое состояние: Базовое (DynaState=1)\n✓ Быстрое время ГПУ: Включено\n✓ Асинхронные шейдеры: Включено\n✓ Реактивная очистка: Отключено\n✓ Обратная связь барьеров: Отключено\n✓ Обратное чтение буферов ГПУ: Отключено\n✓ Сжатие текстур ASTC: Отключено\n✓ Быстрая память (Fastmem): Включено",
-            "✓ Memory Layout: 8GB DRAM (Critical for character loading!)\n✓ Airplane Mode: Enabled (Bypasses Battle.net)\n✓ GPU Accuracy: Normal\n✓ Dynamic State: Basic (DynaState=1)\n✓ Fast GPU Time: Enabled\n✓ Asynchronous Shaders: Enabled\n✓ Reactive Flushing: Disabled\n✓ Barrier Feedback Loops: Disabled\n✓ GPU Buffer Readback: Disabled\n✓ ASTC Recompression: Uncompressed\n✓ Fastmem: Enabled",
-            mapOf(
-                "System\\memory_layout_mode" to "2",
-                "System\\airplane_mode" to "true",
-                "Network\\airplane_mode" to "true",
-                "Services\\airplane_mode" to "true",
-                "Renderer\\gpu_accuracy" to "0",
-                "Renderer\\dyna_state" to "1",
-                "Renderer\\enable_gpu_buffer_readback" to "false",
-                "Renderer\\barrier_feedback_loops" to "false",
-                "Renderer\\use_reactive_flushing" to "false",
-                "Renderer\\astc_recompression" to "0",
-                "Renderer\\use_asynchronous_shaders" to "true",
-                "Renderer\\use_fast_gpu_time" to "true",
-                "Cpu\\cpu_accuracy" to "0",
-                "Cpu\\cpuopt_fastmem" to "true"
             )
         ),
         GameFixProfile(
@@ -1382,23 +1366,6 @@ GameFixProfile(
                 "Renderer\\fsr_sharpening_slider" to "85"
             ),
             listOf(0x0100BFF00E256000L, 0x0100E67012924000L)
-        ),
-                // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/4150
-GameFixProfile(
-            0x0100760012E4A000L,
-            "Mario + Rabbids Sparks of Hope",
-            "• Вылет движка Snowdrop при переходе в тактический бой",
-            "• Snowdrop engine crash on tactical combat transition",
-            "✓ Точность DMA: Безопасная\n✓ Точность ГПУ: Высокая\n✓ Обратная связь барьеров: Включено",
-            "✓ DMA Accuracy: Safe\n✓ GPU Accuracy: High\n✓ Barrier Feedback Loops: Enabled",
-            mapOf(
-                "Renderer\\gpu_accuracy" to "2",
-                "Renderer\\use_reactive_flushing" to "true",
-                "Renderer\\use_fast_gpu_time" to "false",
-                "Renderer\\astc_recompression" to "0",
-                "Renderer\\barrier_feedback_loops" to "true",
-                "Renderer\\dma_accuracy" to "3"
-            )
         ),
                 // src: https://github.com/Ryujinx/Ryujinx-Games-List/issues/4190
 GameFixProfile(
@@ -1790,21 +1757,63 @@ GameFixProfile(
             )
         ),
         GameFixProfile(
-            0x010067300059A000L,
+            0x010067300B762000L,
             "Mario + Rabbids: Kingdom Battle",
-            "• Диагональная полоса при запуске на полноэкранном кваде\n• Сильный пересвет и черные тени Snowdrop Engine\n• Мерцание текстур персонажей",
-            "• Diagonal line across fullscreen quad on startup\n• Severe overexposure and pitch-black shadows (Snowdrop Engine)\n• Character model flickering",
-            "✓ Точность ГПУ: Высокая (устранение пересвета и черных теней)\n✓ Обратные циклы барьеров: Включено\n✓ Реактивная очистка: Включено\n✓ Сжатие текстур ASTC: Отключено\n✓ Асинхронные шейдеры: Включено",
-            "✓ GPU Accuracy: High (Fixes bloom & black shadows)\n✓ Barrier Feedback Loops: Enabled\n✓ Reactive Flushing: Enabled\n✓ ASTC Recompression: Uncompressed\n✓ Asynchronous Shaders: Enabled",
+            "• Диагональная полоса при запуске на полноэкранном кваде\n• Сильный белый пересвет, белые блоки и срез 3D-колонн (Snowdrop Engine)\n• Мерцание текстур персонажей",
+            "• Diagonal line across fullscreen quad on startup\n• Severe white overexposure, white blocks, and 3D pillar clipping (Snowdrop Engine)\n• Character model flickering",
+            "✓ Память: 4GB DRAM + Режим полета\n✓ Точность ГПУ: Высокая (High) + Fix Bloom (Snowdrop HDR Clamp)\n✓ Обратные циклы барьеров и Реактивная очистка: Включено\n✓ Обратное чтение буферов и Sync Memory Ops: Включено (автоэкспозиция Snowdrop)\n✓ DMA Accuracy: Безопасная (Safe=3) + Синхронный вывод (AsyncPresent=false)\n✓ Сжатие текстур ASTC: Отключено",
+            "✓ Memory Layout: 4GB DRAM + Airplane Mode\n✓ GPU Accuracy: High + Fix Bloom Effects (Snowdrop HDR Clamp)\n✓ Barrier Feedback Loops & Reactive Flushing: Enabled\n✓ GPU Buffer Readback & Sync Memory Ops: Enabled (Snowdrop auto-exposure)\n✓ DMA Accuracy: Safe (3) + Synchronous Presentation (AsyncPresent=false)\n✓ ASTC Recompression: Uncompressed",
             mapOf(
+                "Core\\memory_layout_mode" to "0",
+                "System\\memory_layout_mode" to "0",
+                "System\\airplane_mode" to "true",
+                "Network\\airplane_mode" to "true",
+                "Services\\airplane_mode" to "true",
                 "Renderer\\gpu_accuracy" to "2",
                 "Renderer\\dma_accuracy" to "3",
                 "Renderer\\barrier_feedback_loops" to "true",
                 "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\astc_recompression" to "0",
-                "Renderer\\fix_bloom_effects" to "false",
+                "Renderer\\fix_bloom_effects" to "true",
                 "Renderer\\early_release_fences" to "false",
-                "Renderer\\use_asynchronous_shaders" to "true"
+                "Renderer\\use_asynchronous_shaders" to "true",
+                "Renderer\\async_presentation" to "false",
+                "Renderer\\use_disk_shader_cache" to "true",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\enable_gpu_buffer_readback" to "true",
+                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\vram_garbage_collection" to "true",
+                "Renderer\\vram_budget_governor" to "true",
+                "Renderer\\use_vulkan_driver_pipeline_cache" to "true"
+            )
+        ),
+        GameFixProfile(
+            0x010067300059A000L,
+            "Mario + Rabbids: Kingdom Battle",
+            "• Диагональная полоса при запуске на полноэкранном кваде\n• Сильный белый пересвет, белые блоки и срез 3D-колонн (Snowdrop Engine)\n• Мерцание текстур персонажей",
+            "• Diagonal line across fullscreen quad on startup\n• Severe white overexposure, white blocks, and 3D pillar clipping (Snowdrop Engine)\n• Character model flickering",
+            "✓ Память: 4GB DRAM + Режим полета\n✓ Точность ГПУ: Высокая (High) + Fix Bloom (Snowdrop HDR Clamp)\n✓ Обратные циклы барьеров и Реактивная очистка: Включено\n✓ Обратное чтение буферов и Sync Memory Ops: Включено (автоэкспозиция Snowdrop)\n✓ Асинхронные шейдеры и вывод: Отключено (синхронный тонемап HDR Snowdrop)\n✓ DMA Accuracy: Безопасная (Safe=3)\n✓ Сжатие текстур ASTC: Отключено",
+            "✓ Memory Layout: 4GB DRAM + Airplane Mode\n✓ GPU Accuracy: High + Fix Bloom Effects (Snowdrop HDR Clamp)\n✓ Barrier Feedback Loops & Reactive Flushing: Enabled\n✓ GPU Buffer Readback & Sync Memory Ops: Enabled (Snowdrop auto-exposure)\n✓ Async Shaders & Async Presentation: Disabled (synchronous Snowdrop HDR tonemapping)\n✓ DMA Accuracy: Safe (3)\n✓ ASTC Recompression: Uncompressed",
+            mapOf(
+                "Core\\memory_layout_mode" to "0",
+                "System\\memory_layout_mode" to "0",
+                "System\\airplane_mode" to "true",
+                "Network\\airplane_mode" to "true",
+                "Services\\airplane_mode" to "true",
+                "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\dma_accuracy" to "3",
+                "Renderer\\barrier_feedback_loops" to "true",
+                "Renderer\\use_reactive_flushing" to "true",
+                "Renderer\\astc_recompression" to "0",
+                "Renderer\\fix_bloom_effects" to "true",
+                "Renderer\\early_release_fences" to "false",
+                "Renderer\\use_asynchronous_shaders" to "false",
+                "Renderer\\async_presentation" to "false",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\enable_gpu_buffer_readback" to "true",
+                "Renderer\\sync_memory_operations" to "true",
+                "Renderer\\vram_garbage_collection" to "true",
+                "Renderer\\vram_budget_governor" to "true"
             )
         ),
         GameFixProfile(
@@ -5466,15 +5475,18 @@ GameFixProfile(
         GameFixProfile(
             0x0100A83022A22000L,
             "Absolum",
-            "• Рассинхронизация 2D-презентации кадров при асинхронном выводе\n• Сбои декодирования вступительных видеороликов NVDEC на ГПУ\n• Микрофризы и артефакты спрайтов при динамическом масштабировании",
-            "• 2D presentation desync with asynchronous presentation\n• GPU NVDEC video decoding stutter\n• Micro-stutter and sprite artifacts with dynamic rescaling",
-            "✓ Рекомендуемые настройки STORM SOFT для стабильности и максимального FPS (2D Dotemu/Wonder Boy)",
-            "✓ STORM SOFT recommended profile settings for stability and maximum FPS (2D Dotemu/Wonder Boy)",
+            "• Задержка появления вступительной заставки и чёрный фон за 2D-сценой\n• Рассинхронизация 2D-слоёв\n• Завышенное потребление VRAM/RAM",
+            "• Delayed intro video startup and black 2D background artwork\n• 2D layer desync\n• Excessive VRAM/RAM growth",
+            "✓ Память: 4GB DRAM + Режим полета\n✓ Точность ГПУ: Высокая (High) + Fix Bloom + NVDEC ГПУ\n✓ Асинхронный вывод и быстрое время ГПУ: Отключено (0% рассинхронизации 2D-слоёв)\n✓ Обратное чтение и Sync Memory Ops: Включено (DMA Safe=3)\n✓ Асинхронные шейдеры, реактивная очистка, барьеры и GC VRAM: Включено",
+            "✓ Memory Layout: 4GB DRAM + Airplane Mode\n✓ GPU Accuracy: High + Fix Bloom + GPU NVDEC\n✓ Async Presentation & Fast GPU Time: Disabled (0% 2D layer desync)\n✓ GPU Buffer Readback & Sync Memory Ops: Enabled (DMA Safe=3)\n✓ Asynchronous Shaders, Reactive Flushing, Barrier Loops & VRAM GC: Enabled",
             mapOf(
+                "Core\\memory_layout_mode" to "0",
+                "System\\memory_layout_mode" to "0",
                 "System\\airplane_mode" to "true",
                 "Network\\airplane_mode" to "true",
                 "Services\\airplane_mode" to "true",
                 "Renderer\\gpu_accuracy" to "2",
+                "Renderer\\fix_bloom_effects" to "true",
                 "Renderer\\nvdec_emulation" to "2",
                 "Renderer\\async_presentation" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true",
@@ -5484,6 +5496,7 @@ GameFixProfile(
                 "Renderer\\sync_memory_operations" to "true",
                 "Renderer\\use_reactive_flushing" to "true",
                 "Renderer\\vram_garbage_collection" to "true",
+                "Renderer\\vram_budget_governor" to "true",
                 "Renderer\\use_vulkan_driver_pipeline_cache" to "true",
                 "Renderer\\early_release_fences" to "false",
                 "Renderer\\dma_accuracy" to "3",
@@ -6858,7 +6871,6 @@ GameFixProfile(
                 nameLower.contains("tears of the kingdom") -> listOf("tears of the kingdom", "totk", "0100f2c0115b6000")
                 nameLower.contains("paper mario") -> listOf("paper mario", "thousand-year", "01004d701742a000")
                 nameLower.contains("hogwarts legacy") -> listOf("hogwarts", "0100bcb0176d0000", "0100b5b0112f8000", "0100d1801648e000")
-                nameLower.contains("diablo ii") -> listOf("diablo ii", "diablo 2", "resurrected", "01002a801458a000", "0100916014d8c000")
                 nameLower.contains("mechanicus") -> listOf("mechanicus", "warhammer", "0100c6000eea8000")
                 nameLower.contains("skywalker saga") -> listOf("skywalker saga", "lego star wars", "0100923008c54000")
                 nameLower.contains("bayonetta 3") -> listOf("bayonetta 3", "01004a4010fea000")
@@ -6873,7 +6885,7 @@ GameFixProfile(
                 nameLower.contains("mortal kombat 1") || nameLower.contains("mk1") -> listOf("mortal kombat 1", "mk1", "01006560184e6000", "0100d2800d5c2000", "010066b019e0e000")
                 nameLower.contains("mortal kombat") -> listOf("mortal kombat", "mk11", "0100b1100c4d0000", "0100f2200c984000")
                 nameLower.contains("hot pursuit") || nameLower.contains("need for speed") -> listOf("need for speed", "hot pursuit", "nfs", "010074600ee26000", "0100b9000d000000")
-                nameLower.contains("kingdom battle") -> listOf("kingdom battle", "mario + rabbids", "mario rabbids", "010067300059a000")
+                nameLower.contains("kingdom battle") -> listOf("kingdom battle", "mario + rabbids", "mario rabbids", "010067300059a000", "010067300b762000")
                 nameLower.contains("sparks of hope") -> listOf("sparks of hope", "01005ca00f966000")
                 nameLower.contains("splintered fate") || nameLower.contains("tmnt") -> listOf("splintered fate", "tmnt", "ninja turtles", "01005cf01e784000")
                 nameLower.contains("mario odyssey") -> listOf("odyssey", "mario odyssey", "0100000000010000")

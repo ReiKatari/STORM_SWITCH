@@ -18,7 +18,11 @@ inline std::optional<u8> TranslateNativeUncompressedKind(u8 kind, u8 fallback) {
     case 0: return static_cast<u8>(Tegra::PTEKind::PITCH);
     case 1: return static_cast<u8>(Tegra::PTEKind::Z16);
     case 3: return static_cast<u8>(Tegra::PTEKind::S8Z24);
+    case 4: return static_cast<u8>(Tegra::PTEKind::ZF32_X24S8);
     case 6: return static_cast<u8>(Tegra::PTEKind::GENERIC_16BX2);
+    // Welcome Tour's CUDA scratch mapping (NvRmGpuDeviceChooseKind class 3) requests kind 0xf with
+    // the same fallback, i.e. no compression to invalidate. Unlisted equal pairs are still rejected.
+    case 0xf: return static_cast<u8>(Tegra::PTEKind::GENERIC_16BX2);
     default: return std::nullopt;
     }
 }
@@ -34,7 +38,8 @@ inline std::optional<NativeMemoryKind> SelectNativeMemoryKind(u8 requested, u8 f
     }
     // The native caller supplies an uncompressed alternative explicitly. Return
     // that selected native kind so the SDK invalidates its compressed preference.
-    if (requested == 8 && fallback == 6) {
+    // Kind 9 is generic compression with PLC disabled, with the same fallback.
+    if ((requested == 8 || requested == 9) && fallback == 6) {
         return NativeMemoryKind{static_cast<u8>(Tegra::PTEKind::GENERIC_16BX2), 6};
     }
     // TU104 kind 0x0c is the compressible S8Z24 variant; kind 3 is
@@ -45,16 +50,10 @@ inline std::optional<NativeMemoryKind> SelectNativeMemoryKind(u8 requested, u8 f
     if (requested == 0xc && fallback == 3) {
         return NativeMemoryKind{static_cast<u8>(Tegra::PTEKind::S8Z24), 3};
     }
-    if (fallback == 0) {
-        return NativeMemoryKind{static_cast<u8>(Tegra::PTEKind::PITCH), 0};
+    if (requested == 0xd && fallback == 4) {
+        return NativeMemoryKind{static_cast<u8>(Tegra::PTEKind::ZF32_X24S8), 4};
     }
-    if (fallback == 1) {
-        return NativeMemoryKind{static_cast<u8>(Tegra::PTEKind::Z16), 1};
-    }
-    if (fallback == 3) {
-        return NativeMemoryKind{static_cast<u8>(Tegra::PTEKind::S8Z24), 3};
-    }
-    return NativeMemoryKind{static_cast<u8>(Tegra::PTEKind::GENERIC_16BX2), fallback != 7 ? fallback : u8{6}};
+    return std::nullopt;
 }
 
 } // namespace Service::Nvidia::Devices

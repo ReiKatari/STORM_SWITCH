@@ -32,7 +32,9 @@ import org.yuzu.yuzu_emu.databinding.FragmentSettingsBinding
 import org.yuzu.yuzu_emu.features.input.NativeInput
 import org.yuzu.yuzu_emu.features.settings.model.Settings
 import org.yuzu.yuzu_emu.features.settings.model.view.PathSetting
+import org.yuzu.yuzu_emu.NativeLibrary
 import org.yuzu.yuzu_emu.fragments.MessageDialogFragment
+import org.yuzu.yuzu_emu.fragments.ProgressDialogFragment
 import org.yuzu.yuzu_emu.utils.PathUtil
 import org.yuzu.yuzu_emu.utils.ViewUtils.updateMargins
 import org.yuzu.yuzu_emu.utils.*
@@ -344,9 +346,132 @@ class SettingsFragment : Fragment() {
             if (oldPath != path) {
                 promptSaveMigration(pathSetting, oldPath, path)
             }
+        } else if (pathSetting.pathType == PathSetting.PathType.NAND) {
+            val oldPath = pathSetting.getCurrentPath()
+            if (oldPath != path) {
+                promptNandMigration(pathSetting, oldPath, path)
+            }
         } else {
             setPathAndNotify(pathSetting, path)
         }
+    }
+
+    private fun promptNandMigration(pathSetting: PathSetting, fromPath: String, toPath: String) {
+        if (NativeLibrary.isRunning()) {
+            Toast.makeText(
+                requireContext(),
+                R.string.nand_migration_game_running,
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+        if (PathUtil.isSameOrInside(fromPath, toPath) || PathUtil.isSameOrInside(toPath, fromPath)) {
+            Toast.makeText(
+                requireContext(),
+                R.string.invalid_directory,
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+        if (PathUtil.NAND_CONTENT_FOLDERS.none { PathUtil.hasContent("$fromPath/$it") }) {
+            setPathAndNotify(pathSetting, toPath)
+            return
+        }
+
+        val destinationHasContent =
+            PathUtil.NAND_CONTENT_FOLDERS.any { PathUtil.hasContent("$toPath/$it") }
+        val builder = MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
+            .setTitle(R.string.nand_migration)
+            .setMessage(
+                if (destinationHasContent) {
+                    R.string.nand_migration_replace_question
+                } else {
+                    R.string.nand_migration_question
+                }
+            )
+            .setPositiveButton(R.string.confirm) { _, _ ->
+                val activity = requireActivity()
+                ProgressDialogFragment.newInstance(
+                    activity,
+                    R.string.nand_migration_copying,
+                    true
+                ) { progressCallback, _ ->
+                    moveNandContent(activity, pathSetting, fromPath, toPath, progressCallback)
+                }.show(parentFragmentManager, ProgressDialogFragment.TAG)
+            }
+            .setNegativeButton(R.string.skip_migration) { _, _ ->
+                setPathAndNotify(pathSetting, toPath)
+            }
+            .setNeutralButton(R.string.cancel, null)
+        showMaterialDialog(builder)
+    }
+
+    private fun moveNandContent(
+        activity: androidx.fragment.app.FragmentActivity,
+        pathSetting: PathSetting,
+        fromPath: String,
+        toPath: String,
+        progressCallback: (max: Long, progress: Long) -> Boolean
+    ): Any {
+        val source = File(fromPath)
+        val needed = PathUtil.NAND_CONTENT_FOLDERS.sumOf {
+            PathUtil.directorySize(File(source, it))
+        }
+        val available = File(toPath).usableSpace
+        if (needed > available) {
+            return activity.getString(
+                R.string.nand_migration_no_space,
+                android.text.format.Formatter.formatFileSize(activity, needed),
+                android.text.format.Formatter.formatFileSize(activity, available)
+            )
+        }
+
+        val result = PathUtil.copyFolders(source, File(toPath), PathUtil.NAND_CONTENT_FOLDERS) {
+            progressCallback(needed, it)
+        }
+        when (result) {
+            PathUtil.CopyResult.CANCELLED -> return Unit
+            PathUtil.CopyResult.FAILED -> return MessageDialogFragment.newInstance(
+                activity,
+                titleId = R.string.nand_migration,
+                descriptionId = R.string.nand_migration_failed
+            )
+            PathUtil.CopyResult.COPIED -> Unit
+        }
+
+        val savesInNand = NativeConfig.getSaveDir() == fromPath
+        pathSetting.setPath(toPath)
+        if (savesInNand) {
+            NativeConfig.setSaveDir(toPath)
+        }
+        try {
+            NativeConfig.saveGlobalConfig()
+            NativeConfig.reloadGlobalConfig()
+        } catch (_: Exception) {
+        }
+        GameHelper.reinitializeSystem()
+        activity.runOnUiThread {
+            if (isAdded) {
+                val position = settingsViewModel.pathSettingPosition.value
+                if (position >= 0) {
+                    settingsAdapter?.notifyItemChanged(position)
+                }
+            }
+            val freedStr = android.text.format.Formatter.formatFileSize(activity, needed)
+            val cleanupBuilder = MaterialAlertDialogBuilder(activity, R.style.EdenMaterialDialog)
+                .setTitle(R.string.nand_migration_free_space)
+                .setMessage(activity.getString(R.string.nand_migration_free_space_question, freedStr))
+                .setPositiveButton(R.string.delete) { _, _ ->
+                    Thread {
+                        PathUtil.NAND_CONTENT_FOLDERS.forEach { folder ->
+                            File(source, folder).deleteRecursively()
+                        }
+                    }.start()
+                }
+                .setNegativeButton(R.string.nand_migration_keep, null)
+            showMaterialDialog(cleanupBuilder)
+        }
+        return activity.getString(R.string.nand_migration_done)
     }
 
     private fun promptSaveMigration(pathSetting: PathSetting, fromPath: String, toPath: String) {
@@ -428,6 +553,10 @@ class SettingsFragment : Fragment() {
         } catch (_: Exception) {
         }
 
+        if (pathSetting.pathType == PathSetting.PathType.NAND) {
+            Thread { GameHelper.reinitializeSystem() }.start()
+        }
+
         val messageResId = if (pathSetting.pathType == PathSetting.PathType.SAVE_DATA) {
             R.string.save_directory_set
         } else {
@@ -458,7 +587,19 @@ class SettingsFragment : Fragment() {
         val currentPath = pathSetting.getCurrentPath()
         val defaultPath = pathSetting.getDefaultPath()
 
-        if (pathSetting.pathType == PathSetting.PathType.SDMC || pathSetting.pathType == PathSetting.PathType.NAND) {
+        if (pathSetting.pathType == PathSetting.PathType.NAND) {
+            val builder = MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
+                .setTitle(R.string.reset_to_default)
+                .setMessage(defaultPath)
+                .setPositiveButton(R.string.confirm) { _, _ ->
+                    handleSelectedPath(pathSetting, defaultPath)
+                }
+                .setNegativeButton(R.string.cancel, null)
+            showMaterialDialog(builder)
+            return
+        }
+
+        if (pathSetting.pathType == PathSetting.PathType.SDMC) {
             val builder = MaterialAlertDialogBuilder(requireContext(), R.style.EdenMaterialDialog)
                 .setTitle(R.string.reset_to_default)
                 .setMessage(defaultPath)

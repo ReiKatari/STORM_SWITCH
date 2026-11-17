@@ -239,6 +239,13 @@ struct ApplicationPlayStatistics {
 static_assert(sizeof(ApplicationPlayStatistics) == 0x18,
               "ApplicationPlayStatistics has incorrect size.");
 
+enum AppletZIndex : s32 {
+    Background = 0,
+    Foreground = 1,
+    ForegroundVisible = 2,
+    Overlay = 3,
+};
+
 using ProgramId = u64;
 
 struct Applet;

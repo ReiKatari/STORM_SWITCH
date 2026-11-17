@@ -449,7 +449,7 @@ Fast（2000MHz）：运行在 2 倍频率。</translation>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="104" />
             <source>Set a custom value of CPU ticks. Higher values can increase performance, but may cause deadlocks. A range of 77-21000 is recommended.</source>
-            <translation>设置自定义的 CPU 时钟周期。较高的数值可能提升性能，但也可能导致游戏卡死。推荐范围：77–21000。</translation>
+            <translation>设置自定义的 CPU 时钟周期。较高的数值可能提升性能，但也可能导致游戏卡死。推荐范围：77-21000。</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="112" />
@@ -6515,7 +6515,7 @@ UUID: %2</translation>
         <message>
             <location filename="../../src/yuzu/configuration/configure_tas.ui" line="27" />
             <source>To check which hotkeys control the playback/recording, please refer to the Hotkey settings (Configure -&gt; General -&gt; Hotkeys).</source>
-            <translation>要确认是哪些热键控制播放/录制，请参阅热键设置。(设置—&gt;通用—&gt;热键)</translation>
+            <translation>要确认是哪些热键控制播放/录制，请参阅热键设置。(设置-&gt;通用-&gt;热键)</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_tas.ui" line="98" />

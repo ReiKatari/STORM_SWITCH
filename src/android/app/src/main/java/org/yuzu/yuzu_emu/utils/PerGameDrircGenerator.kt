@@ -104,7 +104,9 @@ object PerGameDrircGenerator {
 
         // 2c. Mario + Rabbids Series (Snowdrop Engine Shadow Maps, Exposure & Fullscreen Quad)
         if (cleanId.startsWith("010067300059A") || // Mario + Rabbids: Kingdom Battle
-            cleanId.startsWith("0100760012E4A") || // Mario + Rabbids: Kingdom Battle Gold
+            cleanId.startsWith("010067300B762") || // Mario + Rabbids: Kingdom Battle (EU/Alt)
+            cleanId.startsWith("0100317013770") || // Mario + Rabbids: Sparks of Hope (Primary)
+            cleanId.startsWith("010068D01440C") || // Mario + Rabbids: Sparks of Hope (Alt)
             cleanId.startsWith("010032C00AC58") || // Mario + Rabbids: Sparks of Hope
             cleanId.startsWith("01005CA00F966") || // Mario + Rabbids: Sparks of Hope
             cleanTitle.contains("rabbids")
@@ -480,19 +482,26 @@ object PerGameDrircGenerator {
                 optionsBuilder.append("            <option name=\"tu_allow_concurrent_binning\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_allow_oob_indirect_ubo_loads\" value=\"true\" />\n")
             }
-            GameProfileType.DIABLO,
+            GameProfileType.DIABLO -> {
+                optionsBuilder.append("            <option name=\"tu_allow_concurrent_binning\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_use_tex_coord_round_nearest_even_mode\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_allow_oob_indirect_ubo_loads\" value=\"true\" />\n")
+            }
             GameProfileType.ABSOLUM,
             GameProfileType.STREETS_OF_RAGE_4,
             GameProfileType.DISCO_ELYSIUM -> {
                 optionsBuilder.append("            <option name=\"tu_allow_concurrent_binning\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_use_tex_coord_round_nearest_even_mode\" value=\"true\" />\n")
-                optionsBuilder.append("            <option name=\"dual_color_blend_by_location\" value=\"true\" />\n")
                 optionsBuilder.append("            <option name=\"tu_allow_oob_indirect_ubo_loads\" value=\"true\" />\n")
             }
             GameProfileType.ZELDA,
             GameProfileType.XENOBLADE,
             GameProfileType.POKEMON,
-            GameProfileType.ALAN_WAKE,
+            GameProfileType.ALAN_WAKE -> {
+                optionsBuilder.append("            <option name=\"tu_allow_concurrent_binning\" value=\"false\" />\n")
+                optionsBuilder.append("            <option name=\"tu_enable_d24s8_border_color_workaround\" value=\"true\" />\n")
+                optionsBuilder.append("            <option name=\"tu_allow_oob_indirect_ubo_loads\" value=\"true\" />\n")
+            }
             GameProfileType.MARIO_RABBIDS -> {
                 optionsBuilder.append("            <option name=\"tu_allow_concurrent_binning\" value=\"false\" />\n")
                 optionsBuilder.append("            <option name=\"tu_enable_d24s8_border_color_workaround\" value=\"true\" />\n")
@@ -539,13 +548,11 @@ $optionsBuilder        </application>
         }
 
         val configFile = File(targetDir, "drirc.xml")
-        if (xml != lastWrittenXml || !configFile.exists()) {
-            configFile.writeText(xml, Charsets.UTF_8)
-            File(targetDir, "00-storm.conf").writeText(xml, Charsets.UTF_8)
-            val homeDir = YuzuApplication.appContext.filesDir
-            File(homeDir, ".drirc").writeText(xml, Charsets.UTF_8)
-            lastWrittenXml = xml
-        }
+        configFile.writeText(xml, Charsets.UTF_8)
+        File(targetDir, "00-storm.conf").writeText(xml, Charsets.UTF_8)
+        val homeDir = YuzuApplication.appContext.filesDir
+        File(homeDir, ".drirc").writeText(xml, Charsets.UTF_8)
+        lastWrittenXml = xml
 
         Log.info("[PerGameDrircGenerator] Generated $profileType drirc profile for $title ($programIdHex)")
         return configFile

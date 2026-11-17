@@ -24,8 +24,15 @@
 ankerl::unordered_dense::map<std::string, std::unique_ptr<AndroidConfig>> map_profiles;
 
 bool IsHandheldOnly() {
-    const auto npad_style_set =
-        EmulationSession::GetInstance().System().HIDCore().GetSupportedStyleTag();
+    auto& session = EmulationSession::GetInstance();
+    if (session.IsShuttingDown() || session.System().IsShuttingDown()) {
+        return false;
+    }
+    std::scoped_lock hid_lock(session.GetHidLifecycleMutex());
+    if (session.IsShuttingDown() || session.System().IsShuttingDown()) {
+        return false;
+    }
+    const auto npad_style_set = session.System().HIDCore().GetSupportedStyleTag();
 
     if (npad_style_set.fullkey == 1) {
         return false;
@@ -84,7 +91,15 @@ bool LoadProfile(std::string& profile_name, std::size_t player_index) {
 
 void ApplyControllerConfig(size_t player_index,
                            const std::function<void(Core::HID::EmulatedController*)>& apply) {
-    auto& hid_core = EmulationSession::GetInstance().System().HIDCore();
+    auto& session = EmulationSession::GetInstance();
+    if (session.IsShuttingDown() || session.System().IsShuttingDown()) {
+        return;
+    }
+    std::scoped_lock hid_lock(session.GetHidLifecycleMutex());
+    if (session.IsShuttingDown() || session.System().IsShuttingDown()) {
+        return;
+    }
+    auto& hid_core = session.System().HIDCore();
     if (player_index == 0) {
         auto* handheld = hid_core.GetEmulatedController(Core::HID::NpadIdType::Handheld);
         auto* player_one = hid_core.GetEmulatedController(Core::HID::NpadIdType::Player1);
@@ -106,7 +121,15 @@ void ApplyControllerConfig(size_t player_index,
 }
 
 std::vector<s32> GetSupportedStyles(int player_index) {
-    auto& hid_core = EmulationSession::GetInstance().System().HIDCore();
+    auto& session = EmulationSession::GetInstance();
+    if (session.IsShuttingDown() || session.System().IsShuttingDown()) {
+        return {};
+    }
+    std::scoped_lock hid_lock(session.GetHidLifecycleMutex());
+    if (session.IsShuttingDown() || session.System().IsShuttingDown()) {
+        return {};
+    }
+    auto& hid_core = session.System().HIDCore();
     const auto npad_style_set = hid_core.GetSupportedStyleTag();
     std::vector<s32> supported_indexes;
     if (npad_style_set.fullkey == 1) {
@@ -137,7 +160,15 @@ std::vector<s32> GetSupportedStyles(int player_index) {
 }
 
 void ConnectController(size_t player_index, bool connected) {
-    auto& hid_core = EmulationSession::GetInstance().System().HIDCore();
+    auto& session = EmulationSession::GetInstance();
+    if (session.IsShuttingDown() || session.System().IsShuttingDown()) {
+        return;
+    }
+    std::scoped_lock hid_lock(session.GetHidLifecycleMutex());
+    if (session.IsShuttingDown() || session.System().IsShuttingDown()) {
+        return;
+    }
+    auto& hid_core = session.System().HIDCore();
     ApplyControllerConfig(player_index, [&](Core::HID::EmulatedController* controller) {
         auto supported_styles = GetSupportedStyles(player_index);
         auto controller_style = controller->GetNpadStyleIndex(true);
@@ -295,7 +326,14 @@ void Java_org_yuzu_yuzu_1emu_features_input_NativeInput_onDeviceMotionEvent(
 
 void Java_org_yuzu_yuzu_1emu_features_input_NativeInput_reloadInputDevices(JNIEnv* env,
                                                                            jobject j_obj) {
-    EmulationSession::GetInstance().System().HIDCore().ReloadInputDevices();
+    auto& session = EmulationSession::GetInstance();
+    if (!session.IsRunning() || session.IsShuttingDown() || session.System().IsShuttingDown()) {
+        return;
+    }
+    std::scoped_lock hid_lock(session.GetHidLifecycleMutex());
+    if (session.IsRunning() && !session.IsShuttingDown() && !session.System().IsShuttingDown()) {
+        session.System().HIDCore().ReloadInputDevices();
+    }
 }
 
 void Java_org_yuzu_yuzu_1emu_features_input_NativeInput_registerController(JNIEnv* env,
@@ -432,7 +470,15 @@ void Java_org_yuzu_yuzu_1emu_features_input_NativeInput_loadPerGameConfiguration
     jstring j_selected_profile_name) {
     static constexpr size_t HANDHELD_INDEX = 8;
 
-    auto& hid_core = EmulationSession::GetInstance().System().HIDCore();
+    auto& session = EmulationSession::GetInstance();
+    if (session.IsShuttingDown() || session.System().IsShuttingDown()) {
+        return;
+    }
+    std::scoped_lock hid_lock(session.GetHidLifecycleMutex());
+    if (session.IsShuttingDown() || session.System().IsShuttingDown()) {
+        return;
+    }
+    auto& hid_core = session.System().HIDCore();
     Settings::values.players.SetGlobal(false);
 
     auto profile_name = Common::Android::GetJString(env, j_selected_profile_name);
@@ -535,8 +581,15 @@ jstring Java_org_yuzu_yuzu_1emu_features_input_NativeInput_getButtonParamImpl(JN
                                                                               jobject j_obj,
                                                                               jint j_player_index,
                                                                               jint j_button) {
-    return Common::Android::ToJString(env, EmulationSession::GetInstance()
-                                               .System()
+    auto& session = EmulationSession::GetInstance();
+    if (session.IsShuttingDown() || session.System().IsShuttingDown()) {
+        return Common::Android::ToJString(env, "");
+    }
+    std::scoped_lock hid_lock(session.GetHidLifecycleMutex());
+    if (session.IsShuttingDown() || session.System().IsShuttingDown()) {
+        return Common::Android::ToJString(env, "");
+    }
+    return Common::Android::ToJString(env, session.System()
                                                .HIDCore()
                                                .GetEmulatedControllerByIndex(j_player_index)
                                                ->GetButtonParam(j_button)
@@ -555,8 +608,15 @@ jstring Java_org_yuzu_yuzu_1emu_features_input_NativeInput_getStickParamImpl(JNI
                                                                              jobject j_obj,
                                                                              jint j_player_index,
                                                                              jint j_stick) {
-    return Common::Android::ToJString(env, EmulationSession::GetInstance()
-                                               .System()
+    auto& session = EmulationSession::GetInstance();
+    if (session.IsShuttingDown() || session.System().IsShuttingDown()) {
+        return Common::Android::ToJString(env, "");
+    }
+    std::scoped_lock hid_lock(session.GetHidLifecycleMutex());
+    if (session.IsShuttingDown() || session.System().IsShuttingDown()) {
+        return Common::Android::ToJString(env, "");
+    }
+    return Common::Android::ToJString(env, session.System()
                                                .HIDCore()
                                                .GetEmulatedControllerByIndex(j_player_index)
                                                ->GetStickParam(j_stick)
@@ -590,8 +650,15 @@ jintArray Java_org_yuzu_yuzu_1emu_features_input_NativeInput_getSupportedStyleTa
 jint Java_org_yuzu_yuzu_1emu_features_input_NativeInput_getStyleIndexImpl(JNIEnv* env,
                                                                           jobject j_obj,
                                                                           jint j_player_index) {
-    return static_cast<s32>(EmulationSession::GetInstance()
-                                .System()
+    auto& session = EmulationSession::GetInstance();
+    if (session.IsShuttingDown() || session.System().IsShuttingDown()) {
+        return static_cast<s32>(Core::HID::NpadStyleIndex::None);
+    }
+    std::scoped_lock hid_lock(session.GetHidLifecycleMutex());
+    if (session.IsShuttingDown() || session.System().IsShuttingDown()) {
+        return static_cast<s32>(Core::HID::NpadStyleIndex::None);
+    }
+    return static_cast<s32>(session.System()
                                 .HIDCore()
                                 .GetEmulatedControllerByIndex(j_player_index)
                                 ->GetNpadStyleIndex(true));
@@ -601,7 +668,15 @@ void Java_org_yuzu_yuzu_1emu_features_input_NativeInput_setStyleIndexImpl(JNIEnv
                                                                           jobject j_obj,
                                                                           jint j_player_index,
                                                                           jint j_style_index) {
-    auto& hid_core = EmulationSession::GetInstance().System().HIDCore();
+    auto& session = EmulationSession::GetInstance();
+    if (session.IsShuttingDown() || session.System().IsShuttingDown()) {
+        return;
+    }
+    std::scoped_lock hid_lock(session.GetHidLifecycleMutex());
+    if (session.IsShuttingDown() || session.System().IsShuttingDown()) {
+        return;
+    }
+    auto& hid_core = session.System().HIDCore();
     auto type = static_cast<Core::HID::NpadStyleIndex>(j_style_index);
     ApplyControllerConfig(j_player_index, [&](Core::HID::EmulatedController* controller) {
         controller->SetNpadStyleIndex(type);
@@ -624,7 +699,15 @@ jboolean Java_org_yuzu_yuzu_1emu_features_input_NativeInput_isControllerImpl(JNI
 jboolean Java_org_yuzu_yuzu_1emu_features_input_NativeInput_getIsConnected(JNIEnv* env,
                                                                            jobject j_obj,
                                                                            jint j_player_index) {
-    auto& hid_core = EmulationSession::GetInstance().System().HIDCore();
+    auto& session = EmulationSession::GetInstance();
+    if (session.IsShuttingDown() || session.System().IsShuttingDown()) {
+        return JNI_FALSE;
+    }
+    std::scoped_lock hid_lock(session.GetHidLifecycleMutex());
+    if (session.IsShuttingDown() || session.System().IsShuttingDown()) {
+        return JNI_FALSE;
+    }
+    auto& hid_core = session.System().HIDCore();
     auto* controller = hid_core.GetEmulatedControllerByIndex(static_cast<size_t>(j_player_index));
     if (j_player_index == 0 &&
         controller->GetNpadStyleIndex(true) == Core::HID::NpadStyleIndex::Handheld) {

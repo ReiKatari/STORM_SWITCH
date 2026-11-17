@@ -61,8 +61,8 @@ QIcon MakeVectorIcon(VectorIcon type, const QColor& color, int size = 16) {
 CheatsDialog::CheatsDialog(QWidget* parent, Core::System& system, u64 title_id, const QString& file_name)
     : QDialog(parent), m_system(system), m_title_id(title_id), m_file_name(file_name) {
     setWindowTitle(StormLang(
-        QStringLiteral("Менеджер чит-кодов — STORM SWITCH"),
-        QStringLiteral("Cheat Code Manager — STORM SWITCH")
+        QStringLiteral("Менеджер чит-кодов - STORM SWITCH"),
+        QStringLiteral("Cheat Code Manager - STORM SWITCH")
     ));
 
     resize(880, 600);

@@ -20,6 +20,8 @@ struct HostTranslateInfo {
     u64 min_ssbo_alignment{};            ///< Minimum alignment supported by the device for SSBOs
     u32 max_per_stage_descriptor_sampled_images{}; ///< maximum sampled descriptors per stage
     u32 max_per_stage_resources{};                 ///< maximum resources per stage
+    u32 max_per_stage_descriptor_storage_buffers{}; ///< maximum storage buffers per stage
+    u32 max_per_stage_descriptor_samplers{};       ///< maximum samplers per stage
     u32 max_descriptor_set_samplers{};
     u32 max_descriptor_set_uniform_buffers{};
     u32 max_descriptor_set_uniform_buffers_dynamic{};
@@ -40,8 +42,10 @@ struct HostTranslateInfo {
                                         ///< control flow
     bool support_attribute_texture_handle{}; ///< True when the host binds texture handles that
                                              ///< arrive as vertex attributes
+    bool gs_replicates_side_effects{}; ///< True when geometry shaders run once per output vertex
     bool support_viewport_mask{}; ///< True when the host supports viewport mask
     bool single_lane_geometry_subgroups{};
+    bool support_handle_table_arrays{};
 
     void ApplyDescriptorLimitPolicy() noexcept {
         if (min_ssbo_alignment == 0) {
@@ -49,6 +53,8 @@ struct HostTranslateInfo {
         }
         ApplyDescriptorLimitFallback(max_per_stage_descriptor_sampled_images);
         ApplyDescriptorLimitFallback(max_per_stage_resources);
+        ApplyDescriptorLimitFallback(max_per_stage_descriptor_storage_buffers);
+        ApplyDescriptorLimitFallback(max_per_stage_descriptor_samplers);
         ApplyDescriptorLimitFallback(max_descriptor_set_samplers);
         ApplyDescriptorLimitFallback(max_descriptor_set_uniform_buffers);
         ApplyDescriptorLimitFallback(max_descriptor_set_uniform_buffers_dynamic);

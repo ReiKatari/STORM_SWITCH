@@ -32,6 +32,10 @@ struct RenderAreaLayout {
 constexpr u32 RESCALING_LAYOUT_WORDS_OFFSET = offsetof(RescalingLayout, rescaling_textures);
 constexpr u32 RESCALING_LAYOUT_DOWN_FACTOR_OFFSET = offsetof(RescalingLayout, down_factor);
 constexpr u32 RENDERAREA_LAYOUT_OFFSET = offsetof(RenderAreaLayout, render_area);
+/// Offset of the draw-generation counter in the push constant block, used by geometry shaders that claim their
+/// primitive (Info::uses_gs_scratch), after the rescaling and render area words.
+constexpr u32 GS_GENERATION_LAYOUT_OFFSET =
+    static_cast<u32>(sizeof(RescalingLayout) + sizeof(RenderAreaLayout));
 
 [[nodiscard]] std::vector<u32> EmitSPIRV(const Profile& profile, const RuntimeInfo& runtime_info, IR::Program& program, Bindings& bindings);
 [[nodiscard]] inline std::vector<u32> EmitSPIRV(const Profile& profile, IR::Program& program) {

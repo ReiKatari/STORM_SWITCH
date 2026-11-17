@@ -2737,13 +2737,10 @@ class SettingsFragmentPresenter(
 
 
             if (!NativeConfig.isPerGameConfigLoaded()) {
-
                 add(HeaderSetting(R.string.log))
-
-
-
                 add(BooleanSetting.DEBUG_FLUSH_BY_LINE.key)
-
+                add(BooleanSetting.EXTENDED_LOGGING.key)
+                add(StringSetting.LOG_FILTER.key)
             }
 
 

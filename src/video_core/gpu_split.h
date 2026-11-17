@@ -9,6 +9,7 @@
 #include <memory>
 #include <thread>
 #include <type_traits>
+#include <unordered_map>
 
 #include "common/common_types.h"
 
@@ -107,6 +108,14 @@ public:
     /// Waits until the back executed the compute and copy work sent so far (not what came after).
     void WaitForWriters();
 
+    /// A semaphore release sent to the back at `address` (front thread only).
+    void NoteRelease(GPUVAddr address) {
+        sent_releases.insert_or_assign(address, write_position);
+    }
+    /// Waits for the back to run the releases sent to [address, address + size): macros on the
+    /// front read memory that the GPU would have written by then (front thread only).
+    void AwaitReleases(GPUVAddr address, u64 size);
+
 private:
     enum class Kind : u64 {
         Wrap,   ///< The rest of the ring is unused: continue at its start
@@ -169,6 +178,8 @@ private:
     /// Words between publishes: small right after a drain, while the back has nothing to do.
     size_t publish_every{PublishEvery};
     Tegra::Engines::EngineInterface* front_engine{};
+    /// Semaphore releases sent to the back: address, write position after them.
+    std::unordered_map<GPUVAddr, u64> sent_releases;
 
     // Back side.
     Tegra::Engines::EngineInterface* back_engine{};

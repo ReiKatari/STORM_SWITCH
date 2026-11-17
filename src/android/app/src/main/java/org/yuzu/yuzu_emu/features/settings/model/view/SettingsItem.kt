@@ -281,6 +281,20 @@ abstract class SettingsItem(
                     descriptionId = R.string.flush_by_line_description
                 )
             )
+            put(
+                SwitchSetting(
+                    BooleanSetting.EXTENDED_LOGGING,
+                    titleId = R.string.extended_logging,
+                    descriptionId = R.string.extended_logging_description
+                )
+            )
+            put(
+                StringInputSetting(
+                    StringSetting.LOG_FILTER,
+                    titleId = R.string.log_filter,
+                    descriptionId = R.string.log_filter_description
+                )
+            )
 
             val dockedModeSetting = object : AbstractBooleanSetting {
                 override val key = BooleanSetting.USE_DOCKED_MODE.key

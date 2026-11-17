@@ -76,7 +76,7 @@ TEST_CASE("Native block image storage covers every padded GOB", "[graphics-super
     const auto requirements = CalculateNativeImageRequirements(preference, 1);
     REQUIRE(requirements.has_value());
     REQUIRE(requirements->size == 8847360);
-    REQUIRE(requirements->alignment == 8192);
+    REQUIRE(requirements->alignment == 4096);
     REQUIRE(requirements->size % requirements->alignment == 0);
     preference[1] = 1; // The GPU descriptor uses the same block storage.
     REQUIRE(CalculateNativeImageRequirements(preference, 1)->size == requirements->size);
@@ -88,7 +88,9 @@ TEST_CASE("Native block image storage covers every padded GOB", "[graphics-super
 TEST_CASE("Native block image sizing rejects unsupported layouts and undersized pitches", "[graphics-supervisor]") {
     using Service::AM::CalculateNativeImageRequirements;
     const std::array<u32, 16> original{0, 2, 0x0437077f, 0, 7, 120, 1, 1};
-    for (const auto count : {0U, 2U, 0xffffffffU}) {
+    REQUIRE(CalculateNativeImageRequirements(original, 2)->size ==
+            CalculateNativeImageRequirements(original, 1)->size * 2);
+    for (const auto count : {0U, 0xffffffffU}) {
         REQUIRE_FALSE(CalculateNativeImageRequirements(original, count));
     }
     for (const auto index : {0, 1, 3, 6, 7, 8, 15}) {

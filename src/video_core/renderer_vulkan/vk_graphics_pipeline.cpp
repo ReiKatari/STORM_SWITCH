@@ -276,9 +276,17 @@ GraphicsPipeline::GraphicsPipeline(
         num_textures += Shader::NumDescriptors(info->texture_descriptors);
         num_image_elements += Shader::NumDescriptors(info->texture_descriptors);
         num_image_elements += Shader::NumDescriptors(info->image_descriptors);
+        has_side_effects |= info->stores_global_memory ||
+                            std::ranges::any_of(info->storage_buffers_descriptors,
+                                                [](const auto& d) { return d.is_written; }) ||
+                            std::ranges::any_of(info->image_buffer_descriptors,
+                                                [](const auto& d) { return d.is_written; }) ||
+                            std::ranges::any_of(info->image_descriptors,
+                                                [](const auto& d) { return d.is_written; });
         for (const auto& desc : info->texture_descriptors) {
             uses_attribute_handle |= desc.cbuf_index == Shader::ATTRIBUTE_HANDLE_CBUF_INDEX;
         }
+        uses_gs_scratch |= info->uses_gs_scratch;
         num_descriptor_entries += NumDescriptorEntries(*info);
     }
     fragment_has_color0_output = stage_infos[NUM_STAGES - 1].stores_frag_color[0];
@@ -389,23 +397,38 @@ bool GraphicsPipeline::ConfigureImpl(bool is_indexed) {
             }
             ASSERT(cbufs[desc.cbuf_index].enabled);
             const u32 index_offset{index << desc.size_shift};
-            const u32 offset{desc.cbuf_offset + index_offset};
+            u32 offset{desc.cbuf_offset + index_offset};
+            if constexpr (std::is_same_v<decltype(desc), const Shader::TextureDescriptor&> ||
+                          std::is_same_v<decltype(desc), const Shader::TextureBufferDescriptor&>) {
+                if (desc.has_index_cbuf) {
+                    ASSERT(cbufs[desc.index_cbuf_index].enabled);
+                    offset += gpu_memory->Read<u32>(cbufs[desc.index_cbuf_index].address +
+                                                    desc.index_cbuf_offset)
+                              << desc.index_shift;
+                }
+            }
             const GPUVAddr addr{cbufs[desc.cbuf_index].address + offset};
             if constexpr (std::is_same_v<decltype(desc), const Shader::TextureDescriptor&> ||
                           std::is_same_v<decltype(desc), const Shader::TextureBufferDescriptor&>) {
                 if (desc.has_secondary) {
                     ASSERT(cbufs[desc.secondary_cbuf_index].enabled);
-                    const u32 second_offset{desc.secondary_cbuf_offset + index_offset};
+                    const u32 second_offset{desc.secondary_cbuf_offset};
                     const GPUVAddr separate_addr{cbufs[desc.secondary_cbuf_index].address +
                                                  second_offset};
-                    const u32 lhs_raw{gpu_memory->Read<u32>(addr) << desc.shift_left};
-                    const u32 rhs_raw{gpu_memory->Read<u32>(separate_addr)
-                                      << desc.secondary_shift_left};
+                    const u32 lhs_raw{(gpu_memory->Read<u32>(addr) << desc.shift_left) & desc.mask};
+                    const u32 rhs_raw{(gpu_memory->Read<u32>(separate_addr)
+                                       << desc.secondary_shift_left) &
+                                      desc.secondary_mask};
                     const u32 raw{lhs_raw | rhs_raw};
                     return TexturePair(raw, via_header_index);
                 }
             }
-            return TexturePair(gpu_memory->Read<u32>(addr), via_header_index);
+            u32 raw{gpu_memory->Read<u32>(addr)};
+            if constexpr (std::is_same_v<decltype(desc), const Shader::TextureDescriptor&> ||
+                          std::is_same_v<decltype(desc), const Shader::TextureBufferDescriptor&>) {
+                raw = (raw << desc.shift_left) & desc.mask;
+            }
+            return TexturePair(raw, via_header_index);
         }};
         const auto add_image{[&](const auto& desc, bool blacklist) LAMBDA_FORCEINLINE {
             for (u32 index = 0; index < desc.count; ++index) {
@@ -900,6 +923,16 @@ void GraphicsPipeline::MakePipeline(VkRenderPass render_pass) {
     }
     if (device.IsExtProvokingVertexSupported()) {
         provoking_vertex.pNext = std::exchange(rasterization_ci.pNext, &provoking_vertex);
+    }
+    VkPipelineRasterizationDepthClipStateCreateInfoEXT depth_clip{
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_DEPTH_CLIP_STATE_CREATE_INFO_EXT,
+        .pNext = nullptr,
+        .flags = 0,
+        .depthClipEnable =
+            static_cast<VkBool32>(dynamic.depth_clip_disabled == 0 ? VK_TRUE : VK_FALSE),
+    };
+    if (device.IsExtDepthClipEnableSupported()) {
+        depth_clip.pNext = std::exchange(rasterization_ci.pNext, &depth_clip);
     }
 
     const bool supports_alpha_output = fragment_has_color0_output;

@@ -42,6 +42,7 @@
 #include "video_core/texture_cache/image_view_base.h"
 #include "video_core/texture_cache/render_targets.h"
 #include "video_core/texture_cache/types.h"
+#include "video_core/texture_cache/storm_mvcc_radix.h"
 #include "video_core/textures/texture.h"
 
 namespace Tegra {
@@ -248,6 +249,11 @@ public:
 
     [[nodiscard]] ImageId DmaImageId(const Tegra::DMA::ImageOperand& operand, bool is_upload);
 
+    [[nodiscard]] bool CanDmaBufferImageCopy(
+        const Tegra::DMA::ImageCopy& copy_info, const Tegra::DMA::BufferOperand& buffer_operand,
+        const Tegra::DMA::ImageOperand& image_operand, ImageId image_id,
+        size_t buffer_offset = 0) const;
+
     [[nodiscard]] std::pair<Image*, BufferImageCopy> DmaBufferImageCopy(
         const Tegra::DMA::ImageCopy& copy_info, const Tegra::DMA::BufferOperand& buffer_operand,
         const Tegra::DMA::ImageOperand& image_operand, ImageId image_id, bool modifies_image);
@@ -428,6 +434,10 @@ private:
     bool ScaleDown(Image& image);
     u64 GetScaledImageSizeBytes(const ImageBase& image);
 
+    /// The device memory an image counts for in total_used_memory between two driver readings
+    /// (none for an unbacked image).
+    u64 ImageMemoryBytes(const ImageBase& image) const;
+
     void QueueAsyncDecode(Image& image, ImageId image_id);
     void TickAsyncDecode();
 
@@ -454,6 +464,8 @@ private:
 
     ankerl::unordered_dense::map<RenderTargets, FramebufferId> framebuffers;
     ankerl::unordered_dense::map<u64, std::vector<ImageMapId>, Common::IdentityHash<u64>> page_table;
+    static constexpr u64 RT_PROTECTION_WINDOW = 720;
+    StormMvccRadixDirectory mvcc_radix_directory;
     ankerl::unordered_dense::map<ImageId, boost::container::small_vector<ImageViewId, 16>> sparse_views;
 
     DAddr virtual_invalid_space{};
@@ -461,6 +473,7 @@ private:
     bool has_deleted_images = false;
     bool is_rescaling = false;
     u64 total_used_memory = 0;
+    u64 image_bytes = 0;
     u64 minimum_memory;
     u64 expected_memory;
     u64 critical_memory;
@@ -510,6 +523,9 @@ private:
 
     Common::ScratchBuffer<u8> swizzle_data_buffer;
     Common::ScratchBuffer<u8> unswizzle_data_buffer;
+    Common::ScratchBuffer<u8> astc_scan_buffer;
+    u64 astc_opaque_images{};
+    u64 astc_alpha_images{};
 
     u64 modification_tick = 0;
     u64 frame_tick = 0;

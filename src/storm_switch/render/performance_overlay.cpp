@@ -48,6 +48,13 @@
 #include "video_core/shader_notify.h"
 #include <QIcon>
 #include <QPixmap>
+#ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#include <psapi.h>
+#endif
 
 namespace {
 QIcon MakeVectorCloseIcon(int size = 16, const QColor& color = QColor(148, 163, 184)) {
@@ -242,6 +249,10 @@ void PerformanceOverlay::SetupUI() {
     compact_stats_row->addStretch(1);
     compact_layout->addLayout(compact_stats_row);
 
+    m_compact_ram = new QLabel(m_compact_widget);
+    m_compact_ram->setStyleSheet(QStringLiteral("font-size: 11px; font-weight: bold; color: #38BDF8;"));
+    compact_layout->addWidget(m_compact_ram);
+
     m_compact_fpsGraph = new FpsGraphWidget(m_compact_widget, 90);
     compact_layout->addWidget(m_compact_fpsGraph, 1);
 
@@ -391,6 +402,10 @@ void PerformanceOverlay::SetupMonitoringTab(QWidget* tab) {
     m_lbl_shaders = new QLabel(tr("Шейдеры: 0"), tab);
     m_lbl_shaders->setStyleSheet(QStringLiteral("color: %1;").arg(po_pal.accent));
     info_box->addWidget(m_lbl_shaders);
+
+    m_lbl_ram = new QLabel(StormLang(QStringLiteral("ОЗУ: 0.00 ГБ"), QStringLiteral("RAM: 0.00 GB")), tab);
+    m_lbl_ram->setStyleSheet(QStringLiteral("font-weight: bold; color: #38BDF8;"));
+    info_box->addWidget(m_lbl_ram);
 
     info_box->addStretch(1);
     layout->addLayout(info_box);
@@ -803,6 +818,28 @@ void PerformanceOverlay::updateStats(const Core::PerfStatsResults& results,
             m_lbl_shaders->setText(tr("Шейдеры: OK | JIT Tier-3: %1").arg(jit_opt));
         }
     }
+
+#ifdef _WIN32
+    {
+        double proc_gb = 0.0, used_gb = 0.0, total_gb = 0.0;
+        PROCESS_MEMORY_COUNTERS pmc{};
+        pmc.cb = sizeof(pmc);
+        if (K32GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc))) {
+            proc_gb = static_cast<double>(pmc.WorkingSetSize) / (1024.0 * 1024.0 * 1024.0);
+        }
+        MEMORYSTATUSEX mst{};
+        mst.dwLength = sizeof(mst);
+        if (GlobalMemoryStatusEx(&mst)) {
+            total_gb = static_cast<double>(mst.ullTotalPhys) / (1024.0 * 1024.0 * 1024.0);
+            used_gb = static_cast<double>(mst.ullTotalPhys - mst.ullAvailPhys) / (1024.0 * 1024.0 * 1024.0);
+        }
+        const QString ram_txt = StormLang(
+            QStringLiteral("ОЗУ: %1 ГБ (%2/%3)").arg(QString::number(proc_gb, 'f', 2), QString::number(used_gb, 'f', 1), QString::number(total_gb, 'f', 1)),
+            QStringLiteral("RAM: %1 GB (%2/%3)").arg(QString::number(proc_gb, 'f', 2), QString::number(used_gb, 'f', 1), QString::number(total_gb, 'f', 1)));
+        if (m_compact_ram) m_compact_ram->setText(ram_txt);
+        if (m_lbl_ram) m_lbl_ram->setText(ram_txt);
+    }
+#endif
 }
 
 void PerformanceOverlay::RefreshCheats() {
@@ -913,8 +950,8 @@ void PerformanceOverlay::OnCheatToggled(int row) {
         }
     }
 
-    std::vector<Core::Memory::CheatEntry> active_cheat_entries;
-    const Core::Memory::TextCheatParser parser;
+    Core::Memory::CheatList active_cheat_list;
+    const Core::Memory::TextCheatParser parser{true};
     int active_count = 0;
 
     for (const auto& c : m_cheats) {
@@ -924,17 +961,14 @@ void PerformanceOverlay::OnCheatToggled(int row) {
             active_count++;
             new_disabled.push_back("__ENABLED__:" + c.name.toStdString());
             std::string formatted = fmt::format("[{}]\n{}\n", c.name.toStdString(), c.code.toStdString());
-            auto parsed = parser.Parse(formatted);
-            for (auto& p : parsed) {
-                active_cheat_entries.push_back(std::move(p));
-            }
+            active_cheat_list.Append(parser.Parse(formatted));
         }
     }
 
     disabled = std::move(new_disabled);
 
     // Dynamically apply to running game!
-    QtCommon::system->ReloadCheatList(active_cheat_entries);
+    QtCommon::system->ReloadCheatList(std::move(active_cheat_list));
     m_cheat_status->setText(tr("Читы обновлены на лету! Активно: %1 из %2").arg(active_count).arg(m_cheats.size()));
     m_cheat_status->setStyleSheet(QStringLiteral("font-weight: bold; color: #00D2FF;"));
 }

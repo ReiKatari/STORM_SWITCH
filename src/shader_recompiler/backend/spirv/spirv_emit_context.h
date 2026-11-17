@@ -7,6 +7,8 @@
 #pragma once
 
 #include <array>
+#include <optional>
+#include <unordered_map>
 
 #include <sirit/sirit.h>
 #include "common/container/unordered_set.h"
@@ -312,6 +314,16 @@ public:
     Id render_area_push_constant{};
     u32 render_are_member_index{};
 
+    // Geometry shaders whose memory side effects run once per primitive (Info::uses_gs_scratch):
+    // the copies of a primitive claim it in a scratch buffer and only the winner does them.
+    bool gs_dedup{};
+    u32 gs_scratch_ssbo{};
+    Id gs_generation_block{};
+    u32 gs_generation_member{};
+    Id gs_is_first{};
+    /// Blocks whose side effects are guarded end in this label instead of their own.
+    std::unordered_map<const IR::Block*, Id> gs_exit_labels;
+
     Id local_memory{};
 
     bool uses_explicit_workgroup_layout{};
@@ -373,6 +385,8 @@ public:
     Id load_const_func_u32x2{};
     Id load_const_func_u32x4{};
 
+    Id atomic_add_global_func_u32{};
+
     // Sirit::Id doesn't play nice with *::set<>
     ::Common::unordered_set<u32> non_uniform_ids;
 
@@ -397,14 +411,19 @@ private:
     void DefineImages(const Info& info, u32& binding, u32& scaling_index);
     void DefineAttributeMemAccess(const Info& info);
     void DefineWriteStorageCasLoopFunction(const Info& info);
-    void DefineGlobalMemoryFunctions(const Info& info);
+    void DefineGlobalMemoryFunctions(const IR::Program& program);
     void DefineRescalingInput(const Info& info);
     void DefineRescalingInputPushConstant();
     void DefineRescalingInputUniformConstant();
     void DefineRenderArea(const Info& info);
+    void DefineGsGeneration();
 
     void DefineInputs(const IR::Program& program);
     void DefineOutputs(const IR::Program& program);
 };
+
+/// Flushes NaN/Inf to zero (or neg_inf_fallback for -Inf) and clamps signed F32 values to [-max_abs, max_abs] when fix_bloom_effects is enabled.
+Id SanitizeFiniteF32(EmitContext& ctx, Id value, f32 max_abs = 65000.0f,
+                     std::optional<f32> neg_inf_fallback = std::nullopt);
 
 } // namespace Shader::Backend::SPIRV

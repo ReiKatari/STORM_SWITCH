@@ -311,7 +311,8 @@ void OnlineToolsDialog::PopulateFallbackCatalog() {
         }
     } else {
         const std::vector<std::pair<QString, qint64>> default_keys = {
-            {QStringLiteral("23.0.0"), 12177}, {QStringLiteral("22.5.0"), 7423},
+            {QStringLiteral("23.5.0"), 12177}, {QStringLiteral("23.0.0"), 12177},
+            {QStringLiteral("22.5.0"), 7423},
             {QStringLiteral("22.1.0"), 7407},  {QStringLiteral("22.0.0"), 7407},
             {QStringLiteral("21.2.0"), 11343}, {QStringLiteral("21.1.0"), 11343},
             {QStringLiteral("21.0.1"), 11343}, {QStringLiteral("21.0.0"), 11343},

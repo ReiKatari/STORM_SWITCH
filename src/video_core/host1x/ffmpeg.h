@@ -246,6 +246,12 @@ private:
     s64 m_next_pts{};
     std::queue<FrameOffsets> m_pending_offsets;
     FrameOffsets m_last_offsets{};
+
+    struct DeferredPacket {
+        std::vector<u8> data;
+        FrameOffsets offsets;
+    };
+    std::vector<DeferredPacket> m_deferred_packets;
 };
 
 } // namespace FFmpeg

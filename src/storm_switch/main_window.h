@@ -56,6 +56,7 @@ class QSlider;
 class QHBoxLayout;
 class WaitTreeWidget;
 class PerformanceOverlay;
+class RuntimeCheatMenu;
 class FloatingTranslateButton;
 class GameTranslator;
 class InGameNotificationOverlay;
@@ -159,9 +160,12 @@ private:
     constexpr static int MaxMultiplier = 8;
 };
 
+class RuntimeCheatMenu;
+
 class MainWindow : public QMainWindow {
     Q_OBJECT
     friend class PerformanceOverlay;
+    friend class RuntimeCheatMenu;
 
     /// Max number of recently loaded items to keep track of
     static const int max_recent_files_item = 10;
@@ -661,6 +665,7 @@ private:
     QLabel* emu_speed_label = nullptr;
     QLabel* game_fps_label = nullptr;
     QLabel* emu_frametime_label = nullptr;
+    QLabel* emu_ram_label = nullptr;
     QLabel* tas_label = nullptr;
     QLabel* firmware_label = nullptr;
     QPushButton* gpu_accuracy_button = nullptr;
@@ -725,7 +730,7 @@ private:
     QString startup_icon_theme;
 
     QActionGroup* game_size_actions;
-    std::vector<QAction*> runtime_cheat_actions;
+    std::unique_ptr<RuntimeCheatMenu> runtime_cheat_menu;
 
     // Debugger panes
     ControllerDialog* controller_dialog = nullptr;

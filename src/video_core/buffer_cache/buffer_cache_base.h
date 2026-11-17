@@ -137,6 +137,8 @@ public:
 
     std::array<u32, NUM_STAGES> enabled_storage_buffers{};
     std::array<u32, NUM_STAGES> written_storage_buffers{};
+    /// Storage buffers bound to the host's geometry shader scratch buffer (GS_SCRATCH_CBUF_INDEX).
+    std::array<u32, NUM_STAGES> scratch_storage_buffers{};
     u32 enabled_compute_storage_buffers = 0;
     u32 written_compute_storage_buffers = 0;
 

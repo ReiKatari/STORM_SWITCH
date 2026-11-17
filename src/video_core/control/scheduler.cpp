@@ -41,16 +41,16 @@ void Scheduler::Push(GPU& gpu, s32 channel, CommandList&& entries) {
     ResumePending(gpu);
 }
 
-void Scheduler::ResumePending(GPU& gpu) {
+bool Scheduler::ResumePending(GPU& gpu) {
     std::vector<std::shared_ptr<ChannelState>> pending_copy;
     {
         std::unique_lock lk(scheduling_guard);
         if (pending_native_channels.empty()) {
-            return;
+            return false;
         }
         pending_copy = pending_native_channels;
     }
-    ResumeReadyNativeChannels(pending_copy,
+    const std::size_t resumed_count = ResumeReadyNativeChannels(pending_copy,
         [](const auto& state) {
             return state && state->payload &&
                    state->payload->dma_pusher.HasPendingNativeAcquire() &&
@@ -78,6 +78,7 @@ void Scheduler::ResumePending(GPU& gpu) {
                 return !state || !state->payload || !state->payload->dma_pusher.HasPendingNativeAcquire();
             });
     }
+    return resumed_count > 0;
 }
 
 void Scheduler::DeclareChannel(std::shared_ptr<ChannelState> new_channel) {

@@ -5,12 +5,15 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <algorithm>
+#include <array>
 #include <span>
 #include <tuple>
 #include <type_traits>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
+#include "common/logging.h"
 #include "common/settings.h"
 #include "shader_recompiler/backend/spirv/emit_spirv.h"
 #include "shader_recompiler/backend/spirv/emit_spirv_instructions.h"
@@ -121,6 +124,51 @@ Id TypeId(const EmitContext& ctx, IR::Type type) {
     }
 }
 
+Id GuardedResultType(EmitContext& ctx, IR::Type type) {
+    switch (type) {
+    case IR::Type::U32:
+        return ctx.U32[1];
+    case IR::Type::U32x2:
+        return ctx.U32[2];
+    case IR::Type::U64:
+        return ctx.U64;
+    case IR::Type::F32:
+        return ctx.F32[1];
+    default:
+        throw NotImplementedException("Guarded geometry side effect of type {}", type);
+    }
+}
+
+// Emits a block of a geometry shader that claims its primitive (EmitContext::gs_dedup), each
+// memory side effect inside `if (gs_is_first)`. Results of the skipped ones are null.
+void EmitGuardedBlock(EmitContext& ctx, IR::Block& block, Id label, Id exit_label) {
+    Id segment{label};
+    for (IR::Inst& inst : block.Instructions()) {
+        if (!IR::IsGeometrySideEffect(inst.GetOpcode()) || !Sirit::ValidId(ctx.gs_is_first)) {
+            EmitInst(ctx, &inst);
+            continue;
+        }
+        const Id then_label{ctx.OpLabel()};
+        const Id merge_label{ctx.OpLabel()};
+        ctx.OpSelectionMerge(merge_label, spv::SelectionControlMask::MaskNone);
+        ctx.OpBranchConditional(ctx.gs_is_first, then_label, merge_label);
+        ctx.AddLabel(then_label);
+        EmitInst(ctx, &inst);
+        ctx.OpBranch(merge_label);
+        ctx.AddLabel(merge_label);
+        if (inst.Type() != IR::Type::Void) {
+            const Id type{GuardedResultType(ctx, inst.Type())};
+            const std::array operands{inst.Definition<Id>(), then_label, ctx.ConstantNull(type),
+                                      segment};
+            inst.SetDefinition<Id>(ctx.OpPhi(type, operands));
+        }
+        segment = merge_label;
+    }
+    // Phis in the successors name the block's last label.
+    ctx.OpBranch(exit_label);
+    ctx.AddLabel(exit_label);
+}
+
 void Traverse(EmitContext& ctx, IR::Program& program) {
     IR::Block* current_block{};
     for (const IR::AbstractSyntaxNode& node : program.syntax_list) {
@@ -132,6 +180,11 @@ void Traverse(EmitContext& ctx, IR::Program& program) {
             }
             current_block = node.data.block;
             ctx.AddLabel(label);
+            const auto exit{ctx.gs_exit_labels.find(node.data.block)};
+            if (exit != ctx.gs_exit_labels.end()) {
+                EmitGuardedBlock(ctx, *node.data.block, label, exit->second);
+                break;
+            }
             for (IR::Inst& inst : node.data.block->Instructions()) {
                 EmitInst(ctx, &inst);
             }
@@ -204,6 +257,34 @@ Id DefineMain(EmitContext& ctx, IR::Program& program) {
     const Id main{ctx.OpFunction(ctx.void_id, spv::FunctionControlMask::MaskNone, void_function)};
     for (IR::Block* const block : program.blocks) {
         block->SetDefinition(ctx.OpLabel());
+    }
+    if (ctx.gs_dedup) {
+        // Loop headers stay whole: their loop merge has to be in the block the back edge targets.
+        std::unordered_set<const IR::Block*> loop_headers;
+        const IR::Block* previous{};
+        for (const IR::AbstractSyntaxNode& node : program.syntax_list) {
+            if (node.type == IR::AbstractSyntaxNode::Type::Block) {
+                previous = node.data.block;
+                continue;
+            }
+            if (node.type == IR::AbstractSyntaxNode::Type::Loop && previous) {
+                loop_headers.insert(previous);
+            }
+            previous = nullptr;
+        }
+        for (IR::Block* const block : program.blocks) {
+            const bool has_side_effects{std::ranges::any_of(
+                block->Instructions(),
+                [](const IR::Inst& inst) { return IR::IsGeometrySideEffect(inst.GetOpcode()); })};
+            if (!has_side_effects) {
+                continue;
+            }
+            if (loop_headers.contains(block)) {
+                LOG_WARNING(Shader_SPIRV, "Geometry side effect in a loop header is not deduplicated");
+                continue;
+            }
+            ctx.gs_exit_labels.emplace(block, ctx.OpLabel());
+        }
     }
     Traverse(ctx, program);
     ctx.OpFunctionEnd();
@@ -317,7 +398,7 @@ void DefineEntryPoint(const IR::Program& program, EmitContext& ctx, Id main) {
         } else {
             ctx.AddExecutionMode(main, spv::ExecutionMode::OriginUpperLeft);
         }
-        if (program.info.stores_frag_depth) {
+        if (program.info.stores_frag_depth || ctx.runtime_info.depth_range) {
             ctx.AddExecutionMode(main, spv::ExecutionMode::DepthReplacing);
         }
         if (ctx.runtime_info.force_early_z) {
@@ -380,10 +461,8 @@ void SetupDenormControl(const Profile& profile, const IR::Program& program, Emit
 
 void SetupSignedNanCapabilities(const Profile& profile, const IR::Program& program,
                                 EmitContext& ctx, Id main_func) {
-    if (profile.has_broken_fp16_float_controls && program.info.uses_fp16) {
-        return;
-    }
-    if (program.info.uses_fp16 && profile.support_fp16_signed_zero_nan_preserve) {
+    if (!profile.has_broken_fp16_float_controls && program.info.uses_fp16 &&
+        profile.support_fp16_signed_zero_nan_preserve) {
         ctx.AddCapability(spv::Capability::SignedZeroInfNanPreserve);
         ctx.AddExecutionMode(main_func, spv::ExecutionMode::SignedZeroInfNanPreserve, 16U);
     }
@@ -480,7 +559,9 @@ void SetupCapabilities(const Profile& profile, const Info& info, EmitContext& ct
     ctx.AddCapability(spv::Capability::ImageGatherExtended);
     ctx.AddCapability(spv::Capability::ImageQuery);
     ctx.AddCapability(spv::Capability::SampledBuffer);
-    if (!ctx.non_uniform_ids.empty()) {
+    if (!ctx.non_uniform_ids.empty() || ctx.uses_nonuniform_sampled_image ||
+        ctx.uses_nonuniform_storage_image || ctx.uses_nonuniform_uniform_texel_buffer ||
+        ctx.uses_nonuniform_storage_texel_buffer) {
         if (ctx.profile.supported_spirv < 0x00010500)
             ctx.AddExtension("SPV_EXT_descriptor_indexing");
         ctx.AddCapability(spv::Capability::ShaderNonUniform);
@@ -572,7 +653,10 @@ Id EmitPhi(EmitContext& ctx, IR::Inst* inst) {
     boost::container::small_vector<Id, 32> blocks;
     blocks.reserve(num_args);
     for (size_t index = 0; index < num_args; ++index) {
-        blocks.push_back(inst->PhiBlock(index)->Definition<Id>());
+        const IR::Block* const block{inst->PhiBlock(index)};
+        const auto exit{ctx.gs_exit_labels.find(block)};
+        blocks.push_back(exit != ctx.gs_exit_labels.end() ? exit->second
+                                                          : block->Definition<Id>());
     }
     // The type of a phi instruction is stored in its flags
     const Id result_type{TypeId(ctx, inst->Flags<IR::Type>())};

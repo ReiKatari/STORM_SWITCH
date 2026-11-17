@@ -54,6 +54,7 @@ struct ImageInfo {
     bool forced_flushed = false;
     bool dma_downloaded = false;
     bool is_sparse = false;
+    bool astc_opaque = false;
 };
 
 } // namespace VideoCommon

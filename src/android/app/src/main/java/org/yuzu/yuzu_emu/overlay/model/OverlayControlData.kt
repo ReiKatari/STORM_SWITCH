@@ -3,7 +3,10 @@
 
 package org.yuzu.yuzu_emu.overlay.model
 
-data class OverlayControlData(
+import androidx.annotation.Keep
+
+@Keep
+data class OverlayControlData @Keep constructor(
     val id: String,
     var enabled: Boolean,
     var landscapePosition: Pair<Double, Double>,
@@ -12,6 +15,7 @@ data class OverlayControlData(
     var individualScale: Float,
     var individualOpacity: Float = 1.0f
 ) {
+    @Keep
     constructor(
         id: String,
         enabled: Boolean,

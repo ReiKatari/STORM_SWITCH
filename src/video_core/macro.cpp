@@ -29,6 +29,7 @@
 #include "video_core/engines/maxwell_3d.h"
 #include "video_core/dirty_flags.h"
 #include "video_core/memory_manager.h"
+#include "video_core/gpu_split.h"
 #include "video_core/rasterizer_interface.h"
 #include "video_core/macro.h"
 
@@ -1409,6 +1410,9 @@ bool MacroEngine::HandleNativeDmaMethod(MemoryManager& memory_manager,
         const GPUVAddr addr = (GPUVAddr{mme_dma_addr_a} << 32) | GPUVAddr{mme_dma_addr_b};
         if (count > 0 && addr != 0) {
             const std::size_t bytes = std::size_t{count} * sizeof(u32);
+            if (auto& split = VideoCommon::GpuSplit::Get(); split.Active() && split.FrontMacros()) {
+                split.AwaitReleases(addr, bytes);
+            }
             flush_gpu_read(addr, bytes);
             if (memory_manager.IsFullyMappedRange(addr, bytes)) {
                 memory_manager.ReadBlock(addr, &native_interpreter.dram[mme_data_ram_addr], bytes);
@@ -1430,6 +1434,9 @@ bool MacroEngine::HandleNativeDmaMethod(MemoryManager& memory_manager,
             fifo->resize(old_size + count, 0U);
             if (addr != 0) {
                 const std::size_t bytes = std::size_t{count} * sizeof(u32);
+                if (auto& split = VideoCommon::GpuSplit::Get(); split.Active() && split.FrontMacros()) {
+                    split.AwaitReleases(addr, bytes);
+                }
                 flush_gpu_read(addr, bytes);
                 if (memory_manager.IsFullyMappedRange(addr, bytes)) {
                     memory_manager.ReadBlock(addr, fifo->data() + old_size, bytes);

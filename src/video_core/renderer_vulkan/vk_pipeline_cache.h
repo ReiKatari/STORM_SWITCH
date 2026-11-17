@@ -124,12 +124,12 @@ private:
 
     [[nodiscard]] GraphicsPipeline* BuiltPipeline(GraphicsPipeline* pipeline) const noexcept;
 
-    std::unique_ptr<GraphicsPipeline> CreateGraphicsPipeline();
+    std::unique_ptr<GraphicsPipeline> CreateGraphicsPipeline(bool* shader_failed = nullptr);
 
     std::unique_ptr<GraphicsPipeline> CreateGraphicsPipeline(
         ShaderPools& pools, const GraphicsPipelineCacheKey& key,
         std::span<Shader::Environment* const> envs, PipelineStatistics* statistics,
-        bool build_in_parallel);
+        bool build_in_parallel, bool* shader_failed = nullptr);
 
     std::unique_ptr<ComputePipeline> CreateComputePipeline(const ComputePipelineCacheKey& key,
                                                            const ShaderInfo* shader);
@@ -167,6 +167,7 @@ private:
     mutable std::mutex compute_cache_mutex;
     ankerl::unordered_dense::map<ComputePipelineCacheKey, std::unique_ptr<ComputePipeline>> compute_cache;
     ankerl::unordered_dense::map<GraphicsPipelineCacheKey, std::unique_ptr<GraphicsPipeline>> graphics_cache;
+    ankerl::unordered_dense::set<GraphicsPipelineCacheKey> failed_graphics_keys;
 
     ShaderPools main_pools;
 

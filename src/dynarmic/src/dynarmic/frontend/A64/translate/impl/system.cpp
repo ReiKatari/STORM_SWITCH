@@ -86,7 +86,17 @@ bool TranslatorVisitor::DSB(Imm<4> /*CRm*/) {
     return true;
 }
 
-bool TranslatorVisitor::DMB(Imm<4> /*CRm*/) {
+bool TranslatorVisitor::DMB(Imm<4> CRm) {
+#ifdef ARCHITECTURE_x86_64
+    // DMB *LD (loads before later accesses) and DMB *ST (stores before later stores) order what
+    // x86 already orders: only a full barrier needs mfence (from Lichii #161).
+    const u32 access = CRm.ZeroExtend() & 3U;
+    if (access == 1U || access == 2U) {
+        return true;
+    }
+#else
+    (void)CRm;
+#endif
     ir.DataMemoryBarrier();
     return true;
 }

@@ -75,6 +75,10 @@ constexpr VkBorderColor ConvertBorderColor(const std::array<float, 4>& color) {
     } else if (color == std::array<float, 4>{1, 1, 1, 1}) {
         return VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
     }
+    if (color[0] >= 0.5f && color[1] < 0.05f && color[2] < 0.05f) {
+        // Depth/red-channel samplers (shadow maps) store far-plane border 1.0f in R only.
+        return VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+    }
     if (color[0] + color[1] + color[2] > 1.35f) {
         // If color elements are brighter than roughly 0.5 average, use white border
         return VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
@@ -164,7 +168,8 @@ constexpr VkBorderColor ConvertBorderColor(const std::array<float, 4>& color) {
     if (format_override) {
         format_info.format = *format_override;
         format_info.attachable = false;
-        format_info.storage = true;
+        format_info.storage = device.IsFormatSupported(
+            *format_override, VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT, FormatType::Optimal);
     }
     VkImageCreateFlags flags{};
     if (info.type == ImageType::e2D && info.resources.layers >= 6 &&
@@ -606,10 +611,12 @@ void CopyBufferToImage(vk::CommandBuffer cmdbuf, VkBuffer src_buffer, VkImage im
     }
     static constexpr VkAccessFlags WRITE_ACCESS_FLAGS =
                                            VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
-                                           VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+                                           VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
+                                           VK_ACCESS_TRANSFER_WRITE_BIT;
     static constexpr VkAccessFlags READ_ACCESS_FLAGS = VK_ACCESS_SHADER_READ_BIT |
                                                        VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
-                                                       VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+                                                       VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
+                                                       VK_ACCESS_TRANSFER_READ_BIT;
 
     //  Compute exact mip/layer range being written to
     RangedBarrierRange range;
@@ -621,7 +628,7 @@ void CopyBufferToImage(vk::CommandBuffer cmdbuf, VkBuffer src_buffer, VkImage im
     const VkImageMemoryBarrier read_barrier{
             .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
             .pNext = nullptr,
-            .srcAccessMask = WRITE_ACCESS_FLAGS,
+            .srcAccessMask = WRITE_ACCESS_FLAGS | READ_ACCESS_FLAGS,
             .dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
             .oldLayout = is_initialized ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_UNDEFINED,
             .newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -644,18 +651,13 @@ void CopyBufferToImage(vk::CommandBuffer cmdbuf, VkBuffer src_buffer, VkImage im
             .subresourceRange = subresource_range,
     };
 
-    cmdbuf.PipelineBarrier(VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT |
-                           VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
-                           VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
-                           read_barrier);
+    cmdbuf.PipelineBarrier(vk::PIPELINE_STAGE_GRAPHICS_COMPUTE_TRANSFER,
+                           VK_PIPELINE_STAGE_TRANSFER_BIT, 0, read_barrier);
     cmdbuf.CopyBufferToImage(src_buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, copies);
     // TODO: Move this to another API
-    cmdbuf.PipelineBarrier(
-            VK_PIPELINE_STAGE_TRANSFER_BIT,
-            VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT |
-            VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT |
-            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-            0, nullptr, nullptr, write_barrier);
+    cmdbuf.PipelineBarrier(VK_PIPELINE_STAGE_TRANSFER_BIT,
+                           vk::PIPELINE_STAGE_GRAPHICS_COMPUTE_TRANSFER, 0, nullptr, nullptr,
+                           write_barrier);
 }
 
 [[nodiscard]] VkImageBlit MakeImageBlit(const Region2D& dst_region, const Region2D& src_region,
@@ -994,6 +996,9 @@ bool TextureCacheRuntime::ShouldReinterpret(Image& dst, Image& src) {
 }
 
 VkBuffer TextureCacheRuntime::GetTemporaryBuffer(size_t needed_size) {
+    if (needed_size == 0) {
+        needed_size = 1;
+    }
     const auto level = (8 * sizeof(size_t)) - std::countl_zero(needed_size - 1ULL);
     if (buffers[level]) {
         return *buffers[level];
@@ -1086,12 +1091,22 @@ void TextureCacheRuntime::EraseResolveShadow(VkImage msaa_image) {
 }
 
 void TextureCacheRuntime::BarrierFeedbackLoop() {
-    const auto driver_id = device.GetDriverID();
-    if (driver_id == VK_DRIVER_ID_QUALCOMM_PROPRIETARY || driver_id == VK_DRIVER_ID_MESA_TURNIP ||
-        driver_id == VK_DRIVER_ID_ARM_PROPRIETARY) {
-        return;
-    }
     scheduler.RequestOutsideRenderPassOperationContext();
+    scheduler.Record([](vk::CommandBuffer cmdbuf) {
+        static constexpr VkMemoryBarrier FEEDBACK_BARRIER{
+            .sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER,
+            .pNext = nullptr,
+            .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+                             VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+            .dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
+        };
+        cmdbuf.PipelineBarrier(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
+                                   VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+                               VK_PIPELINE_STAGE_VERTEX_SHADER_BIT |
+                                   VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT |
+                                   VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                               0, FEEDBACK_BARRIER);
+    });
 }
 
 void TextureCacheRuntime::ReinterpretImage(Image& dst, Image& src,
@@ -1104,22 +1119,43 @@ void TextureCacheRuntime::ReinterpretImage(Image& dst, Image& src,
     const VkImageAspectFlags src_aspect_mask = src.AspectMask();
     const VkImageAspectFlags dst_aspect_mask = dst.AspectMask();
 
-    const auto bpp_in = BytesPerBlock(src.info.format) / DefaultBlockWidth(src.info.format);
-    const auto bpp_out = BytesPerBlock(dst.info.format) / DefaultBlockWidth(dst.info.format);
-    std::ranges::transform(copies, vk_in_copies.begin(),
-                           [src_aspect_mask, bpp_in, bpp_out](const auto& copy) {
-                               auto copy2 = copy;
-                               copy2.src_offset.x = (bpp_out * copy.src_offset.x) / bpp_in;
-                               copy2.extent.width = (bpp_out * copy.extent.width) / bpp_in;
-                               return MakeBufferImageCopy(copy2, true, src_aspect_mask);
-                           });
-    std::ranges::transform(copies, vk_out_copies.begin(), [dst_aspect_mask](const auto& copy) {
-        return MakeBufferImageCopy(copy, false, dst_aspect_mask);
-    });
-    const u32 img_bpp = BytesPerBlock(dst.info.format);
+    const u32 bpp_in = BytesPerBlock(src.info.format) / DefaultBlockWidth(src.info.format);
+    const u32 bpp_out = BytesPerBlock(dst.info.format) / DefaultBlockWidth(dst.info.format);
+    if (bpp_in == 0 || bpp_out == 0) {
+        return;
+    }
+    const u32 src_block_bytes = BytesPerBlock(src.info.format);
+    const u32 dst_block_bytes = BytesPerBlock(dst.info.format);
+    size_t buffer_offset = 0;
     size_t total_size = 0;
+    vk_in_copies.clear();
+    vk_out_copies.clear();
     for (const auto& copy : copies) {
-        total_size += copy.extent.width * copy.extent.height * copy.extent.depth * img_bpp;
+        auto src_copy = copy;
+        src_copy.src_offset.x = (bpp_out * copy.src_offset.x) / bpp_in;
+        src_copy.extent.width = (bpp_out * copy.extent.width) / bpp_in;
+        if (copy.extent.width == 0 || copy.extent.height == 0 || copy.extent.depth == 0 ||
+            src_copy.extent.width == 0) {
+            continue;
+        }
+        VkBufferImageCopy in_copy = MakeBufferImageCopy(src_copy, true, src_aspect_mask);
+        VkBufferImageCopy out_copy = MakeBufferImageCopy(copy, false, dst_aspect_mask);
+        in_copy.bufferOffset = buffer_offset;
+        out_copy.bufferOffset = buffer_offset;
+        const size_t in_bytes = size_t{src_copy.extent.width} * src_copy.extent.height *
+                                src_copy.extent.depth * src_block_bytes;
+        const size_t out_bytes =
+            size_t{copy.extent.width} * copy.extent.height * copy.extent.depth * dst_block_bytes;
+        const size_t region_bytes = (std::max)(in_bytes, out_bytes);
+        // Keep each queued sub-copy aligned and non-overlapping inside the scratch buffer.
+        const size_t aligned_region = (region_bytes + 15ULL) & ~15ULL;
+        buffer_offset += aligned_region;
+        total_size += aligned_region;
+        vk_in_copies.push_back(in_copy);
+        vk_out_copies.push_back(out_copy);
+    }
+    if (vk_in_copies.empty() || total_size == 0) {
+        return;
     }
     const VkBuffer copy_buffer = GetTemporaryBuffer(total_size);
     const VkImage dst_image = dst.Handle();
@@ -1390,18 +1426,16 @@ void TextureCacheRuntime::ConvertImage(Framebuffer* dst, ImageView& dst_view, Im
     }
 
     switch (dst_view.format) {
-    case PixelFormat::D24_UNORM_S8_UINT:
-        if (src_view.format == PixelFormat::A8B8G8R8_UNORM
-        || src_view.format == PixelFormat::B8G8R8A8_UNORM
-        || src_view.format == PixelFormat::A8B8G8R8_SRGB
-        || src_view.format == PixelFormat::B8G8R8A8_SRGB) {
-            return blit_image_helper.ConvertABGR8ToD24S8(dst, src_view);
+    case PixelFormat::R16_UNORM:
+        if (src_view.format == PixelFormat::D16_UNORM) {
+            return blit_image_helper.ConvertD16ToR16(dst, src_view);
         }
         break;
-    case PixelFormat::S8_UINT_D24_UNORM:
-        if (src_view.format == PixelFormat::A8B8G8R8_UNORM ||
-            src_view.format == PixelFormat::B8G8R8A8_UNORM) {
-            return blit_image_helper.ConvertABGR8ToD24S8(dst, src_view);
+    case PixelFormat::A8B8G8R8_SRGB:
+    case PixelFormat::B8G8R8A8_SRGB:
+    case PixelFormat::B8G8R8A8_UNORM:
+        if (src_view.format == PixelFormat::D32_FLOAT) {
+            return blit_image_helper.ConvertD32FToABGR8(dst, src_view);
         }
         break;
     case PixelFormat::A8B8G8R8_UNORM:
@@ -1411,123 +1445,13 @@ void TextureCacheRuntime::ConvertImage(Framebuffer* dst, ImageView& dst_view, Im
         if (src_view.format == PixelFormat::D24_UNORM_S8_UINT) {
             return blit_image_helper.ConvertS8D24ToABGR8(dst, src_view);
         }
-        [[fallthrough]];
-    case PixelFormat::A8B8G8R8_SNORM:
-    case PixelFormat::A8B8G8R8_SINT:
-    case PixelFormat::A8B8G8R8_UINT:
-    case PixelFormat::R5G6B5_UNORM:
-    case PixelFormat::B5G6R5_UNORM:
-    case PixelFormat::A1R5G5B5_UNORM:
-    case PixelFormat::A2B10G10R10_UNORM:
-    case PixelFormat::A2B10G10R10_UINT:
-    case PixelFormat::A2R10G10B10_UNORM:
-    case PixelFormat::A1B5G5R5_UNORM:
-    case PixelFormat::A5B5G5R1_UNORM:
-    case PixelFormat::R8_UNORM:
-    case PixelFormat::R8_SNORM:
-    case PixelFormat::R8_SINT:
-    case PixelFormat::R8_UINT:
-    case PixelFormat::R16G16B16A16_FLOAT:
-    case PixelFormat::R16G16B16A16_UNORM:
-    case PixelFormat::R16G16B16A16_SNORM:
-    case PixelFormat::R16G16B16A16_SINT:
-    case PixelFormat::R16G16B16A16_UINT:
-    case PixelFormat::B10G11R11_FLOAT:
-    case PixelFormat::R32G32B32A32_UINT:
-    case PixelFormat::BC1_RGBA_UNORM:
-    case PixelFormat::BC2_UNORM:
-    case PixelFormat::BC3_UNORM:
-    case PixelFormat::BC4_UNORM:
-    case PixelFormat::BC4_SNORM:
-    case PixelFormat::BC5_UNORM:
-    case PixelFormat::BC5_SNORM:
-    case PixelFormat::BC7_UNORM:
-    case PixelFormat::BC6H_UFLOAT:
-    case PixelFormat::BC6H_SFLOAT:
-    case PixelFormat::ASTC_2D_4X4_UNORM:
-    case PixelFormat::B8G8R8A8_UNORM:
-    case PixelFormat::R32G32B32A32_FLOAT:
-    case PixelFormat::R32G32B32A32_SINT:
-    case PixelFormat::R32G32_FLOAT:
-    case PixelFormat::R32G32_SINT:
+        if (src_view.format == PixelFormat::D32_FLOAT) {
+            return blit_image_helper.ConvertD32FToABGR8(dst, src_view);
+        }
+        break;
     case PixelFormat::R32_FLOAT:
-        if (dst_view.format == PixelFormat::B5G6R5_UNORM && src_view.format == PixelFormat::D32_FLOAT) {
-            const Region2D region{
-                .start = {0, 0},
-                .end = {static_cast<s32>(dst->RenderArea().width),
-                        static_cast<s32>(dst->RenderArea().height)},
-            };
-            return blit_image_helper.BlitColor(dst, src_view, region, region,
-                                            Tegra::Engines::Fermi2D::Filter::Point,
-                                            Tegra::Engines::Fermi2D::Operation::SrcCopy);
-        }
-        if (dst_view.format == PixelFormat::R32_FLOAT && src_view.format == PixelFormat::D32_FLOAT) {
+        if (src_view.format == PixelFormat::D32_FLOAT) {
             return blit_image_helper.ConvertD32ToR32(dst, src_view);
-        }
-        break;
-    case PixelFormat::R16_FLOAT:
-    case PixelFormat::R16_UNORM:
-        if (src_view.format == PixelFormat::D16_UNORM) {
-            return blit_image_helper.ConvertD16ToR16(dst, src_view);
-        }
-        break;
-    case PixelFormat::R16_SNORM:
-    case PixelFormat::R16_UINT:
-    case PixelFormat::R16_SINT:
-    case PixelFormat::R16G16_UNORM:
-    case PixelFormat::R16G16_FLOAT:
-    case PixelFormat::R16G16_UINT:
-    case PixelFormat::R16G16_SINT:
-    case PixelFormat::R16G16_SNORM:
-    case PixelFormat::R32G32B32_FLOAT:
-    case PixelFormat::A8B8G8R8_SRGB:
-    case PixelFormat::R8G8_UNORM:
-    case PixelFormat::R8G8_SNORM:
-    case PixelFormat::R8G8_SINT:
-    case PixelFormat::R8G8_UINT:
-    case PixelFormat::R32G32_UINT:
-    case PixelFormat::R16G16B16X16_FLOAT:
-    case PixelFormat::R32_UINT:
-    case PixelFormat::R32_SINT:
-    case PixelFormat::ASTC_2D_8X8_UNORM:
-    case PixelFormat::ASTC_2D_8X5_UNORM:
-    case PixelFormat::ASTC_2D_5X4_UNORM:
-    case PixelFormat::B8G8R8A8_SRGB:
-    case PixelFormat::BC1_RGBA_SRGB:
-    case PixelFormat::BC2_SRGB:
-    case PixelFormat::BC3_SRGB:
-    case PixelFormat::BC7_SRGB:
-    case PixelFormat::A4B4G4R4_UNORM:
-    case PixelFormat::G4R4_UNORM:
-    case PixelFormat::ASTC_2D_4X4_SRGB:
-    case PixelFormat::ASTC_2D_8X8_SRGB:
-    case PixelFormat::ASTC_2D_8X5_SRGB:
-    case PixelFormat::ASTC_2D_5X4_SRGB:
-    case PixelFormat::ASTC_2D_5X5_UNORM:
-    case PixelFormat::ASTC_2D_5X5_SRGB:
-    case PixelFormat::ASTC_2D_10X8_UNORM:
-    case PixelFormat::ASTC_2D_10X8_SRGB:
-    case PixelFormat::ASTC_2D_6X6_UNORM:
-    case PixelFormat::ASTC_2D_6X6_SRGB:
-    case PixelFormat::ASTC_2D_10X6_UNORM:
-    case PixelFormat::ASTC_2D_10X6_SRGB:
-    case PixelFormat::ASTC_2D_10X5_UNORM:
-    case PixelFormat::ASTC_2D_10X5_SRGB:
-    case PixelFormat::ASTC_2D_10X10_UNORM:
-    case PixelFormat::ASTC_2D_10X10_SRGB:
-    case PixelFormat::ASTC_2D_12X10_UNORM:
-    case PixelFormat::ASTC_2D_12X10_SRGB:
-    case PixelFormat::ASTC_2D_12X12_UNORM:
-    case PixelFormat::ASTC_2D_12X12_SRGB:
-    case PixelFormat::ASTC_2D_8X6_UNORM:
-    case PixelFormat::ASTC_2D_8X6_SRGB:
-    case PixelFormat::ASTC_2D_6X5_UNORM:
-    case PixelFormat::ASTC_2D_6X5_SRGB:
-    case PixelFormat::E5B9G9R9_FLOAT:
-        break;
-    case PixelFormat::D32_FLOAT:
-        if (src_view.format == PixelFormat::R32_FLOAT) {
-            return blit_image_helper.ConvertR32ToD32(dst, src_view);
         }
         break;
     case PixelFormat::D16_UNORM:
@@ -1535,14 +1459,71 @@ void TextureCacheRuntime::ConvertImage(Framebuffer* dst, ImageView& dst_view, Im
             return blit_image_helper.ConvertR16ToD16(dst, src_view);
         }
         break;
-    case PixelFormat::X8_D24_UNORM:
-    case PixelFormat::S8_UINT:
-    case PixelFormat::D32_FLOAT_S8_UINT:
-    case PixelFormat::Invalid:
+    case PixelFormat::S8_UINT_D24_UNORM:
+        if (src_view.format == PixelFormat::A8B8G8R8_UNORM ||
+            src_view.format == PixelFormat::B8G8R8A8_UNORM) {
+            return blit_image_helper.ConvertABGR8ToD24S8(dst, src_view);
+        }
+        break;
+    case PixelFormat::D32_FLOAT:
+        if (src_view.format == PixelFormat::A8B8G8R8_UNORM ||
+            src_view.format == PixelFormat::B8G8R8A8_UNORM ||
+            src_view.format == PixelFormat::A8B8G8R8_SRGB ||
+            src_view.format == PixelFormat::B8G8R8A8_SRGB) {
+            return blit_image_helper.ConvertABGR8ToD32F(dst, src_view);
+        }
+        if (src_view.format == PixelFormat::R32_FLOAT) {
+            return blit_image_helper.ConvertR32ToD32(dst, src_view);
+        }
+        break;
+    case PixelFormat::D24_UNORM_S8_UINT:
+        if (src_view.format == PixelFormat::A8B8G8R8_UNORM ||
+            src_view.format == PixelFormat::B8G8R8A8_UNORM ||
+            src_view.format == PixelFormat::A8B8G8R8_SRGB ||
+            src_view.format == PixelFormat::B8G8R8A8_SRGB) {
+            return blit_image_helper.ConvertABGR8ToD24S8(dst, src_view);
+        }
+        break;
     default:
-        LOG_DEBUG(Render_Vulkan, "Unimplemented texture conversion from {} to {} format type", src_view.format, dst_view.format);
         break;
     }
+
+    auto is_float_color = [](PixelFormat fmt) {
+        switch (fmt) {
+        case PixelFormat::R16G16B16A16_FLOAT:
+        case PixelFormat::B10G11R11_FLOAT:
+        case PixelFormat::R32G32B32A32_FLOAT:
+        case PixelFormat::R32G32_FLOAT:
+        case PixelFormat::R32_FLOAT:
+        case PixelFormat::R16_FLOAT:
+        case PixelFormat::R16G16_FLOAT:
+        case PixelFormat::R32G32B32_FLOAT:
+        case PixelFormat::R16G16B16X16_FLOAT:
+        case PixelFormat::E5B9G9R9_FLOAT:
+            return true;
+        default:
+            return false;
+        }
+    };
+    if (src_view.format == PixelFormat::D32_FLOAT &&
+        (dst_view.format == PixelFormat::B5G6R5_UNORM ||
+         (Settings::values.fix_bloom_effects.GetValue() &&
+          !is_float_color(dst_view.format) &&
+          !IsPixelFormatInteger(dst_view.format) &&
+          VideoCore::Surface::GetFormatType(dst_view.format) ==
+              VideoCore::Surface::SurfaceType::ColorTexture))) {
+        const Region2D region{
+            .start = {0, 0},
+            .end = {static_cast<s32>(dst->RenderArea().width),
+                    static_cast<s32>(dst->RenderArea().height)},
+        };
+        return blit_image_helper.BlitColor(dst, src_view, region, region,
+                                           Tegra::Engines::Fermi2D::Filter::Point,
+                                           Tegra::Engines::Fermi2D::Operation::SrcCopy);
+    }
+
+    LOG_DEBUG(Render_Vulkan, "Unimplemented texture conversion from {} to {} format type",
+              src_view.format, dst_view.format);
 }
 
 VkFormat TextureCacheRuntime::GetSupportedFormat(VkFormat requested_format,
@@ -1591,15 +1572,46 @@ void TextureCacheRuntime::CopyImage(Image& dst, Image& src,
     // As per the size-compatible formats section of vulkan, copy manually via ReinterpretImage
     // these images that aren't size-compatible
     if (BytesPerBlock(src.info.format) != BytesPerBlock(dst.info.format)) {
-        // Linear images with mismatched block sizes cause corruption or device loss in ReinterpretImage.
-        // Tested with TitleID: 0x010067300059A000 (Mario + Rabbids Kingdom Battle)
-        if (src.info.type == ImageType::Linear || dst.info.type == ImageType::Linear) {
+        const u32 bpp_in = BytesPerBlock(src.info.format);
+        const u32 bpp_out = BytesPerBlock(dst.info.format);
+        if (bpp_in == 0 || bpp_out == 0) {
             return;
+        }
+        auto safe_extent = dst.info.size;
+        if (src.info.type == ImageType::Linear || dst.info.type == ImageType::Linear) {
+            // Compute exact byte-aligned extent bounded by both Linear/Optimal dimensions so
+            // mismatched pitch-linear transfers execute cleanly without zero-width or OOB copies.
+            if (DefaultBlockWidth(src.info.format) != 1 ||
+                DefaultBlockHeight(src.info.format) != 1 ||
+                DefaultBlockWidth(dst.info.format) != 1 ||
+                DefaultBlockHeight(dst.info.format) != 1) {
+                return;
+            }
+            u32 gcd_a = bpp_in;
+            u32 gcd_b = bpp_out;
+            while (gcd_b != 0) {
+                const u32 t = gcd_a % gcd_b;
+                gcd_a = gcd_b;
+                gcd_b = t;
+            }
+            const u32 row_unit = (bpp_in / gcd_a) * bpp_out;
+            const u32 src_row_bytes = src.info.size.width * bpp_in;
+            const u32 dst_row_bytes = dst.info.size.width * bpp_out;
+            const u32 common_bytes = ((std::min)(src_row_bytes, dst_row_bytes) / row_unit) * row_unit;
+            if (common_bytes == 0) {
+                return;
+            }
+            safe_extent.width = common_bytes / bpp_out;
+            safe_extent.height = (std::min)(src.info.size.height, dst.info.size.height);
+            safe_extent.depth = (std::min)(src.info.size.depth, dst.info.size.depth);
+            if (safe_extent.width == 0 || safe_extent.height == 0 || safe_extent.depth == 0) {
+                return;
+            }
         }
         auto oneCopy = VideoCommon::ImageCopy{
             .src_offset = VideoCommon::Offset3D(0, 0, 0),
             .dst_offset = VideoCommon::Offset3D(0, 0, 0),
-            .extent = dst.info.size
+            .extent = safe_extent,
         };
         return ReinterpretImage(dst, src, std::span{&oneCopy, 1});
     }
@@ -1681,18 +1693,13 @@ void TextureCacheRuntime::CopyImage(Image& dst, Image& src,
                 .subresourceRange = dst_range.SubresourceRange(aspect_mask),
             },
         };
-        cmdbuf.PipelineBarrier(
-                VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT |
-                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT,
-                VK_PIPELINE_STAGE_TRANSFER_BIT,
-                0, nullptr, nullptr, pre_barriers);
+        cmdbuf.PipelineBarrier(vk::PIPELINE_STAGE_GRAPHICS_COMPUTE_TRANSFER,
+                               VK_PIPELINE_STAGE_TRANSFER_BIT, 0, nullptr, nullptr, pre_barriers);
         cmdbuf.CopyImage(src_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dst_image,
                          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VideoCommon::FixSmallVectorADL(vk_copies));
-        cmdbuf.PipelineBarrier(
-                VK_PIPELINE_STAGE_TRANSFER_BIT,
-                VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT |
-                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT,
-                0, nullptr, nullptr, post_barriers);
+        cmdbuf.PipelineBarrier(VK_PIPELINE_STAGE_TRANSFER_BIT,
+                               vk::PIPELINE_STAGE_GRAPHICS_COMPUTE_TRANSFER, 0, nullptr, nullptr,
+                               post_barriers);
     });
 }
 
@@ -1871,6 +1878,34 @@ bool TextureCacheRuntime::CanReportMemoryUsage() const {
     return device.CanReportMemoryUsage();
 }
 
+constexpr std::array<VkFormat, 2> OPAQUE_ASTC_VIEW_FORMATS{
+    VK_FORMAT_BC1_RGBA_UNORM_BLOCK,
+    VK_FORMAT_BC1_RGBA_SRGB_BLOCK,
+};
+
+[[nodiscard]] bool IsOpaqueBc1Astc(const TextureCacheRuntime& runtime, const ImageInfo& info) {
+    return info.astc_opaque && IsPixelFormatASTC(info.format) && runtime.UseOpaqueAstcFormat();
+}
+
+[[nodiscard]] std::optional<VkFormat> AstcHostFormat(const TextureCacheRuntime& runtime,
+                                                     const ImageInfo& info) {
+    if (!IsOpaqueBc1Astc(runtime, info)) {
+        return std::nullopt;
+    }
+    return VideoCore::Surface::IsPixelFormatSRGB(info.format) ? VK_FORMAT_BC1_RGBA_SRGB_BLOCK
+                                                              : VK_FORMAT_BC1_RGBA_UNORM_BLOCK;
+}
+
+bool TextureCacheRuntime::UseOpaqueAstcFormat() const {
+    // EDEN_NX2_ASTC_BC1=0 keeps every re-compressed ASTC image in BC3.
+    static const bool enabled = [] {
+        const char* value = std::getenv("EDEN_NX2_ASTC_BC1");
+        return value == nullptr || value[0] != '0';
+    }();
+    return enabled && !device.IsOptimalAstcSupported() && device.IsOptimalBcnSupported() &&
+           Settings::values.astc_recompression.GetValue() == Settings::AstcRecompression::Bc3;
+}
+
 
 void TextureCacheRuntime::TickFrame() {
     std::erase_if(pending_msaa_images, [this](const auto& pending) {
@@ -1883,7 +1918,10 @@ Image::Image(TextureCacheRuntime& runtime_, const ImageInfo& info_, GPUVAddr gpu
     : VideoCommon::ImageBase(info_, gpu_addr_, cpu_addr_), scheduler{&runtime_.scheduler},
       runtime{&runtime_},
       original_image(MakeImage(runtime_.device, runtime_.memory_allocator, info,
-                               runtime->ViewFormats(info.format))),
+                               IsOpaqueBc1Astc(runtime_, info)
+                                   ? std::span<const VkFormat>{OPAQUE_ASTC_VIEW_FORMATS}
+                                   : runtime->ViewFormats(info.format),
+                               AstcHostFormat(runtime_, info))),
       aspect_mask(ImageAspectMask(info.format)) {
     if (IsPixelFormatASTC(info.format) && !runtime->device.IsOptimalAstcSupported()) {
         switch (Settings::values.accelerate_astc.GetValue()) {
@@ -2394,7 +2432,10 @@ bool Image::ScaleUp(bool ignore) {
         scaled_info.size.width = scaled_width;
         scaled_info.size.height = scaled_height;
         scaled_image = MakeImage(runtime->device, runtime->memory_allocator, scaled_info,
-                                 runtime->ViewFormats(info.format));
+                                 IsOpaqueBc1Astc(*runtime, scaled_info)
+                                     ? std::span<const VkFormat>{OPAQUE_ASTC_VIEW_FORMATS}
+                                     : runtime->ViewFormats(info.format),
+                                 AstcHostFormat(*runtime, scaled_info));
         ignore = false;
     }
     current_image = &Image::scaled_image;
@@ -2579,6 +2620,11 @@ ImageView::ImageView(TextureCacheRuntime& runtime, const VideoCommon::ImageViewI
         }
     }
     auto format_info = MaxwellToVK::SurfaceFormat(*device, FormatType::Optimal, true, format);
+    if (IsOpaqueBc1Astc(runtime, image.info) && IsPixelFormatASTC(format)) {
+        format_info.format = VideoCore::Surface::IsPixelFormatSRGB(format)
+                                 ? VK_FORMAT_BC1_RGBA_SRGB_BLOCK
+                                 : VK_FORMAT_BC1_RGBA_UNORM_BLOCK;
+    }
     if (device->ApiVersion() >= VK_API_VERSION_1_3) {
         const VkFormatProperties3 properties3 =
             device->GetPhysical().GetFormatProperties3(format_info.format);
@@ -3232,8 +3278,8 @@ void TextureCacheRuntime::TransitionImageLayout(Image& image) {
         };
         scheduler.RequestOutsideRenderPassOperationContext();
         scheduler.Record([barrier](vk::CommandBuffer cmdbuf) {
-            cmdbuf.PipelineBarrier(vk::PIPELINE_STAGE_GRAPHICS_COMPUTE,
-                                   vk::PIPELINE_STAGE_GRAPHICS_COMPUTE, 0, barrier);
+            cmdbuf.PipelineBarrier(vk::PIPELINE_STAGE_GRAPHICS_COMPUTE_TRANSFER,
+                                   vk::PIPELINE_STAGE_GRAPHICS_COMPUTE_TRANSFER, 0, barrier);
         });
     }
 }

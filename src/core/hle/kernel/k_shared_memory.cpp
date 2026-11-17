@@ -6,6 +6,7 @@
 
 #include "common/assert.h"
 #include "core/core.h"
+#include "core/device_memory.h"
 #include "core/hle/kernel/k_page_table.h"
 #include "core/hle/kernel/k_scoped_resource_reservation.h"
 #include "core/hle/kernel/k_shared_memory.h"
@@ -61,7 +62,8 @@ Result KSharedMemory::Initialize(KernelCore& kernel, Core::DeviceMemory& device_
 
     // Clear all pages in the memory.
     for (const auto& block : *m_page_group) {
-        std::memset(m_device_memory->GetPointer<void>(block.GetAddress()), 0, block.GetSize());
+        m_device_memory->buffer.ClearBackingRegion(
+            GetInteger(block.GetAddress()) - Core::DramMemoryMap::Base, block.GetSize(), 0);
     }
 
     R_SUCCEED();

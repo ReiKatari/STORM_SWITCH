@@ -477,15 +477,15 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
         });
 
         auto* const hint_3d = new QLabel(ctrl_lang(
-            QStringLiteral("ЛКМ — 3D вращение 360° | Двойной клик — 180° | Колесико — зум"),
-            QStringLiteral("LMB — 360° 3D Orbit | Double Click — 180° Flip | Wheel — Zoom"),
-            QStringLiteral("左键 — 360° 3D 旋转 | 双击 — 180° 翻转 | 滚轮 — 缩放"),
-            QStringLiteral("左ドラッグ — 360° 3D回転 | ダブルクリック — 180°反転 | ホイール — ズーム"),
-            QStringLiteral("좌클릭 — 360° 3D 회전 | 더블클릭 — 180° 반전 | 휠 — 줌"),
-            QStringLiteral("LMT — 360° 3D-Drehung | Doppelklick — 180° | Mausrad — Zoom"),
-            QStringLiteral("Clic G — Rotation 3D 360° | Double-clic — 180° | Molette — Zoom"),
-            QStringLiteral("Clic Izq. — Rotación 3D 360° | Doble clic — 180° | Rueda — Zoom"),
-            QStringLiteral("زر الفأرة الأيسر — دوران 360° | نقر مزدوج — 180° | العجلة — تقريب")), this);
+            QStringLiteral("ЛКМ - 3D вращение 360° | Двойной клик - 180° | Колесико - зум"),
+            QStringLiteral("LMB - 360° 3D Orbit | Double Click - 180° Flip | Wheel - Zoom"),
+            QStringLiteral("左键 - 360° 3D 旋转 | 双击 - 180° 翻转 | 滚轮 - 缩放"),
+            QStringLiteral("左ドラッグ - 360° 3D回転 | ダブルクリック - 180°反転 | ホイール - ズーム"),
+            QStringLiteral("좌클릭 - 360° 3D 회전 | 더블클릭 - 180° 반전 | 휠 - 줌"),
+            QStringLiteral("LMT - 360° 3D-Drehung | Doppelklick - 180° | Mausrad - Zoom"),
+            QStringLiteral("Clic G - Rotation 3D 360° | Double-clic - 180° | Molette - Zoom"),
+            QStringLiteral("Clic Izq. - Rotación 3D 360° | Doble clic - 180° | Rueda - Zoom"),
+            QStringLiteral("زر الفأرة الأيسر - دوران 360° | نقر مزدوج - 180° | العجلة - تقريب")), this);
         hint_3d->setWordWrap(true);
         hint_3d->setAlignment(Qt::AlignCenter);
         hint_3d->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);

@@ -66,12 +66,36 @@ object SettingsFile {
                 if (r4 != text) { text = r4; modified = true }
             }
 
-            // Mario + Rabbids: Kingdom Battle (010067300059A*)
-            if (cleanProg.startsWith("010067300059A")) {
-                val rBloom = text.replace(Regex("fix_bloom_effects\\s*=\\s*true", RegexOption.IGNORE_CASE), "fix_bloom_effects = false")
+            // Mario + Rabbids: Kingdom Battle (010067300059A*, 010067300B762*)
+            if (cleanProg.startsWith("010067300059A") || cleanProg.startsWith("010067300B762")) {
+                val rMem = text.replace(Regex("(?m)^\\s*memory_layout_mode\\s*=\\s*[12]\\s*$"), "memory_layout_mode=0")
+                if (rMem != text) { text = rMem; modified = true }
+                val rBloom = text.replace(Regex("(?m)^\\s*fix_bloom_effects\\s*=\\s*false\\s*$", RegexOption.IGNORE_CASE), "fix_bloom_effects=true")
                 if (rBloom != text) { text = rBloom; modified = true }
-                val rBloomGlobal = text.replace(Regex("fix_bloom_effects\\\\use_global\\s*=\\s*false", RegexOption.IGNORE_CASE), "fix_bloom_effects\\use_global = true")
-                if (rBloomGlobal != text) { text = rBloomGlobal; modified = true }
+                val rReadback = text.replace(Regex("(?m)^\\s*enable_gpu_buffer_readback\\s*=\\s*false\\s*$", RegexOption.IGNORE_CASE), "enable_gpu_buffer_readback=true")
+                if (rReadback != text) { text = rReadback; modified = true }
+                val rSync = text.replace(Regex("(?m)^\\s*sync_memory_operations\\s*=\\s*false\\s*$", RegexOption.IGNORE_CASE), "sync_memory_operations=true")
+                if (rSync != text) { text = rSync; modified = true }
+                val rDma = text.replace(Regex("(?m)^\\s*dma_accuracy\\s*=\\s*[012]\\s*$"), "dma_accuracy=3")
+                if (rDma != text) { text = rDma; modified = true }
+                val rGpu = text.replace(Regex("(?m)^\\s*gpu_accuracy\\s*=\\s*[013]\\s*$"), "gpu_accuracy=2")
+                if (rGpu != text) { text = rGpu; modified = true }
+                val rAsyncSh = text.replace(Regex("(?m)^\\s*use_asynchronous_shaders\\s*=\\s*true\\s*$", RegexOption.IGNORE_CASE), "use_asynchronous_shaders=false")
+                if (rAsyncSh != text) { text = rAsyncSh; modified = true }
+                val rAsyncP = text.replace(Regex("(?m)^\\s*async_presentation\\s*=\\s*true\\s*$", RegexOption.IGNORE_CASE), "async_presentation=false")
+                if (rAsyncP != text) { text = rAsyncP; modified = true }
+                val rFast = text.replace(Regex("(?m)^\\s*use_fast_gpu_time\\s*=\\s*true\\s*$", RegexOption.IGNORE_CASE), "use_fast_gpu_time=false")
+                if (rFast != text) { text = rFast; modified = true }
+                val rBfl = text.replace(Regex("(?m)^\\s*barrier_feedback_loops\\s*=\\s*false\\s*$", RegexOption.IGNORE_CASE), "barrier_feedback_loops=true")
+                if (rBfl != text) { text = rBfl; modified = true }
+                val rFlush = text.replace(Regex("(?m)^\\s*use_reactive_flushing\\s*=\\s*false\\s*$", RegexOption.IGNORE_CASE), "use_reactive_flushing=true")
+                if (rFlush != text) { text = rFlush; modified = true }
+                val rGc = text.replace(Regex("(?m)^\\s*vram_garbage_collection\\s*=\\s*false\\s*$", RegexOption.IGNORE_CASE), "vram_garbage_collection=true")
+                if (rGc != text) { text = rGc; modified = true }
+                val rGov = text.replace(Regex("(?m)^\\s*vram_budget_governor\\s*=\\s*false\\s*$", RegexOption.IGNORE_CASE), "vram_budget_governor=true")
+                if (rGov != text) { text = rGov; modified = true }
+                val rFences = text.replace(Regex("(?m)^\\s*early_release_fences\\s*=\\s*true\\s*$", RegexOption.IGNORE_CASE), "early_release_fences=false")
+                if (rFences != text) { text = rFences; modified = true }
             }
 
             // Diablo II: Resurrected (0100726014352*, 01002A801458A*, 0100916014D8C*)
@@ -79,22 +103,79 @@ object SettingsFile {
                 cleanProg.startsWith("01002A801458A") ||
                 cleanProg.startsWith("0100916014D8C")
             ) {
-                val r1 = text.replace(Regex("memory_layout_mode\\s*=\\s*[12]"), "memory_layout_mode = 0")
+                // Heal corrupted keys from earlier unescaped backslash replacement
+                val rHealMem = text.replace(Regex("(?m)^memory_layout_modeuse_global\\s*=.*$"), Regex.escapeReplacement("memory_layout_mode\\use_global=false"))
+                if (rHealMem != text) { text = rHealMem; modified = true }
+                val rHealDyna = text.replace(Regex("(?m)^dyna_stateuse_global\\s*=.*$"), Regex.escapeReplacement("dyna_state\\use_global=false"))
+                if (rHealDyna != text) { text = rHealDyna; modified = true }
+                val r1 = text.replace(Regex("(?m)^\\s*memory_layout_mode\\s*=\\s*[02]\\s*$"), "memory_layout_mode=1")
                 if (r1 != text) { text = r1; modified = true }
-                val r1Global = text.replace(Regex("memory_layout_mode\\\\use_global\\s*=\\s*false", RegexOption.IGNORE_CASE), "memory_layout_mode\\use_global = true")
-                if (r1Global != text) { text = r1Global; modified = true }
-                val rDyna = text.replace(Regex("(?m)^\\s*dyna_state\\s*=\\s*0\\s*$"), "")
-                if (rDyna != text) { text = rDyna; modified = true }
-                val rDynaGlobal = text.replace(Regex("dyna_state\\\\use_global\\s*=\\s*false", RegexOption.IGNORE_CASE), "dyna_state\\use_global = true")
-                if (rDynaGlobal != text) { text = rDynaGlobal; modified = true }
-                val r2 = text.replace(Regex("gpu_accuracy\\s*=\\s*[01]"), "gpu_accuracy = 2")
+                val r2 = text.replace(Regex("(?m)^\\s*gpu_accuracy\\s*=\\s*[023]\\s*$"), "gpu_accuracy=1")
                 if (r2 != text) { text = r2; modified = true }
-                val r3 = text.replace(Regex("vram_budget_governor\\s*=\\s*true", RegexOption.IGNORE_CASE), "vram_budget_governor = false")
+                val rDyna = text.replace(Regex("(?m)^\\s*dyna_state\\s*=\\s*[023]\\s*$"), "dyna_state=1")
+                if (rDyna != text) { text = rDyna; modified = true }
+                val rBloom = text.replace(Regex("(?m)^\\s*fix_bloom_effects\\s*=\\s*true\\s*$", RegexOption.IGNORE_CASE), "fix_bloom_effects=false")
+                if (rBloom != text) { text = rBloom; modified = true }
+                val rAsyncSh = text.replace(Regex("(?m)^\\s*use_asynchronous_shaders\\s*=\\s*false\\s*$", RegexOption.IGNORE_CASE), "use_asynchronous_shaders=true")
+                if (rAsyncSh != text) { text = rAsyncSh; modified = true }
+                val rAsyncP = text.replace(Regex("(?m)^\\s*async_presentation\\s*=\\s*false\\s*$", RegexOption.IGNORE_CASE), "async_presentation=true")
+                if (rAsyncP != text) { text = rAsyncP; modified = true }
+                val rSync = text.replace(Regex("(?m)^\\s*sync_memory_operations\\s*=\\s*false\\s*$", RegexOption.IGNORE_CASE), "sync_memory_operations=true")
+                if (rSync != text) { text = rSync; modified = true }
+                val rReadback = text.replace(Regex("(?m)^\\s*enable_gpu_buffer_readback\\s*=\\s*true\\s*$", RegexOption.IGNORE_CASE), "enable_gpu_buffer_readback=false")
+                if (rReadback != text) { text = rReadback; modified = true }
+                val rDma = text.replace(Regex("(?m)^\\s*dma_accuracy\\s*=\\s*[012]\\s*$"), "dma_accuracy=3")
+                if (rDma != text) { text = rDma; modified = true }
+                val rBfl = text.replace(Regex("(?m)^\\s*barrier_feedback_loops\\s*=\\s*true\\s*$", RegexOption.IGNORE_CASE), "barrier_feedback_loops=false")
+                if (rBfl != text) { text = rBfl; modified = true }
+                val rFlush = text.replace(Regex("(?m)^\\s*use_reactive_flushing\\s*=\\s*true\\s*$", RegexOption.IGNORE_CASE), "use_reactive_flushing=false")
+                if (rFlush != text) { text = rFlush; modified = true }
+                val rFast = text.replace(Regex("(?m)^\\s*use_fast_gpu_time\\s*=\\s*true\\s*$", RegexOption.IGNORE_CASE), "use_fast_gpu_time=false")
+                if (rFast != text) { text = rFast; modified = true }
+                val rVkCache = text.replace(Regex("(?m)^\\s*use_vulkan_driver_pipeline_cache\\s*=\\s*true\\s*$", RegexOption.IGNORE_CASE), "use_vulkan_driver_pipeline_cache=false")
+                if (rVkCache != text) { text = rVkCache; modified = true }
+                val r3 = text.replace(Regex("(?m)^\\s*vram_budget_governor\\s*=\\s*false\\s*$", RegexOption.IGNORE_CASE), "vram_budget_governor=true")
                 if (r3 != text) { text = r3; modified = true }
-                val r4 = text.replace(Regex("early_release_fences\\s*=\\s*true", RegexOption.IGNORE_CASE), "early_release_fences = false")
+                val rGc = text.replace(Regex("(?m)^\\s*vram_garbage_collection\\s*=\\s*false\\s*$", RegexOption.IGNORE_CASE), "vram_garbage_collection=true")
+                if (rGc != text) { text = rGc; modified = true }
+                val r4 = text.replace(Regex("(?m)^\\s*early_release_fences\\s*=\\s*true\\s*$", RegexOption.IGNORE_CASE), "early_release_fences=false")
                 if (r4 != text) { text = r4; modified = true }
-                val r5 = text.replace(Regex("enable_frame_skipping\\s*=\\s*true", RegexOption.IGNORE_CASE), "enable_frame_skipping = false")
+                val r5 = text.replace(Regex("(?m)^\\s*enable_frame_skipping\\s*=\\s*true\\s*$", RegexOption.IGNORE_CASE), "enable_frame_skipping=false")
                 if (r5 != text) { text = r5; modified = true }
+            }
+
+            // Absolum (0100A83022A22*)
+            if (cleanProg.startsWith("0100A83022A22")) {
+                val rMem = text.replace(Regex("(?m)^\\s*memory_layout_mode\\s*=\\s*[12]\\s*$"), "memory_layout_mode=0")
+                if (rMem != text) { text = rMem; modified = true }
+                val rGpu = text.replace(Regex("(?m)^\\s*gpu_accuracy\\s*=\\s*[013]\\s*$"), "gpu_accuracy=2")
+                if (rGpu != text) { text = rGpu; modified = true }
+                val rBloom = text.replace(Regex("(?m)^\\s*fix_bloom_effects\\s*=\\s*false\\s*$", RegexOption.IGNORE_CASE), "fix_bloom_effects=true")
+                if (rBloom != text) { text = rBloom; modified = true }
+                val rNvdec = text.replace(Regex("(?m)^\\s*nvdec_emulation\\s*=\\s*[01]\\s*$"), "nvdec_emulation=2")
+                if (rNvdec != text) { text = rNvdec; modified = true }
+                val rAsyncP = text.replace(Regex("(?m)^\\s*async_presentation\\s*=\\s*true\\s*$", RegexOption.IGNORE_CASE), "async_presentation=false")
+                if (rAsyncP != text) { text = rAsyncP; modified = true }
+                val rAsyncSh = text.replace(Regex("(?m)^\\s*use_asynchronous_shaders\\s*=\\s*false\\s*$", RegexOption.IGNORE_CASE), "use_asynchronous_shaders=true")
+                if (rAsyncSh != text) { text = rAsyncSh; modified = true }
+                val rFast = text.replace(Regex("(?m)^\\s*use_fast_gpu_time\\s*=\\s*true\\s*$", RegexOption.IGNORE_CASE), "use_fast_gpu_time=false")
+                if (rFast != text) { text = rFast; modified = true }
+                val rSync = text.replace(Regex("(?m)^\\s*sync_memory_operations\\s*=\\s*false\\s*$", RegexOption.IGNORE_CASE), "sync_memory_operations=true")
+                if (rSync != text) { text = rSync; modified = true }
+                val rReadback = text.replace(Regex("(?m)^\\s*enable_gpu_buffer_readback\\s*=\\s*false\\s*$", RegexOption.IGNORE_CASE), "enable_gpu_buffer_readback=true")
+                if (rReadback != text) { text = rReadback; modified = true }
+                val rFlush = text.replace(Regex("(?m)^\\s*use_reactive_flushing\\s*=\\s*false\\s*$", RegexOption.IGNORE_CASE), "use_reactive_flushing=true")
+                if (rFlush != text) { text = rFlush; modified = true }
+                val rDma = text.replace(Regex("(?m)^\\s*dma_accuracy\\s*=\\s*[012]\\s*$"), "dma_accuracy=3")
+                if (rDma != text) { text = rDma; modified = true }
+                val rBfl = text.replace(Regex("(?m)^\\s*barrier_feedback_loops\\s*=\\s*false\\s*$", RegexOption.IGNORE_CASE), "barrier_feedback_loops=true")
+                if (rBfl != text) { text = rBfl; modified = true }
+                val rGov = text.replace(Regex("(?m)^\\s*vram_budget_governor\\s*=\\s*false\\s*$", RegexOption.IGNORE_CASE), "vram_budget_governor=true")
+                if (rGov != text) { text = rGov; modified = true }
+                val rGc = text.replace(Regex("(?m)^\\s*vram_garbage_collection\\s*=\\s*false\\s*$", RegexOption.IGNORE_CASE), "vram_garbage_collection=true")
+                if (rGc != text) { text = rGc; modified = true }
+                val rFences = text.replace(Regex("(?m)^\\s*early_release_fences\\s*=\\s*true\\s*$", RegexOption.IGNORE_CASE), "early_release_fences=false")
+                if (rFences != text) { text = rFences; modified = true }
             }
 
             // Unravel Two (01008C3005A32*, 0100E5D00CC0C*, 010099900B22E*)
@@ -153,7 +234,7 @@ object SettingsFile {
 
     fun sanitizePoisonedConfigs(context: Context = YuzuApplication.appContext) {
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-        val PREF_SANITIZED_KEY = "storm_config_sanitized_17_9_0"
+        val PREF_SANITIZED_KEY = "storm_config_sanitized_18_0_9"
         if (prefs.getBoolean(PREF_SANITIZED_KEY, false)) {
             return
         }
@@ -187,32 +268,32 @@ object SettingsFile {
                             if (trimmed.startsWith("dyna_state", ignoreCase = true) && !trimmed.startsWith("dyna_state\\default", ignoreCase = true)) {
                                 hasDynaState = true
                                 val parts = trimmed.split("=", limit = 2)
-                                if (parts.size == 2 && (parts[1].trim() == "0" || parts[1].trim() == "3")) {
-                                    newLines.add("dyna_state=1")
+                                if (parts.size == 2 && parts[1].trim() != "0") {
+                                    newLines.add("dyna_state=0")
                                     modified = true
                                     continue
                                 }
                             } else if (trimmed.startsWith("dyna_state\\default", ignoreCase = true)) {
                                 hasDynaDefault = true
                                 val parts = trimmed.split("=", limit = 2)
-                                if (parts.size == 2 && parts[1].trim().equals("true", ignoreCase = true)) {
-                                    newLines.add("dyna_state\\default=false")
+                                if (parts.size == 2 && parts[1].trim().equals("false", ignoreCase = true)) {
+                                    newLines.add("dyna_state\\default=true")
                                     modified = true
                                     continue
                                 }
                             } else if (trimmed.startsWith("sync_memory_operations", ignoreCase = true) && !trimmed.startsWith("sync_memory_operations\\default", ignoreCase = true)) {
                                 hasSyncMem = true
                                 val parts = trimmed.split("=", limit = 2)
-                                if (parts.size == 2 && parts[1].trim().equals("false", ignoreCase = true)) {
-                                    newLines.add("sync_memory_operations=true")
+                                if (parts.size == 2 && parts[1].trim().equals("true", ignoreCase = true)) {
+                                    newLines.add("sync_memory_operations=false")
                                     modified = true
                                     continue
                                 }
                             } else if (trimmed.startsWith("sync_memory_operations\\default", ignoreCase = true)) {
                                 hasSyncMemDefault = true
                                 val parts = trimmed.split("=", limit = 2)
-                                if (parts.size == 2 && parts[1].trim().equals("true", ignoreCase = true)) {
-                                    newLines.add("sync_memory_operations\\default=false")
+                                if (parts.size == 2 && parts[1].trim().equals("false", ignoreCase = true)) {
+                                    newLines.add("sync_memory_operations\\default=true")
                                     modified = true
                                     continue
                                 }
@@ -221,26 +302,26 @@ object SettingsFile {
                         }
 
                         if (!hasDynaState) {
-                            newLines.add("dyna_state=1")
-                            newLines.add("dyna_state\\default=false")
+                            newLines.add("dyna_state=0")
+                            newLines.add("dyna_state\\default=true")
                             modified = true
                         } else if (!hasDynaDefault) {
-                            newLines.add("dyna_state\\default=false")
+                            newLines.add("dyna_state\\default=true")
                             modified = true
                         }
 
                         if (!hasSyncMem) {
-                            newLines.add("sync_memory_operations=true")
-                            newLines.add("sync_memory_operations\\default=false")
+                            newLines.add("sync_memory_operations=false")
+                            newLines.add("sync_memory_operations\\default=true")
                             modified = true
                         } else if (!hasSyncMemDefault) {
-                            newLines.add("sync_memory_operations\\default=false")
+                            newLines.add("sync_memory_operations\\default=true")
                             modified = true
                         }
 
                         if (modified) {
                             globalConfigFile.writeText(newLines.joinToString("\n"), Charsets.UTF_8)
-                            Log.info("[SettingsFile] Sanitized global config.ini: dyna_state=1, sync_memory_operations=true")
+                            Log.info("[SettingsFile] Sanitized global config.ini for 18.0.2: dyna_state=0, sync_memory_operations=false (bloom preserved)")
                         }
                     } catch (e: Exception) {
                         Log.warning("[SettingsFile] Failed to sanitize global config: ${e.message}")
@@ -255,7 +336,10 @@ object SettingsFile {
                         "0100726014352000",
                         "01002a801458a000",
                         "0100916014d8c000",
-                        "0100ad5013bb6000"
+                        "0100ad5013bb6000",
+                        "010067300059a000",
+                        "010067300b762000",
+                        "0100a83022a22000"
                     )
 
                     customFiles?.forEach { customFile ->
@@ -264,14 +348,8 @@ object SettingsFile {
 
                         if (isTargetGame) {
                             try {
-                                val content = customFile.readText(Charsets.UTF_8)
-                                if (content.contains("STORM_AUTO_GAME_FIX_TEMPORARY", ignoreCase = true)) {
-                                    customFile.delete()
-                                    Log.info("[SettingsFile] Deleted temporary per-game fix profile for $nameLower to regenerate clean 14.4.0 settings")
-                                } else {
-                                    customFile.delete()
-                                    Log.info("[SettingsFile] Reset per-game config for $nameLower to clean profile")
-                                }
+                                customFile.delete()
+                                Log.info("[SettingsFile] Deleted stale per-game config $nameLower for clean 17.9.4 regeneration")
                             } catch (e: Exception) {
                                 Log.warning("[SettingsFile] Failed to sanitize target game profile $nameLower: ${e.message}")
                             }
@@ -280,10 +358,23 @@ object SettingsFile {
                 }
             }
 
+            try {
+                org.yuzu.yuzu_emu.utils.GpuDriverHelper.clearShaderAndPipelineCaches(context)
+                org.yuzu.yuzu_emu.utils.GpuDriverHelper.clearVulkanPipelineCaches(context)
+                File(context.filesDir, ".drirc").delete()
+                File(context.filesDir, "gpu_drivers").listFiles()?.forEach { sub ->
+                    if (sub.isDirectory) {
+                        File(sub, "per_game_drirc").deleteRecursively()
+                    }
+                }
+            } catch (e: Throwable) {
+                Log.warning("[SettingsFile] Cache/drirc cleanup during 18_0_3 migration failed: ${e.message}")
+            }
+
             prefs.edit().putBoolean(PREF_SANITIZED_KEY, true).apply()
-            Log.info("[SettingsFile] Successfully completed storm_config_sanitized_17_9_0 migration")
+            Log.info("[SettingsFile] Successfully completed storm_config_sanitized_18_0_3 migration")
         } catch (e: Exception) {
-            Log.warning("[SettingsFile] Migration storm_config_sanitized_17_9_0 failed: ${e.message}")
+            Log.warning("[SettingsFile] Migration storm_config_sanitized_18_0_3 failed: ${e.message}")
         }
     }
 

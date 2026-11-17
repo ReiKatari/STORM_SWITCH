@@ -50,8 +50,6 @@ object StormDesignEngine {
     const val DESIGN_ORBITAL_SPATIAL_UI = 3
     const val DESIGN_CHRONO_NEXUS_COMMANDER = 4
 
-    private val activeListeners =
-        Collections.synchronizedMap(WeakHashMap<Activity, ViewTreeObserver.OnGlobalLayoutListener>())
     private var isInstalled = false
 
     @JvmStatic
@@ -94,22 +92,16 @@ object StormDesignEngine {
             val decor = window.decorView
             styleViewHierarchy(decor, design, themeIndex)
 
-            if (!activity.javaClass.name.contains("EmulationActivity", ignoreCase = true) && !activeListeners.containsKey(activity)) {
-                var isTraversing = false
-                val listener = ViewTreeObserver.OnGlobalLayoutListener {
-                    if (isTraversing) return@OnGlobalLayoutListener
-                    isTraversing = true
-                    try {
-                        val currentDesign = getDesignStyle()
-                        val currentTheme = runCatching { IntSetting.THEME_MODE.getInt() }.getOrDefault(3)
-                        styleViewHierarchy(decor, currentDesign, currentTheme)
-                    } catch (_: Throwable) {
-                    } finally {
-                        isTraversing = false
+            if (!activity.javaClass.name.contains("EmulationActivity", ignoreCase = true)) {
+                decor.post {
+                    runCatching {
+                        styleViewHierarchy(
+                            decor,
+                            getDesignStyle(),
+                            runCatching { IntSetting.THEME_MODE.getInt() }.getOrDefault(3)
+                        )
                     }
                 }
-                decor.viewTreeObserver.addOnGlobalLayoutListener(listener)
-                activeListeners[activity] = listener
             }
         }
     }
@@ -150,15 +142,7 @@ object StormDesignEngine {
         }
     }
 
-    private fun cleanup(activity: Activity) {
-        runCatching {
-            val listener = activeListeners.remove(activity) ?: return
-            val vto = activity.window?.decorView?.viewTreeObserver
-            if (vto != null && vto.isAlive) {
-                vto.removeOnGlobalLayoutListener(listener)
-            }
-        }
-    }
+    private fun cleanup(activity: Activity) {}
 
     private fun getDesignStyle(): Int {
         return DESIGN_HYPERION_GLASS_3D
@@ -520,11 +504,11 @@ object StormDesignEngine {
                     when (design) {
                         DESIGN_HYPERION_GLASS_3D -> {
                             v.animate().scaleX(0.97f).scaleY(0.97f).setDuration(100)
-                                .setInterpolator(DecelerateInterpolator()).start()
+                                .setInterpolator(DecelerateInterpolator()).withLayer().start()
                         }
                         DESIGN_CYBER_DECK_TACTILE -> {
                             v.animate().scaleX(0.96f).scaleY(0.96f).setDuration(80)
-                                .setInterpolator(LinearInterpolator()).start()
+                                .setInterpolator(LinearInterpolator()).withLayer().start()
                             runCatching {
                                 v.performHapticFeedback(
                                     HapticFeedbackConstants.KEYBOARD_TAP,
@@ -535,16 +519,16 @@ object StormDesignEngine {
                         DESIGN_AURORA_QUANTUM -> {
                             v.animate().scaleX(0.97f).scaleY(0.97f)
                                 .translationZ(originalTranslationZ + 2f * density)
-                                .setDuration(110).setInterpolator(DecelerateInterpolator()).start()
+                                .setDuration(110).setInterpolator(DecelerateInterpolator()).withLayer().start()
                         }
                         DESIGN_ORBITAL_SPATIAL_UI -> {
                             v.animate().scaleX(0.97f).scaleY(0.97f)
                                 .translationZ(originalTranslationZ + 3f * density)
-                                .setDuration(120).setInterpolator(DecelerateInterpolator()).start()
+                                .setDuration(120).setInterpolator(DecelerateInterpolator()).withLayer().start()
                         }
                         DESIGN_CHRONO_NEXUS_COMMANDER -> {
                             v.animate().translationY(originalTranslationY + 1.5f * density)
-                                .setDuration(70).setInterpolator(LinearInterpolator()).start()
+                                .setDuration(70).setInterpolator(LinearInterpolator()).withLayer().start()
                         }
                     }
                 }
@@ -556,6 +540,7 @@ object StormDesignEngine {
                         .translationY(originalTranslationY)
                         .setDuration(160)
                         .setInterpolator(OvershootInterpolator(1.1f))
+                        .withLayer()
                         .start()
                 }
             }

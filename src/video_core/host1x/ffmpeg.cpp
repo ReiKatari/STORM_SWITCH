@@ -184,7 +184,8 @@ Decoder::Decoder(Tegra::Host1x::NvdecCommon::VideoCodec codec) {
     if (nvdec_mode == Settings::NvdecEmulation::Gpu || nvdec_mode == Settings::NvdecEmulation::Hybrid) {
         const char* mc_name = nullptr;
         switch (av_codec) {
-        case AV_CODEC_ID_H264: mc_name = "h264_mediacodec"; break;
+        // Disabled: h264_mediacodec without zero-copy hardware surface buffers frames in async EAGAIN (10s black startup in Absolum)
+        // case AV_CODEC_ID_H264: mc_name = "h264_mediacodec"; break;
         // Disabled: causes crashes in Diablo II
         // case AV_CODEC_ID_VP8:  mc_name = "vp8_mediacodec";  break;
         case AV_CODEC_ID_VP9:  mc_name = "vp9_mediacodec";  break;
@@ -297,12 +298,17 @@ bool HardwareContext::InitializeWithType(AVHWDeviceType type) {
     return true;
 }
 
-DecoderContext::DecoderContext(const Decoder bitand decoder) : m_decoder{decoder} {
+DecoderContext::DecoderContext(const Decoder& decoder) : m_decoder{decoder} {
     m_codec_context = avcodec_alloc_context3(m_decoder.GetCodec());
-    const int cpu_threads = std::clamp(static_cast<int>(std::thread::hardware_concurrency()), 2, 8);
+    if (m_codec_context->priv_data) {
+        av_opt_set(m_codec_context->priv_data, "tune", "zerolatency", 0);
+    }
+    const int cpu_threads = std::clamp(static_cast<int>(std::thread::hardware_concurrency()), 2, 4);
     m_codec_context->thread_count = cpu_threads;
-    m_codec_context->thread_type = FF_THREAD_FRAME | FF_THREAD_SLICE;
+    m_codec_context->thread_type = FF_THREAD_SLICE;
+    m_codec_context->flags |= AV_CODEC_FLAG_LOW_DELAY;
     m_codec_context->flags2 |= AV_CODEC_FLAG2_FAST;
+    m_codec_context->delay = 0;
 }
 
 DecoderContext::~DecoderContext() {
@@ -317,9 +323,6 @@ void DecoderContext::InitializeHardwareDecoder(const HardwareContext& context, A
 }
 
 bool DecoderContext::OpenContext(const Decoder& decoder, std::span<const u8> extradata) {
-    if (decoder.GetCodec()->id == AV_CODEC_ID_H264 && !m_codec_context->hw_device_ctx) {
-        m_codec_context->thread_type = FF_THREAD_SLICE;
-    }
     if (!extradata.empty()) {
         av_freep(&m_codec_context->extradata);
         m_codec_context->extradata = static_cast<u8*>(
@@ -332,9 +335,16 @@ bool DecoderContext::OpenContext(const Decoder& decoder, std::span<const u8> ext
         m_codec_context->extradata_size = static_cast<int>(extradata.size());
     }
 
+    m_codec_context->delay = 0;
+    if (m_codec_context->priv_data) {
+        av_opt_set(m_codec_context->priv_data, "tune", "zerolatency", 0);
+    }
     if (const int ret = avcodec_open2(m_codec_context, decoder.GetCodec(), nullptr); ret < 0) {
         LOG_ERROR(HW_GPU, "avcodec_open2 error: {}", AVError(ret));
         return false;
+    }
+    if (m_codec_context->priv_data) {
+        av_opt_set(m_codec_context->priv_data, "tune", "zerolatency", 0);
     }
 
     LOG_INFO(HW_GPU, "Using decoder {}", decoder.GetCodec()->name);
@@ -360,7 +370,11 @@ bool DecoderContext::SendPacket(const Packet& packet) {
 
 std::shared_ptr<Frame> DecoderContext::ReceiveFrame() {
     auto ReceiveImpl = [&](AVFrame* frame) -> int {
-        const int ret = avcodec_receive_frame(m_codec_context, frame);
+        int ret = avcodec_receive_frame(m_codec_context, frame);
+#if defined(__ANDROID__)
+        // Do not block/sleep on EAGAIN: decoder.cpp drains frames in a while loop until EAGAIN,
+        // so sleeping on EAGAIN adds a 40ms blocking stall after EVERY decoded video frame (~10s lag in Absolum).
+#endif
         if (ret < 0 && ret != AVERROR_EOF && ret != AVERROR(EAGAIN)) {
             LOG_ERROR(HW_GPU, "avcodec_receive_frame error: {}", AVError(ret));
         }
@@ -408,6 +422,7 @@ void DecodeApi::Reset() {
         m_pending_offsets.pop();
     }
     m_last_offsets = {};
+    m_deferred_packets.clear();
 }
 
 bool DecodeApi::Initialize(Tegra::Host1x::NvdecCommon::VideoCodec codec) {
@@ -427,6 +442,7 @@ bool DecodeApi::Initialize(Tegra::Host1x::NvdecCommon::VideoCodec codec) {
                     ;
 #endif
 
+#if !defined(__ANDROID__)
     // Enable GPU decoding if requested.
     if (!is_mediacodec &&
         (Settings::values.nvdec_emulation.GetValue() == Settings::NvdecEmulation::Gpu ||
@@ -437,6 +453,7 @@ bool DecodeApi::Initialize(Tegra::Host1x::NvdecCommon::VideoCodec codec) {
             m_hardware_context.reset();
         }
     }
+#endif
 
 #if defined(__ANDROID__)
     m_defer_android_mediacodec_open = is_mediacodec;
@@ -469,6 +486,10 @@ bool DecodeApi::SendPacket(std::span<const u8> packet_data, const FrameOffsets& 
 
         if (m_defer_android_mediacodec_open) {
             if (!dimensions) {
+                m_deferred_packets.push_back(DeferredPacket{
+                    .data = std::vector<u8>(packet_data.begin(), packet_data.end()),
+                    .offsets = offsets,
+                });
                 return true;
             }
 
@@ -483,6 +504,27 @@ bool DecodeApi::SendPacket(std::span<const u8> packet_data, const FrameOffsets& 
 #else
         const std::span<const u8> extradata_span{};
 #endif
+        const auto drain_deferred = [&] {
+            std::vector<DeferredPacket> queued = std::move(m_deferred_packets);
+            m_deferred_packets.clear();
+            for (const auto& qp : queued) {
+                if (qp.data.empty()) {
+                    continue;
+                }
+                FFmpeg::Packet q_packet(qp.data);
+                q_packet.GetPacket()->pts = m_next_pts;
+                q_packet.GetPacket()->dts = m_next_pts;
+                ++m_next_pts;
+                if (m_decoder_context->SendPacket(q_packet)) {
+                    if (!qp.offsets.hidden) {
+                        m_pending_offsets.push(qp.offsets);
+                    }
+                } else {
+                    --m_next_pts;
+                }
+            }
+        };
+
         if (!m_decoder_context->OpenContext(*m_decoder, extradata_span)) {
 #if defined(__ANDROID__)
             if (m_defer_android_mediacodec_open) {
@@ -495,6 +537,7 @@ bool DecodeApi::SendPacket(std::span<const u8> packet_data, const FrameOffsets& 
                     m_needs_h264_extradata = false;
                     if (m_decoder_context->OpenContext(*m_decoder, extradata_span)) {
                         m_opened = true;
+                        drain_deferred();
                     } else {
                         this->Reset();
                         return false;
@@ -513,6 +556,7 @@ bool DecodeApi::SendPacket(std::span<const u8> packet_data, const FrameOffsets& 
 #endif
         } else {
             m_opened = true;
+            drain_deferred();
         }
     }
     if (packet_data.empty()) {

@@ -18,6 +18,8 @@
 #include "video_core/renderer_base.h"
 #include "video_core/textures/decoders.h"
 
+#include "video_core/nx2.h"
+
 namespace Tegra::Engines {
 
 using namespace Texture;
@@ -186,10 +188,15 @@ void MaxwellDMA::CopyBlockLinearToPitch() {
    
 
     u32 bytes_per_pixel = 1;
+    const size_t accel_layer_size =
+        CalculateSize(true, bytes_per_pixel, regs.src_params.width, regs.src_params.height,
+                      regs.src_params.depth, regs.src_params.block_size.height,
+                      regs.src_params.block_size.depth);
     DMA::ImageOperand src_operand;
     src_operand.bytes_per_pixel = bytes_per_pixel;
     src_operand.params = regs.src_params;
-    src_operand.address = regs.offset_in;
+    src_operand.address =
+        regs.offset_in + static_cast<GPUVAddr>(regs.src_params.layer) * accel_layer_size;
 
     DMA::BufferOperand dst_operand;
     dst_operand.pitch = static_cast<u32>(std::abs(regs.pitch_out));
@@ -200,7 +207,19 @@ void MaxwellDMA::CopyBlockLinearToPitch() {
     copy_info.length_x = regs.line_length_in;
     copy_info.length_y = regs.line_count;
     auto& accelerate = rasterizer->AccessAccelerateDMA();
-    if (accelerate.ImageToBuffer(copy_info, src_operand, dst_operand)) {
+    if (regs.launch_dma.remap_enable == 0 &&
+        accelerate.ImageToBuffer(copy_info, src_operand, dst_operand)) {
+        // Pokemon Pokopia copies photos from RT to pitch-linear buffer and JPEG-encodes on CPU.
+        // On Switch 2, flush accelerated image-to-buffer copies (notsapinho 7dde4f1).
+        static const bool flush_readbacks = [] {
+            const char* value = std::getenv("EDEN_NX2_DMA_READBACK_FLUSH");
+            return value == nullptr || value[0] != '0';
+        }();
+        if (flush_readbacks && Tegra::g_nx2_ampere.load(std::memory_order_relaxed)) {
+            memory_manager.FlushRegion(dst_operand.address,
+                                       static_cast<size_t>(dst_operand.pitch) * regs.line_count,
+                                       VideoCommon::CacheType::BufferCache);
+        }
         return;
     }
 
@@ -247,9 +266,11 @@ void MaxwellDMA::CopyBlockLinearToPitch() {
 
     const size_t dst_size = dst_operand.pitch * regs.line_count;
 
+    const GPUVAddr src_read_addr =
+        regs.offset_in + static_cast<GPUVAddr>(src_params.layer) * src_size;
     Tegra::Memory::GpuGuestMemory<u8, Tegra::Memory::GuestMemoryFlags::SafeRead> tmp_read_buffer(
-        memory_manager, src_operand.address, src_size, &read_buffer);
-    Tegra::Memory::GpuGuestMemoryScoped<u8, Tegra::Memory::GuestMemoryFlags::UnsafeReadCachedWrite>
+        memory_manager, src_read_addr, src_size, &read_buffer);
+    Tegra::Memory::GpuGuestMemoryScoped<u8, Tegra::Memory::GuestMemoryFlags::SafeReadCachedWrite>
         tmp_write_buffer(memory_manager, dst_operand.address, dst_size, &write_buffer);
 
     UnswizzleSubrect(tmp_write_buffer, tmp_read_buffer, bytes_per_pixel, width, height, depth,
@@ -259,10 +280,15 @@ void MaxwellDMA::CopyBlockLinearToPitch() {
 
 void MaxwellDMA::CopyPitchToBlockLinear() {
     u32 bytes_per_pixel = 1;
+    const size_t accel_layer_size =
+        CalculateSize(true, bytes_per_pixel, regs.dst_params.width, regs.dst_params.height,
+                      regs.dst_params.depth, regs.dst_params.block_size.height,
+                      regs.dst_params.block_size.depth);
     DMA::ImageOperand dst_operand;
     dst_operand.bytes_per_pixel = bytes_per_pixel;
     dst_operand.params = regs.dst_params;
-    dst_operand.address = regs.offset_out;
+    dst_operand.address =
+        regs.offset_out + static_cast<GPUVAddr>(regs.dst_params.layer) * accel_layer_size;
     DMA::BufferOperand src_operand;
     src_operand.pitch = regs.pitch_in;
     src_operand.width = regs.line_length_in;
@@ -272,7 +298,8 @@ void MaxwellDMA::CopyPitchToBlockLinear() {
     copy_info.length_x = regs.line_length_in;
     copy_info.length_y = regs.line_count;
     auto& accelerate = rasterizer->AccessAccelerateDMA();
-    if (accelerate.BufferToImage(copy_info, src_operand, dst_operand)) {
+    if (regs.launch_dma.remap_enable == 0 &&
+        accelerate.BufferToImage(copy_info, src_operand, dst_operand)) {
         return;
     }
 
@@ -302,7 +329,8 @@ void MaxwellDMA::CopyPitchToBlockLinear() {
     }
 
     bytes_per_pixel = base_bpp << bpp_shift;
-    const u32 height = dst_params.height;
+    width = (std::max)(width, x_offset + x_elements);
+    const u32 height = (std::max)(dst_params.height, dst_params.origin.y + regs.line_count);
     const u32 depth = dst_params.depth;
     const u32 block_height = dst_params.block_size.height;
     const u32 block_depth = dst_params.block_size.depth;
@@ -314,7 +342,7 @@ void MaxwellDMA::CopyPitchToBlockLinear() {
     const GPUVAddr dst_addr = regs.offset_out + static_cast<GPUVAddr>(regs.dst_params.layer) * dst_size;
     Tegra::Memory::GpuGuestMemory<u8, Tegra::Memory::GuestMemoryFlags::SafeRead> tmp_read_buffer(
         memory_manager, src_addr, src_size, &read_buffer);
-    Tegra::Memory::GpuGuestMemoryScoped<u8, Tegra::Memory::GuestMemoryFlags::UnsafeReadCachedWrite>
+    Tegra::Memory::GpuGuestMemoryScoped<u8, Tegra::Memory::GuestMemoryFlags::SafeReadCachedWrite>
         tmp_write_buffer(memory_manager, dst_addr, dst_size, &write_buffer);
 
     //  If the input is linear and the output is tiled, swizzle the input and copy it over.

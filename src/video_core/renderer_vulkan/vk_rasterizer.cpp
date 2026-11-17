@@ -33,6 +33,7 @@
 #include "video_core/renderer_vulkan/blit_image.h"
 #include "video_core/renderer_vulkan/fixed_pipeline_state.h"
 #include "video_core/renderer_vulkan/maxwell_to_vk.h"
+#include "shader_recompiler/backend/spirv/emit_spirv.h"
 #include "video_core/renderer_vulkan/vk_buffer_cache.h"
 #include "video_core/renderer_vulkan/vk_compute_pipeline.h"
 #include "video_core/renderer_vulkan/vk_descriptor_pool.h"
@@ -66,7 +67,21 @@ struct DrawParams {
     bool is_indexed;
 };
 
-VkViewport GetViewportState(const Device& device, const Maxwell& regs, size_t index, float scale) {
+u32 UnscaledFramebufferHeight(const Framebuffer* fb, bool is_rescaling) {
+    if (fb == nullptr) {
+        return 0;
+    }
+    const u32 scaled_height = fb->RenderArea().height;
+    if (!is_rescaling || scaled_height == 0) {
+        return scaled_height;
+    }
+    const u32 up_scale = Settings::values.resolution_info.up_scale;
+    const u32 down_shift = Settings::values.resolution_info.down_shift;
+    return up_scale > 0 ? ((scaled_height << down_shift) / up_scale) : scaled_height;
+}
+
+VkViewport GetViewportState(const Device& device, const Maxwell& regs, size_t index, float scale,
+                            u32 fallback_height = 0) {
     const auto& src = regs.viewport_transform[index];
     const auto conv = [scale](float value) {
         float new_value = value * scale;
@@ -87,10 +102,13 @@ VkViewport GetViewportState(const Device& device, const Maxwell& regs, size_t in
                           src.swizzle.y == Maxwell::ViewportSwizzle::NegativeY;
 
     if (lower_left) {
-        // min() fixes 2D games (Unepic, Aggelos); otherwise flip by surface clip height.
-        const float clip_height = conv(static_cast<f32>(regs.surface_clip.height));
-        const float flip_height = (height > 0.0f && height < clip_height) ? height : clip_height;
-        y += flip_height;
+        // Flip across the active surface/render-target height so sub-viewports mirror scissor Y
+        const s32 raw_clip_height = static_cast<s32>(regs.surface_clip.height);
+        const s32 unscaled_clip_height =
+            (raw_clip_height <= 0 && fallback_height > 0) ? static_cast<s32>(fallback_height)
+                                                          : raw_clip_height;
+        const float clip_height = conv(static_cast<f32>(unscaled_clip_height));
+        y = clip_height > 0.0f ? (clip_height - y) : (y + height);
         height = -height;
     }
 
@@ -117,7 +135,7 @@ VkViewport GetViewportState(const Device& device, const Maxwell& regs, size_t in
     return viewport;
 }
 
-VkRect2D GetScissorState(const Maxwell& regs, size_t index, u32 up_scale = 1, u32 down_shift = 0) {
+VkRect2D GetScissorState(const Maxwell& regs, size_t index, u32 up_scale = 1, u32 down_shift = 0, u32 fallback_height = 0) {
     const auto& src = regs.scissor_test[index];
     VkRect2D scissor{};
     const auto scale_up = [&](s32 value) -> s32 {
@@ -135,7 +153,12 @@ VkRect2D GetScissorState(const Maxwell& regs, size_t index, u32 up_scale = 1, u3
     };
 
     const bool lower_left = regs.window_origin.mode != Maxwell::WindowOrigin::Mode::UpperLeft;
-    const s32 clip_height = regs.surface_clip.height;
+    const s32 raw_clip_height = static_cast<s32>(regs.surface_clip.height);
+    const s32 clip_height =
+        raw_clip_height > 0
+            ? raw_clip_height
+            : (fallback_height > 0 ? static_cast<s32>(fallback_height)
+                                   : static_cast<s32>(src.max_y.Value()));
 
     // Flip coordinates if lower left
     s32 min_y = lower_left ? (clip_height - src.max_y) : src.min_y.Value();
@@ -376,6 +399,24 @@ void RasterizerVulkan::CollectAttributeHandleRuns(bool is_indexed) {
     }
 }
 
+namespace {
+// Generations of draws whose geometry shader claims its primitive (Shader::Info::uses_gs_scratch).
+// 0 is never handed out: it marks a slot nobody has claimed.
+u32 NextGsGeneration() {
+    static u32 generation = 0;
+    if (++generation == 0) {
+        ++generation;
+    }
+    return generation;
+}
+
+void PushGsGeneration(vk::CommandBuffer cmdbuf, VkPipelineLayout layout, u32 generation) {
+    cmdbuf.PushConstants(layout, VK_SHADER_STAGE_ALL_GRAPHICS,
+                         Shader::Backend::SPIRV::GS_GENERATION_LAYOUT_OFFSET, sizeof(generation),
+                         &generation);
+}
+} // Anonymous namespace
+
 void RasterizerVulkan::Draw(bool is_indexed, u32 instance_count) {
     split_attribute_handles = true;
     SCOPE_EXIT {
@@ -386,8 +427,32 @@ void RasterizerVulkan::Draw(bool is_indexed, u32 instance_count) {
         const u32 num_instances{instance_count};
         const DrawParams draw_params{MakeDrawParams(draw_state, num_instances, is_indexed)};
 
-        const auto record_draw = [this](const DrawParams& params) {
-            GraphicsPipeline* const current_pipeline{pipeline_cache.CurrentGraphicsPipeline()};
+        GraphicsPipeline* const current_pipeline{pipeline_cache.CurrentGraphicsPipeline()};
+        const VkPipelineLayout gs_layout{current_pipeline && current_pipeline->UsesGsScratch()
+                                             ? current_pipeline->Layout()
+                                             : VK_NULL_HANDLE};
+        const auto record_draw = [this, current_pipeline, gs_layout](const DrawParams& params) {
+            if (gs_layout != VK_NULL_HANDLE) {
+                // Primitive ids start over with every instance: one draw and generation each.
+                for (u32 instance = 0; instance < params.num_instances; ++instance) {
+                    scheduler.Record([current_pipeline, params, instance, gs_layout,
+                                      generation = NextGsGeneration()](vk::CommandBuffer cmdbuf) {
+                        if (!current_pipeline || !current_pipeline->IsBound()) {
+                            return;
+                        }
+                        PushGsGeneration(cmdbuf, gs_layout, generation);
+                        if (params.is_indexed) {
+                            cmdbuf.DrawIndexed(params.num_vertices, 1, params.first_index,
+                                               params.base_vertex,
+                                               params.base_instance + instance);
+                        } else {
+                            cmdbuf.Draw(params.num_vertices, 1, params.base_vertex,
+                                        params.base_instance + instance);
+                        }
+                    });
+                }
+                return;
+            }
             scheduler.Record([current_pipeline, params](vk::CommandBuffer cmdbuf) {
                 if (!current_pipeline || !current_pipeline->IsBound()) {
                     return;
@@ -578,19 +643,39 @@ void RasterizerVulkan::DrawTexture() {
                                     .y = ScaleSrc(draw_texture_state.src_y1)}};
     Extent3D src_size = {static_cast<u32>(ScaleSrc(texture.size.width)),
                          static_cast<u32>(ScaleSrc(texture.size.height)), texture.size.depth};
+    // DrawTexture rectangles go through the fragment pipeline, scissor included.
+    std::optional<VkRect2D> scissor;
+    if (maxwell3d->regs.scissor_test[0].enable) {
+        u32 up_scale = 1;
+        u32 down_shift = 0;
+        if (dst_rescaling) {
+            up_scale = Settings::values.resolution_info.up_scale;
+            down_shift = Settings::values.resolution_info.down_shift;
+        }
+        scissor = GetScissorState(maxwell3d->regs, 0, up_scale, down_shift,
+                                  UnscaledFramebufferHeight(framebuffer, dst_rescaling));
+    }
+
+    // Drawing a texture 1:1 onto itself without blending changes nothing on hardware, but samples
+    // the active render target (undefined in Vulkan, corrupts tiled GPUs).
+    const auto& fb_images = framebuffer->Images();
+    const bool src_is_target =
+        std::find(fb_images.begin(), fb_images.begin() + framebuffer->NumImages(),
+                  texture.ImageHandle()) != fb_images.begin() + framebuffer->NumImages();
+    if (src_is_target && src_rescaling == dst_rescaling &&
+        src_region.start.x == dst_region.start.x && src_region.start.y == dst_region.start.y &&
+        src_region.end.x == dst_region.end.x && src_region.end.y == dst_region.end.y &&
+        maxwell3d->regs.blend.enable[0] == 0) {
+        return;
+    }
+
     blit_image.BlitColor(framebuffer, src_view, texture.ImageHandle(),
-                         sampler->Handle(), dst_region, src_region, src_size);
+                         sampler->Handle(), dst_region, src_region, src_size, scissor);
 }
 
 void RasterizerVulkan::Clear(u32 layer_count) {
-    if (!maxwell3d->ShouldExecute()) {
-        return;
-    }
     FlushWork();
     gpu_memory->FlushCaching();
-    if (!maxwell3d->EvaluateCondition()) {
-        return;
-    }
 
     auto& regs = maxwell3d->regs;
     const bool use_color = regs.clear_surface.R || regs.clear_surface.G || regs.clear_surface.B ||
@@ -624,8 +709,10 @@ void RasterizerVulkan::Clear(u32 layer_count) {
     default_scissor.extent.height = (std::numeric_limits<s32>::max)();
 
     VkClearRect clear_rect{
-        .rect = regs.clear_control.use_scissor ? GetScissorState(regs, 0, up_scale, down_shift)
-                                               : default_scissor,
+        .rect = regs.clear_control.use_scissor
+                    ? GetScissorState(regs, 0, up_scale, down_shift,
+                                      UnscaledFramebufferHeight(framebuffer, framebuffer->IsRescaled()))
+                    : default_scissor,
         .baseArrayLayer = regs.clear_surface.layer,
         .layerCount = layer_count,
     };
@@ -673,6 +760,7 @@ void RasterizerVulkan::Clear(u32 layer_count) {
     }
 
     constexpr bool ENABLE_DEFERRED_CLEAR = true;
+    const bool is_adreno_proprietary = device.IsQualcomm() && !device.IsTurnip();
     const bool color_full_channels = regs.clear_surface.R && regs.clear_surface.G &&
                                      regs.clear_surface.B && regs.clear_surface.A;
     const bool stencil_partial = use_stencil && framebuffer->HasAspectStencilBit() &&
@@ -681,7 +769,8 @@ void RasterizerVulkan::Clear(u32 layer_count) {
     const bool ds_deferrable =
         !ds_used || ((!framebuffer->HasAspectDepthBit() || use_depth) &&
                      (!framebuffer->HasAspectStencilBit() || use_stencil) && !stencil_partial);
-    const bool can_defer_clear = ENABLE_DEFERRED_CLEAR && !regs.clear_control.use_scissor &&
+    const bool can_defer_clear = ENABLE_DEFERRED_CLEAR && !is_adreno_proprietary &&
+                                 !regs.clear_control.use_scissor &&
                                  regs.clear_surface.layer == 0 &&
                                  !scheduler.IsRenderPassActive() &&
                                  (!use_color || color_full_channels) && ds_deferrable;
@@ -711,6 +800,13 @@ void RasterizerVulkan::Clear(u32 layer_count) {
         if (color_full_channels) {
             if (can_defer_clear) {
                 scheduler.DeferColorClear(framebuffer, color_attachment, clear_value);
+            } else if (is_adreno_proprietary) {
+                u8 color_mask = 0xF;
+                Region2D dst_region = {
+                    Offset2D{.x = clear_rect.rect.offset.x, .y = clear_rect.rect.offset.y},
+                    Offset2D{.x = clear_rect.rect.offset.x + s32(clear_rect.rect.extent.width),
+                             .y = clear_rect.rect.offset.y + s32(clear_rect.rect.extent.height)}};
+                blit_image.ClearColor(framebuffer, color_mask, regs.clear_color, dst_region);
             } else {
                 scheduler.Record([color_attachment, clear_value, clear_rect](vk::CommandBuffer cmdbuf) {
                     const VkClearAttachment attachment{
@@ -759,6 +855,14 @@ void RasterizerVulkan::Clear(u32 layer_count) {
         ds_value.depthStencil.depth = regs.clear_depth;
         ds_value.depthStencil.stencil = regs.clear_stencil;
         scheduler.DeferDepthStencilClear(framebuffer, ds_value);
+    } else if (is_adreno_proprietary) {
+        Region2D dst_region = {
+            Offset2D{.x = clear_rect.rect.offset.x, .y = clear_rect.rect.offset.y},
+            Offset2D{.x = clear_rect.rect.offset.x + s32(clear_rect.rect.extent.width),
+                     .y = clear_rect.rect.offset.y + s32(clear_rect.rect.extent.height)}};
+        blit_image.ClearDepthStencil(framebuffer, use_depth, regs.clear_depth,
+                                     u8(regs.stencil_front_mask), regs.clear_stencil,
+                                     regs.stencil_front_func_mask, dst_region);
     } else {
         scheduler.Record([clear_depth = regs.clear_depth, clear_stencil = regs.clear_stencil,
                           clear_rect, aspect_flags](vk::CommandBuffer cmdbuf) {
@@ -1017,7 +1121,13 @@ bool RasterizerVulkan::MustFlushRegion(DAddr addr, u64 size, VideoCommon::CacheT
             return true;
         }
     }
-    if (!Settings::IsGPULevelHigh() && !Settings::values.use_reactive_flushing.GetValue()) {
+    const u64 base_tid = current_title_id & ~0x1FFFULL;
+    const bool is_d2r = (base_tid == 0x0100726014352000ULL ||
+                         base_tid == 0x01002A801458A000ULL ||
+                         base_tid == 0x0100916014D8C000ULL);
+    if (!Settings::IsGPULevelNormal() && !Settings::IsGPULevelHigh() &&
+        !Settings::IsGPULevelExtreme() && !Settings::values.use_reactive_flushing.GetValue() &&
+        !is_d2r) {
         return false;
     }
     if (True(which & VideoCommon::CacheType::TextureCache)) {
@@ -1174,7 +1284,13 @@ void RasterizerVulkan::ReleaseFences(bool force) {
 
 void RasterizerVulkan::FlushAndInvalidateRegion(DAddr addr, u64 size,
                                                 VideoCommon::CacheType which) {
-    if (Settings::IsGPULevelHigh() || Settings::values.use_reactive_flushing.GetValue()) {
+    const u64 base_tid = current_title_id & ~0x1FFFULL;
+    const bool is_d2r = (base_tid == 0x0100726014352000ULL ||
+                         base_tid == 0x01002A801458A000ULL ||
+                         base_tid == 0x0100916014D8C000ULL);
+    if (Settings::IsGPULevelNormal() || Settings::IsGPULevelHigh() ||
+        Settings::IsGPULevelExtreme() || Settings::values.use_reactive_flushing.GetValue() ||
+        is_d2r) {
         FlushRegion(addr, size, which);
     }
     InvalidateRegion(addr, size, which);
@@ -1269,6 +1385,9 @@ void RasterizerVulkan::AccelerateInlineToMemory(GPUVAddr address, size_t copy_si
     if (!cpu_addr) [[unlikely]] {
         gpu_memory->WriteBlock(address, memory.data(), copy_size);
         return;
+    }
+    if (MustFlushRegion(*cpu_addr, copy_size, VideoCommon::CacheType::TextureCache)) {
+        FlushRegion(*cpu_addr, copy_size, VideoCommon::CacheType::TextureCache);
     }
     gpu_memory->WriteBlockUnsafe(address, memory.data(), copy_size);
     {
@@ -1366,7 +1485,8 @@ bool AccelerateDMA::DmaBufferImageCopy(const Tegra::DMA::ImageCopy& copy_info,
                                        const Tegra::DMA::ImageOperand& image_operand) {
     std::scoped_lock lock{buffer_cache.mutex, texture_cache.mutex};
     const auto image_id = texture_cache.DmaImageId(image_operand, IS_IMAGE_UPLOAD);
-    if (image_id == VideoCommon::NULL_IMAGE_ID) {
+    if (image_id == VideoCommon::NULL_IMAGE_ID ||
+        !texture_cache.CanDmaBufferImageCopy(copy_info, buffer_operand, image_operand, image_id)) {
         return false;
     }
     const u32 buffer_size = static_cast<u32>(buffer_operand.pitch * buffer_operand.height);
@@ -1375,6 +1495,10 @@ bool AccelerateDMA::DmaBufferImageCopy(const Tegra::DMA::ImageCopy& copy_info,
                                          : VideoCommon::ObtainBufferOperation::MarkAsWritten;
     const auto [buffer, offset] =
         buffer_cache.ObtainBuffer(buffer_operand.address, buffer_size, sync_info, post_op);
+    if (!texture_cache.CanDmaBufferImageCopy(copy_info, buffer_operand, image_operand, image_id,
+                                             offset)) {
+        return false;
+    }
 
     const auto [image, copy] = texture_cache.DmaBufferImageCopy(
         copy_info, buffer_operand, image_operand, image_id, IS_IMAGE_UPLOAD);
@@ -1384,9 +1508,6 @@ bool AccelerateDMA::DmaBufferImageCopy(const Tegra::DMA::ImageCopy& copy_info,
         texture_cache.PrepareImage(image_id, true, false);
         image->UploadMemory(buffer->Handle(), offset, copy_span);
     } else {
-        if (offset % BytesPerBlock(image->info.format)) {
-            return false;
-        }
         texture_cache.DownloadImageIntoBuffer(image, buffer->Handle(), offset, copy_span,
                                               buffer_operand.address, buffer_size);
     }
@@ -1413,6 +1534,16 @@ void RasterizerVulkan::UpdateDynamicStates() {
     if (topology_changed) {
         flags[Dirty::DepthBiasEnable] = true;
         flags[Dirty::PrimitiveRestartEnable] = true;
+    }
+
+    const auto* current_fb = texture_cache.GetFramebuffer();
+    const bool is_rescaling =
+        (current_fb != nullptr) ? current_fb->IsRescaled() : texture_cache.IsRescaling();
+    const u32 current_fb_height = UnscaledFramebufferHeight(current_fb, is_rescaling);
+    if (current_fb_height != last_dynamic_fb_height) {
+        last_dynamic_fb_height = current_fb_height;
+        flags[Dirty::Viewports] = true;
+        flags[Dirty::Scissors] = true;
     }
 
     UpdateViewportsState(regs);
@@ -1529,15 +1660,18 @@ void RasterizerVulkan::UpdateViewportsState(Tegra::Engines::Maxwell3D::Regs& reg
 
     const auto* current_fb = texture_cache.GetFramebuffer();
     const bool is_rescaling = (current_fb != nullptr) ? current_fb->IsRescaled() : texture_cache.IsRescaling();
+    const u32 fb_height = UnscaledFramebufferHeight(current_fb, is_rescaling);
     const float scale = is_rescaling ? Settings::values.resolution_info.up_factor : 1.0f;
 
     if (!regs.viewport_scale_offset_enabled) {
+        const u32 raw_clip_h = static_cast<u32>(regs.surface_clip.height);
+        const u32 eff_clip_h = (raw_clip_h == 0 && fb_height > 0) ? fb_height : raw_clip_h;
         float x = static_cast<float>(regs.surface_clip.x) * scale;
         float y = static_cast<float>(regs.surface_clip.y) * scale;
         float width = (std::max)(1.0f, static_cast<float>(regs.surface_clip.width) * scale);
-        float height = (std::max)(1.0f, static_cast<float>(regs.surface_clip.height) * scale);
+        float height = (std::max)(1.0f, static_cast<float>(eff_clip_h > 0 ? eff_clip_h : raw_clip_h) * scale);
         if (regs.window_origin.mode != Maxwell::WindowOrigin::Mode::UpperLeft) {
-            y += height;
+            y = eff_clip_h > 0 ? (static_cast<float>(eff_clip_h) * scale - y) : (y + height);
             height = -height;
         }
         VkViewport viewport{
@@ -1558,14 +1692,22 @@ void RasterizerVulkan::UpdateViewportsState(Tegra::Engines::Maxwell3D::Regs& reg
         return;
     }
     const std::array viewport_list{
-        GetViewportState(device, regs, 0, scale),  GetViewportState(device, regs, 1, scale),
-        GetViewportState(device, regs, 2, scale),  GetViewportState(device, regs, 3, scale),
-        GetViewportState(device, regs, 4, scale),  GetViewportState(device, regs, 5, scale),
-        GetViewportState(device, regs, 6, scale),  GetViewportState(device, regs, 7, scale),
-        GetViewportState(device, regs, 8, scale),  GetViewportState(device, regs, 9, scale),
-        GetViewportState(device, regs, 10, scale), GetViewportState(device, regs, 11, scale),
-        GetViewportState(device, regs, 12, scale), GetViewportState(device, regs, 13, scale),
-        GetViewportState(device, regs, 14, scale), GetViewportState(device, regs, 15, scale),
+        GetViewportState(device, regs, 0, scale, fb_height),
+        GetViewportState(device, regs, 1, scale, fb_height),
+        GetViewportState(device, regs, 2, scale, fb_height),
+        GetViewportState(device, regs, 3, scale, fb_height),
+        GetViewportState(device, regs, 4, scale, fb_height),
+        GetViewportState(device, regs, 5, scale, fb_height),
+        GetViewportState(device, regs, 6, scale, fb_height),
+        GetViewportState(device, regs, 7, scale, fb_height),
+        GetViewportState(device, regs, 8, scale, fb_height),
+        GetViewportState(device, regs, 9, scale, fb_height),
+        GetViewportState(device, regs, 10, scale, fb_height),
+        GetViewportState(device, regs, 11, scale, fb_height),
+        GetViewportState(device, regs, 12, scale, fb_height),
+        GetViewportState(device, regs, 13, scale, fb_height),
+        GetViewportState(device, regs, 14, scale, fb_height),
+        GetViewportState(device, regs, 15, scale, fb_height),
     };
     scheduler.Record([this, viewport_list](vk::CommandBuffer cmdbuf) {
         const u32 num_viewports = std::min<u32>(device.GetMaxViewports(), Maxwell::NumViewports);
@@ -1580,6 +1722,7 @@ void RasterizerVulkan::UpdateScissorsState(Tegra::Engines::Maxwell3D::Regs& regs
     }
     const auto* current_fb = texture_cache.GetFramebuffer();
     const bool is_rescaling = (current_fb != nullptr) ? current_fb->IsRescaled() : texture_cache.IsRescaling();
+    const u32 fb_height = UnscaledFramebufferHeight(current_fb, is_rescaling);
 
     if (!regs.viewport_scale_offset_enabled) {
         const auto& resolution = Settings::values.resolution_info;
@@ -1597,12 +1740,16 @@ void RasterizerVulkan::UpdateScissorsState(Tegra::Engines::Maxwell3D::Regs& regs
             const u32 converted_value = upset >> down_shift;
             return std::max<u32>(converted_value + acumm, 1U);
         };
+        const u32 raw_clip_h = static_cast<u32>(regs.surface_clip.height);
+        const u32 eff_clip_h = (raw_clip_h == 0 && fb_height > 0) ? fb_height : raw_clip_h;
         u32 x = scale_up(regs.surface_clip.x);
         u32 y = scale_up(regs.surface_clip.y);
         u32 width = (std::max)(1u, scale_up(static_cast<u32>(regs.surface_clip.width)));
-        u32 height = (std::max)(1u, scale_up(static_cast<u32>(regs.surface_clip.height)));
+        u32 height = (std::max)(1u, scale_up(eff_clip_h > 0 ? eff_clip_h : raw_clip_h));
         if (regs.window_origin.mode != Maxwell::WindowOrigin::Mode::UpperLeft) {
-            y = scale_up(regs.surface_clip.height) - (y + height);
+            const s32 scaled_clip_h = static_cast<s32>(scale_up(eff_clip_h));
+            y = eff_clip_h > 0 ? static_cast<u32>((std::max)(0, scaled_clip_h - static_cast<s32>(y + height)))
+                               : 0U;
         }
         VkRect2D scissor{};
         scissor.offset.x = static_cast<int32_t>(x);
@@ -1625,22 +1772,22 @@ void RasterizerVulkan::UpdateScissorsState(Tegra::Engines::Maxwell3D::Regs& regs
         down_shift = Settings::values.resolution_info.down_shift;
     }
     const std::array scissor_list{
-        GetScissorState(regs, 0, up_scale, down_shift),
-        GetScissorState(regs, 1, up_scale, down_shift),
-        GetScissorState(regs, 2, up_scale, down_shift),
-        GetScissorState(regs, 3, up_scale, down_shift),
-        GetScissorState(regs, 4, up_scale, down_shift),
-        GetScissorState(regs, 5, up_scale, down_shift),
-        GetScissorState(regs, 6, up_scale, down_shift),
-        GetScissorState(regs, 7, up_scale, down_shift),
-        GetScissorState(regs, 8, up_scale, down_shift),
-        GetScissorState(regs, 9, up_scale, down_shift),
-        GetScissorState(regs, 10, up_scale, down_shift),
-        GetScissorState(regs, 11, up_scale, down_shift),
-        GetScissorState(regs, 12, up_scale, down_shift),
-        GetScissorState(regs, 13, up_scale, down_shift),
-        GetScissorState(regs, 14, up_scale, down_shift),
-        GetScissorState(regs, 15, up_scale, down_shift),
+        GetScissorState(regs, 0, up_scale, down_shift, fb_height),
+        GetScissorState(regs, 1, up_scale, down_shift, fb_height),
+        GetScissorState(regs, 2, up_scale, down_shift, fb_height),
+        GetScissorState(regs, 3, up_scale, down_shift, fb_height),
+        GetScissorState(regs, 4, up_scale, down_shift, fb_height),
+        GetScissorState(regs, 5, up_scale, down_shift, fb_height),
+        GetScissorState(regs, 6, up_scale, down_shift, fb_height),
+        GetScissorState(regs, 7, up_scale, down_shift, fb_height),
+        GetScissorState(regs, 8, up_scale, down_shift, fb_height),
+        GetScissorState(regs, 9, up_scale, down_shift, fb_height),
+        GetScissorState(regs, 10, up_scale, down_shift, fb_height),
+        GetScissorState(regs, 11, up_scale, down_shift, fb_height),
+        GetScissorState(regs, 12, up_scale, down_shift, fb_height),
+        GetScissorState(regs, 13, up_scale, down_shift, fb_height),
+        GetScissorState(regs, 14, up_scale, down_shift, fb_height),
+        GetScissorState(regs, 15, up_scale, down_shift, fb_height),
     };
     scheduler.Record([this, scissor_list](vk::CommandBuffer cmdbuf) {
         const u32 num_scissors = std::min<u32>(device.GetMaxViewports(), Maxwell::NumViewports);
@@ -2017,10 +2164,8 @@ void RasterizerVulkan::UpdateDepthClampEnable(Tegra::Engines::Maxwell3D::Regs& r
     if (!device.SupportsDynamicState3DepthClampEnable()) {
         return;
     }
-    const bool is_enabled = !(regs.viewport_clip_control.geometry_clip ==
-                                  Maxwell::ViewportClipControl::GeometryClip::FrustumXYZ ||
-                              regs.viewport_clip_control.geometry_clip ==
-                                  Maxwell::ViewportClipControl::GeometryClip::FrustumZ);
+    const bool is_enabled =
+        MaxwellDepthClampClip(regs, device.IsExtDepthClipEnableSupported()).clamp;
     scheduler.Record(
         [is_enabled](vk::CommandBuffer cmdbuf) { cmdbuf.SetDepthClampEnableEXT(is_enabled); });
 }

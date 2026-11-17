@@ -245,6 +245,14 @@ class DriverViewModel : ViewModel() {
                 targets.add(File(cacheDir, "shader/$name"))
             }
             targets.add(File(cacheDir, "vulkan_pipelines.bin"))
+            targets.add(File(cacheDir, "vulkan_static_pipelines.bin"))
+            targets.add(File(cacheDir, "mesa_shader_cache"))
+        }
+        val filesDir = YuzuApplication.appContext.filesDir
+        if (filesDir != null) {
+            targets.add(File(filesDir, "vulkan_static_pipelines.bin"))
+            targets.add(File(filesDir, "mesa_shader_cache"))
+            targets.add(File(filesDir, "gpu/vk_file_redirect/mesa_shader_cache"))
         }
 
         for (target in targets) {
@@ -264,37 +272,7 @@ class DriverViewModel : ViewModel() {
     }
 
     private fun deleteAllShadersInternal() {
-        val targets = mutableListOf<File>()
-        val userDir = DirectoryInitialization.userDirectory
-        if (userDir != null) {
-            targets.add(File(userDir, "cache/shader"))
-            targets.add(File(userDir, "shader"))
-        }
-        val extFiles = YuzuApplication.appContext.getExternalFilesDir(null)
-        if (extFiles != null) {
-            targets.add(File(extFiles, "shader"))
-            targets.add(File(extFiles, "cache/shader"))
-        }
-        val cacheDir = YuzuApplication.appContext.cacheDir
-        if (cacheDir != null) {
-            targets.add(File(cacheDir, "shader"))
-            targets.add(File(cacheDir, "vulkan_pipelines.bin"))
-        }
-
-        for (target in targets) {
-            try {
-                if (target.exists()) {
-                    if (target.isDirectory) {
-                        target.deleteRecursively()
-                    } else {
-                        target.delete()
-                    }
-                    Log.info("[DriverViewModel] Deleted all shader cache target: ${target.absolutePath}")
-                }
-            } catch (e: Exception) {
-                Log.error("[DriverViewModel] Failed to delete all shader cache in ${target.absolutePath}: ${e.message}")
-            }
-        }
+        GpuDriverHelper.clearShaderAndPipelineCaches(YuzuApplication.appContext)
     }
 
     val isPerGame: Boolean
@@ -438,16 +416,20 @@ class DriverViewModel : ViewModel() {
     fun onLaunchGame(game: Game? = null) {
         _isDriverReady.value = false
 
-        if (game != null) {
-            try {
-                GpuDriverHelper.applyPerGameDriverConfig(game.programIdHex, game.title)
-            } catch (e: Exception) {
-                Log.warning("[DriverViewModel] Early applyPerGameDriverConfig failed: ${e.message}")
-            }
-        }
-
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
+                try {
+                    YuzuApplication.driverInitDeferred.await()
+                } catch (_: Throwable) {}
+                if (game != null) {
+                    GpuDriverHelper.activeGameProgramId = game.programIdHex
+                    GpuDriverHelper.activeGameTitle = game.title
+                    try {
+                        GpuDriverHelper.applyPerGameDriverConfig(game.programIdHex, game.title)
+                    } catch (e: Exception) {
+                        Log.warning("[DriverViewModel] Per-game applyPerGameDriverConfig failed: ${e.message}")
+                    }
+                }
                 var selectedDriverPath = ""
                 var isCustomDriverForGame = false
 
@@ -488,6 +470,7 @@ class DriverViewModel : ViewModel() {
                 }
 
                 if (!isCustomDriverForGame) {
+                    GpuDriverHelper.ensureStormDriverReadyForLaunch()
                     selectedDriverPath = StringSetting.DRIVER_PATH.getString(needsGlobal = true)
                     if (selectedDriverPath.isNotEmpty() && !File(selectedDriverPath).exists()) {
                         val fallback = GpuDriverHelper.getDrivers().firstOrNull()?.first

@@ -42,7 +42,8 @@ static std::string ResolveSettingKey(std::string key) {
 static bool IsFrontendOnlySettingKey(const std::string& key) {
     return key == "show_quick_save_load_overlay" ||
            key == "ui_design_style" ||
-           key == "performance_preset";
+           key == "performance_preset" ||
+           key == "button_slide";
 }
 
 static Settings::BasicSetting* getBasicSetting(JNIEnv* env, jstring jkey) {

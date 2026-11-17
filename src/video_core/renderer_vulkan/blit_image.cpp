@@ -630,7 +630,8 @@ void BlitImageHelper::BlitColor(const Framebuffer* dst_framebuffer, const ImageV
 void BlitImageHelper::BlitColor(const Framebuffer* dst_framebuffer, VkImageView src_image_view,
                                 VkImage src_image, VkSampler src_sampler,
                                 const Region2D& dst_region, const Region2D& src_region,
-                                const Extent3D& src_size) {
+                                const Extent3D& src_size,
+                                const std::optional<VkRect2D>& scissor) {
     if (!dst_framebuffer || src_image_view == VK_NULL_HANDLE || src_image == VK_NULL_HANDLE ||
         src_sampler == VK_NULL_HANDLE) {
         return;
@@ -644,18 +645,47 @@ void BlitImageHelper::BlitColor(const Framebuffer* dst_framebuffer, VkImageView 
     if (!pipeline) {
         return;
     }
+
+    // Clip the destination rectangle to the scissor; the viewport keeps the full rectangle so
+    // the texture coordinates are unchanged.
+    std::optional<VkRect2D> clip;
+    if (scissor) {
+        const s64 x0 = (std::max)(s64{(std::min)(dst_region.start.x, dst_region.end.x)},
+                                  s64{scissor->offset.x});
+        const s64 y0 = (std::max)(s64{(std::min)(dst_region.start.y, dst_region.end.y)},
+                                  s64{scissor->offset.y});
+        const s64 x1 = (std::min)(s64{(std::max)(dst_region.start.x, dst_region.end.x)},
+                                  s64{scissor->offset.x} + scissor->extent.width);
+        const s64 y1 = (std::min)(s64{(std::max)(dst_region.start.y, dst_region.end.y)},
+                                  s64{scissor->offset.y} + scissor->extent.height);
+        if (x1 <= x0 || y1 <= y0) {
+            return; // Fully scissored out.
+        }
+        clip = VkRect2D{
+            .offset = {static_cast<s32>(x0), static_cast<s32>(y0)},
+            .extent = {static_cast<u32>(x1 - x0), static_cast<u32>(y1 - y0)},
+        };
+    }
+
+    // Read the framebuffer now: by the time the worker runs this, the texture cache may have
+    // retired it (moved into its delayed-destruction ring), leaving a null handle behind.
+    const VkRenderPass render_pass = dst_framebuffer->RenderPass();
+    const VkFramebuffer framebuffer_handle = dst_framebuffer->Handle();
+    const VkExtent2D render_area = dst_framebuffer->RenderArea();
     scheduler.RequestOutsideRenderPassOperationContext();
-    scheduler.Record([this, dst_framebuffer, src_image_view, src_image, src_sampler, dst_region,
-                      src_region, src_size, pipeline, layout](vk::CommandBuffer cmdbuf) {
-        TransitionImageLayout(cmdbuf, src_image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    scheduler.Record([this, render_pass, framebuffer_handle, render_area, src_image_view,
+                      src_image, src_sampler, dst_region, src_region, src_size, pipeline, layout,
+                      clip](vk::CommandBuffer cmdbuf) {
+        // Images stay in GENERAL everywhere: only make earlier writes visible.
+        TransitionImageLayout(cmdbuf, src_image, VK_IMAGE_LAYOUT_GENERAL);
         const VkRenderPassBeginInfo renderpass_bi{
             .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
             .pNext = nullptr,
-            .renderPass = dst_framebuffer->RenderPass(),
-            .framebuffer = dst_framebuffer->Handle(),
+            .renderPass = render_pass,
+            .framebuffer = framebuffer_handle,
             .renderArea = {
                 .offset = {0, 0},
-                .extent = dst_framebuffer->RenderArea(),
+                .extent = render_area,
             },
             .clearValueCount = 0,
             .pClearValues = nullptr,
@@ -667,6 +697,9 @@ void BlitImageHelper::BlitColor(const Framebuffer* dst_framebuffer, VkImageView 
         cmdbuf.BindDescriptorSets(VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, descriptor_set,
                                   nullptr);
         BindBlitState(cmdbuf, layout, dst_region, src_region, src_size);
+        if (clip) {
+            cmdbuf.SetScissor(0, *clip);
+        }
         cmdbuf.Draw(3, 1, 0, 0);
         cmdbuf.EndRenderPass();
     });
