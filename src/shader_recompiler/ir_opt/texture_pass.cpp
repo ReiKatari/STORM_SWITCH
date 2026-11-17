@@ -634,7 +634,8 @@ public:
                    desc.secondary_cbuf_offset == existing.secondary_cbuf_offset &&
                    desc.secondary_shift_left == existing.secondary_shift_left &&
                    desc.count == existing.count && desc.size_shift == existing.size_shift &&
-                   desc.has_secondary == existing.has_secondary;
+                   desc.has_secondary == existing.has_secondary &&
+                   desc.is_integer == existing.is_integer;
         });
     }
 
@@ -897,8 +898,10 @@ void TexturePass(Environment& env, IR::Program& program, const HostTranslateInfo
         }
         default:
             if (flags.type == TextureType::Buffer) {
+                const bool is_integer{is_texture_pixel_format_integer(cbuf)};
                 index = descriptors.Add(TextureBufferDescriptor{
                     .has_secondary = cbuf.has_secondary,
+                    .is_integer = is_integer,
                     .cbuf_index = cbuf.index,
                     .cbuf_offset = cbuf.offset,
                     .shift_left = cbuf.shift_left,
@@ -908,6 +911,7 @@ void TexturePass(Environment& env, IR::Program& program, const HostTranslateInfo
                     .count = count,
                     .size_shift = size_shift,
                 });
+                flags.is_integer.Assign(is_integer ? 1 : 0);
             } else {
                 count = std::min(count, sampled_dynamic_cap);
                 const bool is_integer{is_texture_pixel_format_integer(cbuf)};

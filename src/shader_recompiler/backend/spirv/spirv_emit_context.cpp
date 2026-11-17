@@ -560,7 +560,7 @@ void EmitContext::DefineCommonTypes(const Info& info) {
         U16 = Name(TypeInt(16, false), "u16");
         S16 = Name(TypeInt(16, true), "s16");
     }
-    if (info.uses_int64 && profile.support_int64) {
+    if ((info.uses_int64 || info.uses_global_memory) && profile.support_int64) {
         AddCapability(spv::Capability::Int64);
         U64 = Name(TypeInt(64, false), "u64");
     }
@@ -949,64 +949,168 @@ void EmitContext::DefineGlobalMemoryFunctions(const Info& info) {
     const auto define_body{[&](DefPtr ssbo_member, Id addr, Id element_pointer, u32 shift,
                                size_t count, auto&& callback) {
         AddLabel();
+        struct ResolvedSsbo {
+            size_t index;
+            Id ssbo_addr;
+            Id unaligned_addr;
+            Id size_u32;
+            Id has_valid_size;
+            Id non_null;
+        };
+        boost::container::static_vector<ResolvedSsbo, Info::MAX_SSBOS> resolved;
+        const Id max_valid_size{Const(0x10000000u)};
+        const Id fallback_size_u64{Constant(U64, 0x800000ULL)};
         const size_t num_buffers{info.storage_buffers_descriptors.size()};
         for (size_t index = 0; index < num_buffers; ++index) {
-            if (info.nvn_buffer_used.any() && !info.nvn_buffer_used[index]) {
+            const auto& ssbo{info.storage_buffers_descriptors[index]};
+            if (ssbo.cbuf_index >= Info::MAX_CBUFS ||
+                (info.constant_buffer_mask & (1U << ssbo.cbuf_index)) == 0) {
                 continue;
             }
-            const auto& ssbo{info.storage_buffers_descriptors[index]};
+            const u32 cbuf_size{info.constant_buffer_used_sizes[ssbo.cbuf_index]};
+            if (ssbo.cbuf_offset + 8 > cbuf_size) {
+                continue;
+            }
+            const bool is_nvn_cbuf = (ssbo.cbuf_index == 0) &&
+                                     (ssbo.cbuf_offset >= info.nvn_buffer_base) &&
+                                     (ssbo.cbuf_offset < info.nvn_buffer_base + 16 * 0x10);
+            if (is_nvn_cbuf) {
+                const size_t nvn_index = (ssbo.cbuf_offset - info.nvn_buffer_base) / 0x10;
+                if (nvn_index < 16 && info.nvn_buffer_used.any() && !info.nvn_buffer_used[nvn_index]) {
+                    continue;
+                }
+            }
+            const bool has_size_in_cbuf = (ssbo.cbuf_offset + 12 <= cbuf_size);
+            const bool has_size_hi_in_cbuf = (ssbo.cbuf_offset + 16 <= cbuf_size);
             Id addr_u32x2{};
             Id size_u32{};
+            Id size_hi_u32{};
             if (aliasing) {
-                const Id ssbo_addr_cbuf_offset{Const(ssbo.cbuf_offset / 8)};
-                const Id ssbo_size_cbuf_offset{Const(ssbo.cbuf_offset / 4 + 2)};
-                const Id ssbo_addr_pointer{OpAccessChain(
-                    uniform_types.U32x2, cbufs[ssbo.cbuf_index].U32x2, zero, ssbo_addr_cbuf_offset)};
-                const Id ssbo_size_pointer{OpAccessChain(
-                    uniform_types.U32, cbufs[ssbo.cbuf_index].U32, zero, ssbo_size_cbuf_offset)};
-                addr_u32x2 = OpLoad(U32[2], ssbo_addr_pointer);
-                size_u32 = OpLoad(U32[1], ssbo_size_pointer);
+                if (Sirit::ValidId(cbufs[ssbo.cbuf_index].U32x2) && (ssbo.cbuf_offset % 8) == 0) {
+                    const Id ssbo_addr_cbuf_offset{Const(ssbo.cbuf_offset / 8)};
+                    const Id ssbo_addr_pointer{OpAccessChain(
+                        uniform_types.U32x2, cbufs[ssbo.cbuf_index].U32x2, zero, ssbo_addr_cbuf_offset)};
+                    addr_u32x2 = OpLoad(U32[2], ssbo_addr_pointer);
+                } else if (Sirit::ValidId(cbufs[ssbo.cbuf_index].U32)) {
+                    const Id lo_ptr{OpAccessChain(
+                        uniform_types.U32, cbufs[ssbo.cbuf_index].U32, zero, Const(ssbo.cbuf_offset / 4))};
+                    const Id hi_ptr{OpAccessChain(
+                        uniform_types.U32, cbufs[ssbo.cbuf_index].U32, zero, Const(ssbo.cbuf_offset / 4 + 1))};
+                    addr_u32x2 = OpCompositeConstruct(U32[2], OpLoad(U32[1], lo_ptr), OpLoad(U32[1], hi_ptr));
+                } else {
+                    continue;
+                }
+                if (has_size_in_cbuf && Sirit::ValidId(cbufs[ssbo.cbuf_index].U32)) {
+                    const Id ssbo_size_cbuf_offset{Const(ssbo.cbuf_offset / 4 + 2)};
+                    const Id ssbo_size_pointer{OpAccessChain(
+                        uniform_types.U32, cbufs[ssbo.cbuf_index].U32, zero, ssbo_size_cbuf_offset)};
+                    size_u32 = OpLoad(U32[1], ssbo_size_pointer);
+                    if (has_size_hi_in_cbuf) {
+                        const Id ssbo_size_hi_pointer{OpAccessChain(
+                            uniform_types.U32, cbufs[ssbo.cbuf_index].U32, zero, Const(ssbo.cbuf_offset / 4 + 3))};
+                        size_hi_u32 = OpLoad(U32[1], ssbo_size_hi_pointer);
+                    }
+                }
             } else {
                 const u32 vec_idx{ssbo.cbuf_offset / 16};
                 const u32 comp_idx{(ssbo.cbuf_offset / 4) % 4};
                 const Id vec_ptr{OpAccessChain(
                     uniform_types.U32x4, cbufs[ssbo.cbuf_index].U32x4, zero, Const(vec_idx))};
                 const Id vec_val{OpLoad(U32[4], vec_ptr)};
-                if (comp_idx == 0) {
-                    addr_u32x2 = OpVectorShuffle(U32[2], vec_val, vec_val, 0, 1);
-                    size_u32 = OpCompositeExtract(U32[1], vec_val, 2);
+                if (comp_idx <= 2) {
+                    addr_u32x2 = OpVectorShuffle(U32[2], vec_val, vec_val, comp_idx, comp_idx + 1);
                 } else {
-                    addr_u32x2 = OpVectorShuffle(U32[2], vec_val, vec_val, 2, 3);
                     const Id next_ptr{OpAccessChain(
                         uniform_types.U32x4, cbufs[ssbo.cbuf_index].U32x4, zero, Const(vec_idx + 1))};
                     const Id next_val{OpLoad(U32[4], next_ptr)};
-                    size_u32 = OpCompositeExtract(U32[1], next_val, 0);
+                    addr_u32x2 = OpCompositeConstruct(U32[2], OpCompositeExtract(U32[1], vec_val, 3),
+                                                      OpCompositeExtract(U32[1], next_val, 0));
+                }
+                if (has_size_in_cbuf) {
+                    const u32 size_word{ssbo.cbuf_offset / 4 + 2};
+                    const u32 size_vec_idx{size_word / 4};
+                    const u32 size_comp_idx{size_word % 4};
+                    if (size_vec_idx == vec_idx) {
+                        size_u32 = OpCompositeExtract(U32[1], vec_val, size_comp_idx);
+                        if (has_size_hi_in_cbuf && size_comp_idx < 3) {
+                            size_hi_u32 = OpCompositeExtract(U32[1], vec_val, size_comp_idx + 1);
+                        }
+                    } else {
+                        const Id size_vec_ptr{OpAccessChain(
+                            uniform_types.U32x4, cbufs[ssbo.cbuf_index].U32x4, zero, Const(size_vec_idx))};
+                        const Id size_vec_val{OpLoad(U32[4], size_vec_ptr)};
+                        size_u32 = OpCompositeExtract(U32[1], size_vec_val, size_comp_idx);
+                        if (has_size_hi_in_cbuf && size_comp_idx < 3) {
+                            size_hi_u32 = OpCompositeExtract(U32[1], size_vec_val, size_comp_idx + 1);
+                        }
+                    }
+                    if (has_size_hi_in_cbuf && !Sirit::ValidId(size_hi_u32)) {
+                        const u32 hi_word{ssbo.cbuf_offset / 4 + 3};
+                        const Id hi_vec_ptr{OpAccessChain(
+                            uniform_types.U32x4, cbufs[ssbo.cbuf_index].U32x4, zero, Const(hi_word / 4))};
+                        size_hi_u32 = OpCompositeExtract(U32[1], OpLoad(U32[4], hi_vec_ptr), hi_word % 4);
+                    }
                 }
             }
-
             const u64 ssbo_align_mask{~(profile.min_ssbo_alignment - 1U)};
             const Id unaligned_addr{OpBitcast(U64, addr_u32x2)};
             const Id ssbo_addr{OpBitwiseAnd(U64, unaligned_addr, Constant(U64, ssbo_align_mask))};
-            const Id ssbo_size{OpUConvert(U64, size_u32)};
-            const Id ssbo_end{OpIAdd(U64, ssbo_addr, ssbo_size)};
-            const Id cond{OpLogicalAnd(U1, OpUGreaterThanEqual(U1, addr, ssbo_addr),
-                                       OpULessThan(U1, addr, ssbo_end))};
+            const Id non_null{OpINotEqual(U1, unaligned_addr, Constant(U64, 0ULL))};
+            Id has_valid_size{};
+            if (Sirit::ValidId(size_u32)) {
+                Id ok{OpLogicalAnd(U1, OpINotEqual(U1, size_u32, zero),
+                                   OpULessThanEqual(U1, size_u32, max_valid_size))};
+                if (Sirit::ValidId(size_hi_u32)) {
+                    ok = OpLogicalAnd(U1, ok, OpIEqual(U1, size_hi_u32, zero));
+                }
+                has_valid_size = ok;
+            }
+            resolved.push_back({
+                .index = index,
+                .ssbo_addr = ssbo_addr,
+                .unaligned_addr = unaligned_addr,
+                .size_u32 = size_u32,
+                .has_valid_size = has_valid_size,
+                .non_null = non_null,
+            });
+        }
+        const auto emit_match{[&](const ResolvedSsbo& entry, Id cond) {
             const Id then_label{OpLabel()};
             const Id else_label{OpLabel()};
             OpSelectionMerge(else_label, spv::SelectionControlMask::MaskNone);
             OpBranchConditional(cond, then_label, else_label);
             AddLabel(then_label);
-            const Id ssbo_offset{OpUConvert(U32[1], OpISub(U64, addr, ssbo_addr))};
+            const Id ssbo_offset{OpUConvert(U32[1], OpISub(U64, addr, entry.ssbo_addr))};
             if ((aliasing && (shift <= 2 || profile.min_ssbo_alignment >= (1ULL << shift))) || count == 1) {
-                const Id ssbo_id{ssbos[index].*ssbo_member};
+                const Id ssbo_id{ssbos[entry.index].*ssbo_member};
                 const Id ssbo_index{OpShiftRightLogical(U32[1], ssbo_offset, Const(shift))};
                 const Id ssbo_pointer{OpAccessChain(element_pointer, ssbo_id, zero, ssbo_index)};
-                callback(ssbo_pointer, index, ssbo_offset, true);
+                callback(ssbo_pointer, entry.index, ssbo_offset, true);
             } else {
                 const Id base_index{OpShiftRightLogical(U32[1], ssbo_offset, Const(2u))};
-                callback(base_index, index, ssbo_offset, false);
+                callback(base_index, entry.index, ssbo_offset, false);
             }
             AddLabel(else_label);
+        }};
+        for (const auto& entry : resolved) {
+            if (!Sirit::ValidId(entry.has_valid_size)) {
+                continue;
+            }
+            const Id ssbo_end{OpIAdd(U64, entry.unaligned_addr, OpUConvert(U64, entry.size_u32))};
+            const Id in_range{OpLogicalAnd(U1, OpUGreaterThanEqual(U1, addr, entry.unaligned_addr),
+                                           OpULessThan(U1, addr, ssbo_end))};
+            const Id cond{OpLogicalAnd(U1, OpLogicalAnd(U1, entry.non_null, entry.has_valid_size), in_range)};
+            emit_match(entry, cond);
+        }
+        for (const auto& entry : resolved) {
+            const Id fallback_end{OpIAdd(U64, entry.unaligned_addr, fallback_size_u64)};
+            const Id in_fallback{OpLogicalAnd(U1, OpUGreaterThanEqual(U1, addr, entry.unaligned_addr),
+                                              OpULessThan(U1, addr, fallback_end))};
+            Id cond{OpLogicalAnd(U1, entry.non_null, in_fallback)};
+            if (Sirit::ValidId(entry.has_valid_size)) {
+                cond = OpLogicalAnd(U1, cond, OpLogicalNot(U1, entry.has_valid_size));
+            }
+            emit_match(entry, cond);
         }
     }};
     const auto define_load{[&](DefPtr ssbo_member, Id element_pointer, Id type, u32 shift, size_t count) {
@@ -1185,6 +1289,9 @@ void EmitContext::DefineConstantBuffers(const Info& info, u32& binding) {
         return;
     }
     IR::Type types{info.used_constant_buffer_types | info.used_indirect_cbuf_types};
+    if (info.uses_global_memory && profile.support_int64) {
+        types |= IR::Type::U32 | IR::Type::U32x2;
+    }
     if (True(types & IR::Type::U8)) {
         if (profile.support_int8 && profile.support_uniform_and_storage_buffer_8bit) {
             DefineConstBuffers(*this, info, &UniformDefinitions::U8, binding, U8, 'u', sizeof(u8));
@@ -1292,6 +1399,9 @@ void EmitContext::DefineStorageBuffers(const Info& info, u32& binding) {
     IR::Type used_types{profile.support_descriptor_aliasing ? info.used_storage_buffer_types
                                                             : IR::Type::U32};
     used_types |= IR::Type::U32;
+    if (info.uses_global_memory && profile.support_int64 && profile.support_descriptor_aliasing) {
+        used_types |= IR::Type::U32x2 | IR::Type::U32x4;
+    }
     if (profile.support_int8 && profile.support_storage_buffer_8bit &&
         True(used_types & IR::Type::U8)) {
         DefineSsbos(*this, storage_types.U8, &StorageDefinitions::U8, info, binding, U8,
@@ -1379,21 +1489,35 @@ void EmitContext::DefineTextureBuffers(const Info& info, u32& binding) {
         return;
     }
     const spv::ImageFormat format{spv::ImageFormat::Unknown};
-    image_buffer_type = TypeImage(F32[1], spv::Dim::Buffer, 0U, false, false, 1, format);
+    const Id f32_img_type{TypeImage(F32[1], spv::Dim::Buffer, 0U, false, false, 1, format)};
+    const Id f32_ptr_type{TypePointer(spv::StorageClass::UniformConstant, f32_img_type)};
+    image_buffer_type = f32_img_type;
+    Id u32_img_type{};
+    Id u32_ptr_type{};
 
-    const Id type{TypePointer(spv::StorageClass::UniformConstant, image_buffer_type)};
     texture_buffers.reserve(info.texture_buffer_descriptors.size());
     for (const TextureBufferDescriptor& desc : info.texture_buffer_descriptors) {
-        if (desc.count != 1) {
-            throw NotImplementedException("Array of texture buffers");
+        Id img_type{f32_img_type};
+        Id ptr_type{f32_ptr_type};
+        if (desc.is_integer) {
+            if (!Sirit::ValidId(u32_img_type)) {
+                u32_img_type = TypeImage(U32[1], spv::Dim::Buffer, 0U, false, false, 1, format);
+                u32_ptr_type = TypePointer(spv::StorageClass::UniformConstant, u32_img_type);
+            }
+            img_type = u32_img_type;
+            ptr_type = u32_ptr_type;
         }
-        const Id id{AddGlobalVariable(type, spv::StorageClass::UniformConstant)};
+        const Id desc_type{DescType(*this, img_type, ptr_type, desc.count)};
+        const Id id{AddGlobalVariable(desc_type, spv::StorageClass::UniformConstant)};
         Decorate(id, spv::Decoration::Binding, binding);
         Decorate(id, spv::Decoration::DescriptorSet, 0U);
         Name(id, NameOf(stage, desc, "texbuf"));
         texture_buffers.push_back({
             .id = id,
+            .image_type = img_type,
+            .pointer_type = ptr_type,
             .count = desc.count,
+            .is_integer = desc.is_integer,
         });
         if (profile.supported_spirv >= 0x00010400) {
             interfaces.push_back(id);

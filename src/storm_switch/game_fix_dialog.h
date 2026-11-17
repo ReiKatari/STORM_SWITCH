@@ -50,7 +50,11 @@ public:
     bool IsDontAskChecked() const { return m_dont_ask_checked; }
     const std::vector<std::string>& GetExcludedKeys() const { return m_excluded_keys; }
 
+protected:
+    void showEvent(QShowEvent* event) override;
+
 private:
+    void EnsureUIInitialized();
     void SetupUI();
     void DetectHardwareInfo();
     void SelectOptimizationMode(OptimizationMode mode);
@@ -68,6 +72,7 @@ private:
 
     const Core::GameFixProfile* m_profile{nullptr};
 
+    bool m_ui_initialized{false};
     bool m_apply_fixes{true};
     bool m_save_to_ini{true};
     bool m_dont_ask_checked{false};

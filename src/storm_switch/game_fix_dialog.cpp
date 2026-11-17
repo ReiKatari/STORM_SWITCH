@@ -244,11 +244,23 @@ GameFixDialog::GameFixDialog(QWidget* parent, u64 title_id_, const QString& game
     setMinimumSize(720, 540);
     StormUI::StructureEngine::InstallEscDismiss(this);
 
+}
+
+GameFixDialog::~GameFixDialog() = default;
+
+void GameFixDialog::EnsureUIInitialized() {
+    if (m_ui_initialized) {
+        return;
+    }
+    m_ui_initialized = true;
     DetectHardwareInfo();
     SetupUI();
 }
 
-GameFixDialog::~GameFixDialog() = default;
+void GameFixDialog::showEvent(QShowEvent* event) {
+    EnsureUIInitialized();
+    QDialog::showEvent(event);
+}
 
 void GameFixDialog::DetectHardwareInfo() {
     // 1. Logical CPU Cores
@@ -1263,6 +1275,7 @@ void GameFixDialog::SaveAsSettingsProfile() {
 
 GameFixDialog::Result GameFixDialog::Execute() {
     if (!m_profile && m_title_id == 0 && m_game_path.isEmpty()) {
+        EnsureUIInitialized();
         exec();
         return m_result;
     }
@@ -1298,6 +1311,7 @@ GameFixDialog::Result GameFixDialog::Execute() {
         return Result::ApplyAndLaunch;
     }
 
+    EnsureUIInitialized();
     exec();
 
     m_dont_ask_checked = m_dont_ask_cb && m_dont_ask_cb->isChecked();

@@ -47,7 +47,10 @@ struct TextureDefinition {
 
 struct TextureBufferDefinition {
     Id id;
+    Id image_type;
+    Id pointer_type;
     u32 count;
+    bool is_integer;
 };
 
 struct ImageBufferDefinition {

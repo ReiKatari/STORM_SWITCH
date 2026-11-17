@@ -36,8 +36,11 @@ u32 GetBytesPerPixel(const Tegra::FramebufferConfig& framebuffer) {
 }
 
 std::size_t GetSizeInBytes(const Tegra::FramebufferConfig& framebuffer) {
-    return static_cast<std::size_t>(framebuffer.stride) *
-           static_cast<std::size_t>(framebuffer.height) * GetBytesPerPixel(framebuffer);
+    const std::size_t effective_stride =
+        (std::max<std::size_t>)(1, framebuffer.stride != 0 ? framebuffer.stride : framebuffer.width);
+    const std::size_t effective_height = (std::max<std::size_t>)(1, framebuffer.height);
+    const std::size_t bpp = (std::max<std::size_t>)(1, GetBytesPerPixel(framebuffer));
+    return effective_stride * effective_height * bpp;
 }
 
 VkFormat GetFormat(const Tegra::FramebufferConfig& framebuffer) {
@@ -63,8 +66,8 @@ Layer::Layer(const Device& device, MemoryAllocator& memory_allocator_, Scheduler
     , scheduler(scheduler_)
     , device_memory(device_memory_)
     , filters(filters_)
-    , image_count(image_count_)
-    , current_output_size(output_size)
+    , image_count((std::max<size_t>)(1, image_count_))
+    , current_output_size{(std::max)(1u, output_size.width), (std::max)(1u, output_size.height)}
     , scaling_filter_setting(filters.get_scaling_filter())
 {
     CreateDescriptorPool(device);
@@ -98,15 +101,15 @@ void Layer::ConfigureDraw(const Device& device, PresentPushConstants* out_push_c
     RefreshResources(device, framebuffer);
 
     const VkExtent2D current_render_extent{
-        .width = scaled_width,
-        .height = scaled_height,
+        .width = (std::max)(1u, scaled_width),
+        .height = (std::max)(1u, scaled_height),
     };
 
     SetAntiAliasPass(device, current_render_extent);
 
     const VkExtent2D window_size{
-        .width = layout.screen.GetWidth(),
-        .height = layout.screen.GetHeight(),
+        .width = (std::max)(1u, layout.screen.GetWidth()),
+        .height = (std::max)(1u, layout.screen.GetHeight()),
     };
     UpdateScalingFilter(device, window_size);
 
@@ -179,9 +182,12 @@ void Layer::CreateRawImages(const Device& device, const Tegra::FramebufferConfig
     raw_images.resize(image_count);
     raw_image_views.resize(image_count);
 
+    const VkExtent2D raw_extent{
+        .width = (std::max)(1u, framebuffer.width),
+        .height = (std::max)(1u, framebuffer.height),
+    };
     for (size_t i = 0; i < image_count; ++i) {
-        raw_images[i] =
-            CreateWrappedImage(memory_allocator, {framebuffer.width, framebuffer.height}, format);
+        raw_images[i] = CreateWrappedImage(memory_allocator, raw_extent, format);
         raw_image_views[i] = CreateWrappedImageView(device, raw_images[i], format);
     }
 }
@@ -315,6 +321,9 @@ void Layer::UpdateDescriptorSet(const Device& device, VkImageView image_view, Vk
 }
 
 void Layer::UpdateRawImage(const Tegra::FramebufferConfig& framebuffer, size_t image_index) {
+    if (framebuffer.width == 0 || framebuffer.height == 0) {
+        return;
+    }
     const std::span<u8> mapped_span = buffer.Mapped();
 
     const u64 image_offset = GetRawImageOffset(framebuffer, image_index);
@@ -325,9 +334,10 @@ void Layer::UpdateRawImage(const Tegra::FramebufferConfig& framebuffer, size_t i
     // TODO(Rodrigo): Read this from HLE
     constexpr u32 block_height_log2 = 4;
     const u32 bytes_per_pixel = GetBytesPerPixel(framebuffer);
+    const u32 effective_stride = framebuffer.stride != 0 ? framebuffer.stride : framebuffer.width;
     const u64 linear_size{GetSizeInBytes(framebuffer)};
     const u64 tiled_size{Tegra::Texture::CalculateSize(
-        true, bytes_per_pixel, framebuffer.stride, framebuffer.height, 1, block_height_log2, 0)};
+        true, bytes_per_pixel, effective_stride, framebuffer.height, 1, block_height_log2, 0)};
     if (host_ptr) {
         Tegra::Texture::UnswizzleTexture(
             mapped_span.subspan(image_offset, linear_size), std::span(host_ptr, tiled_size),

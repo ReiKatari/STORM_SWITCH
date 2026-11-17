@@ -18,6 +18,7 @@
 #include <QPropertyAnimation>
 #include <QPushButton>
 #include <QTabWidget>
+#include <QTimer>
 #include <QStackedWidget>
 #include <QDialog>
 #include <QVariantAnimation>
@@ -494,6 +495,18 @@ protected:
         const QEvent::Type type = event->type();
 
         if (type == QEvent::Show) {
+            if (auto* themed_w = qobject_cast<QWidget*>(watched)) {
+                if (themed_w->property("_stormDialogThemed").toBool()) {
+                    const auto pal = StormTheme::GetThemePalette();
+                    const QString sig = QStringLiteral("%1|%2|%3|%4|%5").arg(
+                        QString::fromStdString(GetActiveDesignId()),
+                        pal.bg, pal.surface, pal.accent, pal.textPrimary);
+                    if (themed_w->property("_stormThemeSig").toString().isEmpty()) {
+                        themed_w->setProperty("_stormThemeSig", sig);
+                        themed_w->setProperty("_stormLastBaseQss", BuildDialogStylesheet(pal));
+                    }
+                }
+            }
             // 1. Smooth 130ms windowOpacity fade-in for top-level QDialogs (Zero-Idle-CPU)
             if (auto* dialog = qobject_cast<QDialog*>(watched)) {
                 if (dialog->isWindow() &&
@@ -611,11 +624,42 @@ protected:
             }
         } else if (type == QEvent::PaletteChange || type == QEvent::ThemeChange ||
                    type == QEvent::ApplicationPaletteChange) {
-            // Live Theme & Palette Refresh for dialogs
+            // Live Theme & Palette Refresh for dialogs (re-entrancy safe for Qt 6.11+)
             if (auto* w = qobject_cast<QWidget*>(watched)) {
-                if (w->property("_stormDialogThemed").toBool()) {
+                if (w->property("_stormDialogThemed").toBool() && w->isVisible() &&
+                    !w->property("_stormRefreshingStylesheet").toBool()) {
                     const auto pal = StormTheme::GetThemePalette();
-                    w->setStyleSheet(BuildDialogStylesheet(pal));
+                    const QString sig = QStringLiteral("%1|%2|%3|%4|%5").arg(
+                        QString::fromStdString(GetActiveDesignId()),
+                        pal.bg, pal.surface, pal.accent, pal.textPrimary);
+                    const QString prev_sig = w->property("_stormThemeSig").toString();
+                    if (prev_sig.isEmpty()) {
+                        w->setProperty("_stormThemeSig", sig);
+                        w->setProperty("_stormLastBaseQss", BuildDialogStylesheet(pal));
+                    } else if (prev_sig != sig) {
+                        w->setProperty("_stormThemeSig", sig);
+                        w->setProperty("_stormRefreshingStylesheet", true);
+                        QPointer<QWidget> safe_w(w);
+                        QTimer::singleShot(0, w, [safe_w]() {
+                            if (!safe_w) {
+                                return;
+                            }
+                            const auto cur_pal = StormTheme::GetThemePalette();
+                            const QString new_base = BuildDialogStylesheet(cur_pal);
+                            const QString last_base = safe_w->property("_stormLastBaseQss").toString();
+                            const QString cur_qss = safe_w->styleSheet();
+                            QString suffix;
+                            if (!last_base.isEmpty() && cur_qss.startsWith(last_base)) {
+                                suffix = cur_qss.mid(last_base.size());
+                            }
+                            const QString next_qss = new_base + suffix;
+                            safe_w->setProperty("_stormLastBaseQss", new_base);
+                            if (cur_qss != next_qss) {
+                                safe_w->setStyleSheet(next_qss);
+                            }
+                            safe_w->setProperty("_stormRefreshingStylesheet", false);
+                        });
+                    }
                 }
             }
         }

@@ -237,14 +237,19 @@ namespace Vulkan {
                 .priority = 0.f,
         };
 
+        VkImageCreateInfo safe_image_ci = ci;
+        safe_image_ci.extent.width = (std::max)(1u, safe_image_ci.extent.width);
+        safe_image_ci.extent.height = (std::max)(1u, safe_image_ci.extent.height);
+        safe_image_ci.extent.depth = (std::max)(1u, safe_image_ci.extent.depth);
+
         VkImage handle{};
         VmaAllocation allocation{};
         VmaAllocationInfo alloc_info{};
-        VkResult res_image = vmaCreateImage(allocator, &ci, &alloc_ci, &handle, &allocation, &alloc_info);
+        VkResult res_image = vmaCreateImage(allocator, &safe_image_ci, &alloc_ci, &handle, &allocation, &alloc_info);
         if (res_image != VK_SUCCESS) {
             auto alloc_ci_relax = alloc_ci;
             alloc_ci_relax.flags &= ~VMA_ALLOCATION_CREATE_WITHIN_BUDGET_BIT;
-            res_image = vmaCreateImage(allocator, &ci, &alloc_ci_relax, &handle, &allocation, &alloc_info);
+            res_image = vmaCreateImage(allocator, &safe_image_ci, &alloc_ci_relax, &handle, &allocation, &alloc_info);
         }
         vk::Check(res_image);
 
@@ -278,24 +283,29 @@ namespace Vulkan {
             .priority = 0.f,
         };
 
+        VkBufferCreateInfo safe_ci = ci;
+        if (safe_ci.size == 0) {
+            safe_ci.size = 16;
+        }
+
         VkBuffer handle{};
         VmaAllocationInfo alloc_info{};
         VmaAllocation allocation{};
         VkMemoryPropertyFlags property_flags{};
 
-        VkResult res_buffer = vmaCreateBuffer(allocator, &ci, &alloc_ci, &handle, &allocation, &alloc_info);
+        VkResult res_buffer = vmaCreateBuffer(allocator, &safe_ci, &alloc_ci, &handle, &allocation, &alloc_info);
         if (res_buffer != VK_SUCCESS) {
             auto alloc_ci_relax = alloc_ci;
             alloc_ci_relax.flags &= ~VMA_ALLOCATION_CREATE_WITHIN_BUDGET_BIT;
-            res_buffer = vmaCreateBuffer(allocator, &ci, &alloc_ci_relax, &handle, &allocation, &alloc_info);
+            res_buffer = vmaCreateBuffer(allocator, &safe_ci, &alloc_ci_relax, &handle, &allocation, &alloc_info);
             if (res_buffer != VK_SUCCESS && (alloc_ci_relax.preferredFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
                 alloc_ci_relax.preferredFlags &= ~VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-                res_buffer = vmaCreateBuffer(allocator, &ci, &alloc_ci_relax, &handle, &allocation, &alloc_info);
+                res_buffer = vmaCreateBuffer(allocator, &safe_ci, &alloc_ci_relax, &handle, &allocation, &alloc_info);
             }
         }
         if (res_buffer != VK_SUCCESS) {
             LOG_CRITICAL(Render_Vulkan, "Buffer allocation failed: bytes={}, usage={}, buffer_flags={:#x}, result={}",
-                         ci.size, static_cast<u32>(usage), ci.usage, static_cast<s32>(res_buffer));
+                         safe_ci.size, static_cast<u32>(usage), safe_ci.usage, static_cast<s32>(res_buffer));
         }
         vk::Check(res_buffer);
         vmaGetAllocationMemoryProperties(allocator, allocation, &property_flags);
@@ -311,7 +321,7 @@ namespace Vulkan {
         }
 
         u8 *data = reinterpret_cast<u8 *>(alloc_info.pMappedData);
-        const std::span<u8> mapped_data = data ? std::span<u8>{data, ci.size} : std::span<u8>{};
+        const std::span<u8> mapped_data = data ? std::span<u8>{data, safe_ci.size} : std::span<u8>{};
         const bool is_coherent = (property_flags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) != 0;
 
         return vk::Buffer(handle, *device.GetLogical(), allocator, allocation, mapped_data,

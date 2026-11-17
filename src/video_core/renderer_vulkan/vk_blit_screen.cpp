@@ -119,9 +119,13 @@ void BlitScreen::DrawToFrame(const Device& device, RasterizerVulkan& rasterizer,
                              const Layout::FramebufferLayout& layout,
                              size_t current_swapchain_image_count,
                              VkFormat current_swapchain_view_format) {
+    if (!frame || layout.width == 0 || layout.height == 0) {
+        return;
+    }
+    current_swapchain_image_count = (std::max<size_t>)(1, current_swapchain_image_count);
     const VkExtent2D window_size{
-        .width = layout.screen.GetWidth(),
-        .height = layout.screen.GetHeight(),
+        .width = (std::max)(1u, layout.screen.GetWidth()),
+        .height = (std::max)(1u, layout.screen.GetHeight()),
     };
     const float up_factor = Settings::values.resolution_info.up_factor;
     const auto active_aa = filters.get_anti_aliasing();
