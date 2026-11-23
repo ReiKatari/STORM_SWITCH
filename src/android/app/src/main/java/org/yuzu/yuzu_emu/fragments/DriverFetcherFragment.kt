@@ -118,9 +118,25 @@ class DriverFetcherFragment : Fragment() {
 
 
 
+    private val isArmMaliGpu: Boolean
+
+        get() {
+
+            val model = (gpuModel ?: "").lowercase()
+
+            return model.contains("mali") || model.contains("immortalis")
+
+        }
+
     private val recommendedDriver: String
 
         get() {
+
+            if (isArmMaliGpu && android.os.Build.VERSION.SDK_INT >= 29) {
+
+                return "malisx2 (Arm Mali v7-v12) / " + getString(R.string.system_gpu_driver)
+
+            }
 
             if (isMaliOrNonAdrenoGpu) {
 
@@ -196,7 +212,9 @@ class DriverFetcherFragment : Fragment() {
 
         DriverRepo("STORM DRIVER", "ReiKatari/STORM_DRIVER", 0, true, SortMode.PublishTime),
 
-        DriverRepo("Balemuni Turnip (Apex)", "Balemuni/Balemunis-Aurora", 1),
+        DriverRepo("malisx2 (Arm Mali v7-v12)", "bmdhacks/malisx2", 1, false, SortMode.PublishTime),
+
+        DriverRepo("Balemuni Turnip (Apex)", "Balemuni/Balemunis-Aurora", 2),
 
         DriverRepo("KIMCHI Turnip Drivers", "K11MCH1/AdrenoToolsDrivers", 2, true, SortMode.PublishTime),
 
@@ -389,6 +407,8 @@ class DriverFetcherFragment : Fragment() {
 
 
 
+        setupCategoryTabs()
+
         setInsets()
 
 
@@ -451,27 +471,57 @@ class DriverFetcherFragment : Fragment() {
 
         when {
 
+            path.contains("malisx2", ignoreCase = true) -> {
+
+                list.add(
+
+                    Release(
+
+                        tagName = "v0.6.1",
+
+                        titleName = "malisx2 0.6.1 (Arm Mali v7-v12 Vulkan 1.3)",
+
+                        title = "malisx2 0.6.1 (Arm Mali v7-v12 Vulkan 1.3)",
+
+                        body = "Open-source Vulkan 1.3 driver for Arm Mali GPUs on stock Android kbase (no root, Android 10+ / API 29+). Supports Mali-G31/G51/G52/G76 (v7), G57/G68/G77/G78 (v9), G310/G510/G610/G710 (v10), G615/G715 (v11), G620/G720 (v12).",
+
+                        artifacts = listOf(
+
+                            Artifact(URL("https://github.com/bmdhacks/malisx2/releases/download/v0.6.1/malisx2-0.6.1-9fbc7da290.zip"), "malisx2-0.6.1-9fbc7da290.zip")
+
+                        ),
+
+                        prerelease = false,
+
+                        latest = true,
+
+                        publishTime = now
+
+                    )
+
+                )
+
+            }
+
             path.contains("STORM_DRIVER", ignoreCase = true) -> {
 
                 list.add(
 
                     Release(
 
-                        tagName = "8.0.0",
+                        tagName = "12.0.0",
 
-                        titleName = "STORM DRIVER 10.0.0 (Unified Mesa Turnip Adreno 6xx/7xx/8xx)",
+                        titleName = "STORM DRIVER 12.0.0 (Unified Mesa Turnip Adreno 6xx/7xx/8xx)",
 
-                        title = "STORM DRIVER 10.0.0 (Unified Mesa Turnip Adreno 6xx/7xx/8xx)",
+                        title = "STORM DRIVER 12.0.0 (Unified Mesa Turnip Adreno 6xx/7xx/8xx)",
 
-                        body = "STORM DRIVER 10.0.0 Unified Driver for Snapdragon Adreno 6xx, 7xx, 8xx (Qualcomm 8 Gen 1/2/3/Elite) with 4PDA curated reference packs.",
+                        body = "Official STORM DRIVER 12.0.0 release with unified Vulkan 1.4 Mesa Turnip architecture for Adreno 6xx/7xx/8xx.",
 
                         artifacts = listOf(
 
-                            Artifact(URL("https://github.com/ReiKatari/STORM_DRIVER/releases/download/8.0.0/STORM_DRIVER_8.0.0.zip"), "STORM_DRIVER_8.0.0.zip"),
+                            Artifact(URL("https://stormgamesworld.ru/uploads/programs/STORM_DRIVER/STORM_DRIVER_12.0.0.zip"), "STORM_DRIVER_12.0.0.zip"),
 
-                            Artifact(URL("https://stormgamesworld.ru/drivers/STORM_DRIVER_8.0.0.zip"), "STORM_DRIVER_8.0.0_Direct.zip"),
-
-                            Artifact(URL("https://stormgamesworld.ru/drivers/4PDA_Turnip_Qualcomm_Reference_Pack.zip"), "4PDA_Turnip_Qualcomm_Reference_Pack.zip")
+                            Artifact(URL("https://github.com/ReiKatari/STORM_DRIVER/releases/download/12.0.0/STORM_DRIVER_12.0.0.zip"), "STORM_DRIVER_12.0.0_GitHub.zip")
 
                         ),
 
@@ -655,31 +705,39 @@ class DriverFetcherFragment : Fragment() {
                     4 -> DriverCategory.Qualcomm
                     else -> DriverCategory.All
                 }
-                filterAndApplyDriverGroups(loadedDriverGroups)
+                val snapshot = synchronized(loadedDriverGroups) { ArrayList(loadedDriverGroups) }
+                filterAndApplyDriverGroups(snapshot)
             }
             override fun onTabUnselected(tab: com.google.android.material.tabs.TabLayout.Tab?) {}
             override fun onTabReselected(tab: com.google.android.material.tabs.TabLayout.Tab?) {
                 onTabSelected(tab)
             }
         })
+
+        // On Arm Mali / Immortalis GPUs, pre-select the Mali (malisx2 / PanVK) tab immediately
+        if (isArmMaliGpu) {
+            currentCategoryFilter = DriverCategory.PanVK
+            tabLayout.getTabAt(3)?.select()
+        }
     }
 
     private fun filterAndApplyDriverGroups(sourceList: List<DriverGroup>) {
+        val snapshot = ArrayList(sourceList)
         synchronized(loadedDriverGroups) {
             loadedDriverGroups.clear()
-            loadedDriverGroups.addAll(sourceList)
+            loadedDriverGroups.addAll(snapshot)
         }
         val filtered = when (currentCategoryFilter) {
-            DriverCategory.All -> sourceList
-            DriverCategory.Storm -> sourceList.filter { it.category == DriverCategory.Storm }
-            DriverCategory.Turnip -> sourceList.filter { it.category == DriverCategory.Turnip }
-            DriverCategory.PanVK -> sourceList.filter { it.category == DriverCategory.PanVK }
-            DriverCategory.Qualcomm -> sourceList.filter {
+            DriverCategory.All -> snapshot
+            DriverCategory.Storm -> snapshot.filter { it.category == DriverCategory.Storm }
+            DriverCategory.Turnip -> snapshot.filter { it.category == DriverCategory.Turnip }
+            DriverCategory.PanVK -> snapshot.filter { it.category == DriverCategory.PanVK }
+            DriverCategory.Qualcomm -> snapshot.filter {
                 it.category == DriverCategory.Qualcomm ||
                 it.name.contains("Qualcomm", ignoreCase = true) ||
                 it.releases.any { r -> r.title.contains("Qualcomm", ignoreCase = true) || r.title.contains("v@", ignoreCase = true) }
             }
-        }.sortedBy { it.sort }
+        }.sortedBy { if (isArmMaliGpu && it.category == DriverCategory.PanVK) -1 else it.sort }
         driverGroupAdapter.updateDriverGroups(filtered)
     }
 
@@ -869,7 +927,7 @@ class DriverFetcherFragment : Fragment() {
 
 
 
-                    synchronized(driverGroups) {
+                    val snapshot: List<DriverGroup> = synchronized(driverGroups) {
 
                         driverGroups.add(group)
 
@@ -879,6 +937,8 @@ class DriverFetcherFragment : Fragment() {
 
                         }
 
+                        ArrayList(driverGroups)
+
                     }
 
 
@@ -887,11 +947,11 @@ class DriverFetcherFragment : Fragment() {
 
                         if (_binding != null) {
 
-                            driverGroupAdapter.updateDriverGroups(driverGroups)
+                            filterAndApplyDriverGroups(snapshot)
 
 
 
-                            if (driverGroups.size >= repoList.size) {
+                            if (snapshot.size >= repoList.size) {
 
                                 binding.loadingIndicator.isVisible = false
 
@@ -1027,6 +1087,12 @@ class DriverFetcherFragment : Fragment() {
 
                             val release = fromJson(node, useTagName)
 
+                            if (release.artifacts.isEmpty()) {
+
+                                return@forEach
+
+                            }
+
 
 
                             if (latestRelease == null && !release.prerelease) {
@@ -1081,17 +1147,17 @@ class DriverFetcherFragment : Fragment() {
 
                 try {
 
-                    val tagName = node.get("tag_name").toString().removeSurrounding("\"")
+                    val tagName = node.get("tag_name")?.asText() ?: ""
 
-                    val body = node.get("body").toString().removeSurrounding("\"")
+                    val body = node.get("body")?.asText() ?: ""
 
-                    val prerelease = node.get("prerelease").toString().toBoolean()
+                    val prerelease = node.get("prerelease")?.asBoolean(false) ?: false
 
-                    val titleName = node.get("name").toString().removeSurrounding("\"")
+                    val titleName = node.get("name")?.asText()?.ifBlank { tagName } ?: tagName
 
 
 
-                    val published = node.get("published_at").toString().removeSurrounding("\"")
+                    val published = node.get("published_at")?.asText() ?: ""
 
                     val instantTime: Instant? = Instant.parse(published)
 
@@ -1117,11 +1183,15 @@ class DriverFetcherFragment : Fragment() {
 
 
 
+                            val name = subNode.get("name")?.asText() ?: ""
+
+                            if (!name.endsWith(".zip", ignoreCase = true)) {
+
+                                return@forEach
+
+                            }
+
                             val url = URL(urlStr)
-
-                            val name = subNode.get("name").toString().removeSurrounding("\"")
-
-
 
                             val artifact = Artifact(url, name)
 
@@ -1183,7 +1253,7 @@ class DriverFetcherFragment : Fragment() {
         val sort: Int,
         val category: DriverCategory = when {
             name.contains("STORM", ignoreCase = true) -> DriverCategory.Storm
-            name.contains("PanVK", ignoreCase = true) || name.contains("Mali", ignoreCase = true) || name.contains("Immortalis", ignoreCase = true) -> DriverCategory.PanVK
+            name.contains("malisx2", ignoreCase = true) || name.contains("PanVK", ignoreCase = true) || name.contains("Mali", ignoreCase = true) || name.contains("Immortalis", ignoreCase = true) -> DriverCategory.PanVK
             name.contains("Qualcomm", ignoreCase = true) -> DriverCategory.Qualcomm
             else -> DriverCategory.Turnip
         }

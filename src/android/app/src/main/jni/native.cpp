@@ -314,8 +314,70 @@ void EmulationSession::InitializeGpuDriver(const std::string& hook_lib_dir,
         }
     }
 
-    // Only attempt adrenotools custom/hooked driver loading on Adreno hardware where KGSL is available
-    if (SupportsCustomDriver()) {
+    auto is_driver_malisx2 = [&]() -> bool {
+        const std::string ln = Common::ToLower(effective_custom_driver_name);
+        const std::string ld = Common::ToLower(safe_custom_driver_dir);
+        if (ln.find("malisx2") != std::string::npos || ld.find("malisx2") != std::string::npos) {
+            return true;
+        }
+        if (!safe_custom_driver_dir.empty()) {
+            std::ifstream mf(safe_custom_driver_dir + "meta.json");
+            if (mf.is_open()) {
+                std::string meta_txt((std::istreambuf_iterator<char>(mf)), std::istreambuf_iterator<char>());
+                if (Common::ToLower(meta_txt).find("malisx2") != std::string::npos) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+
+    auto apply_crash_guards = [&]() {
+        if (!effective_custom_driver_name.empty() && !blacklisted_path.empty() &&
+            access(blacklisted_path.c_str(), R_OK) == 0) {
+            std::ifstream bf(blacklisted_path);
+            std::string bl_content((std::istreambuf_iterator<char>(bf)), std::istreambuf_iterator<char>());
+            if (bl_content.find(effective_custom_driver_name) != std::string::npos ||
+                bl_content == "crashed_custom_driver") {
+                LOG_WARNING(Frontend, "[GpuDriver] Skipping blacklisted custom driver '{}'",
+                            effective_custom_driver_name);
+                effective_custom_driver_name.clear();
+            }
+        }
+        if (!effective_custom_driver_name.empty() && !dlopen_inflight_path.empty() &&
+            access(dlopen_inflight_path.c_str(), F_OK) == 0) {
+            LOG_ERROR(Frontend,
+                      "[GpuDriver] Detected prior native crash while loading '{}'; blacklisting and "
+                      "falling back to System Vulkan",
+                      effective_custom_driver_name);
+            if (!blacklisted_path.empty()) {
+                std::ofstream bf(blacklisted_path, std::ios::app);
+                bf << effective_custom_driver_name << "\n";
+            }
+            std::remove(dlopen_inflight_path.c_str());
+            effective_custom_driver_name.clear();
+        }
+    };
+
+    const bool is_malisx2_driver = is_driver_malisx2();
+    const std::string lower_custom_name = Common::ToLower(effective_custom_driver_name);
+    const std::string lower_custom_dir = Common::ToLower(safe_custom_driver_dir);
+    const bool is_panvk_driver = !is_malisx2_driver && (
+                                 lower_custom_name.find("panvk") != std::string::npos ||
+                                 lower_custom_name.find("panfrost") != std::string::npos ||
+                                 lower_custom_dir.find("panvk") != std::string::npos ||
+                                 lower_custom_dir.find("panfrost") != std::string::npos);
+
+    const bool is_adreno_kgsl = android_get_device_api_level() >= 28 && CheckKgslPresent();
+    // Adreno hardware (KGSL) custom driver loading via adrenotools
+    if (is_adreno_kgsl) {
+        // Never attempt to load a Mali-only driver (malisx2/PanVK) on Adreno hardware
+        if (is_malisx2_driver || is_panvk_driver) {
+            LOG_WARNING(Frontend, "[GpuDriver] Skipping Mali-only custom driver '{}' on Adreno GPU",
+                        effective_custom_driver_name);
+            effective_custom_driver_name.clear();
+        }
+
         // Enable driver file redirection whenever file_redirect_dir is provided
         if (!safe_file_redirect_dir.empty()) {
             featureFlags |= ADRENOTOOLS_DRIVER_FILE_REDIRECT;
@@ -355,30 +417,7 @@ void EmulationSession::InitializeGpuDriver(const std::string& hook_lib_dir,
             }
         }
 
-        if (!effective_custom_driver_name.empty() && !blacklisted_path.empty() &&
-            access(blacklisted_path.c_str(), R_OK) == 0) {
-            std::ifstream bf(blacklisted_path);
-            std::string bl_content((std::istreambuf_iterator<char>(bf)), std::istreambuf_iterator<char>());
-            if (bl_content.find(effective_custom_driver_name) != std::string::npos ||
-                bl_content == "crashed_custom_driver") {
-                LOG_WARNING(Frontend, "[GpuDriver] Skipping blacklisted custom driver '{}'",
-                            effective_custom_driver_name);
-                effective_custom_driver_name.clear();
-            }
-        }
-        if (!effective_custom_driver_name.empty() && !dlopen_inflight_path.empty() &&
-            access(dlopen_inflight_path.c_str(), F_OK) == 0) {
-            LOG_ERROR(Frontend,
-                      "[GpuDriver] Detected prior native crash while loading '{}'; blacklisting and "
-                      "falling back to System Vulkan",
-                      effective_custom_driver_name);
-            if (!blacklisted_path.empty()) {
-                std::ofstream bf(blacklisted_path, std::ios::app);
-                bf << effective_custom_driver_name << "\n";
-            }
-            std::remove(dlopen_inflight_path.c_str());
-            effective_custom_driver_name.clear();
-        }
+        apply_crash_guards();
 
         // Try to load a custom driver.
         if (!effective_custom_driver_name.empty()) {
@@ -411,35 +450,72 @@ void EmulationSession::InitializeGpuDriver(const std::string& hook_lib_dir,
         LOG_INFO(Frontend, "[GpuDriver] adrenotools_open_libvulkan dir='{}' lib='{}' gpu='{}' custom={} -> {}",
                  safe_custom_driver_dir, effective_custom_driver_name, gpu_model, custom_driver_loaded,
                  handle ? "SUCCESS" : "FAILED (fallback to system Vulkan)");
+    } else if (!effective_custom_driver_name.empty() && !safe_custom_driver_dir.empty()) {
+        // Non-KGSL hardware (Arm Mali / Immortalis): load custom Vulkan HAL drivers (malisx2, PanVK)
+        // via adrenotools namespace hook WITHOUT FILE_REDIRECT or KGSL flags so Android's libvulkan.so
+        // opens the custom HAL module (HMI symbol) and manages WSI swapchains cleanly.
+        if (is_malisx2_driver) {
+            unsetenv("PAN_I_WANT_A_BROKEN_VULKAN_DRIVER");
+            unsetenv("PAN_MESA_DEBUG");
+            unsetenv("MESA_NO_ERROR");
+            if (android_get_device_api_level() < 29) {
+                LOG_WARNING(Frontend, "[GpuDriver] malisx2 requires Android 10 (API 29+), current API={}; using system Vulkan",
+                            android_get_device_api_level());
+                effective_custom_driver_name.clear();
+            } else if (access("/dev/mali0", F_OK) != 0) {
+                LOG_WARNING(Frontend, "[GpuDriver] malisx2 requires Arm Mali kbase (/dev/mali0); device node missing, using system Vulkan");
+                effective_custom_driver_name.clear();
+            }
+        } else if (is_panvk_driver) {
+            setenv("PAN_I_WANT_A_BROKEN_VULKAN_DRIVER", "1", 1);
+            setenv("MESA_NO_ERROR", "1", 1);
+            LOG_INFO(Frontend, "Exported PAN_I_WANT_A_BROKEN_VULKAN_DRIVER=1 and MESA_NO_ERROR=1 for PanVK");
+        }
+
+        apply_crash_guards();
+
+        if (!effective_custom_driver_name.empty() && !safe_hook_lib_dir.empty() &&
+            access((safe_custom_driver_dir + effective_custom_driver_name).c_str(), R_OK) == 0) {
+            if (!dlopen_inflight_path.empty()) {
+                std::ofstream df(dlopen_inflight_path, std::ios::trunc);
+                df << effective_custom_driver_name << "\n";
+                df.flush();
+            }
+            handle = adrenotools_open_libvulkan(
+                RTLD_NOW, ADRENOTOOLS_DRIVER_CUSTOM, safe_custom_driver_dir.c_str(),
+                safe_hook_lib_dir.c_str(), safe_custom_driver_dir.c_str(),
+                effective_custom_driver_name.c_str(), nullptr, nullptr);
+            if (!dlopen_inflight_path.empty()) {
+                std::remove(dlopen_inflight_path.c_str());
+            }
+            if (handle) {
+                custom_driver_loaded = true;
+                LOG_INFO(Frontend, "[GpuDriver] Loaded Mali custom Vulkan HAL driver via adrenotools: {}{} (malisx2={})",
+                         safe_custom_driver_dir, effective_custom_driver_name, is_malisx2_driver);
+            } else {
+                LOG_WARNING(Frontend, "[GpuDriver] adrenotools HAL hook failed for {}{}; trying direct dlopen fallback",
+                            safe_custom_driver_dir, effective_custom_driver_name);
+            }
+        }
     }
 
-    const std::string lower_custom_name = Common::ToLower(effective_custom_driver_name);
-    const std::string lower_custom_dir = Common::ToLower(safe_custom_driver_dir);
-    const bool is_panvk_driver = lower_custom_name.find("panvk") != std::string::npos ||
-                                 lower_custom_name.find("panfrost") != std::string::npos ||
-                                 lower_custom_dir.find("panvk") != std::string::npos ||
-                                 lower_custom_dir.find("panfrost") != std::string::npos;
-    if (is_panvk_driver) {
-        setenv("PAN_I_WANT_A_BROKEN_VULKAN_DRIVER", "1", 1);
-        setenv("MESA_NO_ERROR", "1", 1);
-        LOG_INFO(Frontend, "Exported PAN_I_WANT_A_BROKEN_VULKAN_DRIVER=1 and MESA_NO_ERROR=1 for PanVK");
-    }
-
-    // Try to load a custom driver directly if adrenotools failed or on non-KGSL hardware (e.g. Mali PanVK)
-    if (!handle && !effective_custom_driver_name.empty() && !safe_custom_driver_dir.empty()) {
+    // Fallback: load standalone non-HAL custom driver directly via dlopen (must export vkGetInstanceProcAddr)
+    if (!handle && !effective_custom_driver_name.empty() && !safe_custom_driver_dir.empty() && !is_malisx2_driver) {
         std::string full_custom_driver_path = safe_custom_driver_dir + effective_custom_driver_name;
-        if (!dlopen_inflight_path.empty()) {
-            std::ofstream df(dlopen_inflight_path, std::ios::trunc);
-            df << effective_custom_driver_name << "\n";
-            df.flush();
-        }
-        handle = dlopen(full_custom_driver_path.c_str(), RTLD_NOW | RTLD_LOCAL);
-        if (!dlopen_inflight_path.empty()) {
-            std::remove(dlopen_inflight_path.c_str());
-        }
-        if (handle) {
-            custom_driver_loaded = true;
-            LOG_INFO(Frontend, "Loaded custom Vulkan driver directly via dlopen: {}", full_custom_driver_path);
+        if (access(full_custom_driver_path.c_str(), R_OK) == 0) {
+            if (!dlopen_inflight_path.empty()) {
+                std::ofstream df(dlopen_inflight_path, std::ios::trunc);
+                df << effective_custom_driver_name << "\n";
+                df.flush();
+            }
+            handle = dlopen(full_custom_driver_path.c_str(), RTLD_NOW | RTLD_LOCAL);
+            if (!dlopen_inflight_path.empty()) {
+                std::remove(dlopen_inflight_path.c_str());
+            }
+            if (handle) {
+                custom_driver_loaded = true;
+                LOG_INFO(Frontend, "Loaded custom Vulkan driver directly via dlopen: {}", full_custom_driver_path);
+            }
         }
     }
 
@@ -471,7 +547,7 @@ void EmulationSession::InitializeGpuDriver(const std::string& hook_lib_dir,
         if (!drirc_dir.empty() && drirc_dir.back() == '/') {
             drirc_dir.pop_back();
         }
-        if (!drirc_dir.empty() &&
+        if (!is_malisx2_driver && !drirc_dir.empty() &&
             (access((safe_custom_driver_dir + "00-storm.conf").c_str(), R_OK) == 0 ||
              access((safe_custom_driver_dir + "drirc").c_str(), R_OK) == 0)) {
             setenv("DRIRC_CONFIGDIR", drirc_dir.c_str(), 1);
@@ -1465,20 +1541,49 @@ void JNICALL Java_org_yuzu_yuzu_1emu_NativeLibrary_initializeGpuDriver(JNIEnv* e
 
     const std::string lower_driver_name = Common::ToLower(custom_driver_name_str);
     const std::string lower_driver_dir = Common::ToLower(safe_driver_dir);
-    const bool is_panvk = lower_driver_name.find("panvk") != std::string::npos ||
+    bool is_malisx2 = lower_driver_name.find("malisx2") != std::string::npos ||
+                      lower_driver_dir.find("malisx2") != std::string::npos;
+    if (!is_malisx2 && !safe_driver_dir.empty()) {
+        std::ifstream mf(safe_driver_dir + "meta.json");
+        if (mf.is_open()) {
+            std::string meta_txt((std::istreambuf_iterator<char>(mf)), std::istreambuf_iterator<char>());
+            if (Common::ToLower(meta_txt).find("malisx2") != std::string::npos) {
+                is_malisx2 = true;
+            }
+        }
+    }
+    const bool is_panvk = !is_malisx2 && (
+                          lower_driver_name.find("panvk") != std::string::npos ||
                           lower_driver_name.find("panfrost") != std::string::npos ||
                           lower_driver_dir.find("panvk") != std::string::npos ||
-                          lower_driver_dir.find("panfrost") != std::string::npos;
+                          lower_driver_dir.find("panfrost") != std::string::npos);
 
-    if (is_panvk) {
+#ifdef ARCHITECTURE_arm64
+    const bool has_kgsl = CheckKgslPresent();
+    const bool has_mali_kbase = !has_kgsl && CheckMaliPresent();
+    const bool api_supports_malisx2 = android_get_device_api_level() >= 29;
+#else
+    const bool has_kgsl = false;
+    const bool has_mali_kbase = false;
+    const bool api_supports_malisx2 = false;
+#endif
+
+    if (is_malisx2 && has_mali_kbase && api_supports_malisx2) {
+        unsetenv("PAN_I_WANT_A_BROKEN_VULKAN_DRIVER");
+        unsetenv("PAN_MESA_DEBUG");
+        unsetenv("MESA_NO_ERROR");
+        Core::GameFixDatabase::SetDetectedGpuVendor("ARM");
+        LOG_INFO(Frontend, "malisx2 Vulkan driver detected: {}, tagged vendor ARM", full_custom_driver_path);
+    } else if (is_panvk && has_mali_kbase) {
         setenv("PAN_I_WANT_A_BROKEN_VULKAN_DRIVER", "1", 1);
         setenv("MESA_NO_ERROR", "1", 1);
         Core::GameFixDatabase::SetDetectedGpuVendor("ARM");
         LOG_INFO(Frontend, "PanVK driver detected: exported PAN_I_WANT_A_BROKEN_VULKAN_DRIVER=1 and MESA_NO_ERROR=1, tagged vendor ARM");
-    } else if (!full_custom_driver_path.empty() && std::filesystem::exists(full_custom_driver_path)) {
+    } else if (!full_custom_driver_path.empty() && std::filesystem::exists(full_custom_driver_path) &&
+               has_kgsl && !is_malisx2 && !is_panvk) {
         Core::GameFixDatabase::SetDetectedGpuVendor("Qualcomm");
         LOG_INFO(Frontend, "Custom Turnip driver exists on disk: {}, tagged vendor Qualcomm", full_custom_driver_path);
-    } else if (tu_debug != nullptr) {
+    } else if (tu_debug != nullptr && has_kgsl) {
         Core::GameFixDatabase::SetDetectedGpuVendor("Qualcomm");
     } else {
         LOG_INFO(Frontend, "No custom driver active, leaving GPU vendor empty for VulkanDevice auto-detection");

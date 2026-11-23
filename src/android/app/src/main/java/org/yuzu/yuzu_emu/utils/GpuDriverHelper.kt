@@ -64,6 +64,12 @@ object GpuDriverHelper {
 
 
     fun isMaliGpu(): Boolean {
+        if (File("/dev/kgsl-3d0").exists() || File("/sys/class/kgsl/kgsl-3d0/gpu_model").exists()) {
+            return false
+        }
+        if (File("/dev/mali0").exists() || File("/dev/panfrost").exists() || File("/dev/panthor").exists()) {
+            return true
+        }
         val model = (hookLibPath?.let { getGpuModel(hookLibPath = it) } ?: "").lowercase()
         return model.contains("mali") || model.contains("immortalis")
     }
@@ -190,17 +196,56 @@ object GpuDriverHelper {
                libName.contains("purple", ignoreCase = true)
     }
 
-    fun isPanVkDriverActive(): Boolean {
-        // Qualcomm Adreno hardware can NEVER use PanVK!
-        if (File("/sys/class/kgsl/kgsl-3d0/gpu_model").exists()) {
-            return false
-        }
-        val metadata = installedCustomDriverData
+    fun isMalisx2Metadata(metadata: GpuDriverMetadata): Boolean {
+        val libName = metadata.libraryName ?: ""
+        val name = metadata.name ?: ""
+        val vendor = metadata.vendor ?: ""
+        return libName.contains("malisx2", ignoreCase = true) ||
+               name.contains("malisx2", ignoreCase = true) ||
+               vendor.contains("malisx2", ignoreCase = true)
+    }
+
+    fun isPanVkMetadata(metadata: GpuDriverMetadata): Boolean {
+        if (isMalisx2Metadata(metadata)) return false
         val libName = metadata.libraryName ?: ""
         val name = metadata.name ?: ""
         return libName.contains("panvk", ignoreCase = true) ||
                libName.contains("panfrost", ignoreCase = true) ||
                name.contains("PanVK", ignoreCase = true)
+    }
+
+    fun isMalisx2DriverActive(): Boolean {
+        // Qualcomm Adreno hardware can NEVER use malisx2 (requires Arm Mali kbase /dev/mali0)
+        if (File("/sys/class/kgsl/kgsl-3d0/gpu_model").exists()) {
+            return false
+        }
+        return isMalisx2Metadata(installedCustomDriverData)
+    }
+
+    fun isPanVkDriverActive(): Boolean {
+        // Qualcomm Adreno hardware can NEVER use PanVK!
+        if (File("/sys/class/kgsl/kgsl-3d0/gpu_model").exists()) {
+            return false
+        }
+        return isPanVkMetadata(installedCustomDriverData)
+    }
+
+    fun isMaliCompatibleCustomMetadata(metadata: GpuDriverMetadata): Boolean {
+        if (metadata.name == null || metadata.libraryName.isNullOrEmpty()) return false
+        if (isMalisx2Metadata(metadata)) {
+            return Build.VERSION.SDK_INT >= 29
+        }
+        if (isPanVkMetadata(metadata)) return true
+        val name = metadata.name ?: ""
+        val ver = metadata.version ?: ""
+        val isStorm = name.contains("STORM", ignoreCase = true) || ver.contains("STORM", ignoreCase = true)
+        if (isStorm) {
+            val regex = Regex("""\d+(\.\d+)*""")
+            val verNum = regex.find(ver)?.value ?: regex.find(name)?.value ?: "0"
+            val major = verNum.split(".").firstOrNull()?.toIntOrNull() ?: 0
+            return major >= 8
+        }
+        return false
     }
 
     fun isDriverCompatibleWithAdreno8xx(metadata: GpuDriverMetadata): Boolean {
@@ -255,10 +300,23 @@ object GpuDriverHelper {
         initializeDirectories()
         hookLibPath = YuzuApplication.appContext.applicationInfo.nativeLibraryDir + "/"
 
-        val isPanVkOrStorm = isPanVkDriverActive() || (isMaliGpu() && isStormDriver8OrNewer())
-        if (!isAdrenoGpu() && !isPanVkOrStorm) {
-            // On non-Adreno GPUs without a PanVK custom driver, custom drivers cannot be loaded.
-            // Clean up any stray Turnip driver files to prevent startup crashes.
+        // Read active selected zip metadata BEFORE deciding whether a non-Adreno GPU may proceed,
+        // fixing the chicken-and-egg bug where gpu_driver/ was wiped before unzipping malisx2/PanVK.
+        val activeDriverZipPath = try { StringSetting.DRIVER_PATH.getString() } catch (_: Exception) { "" }
+        val activeZipMetadata = if (activeDriverZipPath.isNotEmpty()) {
+            val f = File(activeDriverZipPath)
+            if (f.exists()) getMetadataFromZip(f) else GpuDriverMetadata()
+        } else {
+            GpuDriverMetadata()
+        }
+        val isNonAdrenoAllowed = isMalisx2DriverActive() ||
+            isPanVkDriverActive() ||
+            (isMaliGpu() && isStormDriver8OrNewer()) ||
+            (isMaliGpu() && isMaliCompatibleCustomMetadata(activeZipMetadata)) ||
+            (!isAdrenoGpu() && (isMalisx2Metadata(activeZipMetadata) && Build.VERSION.SDK_INT >= 29 || isPanVkMetadata(activeZipMetadata)))
+
+        if (!isAdrenoGpu() && !isNonAdrenoAllowed) {
+            // On non-Adreno GPUs without a valid Mali/malisx2/PanVK driver, wipe any stray Turnip files
             try {
                 driverInstallationPath?.let { path ->
                     val installDir = File(path)
@@ -280,7 +338,6 @@ object GpuDriverHelper {
         NativeFreedrenoConfig.reloadFreedrenoConfig()
 
         // Keep driverInstallationPath strictly synchronized with StringSetting.DRIVER_PATH
-        val activeDriverZipPath = try { StringSetting.DRIVER_PATH.getString() } catch (_: Exception) { "" }
         val installDir = File(driverInstallationPath!!)
         val markerFile = File(installDir, ACTIVE_DRIVER_MARKER)
         val recordedZip = if (markerFile.exists()) {
@@ -338,6 +395,35 @@ object GpuDriverHelper {
             }
         }
 
+        // Guard Adreno hardware against Mali-only drivers (malisx2 / PanVK)
+        if (isAdrenoGpu() && (isMalisx2Metadata(installedCustomDriverData) || isPanVkMetadata(installedCustomDriverData))) {
+            Log.warning("[GpuDriverHelper] Auto-fallback: Mali-only driver '${installedCustomDriverData.name}' cannot run on Adreno; clearing install dir.")
+            try {
+                driverInstallationPath?.let { path ->
+                    val installDir = File(path)
+                    if (installDir.exists()) {
+                        installDir.deleteRecursively()
+                        installDir.mkdirs()
+                    }
+                }
+            } catch (_: Exception) {}
+        }
+
+        // Guard Mali/non-Adreno hardware against incompatible Turnip or API<29 malisx2 drivers
+        if (!isAdrenoGpu() && !installedCustomDriverData.libraryName.isNullOrEmpty() &&
+            !isMaliCompatibleCustomMetadata(installedCustomDriverData)) {
+            Log.warning("[GpuDriverHelper] Auto-fallback: Driver '${installedCustomDriverData.name}' is incompatible with this Mali GPU/API; clearing install dir.")
+            try {
+                driverInstallationPath?.let { path ->
+                    val installDir = File(path)
+                    if (installDir.exists()) {
+                        installDir.deleteRecursively()
+                        installDir.mkdirs()
+                    }
+                }
+            } catch (_: Exception) {}
+        }
+
         // Guard Adreno 8xx (8 Elite / 8s Gen 4) against incompatible legacy A6xx/A7xx Turnip drivers
         if (isAdreno8xx() && !isDriverCompatibleWithAdreno8xx(installedCustomDriverData)) {
             Log.warning("[GpuDriverHelper] Auto-fallback: Installed custom driver '${installedCustomDriverData.name}' is incompatible with Adreno 8xx; reverting to compatible driver.")
@@ -353,7 +439,20 @@ object GpuDriverHelper {
         }
 
         val customLib = installedCustomDriverData.libraryName
-        if (!customLib.isNullOrEmpty() && (isTurnipDriverActive() || isPanVkDriverActive())) {
+        val malisx2Active = isMalisx2DriverActive()
+        if (!customLib.isNullOrEmpty() && malisx2Active) {
+            // malisx2 is a clean-room Mesa kraid/Bifrost driver for Mali kbase:
+            // clear all Turnip and PanVK env vars so they never interfere, and cap Mesa disk cache.
+            NativeFreedrenoConfig.clearFreedrenoEnv("DRIRC_CONFIGDIR")
+            NativeFreedrenoConfig.clearFreedrenoEnv("MESA_DRIRC_DIR")
+            NativeFreedrenoConfig.clearFreedrenoEnv("MESA_DRIRC_FILE")
+            NativeFreedrenoConfig.clearFreedrenoEnv("TU_DEBUG")
+            NativeFreedrenoConfig.clearFreedrenoEnv("PAN_MESA_DEBUG")
+            NativeFreedrenoConfig.clearFreedrenoEnv("PAN_I_WANT_A_BROKEN_VULKAN_DRIVER")
+            NativeFreedrenoConfig.clearFreedrenoEnv("MESA_NO_ERROR")
+            NativeFreedrenoConfig.setFreedrenoEnv("MESA_SHADER_CACHE_MAX_SIZE", "128M")
+            NativeFreedrenoConfig.clearFreedrenoEnv("MESA_DISK_CACHE_SINGLE_FILE")
+        } else if (!customLib.isNullOrEmpty() && (isTurnipDriverActive() || isPanVkDriverActive())) {
             val installDir = File(driverInstallationPath!!)
             val isStorm8 = isStormDriver8OrNewer()
             val panVkActive = isPanVkDriverActive()
@@ -701,16 +800,21 @@ object GpuDriverHelper {
      * Unzips driver into installation directory
      */
     fun installCustomDriver(driver: File): Boolean = synchronized(driverLock) {
-        // Ensure we have directories and clean old files without resetting native driver to null mid-install.
-        initializeDirectories()
-        resetDriverInstallDirOnly()
-
-        // Validate driver
+        // Validate driver BEFORE wiping existing installation directory so failed installs keep prior state intact.
         val metadata = getMetadataFromZip(driver)
         if (metadata.name == null) {
             driver.delete()
             return@synchronized false
         }
+
+        if (metadata.minApi > Build.VERSION.SDK_INT) {
+            Log.warning("[GpuDriverHelper] Driver '${metadata.name}' requires Android API ${metadata.minApi}, device is API ${Build.VERSION.SDK_INT}")
+            return@synchronized false
+        }
+
+        // Ensure we have directories and clean old files without resetting native driver to null mid-install.
+        initializeDirectories()
+        resetDriverInstallDirOnly()
 
         // Unzip the driver to the private installation directory
         try {
@@ -1241,7 +1345,14 @@ object GpuDriverHelper {
 
     fun isAdrenoGpu(): Boolean {
         return try {
-            supportsCustomDriverLoading()
+            if (File("/dev/kgsl-3d0").exists() || File("/sys/class/kgsl/kgsl-3d0/gpu_model").exists()) {
+                return true
+            }
+            if (File("/dev/mali0").exists() || File("/dev/panfrost").exists() || File("/dev/panthor").exists()) {
+                return false
+            }
+            val model = (hookLibPath?.let { getGpuModel(hookLibPath = it) } ?: "").lowercase()
+            model.contains("adreno")
         } catch (e: Throwable) {
             false
         }

@@ -354,7 +354,11 @@ class DriverManagerFragment : Fragment() {
             }
         }
 
-        driverViewModel.onDriverSelected(selectedPosition, skipShaderWipe = true)
+        if (selectedPosition >= 0) {
+            driverViewModel.onDriverSelected(selectedPosition, skipShaderWipe = true, skipInstall = true)
+        } else {
+            driverViewModel.updateDriverNameForGame(args.game)
+        }
         driverViewModel.reloadDriverData()
         refreshDriverList()
         updateDriverSelectionUi()
@@ -411,18 +415,31 @@ class DriverManagerFragment : Fragment() {
             .show()
     }
 
+    private fun findDriverPosition(targetPath: String): Int {
+        val idx = driverViewModel.driverData.indexOfFirst {
+            it.first.equals(targetPath, ignoreCase = true) ||
+                File(it.first).name.equals(File(targetPath).name, ignoreCase = true)
+        }
+        return if (idx >= 0) idx + 1 else -1
+    }
+
     private fun updateRecommendedBanner() {
         if (_binding == null) return
         val model = (GpuDriverHelper.hookLibPath?.let { GpuDriverHelper.getGpuModel(hookLibPath = it) } ?: "").trim()
         val modelLower = model.lowercase()
+        val isMali = !GpuDriverHelper.isAdrenoGpu() && (modelLower.contains("mali") || modelLower.contains("immortalis"))
         val (vendor, rec) = when {
-            modelLower.contains("mali") || modelLower.contains("immortalis") -> {
+            isMali && android.os.Build.VERSION.SDK_INT >= 29 -> {
                 val name = if (model.isNotEmpty()) model else "Arm Mali"
-                name to "PanVK / STORM DRIVER 12.0.0"
+                name to "malisx2 (Arm Mali v7-v12) / System"
+            }
+            isMali -> {
+                val name = if (model.isNotEmpty()) model else "Arm Mali"
+                name to getString(R.string.system_gpu_driver)
             }
             modelLower.contains("xclipse") -> {
                 val name = if (model.isNotEmpty()) model else "Samsung Xclipse"
-                name to "STORM DRIVER 12.0.0 / System Xclipse RDNA"
+                name to "System Xclipse RDNA"
             }
             modelLower.contains("adreno") -> {
                 val name = if (model.isNotEmpty()) model else "Qualcomm Adreno"
@@ -437,6 +454,23 @@ class DriverManagerFragment : Fragment() {
 
         val activePath = StringSetting.DRIVER_PATH.getString()
         val customMeta = GpuDriverHelper.customDriverSettingData
+        if (isMali) {
+            val isMalisx2Active = GpuDriverHelper.isMalisx2Metadata(customMeta) ||
+                activePath.contains("malisx2", ignoreCase = true)
+            if (android.os.Build.VERSION.SDK_INT < 29) {
+                binding.buttonInstallStormDriver.isEnabled = false
+                binding.buttonInstallStormDriver.text = "malisx2 (Android 10+)"
+            } else if (isMalisx2Active) {
+                binding.buttonInstallStormDriver.isEnabled = true
+                binding.buttonInstallStormDriver.text = getString(R.string.malisx2_active_label)
+            } else {
+                binding.buttonInstallStormDriver.isEnabled = true
+                binding.buttonInstallStormDriver.text = getString(R.string.install_malisx2_driver)
+            }
+            return
+        }
+
+        binding.buttonInstallStormDriver.isEnabled = true
         val is12Active = customMeta.version?.contains("12.0") == true ||
                          customMeta.name?.contains("12.0") == true ||
                          activePath.contains("12.0", ignoreCase = true)
@@ -448,7 +482,145 @@ class DriverManagerFragment : Fragment() {
         }
     }
 
+    private fun installMalisx2Driver() {
+        if (android.os.Build.VERSION.SDK_INT < 29) {
+            android.widget.Toast.makeText(
+                requireContext(),
+                getString(R.string.malisx2_min_api_warning),
+                android.widget.Toast.LENGTH_LONG
+            ).show()
+            return
+        }
+
+        val dialogBinding = org.yuzu.yuzu_emu.databinding.DialogProgressBinding.inflate(layoutInflater)
+        dialogBinding.progressBar.isIndeterminate = true
+        dialogBinding.title.text = getString(R.string.installing_driver)
+        dialogBinding.status.text = getString(R.string.downloading)
+
+        val progressDialog = com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+            .setView(dialogBinding.root)
+            .setCancelable(false)
+            .create()
+
+        progressDialog.show()
+
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+            var resolvedName = "malisx2-0.6.1-9fbc7da290.zip"
+            var resolvedUrl = "https://github.com/bmdhacks/malisx2/releases/download/v0.6.1/malisx2-0.6.1-9fbc7da290.zip"
+            var downloadedFile: File? = null
+            var downloadSuccess = false
+
+            val client = okhttp3.OkHttpClient.Builder()
+                .dns(org.yuzu.yuzu_emu.utils.SmartDns)
+                .connectTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
+                .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+                .followRedirects(true)
+                .followSslRedirects(true)
+                .retryOnConnectionFailure(true)
+                .build()
+
+            withContext(Dispatchers.IO) {
+                // 1. Resolve latest release .zip from GitHub API (falls back to v0.6.1 on rate limit)
+                try {
+                    val apiReq = okhttp3.Request.Builder()
+                        .url("https://api.github.com/repos/bmdhacks/malisx2/releases/latest")
+                        .header("User-Agent", "StormSwitch/18.4.3")
+                        .header("Accept", "application/vnd.github.v3+json")
+                        .build()
+                    client.newCall(apiReq).execute().use { resp ->
+                        if (resp.isSuccessful) {
+                            val bodyStr = resp.body?.string() ?: ""
+                            if (bodyStr.isNotBlank()) {
+                                val json = org.json.JSONObject(bodyStr)
+                                val assets = json.optJSONArray("assets")
+                                if (assets != null) {
+                                    for (i in 0 until assets.length()) {
+                                        val asset = assets.getJSONObject(i)
+                                        val aName = asset.optString("name", "")
+                                        val aUrl = asset.optString("browser_download_url", "")
+                                        if (aName.endsWith(".zip", ignoreCase = true) && aUrl.isNotBlank()) {
+                                            resolvedName = aName
+                                            resolvedUrl = aUrl
+                                            break
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (_: Exception) {}
+
+                val existingPath = "${GpuDriverHelper.driverStoragePath}$resolvedName"
+                val existing = File(existingPath)
+                if (existing.exists() && existing.length() > 1024L &&
+                    GpuDriverHelper.getMetadataFromZip(existing).name != null) {
+                    downloadedFile = existing
+                    downloadSuccess = true
+                    return@withContext
+                }
+
+                val tempTarget = File(requireContext().cacheDir, resolvedName)
+                try {
+                    val req = okhttp3.Request.Builder()
+                        .url(resolvedUrl)
+                        .header("User-Agent", "StormSwitch/18.4.3")
+                        .header("Accept", "application/octet-stream, */*")
+                        .build()
+                    client.newCall(req).execute().use { resp ->
+                        if (!resp.isSuccessful) throw IOException("HTTP ${resp.code}")
+                        val body = resp.body ?: throw IOException("Empty body")
+                        body.byteStream().use { input ->
+                            java.io.FileOutputStream(tempTarget).use { output ->
+                                input.copyTo(output)
+                            }
+                        }
+                    }
+                    if (tempTarget.exists() && tempTarget.length() > 1024L) {
+                        downloadedFile = tempTarget
+                        downloadSuccess = true
+                    }
+                } catch (_: Exception) {}
+            }
+
+            progressDialog.dismiss()
+
+            if (!downloadSuccess || downloadedFile == null) {
+                android.widget.Toast.makeText(requireContext(), getString(R.string.driver_empty), android.widget.Toast.LENGTH_SHORT).show()
+                return@launch
+            }
+
+            try {
+                val targetPath = "${GpuDriverHelper.driverStoragePath}$resolvedName"
+                if (downloadedFile!!.absolutePath.equals(targetPath, ignoreCase = true)) {
+                    refreshDriverList()
+                    val currentPath = StringSetting.DRIVER_PATH.getString()
+                    if (currentPath.equals(targetPath, ignoreCase = true)) {
+                        android.widget.Toast.makeText(requireContext(), getString(R.string.storm_driver_already_active), android.widget.Toast.LENGTH_SHORT).show()
+                        return@launch
+                    }
+                    promptDriverApplication(targetPath, findDriverPosition(targetPath))
+                } else {
+                    val uri = android.net.Uri.fromFile(downloadedFile!!)
+                    if (GpuDriverHelper.copyDriverToInternalStorage(uri)) {
+                        refreshDriverList()
+                        promptDriverApplication(targetPath, findDriverPosition(targetPath))
+                    } else {
+                        android.widget.Toast.makeText(requireContext(), getString(R.string.select_gpu_driver_error), android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } catch (e: Exception) {
+                android.widget.Toast.makeText(requireContext(), e.localizedMessage ?: "Error", android.widget.Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     private fun installStormDriver10() {
+        val model = (GpuDriverHelper.hookLibPath?.let { GpuDriverHelper.getGpuModel(hookLibPath = it) } ?: "").lowercase()
+        if (!GpuDriverHelper.isAdrenoGpu() && (model.contains("mali") || model.contains("immortalis"))) {
+            installMalisx2Driver()
+            return
+        }
+
         val fileName = "STORM_DRIVER_12.0.0.zip"
         val storagePath = "${GpuDriverHelper.driverStoragePath}$fileName"
         val existingFile = File(storagePath)
@@ -461,7 +633,7 @@ class DriverManagerFragment : Fragment() {
                     android.widget.Toast.makeText(requireContext(), getString(R.string.storm_driver_already_active), android.widget.Toast.LENGTH_SHORT).show()
                     return
                 }
-                promptDriverApplication(storagePath, 1)
+                promptDriverApplication(storagePath, findDriverPosition(storagePath))
                 return
             }
         }
@@ -547,7 +719,7 @@ class DriverManagerFragment : Fragment() {
                 if (GpuDriverHelper.copyDriverToInternalStorage(uri)) {
                     refreshDriverList()
                     val targetPath = "${GpuDriverHelper.driverStoragePath}$fileName"
-                    promptDriverApplication(targetPath, 1)
+                    promptDriverApplication(targetPath, findDriverPosition(targetPath))
                 } else {
                     android.widget.Toast.makeText(requireContext(), getString(R.string.select_gpu_driver_error), android.widget.Toast.LENGTH_SHORT).show()
                 }

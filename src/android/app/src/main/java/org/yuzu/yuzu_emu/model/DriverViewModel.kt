@@ -143,12 +143,16 @@ class DriverViewModel : ViewModel() {
         _showClearButton.value = value
     }
 
-    fun onDriverSelected(position: Int, skipShaderWipe: Boolean = false) {
-
-        val newDriverPath = if (position == 0) {
+    fun onDriverSelected(
+        position: Int,
+        skipShaderWipe: Boolean = false,
+        skipInstall: Boolean = false
+    ) {
+        val safePosition = if (position in 0..driverData.size) position else 0
+        val newDriverPath = if (safePosition == 0) {
             ""
         } else {
-            driverData[position - 1].first
+            driverData[safePosition - 1].first
         }
 
         if (!skipShaderWipe && newDriverPath != previousDriverPath) {
@@ -166,15 +170,15 @@ class DriverViewModel : ViewModel() {
         if (activeGame != null) {
             StringSetting.DRIVER_PATH.global = false
         }
-        if (position == 0) {
+        if (safePosition == 0) {
             StringSetting.DRIVER_PATH.setString("")
-            if (activeGame == null) {
+            if (!skipInstall && activeGame == null) {
                 GpuDriverHelper.installDefaultDriver()
             }
         } else {
-            val driverFile = File(driverData[position - 1].first)
+            val driverFile = File(driverData[safePosition - 1].first)
             StringSetting.DRIVER_PATH.setString(driverFile.path)
-            if (activeGame == null && driverFile.exists()) {
+            if (!skipInstall && activeGame == null && driverFile.exists()) {
                 GpuDriverHelper.installCustomDriver(driverFile)
             }
         }

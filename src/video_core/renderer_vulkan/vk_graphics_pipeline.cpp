@@ -135,7 +135,7 @@ RenderPassKey MakeRenderPassKey(const FixedPipelineState& state, const Device& d
     } else {
         key.depth_format = PixelFormat::Invalid;
     }
-    key.samples = MaxwellToVK::MsaaMode(state.msaa_mode);
+    key.samples = device.ClampSampleCount(MaxwellToVK::MsaaMode(state.msaa_mode));
     const bool has_color = std::ranges::any_of(key.color_formats, [](PixelFormat format) {
         return format != PixelFormat::Invalid;
     });
@@ -960,12 +960,17 @@ void GraphicsPipeline::MakePipeline(VkRenderPass render_pass) {
 
     const bool supports_alpha_output = fragment_has_color0_output;
     const bool alpha_to_one_supported = device.SupportsAlphaToOne();
+    const VkSampleCountFlagBits raster_samples =
+        device.ClampSampleCount(MaxwellToVK::MsaaMode(key.state.msaa_mode));
     const VkPipelineMultisampleStateCreateInfo multisample_ci{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
-        .rasterizationSamples = MaxwellToVK::MsaaMode(key.state.msaa_mode),
-        .sampleShadingEnable = Settings::values.sample_shading.GetValue() > 0 ? VK_TRUE : VK_FALSE,
+        .rasterizationSamples = raster_samples,
+        .sampleShadingEnable = (raster_samples != VK_SAMPLE_COUNT_1_BIT &&
+                                Settings::values.sample_shading.GetValue() > 0)
+                                   ? VK_TRUE
+                                   : VK_FALSE,
         .minSampleShading = f32(Settings::values.sample_shading.GetValue()) / 100.0f,
         .pSampleMask = nullptr,
         .alphaToCoverageEnable =

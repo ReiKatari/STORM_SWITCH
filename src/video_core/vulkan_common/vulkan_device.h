@@ -354,6 +354,7 @@ public:
         switch (GetDriverID()) {
         case VK_DRIVER_ID_QUALCOMM_PROPRIETARY:
         case VK_DRIVER_ID_ARM_PROPRIETARY:
+        case VK_DRIVER_ID_MESA_PANVK:
         case VK_DRIVER_ID_SAMSUNG_PROPRIETARY:
         case VK_DRIVER_ID_MESA_TURNIP:
             return true;
@@ -1179,6 +1180,67 @@ FN_MAX_LIMIT_LIST
                properties.properties.vendorID == 0x13B5 ||
                std::string_view(properties.properties.deviceName).find("Mali") != std::string_view::npos ||
                std::string_view(properties.properties.deviceName).find("Immortalis") != std::string_view::npos;
+    }
+
+    /// Returns true when running on the open-source malisx2 (Mesa kraid/Bifrost) Vulkan driver
+    /// for Arm Mali kbase, which reports VK_DRIVER_ID_ARM_PROPRIETARY with "malisx2" in driverInfo.
+    [[nodiscard]] bool IsMalisx2() const noexcept {
+        const auto contains_ci = [](std::string_view haystack, std::string_view needle) {
+            if (needle.size() > haystack.size()) {
+                return false;
+            }
+            for (size_t i = 0; i + needle.size() <= haystack.size(); ++i) {
+                bool match = true;
+                for (size_t j = 0; j < needle.size(); ++j) {
+                    const char a = haystack[i + j];
+                    const char b = needle[j];
+                    const char la = (a >= 'A' && a <= 'Z') ? static_cast<char>(a - 'A' + 'a') : a;
+                    const char lb = (b >= 'A' && b <= 'Z') ? static_cast<char>(b - 'A' + 'a') : b;
+                    if (la != lb) {
+                        match = false;
+                        break;
+                    }
+                }
+                if (match) {
+                    return true;
+                }
+            }
+            return false;
+        };
+        return contains_ci(std::string_view(properties.driver.driverInfo), "malisx2") ||
+               contains_ci(std::string_view(properties.driver.driverName), "malisx2");
+    }
+
+    /// Returns the bitmask of sample counts supported for both color and depth framebuffers.
+    [[nodiscard]] VkSampleCountFlags GetSupportedSampleCounts() const noexcept {
+        const VkSampleCountFlags mask = properties.properties.limits.framebufferColorSampleCounts &
+                                        properties.properties.limits.framebufferDepthSampleCounts;
+        return mask != 0 ? mask : VK_SAMPLE_COUNT_1_BIT;
+    }
+
+    /// Returns true if the Vulkan device supports multisampling (> 1x MSAA).
+    [[nodiscard]] bool IsMsaaSupported() const noexcept {
+        return (GetSupportedSampleCounts() & ~static_cast<VkSampleCountFlags>(VK_SAMPLE_COUNT_1_BIT)) != 0;
+    }
+
+    /// Clamps a requested VkSampleCountFlagBits to the highest sample count supported by the device.
+    [[nodiscard]] VkSampleCountFlagBits ClampSampleCount(
+        VkSampleCountFlagBits requested) const noexcept {
+        const VkSampleCountFlags supported = GetSupportedSampleCounts();
+        if ((supported & static_cast<VkSampleCountFlags>(requested)) != 0) {
+            return requested;
+        }
+        static constexpr VkSampleCountFlagBits kOrdered[] = {
+            VK_SAMPLE_COUNT_16_BIT, VK_SAMPLE_COUNT_8_BIT, VK_SAMPLE_COUNT_4_BIT,
+            VK_SAMPLE_COUNT_2_BIT,  VK_SAMPLE_COUNT_1_BIT,
+        };
+        for (const VkSampleCountFlagBits candidate : kOrdered) {
+            if (candidate <= requested &&
+                (supported & static_cast<VkSampleCountFlags>(candidate)) != 0) {
+                return candidate;
+            }
+        }
+        return VK_SAMPLE_COUNT_1_BIT;
     }
 
     [[nodiscard]] bool IsQualcomm() const noexcept {

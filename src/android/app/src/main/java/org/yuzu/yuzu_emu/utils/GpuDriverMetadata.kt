@@ -23,13 +23,13 @@ class GpuDriverMetadata {
         try {
             val json = JSONObject(FileUtil.getStringFromFile(metadataFile))
             name = json.getString("name")
-            description = json.getString("description")
-            author = json.getString("author")
-            vendor = json.getString("vendor")
-            version = json.getString("driverVersion")
+            description = json.optString("description", "")
+            author = json.optString("author", "")
+            vendor = json.optString("vendor", "")
+            version = json.optString("driverVersion", "")
             packageVersion = json.optString("packageVersion", "").takeIf { it.isNotBlank() }
                 ?: json.optString("version", "").takeIf { it.isNotBlank() }
-            minApi = json.getInt("minApi")
+            minApi = json.optInt("minApi", 0)
             libraryName = json.getString("libraryName")
         } catch (e: JSONException) {
             // JSON is malformed, ignore and treat as unsupported metadata.
@@ -53,13 +53,13 @@ class GpuDriverMetadata {
         try {
             val json = JSONObject(FileUtil.getStringFromInputStream(metadataStream))
             name = json.getString("name")
-            description = json.getString("description")
-            author = json.getString("author")
-            vendor = json.getString("vendor")
-            version = json.getString("driverVersion")
+            description = json.optString("description", "")
+            author = json.optString("author", "")
+            vendor = json.optString("vendor", "")
+            version = json.optString("driverVersion", "")
             packageVersion = json.optString("packageVersion", "").takeIf { it.isNotBlank() }
                 ?: json.optString("version", "").takeIf { it.isNotBlank() }
-            minApi = json.getInt("minApi")
+            minApi = json.optInt("minApi", 0)
             libraryName = json.getString("libraryName")
         } catch (e: JSONException) {
             // JSON is malformed, ignore and treat as unsupported metadata.

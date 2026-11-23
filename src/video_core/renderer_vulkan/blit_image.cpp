@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <algorithm>
+#include <array>
+#include <vector>
 
 #include "video_core/renderer_vulkan/vk_texture_cache.h"
 
@@ -939,6 +941,130 @@ void BlitImageHelper::CopyMSAA(RenderPassCache& render_pass_cache, VkImage dst_i
                                bool msaa_to_non_msaa) {
     while (!msaa_copy_resources.empty() && scheduler.IsFree(msaa_copy_resources.front().tick)) {
         msaa_copy_resources.pop_front();
+    }
+    if (!device.IsMsaaSupported()) {
+        // Driver does not support MSAA (e.g. malisx2 with sampleCounts == 1): both images were
+        // created with VK_SAMPLE_COUNT_1_BIT, so perform a single-sampled VkImageBlit instead
+        // of binding a 1x image to a sampler2DMS shader.
+        const auto [samples_x, samples_y] = VideoCommon::SamplesLog2(static_cast<int>(num_samples));
+        std::vector<VkImageBlit> blits;
+        blits.reserve(copies.size());
+        for (const VideoCommon::ImageCopy& copy : copies) {
+            const s32 src_x0 = msaa_to_non_msaa ? (copy.src_offset.x >> samples_x)
+                                                : (copy.dst_offset.x << samples_x);
+            const s32 src_y0 = msaa_to_non_msaa ? (copy.src_offset.y >> samples_y)
+                                                : (copy.dst_offset.y << samples_y);
+            const s32 src_w = (std::max)(1, msaa_to_non_msaa
+                                                ? static_cast<s32>(copy.extent.width >> samples_x)
+                                                : static_cast<s32>(copy.extent.width << samples_x));
+            const s32 src_h = (std::max)(1, msaa_to_non_msaa
+                                                ? static_cast<s32>(copy.extent.height >> samples_y)
+                                                : static_cast<s32>(copy.extent.height << samples_y));
+            const s32 dst_w = (std::max)(1, static_cast<s32>(copy.extent.width));
+            const s32 dst_h = (std::max)(1, static_cast<s32>(copy.extent.height));
+            const s32 depth = (std::max)(1, static_cast<s32>(copy.extent.depth));
+            blits.push_back(VkImageBlit{
+                .srcSubresource{
+                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                    .mipLevel = static_cast<u32>(copy.src_subresource.base_level),
+                    .baseArrayLayer = static_cast<u32>(copy.src_subresource.base_layer),
+                    .layerCount = static_cast<u32>(copy.src_subresource.num_layers),
+                },
+                .srcOffsets{
+                    VkOffset3D{src_x0, src_y0, copy.src_offset.z},
+                    VkOffset3D{src_x0 + src_w, src_y0 + src_h, copy.src_offset.z + depth},
+                },
+                .dstSubresource{
+                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                    .mipLevel = static_cast<u32>(copy.dst_subresource.base_level),
+                    .baseArrayLayer = static_cast<u32>(copy.dst_subresource.base_layer),
+                    .layerCount = static_cast<u32>(copy.dst_subresource.num_layers),
+                },
+                .dstOffsets{
+                    VkOffset3D{copy.dst_offset.x, copy.dst_offset.y, copy.dst_offset.z},
+                    VkOffset3D{copy.dst_offset.x + dst_w, copy.dst_offset.y + dst_h,
+                               copy.dst_offset.z + depth},
+                },
+            });
+        }
+        if (blits.empty()) {
+            return;
+        }
+        const VkFormat src_vk_format_1x =
+            MaxwellToVK::SurfaceFormat(device, FormatType::Optimal, true, src_format).format;
+        const bool can_linear_filter = device.IsFormatSupported(
+            src_vk_format_1x, VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT, FormatType::Optimal);
+        const VkFilter vk_filter =
+            (!msaa_to_non_msaa && can_linear_filter) ? VK_FILTER_LINEAR : VK_FILTER_NEAREST;
+        scheduler.RequestOutsideRenderPassOperationContext();
+        scheduler.Record([src_image, dst_image, blits = std::move(blits),
+                          vk_filter](vk::CommandBuffer cmdbuf) {
+            const std::array pre_barriers{
+                VkImageMemoryBarrier{
+                    .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+                    .pNext = nullptr,
+                    .srcAccessMask = VK_ACCESS_MEMORY_WRITE_BIT,
+                    .dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
+                    .oldLayout = VK_IMAGE_LAYOUT_GENERAL,
+                    .newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                    .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                    .image = src_image,
+                    .subresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, VK_REMAINING_MIP_LEVELS, 0,
+                                      VK_REMAINING_ARRAY_LAYERS},
+                },
+                VkImageMemoryBarrier{
+                    .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+                    .pNext = nullptr,
+                    .srcAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT,
+                    .dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
+                    .oldLayout = VK_IMAGE_LAYOUT_GENERAL,
+                    .newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                    .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                    .image = dst_image,
+                    .subresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, VK_REMAINING_MIP_LEVELS, 0,
+                                      VK_REMAINING_ARRAY_LAYERS},
+                },
+            };
+            const std::array post_barriers{
+                VkImageMemoryBarrier{
+                    .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+                    .pNext = nullptr,
+                    .srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
+                    .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT,
+                    .oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                    .newLayout = VK_IMAGE_LAYOUT_GENERAL,
+                    .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                    .image = src_image,
+                    .subresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, VK_REMAINING_MIP_LEVELS, 0,
+                                      VK_REMAINING_ARRAY_LAYERS},
+                },
+                VkImageMemoryBarrier{
+                    .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+                    .pNext = nullptr,
+                    .srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
+                    .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT,
+                    .oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                    .newLayout = VK_IMAGE_LAYOUT_GENERAL,
+                    .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                    .image = dst_image,
+                    .subresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, VK_REMAINING_MIP_LEVELS, 0,
+                                      VK_REMAINING_ARRAY_LAYERS},
+                },
+            };
+            cmdbuf.PipelineBarrier(VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+                                   VK_PIPELINE_STAGE_TRANSFER_BIT, 0, nullptr, nullptr,
+                                   pre_barriers);
+            cmdbuf.BlitImage(src_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dst_image,
+                             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, blits, vk_filter);
+            cmdbuf.PipelineBarrier(VK_PIPELINE_STAGE_TRANSFER_BIT,
+                                   VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, nullptr, nullptr,
+                                   post_barriers);
+        });
+        return;
     }
     const auto [samples_x, samples_y] = VideoCommon::SamplesLog2(static_cast<int>(num_samples));
     const s32 scale_x = 1 << samples_x;

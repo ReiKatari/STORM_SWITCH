@@ -2865,7 +2865,7 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="fsr2_quality_balanced">Balanced (1.7x)</string>
     <string name="fsr2_quality_performance">Performance (2.0x)</string>
     <string name="fsr2_quality_ultra_performance">Ultra Performance (3.0x)</string>
-    <string name="mali_driver_info">Mali/Immortalis/Xclipse GPUs use the manufacturer system Vulkan driver. Upstream Mesa PanVK is experimental and does not yet support full Switch Vulkan extensions. Custom .zip driver installation remains available for experimental builds, while Adreno Turnip drivers are filtered to prevent crashes.</string>
+    <string name="mali_driver_info">Arm Mali / Immortalis GPUs (v7-v12: G31/G52/G57/G78/G610/G710/G615/G715/G620/G720, Android 10+) can use the open-source malisx2 Vulkan 1.3 driver or the system Vulkan driver. Adreno Turnip drivers remain blocked on Mali/Xclipse to prevent crashes.</string>
     <string name="mali_turnip_incompatible_warning">Warning: Adreno Turnip drivers are designed specifically for Qualcomm Adreno GPUs. Installing this driver on a Mali or non-Adreno GPU may cause graphics instability or app crashes. Do you want to continue?</string>
 
 
@@ -2951,7 +2951,11 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="tab_driver_all">All Drivers</string>
     <string name="tab_driver_storm">STORM DRIVER</string>
     <string name="tab_driver_turnip">Turnip (Adreno)</string>
-    <string name="tab_driver_panvk">PanVK (Mali / Immortalis)</string>
+    <string name="tab_driver_panvk">Mali (malisx2 / PanVK)</string>
+    <string name="install_malisx2_driver">Install malisx2 (Arm Mali)</string>
+    <string name="malisx2_active_label">malisx2 (Active)</string>
+    <string name="adreno_mali_incompatible_warning">This driver (malisx2 / PanVK) is built exclusively for Arm Mali GPUs and will not work on Qualcomm Adreno. Download anyway?</string>
+    <string name="malisx2_min_api_warning">The malisx2 driver requires Android 10 (API 29) or newer.</string>
     <string name="tab_driver_qualcomm">Qualcomm Proprietary</string>
     <string name="install_storm_driver_10">Download STORM DRIVER 12.0.0</string>
     <string name="storm_driver_10_recommendation">GPU: %1$s • Recommended: %2$s</string>

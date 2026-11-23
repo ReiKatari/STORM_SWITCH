@@ -596,6 +596,7 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
         (device_name_sv.find("Adreno (TM) X1") != std::string_view::npos ||
          device_name_sv.find("Adreno X1") != std::string_view::npos ||
          device_name_sv.find("Snapdragon X") != std::string_view::npos);
+    const bool is_malisx2 = IsMalisx2();
     const bool is_mali = driver_id == VK_DRIVER_ID_ARM_PROPRIETARY ||
                          driver_id == VK_DRIVER_ID_MESA_PANVK ||
                          properties.properties.vendorID == 0x13B5 ||
@@ -857,11 +858,14 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
             (std::max)(properties.properties.limits.minStorageBufferOffsetAlignment, VkDeviceSize{64});
     }
 
-    // ARM Mali compute shared memory clamp to prevent vkCreateComputePipelines crash on 32KB hardware limits
+    // ARM Mali compute shared memory clamp to prevent vkCreateComputePipelines crash on 32KB hardware limits.
+    // On malisx2, preserve hardware-verified TEXTURE_FEATURES_0 BC1-BC7 on v7/v9/v10 (v11/v12 already report false).
     if (is_mali) {
         properties.properties.limits.maxComputeSharedMemorySize =
             (std::min)(properties.properties.limits.maxComputeSharedMemorySize, 32768U);
-        features.features.textureCompressionBC = false;
+        if (!is_malisx2) {
+            features.features.textureCompressionBC = false;
+        }
     }
 
     // Adreno 5xx / PowerVR BCn safety
@@ -873,12 +877,12 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
     auto effective_dyna_state = dyna_state;
 
     if ((!is_turnip && is_adreno_8xx) || is_adreno_x1 ||
-        (!is_turnip && (is_adreno_5xx || is_adreno_6xx || is_qualcomm || is_mali || is_xclipse || is_powervr))) {
+        (!is_turnip && !is_malisx2 && (is_adreno_5xx || is_adreno_6xx || is_qualcomm || is_mali || is_xclipse || is_powervr))) {
         LOG_INFO(Render_Vulkan, "Mobile GPU / driver auto-optimization: ExtendedDynamicState disabled for hardware pipeline stability");
         effective_dyna_state = Settings::ExtendedDynamicState::Disabled;
-    } else if ((is_turnip || (is_intel_windows && is_integrated)) &&
+    } else if ((is_turnip || is_malisx2 || (is_intel_windows && is_integrated)) &&
                effective_dyna_state > Settings::ExtendedDynamicState::EDS1) {
-        LOG_INFO(Render_Vulkan, "Turnip/Intel iGPU auto-optimization: Clamping ExtendedDynamicState to EDS1 to ensure pipeline stability");
+        LOG_INFO(Render_Vulkan, "Turnip/malisx2/Intel iGPU auto-optimization: Clamping ExtendedDynamicState to EDS1 to ensure pipeline stability");
         effective_dyna_state = Settings::ExtendedDynamicState::EDS1;
     }
 
@@ -928,10 +932,13 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
 
     LOG_INFO(Render_Vulkan,
              "STORM GPU Matrix Profile: vendor={:#06x} ({}) device='{}' driverID={} driverVer={:#x} "
-             "[EDS={}, VIDS={}, XFB={}, BCn={}, ASTC={}, FP16={}]",
+             "driverInfo='{}' [malisx2={}, MSAA={}, EDS={}, VIDS={}, XFB={}, BCn={}, ASTC={}, FP16={}]",
              properties.properties.vendorID, GetDriverName(),
              properties.properties.deviceName, static_cast<u32>(properties.driver.driverID),
              properties.properties.driverVersion,
+             properties.driver.driverInfo,
+             is_malisx2,
+             IsMsaaSupported(),
              effective_dyna_state > Settings::ExtendedDynamicState::Disabled,
              extensions.vertex_input_dynamic_state,
              extensions.transform_feedback,
@@ -1692,7 +1699,7 @@ void Device::RemoveUnsuitableExtensions() {
             features.custom_border_color.customBorderColors &&
             features.custom_border_color.customBorderColorWithoutFormat &&
             GetDriverID() != VK_DRIVER_ID_QUALCOMM_PROPRIETARY &&
-            GetDriverID() != VK_DRIVER_ID_ARM_PROPRIETARY; // Qualcomm and Mali proprietary drivers have broken custom border color sampler interpolation
+            (GetDriverID() != VK_DRIVER_ID_ARM_PROPRIETARY || IsMalisx2()); // Qualcomm and Arm proprietary blobs have broken custom border color interpolation
     }
     RemoveExtensionFeatureIfUnsuitable(extensions.custom_border_color, features.custom_border_color,
                                        VK_EXT_CUSTOM_BORDER_COLOR_EXTENSION_NAME);

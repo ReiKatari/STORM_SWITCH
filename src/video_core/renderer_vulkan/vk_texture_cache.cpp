@@ -200,7 +200,7 @@ constexpr VkBorderColor ConvertBorderColor(const std::array<float, 4>& color) {
         },
         .mipLevels = static_cast<u32>(info.resources.levels),
         .arrayLayers = static_cast<u32>(info.resources.layers),
-        .samples = ConvertSampleCount(info.num_samples),
+        .samples = device.ClampSampleCount(ConvertSampleCount(info.num_samples)),
         .tiling = VK_IMAGE_TILING_OPTIMAL,
         .usage = ImageUsageFlags(device, format_info, info.format),
         .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
@@ -1852,6 +1852,10 @@ void TextureCacheRuntime::CopyImageMSAA(Image& dst, Image& src,
             return;
         }
     }
+    if (!device.IsMsaaSupported()) {
+        // Ensure uninitialized dst transitions UNDEFINED -> GENERAL before single-sampled BlitImage fallback
+        TransitionImageLayout(dst);
+    }
     blit_image_helper.CopyMSAA(render_pass_cache, dst.Handle(), dst.info.format, src.Handle(),
                                src.info.format, num_samples, copies, msaa_to_non_msaa);
 }
@@ -2081,7 +2085,8 @@ void Image::UploadMemory(VkBuffer buffer, VkDeviceSize offset,
         image_ci.format =
             MaxwellToVK::SurfaceFormat(runtime->device, FormatType::Optimal, true, info.format)
                 .format;
-        image_ci.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+        image_ci.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
+                         VK_IMAGE_USAGE_SAMPLED_BIT;
         vk::Image temp_image = runtime->memory_allocator.CreateImage(image_ci);
 
         scheduler->RequestOutsideRenderPassOperationContext();
@@ -2110,6 +2115,28 @@ void Image::UploadMemory(VkBuffer buffer, VkDeviceSize offset,
             image_copies.push_back(image_copy);
         }
 
+        if (!initialized && !runtime->device.IsMsaaSupported()) {
+            const VkImage dst_vk_image = Handle();
+            const VkImageAspectFlags dst_aspect = aspect_mask;
+            scheduler->RequestOutsideRenderPassOperationContext();
+            scheduler->Record([dst_vk_image, dst_aspect](vk::CommandBuffer cmdbuf) {
+                const VkImageMemoryBarrier init_barrier{
+                    .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+                    .pNext = nullptr,
+                    .srcAccessMask = 0,
+                    .dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
+                    .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+                    .newLayout = VK_IMAGE_LAYOUT_GENERAL,
+                    .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                    .image = dst_vk_image,
+                    .subresourceRange{dst_aspect, 0, VK_REMAINING_MIP_LEVELS, 0,
+                                      VK_REMAINING_ARRAY_LAYERS},
+                };
+                cmdbuf.PipelineBarrier(VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                                       VK_PIPELINE_STAGE_TRANSFER_BIT, 0, init_barrier);
+            });
+        }
         runtime->blit_image_helper.CopyMSAA(runtime->render_pass_cache, Handle(), info.format,
                                             temp_vk_image, info.format, info.num_samples,
                                             image_copies, false);
@@ -2224,7 +2251,8 @@ void Image::DownloadMemory(std::span<VkBuffer> buffers_span, std::span<size_t> o
             image_ci.format =
                 MaxwellToVK::SurfaceFormat(runtime->device, FormatType::Optimal, true, info.format)
                     .format;
-            image_ci.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+            image_ci.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+                             VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
             vk::Image temp_image = runtime->memory_allocator.CreateImage(image_ci);
             const VkImage temp_vk_image = *temp_image;
 
@@ -2647,7 +2675,7 @@ bool Image::BlitScaleHelper(bool scale_up) {
         if (!blit_framebuffer) {
             blit_framebuffer.emplace(*runtime, dst_view, nullptr, extent, scale_up);
         }
-        if (info.num_samples > 1) {
+        if (info.num_samples > 1 && runtime->device.IsMsaaSupported()) {
             runtime->blit_image_helper.BlitColorMSAA(&*blit_framebuffer, src_view,
                 dst_region, src_region);
         } else {
@@ -2659,7 +2687,7 @@ bool Image::BlitScaleHelper(bool scale_up) {
         if (!blit_framebuffer) {
             blit_framebuffer.emplace(*runtime, nullptr, dst_view, extent, scale_up);
         }
-        if (info.num_samples > 1) {
+        if (info.num_samples > 1 && runtime->device.IsMsaaSupported()) {
             runtime->blit_image_helper.ResolveDepthStencil(&*blit_framebuffer, src_view,
                 dst_region, src_region);
         } else {
@@ -2678,7 +2706,7 @@ bool Image::BlitScaleHelper(bool scale_up) {
 }
 
 bool Image::NeedsScaleHelper() const {
-    if (info.num_samples > 1) {
+    if (info.num_samples > 1 && runtime->device.IsMsaaSupported()) {
         return true;
     }
     const auto& device = runtime->device;
@@ -2694,7 +2722,7 @@ ImageView::ImageView(TextureCacheRuntime& runtime, const VideoCommon::ImageViewI
                      ImageId image_id_, Image& image)
     : VideoCommon::ImageViewBase{info, image.info, image_id_, image.gpu_addr},
       device{&runtime.device}, image_handle{image.Handle()},
-      samples(ConvertSampleCount(image.info.num_samples)) {
+      samples(runtime.device.ClampSampleCount(ConvertSampleCount(image.info.num_samples))) {
     using Shader::TextureType;
 
     const VkImageAspectFlags aspect_mask = ImageViewAspectMask(info);

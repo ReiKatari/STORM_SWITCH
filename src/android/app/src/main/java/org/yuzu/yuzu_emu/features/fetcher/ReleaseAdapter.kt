@@ -219,14 +219,36 @@ class ReleaseAdapter(
                                 .setTitle(context.getString(R.string.active_driver))
                                 .setMessage(context.getString(R.string.apply_driver_confirm, artifact.name))
                                 .setPositiveButton(R.string.apply_driver_now) { _, _ ->
+                                    val driverFile = File(installedPath)
+                                    val prevPath = org.yuzu.yuzu_emu.features.settings.model.StringSetting.DRIVER_PATH.getString()
+                                    org.yuzu.yuzu_emu.utils.GpuDriverHelper.clearDriverBlacklist()
+                                    org.yuzu.yuzu_emu.features.settings.model.StringSetting.DRIVER_PATH.global = true
                                     org.yuzu.yuzu_emu.features.settings.model.StringSetting.DRIVER_PATH.setString(installedPath)
-                                    driverViewModel.updateDriverList()
-                                    Toast.makeText(
-                                        context,
-                                        "⚡ " + context.getString(R.string.in_use_label, artifact.name),
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                    notifyDataSetChanged()
+                                    val installedOk = if (driverFile.exists()) {
+                                        org.yuzu.yuzu_emu.utils.GpuDriverHelper.installCustomDriver(driverFile)
+                                    } else {
+                                        false
+                                    }
+                                    if (installedOk) {
+                                        org.yuzu.yuzu_emu.utils.NativeConfig.saveGlobalConfig()
+                                        driverViewModel.reloadDriverData()
+                                        driverViewModel.updateDriverNameForGame(null)
+                                        Toast.makeText(
+                                            context,
+                                            "⚡ " + context.getString(R.string.in_use_label, artifact.name),
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        notifyDataSetChanged()
+                                    } else {
+                                        org.yuzu.yuzu_emu.features.settings.model.StringSetting.DRIVER_PATH.setString(prevPath)
+                                        org.yuzu.yuzu_emu.utils.NativeConfig.saveGlobalConfig()
+                                        driverViewModel.reloadDriverData()
+                                        Toast.makeText(
+                                            context,
+                                            context.getString(R.string.select_gpu_driver_error),
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                    }
                                 }
                                 .setNegativeButton(android.R.string.cancel, null)
                                 .show()
@@ -452,14 +474,38 @@ class ReleaseAdapter(
                         val gpuModelStr = org.yuzu.yuzu_emu.utils.GpuDriverHelper.hookLibPath?.let {
                             org.yuzu.yuzu_emu.utils.GpuDriverHelper.getGpuModel(hookLibPath = it)
                         } ?: ""
-                        val isMaliGpu = gpuModelStr.contains("mali", ignoreCase = true) ||
+                        val isAdrenoGpu = org.yuzu.yuzu_emu.utils.GpuDriverHelper.isAdrenoGpu()
+                        val isMaliGpu = !isAdrenoGpu && (
+                            gpuModelStr.contains("mali", ignoreCase = true) ||
                             gpuModelStr.contains("immortalis", ignoreCase = true) ||
                             gpuModelStr.contains("xclipse", ignoreCase = true)
-                        val isTurnipPkg = artifact.name.contains("turnip", ignoreCase = true) ||
+                        )
+                        val isMalisx2Pkg = artifact.name.contains("malisx2", ignoreCase = true)
+                        val isMaliOnlyPkg = isMalisx2Pkg ||
+                            artifact.name.contains("panvk", ignoreCase = true) ||
+                            artifact.name.contains("panfrost", ignoreCase = true)
+                        val isTurnipPkg = !isMaliOnlyPkg && (
+                            artifact.name.contains("turnip", ignoreCase = true) ||
                             artifact.name.contains("freedreno", ignoreCase = true) ||
                             artifact.name.contains("adreno", ignoreCase = true)
+                        )
 
-                        if (isMaliGpu && isTurnipPkg) {
+                        if (isMalisx2Pkg && android.os.Build.VERSION.SDK_INT < 29) {
+                            com.google.android.material.dialog.MaterialAlertDialogBuilder(context)
+                                .setTitle(R.string.warning)
+                                .setMessage(R.string.malisx2_min_api_warning)
+                                .setPositiveButton(R.string.ok, null)
+                                .show()
+                        } else if (isAdrenoGpu && isMaliOnlyPkg) {
+                            com.google.android.material.dialog.MaterialAlertDialogBuilder(context)
+                                .setTitle(R.string.warning)
+                                .setMessage(R.string.adreno_mali_incompatible_warning)
+                                .setPositiveButton(android.R.string.ok) { _, _ ->
+                                    triggerDownload()
+                                }
+                                .setNegativeButton(android.R.string.cancel, null)
+                                .show()
+                        } else if (isMaliGpu && isTurnipPkg) {
                             com.google.android.material.dialog.MaterialAlertDialogBuilder(context)
                                 .setTitle(R.string.warning)
                                 .setMessage(R.string.mali_turnip_incompatible_warning)

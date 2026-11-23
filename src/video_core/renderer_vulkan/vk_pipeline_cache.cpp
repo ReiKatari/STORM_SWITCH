@@ -341,10 +341,13 @@ size_t GetTotalPipelineWorkers(const Device& device) {
         }
     }
 
-    if (device.IsMali() ||
-        device.GetDriverID() == VK_DRIVER_ID_ARM_PROPRIETARY ||
-        device.GetVendorName() == "ARM" ||
-        device.GetDriverName().find("panvk") != std::string::npos) {
+    if (device.IsMalisx2()) {
+        // Mesa kraid/Bifrost compiler in malisx2 is multi-thread safe; allow up to 3 workers on mobile
+        num_workers = std::clamp<size_t>(num_workers, 1ULL, 3ULL);
+    } else if (device.IsMali() ||
+               device.GetDriverID() == VK_DRIVER_ID_ARM_PROPRIETARY ||
+               device.GetVendorName() == "ARM" ||
+               device.GetDriverName().find("panvk") != std::string::npos) {
         num_workers = std::clamp<size_t>(num_workers, 1ULL, 2ULL);
     }
 
@@ -496,8 +499,9 @@ PipelineCache::PipelineCache(Tegra::MaxwellDeviceMemoryManager& device_memory_,
                                   driver_id == VK_DRIVER_ID_QUALCOMM_PROPRIETARY ||
                                   driver_id == VK_DRIVER_ID_MESA_TURNIP ||
                                   driver_id == VK_DRIVER_ID_ARM_PROPRIETARY,
-        .has_broken_spirv_position_input = driver_id == VK_DRIVER_ID_QUALCOMM_PROPRIETARY ||
-                                           driver_id == VK_DRIVER_ID_ARM_PROPRIETARY,
+        .has_broken_spirv_position_input =
+            driver_id == VK_DRIVER_ID_QUALCOMM_PROPRIETARY ||
+            (driver_id == VK_DRIVER_ID_ARM_PROPRIETARY && !device.IsMalisx2()),
         .has_broken_unsigned_image_offsets = false,
         .has_broken_signed_operations = false,
         .has_broken_fp16_float_controls = driver_id == VK_DRIVER_ID_NVIDIA_PROPRIETARY ||
@@ -508,7 +512,7 @@ PipelineCache::PipelineCache(Tegra::MaxwellDeviceMemoryManager& device_memory_,
         .ignore_nan_fp_comparisons = false,
         .has_broken_spirv_subgroup_mask_vector_extract_dynamic =
             driver_id == VK_DRIVER_ID_QUALCOMM_PROPRIETARY ||
-            driver_id == VK_DRIVER_ID_ARM_PROPRIETARY,
+            (driver_id == VK_DRIVER_ID_ARM_PROPRIETARY && !device.IsMalisx2()),
         .max_subgroup_size =
             device.GetMaxSubgroupSize() > 0U ? device.GetMaxSubgroupSize() : 32U,
         .has_broken_robust =

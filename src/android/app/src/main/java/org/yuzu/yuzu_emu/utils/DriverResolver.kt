@@ -51,6 +51,7 @@ object DriverResolver {
     // Driver repository paths - (from DriverFetcherFragment) might extract these to a config file later
     private val repositories = listOf(
         "ReiKatari/STORM_DRIVER",
+        "bmdhacks/malisx2",
         "Balemuni/Balemunis-Aurora",
         "K11MCH1/AdrenoToolsDrivers",
         "MrPurple666/purple-turnip",
