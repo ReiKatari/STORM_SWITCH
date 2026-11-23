@@ -298,10 +298,16 @@ void QtConfig::ReadShortcutValues() {
         // No longer using ReadSetting for shortcut.second as it inaccurately returns a value of 1
         // for WidgetWithChildrenShortcut which is a value of 3. Needed to fix shortcuts the open
         // a file dialog in windowed mode
+        std::string keyseq = ReadStringSetting(std::string("KeySeq"), shortcut.keyseq);
+        if (name == "Exit STORM SWITCH" && keyseq.empty()) {
+            keyseq = shortcut.keyseq;
+        } else if (name == "Direct Connect to Room" && keyseq == "Ctrl+C") {
+            keyseq = shortcut.keyseq;
+        }
         UISettings::values.shortcuts.push_back(
             {name,
              group,
-             {ReadStringSetting(std::string("KeySeq"), shortcut.keyseq),
+             {keyseq,
               ReadStringSetting(std::string("Controller_KeySeq"), shortcut.controller_keyseq),
               shortcut.context,
               ReadBooleanSetting(std::string("Repeat"), std::optional(shortcut.repeat))}});

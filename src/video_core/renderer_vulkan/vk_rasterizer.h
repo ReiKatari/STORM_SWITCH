@@ -233,7 +233,7 @@ private:
     /// the GPU makes them now (BufferCache::Nx2CopyListPages).
     void SubmitNx2ListCopies();
 
-    void UpdateDynamicStates();
+    void UpdateDynamicStates(GraphicsPipeline* pipeline = nullptr);
 
     void HandleTransformFeedback();
 
@@ -304,6 +304,8 @@ private:
 
     u32 draw_counter = 0;
     u32 last_dynamic_fb_height = 0;
+    u32 last_dynamic_fb_width = 0;
+    bool last_dynamic_fb_rescaled = false;
     u64 current_title_id = 0;
 };
 

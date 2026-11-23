@@ -89,8 +89,8 @@ Result KSynchronizationObject::Wait(KernelCore& kernel, s32* out_index,
         // Setup the scheduling lock and sleep.
         KScopedSchedulerLockAndSleep slp(kernel, std::addressof(timer), thread, timeout);
 
-        // Check if the thread should terminate.
-        if (thread->IsTerminationRequested()) {
+        // Check if the thread should terminate or kernel is shutting down.
+        if (thread->IsTerminationRequested() || kernel.IsShuttingDown()) {
             slp.CancelSleep();
             R_THROW(ResultTerminationRequested);
         }
@@ -158,9 +158,13 @@ void KSynchronizationObject::NotifyAvailable(KernelCore& kernel, Result result) 
         return;
     }
 
-    // Iterate over each thread.
-    for (auto* cur_node = m_thread_list_head; cur_node != nullptr; cur_node = cur_node->next) {
-        cur_node->thread->NotifyAvailable(kernel, this, result);
+    // Iterate over each thread (capture next before NotifyAvailable unlinks cur_node).
+    for (auto* cur_node = m_thread_list_head; cur_node != nullptr;) {
+        auto* next_node = cur_node->next;
+        if (cur_node->thread != nullptr) {
+            cur_node->thread->NotifyAvailable(kernel, this, result);
+        }
+        cur_node = next_node;
     }
 }
 

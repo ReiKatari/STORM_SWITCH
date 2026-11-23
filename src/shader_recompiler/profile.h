@@ -78,6 +78,9 @@ struct Profile {
     /// coordinates with the 16.8 format in the ImageGather instruction than the Maxwell
     /// architecture. Applying an offset does fix this mismatching rounding behaviour.
     bool need_gather_subpixel_offset{};
+    /// Set to false on mobile Vulkan drivers with broken 4-offset ConstOffsets textureGatherOffsets
+    /// so SPIR-V emits 4 independent single-offset gathers instead.
+    bool support_texture_gather_offsets{true};
 
     /// OpFClamp is broken and OpFMax + OpFMin should be used instead
         /// Geometry shaders run once per output vertex (Adreno), repeating their memory writes and

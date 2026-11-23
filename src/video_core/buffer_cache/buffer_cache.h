@@ -150,7 +150,7 @@ void BufferCache<P>::TickFrame() {
         }
 #else
         const u64 gc_threshold = vram_gc ? minimum_memory : critical_memory;
-        if (total_used_memory >= gc_threshold) {
+        if (buffer_bytes >= gc_threshold || total_used_memory >= critical_memory) {
             RunGarbageCollector(total_used_memory >= critical_memory);
         }
 #endif
@@ -171,7 +171,14 @@ void BufferCache<P>::WriteMemory(DAddr device_addr, u64 size) {
         ClearDownload(device_addr, size);
         gpu_modified_ranges.Subtract(device_addr, size);
     }
+#ifdef __ANDROID__
+    const DAddr page_start = Common::AlignDown(device_addr, DEVICE_PAGESIZE);
+    memory_tracker.MarkRegionAsCpuModified(
+        device_addr, size,
+        IsRegionGpuModified(page_start, Common::AlignUp(device_addr + size, DEVICE_PAGESIZE) - page_start));
+#else
     memory_tracker.MarkRegionAsCpuModified(device_addr, size);
+#endif
 }
 
 template <class P>
@@ -200,9 +207,15 @@ bool BufferCache<P>::OnCPUWrite(DAddr device_addr, u64 size) {
     if (!is_dirty) {
         return false;
     }
-    if (memory_tracker.IsRegionGpuModified(device_addr, size)) {
+#ifdef __ANDROID__
+    if (IsRegionGpuModified(device_addr, size)) {
         return true;
     }
+#else
+    if (memory_tracker.IsRegionGpuModified(device_addr, size) || IsRegionGpuModified(device_addr, size)) {
+        return true;
+    }
+#endif
     WriteMemory(device_addr, size);
     return false;
 }
@@ -368,12 +381,11 @@ bool BufferCache<P>::DMAClear(GPUVAddr dst_address, u64 amount, u32 value) {
     if (!cpu_dst_address) {
         return false;
     }
-    const bool dest_dirty = IsRegionRegistered(*cpu_dst_address, amount);
+    const size_t size = static_cast<size_t>(amount) * sizeof(u32);
+    const bool dest_dirty = IsRegionRegistered(*cpu_dst_address, size);
     if (!dest_dirty) {
         return false;
     }
-
-    const size_t size = amount * sizeof(u32);
     ClearDownload(*cpu_dst_address, size);
     gpu_modified_ranges.Subtract(*cpu_dst_address, size);
 
@@ -382,6 +394,9 @@ bool BufferCache<P>::DMAClear(GPUVAddr dst_address, u64 amount, u32 value) {
     const u32 offset = dest_buffer.Offset(*cpu_dst_address);
     runtime.ClearBuffer(dest_buffer, offset, size, value);
     dest_buffer.MarkUsage(offset, size);
+    if (VideoCore::Nx2IsActive()) {
+        Tegra::Nx2MarkGpuWritten(*cpu_dst_address, size);
+    }
     return true;
 }
 
@@ -470,6 +485,28 @@ void BufferCache<P>::UpdateComputeBuffers() {
 
 template <class P>
 void BufferCache<P>::BindHostGeometryBuffers(bool is_indexed) {
+    if constexpr (requires { runtime.HasDeferredInlineCopies(); }) {
+        if (runtime.HasDeferredInlineCopies()) {
+            bool overlap = false;
+            if (is_indexed) {
+                const auto& ib = channel_state->index_buffer;
+                if (ib.size > 0 && runtime.HasDeferredInlineOverlap(ib.device_addr, ib.size)) {
+                    overlap = true;
+                }
+            }
+            if (!overlap) {
+                for (const auto& vb : channel_state->vertex_buffers) {
+                    if (vb.size > 0 && runtime.HasDeferredInlineOverlap(vb.device_addr, vb.size)) {
+                        overlap = true;
+                        break;
+                    }
+                }
+            }
+            if (overlap) {
+                runtime.FlushDeferredInlineCopies();
+            }
+        }
+    }
     if (is_indexed) {
         BindHostIndexBuffer();
     } else if constexpr (!HAS_FULL_INDEX_AND_PRIMITIVE_SUPPORT) {
@@ -496,6 +533,11 @@ void BufferCache<P>::BindHostStageBuffers(size_t stage) {
 
 template <class P>
 void BufferCache<P>::BindHostComputeBuffers() {
+    if constexpr (requires { runtime.HasDeferredInlineCopies(); }) {
+        if (runtime.HasDeferredInlineCopies()) {
+            runtime.FlushDeferredInlineCopies();
+        }
+    }
     BindHostComputeUniformBuffers();
     BindHostComputeStorageBuffers();
     BindHostComputeTextureBuffers();
@@ -955,13 +997,15 @@ void BufferCache<P>::BindHostVertexBuffers() {
             Buffer& buffer = slot_buffers[binding.buffer_id];
             TouchBuffer(buffer, binding.buffer_id);
             SynchronizeBuffer(buffer, binding.device_addr, binding.size);
+            const u32 offset = buffer.Offset(binding.device_addr);
+            if (binding.size > 0) {
+                buffer.MarkUsage(offset, binding.size);
+            }
             if (!flags[Dirty::VertexBuffer0 + index]) {
                 flush_bindings();
                 continue;
             }
             flags[Dirty::VertexBuffer0 + index] = false;
-            const u32 offset = buffer.Offset(binding.device_addr);
-            buffer.MarkUsage(offset, binding.size);
             const u32 stride = maxwell3d->regs.vertex_streams[index].stride;
             if (!bindings.buffers.empty() && index != last_index + 1) {
                 flush_bindings();
@@ -985,6 +1029,9 @@ void BufferCache<P>::BindHostVertexBuffers() {
             Buffer& buffer = slot_buffers[binding.buffer_id];
             TouchBuffer(buffer, binding.buffer_id);
             SynchronizeBuffer(buffer, binding.device_addr, binding.size);
+            if (binding.size > 0 && binding.buffer_id != NULL_BUFFER_ID) {
+                buffer.MarkUsage(buffer.Offset(binding.device_addr), binding.size);
+            }
             if (!flags[Dirty::VertexBuffer0 + index]) {
                 continue;
             }
@@ -1088,7 +1135,15 @@ void BufferCache<P>::BindHostGraphicsUniformBuffer(size_t stage, u32 index, u32 
             return alignment > 1 && (offset % alignment) != 0;
         }
     }();
-    const bool use_fast_buffer = needs_alignment_stream ||
+    bool has_deferred_inline = false;
+    if constexpr (requires { runtime.HasDeferredInlineOverlap(device_addr, size); }) {
+        has_deferred_inline = runtime.HasDeferredInlineOverlap(device_addr, size);
+        if (has_deferred_inline && (!has_host_buffer || memory_tracker.IsRegionGpuModified(device_addr, size))) {
+            runtime.FlushDeferredInlineCopies();
+            has_deferred_inline = false;
+        }
+    }
+    const bool use_fast_buffer = has_deferred_inline || needs_alignment_stream ||
         (has_host_buffer && size <= channel_state->uniform_buffer_skip_cache_size &&
          !memory_tracker.IsRegionGpuModified(device_addr, size));
     if (use_fast_buffer) {
@@ -1114,6 +1169,11 @@ void BufferCache<P>::BindHostGraphicsUniformBuffer(size_t stage, u32 index, u32 
         // Stream buffer path to avoid stalling on non-Nvidia drivers or Vulkan
         const std::span<u8> span = runtime.BindMappedUniformBuffer(stage, binding_index, size);
         device_memory.ReadBlockUnsafe(device_addr, span.data(), size);
+        if constexpr (requires { runtime.PatchDeferredInlineBytes(device_addr, span); }) {
+            if (has_deferred_inline) {
+                runtime.PatchDeferredInlineBytes(device_addr, span);
+            }
+        }
         return;
     }
     // Classic cached path
@@ -1148,6 +1208,22 @@ void BufferCache<P>::BindHostGraphicsUniformBuffer(size_t stage, u32 index, u32 
 
 template <class P>
 void BufferCache<P>::BindHostGraphicsStorageBuffers(size_t stage) {
+    if constexpr (requires { runtime.HasDeferredInlineCopies(); }) {
+        if (channel_state->enabled_storage_buffers[stage] != 0 && runtime.HasDeferredInlineCopies()) {
+            bool overlap = false;
+            ForEachEnabledBit(channel_state->enabled_storage_buffers[stage], [&](u32 index) {
+                if (!overlap) {
+                    const auto& sb = channel_state->storage_buffers[stage][index];
+                    if (sb.size > 0 && runtime.HasDeferredInlineOverlap(sb.device_addr, sb.size)) {
+                        overlap = true;
+                    }
+                }
+            });
+            if (overlap) {
+                runtime.FlushDeferredInlineCopies();
+            }
+        }
+    }
     u32 binding_index = 0;
     ForEachEnabledBit(channel_state->enabled_storage_buffers[stage], [&](u32 index) {
         if (((channel_state->scratch_storage_buffers[stage] >> index) & 1) != 0) {
@@ -1184,6 +1260,22 @@ void BufferCache<P>::BindHostGraphicsStorageBuffers(size_t stage) {
 
 template <class P>
 void BufferCache<P>::BindHostGraphicsTextureBuffers(size_t stage) {
+    if constexpr (requires { runtime.HasDeferredInlineCopies(); }) {
+        if (channel_state->enabled_texture_buffers[stage] != 0 && runtime.HasDeferredInlineCopies()) {
+            bool overlap = false;
+            ForEachEnabledBit(channel_state->enabled_texture_buffers[stage], [&](u32 index) {
+                if (!overlap) {
+                    const auto& tb = channel_state->texture_buffers[stage][index];
+                    if (tb.size > 0 && runtime.HasDeferredInlineOverlap(tb.device_addr, tb.size)) {
+                        overlap = true;
+                    }
+                }
+            });
+            if (overlap) {
+                runtime.FlushDeferredInlineCopies();
+            }
+        }
+    }
     ForEachEnabledBit(channel_state->enabled_texture_buffers[stage], [&](u32 index) {
         const TextureBufferBinding& binding = channel_state->texture_buffers[stage][index];
         Buffer& buffer = slot_buffers[binding.buffer_id];
@@ -1214,6 +1306,11 @@ template <class P>
 void BufferCache<P>::BindHostTransformFeedbackBuffers() {
     if (maxwell3d->regs.transform_feedback_enabled == 0) {
         return;
+    }
+    if constexpr (requires { runtime.HasDeferredInlineCopies(); }) {
+        if (runtime.HasDeferredInlineCopies()) {
+            runtime.FlushDeferredInlineCopies();
+        }
     }
     HostBindings<typename P::Buffer> host_bindings;
     for (u32 index = 0; index < NUM_TRANSFORM_FEEDBACK_BUFFERS; ++index) {
@@ -1972,6 +2069,58 @@ void BufferCache<P>::InlineMemoryImplementation(DAddr dest_address, size_t copy_
         u8* const src_pointer = upload_staging.mapped_span.data();
         std::memcpy(src_pointer, inlined_buffer.data(), copy_size);
         const bool can_reorder = runtime.CanReorderUpload(buffer, copies);
+        if constexpr (requires {
+                          runtime.TryDeferInlineCopy(dest_address, copy_size, buffer.Handle(),
+                                                     buffer.Offset(dest_address),
+                                                     upload_staging.buffer, upload_staging.offset,
+                                                     inlined_buffer);
+                      }) {
+            // Defer inline UBO updates only on non-Switch-2 titles (Switch 2 shaders read buffers
+            // via 64-bit BDA LoadGlobal which bypasses UBO descriptors) and only when every
+            // overlapping bound UBO is completely covered by this write (so fast-buffer patching
+            // overwrites 100% of the UBO without ever exposing stale device_memory bytes).
+            if (!can_reorder && copy_size <= 4096 && !Settings::IsCurrentProgramSwitch2()) {
+                const DAddr write_end = dest_address + copy_size;
+                bool hits_bound_ubo = false;
+                bool partial_ubo_overlap = false;
+                for (size_t st = 0; st < NUM_STAGES; ++st) {
+                    const u32 mask = channel_state->enabled_uniform_buffer_masks[st];
+                    if (mask == 0) {
+                        continue;
+                    }
+                    ForEachEnabledBit(mask, [&](u32 idx) {
+                        const auto& ub = channel_state->uniform_buffers[st][idx];
+                        if (ub.size > 0 && ub.device_addr < write_end &&
+                            dest_address < ub.device_addr + ub.size) {
+                            hits_bound_ubo = true;
+                            if (dest_address > ub.device_addr ||
+                                write_end < ub.device_addr + ub.size) {
+                                partial_ubo_overlap = true;
+                            }
+                        }
+                    });
+                }
+                if (hits_bound_ubo && !partial_ubo_overlap &&
+                    runtime.TryDeferInlineCopy(dest_address, copy_size, buffer.Handle(),
+                                               buffer.Offset(dest_address), upload_staging.buffer,
+                                               upload_staging.offset, inlined_buffer)) {
+                    for (size_t st = 0; st < NUM_STAGES; ++st) {
+                        const u32 mask = channel_state->enabled_uniform_buffer_masks[st];
+                        if (mask == 0) {
+                            continue;
+                        }
+                        ForEachEnabledBit(mask, [&](u32 idx) {
+                            const auto& ub = channel_state->uniform_buffers[st][idx];
+                            if (ub.size > 0 && ub.device_addr < write_end &&
+                                dest_address < ub.device_addr + ub.size) {
+                                channel_state->dirty_uniform_buffers[st] |= 1u << idx;
+                            }
+                        });
+                    }
+                    return;
+                }
+            }
+        }
         runtime.CopyBuffer(buffer, upload_staging.buffer, copies, true, can_reorder);
     } else {
         buffer.ImmediateUpload(buffer.Offset(dest_address), inlined_buffer.first(copy_size));
@@ -1985,6 +2134,11 @@ void BufferCache<P>::DownloadBufferMemory(Buffer& buffer) {
 
 template <class P>
 void BufferCache<P>::DownloadBuffersMemory(std::span<const BufferId> buffer_ids) {
+    if constexpr (requires { runtime.FlushDeferredInlineCopies(); }) {
+        if (runtime.HasDeferredInlineCopies()) {
+            runtime.FlushDeferredInlineCopies();
+        }
+    }
     struct Download {
         BufferId buffer_id;
         BufferCopy copy;
@@ -2090,6 +2244,11 @@ void BufferCache<P>::DownloadBufferMemory(Buffer& buffer, DAddr device_addr, u64
 
 template <class P>
 void BufferCache<P>::DeleteBuffer(BufferId buffer_id, bool do_not_mark) {
+    if constexpr (requires { runtime.FlushDeferredInlineCopies(); }) {
+        if (runtime.HasDeferredInlineCopies()) {
+            runtime.FlushDeferredInlineCopies();
+        }
+    }
     bool dirty_index{false};
     boost::container::small_vector<u64, NUM_VERTEX_BUFFERS> dirty_vertex_buffers;
     const auto scalar_replace = [buffer_id](Binding& binding) {

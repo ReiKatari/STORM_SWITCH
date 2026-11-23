@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="storm_prof_btn_save">Uložit</string>
+    <string name="storm_prof_btn_import">Importovat</string>
+    <string name="storm_prof_btn_rename">Přejmenovat</string>
+    <string name="storm_prof_btn_delete">Smazat</string>
+    <string name="storm_prof_preset_balanced_name">Vyvážený (Doporučeno)</string>
+    <string name="storm_prof_save_btn">Uložit</string>
+    <string name="storm_prof_rename_title">Přejmenovat profil</string>
+    <string name="storm_prof_delete_title">Smazat profil</string>
+</resources>

@@ -2,6 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <algorithm>
+#ifdef _WIN32
+#include <windows.h>
+#include <urlmon.h>
+#pragma comment(lib, "urlmon.lib")
+#endif
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
@@ -122,13 +127,7 @@ void TitleDatabase::LoadDataSync() {
     candidate_paths.push_back(Common::FS::GetEdenPath(Common::FS::EdenPath::KeysDir) / "nutdb.json");
     candidate_paths.push_back(Common::FS::GetEdenPath(Common::FS::EdenPath::CacheDir) / "titledb.json");
     candidate_paths.push_back(Common::FS::GetEdenPath(Common::FS::EdenPath::CacheDir) / "titles.json");
-    candidate_paths.push_back("F:/STORM SWITCH BOX/tools/nscb/zconfig/DB/nutdb_America.json");
-    candidate_paths.push_back("F:/STORM SWITCH BOX/tools/nscb/zconfig/DB/nutdb.json");
-    candidate_paths.push_back("F:/STORM SWITCH BOX/Assembling/tools/nscb/zconfig/DB/nutdb_America.json");
-    candidate_paths.push_back("F:/STORM SWITCH BOX/Assembling/tools/nscb/zconfig/DB/nutdb.json");
-    candidate_paths.push_back("E:/STORM SWITCH BOX/tools/nscb/zconfig/DB/nutdb_America.json");
-    candidate_paths.push_back("E:/STORM SWITCH BOX/tools/nscb/zconfig/DB/nutdb.json");
-    candidate_paths.push_back("E:/STORM SWITCH BOX/tools/nscb/zconfig/DB/titledb.json");
+    // Standard portable user/config/titledb, keys, and cache paths are checked above
 
     std::filesystem::path found_path;
     for (const auto& p : candidate_paths) {
@@ -138,6 +137,22 @@ void TitleDatabase::LoadDataSync() {
         }
     }
 
+    if (found_path.empty()) {
+#ifdef _WIN32
+        const auto dl_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::ConfigDir) / "titledb";
+        std::error_code dl_ec;
+        std::filesystem::create_directories(dl_dir, dl_ec);
+        const auto dl_target = dl_dir / "titledb.json";
+        LOG_INFO(Frontend, "TitleDB missing locally; downloading official Tinfoil US.en.json...");
+        const HRESULT hr = URLDownloadToFileW(
+            nullptr, L"https://raw.githubusercontent.com/blawar/titledb/master/US.en.json",
+            dl_target.c_str(), 0, nullptr);
+        if (SUCCEEDED(hr) && std::filesystem::exists(dl_target) && std::filesystem::file_size(dl_target, dl_ec) > 100000) {
+            found_path = dl_target;
+            LOG_INFO(Frontend, "Downloaded Tinfoil TitleDB successfully to {}", Common::FS::PathToUTF8String(dl_target));
+        }
+#endif
+    }
     if (found_path.empty()) {
         LOG_DEBUG(Frontend, "TitleDB database file not found in search paths");
         is_loaded.store(true, std::memory_order_release);

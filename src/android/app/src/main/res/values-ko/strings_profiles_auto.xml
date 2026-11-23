@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="storm_prof_filter_all">전체</string>
+    <string name="storm_prof_btn_save">저장</string>
+    <string name="storm_prof_btn_import">가져오기</string>
+    <string name="storm_prof_btn_apply">적용</string>
+    <string name="storm_prof_btn_share">공유</string>
+    <string name="storm_prof_btn_rename">개명</string>
+    <string name="storm_prof_btn_delete">삭제</string>
+    <string name="storm_prof_preset_balanced_name">균형 (권장)</string>
+    <string name="storm_prof_save_btn">저장</string>
+    <string name="storm_prof_rename_title">프로필 개명</string>
+    <string name="storm_prof_delete_title">프로필 삭제하기</string>
+    <string name="storm_auto_btn_reset">초기화</string>
+    <string name="storm_auto_hw_soc_title">프로세서 / SoC</string>
+    <string name="storm_auto_param_resolution">解像度スケール</string>
+    <string name="storm_auto_param_cpu_backend">CPU 백엔드</string>
+    <string name="storm_auto_btn_apply">최적화 적용</string>
+</resources>

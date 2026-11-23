@@ -2,6 +2,12 @@
 <ui version="4.0">
  <class>ConfigureTas</class>
  <widget class="QDialog" name="ConfigureTas">
+  <property name="minimumSize">
+   <size>
+    <width>480</width>
+    <height>320</height>
+   </size>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout_1">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_1">
@@ -24,7 +30,7 @@
         <item row="1" column="0" colspan="4">
          <widget class="QLabel" name="label_2">
           <property name="text">
-           <string>To check which hotkeys control the playback/recording, please refer to the Hotkey settings (Configure -&gt; General -&gt; Hotkeys).</string>
+           <string>To check which hotkeys control the playback/recording, please refer to the Hotkey settings (Configure -&gt; Controls -&gt; Hotkeys).</string>
           </property>
           <property name="wordWrap">
            <bool>true</bool>

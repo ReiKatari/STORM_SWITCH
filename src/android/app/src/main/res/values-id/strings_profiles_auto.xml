@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="storm_prof_btn_save">Simpan</string>
+    <string name="storm_prof_btn_import">Impor</string>
+    <string name="storm_prof_btn_rename">Ubah Nama</string>
+    <string name="storm_prof_btn_delete">Hapus</string>
+    <string name="storm_prof_preset_balanced_name">Seimbang (Disarankan)</string>
+    <string name="storm_prof_save_btn">Simpan</string>
+    <string name="storm_prof_rename_title">Ubah Nama Profil</string>
+    <string name="storm_prof_delete_title">Hapus Profil</string>
+    <string name="storm_auto_param_cpu_backend">Backend CPU</string>
+</resources>

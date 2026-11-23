@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="storm_prof_btn_save">שמור</string>
+    <string name="storm_prof_btn_import">ייבוא</string>
+    <string name="storm_prof_btn_delete">מחק</string>
+    <string name="storm_prof_preset_balanced_name">מאוזן (מומלץ)</string>
+    <string name="storm_prof_save_btn">שמור</string>
+</resources>

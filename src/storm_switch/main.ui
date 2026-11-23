@@ -91,8 +91,6 @@
     <addaction name="separator"/>
     <addaction name="action_Configure"/>
     <addaction name="action_Configure_Current_Game"/>
-    <addaction name="action_Settings_Profiles"/>
-    <addaction name="action_Auto_Config"/>
    </widget>
    <widget class="QMenu" name="menu_View">
     <property name="title">
@@ -344,22 +342,7 @@
     <enum>QAction::MenuRole::PreferencesRole</enum>
    </property>
   </action>
-  <action name="action_Settings_Profiles">
-   <property name="text">
-    <string>Settings &amp;Profiles...</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Shift+P</string>
-   </property>
-  </action>
-  <action name="action_Auto_Config">
-   <property name="text">
-    <string>&amp;Auto-Optimization &amp; Fixes...</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Shift+F</string>
-   </property>
-  </action>
+
   <action name="action_Enable_Overlay_Applet">
    <property name="checkable">
     <bool>true</bool>
@@ -678,16 +661,7 @@
     <string>&amp;Grid</string>
    </property>
   </action>
-  <action name="actionGame_Icon_Size">
-   <property name="text">
-    <string>Game &amp;Icon Size</string>
-   </property>
-  </action>
-  <action name="actionNone">
-   <property name="text">
-    <string>None</string>
-   </property>
-  </action>
+
   <action name="action_Amiibo_Online_Database">
    <property name="text">
     <string>Online &amp;Amiibo Database...</string>
@@ -720,9 +694,6 @@
   <action name="action_Translate_Screen">
    <property name="text">
     <string>&amp;Auto Translator (OCR + Voice)...</string>
-   </property>
-   <property name="shortcut">
-    <string>T</string>
    </property>
   </action>
  </widget>

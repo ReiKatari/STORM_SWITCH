@@ -13,8 +13,8 @@ QWidget {
 }
 
 QWidget:disabled {
-    color: #FFFFFF;
-    background-color: #040405;
+    color: #6B7280;
+    background: transparent;
 }
 
 QLabel {
@@ -65,13 +65,13 @@ QTreeView::indicator:checked, QTableView::indicator:checked, QListView::indicato
     background-color: #10B981;
     border: 1px solid #10B981;
     border-radius: 4px;
-    image: none;
+    image: url(:/icons/check_white.png);
 }
 QCheckBox::indicator:checked:hover, QGroupBox::indicator:checked:hover, QRadioButton::indicator:checked:hover,
 QTreeView::indicator:checked:hover, QTableView::indicator:checked:hover, QListView::indicator:checked:hover, QAbstractItemView::indicator:checked:hover {
     background-color: #34D399;
     border-color: #34D399;
-    image: none;
+    image: url(:/icons/check_white.png);
 }
 QCheckBox::indicator:disabled, QGroupBox::indicator:disabled, QRadioButton::indicator:disabled,
 QTreeView::indicator:disabled, QTableView::indicator:disabled, QListView::indicator:disabled, QAbstractItemView::indicator:disabled {
@@ -83,8 +83,15 @@ QCheckBox::indicator:checked:disabled, QGroupBox::indicator:checked:disabled, QR
 QTreeView::indicator:checked:disabled, QTableView::indicator:checked:disabled, QListView::indicator:checked:disabled, QAbstractItemView::indicator:checked:disabled {
     background-color: #065F46;
     border-color: #065F46;
+    image: url(:/icons/check_white.png);
+}
+QRadioButton::indicator, QRadioButton::indicator:unchecked, QRadioButton::indicator:checked {
+    border-radius: 8px;
+}
+QRadioButton::indicator:checked, QRadioButton::indicator:checked:hover, QRadioButton::indicator:checked:disabled {
     image: none;
 }
+
 
 QMainWindow, QDialog, QStackedWidget {
     background-color: #080E1A;
@@ -1035,4 +1042,14 @@ QGroupBox[stormHeroCard="true"] {
     border: 1px solid rgba(0, 240, 255, 0.30);
     border-radius: 10px;
     padding: 10px;
+}
+
+QCheckBox::indicator:checked {
+    image: url(:/icons/check_white.png);
+}
+
+QComboBox::down-arrow {
+    image: url(:/icons/down_arrow.png);
+    width: 12px;
+    height: 12px;
 }

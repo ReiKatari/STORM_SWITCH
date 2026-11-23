@@ -172,12 +172,23 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
 
     SetConfiguration();
     PopulateSelectionList();
-    ui->selectorList->setMinimumWidth(220);
+    ui->selectorList->setMinimumWidth(158);
+    ui->selectorList->setMaximumWidth(182);
+    ui->verticalLayout->setContentsMargins(10, 8, 10, 8);
+    ui->verticalLayout->setSpacing(6);
 
-    m_search_edit = new QLineEdit(this);
+    // Unified compact top toolbar: [Quick Search] + [Profiles] + [Auto-Config] in ONE row!
+    const auto cd_pal = StormTheme::GetThemePalette();
+    auto* top_toolbar = new QWidget(this);
+    auto* qa_lay = new QHBoxLayout(top_toolbar);
+    qa_lay->setContentsMargins(0, 0, 0, 2);
+    qa_lay->setSpacing(8);
+
+    m_search_edit = new QLineEdit(top_toolbar);
     m_search_edit->setObjectName(QStringLiteral("SettingsSearchEdit"));
     m_search_edit->setProperty("stormSearchBox", true);
     m_search_edit->setClearButtonEnabled(true);
+    m_search_edit->setMinimumHeight(30);
     m_search_edit->setPlaceholderText(StormLang(
         QStringLiteral("Быстрый поиск настройки (например: Vulkan, FSR, звук, память, кадры)..."),
         QStringLiteral("Quick search settings (e.g. Vulkan, FSR, audio, memory, frame)..."),
@@ -188,22 +199,18 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
         QStringLiteral("بحث سريع في الإعدادات (مثل: Vulkan، FSR، الصوت، الذاكرة، الإطارات)..."),
         QStringLiteral("Búsqueda rápida de ajustes (ej.: Vulkan, FSR, audio, memoria, FPS)...")
     ));
-    ui->verticalLayout->insertWidget(0, m_search_edit);
+    qa_lay->addWidget(m_search_edit, 1);
 
-    const auto cd_pal = StormTheme::GetThemePalette();
-    auto* quick_actions_row = new QWidget(this);
-    auto* qa_lay = new QHBoxLayout(quick_actions_row);
-    qa_lay->setContentsMargins(0, 2, 0, 4);
-    qa_lay->setSpacing(6);
+    const QString top_btn_qss = QStringLiteral(
+        "QPushButton { background: %1; color: %2; border: 1px solid %5; border-radius: 6px; padding: 5px 12px; min-height: 20px; font-weight: 600; font-size: 11px; }"
+        "QPushButton:hover { background: %3; color: %4; border: 1px solid %4; }"
+    ).arg(cd_pal.card, cd_pal.textPrimary, cd_pal.cardAlt, cd_pal.accent, cd_pal.border);
 
     auto* open_profiles_btn = new QPushButton(StormLang(
         QStringLiteral("Профили настроек"),
-        QStringLiteral("Settings Profiles")), quick_actions_row);
+        QStringLiteral("Settings Profiles")), top_toolbar);
     open_profiles_btn->setCursor(Qt::PointingHandCursor);
-    open_profiles_btn->setStyleSheet(QStringLiteral(
-        "QPushButton { background: %1; color: %2; border: none; border-radius: 6px; padding: 5px 8px; font-weight: 600; font-size: 11px; }"
-        "QPushButton:hover { background: %3; color: %4; }"
-    ).arg(cd_pal.card, cd_pal.textPrimary, cd_pal.cardAlt, cd_pal.accent));
+    open_profiles_btn->setStyleSheet(top_btn_qss);
     connect(open_profiles_btn, &QPushButton::clicked, this, [this]() {
         SettingsProfilesDialog dlg(this, const_cast<Core::System*>(&system));
         dlg.exec();
@@ -211,16 +218,13 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
         ConfigurationShared::ReloadAllActiveWidgets();
         ConfigurationShared::NotifyGlobalSettingChanged();
     });
-    qa_lay->addWidget(open_profiles_btn);
+    qa_lay->addWidget(open_profiles_btn, 0);
 
     auto* open_autoconfig_btn = new QPushButton(StormLang(
         QStringLiteral("Авто-настройка"),
-        QStringLiteral("Auto-Config")), quick_actions_row);
+        QStringLiteral("Auto-Config")), top_toolbar);
     open_autoconfig_btn->setCursor(Qt::PointingHandCursor);
-    open_autoconfig_btn->setStyleSheet(QStringLiteral(
-        "QPushButton { background: %1; color: %2; border: none; border-radius: 6px; padding: 5px 8px; font-weight: 600; font-size: 11px; }"
-        "QPushButton:hover { background: %3; color: %4; }"
-    ).arg(cd_pal.card, cd_pal.textPrimary, cd_pal.cardAlt, cd_pal.accent));
+    open_autoconfig_btn->setStyleSheet(top_btn_qss);
     connect(open_autoconfig_btn, &QPushButton::clicked, this, [this]() {
         GameFixDialog dlg(this, 0, QString(), true, const_cast<Core::System&>(system));
         dlg.Execute();
@@ -228,9 +232,9 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
         ConfigurationShared::ReloadAllActiveWidgets();
         ConfigurationShared::NotifyGlobalSettingChanged();
     });
-    qa_lay->addWidget(open_autoconfig_btn);
+    qa_lay->addWidget(open_autoconfig_btn, 0);
 
-    ui->verticalLayout->insertWidget(1, quick_actions_row);
+    ui->verticalLayout->insertWidget(0, top_toolbar);
 
     m_search_results_list = new QListWidget(this);
     m_search_results_list->setObjectName(QStringLiteral("SettingsSearchResultsList"));
@@ -255,6 +259,9 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
     });
     connect(ui_tab.get(), &ConfigureUi::LanguageChanged, this, &ConfigureDialog::OnLanguageChanged);
     connect(ui_tab.get(), &ConfigureUi::ThemeChanged, this, &ConfigureDialog::OnThemeChanged);
+    connect(ui_tab.get(), &ConfigureUi::FontChanged, this, [this](const QString&) {
+        ApplyDesignTheme();
+    });
     connect(general_tab.get(), &ConfigureGeneral::ExternalContentDirsChanged, this,
             &ConfigureDialog::ExternalContentDirsChanged);
     connect(ui->selectorList, &QListWidget::itemSelectionChanged, this,
@@ -343,20 +350,15 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
         setMinimumSize(std::min(720, max_w), std::min(440, max_h));
         setMaximumSize(max_w, max_h);
 
-        int target_w = std::min(1340, max_w);
-        int target_h = std::min(540, max_h);
-        if (QWidget* main_win = parentWidget() ? parentWidget()->window() : nullptr) {
-            if (main_win->isVisible() && !main_win->isMinimized()) {
-                target_w = std::clamp(main_win->width() - 36, std::min(1240, max_w), max_w);
-                if (avail.height() <= 920) {
-                    target_h = std::clamp(std::min(main_win->height() - 56, avail.height() - 88),
-                                          std::min(440, max_h), std::min(540, max_h));
-                } else {
-                    target_h = std::clamp(main_win->height() - 80, std::min(480, max_h), std::min(540, max_h));
-                }
-            }
-        } else if (avail.height() <= 920) {
-            target_h = std::clamp(avail.height() - 88, std::min(440, max_h), std::min(540, max_h));
+        QWidget* main_win = parentWidget() ? parentWidget()->window() : nullptr;
+        int target_w = 0;
+        int target_h = 0;
+        if (main_win && main_win->isVisible() && !main_win->isMinimized()) {
+            target_w = std::clamp(main_win->width() - 200, std::min(1000, max_w), max_w);
+            target_h = std::clamp(main_win->height() - 200, std::min(560, max_h), max_h);
+        } else {
+            target_w = std::clamp(avail.width() - 200, std::min(1000, max_w), max_w);
+            target_h = std::clamp(avail.height() - 200, std::min(560, max_h), max_h);
         }
         resize(target_w, target_h);
     } else {
@@ -679,6 +681,31 @@ void ConfigureDialog::ApplyDesignTheme() {
 
 void ConfigureDialog::DoApplyDesignTheme() {
     setUpdatesEnabled(false);
+    const QString active_fnt = UISettings::values.ui_font.GetValue().empty()
+                                   ? QStringLiteral("Segoe UI")
+                                   : QString::fromStdString(UISettings::values.ui_font.GetValue());
+    QFont base_fnt(active_fnt, 9);
+    setFont(base_fnt);
+    if (ui->tabWidget && ui->tabWidget->tabBar()) {
+        QFont tab_fnt(active_fnt, 9, QFont::Bold);
+        ui->tabWidget->tabBar()->setFont(tab_fnt);
+    }
+    if (ui->selectorList) {
+        QFont list_fnt(active_fnt, 10, QFont::Bold);
+        ui->selectorList->setFont(list_fnt);
+        const QFontMetrics fm(list_fnt);
+        int max_item_w = 220;
+        for (int i = 0; i < ui->selectorList->count(); ++i) {
+            if (auto* item = ui->selectorList->item(i)) {
+                item->setFont(list_fnt);
+                max_item_w = std::max(max_item_w, fm.horizontalAdvance(item->text()) + 48);
+            }
+        }
+        ui->selectorList->setFixedWidth(max_item_w);
+        if (m_search_results_list) {
+            m_search_results_list->setFixedWidth(max_item_w);
+        }
+    }
     const auto pal = StormTheme::GetThemePalette();
     setStyleSheet(StormDesign::BuildConfigDialogStylesheet(pal, false) + StormCancelButtonQssRule());
 

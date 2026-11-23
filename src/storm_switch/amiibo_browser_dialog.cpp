@@ -340,35 +340,49 @@ void AmiiboBrowserDialog::SetupUi() {
     details_layout->setContentsMargins(10, 14, 10, 10);
     details_layout->setSpacing(6);
 
-    // Image preview centered
-    m_image_label = new QLabel(this);
-    m_image_label->setFixedSize(140, 140);
-    m_image_label->setMaximumHeight(220);
+    // Side-by-side preview + metadata layout prevents vertical overlap
+    auto* top_info_row = new QHBoxLayout();
+    top_info_row->setContentsMargins(0, 0, 0, 0);
+    top_info_row->setSpacing(14);
+
+    m_image_label = new QLabel(details_group);
+    m_image_label->setFixedSize(128, 128);
     m_image_label->setAlignment(Qt::AlignCenter);
     m_image_label->setStyleSheet(QStringLiteral("background-color: %1; border: 1px solid %2; border-radius: 8px;").arg(abd_pal.inputBg, abd_pal.border));
-    m_image_label->setPixmap(MakeAmiiboPedestalPlaceholder(140, 140, StormTheme::GetThemePalette()));
-    details_layout->addWidget(m_image_label);
+    m_image_label->setPixmap(MakeAmiiboPedestalPlaceholder(124, 124, StormTheme::GetThemePalette()));
+    top_info_row->addWidget(m_image_label, 0, Qt::AlignTop);
 
-    m_name_label = new QLabel(tr("Имя: -"), this);
+    auto* meta_col = new QVBoxLayout();
+    meta_col->setContentsMargins(0, 0, 0, 0);
+    meta_col->setSpacing(4);
+
+    m_name_label = new QLabel(tr("Имя: -"), details_group);
+    m_name_label->setWordWrap(true);
     m_name_label->setStyleSheet(QStringLiteral("font-size: 11pt; font-weight: bold; color: %1;").arg(abd_pal.accent));
-    details_layout->addWidget(m_name_label);
+    meta_col->addWidget(m_name_label);
 
-    m_series_label = new QLabel(tr("Серия Amiibo: -"), this);
-    details_layout->addWidget(m_series_label);
+    m_series_label = new QLabel(tr("Серия Amiibo: -"), details_group);
+    m_series_label->setWordWrap(true);
+    meta_col->addWidget(m_series_label);
 
-    m_game_series_label = new QLabel(tr("Игровая вселенная: -"), this);
-    details_layout->addWidget(m_game_series_label);
+    m_game_series_label = new QLabel(tr("Игровая вселенная: -"), details_group);
+    m_game_series_label->setWordWrap(true);
+    meta_col->addWidget(m_game_series_label);
 
-    m_type_label = new QLabel(tr("Тип: -"), this);
-    details_layout->addWidget(m_type_label);
+    m_type_label = new QLabel(tr("Тип: -"), details_group);
+    meta_col->addWidget(m_type_label);
 
-    m_id_label = new QLabel(tr("ID (Head/Tail): -"), this);
+    m_id_label = new QLabel(tr("ID (Head/Tail): -"), details_group);
     m_id_label->setStyleSheet(QStringLiteral("color: %1; font-family: monospace; font-size: 8pt;").arg(abd_pal.textSecondary));
-    details_layout->addWidget(m_id_label);
+    meta_col->addWidget(m_id_label);
 
-    m_status_badge = new QLabel(tr("Статус: Ожидание"), this);
-    m_status_badge->setStyleSheet(QStringLiteral("color: %1; font-weight: bold; padding: 2px 8px; background-color: %2; border: 1px solid %3; border-radius: 4px;").arg(abd_pal.textPrimary, abd_pal.cardAlt, abd_pal.border));
-    details_layout->addWidget(m_status_badge);
+    m_status_badge = new QLabel(tr("Статус: Ожидание"), details_group);
+    m_status_badge->setStyleSheet(QStringLiteral("color: %1; font-weight: bold; padding: 3px 8px; background-color: %2; border: 1px solid %3; border-radius: 4px;").arg(abd_pal.textPrimary, abd_pal.cardAlt, abd_pal.border));
+    meta_col->addWidget(m_status_badge);
+    meta_col->addStretch(1);
+
+    top_info_row->addLayout(meta_col, 1);
+    details_layout->addLayout(top_info_row);
 
     // Target game selector
     auto* target_game_box = new QWidget(this);

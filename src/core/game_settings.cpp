@@ -128,6 +128,119 @@ void LoadOverrides(std::uint64_t program_id, const VideoCore::RendererBase& rend
     Core::GameFixDatabase::ReapplyVendorOverrides(program_id);
 
     const u64 base_tid = program_id & ~0x1FFFULL;
+    if (Settings::IsCurrentProgramSwitch2() || ((program_id >> 56) == 0x04ULL)) {
+        // Switch 2 (Ounce / NVN2) requires clean GPU syncpoints and native pipeline compilation;
+        // Switch-1 experimental throttles/frame-skipping/readback toggles stall NX2 presentation.
+        Settings::values.enable_frame_skipping.SetGlobal(false);
+        Settings::values.enable_frame_skipping.SetValue(false);
+        Settings::values.dynamic_performance_scaler.SetGlobal(false);
+        Settings::values.dynamic_performance_scaler.SetValue(false);
+        Settings::values.vram_budget_governor.SetGlobal(false);
+        Settings::values.vram_budget_governor.SetValue(false);
+        Settings::values.smart_shader_throttle.SetGlobal(false);
+        Settings::values.smart_shader_throttle.SetValue(false);
+        Settings::values.drs_resolution_lock.SetGlobal(false);
+        Settings::values.drs_resolution_lock.SetValue(false);
+        Settings::values.early_release_fences.SetGlobal(false);
+        Settings::values.early_release_fences.SetValue(false);
+        Settings::values.use_fast_gpu_time.SetGlobal(false);
+        Settings::values.use_fast_gpu_time.SetValue(false);
+        Settings::values.sync_memory_operations.SetGlobal(false);
+        Settings::values.sync_memory_operations.SetValue(false);
+        Settings::values.enable_gpu_buffer_readback.SetGlobal(false);
+        Settings::values.enable_gpu_buffer_readback.SetValue(false);
+        Settings::values.use_reactive_flushing.SetGlobal(false);
+        Settings::values.use_reactive_flushing.SetValue(false);
+        Settings::values.use_asynchronous_shaders.SetGlobal(false);
+        Settings::values.use_asynchronous_shaders.SetValue(false);
+        Settings::values.gpu_fence_behavior.SetGlobal(false);
+        Settings::values.gpu_fence_behavior.SetValue(Settings::GpuFenceBehavior::Default);
+        if (Settings::values.nvdec_emulation.GetValue() == Settings::NvdecEmulation::Hybrid) {
+            Settings::values.nvdec_emulation.SetGlobal(false);
+            Settings::values.nvdec_emulation.SetValue(Settings::NvdecEmulation::Gpu);
+        }
+        Settings::values.cpu_clock.SetGlobal(false);
+        Settings::values.cpu_clock.SetValue(Settings::CpuClock::Normal);
+        Settings::values.gpu_clock.SetGlobal(false);
+        Settings::values.gpu_clock.SetValue(Settings::GpuClock::Normal);
+    }
+
+    if (program_id == 0x010074F013262000ULL || base_tid == 0x010074F013262000ULL ||
+        program_id == 0x0100453019AA8000ULL || base_tid == 0x0100453019AA8000ULL) {
+        Settings::values.enable_gpu_buffer_readback.SetGlobal(false);
+        Settings::values.enable_gpu_buffer_readback.SetValue(false);
+        Settings::values.gpu_accuracy.SetGlobal(false);
+        Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::High);
+        Settings::values.use_asynchronous_shaders.SetGlobal(false);
+        Settings::values.use_asynchronous_shaders.SetValue(false);
+        Settings::values.use_reactive_flushing.SetGlobal(false);
+        Settings::values.use_reactive_flushing.SetValue(true);
+        Settings::values.dynamic_performance_scaler.SetGlobal(false);
+        Settings::values.dynamic_performance_scaler.SetValue(false);
+        Settings::values.vram_budget_governor.SetGlobal(false);
+        Settings::values.vram_budget_governor.SetValue(false);
+        Settings::values.vram_garbage_collection.SetGlobal(false);
+        Settings::values.vram_garbage_collection.SetValue(false);
+        Settings::values.smart_shader_throttle.SetGlobal(false);
+        Settings::values.smart_shader_throttle.SetValue(false);
+        Settings::values.use_video_framerate.SetGlobal(false);
+        Settings::values.use_video_framerate.SetValue(false);
+        Settings::values.early_release_fences.SetGlobal(false);
+        Settings::values.early_release_fences.SetValue(false);
+        Settings::values.enable_frame_skipping.SetGlobal(false);
+        Settings::values.enable_frame_skipping.SetValue(false);
+        Settings::values.drs_resolution_lock.SetGlobal(false);
+        Settings::values.drs_resolution_lock.SetValue(false);
+        Settings::values.use_fast_gpu_time.SetGlobal(false);
+        Settings::values.use_fast_gpu_time.SetValue(false);
+        Settings::values.sync_memory_operations.SetGlobal(false);
+        Settings::values.sync_memory_operations.SetValue(false);
+        Settings::values.gpu_fence_behavior.SetGlobal(false);
+        Settings::values.gpu_fence_behavior.SetValue(Settings::GpuFenceBehavior::Default);
+        if (Settings::values.nvdec_emulation.GetValue() == Settings::NvdecEmulation::Hybrid) {
+            Settings::values.nvdec_emulation.SetGlobal(false);
+            Settings::values.nvdec_emulation.SetValue(Settings::NvdecEmulation::Gpu);
+        }
+        if (Settings::values.resolution_setup.GetValue() != Settings::ResolutionSetup::Res1X) {
+            Settings::values.resolution_setup.SetGlobal(false);
+            Settings::values.resolution_setup.SetValue(Settings::ResolutionSetup::Res1X);
+            Settings::UpdateRescalingInfo();
+        }
+        if ((program_id == 0x0100453019AA8000ULL || base_tid == 0x0100453019AA8000ULL) &&
+            Settings::values.language_index.GetValue() == Settings::Language::Russian) {
+            Settings::values.language_index.SetGlobal(false);
+            Settings::values.language_index.SetValue(Settings::Language::EnglishAmerican);
+        }
+    }
+
+    if (program_id == 0x0100FF500E34A000ULL || base_tid == 0x0100FF500E34A000ULL ||
+        program_id == 0x0100E95004038000ULL || base_tid == 0x0100E95004038000ULL) {
+        Settings::values.gpu_accuracy.SetGlobal(false);
+        Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::High);
+        Settings::values.use_asynchronous_shaders.SetGlobal(false);
+        Settings::values.use_asynchronous_shaders.SetValue(false);
+        Settings::values.use_reactive_flushing.SetGlobal(false);
+        Settings::values.use_reactive_flushing.SetValue(true);
+        Settings::values.early_release_fences.SetGlobal(false);
+        Settings::values.early_release_fences.SetValue(false);
+        Settings::values.enable_frame_skipping.SetGlobal(false);
+        Settings::values.enable_frame_skipping.SetValue(false);
+        Settings::values.drs_resolution_lock.SetGlobal(false);
+        Settings::values.drs_resolution_lock.SetValue(false);
+        Settings::values.use_fast_gpu_time.SetGlobal(false);
+        Settings::values.use_fast_gpu_time.SetValue(false);
+        Settings::values.dynamic_performance_scaler.SetGlobal(false);
+        Settings::values.dynamic_performance_scaler.SetValue(false);
+        Settings::values.vram_budget_governor.SetGlobal(false);
+        Settings::values.vram_budget_governor.SetValue(false);
+        Settings::values.vram_garbage_collection.SetGlobal(false);
+        Settings::values.vram_garbage_collection.SetValue(false);
+        Settings::values.smart_shader_throttle.SetGlobal(false);
+        Settings::values.smart_shader_throttle.SetValue(false);
+        Settings::values.gpu_fence_behavior.SetGlobal(false);
+        Settings::values.gpu_fence_behavior.SetValue(Settings::GpuFenceBehavior::Default);
+    }
+
     if (program_id == 0x010015100B514000ULL || base_tid == 0x010015100B514000ULL) {
         // Super Mario Bros. Wonder (agl engine): toxic global experimental toggles deadlock fence/query timing
         Settings::values.early_release_fences.SetGlobal(false);

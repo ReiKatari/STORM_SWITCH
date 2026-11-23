@@ -2083,7 +2083,11 @@ bool IsOpaque(std::span<const uint8_t> data) {
             continue;
         }
         const u32 extra_bits = partitions == 2 ? 2 : partitions == 3 ? 5 : 8;
-        const u32 extra_offset = 128 - weight_bits - extra_bits;
+        const u32 dual_plane_bits = params.m_bDualPlane ? 2U : 0U;
+        if (weight_bits + extra_bits + dual_plane_bits > 128U) {
+            return false;
+        }
+        const u32 extra_offset = 128U - weight_bits - extra_bits - dual_plane_bits;
         u32 extra = 0;
         for (u32 bit = 0; bit < extra_bits; ++bit) {
             const u32 position = extra_offset + bit;

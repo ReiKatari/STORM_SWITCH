@@ -244,7 +244,7 @@ This would ban both their forum username and their IP address.</translation>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="37" />
             <source>Error</source>
-            <translation>Error</translation>
+            <translation>त्रुटि</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="38" />
@@ -304,12 +304,12 @@ This would ban both their forum username and their IP address.</translation>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="49" />
             <source>Enable Overlay Applet</source>
-            <translation>Enable Overlay Applet</translation>
+            <translation>सक्षम करें Overlay Applet</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="50" />
             <source>Enables Horizon's built-in overlay applet. Press and hold the home button for 1 second to show it.</source>
-            <translation>Enables Horizon's built-in overlay applet. Press and hold the home button for 1 second to show it.</translation>
+            <translation>Horizon के अंतर्निहित ओवरले एप्लेट को सक्षम करता है। इसे दिखाने के लिए HOME बटन को 1 सेकंड तक दबाए रखें।</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="54" />
@@ -344,7 +344,7 @@ This would ban both their forum username and their IP address.</translation>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="63" />
             <source>Multicore CPU Emulation</source>
-            <translation>Multicore CPU Emulation</translation>
+            <translation>मल्टीकोर CPU पायदान एमुलेशन</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="64" />
@@ -356,7 +356,7 @@ This is mainly a debug option and shouldn't be disabled.</translation>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="66" />
             <source>Memory Layout</source>
-            <translation>Memory Layout</translation>
+            <translation>मेमोरी लेआउट (DRAM)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="67" />
@@ -382,7 +382,7 @@ Disabling it means unlocking the framerate to the maximum your PC can reach.</tr
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="78" />
             <source>Turbo Speed</source>
-            <translation>Turbo Speed</translation>
+            <translation>टर्बो गति</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="79" />
@@ -392,7 +392,7 @@ Disabling it means unlocking the framerate to the maximum your PC can reach.</tr
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="81" />
             <source>Slow Speed</source>
-            <translation>Slow Speed</translation>
+            <translation>धीमी गति</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="82" />
@@ -402,19 +402,19 @@ Disabling it means unlocking the framerate to the maximum your PC can reach.</tr
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="85" />
             <source>Synchronize Core Speed</source>
-            <translation>Synchronize Core Speed</translation>
+            <translation>कोर गति सिंक्रनाइज़ करें</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="86" />
             <source>Synchronizes CPU core speed with the game's maximum rendering speed to boost FPS without affecting game speed (animations, physics, etc.).
 Can help reduce stuttering at lower framerates.</source>
-            <translation>Synchronizes CPU core speed with the game's maximum rendering speed to boost FPS without affecting game speed (animations, physics, etc.).
-Can help reduce stuttering at lower framerates.</translation>
+            <translation>गेम की आंतरिक गति (एनीमेशन, भौतिकी आदि) को प्रभावित किए बिना FPS बढ़ाने के लिए CPU कोर गति को अधिकतम रेंडरिंग गति के साथ सिंक करता है।
+कम फ़्रेमरेट पर अटकने को कम करता है।</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="91" />
             <source>Accuracy:</source>
-            <translation>Accuracy:</translation>
+            <translation>सटीकता:</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="92" />
@@ -441,7 +441,7 @@ Use Boost (1700MHz) to run at the Switch's highest native clock, or Fast (2000MH
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="103" />
             <source>Custom CPU Ticks</source>
-            <translation>Custom CPU Ticks</translation>
+            <translation>कस्टम CPU Ticks</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="104" />
@@ -531,7 +531,7 @@ Please note this may result in deadlocks and other race conditions.</translation
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="142" />
             <source>API:</source>
-            <translation>API:</translation>
+            <translation>ग्राफ़िक्स API:</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="143" />
@@ -543,7 +543,7 @@ Vulkan is recommended.</translation>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="144" />
             <source>Device:</source>
-            <translation>Device:</translation>
+            <translation>डिवाइस:</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="145" />
@@ -655,9 +655,8 @@ This option should always remain enabled.</translation>
             <source>Specifies how videos should be decoded.
 It can either use the CPU or the GPU for decoding, or perform no decoding at all (black screen on videos).
 In most cases, GPU decoding provides the best performance.</source>
-            <translation>Specifies how videos should be decoded.
-It can either use the CPU or the GPU for decoding, or perform no decoding at all (black screen on videos).
-In most cases, GPU decoding provides the best performance.</translation>
+            <translation>निर्दिष्ट करता है कि वीडियो कैसे डिकोड किए जाएँ (CPU, GPU या कोई आउटपुट नहीं)।
+अधिकांश मामलों में GPU डिकोडिंग सर्वोत्तम प्रदर्शन देती है।</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="175" />
@@ -671,11 +670,10 @@ CPU: Use the CPU for decoding.
 GPU: Use the GPU's compute shaders to decode ASTC textures (recommended).
 CPU Asynchronously: Use the CPU to decode ASTC textures on demand. EliminatesASTC decoding
 stuttering but may present artifacts.</source>
-            <translation>This option controls how ASTC textures should be decoded.
-CPU: Use the CPU for decoding.
-GPU: Use the GPU's compute shaders to decode ASTC textures (recommended).
-CPU Asynchronously: Use the CPU to decode ASTC textures on demand. EliminatesASTC decoding
-stuttering but may present artifacts.</translation>
+            <translation>नियंत्रित करता है कि ASTC टेक्सचर कैसे डिकोड किए जाएँ।
+CPU: CPU द्वारा डिकोडिंग।
+GPU: GPU कंप्यूट शेडर द्वारा डिकोडिंग (अनुशंसित)।
+CPU असिंक्रोनस: अटकने को समाप्त करता है लेकिन अस्थायी दृश्य त्रुटियाँ दिखा सकता है।</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="181" />
@@ -766,7 +764,7 @@ Unreal Engine 4 games often see the most significant changes thereof.</translati
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="216" />
             <source>Force maximum clocks (Vulkan only)</source>
-            <translation>Force maximum clocks (Vulkan only)</translation>
+            <translation>अधिकतम क्लॉक बाध्य करें (केवल Vulkan)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="217" />
@@ -795,9 +793,8 @@ Safe to set at 16x on most GPUs.</translation>
             <source>Controls the GPU emulation mode.
 Most games render fine with Fast, but Accurate is still required for some.
 Particles tend to only render correctly with Accurate mode.</source>
-            <translation>Controls the GPU emulation mode.
-Most games render fine with Fast, but Accurate is still required for some.
-Particles tend to only render correctly with Accurate mode.</translation>
+            <translation>GPU एमुलेशन सटीकता मोड को नियंत्रित करता है।
+अधिकांश गेम तेज़ मोड में ठीक चलते हैं, लेकिन कुछ पार्टिकल्स और प्रभावों के लिए सटीक मोड आवश्यक है।</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="225" />
@@ -809,9 +806,9 @@ Particles tend to only render correctly with Accurate mode.</translation>
             <source>Controls the DMA read mode.
 Unsafe is faster, while Safe is more stable and can fix issues in some games.
 Default follows the GPU Accuracy setting.</source>
-            <translation>Controls the DMA read mode.
-Unsafe is faster, while Safe is more stable and can fix issues in some games.
-Default follows the GPU Accuracy setting.</translation>
+            <translation>DMA रीड मोड को नियंत्रित करता है।
+असुरक्षित तेज़ है, जबकि सुरक्षित अधिक स्थिर है और कुछ गेम्स की समस्याओं को ठीक करता है।
+डिफ़ॉल्ट GPU सटीकता का अनुसरण करता है।</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="227" />
@@ -826,29 +823,25 @@ Balanced offers better compatibility and may fix issues in some games.
 Accurate further improves compatibility at the cost of some performance.
 Strict is the slowest option, but can fix issues that require stricter synchronization.
 Default follows the GPU Accuracy setting.</source>
-            <translation>Controls the GPU fence synchronization behavior.
-Immediate is the fastest option, but can introduce some issues.
-Balanced offers better compatibility and may fix issues in some games.
-Accurate further improves compatibility at the cost of some performance.
-Strict is the slowest option, but can fix issues that require stricter synchronization.
-Default follows the GPU Accuracy setting.</translation>
+            <translation>GPU फ़ेंस सिंक्रनाइज़ेशन व्यवहार को नियंत्रित करता है।
+तत्काल सबसे तेज़ है; संतुलित और सटीक बेहतर संगतता देते हैं; सख़्त कठिन सिंक समस्याओं को ठीक करता है।</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="229" />
             <source>Enable GPU buffer readback</source>
-            <translation>Enable GPU buffer readback</translation>
+            <translation>GPU बफ़र रीडबैक सक्षम करें</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="230" />
             <source>Preserves GPU-modified data by reading it back before uploading.
 Some games require this to render certain effects properly.</source>
-            <translation>Preserves GPU-modified data by reading it back before uploading.
-Some games require this to render certain effects properly.</translation>
+            <translation>अपलोड करने से पहले GPU द्वारा संशोधित डेटा को वापस पढ़कर सुरक्षित रखता है।
+कुछ गेम्स में विशेष प्रभावों को सही ढंग से रेंडर करने के लिए यह आवश्यक है।</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="231" />
             <source>Enable asynchronous shader compilation</source>
-            <translation>Enable asynchronous shader compilation</translation>
+            <translation>असिंक्रोनस शेडर संकलन सक्षम करें</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="232" />
@@ -858,7 +851,7 @@ Some games require this to render certain effects properly.</translation>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="233" />
             <source>Fast GPU Time</source>
-            <translation>Fast GPU Time</translation>
+            <translation>तेज़ GPU समय</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="234" />
@@ -870,7 +863,7 @@ Use 256 for maximal performance and 512 for maximal graphics fidelity.</translat
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="236" />
             <source>GPU Unswizzle</source>
-            <translation>GPU Unswizzle</translation>
+            <translation>GPU अनस्विज़ल (Unswizzle)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="237" />
@@ -882,7 +875,7 @@ Disable if experiencing crashes or graphical glitches.</translation>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="239" />
             <source>GPU Unswizzle Max Texture Size</source>
-            <translation>GPU Unswizzle Max Texture Size</translation>
+            <translation>GPU अनस्विज़ल अधिकतम टेक्सचर आकार</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="240" />
@@ -896,7 +889,7 @@ Adjust this to find the balance between GPU acceleration and CPU overhead.</tran
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="244" />
             <source>GPU Unswizzle Stream Size</source>
-            <translation>GPU Unswizzle Stream Size</translation>
+            <translation>GPU अनस्विज़ल स्ट्रीम आकार</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="245" />
@@ -908,7 +901,7 @@ Higher values can reduce stutter during texture loading but may impact frame con
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="248" />
             <source>GPU Unswizzle Chunk Size</source>
-            <translation>GPU Unswizzle Chunk Size</translation>
+            <translation>GPU अनस्विज़ल चंक आकार</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="249" />
@@ -920,7 +913,7 @@ Increasing this can improve throughput on high-end GPUs but may cause TDR or dri
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="253" />
             <source>Use Vulkan pipeline cache</source>
-            <translation>Use Vulkan pipeline cache</translation>
+            <translation>Vulkan पाइपलाइन कैश का उपयोग करें</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="254" />
@@ -946,7 +939,7 @@ Compute pipelines are always enabled on all other drivers.</translation>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="262" />
             <source>Enable Reactive Flushing</source>
-            <translation>Enable Reactive Flushing</translation>
+            <translation>रिएक्टिव फ़्लशिंग सक्षम करें</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="263" />
@@ -956,7 +949,7 @@ Compute pipelines are always enabled on all other drivers.</translation>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="265" />
             <source>Sync to framerate of video playback</source>
-            <translation>Sync to framerate of video playback</translation>
+            <translation>वीडियो प्लेबैक फ़्रेमरेट से सिंक करें</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="266" />
@@ -966,7 +959,7 @@ Compute pipelines are always enabled on all other drivers.</translation>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="268" />
             <source>Barrier feedback loops</source>
-            <translation>Barrier feedback loops</translation>
+            <translation>बैरियर फ़ीडबैक लूप्स</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="269" />
@@ -976,7 +969,7 @@ Compute pipelines are always enabled on all other drivers.</translation>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="270" />
             <source>Enable buffer history</source>
-            <translation>Enable buffer history</translation>
+            <translation>सक्षम करें buffer history</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="271" />
@@ -998,7 +991,7 @@ This option may improve rendering quality and performance consistency in some ga
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="275" />
             <source>Enable Legacy Rescale Pass</source>
-            <translation>Enable Legacy Rescale Pass</translation>
+            <translation>सक्षम करें Legacy Rescale Pass</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="276" />
@@ -1010,7 +1003,7 @@ Legacy behavior workaround that fixes line artifacts on AMD and Intel GPUs, and 
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="282" />
             <source>Extended Dynamic State</source>
-            <translation>Extended Dynamic State</translation>
+            <translation>विस्तारित गतिशील स्थिति</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="283" />
@@ -1022,7 +1015,7 @@ Higher states allow for more features and can increase performance, but may caus
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="287" />
             <source>Vertex Input Dynamic State</source>
-            <translation>Vertex Input Dynamic State</translation>
+            <translation>वर्टेक्स इनपुट डायनेमिक स्टेट</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="288" />
@@ -1032,7 +1025,7 @@ Higher states allow for more features and can increase performance, but may caus
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="291" />
             <source>Sample Shading</source>
-            <translation>Sample Shading</translation>
+            <translation>सैंपल शेडिंग</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="292" />
@@ -1076,7 +1069,7 @@ Mainly used for speedrunning.</translation>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="305" />
             <source>Custom RTC Date:</source>
-            <translation>Custom RTC Date:</translation>
+            <translation>कस्टम RTC तिथि:</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="306" />
@@ -1216,12 +1209,12 @@ When a program attempts to open the controller applet, it is immediately closed.
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="382" />
             <source>Custom frontend</source>
-            <translation>Custom frontend</translation>
+            <translation>कस्टम फ़्रंटएंड</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="383" />
             <source>Real applet</source>
-            <translation>Real applet</translation>
+            <translation>वास्तविक एप्लेट</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="388" />
@@ -1231,12 +1224,12 @@ When a program attempts to open the controller applet, it is immediately closed.
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="389" />
             <source>On Load</source>
-            <translation>On Load</translation>
+            <translation>On लोड करें</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="390" />
             <source>Always</source>
-            <translation>Always</translation>
+            <translation>हमेशा</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="394" />
@@ -1246,27 +1239,27 @@ When a program attempts to open the controller applet, it is immediately closed.
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="395" />
             <source>GPU</source>
-            <translation>GPU</translation>
+            <translation>GPU (ग्राफ़िक्स)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="396" />
             <source>CPU Asynchronous</source>
-            <translation>CPU Asynchronous</translation>
+            <translation>CPU असिंक्रोनस</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="401" />
             <source>Uncompressed (Best quality)</source>
-            <translation>Uncompressed (Best quality)</translation>
+            <translation>असंपीड़ित (सर्वोत्तम गुणवत्ता)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="402" />
             <source>BC1 (Low quality)</source>
-            <translation>BC1 (Low quality)</translation>
+            <translation>BC1 (निम्न गुणवत्ता)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="403" />
             <source>BC3 (Medium quality)</source>
-            <translation>BC3 (Medium quality)</translation>
+            <translation>BC3 (मध्यम गुणवत्ता)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="407" />
@@ -1296,12 +1289,12 @@ When a program attempts to open the controller applet, it is immediately closed.
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="415" />
             <source>Conservative</source>
-            <translation>Conservative</translation>
+            <translation>संरक्षित (किफ़ायती)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="416" />
             <source>Aggressive</source>
-            <translation>Aggressive</translation>
+            <translation>आक्रामक</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="420" />
@@ -1346,27 +1339,27 @@ When a program attempts to open the controller applet, it is immediately closed.
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="435" />
             <source>Unsafe (fast)</source>
-            <translation>Unsafe (fast)</translation>
+            <translation>असुरक्षित (तेज़)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="436" />
             <source>Safe (stable)</source>
-            <translation>Safe (stable)</translation>
+            <translation>सुरक्षित (स्थिर)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="441" />
             <source>Immediate</source>
-            <translation>Immediate</translation>
+            <translation>तत्काल (Immediate)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="442" />
             <source>Balanced</source>
-            <translation>Balanced</translation>
+            <translation>संतुलित</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="444" />
             <source>Strict</source>
-            <translation>Strict</translation>
+            <translation>सख़्त (Strict)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="451" />
@@ -1376,12 +1369,12 @@ When a program attempts to open the controller applet, it is immediately closed.
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="452" />
             <source>Paranoid (disables most optimizations)</source>
-            <translation>Paranoid (disables most optimizations)</translation>
+            <translation>अति-सुरक्षित (अधिकांश अनुकूलन अक्षम)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="453" />
             <source>Debugging</source>
-            <translation>Debugging</translation>
+            <translation>डीबगिंग</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="457" />
@@ -1396,27 +1389,27 @@ When a program attempts to open the controller applet, it is immediately closed.
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="462" />
             <source>Borderless Windowed</source>
-            <translation>Borderless Windowed</translation>
+            <translation>बॉर्डरलेस विंडो</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="463" />
             <source>Exclusive Fullscreen</source>
-            <translation>Exclusive Fullscreen</translation>
+            <translation>एक्सक्लूसिव फ़ुलस्क्रीन</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="467" />
             <source>No Video Output</source>
-            <translation>No Video Output</translation>
+            <translation>कोई वीडियो आउटपुट नहीं</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="468" />
             <source>CPU Video Decoding</source>
-            <translation>CPU Video Decoding</translation>
+            <translation>CPU वीडियो डिकोडिंग</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="469" />
             <source>GPU Video Decoding (Default)</source>
-            <translation>GPU Video Decoding (Default)</translation>
+            <translation>GPU वीडियो डिकोडिंग (डिफ़ॉल्ट)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="474" />
@@ -1592,32 +1585,32 @@ When a program attempts to open the controller applet, it is immediately closed.
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="514" />
             <source>Default (16:9)</source>
-            <translation>Default (16:9)</translation>
+            <translation>डिफ़ॉल्ट (16:9)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="515" />
             <source>Force 4:3</source>
-            <translation>Force 4:3</translation>
+            <translation>4:3 बाध्य करें</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="516" />
             <source>Force 21:9</source>
-            <translation>Force 21:9</translation>
+            <translation>21:9 बाध्य करें</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="517" />
             <source>Force 16:10</source>
-            <translation>Force 16:10</translation>
+            <translation>16:10 बाध्य करें</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="518" />
             <source>Stretch to Window</source>
-            <translation>Stretch to Window</translation>
+            <translation>विंडो के आकार में फैलाएँ</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="522" />
             <source>Automatic</source>
-            <translation>Automatic</translation>
+            <translation>स्वचालित</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="524" />
@@ -1657,7 +1650,7 @@ When a program attempts to open the controller applet, it is immediately closed.
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="536" />
             <source>American English</source>
-            <translation>American English</translation>
+            <translation>अमेरिकी अंग्रेज़ी</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="537" />
@@ -1667,12 +1660,12 @@ When a program attempts to open the controller applet, it is immediately closed.
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="538" />
             <source>German (Deutsch)</source>
-            <translation>German (Deutsch)</translation>
+            <translation>जर्मन (Deutsch)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="539" />
             <source>Italian (italiano)</source>
-            <translation>Italian (italiano)</translation>
+            <translation>इतालवी (italiano)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="540" />
@@ -1682,7 +1675,7 @@ When a program attempts to open the controller applet, it is immediately closed.
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="541" />
             <source>Chinese</source>
-            <translation>Chinese</translation>
+            <translation>चीनी</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="542" />
@@ -1692,7 +1685,7 @@ When a program attempts to open the controller applet, it is immediately closed.
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="543" />
             <source>Dutch (Nederlands)</source>
-            <translation>Dutch (Nederlands)</translation>
+            <translation>डच (Nederlands)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="544" />
@@ -1707,12 +1700,12 @@ When a program attempts to open the controller applet, it is immediately closed.
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="546" />
             <source>Taiwanese</source>
-            <translation>Taiwanese</translation>
+            <translation>ताइवानी चीनी</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="547" />
             <source>British English</source>
-            <translation>British English</translation>
+            <translation>ब्रिटिश अंग्रेज़ी</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="548" />
@@ -1722,12 +1715,12 @@ When a program attempts to open the controller applet, it is immediately closed.
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="549" />
             <source>Latin American Spanish</source>
-            <translation>Latin American Spanish</translation>
+            <translation>लैटिन अमेरिकी स्पेनिश</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="550" />
             <source>Simplified Chinese</source>
-            <translation>Simplified Chinese</translation>
+            <translation>सरलीकृत चीनी</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="551" />
@@ -2039,7 +2032,7 @@ When a program attempts to open the controller applet, it is immediately closed.
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="631" />
             <source>8GB DRAM</source>
-            <translation>8GB DRAM</translation>
+            <translation>8 GB DRAM</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="632" />
@@ -2079,92 +2072,92 @@ When a program attempts to open the controller applet, it is immediately closed.
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="649" />
             <source>Always ask (Default)</source>
-            <translation>Always ask (Default)</translation>
+            <translation>हमेशा पूछें (डिफ़ॉल्ट)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="650" />
             <source>Only if game specifies not to stop</source>
-            <translation>Only if game specifies not to stop</translation>
+            <translation>केवल जब गेम रोकने से मना करे</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="651" />
             <source>Never ask</source>
-            <translation>Never ask</translation>
+            <translation>कभी न पूछें</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="656" />
             <source>Medium (256)</source>
-            <translation>Medium (256)</translation>
+            <translation>मध्यम (256)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="657" />
             <source>High (512)</source>
-            <translation>High (512)</translation>
+            <translation>उच्च (512)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="661" />
             <source>Very Small (16 MB)</source>
-            <translation>Very Small (16 MB)</translation>
+            <translation>बहुत छोटा (16 MB)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="662" />
             <source>Small (32 MB)</source>
-            <translation>Small (32 MB)</translation>
+            <translation>छोटा (32 MB)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="663" />
             <source>Normal (128 MB)</source>
-            <translation>Normal (128 MB)</translation>
+            <translation>सामान्य (128 MB)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="664" />
             <source>Large (256 MB)</source>
-            <translation>Large (256 MB)</translation>
+            <translation>बड़ा (256 MB)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="665" />
             <source>Very Large (512 MB)</source>
-            <translation>Very Large (512 MB)</translation>
+            <translation>बहुत बड़ा (512 MB)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="669" />
             <source>Very Low (4 MB)</source>
-            <translation>Very Low (4 MB)</translation>
+            <translation>Very निम्न (4 MB)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="670" />
             <source>Low (8 MB)</source>
-            <translation>Low (8 MB)</translation>
+            <translation>निम्न (8 MB)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="671" />
             <source>Normal (16 MB)</source>
-            <translation>Normal (16 MB)</translation>
+            <translation>सामान्य (16 MB)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="672" />
             <source>Medium (32 MB)</source>
-            <translation>Medium (32 MB)</translation>
+            <translation>मध्यम (32 MB)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="673" />
             <source>High (64 MB)</source>
-            <translation>High (64 MB)</translation>
+            <translation>उच्च (64 MB)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="677" />
             <source>Very Low (32)</source>
-            <translation>Very Low (32)</translation>
+            <translation>Very निम्न (32)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="678" />
             <source>Low (64)</source>
-            <translation>Low (64)</translation>
+            <translation>निम्न (64)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="679" />
             <source>Normal (128)</source>
-            <translation>Normal (128)</translation>
+            <translation>सामान्य (128)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="686" />
@@ -2189,7 +2182,7 @@ When a program attempts to open the controller applet, it is immediately closed.
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="694" />
             <source>Tree View</source>
-            <translation>Tree View</translation>
+            <translation>ट्री दृश्य</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="695" />
@@ -2566,7 +2559,7 @@ When a program attempts to open the controller applet, it is immediately closed.
         </message>
         <message>
             <source>Eco Frame Pacing</source>
-            <translation>Eco Frame Pacing</translation>
+            <translation>इको फ़्रेम पेसिंग</translation>
         </message>
         <message>
             <source>Выравнивание кадров</source>
@@ -2582,7 +2575,7 @@ When a program attempts to open the controller applet, it is immediately closed.
         </message>
         <message>
             <source>Smart Shader Throttle</source>
-            <translation>Smart Shader Throttle</translation>
+            <translation>स्मार्ट शेडर थ्रॉटल</translation>
         </message>
         <message>
             <source>Троттлинг шейдеров</source>
@@ -2606,7 +2599,7 @@ When a program attempts to open the controller applet, it is immediately closed.
         </message>
         <message>
             <source>VRAM Garbage Collection</source>
-            <translation>VRAM Garbage Collection</translation>
+            <translation>VRAM गार्बेज कलेक्शन</translation>
         </message>
         <message>
             <source>Сборка мусора VRAM</source>
@@ -2662,65 +2655,65 @@ When a program attempts to open the controller applet, it is immediately closed.
         </message>
         <message>
             <source>CPU Affinity Pinning</source>
-            <translation>CPU Affinity Pinning</translation>
+            <translation>CPU कोर एफिनिटी पिनिंग</translation>
         </message>
         <message>
             <source>FP16 Frame Generation</source>
-            <translation>FP16 Frame Generation</translation>
+            <translation>FP16 फ़्रेम जनरेशन</translation>
         </message>
         <message>
             <source>Auto Optical Flow Scale</source>
-            <translation>Auto Optical Flow Scale</translation>
+            <translation>ऑटो ऑप्टिकल फ़्लो स्केल</translation>
         </message>
         <message>
             <source>Emulate BGR565</source>
-            <translation>Emulate BGR565</translation>
+            <translation>BGR565 एमुलेट करें</translation>
         </message>
         <message>
             <source>Low-End Turbo</source>
-            <translation>Low-End Turbo</translation>
+            <translation>लो-एंड टर्बो</translation>
         </message>
         <message>
             <source>Thermal Governor</source>
-            <translation>Thermal Governor</translation>
+            <translation>थर्मल गवर्नर</translation>
         </message>
         <message>
             <source>Raises the clock the emulated CPU reports, which removes some FPS limiters.
 Weaker CPUs may see reduced performance, and certain games may behave improperly.</source>
-            <translation>Raises the clock the emulated CPU reports, which removes some FPS limiters.
-Weaker CPUs may see reduced performance, and certain games may behave improperly.</translation>
+            <translation>एमुलेटेड CPU द्वारा रिपोर्ट की गई क्लॉक को बढ़ाता है, जिससे कुछ FPS सीमाएँ हट जाती हैं।
+कमज़ोर CPU पर प्रदर्शन घट सकता है।</translation>
         </message>
         <message>
             <source>Makes the game believe GPU work finishes faster than it does, so it stops lowering resolution and render distance to fit the Switch's clocks.</source>
-            <translation>Makes the game believe GPU work finishes faster than it does, so it stops lowering resolution and render distance to fit the Switch's clocks.</translation>
+            <translation>Makes the game believe GPU work finishes faster than it does, so it stops lowering रिज़ॉल्यूशन and render distance to fit the Switch's clocks.</translation>
         </message>
         <message>
             <source>Pins emulation threads to physical performance cores.</source>
-            <translation>Pins emulation threads to physical performance cores.</translation>
+            <translation>एमुलेशन थ्रेड्स को भौतिक उच्च-प्रदर्शन CPU कोर पर पिन करता है।</translation>
         </message>
         <message>
             <source>Reduces power draw and frame stuttering with adaptive delivery.</source>
-            <translation>Reduces power draw and frame stuttering with adaptive delivery.</translation>
+            <translation>अनुकूली फ़्रेम वितरण के साथ बिजली की खपत और अटकने को कम करता है।</translation>
         </message>
         <message>
             <source>Locks dynamic resolution scale to prevent resolution drops.</source>
-            <translation>Locks dynamic resolution scale to prevent resolution drops.</translation>
+            <translation>रिज़ॉल्यूशन गिरने से रोकने के लिए डायनेमिक रिज़ॉल्यूशन स्केल को लॉक करता है।</translation>
         </message>
         <message>
             <source>Dynamically regulates priority of background shader compilation threads to prevent microstutters.</source>
-            <translation>Dynamically regulates priority of background shader compilation threads to prevent microstutters.</translation>
+            <translation>सूक्ष्म अटकाव को रोकने के लिए पृष्ठभूमि शेडर संकलन थ्रेड्स की प्राथमिकता को गतिशील रूप से नियंत्रित करता है।</translation>
         </message>
         <message>
             <source>Periodic background collection of unused texture buffers and ASTC cache to prevent VRAM leaks.</source>
-            <translation>Periodic background collection of unused texture buffers and ASTC cache to prevent VRAM leaks.</translation>
+            <translation>VRAM लीक रोकने के लिए अप्रयुक्त टेक्सचर बफ़र्स और ASTC कैश की समय-समय पर पृष्ठभूमि सफ़ाई करता है।</translation>
         </message>
         <message>
             <source>Prevents out-of-memory crashes by unloading textures when VRAM exceeds 85%.</source>
-            <translation>Prevents out-of-memory crashes by unloading textures when VRAM exceeds 85%.</translation>
+            <translation>VRAM उपयोग 85% से अधिक होने पर निष्क्रिय टेक्सचर अनलोड करके मेमोरी की कमी से होने वाले क्रैश को रोकता है।</translation>
         </message>
         <message>
             <source>Maximizes smoothness on entry-level multi-core processors and weak GPUs.</source>
-            <translation>Maximizes smoothness on entry-level multi-core processors and weak GPUs.</translation>
+            <translation>एंट्री-लेवल मल्टी-कोर प्रोसेसर और कमज़ोर GPU पर सुगमता को अधिकतम करता है।</translation>
         </message>
         <message>
             <source>Reduces CPU and GPU temperatures by 10-15°C during frame wait intervals without dropping target frame rate.</source>
@@ -2728,163 +2721,163 @@ Weaker CPUs may see reduced performance, and certain games may behave improperly
         </message>
         <message>
             <source>Locks maximum performance for CPU and GPU, disables aggressive throttling and power saving.</source>
-            <translation>Locks maximum performance for CPU and GPU, disables aggressive throttling and power saving.</translation>
+            <translation>CPU और GPU को अधिकतम प्रदर्शन पर लॉक करता है तथा आक्रामक थ्रॉटलिंग और पावर सेविंग को अक्षम करता है।</translation>
         </message>
         <message>
             <source>Enables HDR10 (BT.2020 PQ / ST2084) color space for compatible HDR and OLED displays.</source>
-            <translation>Enables HDR10 (BT.2020 PQ / ST2084) color space for compatible HDR and OLED displays.</translation>
+            <translation>संगत HDR और OLED डिस्प्ले के लिए HDR10 (BT.2020 PQ / ST2084) कलर स्पेस सक्षम करता है।</translation>
         </message>
         <message>
             <source>Uses 16-bit half precision floating point for frame generation.</source>
-            <translation>Uses 16-bit half precision floating point for frame generation.</translation>
+            <translation>फ़्रेम जनरेशन के लिए 16-बिट हाफ़-प्रिसीजन फ़्लोटिंग पॉइंट (FP16) का उपयोग करता है।</translation>
         </message>
         <message>
             <source>Automatically calculates optical flow grid scale for frame generation.</source>
-            <translation>Automatically calculates optical flow grid scale for frame generation.</translation>
+            <translation>फ़्रेम जनरेशन के लिए ऑप्टिकल फ़्लो ग्रिड स्केल की स्वचालित गणना करता है।</translation>
         </message>
         <message>
             <source>Emulates BGR565 color format by software swapping red and blue channels.</source>
-            <translation>Emulates BGR565 color format by software swapping red and blue channels.</translation>
+            <translation>लाल और नीले चैनलों की सॉफ़्टवेयर अदला-बदली करके BGR565 रंग प्रारूप का अनुकरण करता है।</translation>
         </message>
         <message>
             <source>Releases synchronization fences earlier to reduce frame presentation latency.</source>
-            <translation>Releases synchronization fences earlier to reduce frame presentation latency.</translation>
+            <translation>फ़्रेम प्रस्तुति विलंबता कम करने के लिए सिंक्रनाइज़ेशन फ़ेंस को पहले रिलीज़ करता है।</translation>
         </message>
         <message>
             <source>Runs optimization passes on compiled SPIR-V shaders.</source>
-            <translation>Runs optimization passes on compiled SPIR-V shaders.</translation>
+            <translation>संकलित SPIR-V शेडर्स पर अनुकूलन पास चलाता है।</translation>
         </message>
         <message>
             <source>Uses fast monotonic GPU timer queries for frame pacing.</source>
-            <translation>Uses fast monotonic GPU timer queries for frame pacing.</translation>
+            <translation>फ़्रेम पेसिंग के लिए तेज़ मोनोटोनिक GPU टाइमर क्वेरी का उपयोग करता है।</translation>
         </message>
         <message>
             <source>Skips rendering non-critical frames when emulation falls behind target rate.</source>
-            <translation>Skips rendering non-critical frames when emulation falls behind target rate.</translation>
+            <translation>जब एमुलेशन लक्ष्य दर से पीछे रह जाता है तो गैर-महत्वपूर्ण फ़्रेमों की रेंडरिंग छोड़ देता है।</translation>
         </message>
         <message>
             <source>Reduces power consumption and fan noise on portable devices.</source>
-            <translation>Reduces power consumption and fan noise on portable devices.</translation>
+            <translation>पोर्टेबल उपकरणों पर बिजली की खपत और पंखे के शोर को कम करता है।</translation>
         </message>
         <message>
             <source>Displays floating quick translation overlay button.</source>
-            <translation>Displays floating quick translation overlay button.</translation>
+            <translation>त्वरित स्क्रीन अनुवाद के लिए फ़्लोटिंग ओवरले बटन प्रदर्शित करता है।</translation>
         </message>
         <message>
             <source>CPU Clocks</source>
-            <translation>CPU Clocks</translation>
+            <translation>CPU क्लॉक</translation>
         </message>
         <message>
             <source>GPU Clocks</source>
-            <translation>GPU Clocks</translation>
+            <translation>GPU क्लॉक</translation>
         </message>
         <message>
             <source>Eco Thermal Mode</source>
-            <translation>Eco Thermal Mode</translation>
+            <translation>इको थर्मल मोड</translation>
         </message>
         <message>
             <source>Custom RTC Offset:</source>
-            <translation>Custom RTC Offset:</translation>
+            <translation>कस्टम RTC ऑफ़सेट:</translation>
         </message>
         <message>
             <source>Custom RTC Offset</source>
-            <translation>Custom RTC Offset</translation>
+            <translation>कस्टम RTC ऑफ़सेट</translation>
         </message>
         <message>
             <source>Custom RTC</source>
-            <translation>Custom RTC</translation>
+            <translation>कस्टम RTC</translation>
         </message>
         <message>
             <source>Custom RNG Seed</source>
-            <translation>Custom RNG Seed</translation>
+            <translation>कस्टम RNG सीड</translation>
         </message>
         <message>
             <source>STORM Tier-2 JIT Compiler</source>
-            <translation>STORM Tier-2 JIT Compiler</translation>
+            <translation>STORM Tier-2 JIT कंपाइलर</translation>
         </message>
         <message>
             <source>Enables the zero-overhead STORM Tier-2 instruction pre-optimizer and superblock JIT tuner (canonicalizes ARMv8.3 PAC/BTI hints and accelerates CNTVCT_EL0 counter reads).</source>
-            <translation>Enables the zero-overhead STORM Tier-2 instruction pre-optimizer and superblock JIT tuner (canonicalizes ARMv8.3 PAC/BTI hints and accelerates CNTVCT_EL0 counter reads).</translation>
+            <translation>शून्य-ओवरहेड STORM Tier-2 निर्देश प्री-ऑप्टिमाइज़र और सुपरब्लॉक JIT ट्यूनर सक्षम करता है (ARMv8.3 PAC/BTI और CNTVCT_EL0 टाइमर पठन को तेज़ करता है)।</translation>
         </message>
         <message>
             <source>Enable Frame Generation (LSFG)</source>
-            <translation>Enable Frame Generation (LSFG)</translation>
+            <translation>फ़्रेम जनरेशन सक्षम करें (LSFG)</translation>
         </message>
         <message>
             <source>Generates intermediate frames using Lossless Scaling optical flow to double or quadruple FPS.</source>
-            <translation>Generates intermediate frames using Lossless Scaling optical flow to double or quadruple FPS.</translation>
+            <translation>FPS को दोगुना या चौगुना करने के लिए Lossless Scaling ऑप्टिकल फ़्लो का उपयोग करके मध्यवर्ती फ़्रेम उत्पन्न करता है।</translation>
         </message>
         <message>
             <source>Frame Generation Multiplier:</source>
-            <translation>Frame Generation Multiplier:</translation>
+            <translation>फ़्रेम जनरेशन गुणक:</translation>
         </message>
         <message>
             <source>Multiplier for generated frames (2x = double FPS, 3x = triple FPS, 4x = quadruple FPS).</source>
-            <translation>Multiplier for generated frames (2x = double FPS, 3x = triple FPS, 4x = quadruple FPS).</translation>
+            <translation>जनरेट किए गए फ़्रेम का गुणक (2x = दोगुना FPS, 3x = तिगुना FPS, 4x = चौगुना FPS)।</translation>
         </message>
         <message>
             <source>Target Frame Rate (Hz):</source>
-            <translation>Target Frame Rate (Hz):</translation>
+            <translation>लक्ष्य फ़्रेम दर (Hz):</translation>
         </message>
         <message>
             <source>Target output frame rate in Hz for Frame Generation.</source>
-            <translation>Target output frame rate in Hz for Frame Generation.</translation>
+            <translation>फ़्रेम जनरेशन के लिए Hz में लक्ष्य आउटपुट फ़्रेम दर।</translation>
         </message>
         <message>
             <source>Optical Flow Scale (%):</source>
-            <translation>Optical Flow Scale (%):</translation>
+            <translation>ऑप्टिकल फ़्लो स्केल (%):</translation>
         </message>
         <message>
             <source>Manual resolution scale percentage for optical flow estimation.</source>
-            <translation>Manual resolution scale percentage for optical flow estimation.</translation>
+            <translation>ऑप्टिकल फ़्लो अनुमान के लिए मैन्युअल रिज़ॉल्यूशन स्केल प्रतिशत।</translation>
         </message>
         <message>
             <source>Frame Queue Depth:</source>
-            <translation>Frame Queue Depth:</translation>
+            <translation>फ़्रेम कतार गहराई:</translation>
         </message>
         <message>
             <source>Number of frames queued for optical flow interpolation.</source>
-            <translation>Number of frames queued for optical flow interpolation.</translation>
+            <translation>ऑप्टिकल फ़्लो इंटरपोलेशन के लिए कतारबद्ध फ़्रेमों की संख्या।</translation>
         </message>
         <message>
             <source>Debug Optical Flow Vectors</source>
-            <translation>Debug Optical Flow Vectors</translation>
+            <translation>ऑप्टिकल फ़्लो वेक्टर डीबग करें</translation>
         </message>
         <message>
             <source>Visualizes optical flow motion vectors on screen for debugging.</source>
-            <translation>Visualizes optical flow motion vectors on screen for debugging.</translation>
+            <translation>डीबगिंग के लिए स्क्रीन पर ऑप्टिकल फ़्लो मोशन वेक्टर प्रदर्शित करता है।</translation>
         </message>
         <message>
             <source>Lock Dynamic Resolution</source>
-            <translation>Lock Dynamic Resolution</translation>
+            <translation>डायनेमिक रिज़ॉल्यूशन लॉक करें</translation>
         </message>
         <message>
             <source>Force Maximum Clocks (PC and Mobile)</source>
-            <translation>Force Maximum Clocks (PC and Mobile)</translation>
+            <translation>अधिकतम क्लॉक बाध्य करें (PC और मोबाइल)</translation>
         </message>
         <message>
             <source>Early Release Fences</source>
-            <translation>Early Release Fences</translation>
+            <translation>फ़ेंस शीघ्र रिलीज़ करें</translation>
         </message>
         <message>
             <source>Optimize SPIR-V Output</source>
-            <translation>Optimize SPIR-V Output</translation>
+            <translation>SPIR-V आउटपुट अनुकूलित करें</translation>
         </message>
         <message>
             <source>Enable Frame Skipping</source>
-            <translation>Enable Frame Skipping</translation>
+            <translation>सक्षम करें Frame Skipping</translation>
         </message>
         <message>
             <source>Enable HDR10</source>
-            <translation>Enable HDR10</translation>
+            <translation>HDR10 सक्षम करें</translation>
         </message>
         <message>
             <source>VRAM Budget Governor</source>
-            <translation>VRAM Budget Governor</translation>
+            <translation>VRAM बजट गवर्नर</translation>
         </message>
         <message>
             <source>Floating Translate Button</source>
-            <translation>Floating Translate Button</translation>
+            <translation>फ़्लोटिंग अनुवाद बटन</translation>
         </message>
         <message>
             <source>Normal</source>
@@ -2892,83 +2885,83 @@ Weaker CPUs may see reduced performance, and certain games may behave improperly
         </message>
         <message>
             <source>Boost</source>
-            <translation>Boost</translation>
+            <translation>बूस्ट</translation>
         </message>
         <message>
             <source>Overclock</source>
-            <translation>Overclock</translation>
+            <translation>ओवरक्लॉक</translation>
         </message>
         <message>
             <source>BC5 (High quality)</source>
-            <translation>BC5 (High quality)</translation>
+            <translation>BC5 (उच्च गुणवत्ता)</translation>
         </message>
         <message>
             <source>Hybrid Video Decoding</source>
-            <translation>Hybrid Video Decoding</translation>
+            <translation>हाइब्रिड वीडियो डिकोडिंग</translation>
         </message>
         <message>
             <source>Hybrid</source>
-            <translation>Hybrid</translation>
+            <translation>हाइब्रिड</translation>
         </message>
         <message>
             <source>Carousel View</source>
-            <translation>Carousel View</translation>
+            <translation>कैरोसेल दृश्य</translation>
         </message>
         <message>
             <source>Force 32:9 (Super UltraWide)</source>
-            <translation>Force 32:9 (Super UltraWide)</translation>
+            <translation>32:9 बाध्य करें (Super UltraWide)</translation>
         </message>
         <message>
             <source>Force 1:1 (Square)</source>
-            <translation>Force 1:1 (Square)</translation>
+            <translation>1:1 बाध्य करें (वर्गाकार)</translation>
         </message>
         <message>
             <source>Force 3:2 (Portable / Surface)</source>
-            <translation>Force 3:2 (Portable / Surface)</translation>
+            <translation>3:2 बाध्य करें (पोर्टेबल / Surface)</translation>
         </message>
         <message>
             <source>Force 5:4 (SXGA)</source>
-            <translation>Force 5:4 (SXGA)</translation>
+            <translation>5:4 बाध्य करें (SXGA)</translation>
         </message>
         <message>
             <source>Force 18:9 (2:1 Univisium)</source>
-            <translation>Force 18:9 (2:1 Univisium)</translation>
+            <translation>18:9 बाध्य करें (2:1 Univisium)</translation>
         </message>
         <message>
             <source>Force 19.5:9 (Modern Mobile)</source>
-            <translation>Force 19.5:9 (Modern Mobile)</translation>
+            <translation>19.5:9 बाध्य करें (आधुनिक मोबाइल)</translation>
         </message>
         <message>
             <source>Force 20:9 (Cinema Mobile)</source>
-            <translation>Force 20:9 (Cinema Mobile)</translation>
+            <translation>20:9 बाध्य करें (सिनेमा मोबाइल)</translation>
         </message>
         <message>
             <source>Force 21:10 (Wide 16:10)</source>
-            <translation>Force 21:10 (Wide 16:10)</translation>
+            <translation>21:10 बाध्य करें (वाइड 16:10)</translation>
         </message>
         <message>
             <source>Force 24:10 (3840x1600 UltraWide+)</source>
-            <translation>Force 24:10 (3840x1600 UltraWide+)</translation>
+            <translation>24:10 बाध्य करें (3840x1600 UltraWide+)</translation>
         </message>
         <message>
             <source>Force 32:10 (Super UltraWide 16:10)</source>
-            <translation>Force 32:10 (Super UltraWide 16:10)</translation>
+            <translation>32:10 बाध्य करें (Super UltraWide 16:10)</translation>
         </message>
         <message>
             <source>Force 48:9 (Triple Monitor 3x16:9)</source>
-            <translation>Force 48:9 (Triple Monitor 3x16:9)</translation>
+            <translation>48:9 बाध्य करें (ट्रिपल मॉनिटर 3x16:9)</translation>
         </message>
         <message>
             <source>Auto Window Aspect (True 3D Fit)</source>
-            <translation>Auto Window Aspect (True 3D Fit)</translation>
+            <translation>ऑटो विंडो अनुपात (सच्चा 3D फ़िट)</translation>
         </message>
         <message>
             <source>Auto-Patch 3D Aspect Ratio (No Stretch)</source>
-            <translation>Auto-Patch 3D Aspect Ratio (No Stretch)</translation>
+            <translation>3D आस्पेक्ट रेशियो ऑटो-पैच (बिना खिंचाव)</translation>
         </message>
         <message>
             <source>Auto-Unlock 60/120 FPS</source>
-            <translation>Auto-Unlock 60/120 FPS</translation>
+            <translation>60/120 FPS ऑटो-अनलॉक</translation>
         </message>
         <message>
             <source>Portuguese (Português)</source>
@@ -2980,31 +2973,30 @@ Weaker CPUs may see reduced performance, and certain games may behave improperly
         </message>
         <message>
             <source>Brazilian Portuguese</source>
-            <translation>Brazilian Portuguese</translation>
+            <translation>ब्राज़ीलियाई पुर्तगाली</translation>
         </message>
         <message>
             <source>Dynamic performance scaler</source>
-            <translation>Dynamic performance scaler</translation>
+            <translation>डायनेमिक परफ़ॉर्मेंस स्केलर</translation>
         </message>
         <message>
             <source>Automatically adjusts rendering resolution to maintain the target frame rate. When frames take too long, resolution steps down; when frames are fast, it recovers. Inspired by Atmosphere's dynamic resolution system.</source>
-            <translation>Automatically adjusts rendering resolution to maintain the target frame rate. When frames take too long, resolution steps down; when frames are fast, it recovers. Inspired by Atmosphere's dynamic resolution system.</translation>
+            <translation>लक्ष्य फ़्रेम दर बनाए रखने के लिए रेंडरिंग रिज़ॉल्यूशन को स्वचालित रूप से समायोजित करता है। लोड बढ़ने पर रिज़ॉल्यूशन घटाता है और सामान्य होने पर बहाल करता है।</translation>
         </message>
         <message>
             <source>Automatically patches 3D camera frustum constants in game executables to match the selected aspect ratio (4:3, 16:10, 18:9, 21:9, 32:9, 48:9, etc.) without stretching 3D geometry.</source>
-            <translation>Automatically patches 3D camera frustum constants in game executables to match the selected aspect ratio (4:3, 16:10, 18:9, 21:9, 32:9, 48:9, etc.) without stretching 3D geometry.</translation>
+            <translation>3D ज्योमेट्री को खींचे बिना चयनित आस्पेक्ट रेशियो (4:3, 16:10, 18:9, 21:9, 32:9, 48:9 आदि) से मेल खाने के लिए गेम के 3D कैमरा स्थिरांक को स्वचालित रूप से पैच करता है।</translation>
         </message>
         <message>
             <source>Automatically unlocks 30 FPS VSync/swap-interval caps to allow 60/120 FPS rendering.</source>
-            <translation>Automatically unlocks 30 FPS VSync/swap-interval caps to allow 60/120 FPS rendering.</translation>
+            <translation>60/120 FPS रेंडरिंग की अनुमति देने के लिए 30 FPS VSync सीमा को स्वचालित रूप से अनलॉक करता है।</translation>
         </message>
         <message>
             <source>Selects the scaling filter used when adapting the rendered image to the window size.
 Bilinear and Bicubic are standard filters.
 AMD FidelityFX Super Resolution (FSR) and Qualcomm SGSR provide sharp upscaling.</source>
-            <translation>Selects the scaling filter used when adapting the rendered image to the window size.
-Bilinear and Bicubic are standard filters.
-AMD FidelityFX Super Resolution (FSR) and Qualcomm SGSR provide sharp upscaling.</translation>
+            <translation>रेंडर की गई छवि को विंडो आकार में ढालने के लिए स्केलिंग फ़िल्टर चुनता है।
+बाइलीनियर और बाइक्यूबिक मानक फ़िल्टर हैं; AMD FSR और Qualcomm SGSR तीक्ष्ण अपस्केलिंग प्रदान करते हैं।</translation>
         </message>
         <message>
             <source>The GPU Accuracy Level to use.
@@ -3044,7 +3036,7 @@ Required by some games for proper physics or rendering effects, but significantl
         </message>
         <message>
             <source>Polish (polski)</source>
-            <translation>Polish (polski)</translation>
+            <translation>पोलिश (polski)</translation>
         </message>
         <message>
             <source>Celsius (°C)</source>
@@ -3056,27 +3048,27 @@ Required by some games for proper physics or rendering effects, but significantl
         </message>
         <message>
             <source>Errors Only</source>
-            <translation>Errors Only</translation>
+            <translation>केवल त्रुटियाँ</translation>
         </message>
         <message>
             <source>Standard</source>
-            <translation>Standard</translation>
+            <translation>मानक</translation>
         </message>
         <message>
             <source>Verbose</source>
-            <translation>Verbose</translation>
+            <translation>विस्तृत</translation>
         </message>
         <message>
             <source>All</source>
-            <translation>All</translation>
+            <translation>सभी</translation>
         </message>
         <message>
             <source>Turbo</source>
-            <translation>Turbo</translation>
+            <translation>टर्बो</translation>
         </message>
         <message>
             <source>Slow</source>
-            <translation>Slow</translation>
+            <translation>धीमा</translation>
         </message>
     </context>
     <context>
@@ -3507,17 +3499,17 @@ Required by some games for proper physics or rendering effects, but significantl
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="245" />
             <source>Standard</source>
-            <translation>Standard</translation>
+            <translation>मानक</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="250" />
             <source>Verbose</source>
-            <translation>Verbose</translation>
+            <translation>विस्तृत</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="255" />
             <source>All</source>
-            <translation>All</translation>
+            <translation>सभी</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="266" />
@@ -3607,7 +3599,7 @@ Required by some games for proper physics or rendering effects, but significantl
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="400" />
             <source>Disable Macro JIT</source>
-            <translation>Disable Macro JIT</translation>
+            <translation>मैक्रो JIT अक्षम करें</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="410" />
@@ -3617,7 +3609,7 @@ Required by some games for proper physics or rendering effects, but significantl
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="413" />
             <source>Disable Macro HLE</source>
-            <translation>Disable Macro HLE</translation>
+            <translation>मैक्रो HLE अक्षम करें</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="423" />
@@ -3647,7 +3639,7 @@ Required by some games for proper physics or rendering effects, but significantl
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="462" />
             <source>Disable Buffer Reorder</source>
-            <translation>Disable Buffer Reorder</translation>
+            <translation>बफ़र पुनर्गठन अक्षम करें</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="469" />
@@ -3707,7 +3699,7 @@ Required by some games for proper physics or rendering effects, but significantl
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="559" />
             <source>Debugging</source>
-            <translation>Debugging</translation>
+            <translation>डीबगिंग</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="592" />
@@ -3810,7 +3802,7 @@ Required by some games for proper physics or rendering effects, but significantl
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug_controller.ui" line="40" />
             <source>Clear</source>
-            <translation>Clear</translation>
+            <translation>साफ़ करें</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug_controller.ui" line="47" />
@@ -4075,7 +4067,7 @@ Required by some games for proper physics or rendering effects, but significantl
         <message>
             <location filename="../../src/yuzu/configuration/configure_filesystem.cpp" line="148" />
             <source>Save Data Directory</source>
-            <translation>Save Data Directory</translation>
+            <translation>सहेजें Data निर्देशिका</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_filesystem.cpp" line="149" />
@@ -4123,7 +4115,7 @@ To: %2</translation>
         <message>
             <location filename="../../src/yuzu/configuration/configure_filesystem.cpp" line="224" />
             <source>Migrate Save Data</source>
-            <translation>Migrate Save Data</translation>
+            <translation>Migrate सहेजें Data</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_filesystem.cpp" line="231" />
@@ -4322,7 +4314,7 @@ Would you like to delete the old save data?</translation>
         </message>
         <message>
             <source>API:</source>
-            <translation>API:</translation>
+            <translation>ग्राफ़िक्स API:</translation>
         </message>
         <message>
             <source>API</source>
@@ -4406,7 +4398,7 @@ Would you like to delete the old save data?</translation>
         </message>
         <message>
             <source>Eco Frame Pacing</source>
-            <translation>Eco Frame Pacing</translation>
+            <translation>इको फ़्रेम पेसिंग</translation>
         </message>
         <message>
             <source>Выравнивание кадров</source>
@@ -4520,7 +4512,7 @@ Would you like to delete the old save data?</translation>
         </message>
         <message>
             <source>Force maximum clocks (Vulkan only)</source>
-            <translation>Force maximum clocks (Vulkan only)</translation>
+            <translation>अधिकतम क्लॉक बाध्य करें (केवल Vulkan)</translation>
         </message>
         <message>
             <source>Максимальная частота</source>
@@ -4536,7 +4528,7 @@ Would you like to delete the old save data?</translation>
         </message>
         <message>
             <source>Enable GPU buffer readback</source>
-            <translation>Enable GPU buffer readback</translation>
+            <translation>GPU बफ़र रीडबैक सक्षम करें</translation>
         </message>
         <message>
             <source>Обратное чтение GPU</source>
@@ -4584,7 +4576,7 @@ Would you like to delete the old save data?</translation>
         </message>
         <message>
             <source>Smart Shader Throttle</source>
-            <translation>Smart Shader Throttle</translation>
+            <translation>स्मार्ट शेडर थ्रॉटल</translation>
         </message>
         <message>
             <source>Троттлинг шейдеров</source>
@@ -4596,7 +4588,7 @@ Would you like to delete the old save data?</translation>
         </message>
         <message>
             <source>Use Vulkan pipeline cache</source>
-            <translation>Use Vulkan pipeline cache</translation>
+            <translation>Vulkan पाइपलाइन कैश का उपयोग करें</translation>
         </message>
         <message>
             <source>Vulkan Pipeline Cache</source>
@@ -4612,7 +4604,7 @@ Would you like to delete the old save data?</translation>
         </message>
         <message>
             <source>VRAM Garbage Collection</source>
-            <translation>VRAM Garbage Collection</translation>
+            <translation>VRAM गार्बेज कलेक्शन</translation>
         </message>
         <message>
             <source>Сборка мусора VRAM</source>
@@ -4694,7 +4686,7 @@ Would you like to delete the old save data?</translation>
         <message>
             <location filename="../../src/yuzu/configuration/configure_hotkeys.ui" line="45" />
             <source>Clear All</source>
-            <translation>Clear All</translation>
+            <translation>सभी साफ़ करें</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_hotkeys.ui" line="52" />
@@ -4754,7 +4746,7 @@ Would you like to delete the old save data?</translation>
         <message>
             <location filename="../../src/yuzu/configuration/configure_hotkeys.cpp" line="385" />
             <source>Clear</source>
-            <translation>Clear</translation>
+            <translation>साफ़ करें</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_hotkeys.cpp" line="406" />
@@ -4912,7 +4904,7 @@ Would you like to delete the old save data?</translation>
         <message>
             <location filename="../../src/yuzu/configuration/configure_input.ui" line="537" />
             <source>Clear</source>
-            <translation>Clear</translation>
+            <translation>साफ़ करें</translation>
         </message>
         <message>
             <source>Настройка вибрации</source>
@@ -5207,7 +5199,7 @@ Would you like to delete the old save data?</translation>
         <message>
             <location filename="../../src/yuzu/configuration/configure_input_player.ui" line="209" />
             <source>Delete</source>
-            <translation>Delete</translation>
+            <translation>हटाएं</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_input_player.ui" line="272" />
@@ -5372,7 +5364,7 @@ Would you like to delete the old save data?</translation>
         <message>
             <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="387" />
             <source>Clear</source>
-            <translation>Clear</translation>
+            <translation>साफ़ करें</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="389" />
@@ -5454,7 +5446,7 @@ To invert the axes, first move your joystick vertically, and then horizontally.<
         <message>
             <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="753" />
             <source>Pro Controller</source>
-            <translation>Pro Controller</translation>
+            <translation>Pro कंट्रोलर</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="1102" />
@@ -5479,7 +5471,7 @@ To invert the axes, first move your joystick vertically, and then horizontally.<
         <message>
             <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="1118" />
             <source>GameCube Controller</source>
-            <translation>GameCube Controller</translation>
+            <translation>GameCube कंट्रोलर</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="1127" />
@@ -5618,7 +5610,7 @@ To invert the axes, first move your joystick vertically, and then horizontally.<
         <message>
             <location filename="../../src/yuzu/configuration/configure_input_profile_dialog.ui" line="40" />
             <source>Clear</source>
-            <translation>Clear</translation>
+            <translation>साफ़ करें</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_input_profile_dialog.ui" line="47" />
@@ -5883,7 +5875,7 @@ Current values are %1% and %2% respectively.</translation>
         <message>
             <location filename="../../src/yuzu/configuration/configure_network.ui" line="34" />
             <source>Network Interface</source>
-            <translation>Network Interface</translation>
+            <translation>नेटवर्क इंटरफ़ेस</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_network.ui" line="41" />
@@ -6321,7 +6313,7 @@ UUID: %2</translation>
         <message>
             <location filename="../../src/yuzu/configuration/configure_ringcon.cpp" line="171" />
             <source>Clear</source>
-            <translation>Clear</translation>
+            <translation>साफ़ करें</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_ringcon.cpp" line="173" />
@@ -6604,7 +6596,7 @@ UUID: %2</translation>
         <message>
             <location filename="../../src/yuzu/configuration/configure_touch_from_button.ui" line="61" />
             <source>Delete</source>
-            <translation>Delete</translation>
+            <translation>हटाएं</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_touch_from_button.ui" line="74" />
@@ -6653,7 +6645,7 @@ Drag points to change position, or double-click table cells to edit values.</tra
         <message>
             <location filename="../../src/yuzu/configuration/configure_touch_from_button.cpp" line="206" />
             <source>Delete Profile</source>
-            <translation>Delete Profile</translation>
+            <translation>हटाएं Profile</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_touch_from_button.cpp" line="206" />
@@ -7342,7 +7334,7 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
         <message>
             <location filename="../../src/yuzu/multiplayer/message.cpp" line="63" />
             <source>Error</source>
-            <translation>Error</translation>
+            <translation>त्रुटि</translation>
         </message>
     </context>
     <context>
@@ -7438,7 +7430,7 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
         <message>
             <location filename="../../src/yuzu/game/game_list.cpp" line="463" />
             <source>Remove</source>
-            <translation>Remove</translation>
+            <translation>हटाएं</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/game/game_list.cpp" line="464" />
@@ -7563,7 +7555,7 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
         <message>
             <location filename="../../src/yuzu/game/game_list.cpp" line="643" />
             <source>Clear</source>
-            <translation>Clear</translation>
+            <translation>साफ़ करें</translation>
         </message>
     </context>
     <context>
@@ -7759,7 +7751,7 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
         <message>
             <location filename="../../src/yuzu/multiplayer/host_room.cpp" line="186" />
             <source>Error</source>
-            <translation>Error</translation>
+            <translation>त्रुटि</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/multiplayer/host_room.cpp" line="187" />
@@ -7972,7 +7964,7 @@ Debug Message: </translation>
         <message>
             <location filename="../../src/yuzu/install_dialog.cpp" line="39" />
             <source>Install</source>
-            <translation>Install</translation>
+            <translation>इंस्टॉल करें</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/install_dialog.cpp" line="52" />
@@ -9077,12 +9069,12 @@ Please, only use this feature to install updates and DLC.</translation>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="3699" />
             <source>The current amiibo has been removed</source>
-            <translation>The current amiibo has been removed</translation>
+            <translation>The current Amiibo has been removed</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="3704" />
             <source>Error</source>
-            <translation>Error</translation>
+            <translation>त्रुटि</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="3704" />
@@ -9097,7 +9089,7 @@ Please, only use this feature to install updates and DLC.</translation>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="3711" />
             <source>Load Amiibo</source>
-            <translation>Load Amiibo</translation>
+            <translation>लोड करें Amiibo</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="3746" />
@@ -9107,7 +9099,7 @@ Please, only use this feature to install updates and DLC.</translation>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="3756" />
             <source>The selected file is not a valid amiibo</source>
-            <translation>The selected file is not a valid amiibo</translation>
+            <translation>The selected file is not a valid Amiibo</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="3759" />
@@ -9117,7 +9109,7 @@ Please, only use this feature to install updates and DLC.</translation>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="3765" />
             <source>An unknown error occurred</source>
-            <translation>An unknown error occurred</translation>
+            <translation>An unknown त्रुटि occurred</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="3868" />
@@ -9293,12 +9285,12 @@ Would you like to force it for future launches?</translation>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="4329" />
             <source>Slow</source>
-            <translation>Slow</translation>
+            <translation>धीमा</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="4332" />
             <source>Turbo</source>
-            <translation>Turbo</translation>
+            <translation>टर्बो</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="4336" />
@@ -9740,7 +9732,7 @@ If you wish to clean up the files which were left in the old data location, you 
         <message>
             <location filename="../../src/yuzu/multiplayer/state.cpp" line="209" />
             <source>Error</source>
-            <translation>Error</translation>
+            <translation>त्रुटि</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/multiplayer/state.cpp" line="210" />
@@ -10067,13 +10059,6 @@ p, li { white-space: pre-wrap; }
             <location filename="../../src/yuzu/user_data_migration.cpp" line="68" />
             <source>Link Old Directory</source>
             <translation>Link Old Directory</translation>
-        </message>
-        <message>
-            <location filename="../../src/yuzu/user_data_migration.cpp" line="98" />
-            <source>
-      </source>
-            <translation>
-      </translation>
         </message>
         <message>
             <location filename="../../src/yuzu/user_data_migration.cpp" line="102" />
@@ -11275,7 +11260,7 @@ Most mods are RomFS mods, but patches (.pchtxt) are typically ExeFS mods.</trans
         <message>
             <location filename="../../src/qt_common/qt_string_lookup.h" line="81" />
             <source>One or more keys failed to copy.</source>
-            <translation>One or more keys failed to copy.</translation>
+            <translation>One or more keys करने में विफल: copy.</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/qt_string_lookup.h" line="83" />
@@ -11425,7 +11410,7 @@ This is recommended if you want to share data between emulators.</translation>
         <message>
             <location filename="../../src/yuzu/applets/qt_controller.ui" line="514" />
             <source>Pro Controller</source>
-            <translation>Pro Controller</translation>
+            <translation>Pro कंट्रोलर</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/applets/qt_controller.ui" line="519" />
@@ -11580,7 +11565,7 @@ This is recommended if you want to share data between emulators.</translation>
         <message>
             <location filename="../../src/yuzu/applets/qt_controller.cpp" line="490" />
             <source>GameCube Controller</source>
-            <translation>GameCube Controller</translation>
+            <translation>GameCube कंट्रोलर</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/applets/qt_controller.cpp" line="499" />
@@ -11848,7 +11833,7 @@ By selecting "From Eden", previous save data stored in Ryujinx will be deleted, 
         <message>
             <location filename="../../src/yuzu/updater/update_dialog.ui" line="14" />
             <source>Update Available</source>
-            <translation>Update Available</translation>
+            <translation>अपडेट करें Available</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/updater/update_dialog.ui" line="20" />
@@ -12077,7 +12062,7 @@ Error code: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>डिफ़ॉल्ट पर रीसेट करें</translation>
         </message>
         </context>
     <context>
@@ -12224,7 +12209,7 @@ Error code: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>डिफ़ॉल्ट पर रीसेट करें</translation>
         </message>
         </context>
     <context>
@@ -12371,7 +12356,7 @@ Error code: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>डिफ़ॉल्ट पर रीसेट करें</translation>
         </message>
         </context>
     <context>
@@ -12518,7 +12503,7 @@ Error code: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>डिफ़ॉल्ट पर रीसेट करें</translation>
         </message>
         </context>
     <context>
@@ -12665,7 +12650,7 @@ Error code: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>डिफ़ॉल्ट पर रीसेट करें</translation>
         </message>
     </context>
     <context>
@@ -12812,7 +12797,7 @@ Error code: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>डिफ़ॉल्ट पर रीसेट करें</translation>
         </message>
     </context>
     <context>
@@ -12959,7 +12944,7 @@ Error code: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>डिफ़ॉल्ट पर रीसेट करें</translation>
         </message>
     </context>
     <context>
@@ -13106,7 +13091,7 @@ Error code: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>डिफ़ॉल्ट पर रीसेट करें</translation>
         </message>
     </context>
     <context>

@@ -7,6 +7,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cstring>
 #include <vector>
 
 #include "common/alignment.h"
@@ -31,6 +32,32 @@ public:
 
     void Invalidate() noexcept {
         std::ranges::fill(read_descriptors, 0);
+    }
+
+    [[nodiscard]] const T* ReadChanged(Tegra::MemoryManager const& gpu_memory, u32 index) noexcept {
+        DEBUG_ASSERT(index <= current_limit);
+        const GPUVAddr gpu_addr = current_gpu_addr + index * sizeof(T);
+        const u64 bit = 1ULL << (index & 63);
+        auto& mask_word = read_descriptors[index >> 6];
+        const bool was_read = (mask_word & bit) != 0;
+        if (((gpu_addr & 0xFFF) + sizeof(T)) <= 0x1000) [[likely]] {
+            if (const u8* ptr = gpu_memory.GetPointer(gpu_addr); ptr != nullptr) [[likely]] {
+                if (was_read && std::memcmp(ptr, std::addressof(descriptors[index]), sizeof(T)) == 0) [[likely]] {
+                    return nullptr;
+                }
+                std::memcpy(std::addressof(descriptors[index]), ptr, sizeof(T));
+                mask_word |= bit;
+                return std::addressof(descriptors[index]);
+            }
+        }
+        T tmp;
+        gpu_memory.ReadBlockUnsafe(gpu_addr, std::addressof(tmp), sizeof(T));
+        if (was_read && tmp == descriptors[index]) [[likely]] {
+            return nullptr;
+        }
+        descriptors[index] = tmp;
+        mask_word |= bit;
+        return std::addressof(descriptors[index]);
     }
 
     [[nodiscard]] std::pair<T, bool> Read(Tegra::MemoryManager const& gpu_memory, u32 index) noexcept {

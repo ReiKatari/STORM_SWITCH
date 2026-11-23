@@ -61,10 +61,17 @@ Lobby::Lobby(QWidget* parent, QStandardItemModel* list,
     ui->room_list->setContextMenuPolicy(Qt::CustomContextMenu);
 
     ResetModel();
-    ui->room_list->header()->resizeSection(Column::GAME_NAME, 500);
-    ui->room_list->header()->resizeSection(Column::ROOM_NAME, 300);
-    ui->room_list->header()->resizeSection(Column::MEMBER, 150);
-    ui->room_list->header()->resizeSection(Column::HOST, 200);
+    auto* hdr = ui->room_list->header();
+    hdr->setStretchLastSection(false);
+    hdr->setMinimumSectionSize(90);
+    hdr->setSectionResizeMode(Column::GAME_NAME, QHeaderView::Interactive);
+    hdr->setSectionResizeMode(Column::ROOM_NAME, QHeaderView::Stretch);
+    hdr->setSectionResizeMode(Column::MEMBER, QHeaderView::ResizeToContents);
+    hdr->setSectionResizeMode(Column::HOST, QHeaderView::Interactive);
+    hdr->resizeSection(Column::GAME_NAME, 230);
+    hdr->resizeSection(Column::ROOM_NAME, 240);
+    hdr->resizeSection(Column::MEMBER, 110);
+    hdr->resizeSection(Column::HOST, 175);
 
     ui->nickname->setValidator(validation.GetNickname());
     ui->nickname->setText(
@@ -311,10 +318,17 @@ void Lobby::OnRefreshLobby() {
     ui->refresh_list->setEnabled(true);
     ui->refresh_list->setText(tr("Обновить список"));
     ui->room_list->header()->setDefaultAlignment(Qt::AlignCenter);
-    ui->room_list->header()->resizeSection(Column::GAME_NAME, 500);
-    ui->room_list->header()->resizeSection(Column::ROOM_NAME, 300);
-    ui->room_list->header()->resizeSection(Column::MEMBER, 150);
-    ui->room_list->header()->resizeSection(Column::HOST, 200);
+    auto* hdr = ui->room_list->header();
+    hdr->setStretchLastSection(false);
+    hdr->setMinimumSectionSize(90);
+    hdr->setSectionResizeMode(Column::GAME_NAME, QHeaderView::Interactive);
+    hdr->setSectionResizeMode(Column::ROOM_NAME, QHeaderView::Stretch);
+    hdr->setSectionResizeMode(Column::MEMBER, QHeaderView::ResizeToContents);
+    hdr->setSectionResizeMode(Column::HOST, QHeaderView::Interactive);
+    hdr->resizeSection(Column::GAME_NAME, 230);
+    hdr->resizeSection(Column::ROOM_NAME, 240);
+    hdr->resizeSection(Column::MEMBER, 110);
+    hdr->resizeSection(Column::HOST, 175);
 
     // Set the member list child items to span all columns
     for (int i = 0; i < proxy->rowCount(); i++) {

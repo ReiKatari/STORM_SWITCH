@@ -531,7 +531,7 @@ Please note this may result in deadlocks and other race conditions.</source>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="142" />
             <source>API:</source>
-            <translation>API:</translation>
+            <translation>그래픽 API:</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="143" />
@@ -2437,7 +2437,7 @@ When a program attempts to open the controller applet, it is immediately closed.
         </message>
         <message>
             <source>VRAM Usage Mode</source>
-            <translation>VRAM Usage Mode</translation>
+            <translation>VRAM 사용 모드</translation>
         </message>
         <message>
             <source>Использование VRAM:</source>
@@ -2457,7 +2457,7 @@ When a program attempts to open the controller applet, it is immediately closed.
         </message>
         <message>
             <source>ASTC Decoding Method</source>
-            <translation>ASTC Decoding Method</translation>
+            <translation>ASTC 디코딩 방법</translation>
         </message>
         <message>
             <source>Декодирование ASTC</source>
@@ -2565,7 +2565,7 @@ When a program attempts to open the controller applet, it is immediately closed.
         </message>
         <message>
             <source>Eco Frame Pacing</source>
-            <translation>Eco Frame Pacing</translation>
+            <translation>エコフレームペーシング</translation>
         </message>
         <message>
             <source>Выравнивание кадров</source>
@@ -2581,7 +2581,7 @@ When a program attempts to open the controller applet, it is immediately closed.
         </message>
         <message>
             <source>Smart Shader Throttle</source>
-            <translation>Smart Shader Throttle</translation>
+            <translation>スマートシェーダースロットル</translation>
         </message>
         <message>
             <source>Троттлинг шейдеров</source>
@@ -2593,7 +2593,7 @@ When a program attempts to open the controller applet, it is immediately closed.
         </message>
         <message>
             <source>Vulkan Pipeline Cache</source>
-            <translation>Vulkan Pipeline Cache</translation>
+            <translation>Vulkan 파이프라인 캐시</translation>
         </message>
         <message>
             <source>Кэш Vulkan</source>
@@ -2605,7 +2605,7 @@ When a program attempts to open the controller applet, it is immediately closed.
         </message>
         <message>
             <source>VRAM Garbage Collection</source>
-            <translation>VRAM Garbage Collection</translation>
+            <translation>VRAM ガベージコレクション</translation>
         </message>
         <message>
             <source>Сборка мусора VRAM</source>
@@ -2641,7 +2641,7 @@ When a program attempts to open the controller applet, it is immediately closed.
         </message>
         <message>
             <source>Cabinet</source>
-            <translation>Cabinet</translation>
+            <translation>캐비닛</translation>
         </message>
         <message>
             <source>Кабинет Amiibo</source>
@@ -2661,65 +2661,65 @@ When a program attempts to open the controller applet, it is immediately closed.
         </message>
         <message>
             <source>CPU Affinity Pinning</source>
-            <translation>CPU Affinity Pinning</translation>
+            <translation>CPU アフィニティ固定</translation>
         </message>
         <message>
             <source>FP16 Frame Generation</source>
-            <translation>FP16 Frame Generation</translation>
+            <translation>FP16 フレーム生成</translation>
         </message>
         <message>
             <source>Auto Optical Flow Scale</source>
-            <translation>Auto Optical Flow Scale</translation>
+            <translation>自動オプティカルフロースケール</translation>
         </message>
         <message>
             <source>Emulate BGR565</source>
-            <translation>Emulate BGR565</translation>
+            <translation>BGR565 をエミュレート</translation>
         </message>
         <message>
             <source>Low-End Turbo</source>
-            <translation>Low-End Turbo</translation>
+            <translation>低スペック高速化</translation>
         </message>
         <message>
             <source>Thermal Governor</source>
-            <translation>Thermal Governor</translation>
+            <translation>温度ガバナー</translation>
         </message>
         <message>
             <source>Raises the clock the emulated CPU reports, which removes some FPS limiters.
 Weaker CPUs may see reduced performance, and certain games may behave improperly.</source>
-            <translation>Raises the clock the emulated CPU reports, which removes some FPS limiters.
-Weaker CPUs may see reduced performance, and certain games may behave improperly.</translation>
+            <translation>에뮬레이션된 CPU가 보고하는 클럭을 높여 일부 FPS 제한을 해제합니다.
+저사양 CPU에서는 성능이 저하되거나 일부 게임이 오작동할 수 있습니다.</translation>
         </message>
         <message>
             <source>Makes the game believe GPU work finishes faster than it does, so it stops lowering resolution and render distance to fit the Switch's clocks.</source>
-            <translation>Makes the game believe GPU work finishes faster than it does, so it stops lowering resolution and render distance to fit the Switch's clocks.</translation>
+            <translation>GPU の処理が実際よりも速く完了したとゲームに認識させ、動的解像度や描画距離の低下を防ぎます。</translation>
         </message>
         <message>
             <source>Pins emulation threads to physical performance cores.</source>
-            <translation>Pins emulation threads to physical performance cores.</translation>
+            <translation>エミュレーションスレッドを物理的な高性能コアに固定します。</translation>
         </message>
         <message>
             <source>Reduces power draw and frame stuttering with adaptive delivery.</source>
-            <translation>Reduces power draw and frame stuttering with adaptive delivery.</translation>
+            <translation>適応型フレーム配信により消費電力を抑え、画面のカクつきを低減します。</translation>
         </message>
         <message>
             <source>Locks dynamic resolution scale to prevent resolution drops.</source>
-            <translation>Locks dynamic resolution scale to prevent resolution drops.</translation>
+            <translation>動的解像度スケーリングを固定し、解像度の低下を防止します。</translation>
         </message>
         <message>
             <source>Dynamically regulates priority of background shader compilation threads to prevent microstutters.</source>
-            <translation>Dynamically regulates priority of background shader compilation threads to prevent microstutters.</translation>
+            <translation>バックグラウンドのシェーダーコンパイルスレッドの優先度を動的に調整し、マイクロスタッターを防ぎます。</translation>
         </message>
         <message>
             <source>Periodic background collection of unused texture buffers and ASTC cache to prevent VRAM leaks.</source>
-            <translation>Periodic background collection of unused texture buffers and ASTC cache to prevent VRAM leaks.</translation>
+            <translation>未使用のテクスチャバッファと ASTC キャッシュをバックグラウンドで定期解放し、VRAM リークを防ぎます。</translation>
         </message>
         <message>
             <source>Prevents out-of-memory crashes by unloading textures when VRAM exceeds 85%.</source>
-            <translation>Prevents out-of-memory crashes by unloading textures when VRAM exceeds 85%.</translation>
+            <translation>VRAM の使用率が85%を超えた際に非アクティブなテクスチャをアンロードし、メモリ不足によるクラッシュを防ぎます。</translation>
         </message>
         <message>
             <source>Maximizes smoothness on entry-level multi-core processors and weak GPUs.</source>
-            <translation>Maximizes smoothness on entry-level multi-core processors and weak GPUs.</translation>
+            <translation>エントリー向けマルチコア CPU や低スペック GPU での滑らかさを最大化します。</translation>
         </message>
         <message>
             <source>Reduces CPU and GPU temperatures by 10-15°C during frame wait intervals without dropping target frame rate.</source>
@@ -2727,163 +2727,163 @@ Weaker CPUs may see reduced performance, and certain games may behave improperly
         </message>
         <message>
             <source>Locks maximum performance for CPU and GPU, disables aggressive throttling and power saving.</source>
-            <translation>Locks maximum performance for CPU and GPU, disables aggressive throttling and power saving.</translation>
+            <translation>CPU と GPU を最高パフォーマンス状態に固定し、省電力やサーマルスロットリングを無効化します。</translation>
         </message>
         <message>
             <source>Enables HDR10 (BT.2020 PQ / ST2084) color space for compatible HDR and OLED displays.</source>
-            <translation>Enables HDR10 (BT.2020 PQ / ST2084) color space for compatible HDR and OLED displays.</translation>
+            <translation>対応する HDR および OLED ディスプレイ向けに HDR10 (BT.2020 PQ / ST2084) 色空間を有効化します。</translation>
         </message>
         <message>
             <source>Uses 16-bit half precision floating point for frame generation.</source>
-            <translation>Uses 16-bit half precision floating point for frame generation.</translation>
+            <translation>フレーム生成に 16 ビット半精度浮動小数点 (FP16) を使用して高速化します。</translation>
         </message>
         <message>
             <source>Automatically calculates optical flow grid scale for frame generation.</source>
-            <translation>Automatically calculates optical flow grid scale for frame generation.</translation>
+            <translation>フレーム生成用のオプティカルフローグリッドスケールを自動計算します。</translation>
         </message>
         <message>
             <source>Emulates BGR565 color format by software swapping red and blue channels.</source>
-            <translation>Emulates BGR565 color format by software swapping red and blue channels.</translation>
+            <translation>赤と青のチャンネルをソフトウェアで入れ替えることで BGR565 カラーフォーマットを再現します。</translation>
         </message>
         <message>
             <source>Releases synchronization fences earlier to reduce frame presentation latency.</source>
-            <translation>Releases synchronization fences earlier to reduce frame presentation latency.</translation>
+            <translation>同期フェンスを早期に解放し、フレーム表示の遅延を低減します。</translation>
         </message>
         <message>
             <source>Runs optimization passes on compiled SPIR-V shaders.</source>
-            <translation>Runs optimization passes on compiled SPIR-V shaders.</translation>
+            <translation>コンパイルされた SPIR-V シェーダーに対して最適化パスを実行します。</translation>
         </message>
         <message>
             <source>Uses fast monotonic GPU timer queries for frame pacing.</source>
-            <translation>Uses fast monotonic GPU timer queries for frame pacing.</translation>
+            <translation>高速な単調増加 GPU タイマークエリを使用してフレームペーシングを行います。</translation>
         </message>
         <message>
             <source>Skips rendering non-critical frames when emulation falls behind target rate.</source>
-            <translation>Skips rendering non-critical frames when emulation falls behind target rate.</translation>
+            <translation>エミュレーションが目標速度に追いつかない場合、重要度の低いフレームの描画をスキップします。</translation>
         </message>
         <message>
             <source>Reduces power consumption and fan noise on portable devices.</source>
-            <translation>Reduces power consumption and fan noise on portable devices.</translation>
+            <translation>ポータブルデバイスでの消費電力とファンの騒音を抑制します。</translation>
         </message>
         <message>
             <source>Displays floating quick translation overlay button.</source>
-            <translation>Displays floating quick translation overlay button.</translation>
+            <translation>フローティングクイック翻訳ボタンを表示します。</translation>
         </message>
         <message>
             <source>CPU Clocks</source>
-            <translation>CPU Clocks</translation>
+            <translation>CPU クロック</translation>
         </message>
         <message>
             <source>GPU Clocks</source>
-            <translation>GPU Clocks</translation>
+            <translation>GPU クロック</translation>
         </message>
         <message>
             <source>Eco Thermal Mode</source>
-            <translation>Eco Thermal Mode</translation>
+            <translation>エコ熱管理モード</translation>
         </message>
         <message>
             <source>Custom RTC Offset:</source>
-            <translation>Custom RTC Offset:</translation>
+            <translation>RTC オフセット:</translation>
         </message>
         <message>
             <source>Custom RTC Offset</source>
-            <translation>Custom RTC Offset</translation>
+            <translation>RTC オフセット</translation>
         </message>
         <message>
             <source>Custom RTC</source>
-            <translation>Custom RTC</translation>
+            <translation>カスタム RTC 日時</translation>
         </message>
         <message>
             <source>Custom RNG Seed</source>
-            <translation>Custom RNG Seed</translation>
+            <translation>カスタム RNG シード</translation>
         </message>
         <message>
             <source>STORM Tier-2 JIT Compiler</source>
-            <translation>STORM Tier-2 JIT Compiler</translation>
+            <translation>STORM Tier-2 JIT コンパイラ</translation>
         </message>
         <message>
             <source>Enables the zero-overhead STORM Tier-2 instruction pre-optimizer and superblock JIT tuner (canonicalizes ARMv8.3 PAC/BTI hints and accelerates CNTVCT_EL0 counter reads).</source>
-            <translation>Enables the zero-overhead STORM Tier-2 instruction pre-optimizer and superblock JIT tuner (canonicalizes ARMv8.3 PAC/BTI hints and accelerates CNTVCT_EL0 counter reads).</translation>
+            <translation>ゼロオーバーヘッドの STORM Tier-2 命令プリオプティマイザおよびスーパーブロック JIT チューナーを有効にします。</translation>
         </message>
         <message>
             <source>Enable Frame Generation (LSFG)</source>
-            <translation>Enable Frame Generation (LSFG)</translation>
+            <translation>フレーム生成を有効化 (LSFG)</translation>
         </message>
         <message>
             <source>Generates intermediate frames using Lossless Scaling optical flow to double or quadruple FPS.</source>
-            <translation>Generates intermediate frames using Lossless Scaling optical flow to double or quadruple FPS.</translation>
+            <translation>Lossless Scaling オプティカルフローを使用して中間フレームを生成し、FPS を 2〜4 倍に向上させます。</translation>
         </message>
         <message>
             <source>Frame Generation Multiplier:</source>
-            <translation>Frame Generation Multiplier:</translation>
+            <translation>フレーム生成倍率:</translation>
         </message>
         <message>
             <source>Multiplier for generated frames (2x = double FPS, 3x = triple FPS, 4x = quadruple FPS).</source>
-            <translation>Multiplier for generated frames (2x = double FPS, 3x = triple FPS, 4x = quadruple FPS).</translation>
+            <translation>生成フレームの倍率（2x = 2倍 FPS、3x = 3倍 FPS、4x = 4倍 FPS）。</translation>
         </message>
         <message>
             <source>Target Frame Rate (Hz):</source>
-            <translation>Target Frame Rate (Hz):</translation>
+            <translation>目標フレームレート (Hz):</translation>
         </message>
         <message>
             <source>Target output frame rate in Hz for Frame Generation.</source>
-            <translation>Target output frame rate in Hz for Frame Generation.</translation>
+            <translation>フレーム生成の目標出力フレームレート (Hz)。</translation>
         </message>
         <message>
             <source>Optical Flow Scale (%):</source>
-            <translation>Optical Flow Scale (%):</translation>
+            <translation>オプティカルフロースケール (%):</translation>
         </message>
         <message>
             <source>Manual resolution scale percentage for optical flow estimation.</source>
-            <translation>Manual resolution scale percentage for optical flow estimation.</translation>
+            <translation>オプティカルフロー推定の手動解像度スケール（%）。</translation>
         </message>
         <message>
             <source>Frame Queue Depth:</source>
-            <translation>Frame Queue Depth:</translation>
+            <translation>フレームキュー深度:</translation>
         </message>
         <message>
             <source>Number of frames queued for optical flow interpolation.</source>
-            <translation>Number of frames queued for optical flow interpolation.</translation>
+            <translation>オプティカルフロー補間のためにキューイングされるフレーム数。</translation>
         </message>
         <message>
             <source>Debug Optical Flow Vectors</source>
-            <translation>Debug Optical Flow Vectors</translation>
+            <translation>オプティカルフローベクトルのデバッグ表示</translation>
         </message>
         <message>
             <source>Visualizes optical flow motion vectors on screen for debugging.</source>
-            <translation>Visualizes optical flow motion vectors on screen for debugging.</translation>
+            <translation>デバッグ用にオプティカルフローの動きベクトルを画面上に可視化します。</translation>
         </message>
         <message>
             <source>Lock Dynamic Resolution</source>
-            <translation>Lock Dynamic Resolution</translation>
+            <translation>動的解像度ロック</translation>
         </message>
         <message>
             <source>Force Maximum Clocks (PC and Mobile)</source>
-            <translation>Force Maximum Clocks (PC and Mobile)</translation>
+            <translation>最大クロックを強制</translation>
         </message>
         <message>
             <source>Early Release Fences</source>
-            <translation>Early Release Fences</translation>
+            <translation>フェンスの早期解放</translation>
         </message>
         <message>
             <source>Optimize SPIR-V Output</source>
-            <translation>Optimize SPIR-V Output</translation>
+            <translation>SPIR-V 出力を最適化</translation>
         </message>
         <message>
             <source>Enable Frame Skipping</source>
-            <translation>Enable Frame Skipping</translation>
+            <translation>フレームスキップを有効化</translation>
         </message>
         <message>
             <source>Enable HDR10</source>
-            <translation>Enable HDR10</translation>
+            <translation>HDR10 を有効化</translation>
         </message>
         <message>
             <source>VRAM Budget Governor</source>
-            <translation>VRAM Budget Governor</translation>
+            <translation>VRAM 予算ガバナー</translation>
         </message>
         <message>
             <source>Floating Translate Button</source>
-            <translation>Floating Translate Button</translation>
+            <translation>フローティング翻訳ボタン</translation>
         </message>
         <message>
             <source>Normal</source>
@@ -2891,83 +2891,83 @@ Weaker CPUs may see reduced performance, and certain games may behave improperly
         </message>
         <message>
             <source>Boost</source>
-            <translation>Boost</translation>
+            <translation>ブースト</translation>
         </message>
         <message>
             <source>Overclock</source>
-            <translation>Overclock</translation>
+            <translation>オーバークロック</translation>
         </message>
         <message>
             <source>BC5 (High quality)</source>
-            <translation>BC5 (High quality)</translation>
+            <translation>BC5 (高品質)</translation>
         </message>
         <message>
             <source>Hybrid Video Decoding</source>
-            <translation>Hybrid Video Decoding</translation>
+            <translation>ハイブリッド</translation>
         </message>
         <message>
             <source>Hybrid</source>
-            <translation>Hybrid</translation>
+            <translation>ハイブリッド</translation>
         </message>
         <message>
             <source>Carousel View</source>
-            <translation>Carousel View</translation>
+            <translation>カルーセル表示</translation>
         </message>
         <message>
             <source>Force 32:9 (Super UltraWide)</source>
-            <translation>Force 32:9 (Super UltraWide)</translation>
+            <translation>強制 32:9</translation>
         </message>
         <message>
             <source>Force 1:1 (Square)</source>
-            <translation>Force 1:1 (Square)</translation>
+            <translation>強制 1:1</translation>
         </message>
         <message>
             <source>Force 3:2 (Portable / Surface)</source>
-            <translation>Force 3:2 (Portable / Surface)</translation>
+            <translation>強制 3:2</translation>
         </message>
         <message>
             <source>Force 5:4 (SXGA)</source>
-            <translation>Force 5:4 (SXGA)</translation>
+            <translation>強制 5:4</translation>
         </message>
         <message>
             <source>Force 18:9 (2:1 Univisium)</source>
-            <translation>Force 18:9 (2:1 Univisium)</translation>
+            <translation>強制 18:9</translation>
         </message>
         <message>
             <source>Force 19.5:9 (Modern Mobile)</source>
-            <translation>Force 19.5:9 (Modern Mobile)</translation>
+            <translation>強制 19.5:9</translation>
         </message>
         <message>
             <source>Force 20:9 (Cinema Mobile)</source>
-            <translation>Force 20:9 (Cinema Mobile)</translation>
+            <translation>強制 20:9</translation>
         </message>
         <message>
             <source>Force 21:10 (Wide 16:10)</source>
-            <translation>Force 21:10 (Wide 16:10)</translation>
+            <translation>強制 21:10</translation>
         </message>
         <message>
             <source>Force 24:10 (3840x1600 UltraWide+)</source>
-            <translation>Force 24:10 (3840x1600 UltraWide+)</translation>
+            <translation>強制 24:10</translation>
         </message>
         <message>
             <source>Force 32:10 (Super UltraWide 16:10)</source>
-            <translation>Force 32:10 (Super UltraWide 16:10)</translation>
+            <translation>強制 32:10</translation>
         </message>
         <message>
             <source>Force 48:9 (Triple Monitor 3x16:9)</source>
-            <translation>Force 48:9 (Triple Monitor 3x16:9)</translation>
+            <translation>強制 48:9</translation>
         </message>
         <message>
             <source>Auto Window Aspect (True 3D Fit)</source>
-            <translation>Auto Window Aspect (True 3D Fit)</translation>
+            <translation>ウィンドウ比率に自動調整 (3D)</translation>
         </message>
         <message>
             <source>Auto-Patch 3D Aspect Ratio (No Stretch)</source>
-            <translation>Auto-Patch 3D Aspect Ratio (No Stretch)</translation>
+            <translation>3Dアスペクト比自動パッチ</translation>
         </message>
         <message>
             <source>Auto-Unlock 60/120 FPS</source>
-            <translation>Auto-Unlock 60/120 FPS</translation>
+            <translation>60/120 FPS 自動ロック解除</translation>
         </message>
         <message>
             <source>Portuguese (Português)</source>
@@ -2979,31 +2979,30 @@ Weaker CPUs may see reduced performance, and certain games may behave improperly
         </message>
         <message>
             <source>Brazilian Portuguese</source>
-            <translation>Brazilian Portuguese</translation>
+            <translation>ブラジルポルトガル語</translation>
         </message>
         <message>
             <source>Dynamic performance scaler</source>
-            <translation>Dynamic performance scaler</translation>
+            <translation>動的パフォーマンススケーラー</translation>
         </message>
         <message>
             <source>Automatically adjusts rendering resolution to maintain the target frame rate. When frames take too long, resolution steps down; when frames are fast, it recovers. Inspired by Atmosphere's dynamic resolution system.</source>
-            <translation>Automatically adjusts rendering resolution to maintain the target frame rate. When frames take too long, resolution steps down; when frames are fast, it recovers. Inspired by Atmosphere's dynamic resolution system.</translation>
+            <translation>ターゲットフレームレートを維持するために描画解像度を自動的に調整します。負荷が高い時は解像度を下げ、余裕がある時は復元します。</translation>
         </message>
         <message>
             <source>Automatically patches 3D camera frustum constants in game executables to match the selected aspect ratio (4:3, 16:10, 18:9, 21:9, 32:9, 48:9, etc.) without stretching 3D geometry.</source>
-            <translation>Automatically patches 3D camera frustum constants in game executables to match the selected aspect ratio (4:3, 16:10, 18:9, 21:9, 32:9, 48:9, etc.) without stretching 3D geometry.</translation>
+            <translation>選択したアスペクト比（4:3、16:10、18:9、21:9、32:9、48:9 など）に合わせてゲーム実行ファイル内の 3D カメラ定数を自動パッチし、3D ジオメトリの引き伸ばしを防ぎます。</translation>
         </message>
         <message>
             <source>Automatically unlocks 30 FPS VSync/swap-interval caps to allow 60/120 FPS rendering.</source>
-            <translation>Automatically unlocks 30 FPS VSync/swap-interval caps to allow 60/120 FPS rendering.</translation>
+            <translation>30 FPS の垂直同期（スワップ間隔）制限を自動解除し、60/120 FPS での描画を可能にします。</translation>
         </message>
         <message>
             <source>Selects the scaling filter used when adapting the rendered image to the window size.
 Bilinear and Bicubic are standard filters.
 AMD FidelityFX Super Resolution (FSR) and Qualcomm SGSR provide sharp upscaling.</source>
-            <translation>Selects the scaling filter used when adapting the rendered image to the window size.
-Bilinear and Bicubic are standard filters.
-AMD FidelityFX Super Resolution (FSR) and Qualcomm SGSR provide sharp upscaling.</translation>
+            <translation>렌더링된 이미지를 창 크기에 맞출 때 사용할 스케일링 필터를 선택합니다.
+쌍선형 및 쌍삼차는 표준 필터이며, AMD FSR과 Qualcomm SGSR은 선명한 업스케일링을 제공합니다.</translation>
         </message>
         <message>
             <source>The GPU Accuracy Level to use.
@@ -3043,7 +3042,7 @@ Required by some games for proper physics or rendering effects, but significantl
         </message>
         <message>
             <source>Polish (polski)</source>
-            <translation>Polish (polski)</translation>
+            <translation>ポーランド語 (polski)</translation>
         </message>
         <message>
             <source>Celsius (°C)</source>
@@ -3055,7 +3054,7 @@ Required by some games for proper physics or rendering effects, but significantl
         </message>
         <message>
             <source>Errors Only</source>
-            <translation>Errors Only</translation>
+            <translation>エラーのみ</translation>
         </message>
         <message>
             <source>Standard</source>
@@ -3113,7 +3112,7 @@ Required by some games for proper physics or rendering effects, but significantl
         </message>
         <message>
             <source>Cabinet</source>
-            <translation>Cabinet</translation>
+            <translation>캐비닛</translation>
         </message>
     </context>
     <context>
@@ -3449,11 +3448,11 @@ Required by some games for proper physics or rendering effects, but significantl
         </message>
         <message>
             <source>CPU Optimizations</source>
-            <translation>CPU Optimizations</translation>
+            <translation>CPU 最適化</translation>
         </message>
         <message>
             <source>CPU settings are only available when a game is not running.</source>
-            <translation>CPU settings are only available when a game is not running.</translation>
+            <translation>CPU 設定はゲームが実行されていない場合のみ利用可能です。</translation>
         </message>
     </context>
     <context>
@@ -3796,7 +3795,7 @@ Required by some games for proper physics or rendering effects, but significantl
         </message>
         <message>
             <source>(bitmask)</source>
-            <translation>(bitmask)</translation>
+            <translation>(비트마스크)</translation>
         </message>
     </context>
     <context>
@@ -4321,7 +4320,7 @@ Would you like to delete the old save data?</source>
         </message>
         <message>
             <source>API:</source>
-            <translation>API:</translation>
+            <translation>그래픽 API:</translation>
         </message>
         <message>
             <source>API</source>
@@ -4405,7 +4404,7 @@ Would you like to delete the old save data?</source>
         </message>
         <message>
             <source>Eco Frame Pacing</source>
-            <translation>Eco Frame Pacing</translation>
+            <translation>エコフレームペーシング</translation>
         </message>
         <message>
             <source>Выравнивание кадров</source>
@@ -4459,7 +4458,7 @@ Would you like to delete the old save data?</source>
         </message>
         <message>
             <source>VRAM Usage Mode</source>
-            <translation>VRAM Usage Mode</translation>
+            <translation>VRAM 사용 모드</translation>
         </message>
         <message>
             <source>Использование VRAM</source>
@@ -4475,7 +4474,7 @@ Would you like to delete the old save data?</source>
         </message>
         <message>
             <source>ASTC Decoding Method</source>
-            <translation>ASTC Decoding Method</translation>
+            <translation>ASTC 디코딩 방법</translation>
         </message>
         <message>
             <source>Декодирование ASTC</source>
@@ -4583,7 +4582,7 @@ Would you like to delete the old save data?</source>
         </message>
         <message>
             <source>Smart Shader Throttle</source>
-            <translation>Smart Shader Throttle</translation>
+            <translation>スマートシェーダースロットル</translation>
         </message>
         <message>
             <source>Троттлинг шейдеров</source>
@@ -4599,7 +4598,7 @@ Would you like to delete the old save data?</source>
         </message>
         <message>
             <source>Vulkan Pipeline Cache</source>
-            <translation>Vulkan Pipeline Cache</translation>
+            <translation>Vulkan 파이프라인 캐시</translation>
         </message>
         <message>
             <source>Кэш Vulkan</source>
@@ -4611,7 +4610,7 @@ Would you like to delete the old save data?</source>
         </message>
         <message>
             <source>VRAM Garbage Collection</source>
-            <translation>VRAM Garbage Collection</translation>
+            <translation>VRAM ガベージコレクション</translation>
         </message>
         <message>
             <source>Сборка мусора VRAM</source>
@@ -4666,11 +4665,11 @@ Would you like to delete the old save data?</source>
         </message>
         <message>
             <source>Extensions</source>
-            <translation>Extensions</translation>
+            <translation>拡張機能</translation>
         </message>
         <message>
             <source>Modifying these settings can cause problems. For advanced users only!</source>
-            <translation>Modifying these settings can cause problems. For advanced users only!</translation>
+            <translation>これらの設定を変更すると問題が発生する可能性があります。上級ユーザー専用です！</translation>
         </message>
     </context>
     <context>
@@ -5096,11 +5095,11 @@ Would you like to delete the old save data?</source>
         </message>
         <message>
             <source>Disable SDL WGI/XInput (restart required)</source>
-            <translation>Disable SDL WGI/XInput (restart required)</translation>
+            <translation>SDL WGI/XInput を無効化 (再起動が必要)</translation>
         </message>
         <message>
             <source>Disables SDL WGI and XInput controller drivers. Prevents trigger conflicts, vibration issues, and synthetic Home button presses. Emulator restart required.</source>
-            <translation>Disables SDL WGI and XInput controller drivers. Prevents trigger conflicts, vibration issues, and synthetic Home button presses. Emulator restart required.</translation>
+            <translation>SDL WGI および XInput コントローラー ドライバーを無効化します。トリガーの競合、振動の問題、予期しない Home ボタンの押下を防ぎます。エミュレータの再起動が必要です。</translation>
         </message>
     </context>
     <context>
@@ -5948,11 +5947,11 @@ Current values are %1% and %2% respectively.</source>
         </message>
         <message>
             <source>GameBanana Mods</source>
-            <translation>GameBanana Mods</translation>
+            <translation>GameBanana Mod</translation>
         </message>
         <message>
             <source>Cheats</source>
-            <translation>Cheats</translation>
+            <translation>チート</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="79" />
@@ -6908,7 +6907,7 @@ Drag points to change position, or double-click table cells to edit values.</sou
         </message>
         <message>
             <source>Screenshots Path:</source>
-            <translation>Screenshots Path:</translation>
+            <translation>스크린샷 경로:</translation>
         </message>
     </context>
     <context>
@@ -7051,11 +7050,11 @@ Drag points to change position, or double-click table cells to edit values.</sou
         </message>
         <message>
             <source>Token:</source>
-            <translation>Token:</translation>
+            <translation>토큰:</translation>
         </message>
         <message>
             <source>Username:</source>
-            <translation>Username:</translation>
+            <translation>유저 이름:</translation>
         </message>
     </context>
     <context>
@@ -9512,7 +9511,7 @@ Would you like to bypass this and exit anyway?</source>
         </message>
         <message>
             <source>Check for Updates...</source>
-            <translation>Check for Updates...</translation>
+            <translation>アップデートを確認...</translation>
         </message>
         <message>
             <source>Проверить обновления</source>
@@ -9548,7 +9547,7 @@ Would you like to bypass this and exit anyway?</source>
         </message>
         <message>
             <source>Cabinet</source>
-            <translation>Cabinet</translation>
+            <translation>캐비닛</translation>
         </message>
         <message>
             <source>Папка NAND</source>
@@ -9572,7 +9571,7 @@ Would you like to bypass this and exit anyway?</source>
         </message>
         <message>
             <source>Install Files to NAND...</source>
-            <translation>Install Files to NAND...</translation>
+            <translation>NAND にファイルをインストール...</translation>
         </message>
         <message>
             <source>&amp;Install Files to NAND</source>
@@ -10058,13 +10057,6 @@ p, li { white-space: pre-wrap; }
             <translation>이전 디렉터리 연결</translation>
         </message>
         <message>
-            <location filename="../../src/yuzu/user_data_migration.cpp" line="98" />
-            <source>
-      </source>
-            <translation>
-      </translation>
-        </message>
-        <message>
             <location filename="../../src/yuzu/user_data_migration.cpp" line="102" />
             <source>No</source>
             <translation>아니요</translation>
@@ -10184,7 +10176,7 @@ p, li { white-space: pre-wrap; }
         <message>
             <location filename="../../src/yuzu/configuration/configure_ringcon.cpp" line="72" />
             <source>Start</source>
-            <translation>Start</translation>
+            <translation>시작</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_ringcon.cpp" line="74" />
@@ -12065,7 +12057,7 @@ Error code: %3</source>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>기본값으로 복원</translation>
         </message>
         </context>
     <context>
@@ -12212,7 +12204,7 @@ Error code: %3</source>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>기본값으로 복원</translation>
         </message>
         </context>
     <context>
@@ -12359,7 +12351,7 @@ Error code: %3</source>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>기본값으로 복원</translation>
         </message>
         </context>
     <context>
@@ -12506,7 +12498,7 @@ Error code: %3</source>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>기본값으로 복원</translation>
         </message>
         </context>
     <context>
@@ -12653,7 +12645,7 @@ Error code: %3</source>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>기본값으로 복원</translation>
         </message>
     </context>
     <context>
@@ -12800,7 +12792,7 @@ Error code: %3</source>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>기본값으로 복원</translation>
         </message>
     </context>
     <context>
@@ -12947,7 +12939,7 @@ Error code: %3</source>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>기본값으로 복원</translation>
         </message>
     </context>
     <context>
@@ -13094,7 +13086,7 @@ Error code: %3</source>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>기본값으로 복원</translation>
         </message>
     </context>
     <context>

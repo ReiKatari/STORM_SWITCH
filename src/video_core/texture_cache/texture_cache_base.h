@@ -90,8 +90,10 @@ public:
     std::unordered_map<TICEntry, ImageViewId> image_views;
     std::unordered_map<TSCEntry, SamplerId> samplers;
 
-    ankerl::unordered_dense::map<u32, SamplerId> sampler_ids;
-    ankerl::unordered_dense::map<u32, ImageViewId> image_view_ids;
+    std::vector<SamplerId> graphics_sampler_ids;
+    std::vector<SamplerId> compute_sampler_ids;
+    std::vector<ImageViewId> graphics_image_view_ids;
+    std::vector<ImageViewId> compute_image_view_ids;
 
     TextureCacheGPUMap* gpu_page_table = nullptr;
     TextureCacheGPUMap* sparse_page_table = nullptr;
@@ -428,6 +430,7 @@ private:
     [[nodiscard]] std::pair<u32, u32> PrepareDmaImage(ImageId dst_id, GPUVAddr base_addr,
                                                       bool mark_as_modified);
 
+    void HandleLiveResolutionChange();
     bool ImageCanRescale(ImageBase& image);
     void InvalidateScale(Image& image);
     bool ScaleUp(Image& image);
@@ -529,6 +532,8 @@ private:
 
     u64 modification_tick = 0;
     u64 frame_tick = 0;
+    u32 last_res_up_scale = Settings::values.resolution_info.up_scale;
+    u32 last_res_down_shift = Settings::values.resolution_info.down_shift;
 
     Common::ThreadWorker texture_decode_worker{
         std::clamp<size_t>(static_cast<size_t>(std::thread::hardware_concurrency() > 2 ? std::thread::hardware_concurrency() - 2 : 4), size_t{4}, size_t{8}),

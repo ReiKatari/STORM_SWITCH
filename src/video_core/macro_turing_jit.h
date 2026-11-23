@@ -53,6 +53,10 @@ public:
         bool (*emit)(State*, Word method, Word value);
         Word (*read)(State*, Word address);
         const std::vector<Word>* fifo;
+        const Word* gpu_regs;
+        Word* shadow_regs;
+        const std::uint8_t* fast_skip_mask;
+        const Word* shadow_control;
     };
 
     enum Error : Word {
@@ -102,6 +106,15 @@ public:
     template <typename Read, typename Emit>
     Result Execute(Word start, std::vector<Word>& parameters, std::span<Word> data_ram, Read read,
                    Emit emit) {
+        return Execute(start, std::span<const Word>{parameters}, parameters, data_ram, nullptr,
+                       nullptr, nullptr, nullptr, std::move(read), std::move(emit));
+    }
+
+    template <typename Read, typename Emit>
+    Result Execute(Word start, std::span<const Word> parameters, std::vector<Word>& fifo_backing,
+                   std::span<Word> data_ram, const Word* gpu_regs, Word* shadow_regs,
+                   const std::uint8_t* fast_skip_mask, const Word* shadow_control, Read read,
+                   Emit emit) {
         State state;
         state.regs.fill(0);
         state.carry = state.method = state.increment = 0;
@@ -114,7 +127,11 @@ public:
         state.params = parameters.data();
         state.params_size = static_cast<Word>(parameters.size());
         state.dram = data_ram.data();
-        state.fifo = &parameters;
+        state.fifo = &fifo_backing;
+        state.gpu_regs = gpu_regs;
+        state.shadow_regs = shadow_regs;
+        state.fast_skip_mask = fast_skip_mask;
+        state.shadow_control = shadow_control;
         Thunks<Read, Emit> thunks{read, emit};
         state.user = &thunks;
         state.emit = &Thunks<Read, Emit>::CallEmit;
@@ -133,9 +150,11 @@ private:
         Emit& emit;
         static bool CallEmit(State* state, Word method, Word value) {
             const bool ok = static_cast<Thunks*>(state->user)->emit(method, value);
-            // MME_DMA_READ_FIFOED appends to the FIFO from inside the emit.
-            state->params = state->fifo->data();
-            state->params_size = static_cast<Word>(state->fifo->size());
+            // Only MME_DMA_READ_FIFOED (0x158) appends to the FIFO from inside the emit.
+            if (method == 0x158) [[unlikely]] {
+                state->params = state->fifo->data();
+                state->params_size = static_cast<Word>(state->fifo->size());
+            }
             return ok;
         }
         static Word CallRead(State* state, Word address) {
@@ -391,12 +410,38 @@ private:
                 }
                 if (d.out_emit[lane]) {
                     Output(eax, d, d.out_emit[lane]);
+                    mov(ecx, dword[st + offsetof(State, method)]);
+                    Xbyak::Label slow_emit, emit_done;
+                    mov(r9, ptr[st + offsetof(State, fast_skip_mask)]);
+                    test(r9, r9);
+                    jz(slow_emit);
+                    cmp(ecx, 0xe00);
+                    jae(slow_emit);
+                    cmp(byte[r9 + rcx], 0);
+                    je(slow_emit);
+                    mov(r10, ptr[st + offsetof(State, shadow_control)]);
+                    mov(edx, dword[r10]);
+                    cmp(edx, 3); // ShadowRamControl::Replay
+                    je(slow_emit);
+                    mov(r10, ptr[st + offsetof(State, gpu_regs)]);
+                    cmp(dword[r10 + rcx * 4], eax);
+                    jne(slow_emit);
+                    // Value matches regs[ecx]; keep shadow_state in sync unless Passthrough (2)
+                    cmp(edx, 2);
+                    je(emit_done);
+                    mov(r10, ptr[st + offsetof(State, shadow_regs)]);
+                    mov(dword[r10 + rcx * 4], eax);
+                    jmp(emit_done);
+
+                    L(slow_emit);
                     mov(arg2.cvt32(), eax);
-                    mov(arg1.cvt32(), dword[st + offsetof(State, method)]);
+                    mov(arg1.cvt32(), ecx);
                     mov(arg0, st);
                     call(ptr[st + offsetof(State, emit)]);
                     test(al, al);
                     jz(fail_emit, T_NEAR);
+
+                    L(emit_done);
                     mov(eax, dword[st + offsetof(State, increment)]);
                     add(dword[st + offsetof(State, method)], eax);
                 }
@@ -581,13 +626,24 @@ private:
                 Compare(op);
                 neg(eax);
                 return;
-            case 22:
+            case 22: {
                 lea(eax, ptr[rcx + rdx]);
                 and_(eax, 0xffff);
+                Xbyak::Label slow_read, read_done;
+                mov(r10, ptr[st + offsetof(State, gpu_regs)]);
+                test(r10, r10);
+                jz(slow_read);
+                cmp(eax, 0xe00);
+                jae(slow_read);
+                mov(eax, dword[r10 + rax * 4]);
+                jmp(read_done);
+                L(slow_read);
                 mov(arg1.cvt32(), eax);
                 mov(arg0, st);
                 call(ptr[st + offsetof(State, read)]);
+                L(read_done);
                 return;
+            }
             case 23: {
                 if (imm < 2) {
                     jmp(fail_loop, T_NEAR);

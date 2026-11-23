@@ -64,9 +64,11 @@ public:
             if (!read(request.address, state.descriptor)) return "unmapped QMD";
             const auto qmd = state.descriptor;
             if ((qmd[18] & 0xff) != 0x30 || (qmd[4] & 0x100)) return "unsupported QMD version or queue";
+            // Ampere QMDV03_00 release slots: RELEASE0 at word 24 (0x60), RELEASE1 at word 52 (0xD0).
+            static constexpr std::array<Word, 2> ReleaseSlotBases{24, 52};
             // Validate both release slots before making either visible.
-            for (Word slot = 0; slot < 2; ++slot) {
-                const Word flags = qmd[25 + slot * 4];
+            for (const Word base : ReleaseSlotBases) {
+                const Word flags = qmd[base + 1];
                 if (!(flags & (1U << 23))) continue;
                 const bool add = (flags & (1U << 26)) != 0;
                 if ((flags & (0x3bU << 24)) || (flags >> 30) != 1 ||
@@ -79,15 +81,15 @@ public:
             if (qmd[12] && (qmd[13] & 0xffff) && (qmd[14] & 0xffff) && !dispatch(qmd))
                 return "native shader dispatch required";
             state.completed = true;
-            for (Word slot = 0; slot < 2; ++slot) {
-                const Word flags = qmd[25 + slot * 4];
+            for (const Word base : ReleaseSlotBases) {
+                const Word flags = qmd[base + 1];
                 if (!(flags & (1U << 23))) continue;
-                const Address destination = (Address{flags & 0x1ffff} << 32) | qmd[24 + slot * 4];
+                const Address destination = (Address{flags & 0x1ffff} << 32) | qmd[base];
                 bool released{};
                 if constexpr (std::is_invocable_r_v<bool, Release, Address, Word, Word>) {
-                    released = release(destination, qmd[26 + slot * 4], flags);
+                    released = release(destination, qmd[base + 2], flags);
                 } else {
-                    released = release(destination, qmd[26 + slot * 4]);
+                    released = release(destination, qmd[base + 2]);
                 }
                 if (!released) return "unmapped QMD release";
             }

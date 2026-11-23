@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="storm_prof_title">設定プロファイル</string>
+    <string name="storm_prof_filter_all">すべて</string>
+    <string name="storm_prof_btn_save">保存</string>
+    <string name="storm_prof_btn_import">インポート</string>
+    <string name="storm_prof_btn_apply">適用</string>
+    <string name="storm_prof_btn_share">共有</string>
+    <string name="storm_prof_btn_rename">リネーム</string>
+    <string name="storm_prof_btn_delete">削除</string>
+    <string name="storm_prof_preset_balanced_name">バランス（推奨）</string>
+    <string name="storm_prof_save_hint">プロファイル名</string>
+    <string name="storm_prof_save_btn">保存</string>
+    <string name="storm_prof_rename_title">プロファイルのリネーム</string>
+    <string name="storm_prof_delete_title">プロファイルの削除</string>
+    <string name="storm_auto_btn_reset">リセット</string>
+    <string name="storm_auto_hw_soc_title">プロセッサ / SoC</string>
+    <string name="storm_auto_param_resolution">解像度スケール</string>
+    <string name="storm_auto_param_cpu_backend">CPUバックエンド</string>
+    <string name="storm_auto_btn_apply">最適化を適用</string>
+</resources>

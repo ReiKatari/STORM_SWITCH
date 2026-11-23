@@ -291,11 +291,14 @@ bool Scheduler::UpdateGraphicsPipeline(GraphicsPipeline* pipeline) {
 }
 
 bool Scheduler::UpdateRescaling(bool is_rescaling) {
-    if (state.rescaling_defined && is_rescaling == state.is_rescaling) {
+    const f32 cur_down_factor = Settings::values.resolution_info.down_factor;
+    if (state.rescaling_defined && is_rescaling == state.is_rescaling &&
+        (!is_rescaling || cur_down_factor == state.rescaling_down_factor)) {
         return false;
     }
     state.rescaling_defined = true;
     state.is_rescaling = is_rescaling;
+    state.rescaling_down_factor = cur_down_factor;
     return true;
 }
 
@@ -306,6 +309,66 @@ bool Scheduler::UpdateDescriptorBufferChunk(u32 descriptor_chunk) {
     state.descriptor_buffer_bound = true;
     state.descriptor_buffer_chunk = descriptor_chunk;
     return true;
+}
+
+bool Scheduler::UpdateIndexBuffer(VkBuffer buffer, VkDeviceSize offset, VkIndexType type) noexcept {
+    if (state.index_buffer == buffer && state.index_offset == offset && state.index_type == type) {
+        return false;
+    }
+    state.index_buffer = buffer;
+    state.index_offset = offset;
+    state.index_type = type;
+    return true;
+}
+
+void Scheduler::InvalidateIndexBuffer() noexcept {
+    state.index_buffer = VK_NULL_HANDLE;
+    state.index_type = VK_INDEX_TYPE_MAX_ENUM;
+}
+
+bool Scheduler::UpdateVertexBuffer(u32 index, VkBuffer buffer, VkDeviceSize offset,
+                                   VkDeviceSize size, VkDeviceSize stride) noexcept {
+    if (index >= state.vertex_buffers.size()) {
+        return true;
+    }
+    const u32 bit = 1u << index;
+    if ((state.vertex_buffer_valid_mask & bit) != 0 && state.vertex_buffers[index] == buffer &&
+        state.vertex_offsets[index] == offset && state.vertex_sizes[index] == size &&
+        state.vertex_strides[index] == stride) {
+        return false;
+    }
+    state.vertex_buffer_valid_mask |= bit;
+    state.vertex_buffers[index] = buffer;
+    state.vertex_offsets[index] = offset;
+    state.vertex_sizes[index] = size;
+    state.vertex_strides[index] = stride;
+    return true;
+}
+
+bool Scheduler::UpdateVertexBuffers(u32 min_binding, u32 count, const VkBuffer* buffers,
+                                    const VkDeviceSize* offsets, const VkDeviceSize* sizes,
+                                    const VkDeviceSize* strides) noexcept {
+    if (min_binding + count > state.vertex_buffers.size()) {
+        return true;
+    }
+    bool changed = false;
+    for (u32 i = 0; i < count; ++i) {
+        const u32 slot = min_binding + i;
+        const u32 bit = 1u << slot;
+        if ((state.vertex_buffer_valid_mask & bit) == 0 ||
+            state.vertex_buffers[slot] != buffers[i] ||
+            state.vertex_offsets[slot] != offsets[i] ||
+            state.vertex_sizes[slot] != sizes[i] ||
+            state.vertex_strides[slot] != strides[i]) {
+            state.vertex_buffer_valid_mask |= bit;
+            state.vertex_buffers[slot] = buffers[i];
+            state.vertex_offsets[slot] = offsets[i];
+            state.vertex_sizes[slot] = sizes[i];
+            state.vertex_strides[slot] = strides[i];
+            changed = true;
+        }
+    }
+    return changed;
 }
 
 void Scheduler::WorkerThread(std::stop_token stop_token) {
@@ -463,6 +526,9 @@ void Scheduler::InvalidateState() {
     state.rescaling_defined = false;
     state.descriptor_buffer_bound = false;
     state.has_xfb = false;
+    state.index_buffer = VK_NULL_HANDLE;
+    state.index_type = VK_INDEX_TYPE_MAX_ENUM;
+    state.vertex_buffer_valid_mask = 0;
     state_tracker.InvalidateCommandBufferState();
 }
 
@@ -560,6 +626,9 @@ void Scheduler::EndRenderPass()
 
         state.renderpass = VkRenderPass{};
         num_renderpass_images = 0;
+        if (on_end_renderpass) {
+            on_end_renderpass();
+        }
     }
 
 

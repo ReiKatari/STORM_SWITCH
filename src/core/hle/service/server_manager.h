@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <list>
 #include <mutex>
 #include <optional>
@@ -47,6 +48,13 @@ public:
                            SessionRequestHandlerFactory&& handler_factory, u32 max_sessions = 64);
     Result ManageDeferral(Kernel::KEvent** out_event);
 
+    void MarkWillLoop() noexcept {
+        m_will_loop.store(true, std::memory_order_release);
+    }
+    void RequestStop();
+    const std::string& DebugName() const noexcept {
+        return m_debug_name;
+    }
     Result LoopProcess();
     void StartAdditionalHostThreads(const char* name, size_t num_threads);
 
@@ -89,6 +97,8 @@ private:
     std::optional<MultiWaitHolder> m_deferral_holder{};
 
     // Host state tracking
+    std::string m_debug_name{};
+    std::atomic<bool> m_will_loop{false};
     Common::Event m_stopped{};
     std::vector<std::jthread> m_threads{};
     std::stop_source m_stop_source{};

@@ -145,7 +145,7 @@ void CheatsDialog::SetupGameHeader(QWidget* parent_widget) {
         "  padding: 10px 14px;"
         "  margin: 0px;"
         "}"
-    ).arg(pal.card, pal.border));
+    ).arg(pal.card));
 
     auto* header_layout = new QVBoxLayout(header_card);
     header_layout->setContentsMargins(10, 8, 10, 8);
@@ -171,7 +171,7 @@ void CheatsDialog::SetupGameHeader(QWidget* parent_widget) {
         "padding: 4px 12px;"
         "font-size: 9pt;"
         "font-weight: 700;"
-    ).arg(pal.surface, pal.accent, pal.accent));
+    ).arg(pal.surface, pal.accent));
     top_row->addWidget(m_counter_pill, 0, Qt::AlignRight | Qt::AlignVCenter);
     header_layout->addLayout(top_row);
 
@@ -192,12 +192,15 @@ void CheatsDialog::SetupGameHeader(QWidget* parent_widget) {
         "padding: 3px 8px;"
         "font-family: monospace;"
         "font-size: 9pt;"
-    ).arg(pal.inputBg, pal.textSecondary, pal.border));
+    ).arg(pal.inputBg, pal.textSecondary));
     sub_row->addWidget(tid_lbl);
 
+    const QString bid_display = m_build_id_str.isEmpty()
+        ? StormLang(QStringLiteral("Не определён (запустите игру)"), QStringLiteral("Unknown (launch game)"))
+        : m_build_id_str;
     auto* bid_lbl = new QLabel(StormLang(
-        QStringLiteral("Build ID: %1").arg(m_build_id_str),
-        QStringLiteral("Build ID: %1").arg(m_build_id_str)
+        QStringLiteral("Build ID: %1").arg(bid_display),
+        QStringLiteral("Build ID: %1").arg(bid_display)
     ), header_card);
     bid_lbl->setStyleSheet(QStringLiteral(
         "background-color: %1;"
@@ -208,13 +211,14 @@ void CheatsDialog::SetupGameHeader(QWidget* parent_widget) {
         "font-family: monospace;"
         "font-size: 9pt;"
         "font-weight: 600;"
-    ).arg(pal.inputBg, pal.accent, pal.border));
+    ).arg(pal.inputBg, m_build_id_str.isEmpty() ? pal.textSecondary : pal.accent));
     sub_row->addWidget(bid_lbl);
 
     m_copy_bid_btn = new QPushButton(StormLang(
         QStringLiteral("Копировать Build ID"),
         QStringLiteral("Copy Build ID")
     ), header_card);
+    m_copy_bid_btn->setEnabled(!m_build_id_str.isEmpty());
     m_copy_bid_btn->setIcon(MakeVectorIcon(VectorIcon::Copy, QColor(pal.accent)));
     m_copy_bid_btn->setStyleSheet(QStringLiteral(
         "QPushButton {"

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="storm_prof_filter_all">الكل</string>
+    <string name="storm_prof_btn_save">حفظ</string>
+    <string name="storm_prof_btn_import">استيراد</string>
+    <string name="storm_prof_btn_apply">تفعيل</string>
+    <string name="storm_prof_btn_rename">إعادة تسمية</string>
+    <string name="storm_prof_btn_delete">حذف</string>
+    <string name="storm_prof_preset_balanced_name">متوازن (مستحسن)</string>
+    <string name="storm_prof_save_btn">حفظ</string>
+    <string name="storm_prof_rename_title">إعادة تسمية ملف التعريف</string>
+    <string name="storm_prof_delete_title">حذف ملف التعريف</string>
+    <string name="storm_auto_btn_reset">إعادة تعيين</string>
+    <string name="storm_auto_param_cpu_backend">وحدة المعالجة المركزية الخلفية</string>
+</resources>

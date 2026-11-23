@@ -1126,6 +1126,13 @@ abstract class SettingsItem(
                 )
             )
             put(
+                SwitchSetting(
+                    BooleanSetting.USE_DEVICE_SENSORS,
+                    titleId = R.string.storm_use_device_sensors,
+                    descriptionId = R.string.storm_use_device_sensors_desc,
+                )
+            )
+            put(
                 SingleChoiceSetting(
                     IntSetting.APP_LANGUAGE,
                     titleId = R.string.app_language,

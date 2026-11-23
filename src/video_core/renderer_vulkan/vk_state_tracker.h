@@ -87,6 +87,8 @@ public:
         (*flags) |= invalidation_flags;
         current_topology = INVALID_TOPOLOGY;
         stencil_reset = true;
+        last_alpha_to_coverage = 2;
+        rt_formats_valid = false;
     }
 
     void InvalidateViewports() {
@@ -286,6 +288,25 @@ public:
         return has_changed;
     }
 
+    bool ChangeAlphaToCoverageEnable(bool enable) {
+        const u8 next = enable ? 1 : 0;
+        const bool changed = last_alpha_to_coverage != next;
+        last_alpha_to_coverage = next;
+        return changed;
+    }
+
+    bool ChangeRenderTargetFormats(const Maxwell& regs) {
+        bool changed = !rt_formats_valid;
+        for (size_t i = 0; i < Maxwell::NumRenderTargets; ++i) {
+            if (last_rt_formats[i] != regs.rt[i].format) {
+                last_rt_formats[i] = regs.rt[i].format;
+                changed = true;
+            }
+        }
+        rt_formats_valid = true;
+        return changed;
+    }
+
     void SetupTables(Tegra::Control::ChannelState& channel_state);
 
     void ChangeChannel(Tegra::Control::ChannelState& channel_state);
@@ -315,6 +336,9 @@ private:
     StencilProperties front{};
     StencilProperties back{};
     bool stencil_reset = false;
+    u8 last_alpha_to_coverage = 2;
+    bool rt_formats_valid = false;
+    std::array<Tegra::RenderTargetFormat, Maxwell::NumRenderTargets> last_rt_formats{};
 };
 
 } // namespace Vulkan

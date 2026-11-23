@@ -446,7 +446,7 @@
          <item row="2" column="0">
           <widget class="QCheckBox" name="enable_shader_feedback">
            <property name="toolTip">
-            <string>When checked, yuzu will log statistics about the compiled pipeline cache</string>
+            <string>When checked, STORM SWITCH will log statistics about the compiled pipeline cache</string>
            </property>
            <property name="text">
             <string>Enable Shader Feedback</string>

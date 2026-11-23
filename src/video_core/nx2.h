@@ -46,27 +46,53 @@ inline std::array<std::atomic<u64>, (u64{1} << (36 - Nx2WrittenPageBits)) / 64> 
     if (last < first || last >= g_nx2_gpu_written_pages.size() * 64) {
         return true;
     }
-    for (u64 page = first; page <= last; ++page) {
-        if ((g_nx2_gpu_written_pages[page / 64].load(std::memory_order_relaxed) >> (page % 64)) & 1) {
+    const u64 first_word = first >> 6;
+    const u64 last_word = last >> 6;
+    const u64 first_mask = ~u64{0} << (first & 63);
+    const u64 last_mask = ~u64{0} >> (63 - (last & 63));
+    if (first_word == last_word) {
+        return (g_nx2_gpu_written_pages[first_word].load(std::memory_order_relaxed) &
+                (first_mask & last_mask)) != 0;
+    }
+    if ((g_nx2_gpu_written_pages[first_word].load(std::memory_order_relaxed) & first_mask) != 0) {
+        return true;
+    }
+    for (u64 w = first_word + 1; w < last_word; ++w) {
+        if (g_nx2_gpu_written_pages[w].load(std::memory_order_relaxed) != 0) {
             return true;
         }
     }
-    return false;
+    return (g_nx2_gpu_written_pages[last_word].load(std::memory_order_relaxed) & last_mask) != 0;
 }
 
 inline void Nx2MarkGpuWritten(u64 device_address, u64 size) {
     if (!VideoCore::Nx2IsActive() || size == 0) {
         return;
     }
+    const u64 first = device_address >> Nx2WrittenPageBits;
     const u64 last = (std::min)((device_address + size - 1) >> Nx2WrittenPageBits,
                                static_cast<u64>(g_nx2_gpu_written_pages.size() * 64 - 1));
-    for (u64 page = device_address >> Nx2WrittenPageBits; page <= last; ++page) {
-        auto& word = g_nx2_gpu_written_pages[page / 64];
-        const u64 bit = u64{1} << (page % 64);
-        if ((word.load(std::memory_order_relaxed) & bit) == 0) {
-            word.fetch_or(bit, std::memory_order_relaxed);
-        }
+    if (first > last) {
+        return;
     }
+    const auto set_word = [](std::atomic<u64>& word, u64 mask) {
+        if ((word.load(std::memory_order_relaxed) & mask) != mask) [[unlikely]] {
+            word.fetch_or(mask, std::memory_order_relaxed);
+        }
+    };
+    const u64 first_word = first >> 6;
+    const u64 last_word = last >> 6;
+    const u64 first_mask = ~u64{0} << (first & 63);
+    const u64 last_mask = ~u64{0} >> (63 - (last & 63));
+    if (first_word == last_word) {
+        set_word(g_nx2_gpu_written_pages[first_word], first_mask & last_mask);
+        return;
+    }
+    set_word(g_nx2_gpu_written_pages[first_word], first_mask);
+    for (u64 w = first_word + 1; w < last_word; ++w) {
+        set_word(g_nx2_gpu_written_pages[w], ~u64{0});
+    }
+    set_word(g_nx2_gpu_written_pages[last_word], last_mask);
 }
 
 // GPU-written device pages the front has read command lists from (same layout as above). The
@@ -342,6 +368,12 @@ public:
         std::scoped_lock lk{mutex};
         std::erase_if(waiters, [owner](const Waiter& w) { return w.owner == owner; });
         count.store(waiters.size(), std::memory_order_release);
+    }
+
+    void Clear() {
+        std::scoped_lock lk{mutex};
+        waiters.clear();
+        count.store(0, std::memory_order_release);
     }
 
     [[nodiscard]] bool Latched(const void* owner) {

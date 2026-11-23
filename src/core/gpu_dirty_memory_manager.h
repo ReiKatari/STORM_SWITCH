@@ -33,6 +33,7 @@ public:
                 if (IsValid(tmp.address)) {
                     std::scoped_lock lk(guard);
                     back_buffer.emplace_back(tmp);
+                    has_back_entries.store(true, std::memory_order_release);
                     current.exchange(t, std::memory_order_relaxed);
                     return;
                 }
@@ -48,10 +49,15 @@ public:
     }
 
     void Gather(std::function<void(PAddr, size_t)>& callback) {
+        if (!IsValid(current.load(std::memory_order_acquire).address) &&
+            !has_back_entries.load(std::memory_order_acquire)) [[likely]] {
+            return;
+        }
         {
             std::scoped_lock lk(guard);
             TransformAddress t = current.exchange(default_transform, std::memory_order_relaxed);
             front_buffer.swap(back_buffer);
+            has_back_entries.store(false, std::memory_order_release);
             if (IsValid(t.address)) {
                 front_buffer.emplace_back(t);
             }
@@ -114,6 +120,7 @@ private:
     }
 
     std::atomic<TransformAddress> current{};
+    std::atomic<bool> has_back_entries{false};
     std::mutex guard;
     std::vector<TransformAddress> back_buffer;
     std::vector<TransformAddress> front_buffer;

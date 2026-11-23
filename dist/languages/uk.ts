@@ -1830,7 +1830,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="584" />
       <source>GB</source>
-      <translation>GB</translation>
+      <translation>ГБ</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="585" />
@@ -2190,7 +2190,95 @@ When a program attempts to open the controller applet, it is immediately closed.
       <source>Grid View</source>
       <translation>Таблиця</translation>
     </message>
-  </context>
+      <message>
+        <source>Theme:</source>
+        <translation>Тема:</translation>
+    </message>
+    <message>
+        <source>Theme</source>
+        <translation>Змінити режим теми</translation>
+    </message>
+    <message>
+        <source>Interface language:</source>
+        <translation>Мова інтерфейсу:</translation>
+    </message>
+    <message>
+        <source>Reset All Settings</source>
+        <translation>Скинути всі налаштування</translation>
+    </message>
+    <message>
+        <source>Console Mode</source>
+        <translation>Режим консолі</translation>
+    </message>
+    <message>
+        <source>VRAM Usage Mode</source>
+        <translation>Режим використання VRAM</translation>
+    </message>
+    <message>
+        <source>ASTC Decoding Method</source>
+        <translation>Метод декодування ASTC</translation>
+    </message>
+    <message>
+        <source>Eco Frame Pacing</source>
+        <translation>Енергоефективний фреймпейсинг</translation>
+    </message>
+    <message>
+        <source>Vulkan Pipeline Cache</source>
+        <translation>Кеш конвеєрів Vulkan</translation>
+    </message>
+    <message>
+        <source>VRAM Garbage Collection</source>
+        <translation>Очищення відеопам'яті (VRAM)</translation>
+    </message>
+    <message>
+        <source>CPU Affinity Pinning</source>
+        <translation>Прив'язка ядер ЦП</translation>
+    </message>
+    <message>
+        <source>Emulate BGR565</source>
+        <translation>Емулювати BGR565</translation>
+    </message>
+    <message>
+        <source>Makes the game believe GPU work finishes faster than it does, so it stops lowering resolution and render distance to fit the Switch's clocks.</source>
+        <translation>Примушує більшість ігор працювати на їхній максимальній нативній роздільності. Використовуйте 256 для максимальної продуктивності та 512 для найкращої якості.</translation>
+    </message>
+    <message>
+        <source>CPU Clocks</source>
+        <translation>Розгін ЦП</translation>
+    </message>
+    <message>
+        <source>GPU Clocks</source>
+        <translation>Швидкий час роботи ГП</translation>
+    </message>
+    <message>
+        <source>Custom RTC</source>
+        <translation>Свій RTC</translation>
+    </message>
+    <message>
+        <source>Normal</source>
+        <translation>Нормальний (Рекомендовано)</translation>
+    </message>
+    <message>
+        <source>Boost</source>
+        <translation>Підвищення (1700 МГц)</translation>
+    </message>
+    <message>
+        <source>Overclock</source>
+        <translation>Швидко (2000 МГц)</translation>
+    </message>
+    <message>
+        <source>All</source>
+        <translation>Усі</translation>
+    </message>
+    <message>
+        <source>Turbo</source>
+        <translation>Прискорення</translation>
+    </message>
+    <message>
+        <source>Slow</source>
+        <translation>Сповільнення</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureApplets</name>
     <message>
@@ -2558,12 +2646,12 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="235" />
       <source>Off</source>
-      <translation>Off</translation>
+      <translation>Вимкнено</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="240" />
       <source>Errors</source>
-      <translation>Errors</translation>
+      <translation>Помилки</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="245" />
@@ -2578,7 +2666,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="255" />
       <source>All</source>
-      <translation>All</translation>
+      <translation>Усі</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="266" />
@@ -2840,7 +2928,11 @@ When a program attempts to open the controller applet, it is immediately closed.
       <source>**This will be reset automatically when Eden closes.</source>
       <translation>**Це налаштування автоматично скинеться після закриття Eden.</translation>
     </message>
-  </context>
+      <message>
+        <source>(bitmask)</source>
+        <translation>(бітова маска)</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureDebugController</name>
     <message>
@@ -3328,7 +3420,19 @@ Would you like to delete the old save data?</source>
       <source>VSync On</source>
       <translation>Вертикальну синхронізацію увімкнено</translation>
     </message>
-  </context>
+      <message>
+        <source>VSync Mode:</source>
+        <translation>Режим вертикальної синхронізації:</translation>
+    </message>
+    <message>
+        <source>Use asynchronous GPU emulation</source>
+        <translation>Використовувати асинхронну емуляцію ГП</translation>
+    </message>
+    <message>
+        <source>Eco Frame Pacing</source>
+        <translation>Енергоефективний фреймпейсинг</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureGraphicsAdvanced</name>
     <message>
@@ -3346,7 +3450,47 @@ Would you like to delete the old save data?</source>
       <source>Advanced Graphics Settings</source>
       <translation>Додаткові налаштування графіки</translation>
     </message>
-  </context>
+      <message>
+        <source>VRAM Usage Mode:</source>
+        <translation>Режим використання відеопам’яті:</translation>
+    </message>
+    <message>
+        <source>VRAM Usage Mode</source>
+        <translation>Режим використання VRAM</translation>
+    </message>
+    <message>
+        <source>ASTC Decoding Method:</source>
+        <translation>Метод декодування ASTC:</translation>
+    </message>
+    <message>
+        <source>ASTC Decoding Method</source>
+        <translation>Метод декодування ASTC</translation>
+    </message>
+    <message>
+        <source>Sync Memory Operations</source>
+        <translation>Синхронізувати операції з пам’яттю</translation>
+    </message>
+    <message>
+        <source>Force maximum clocks (Vulkan only)</source>
+        <translation>Примусово максимальна тактова частота (лише Vulkan)</translation>
+    </message>
+    <message>
+        <source>Fix bloom effects</source>
+        <translation>Виправити ефекти світіння</translation>
+    </message>
+    <message>
+        <source>Use Vulkan pipeline cache</source>
+        <translation>Використовувати кеш конвеєра Vulkan</translation>
+    </message>
+    <message>
+        <source>Vulkan Pipeline Cache</source>
+        <translation>Кеш конвеєрів Vulkan</translation>
+    </message>
+    <message>
+        <source>VRAM Garbage Collection</source>
+        <translation>Очищення відеопам'яті (VRAM)</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureGraphicsExtensions</name>
     <message>
@@ -3385,7 +3529,11 @@ Would you like to delete the old save data?</source>
       <source>Extended Dynamic State is disabled on macOS due to MoltenVK compatibility issues that cause black screens.</source>
       <translation>Розширений динамічний стан вимкнений для macOS, осткільки проблеми із сумісністю MoltenVK спричиняють чорні екрани.</translation>
     </message>
-  </context>
+      <message>
+        <source>Extensions</source>
+        <translation>Розширення</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureHotkeys</name>
     <message>
@@ -4139,7 +4287,7 @@ Would you like to delete the old save data?</source>
       <location filename="../../src/yuzu/configuration/configure_input_player.ui" line="2169" />
       <location filename="../../src/yuzu/configuration/configure_input_player.ui" line="2208" />
       <source>B</source>
-      <translation>B</translation>
+      <translation>Б</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_input_player.ui" line="2218" />
@@ -4409,7 +4557,11 @@ To invert the axes, first move your joystick vertically, and then horizontally.<
       <source>Failed to save the input profile "%1"</source>
       <translation>Не вдалося зберегти профіль введення «%1»</translation>
     </message>
-  </context>
+      <message>
+        <source>Unknown</source>
+        <translation>Невідомо</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureInputProfileDialog</name>
     <message>
@@ -4573,7 +4725,11 @@ To invert the axes, first move your joystick vertically, and then horizontally.<
       <source>UDP Test or calibration configuration is in progress.&lt;br&gt;Please wait for them to finish.</source>
       <translation>Відбувається налаштування калібрування або тестування UDP.&lt;br&gt;Дочекайтеся завершення.</translation>
     </message>
-  </context>
+      <message>
+        <source>Motion / Touch</source>
+        <translation>Рух і сенсор</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureMousePanning</name>
     <message>
@@ -5209,7 +5365,19 @@ UUID: %2</translation>
       <source>Warning: "%1" is not a valid language for region "%2"</source>
       <translation>Увага: мова «%1» не підходить для регіону «%2»</translation>
     </message>
-  </context>
+      <message>
+        <source>Console Mode</source>
+        <translation>Режим консолі</translation>
+    </message>
+    <message>
+        <source>Limit Speed Percent</source>
+        <translation>Відсоток обмеження швидкості</translation>
+    </message>
+    <message>
+        <source>Language:</source>
+        <translation>Мова:</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureTas</name>
     <message>
@@ -5583,7 +5751,19 @@ Drag points to change position, or double-click table cells to edit values.</sou
       <comment>Screenshot width value</comment>
       <translation>Автоматично (%1 x %2, %3 x %4)</translation>
     </message>
-  </context>
+      <message>
+        <source>Theme</source>
+        <translation>Змінити режим теми</translation>
+    </message>
+    <message>
+        <source>Language:</source>
+        <translation>Мова:</translation>
+    </message>
+    <message>
+        <source>Screenshots Path:</source>
+        <translation>Тека знімків екрана:</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureVibration</name>
     <message>
@@ -5730,7 +5910,15 @@ Drag points to change position, or double-click table cells to edit values.</sou
       <comment>Tooltip</comment>
       <translation>Повинно бути 48 символів a-z нижнього регістру</translation>
     </message>
-  </context>
+      <message>
+        <source>Token:</source>
+        <translation>Токен:</translation>
+    </message>
+    <message>
+        <source>Username:</source>
+        <translation>Ім’я користувача:</translation>
+    </message>
+</context>
   <context>
     <name>ControllerDialog</name>
     <message>
@@ -8197,7 +8385,27 @@ Would you like to bypass this and exit anyway?</source>
       <source>Null</source>
       <translation>Нічого</translation>
     </message>
-  </context>
+      <message>
+        <source>Fullscreen</source>
+        <translation>Повноекранний режим</translation>
+    </message>
+    <message>
+        <source>Check for Updates</source>
+        <translation>Перевіряти оновлення</translation>
+    </message>
+    <message>
+        <source>Mii Edit</source>
+        <translation>Редагування Mii</translation>
+    </message>
+    <message>
+        <source>Create Shortcut</source>
+        <translation>Створити ярлик</translation>
+    </message>
+    <message>
+        <source>Install Files to NAND</source>
+        <translation>Встановити файли до NAND</translation>
+    </message>
+</context>
   <context>
     <name>MigrationWorker</name>
     <message>
@@ -8675,13 +8883,6 @@ p, li { white-space: pre-wrap; }
       <translation>Під’єднати стару теку</translation>
     </message>
     <message>
-      <location filename="../../src/yuzu/user_data_migration.cpp" line="98" />
-      <source>
-      </source>
-      <translation>
-      </translation>
-    </message>
-    <message>
       <location filename="../../src/yuzu/user_data_migration.cpp" line="102" />
       <location filename="../../src/yuzu/user_data_migration.cpp" line="108" />
       <source>No</source>
@@ -8824,7 +9025,7 @@ p, li { white-space: pre-wrap; }
       <location filename="../../src/yuzu/configuration/configure_ringcon.cpp" line="66" />
       <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="88" />
       <source>B</source>
-      <translation>B</translation>
+      <translation>Б</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_ringcon.cpp" line="68" />
@@ -8842,7 +9043,7 @@ p, li { white-space: pre-wrap; }
       <location filename="../../src/yuzu/configuration/configure_ringcon.cpp" line="72" />
       <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="94" />
       <source>Start</source>
-      <translation>Start</translation>
+      <translation>Запустити</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_ringcon.cpp" line="74" />
@@ -10674,4 +10875,455 @@ Error code: %3</source>
       <translation>%1 успішно завантажено. Хочете відкрити?</translation>
     </message>
   </context>
+<context>
+    <name>QPlatformTheme</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Скасувати</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>Застосувати</translation>
+    </message>
+    <message>
+        <source>Retry</source>
+        <translation>Повторити</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Закрити</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>[&amp;H] Допомога</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Гаразд</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Відновити стандартні</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Допомога</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>[&amp;S] Скинути</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>Скинути</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Зупинити</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Зберегти</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Ні</translation>
+    </message>
+</context>
+<context>
+    <name>QDialogButtonBox</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Скасувати</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>Застосувати</translation>
+    </message>
+    <message>
+        <source>Retry</source>
+        <translation>Повторити</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Закрити</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>[&amp;H] Допомога</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Гаразд</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Відновити стандартні</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Допомога</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>[&amp;S] Скинути</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>Скинути</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Зупинити</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Зберегти</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Ні</translation>
+    </message>
+</context>
+<context>
+    <name>QMessageBox</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Скасувати</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>Застосувати</translation>
+    </message>
+    <message>
+        <source>Retry</source>
+        <translation>Повторити</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Закрити</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>[&amp;H] Допомога</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Гаразд</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Відновити стандартні</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Допомога</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>[&amp;S] Скинути</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>Скинути</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Зупинити</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Зберегти</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Ні</translation>
+    </message>
+</context>
+<context>
+    <name>QGuiApplication</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Скасувати</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>Застосувати</translation>
+    </message>
+    <message>
+        <source>Retry</source>
+        <translation>Повторити</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Закрити</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>[&amp;H] Допомога</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Гаразд</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Відновити стандартні</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Допомога</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>[&amp;S] Скинути</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>Скинути</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Зупинити</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Зберегти</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Ні</translation>
+    </message>
+</context>
+<context>
+    <name>QAbstractButton</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Скасувати</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>Застосувати</translation>
+    </message>
+    <message>
+        <source>Retry</source>
+        <translation>Повторити</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Закрити</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>[&amp;H] Допомога</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Гаразд</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Відновити стандартні</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Допомога</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>[&amp;S] Скинути</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>Скинути</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Зупинити</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Зберегти</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Ні</translation>
+    </message>
+</context>
+<context>
+    <name>QColorDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Скасувати</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>Застосувати</translation>
+    </message>
+    <message>
+        <source>Retry</source>
+        <translation>Повторити</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Закрити</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>[&amp;H] Допомога</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Гаразд</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Відновити стандартні</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Допомога</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>[&amp;S] Скинути</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>Скинути</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Зупинити</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Зберегти</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Ні</translation>
+    </message>
+</context>
+<context>
+    <name>QFileDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Скасувати</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>Застосувати</translation>
+    </message>
+    <message>
+        <source>Retry</source>
+        <translation>Повторити</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Закрити</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>[&amp;H] Допомога</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Гаразд</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Відновити стандартні</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Допомога</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>[&amp;S] Скинути</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>Скинути</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Зупинити</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Зберегти</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Ні</translation>
+    </message>
+</context>
+<context>
+    <name>QFontDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Скасувати</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>Застосувати</translation>
+    </message>
+    <message>
+        <source>Retry</source>
+        <translation>Повторити</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Закрити</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>[&amp;H] Допомога</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Гаразд</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Відновити стандартні</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Допомога</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>[&amp;S] Скинути</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>Скинути</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Зупинити</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Зберегти</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Ні</translation>
+    </message>
+</context>
+<context>
+    <name>QtController</name>
+    <message>
+        <source>Console Mode</source>
+        <translation>Режим консолі</translation>
+    </message>
+    <message>
+        <source>Vibration</source>
+        <translation>Вібрація</translation>
+    </message>
+</context>
 </TS>

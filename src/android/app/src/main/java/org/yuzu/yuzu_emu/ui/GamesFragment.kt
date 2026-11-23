@@ -557,7 +557,7 @@ class GamesFragment : Fragment() {
         } catch (e: Exception) {
             Toast.makeText(
                 requireContext(),
-                "Failed to launch QLaunch: ${e.message}",
+                getString(R.string.storm_qlaunch_failed_fmt, e.message ?: ""),
                 Toast.LENGTH_SHORT
             ).show()
         }

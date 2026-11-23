@@ -466,7 +466,7 @@ void KPageTableBase::Finalize() {
     this->FinalizeProcess();
 
     auto BlockCallback = [&](KProcessAddress addr, u64 size) {
-        if (m_impl.fastmem_arena) {
+        if (m_impl.fastmem_arena && !m_system.Kernel().IsShuttingDown()) {
             m_system.DeviceMemory().buffer.Unmap(GetInteger(addr), size, false);
         }
 

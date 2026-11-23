@@ -135,6 +135,8 @@ Module::Module(Core::System& system)
     Devices::Nx2GpuMemoryRegistry::Get().Reset();
     Tegra::Nx2ClearSemaphoreRegions();
     Tegra::Nx2ClearSparseRegions();
+    Tegra::Nx2ClearGpuWrittenPages();
+    Tegra::Nx2SemaphoreWaiters::Get().Clear();
     const bool is_nx2_session = Settings::IsCurrentProgramSwitch2();
     Devices::g_nx2_driver = is_nx2_session;
     Tegra::g_nx2_ampere = is_nx2_session;

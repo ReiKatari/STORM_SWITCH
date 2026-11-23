@@ -794,8 +794,8 @@ private:
     QAction* save_state_manager_action{nullptr};
     QMenu* save_state_slots_menu{nullptr};
     QMenu* load_state_slots_menu{nullptr};
-    std::array<QAction*, 5> save_slot_actions{};
-    std::array<QAction*, 5> load_slot_actions{};
+    std::array<QAction*, 10> save_slot_actions{};
+    std::array<QAction*, 10> load_slot_actions{};
     void* m_restore_event{nullptr};
     QTimer* m_restore_timer{nullptr};
 

@@ -304,7 +304,7 @@ This would ban both their forum username and their IP address.</source>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="49" />
             <source>Enable Overlay Applet</source>
-            <translation>Enable Overlay Applet</translation>
+            <translation>オーバーレイを有効化</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="50" />
@@ -715,7 +715,7 @@ Aggressive mode may impact performance of other applications such as recording s
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="193" />
             <source>Skip CPU Inner Invalidation</source>
-            <translation>Skip CPU Inner Invalidation</translation>
+            <translation>CPU内部無効化をスキップ</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="194" />
@@ -794,9 +794,9 @@ Safe to set at 16x on most GPUs.</translation>
             <source>Controls the GPU emulation mode.
 Most games render fine with Fast, but Accurate is still required for some.
 Particles tend to only render correctly with Accurate mode.</source>
-            <translation>Controls the GPU emulation mode.
-Most games render fine with Fast, but Accurate is still required for some.
-Particles tend to only render correctly with Accurate mode.</translation>
+            <translation>使用する GPU 精度レベル。
+ノーマルは高速ですが、一部のゲームで描画不具合が発生する場合があります。
+ハイは低速ですが、描画不具合を修正します。</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="225" />
@@ -808,9 +808,9 @@ Particles tend to only render correctly with Accurate mode.</translation>
             <source>Controls the DMA read mode.
 Unsafe is faster, while Safe is more stable and can fix issues in some games.
 Default follows the GPU Accuracy setting.</source>
-            <translation>Controls the DMA read mode.
-Unsafe is faster, while Safe is more stable and can fix issues in some games.
-Default follows the GPU Accuracy setting.</translation>
+            <translation>使用する DMA 精度レベル。
+ノーマルは高速ですが、描画不具合が発生する場合があります。
+セーフは低速ですが、描画不具合を修正します。</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="227" />
@@ -825,12 +825,9 @@ Balanced offers better compatibility and may fix issues in some games.
 Accurate further improves compatibility at the cost of some performance.
 Strict is the slowest option, but can fix issues that require stricter synchronization.
 Default follows the GPU Accuracy setting.</source>
-            <translation>Controls the GPU fence synchronization behavior.
-Immediate is the fastest option, but can introduce some issues.
-Balanced offers better compatibility and may fix issues in some games.
-Accurate further improves compatibility at the cost of some performance.
-Strict is the slowest option, but can fix issues that require stricter synchronization.
-Default follows the GPU Accuracy setting.</translation>
+            <translation>GPU フェンスの同期方法を制御します。
+デフォルトは GPU 精度設定に従います。
+即時（最速）、バランス（必要時のみ待機）、正確（常に GPU 完了を待機）から選択できます。</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="229" />
@@ -841,8 +838,8 @@ Default follows the GPU Accuracy setting.</translation>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="230" />
             <source>Preserves GPU-modified data by reading it back before uploading.
 Some games require this to render certain effects properly.</source>
-            <translation>Preserves GPU-modified data by reading it back before uploading.
-Some games require this to render certain effects properly.</translation>
+            <translation>変更された GPU バッファを CPU メモリへ書き戻す機能を有効にします。
+一部のゲームで物理演算やエフェクトに必要ですが、パフォーマンスが低下します。</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="231" />
@@ -997,7 +994,7 @@ This option may improve rendering quality and performance consistency in some ga
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="275" />
             <source>Enable Legacy Rescale Pass</source>
-            <translation>Enable Legacy Rescale Pass</translation>
+            <translation>レガシースケーリングパスを有効化</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="276" />
@@ -1065,12 +1062,12 @@ Mainly used for speedrunning.</translation>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="303" />
             <source>Homebrew Args</source>
-            <translation>Homebrew Args</translation>
+            <translation>自作ソフト引数</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="304" />
             <source>Command-line arguments passed to homebrew at launch (e.g. -noglsl).</source>
-            <translation>Command-line arguments passed to homebrew at launch (e.g. -noglsl).</translation>
+            <translation>起動時に渡すコマンドライン引数。</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="305" />
@@ -2233,7 +2230,7 @@ When a program attempts to open the controller applet, it is immediately closed.
         </message>
         <message>
             <source>QLaunch</source>
-            <translation>QLaunch</translation>
+            <translation>QLaunchボタン</translation>
         </message>
         <message>
             <source>Reset All Settings</source>
@@ -2437,7 +2434,7 @@ When a program attempts to open the controller applet, it is immediately closed.
         </message>
         <message>
             <source>VRAM Usage Mode</source>
-            <translation>VRAM Usage Mode</translation>
+            <translation>VRAM使用モード</translation>
         </message>
         <message>
             <source>Использование VRAM:</source>
@@ -2457,7 +2454,7 @@ When a program attempts to open the controller applet, it is immediately closed.
         </message>
         <message>
             <source>ASTC Decoding Method</source>
-            <translation>ASTC Decoding Method</translation>
+            <translation>ASTCデコード方法</translation>
         </message>
         <message>
             <source>Декодирование ASTC</source>
@@ -2593,7 +2590,7 @@ When a program attempts to open the controller applet, it is immediately closed.
         </message>
         <message>
             <source>Vulkan Pipeline Cache</source>
-            <translation>Vulkan Pipeline Cache</translation>
+            <translation>Vulkan パイプラインキャッシュ</translation>
         </message>
         <message>
             <source>Кэш Vulkan</source>
@@ -2641,7 +2638,7 @@ When a program attempts to open the controller applet, it is immediately closed.
         </message>
         <message>
             <source>Cabinet</source>
-            <translation>Cabinet</translation>
+            <translation>キャビネット</translation>
         </message>
         <message>
             <source>Кабинет Amiibo</source>
@@ -3085,7 +3082,7 @@ Required by some games for proper physics or rendering effects, but significantl
         <message>
             <location filename="../../src/yuzu/configuration/configure_applets.ui" line="17" />
             <source>Applets</source>
-            <translation>Applets</translation>
+            <translation>アプレット</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_applets.ui" line="25" />
@@ -3098,7 +3095,7 @@ Required by some games for proper physics or rendering effects, but significantl
         </message>
         <message>
             <source>QLaunch</source>
-            <translation>QLaunch</translation>
+            <translation>QLaunchボタン</translation>
         </message>
         <message>
             <source>Web Applet</source>
@@ -3110,7 +3107,7 @@ Required by some games for proper physics or rendering effects, but significantl
         </message>
         <message>
             <source>Cabinet</source>
-            <translation>Cabinet</translation>
+            <translation>キャビネット</translation>
         </message>
     </context>
     <context>
@@ -3493,27 +3490,27 @@ Required by some games for proper physics or rendering effects, but significantl
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="235" />
             <source>Off</source>
-            <translation>Off</translation>
+            <translation>オフ</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="240" />
             <source>Errors</source>
-            <translation>Errors</translation>
+            <translation>エラー</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="245" />
             <source>Standard</source>
-            <translation>Standard</translation>
+            <translation>標準</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="250" />
             <source>Verbose</source>
-            <translation>Verbose</translation>
+            <translation>詳細</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="255" />
             <source>All</source>
-            <translation>All</translation>
+            <translation>すべて</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="266" />
@@ -3588,7 +3585,7 @@ Required by some games for proper physics or rendering effects, but significantl
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="380" />
             <source>Dump Guest (Maxwell) Shaders</source>
-            <translation>Dump Guest (Maxwell) Shaders</translation>
+            <translation>ゲスト(Maxwell)シェーダーを出力</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="387" />
@@ -3643,7 +3640,7 @@ Required by some games for proper physics or rendering effects, but significantl
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="462" />
             <source>Disable Buffer Reorder</source>
-            <translation>Disable Buffer Reorder</translation>
+            <translation>バッファ再順序付けを無効化</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="469" />
@@ -3653,7 +3650,7 @@ Required by some games for proper physics or rendering effects, but significantl
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="472" />
             <source>Dump SPIR-V Shaders</source>
-            <translation>Dump SPIR-V Shaders</translation>
+            <translation>SPIR-Vシェーダーを出力</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="482" />
@@ -3847,7 +3844,7 @@ Required by some games for proper physics or rendering effects, but significantl
         <message>
             <location filename="../../src/yuzu/configuration/configure_dialog.cpp" line="69" />
             <source>Applets</source>
-            <translation>Applets</translation>
+            <translation>アプレット</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_dialog.cpp" line="70" />
@@ -4186,7 +4183,7 @@ Would you like to delete the old save data?</translation>
         <message>
             <location filename="../../src/yuzu/configuration/configure_general.ui" line="52" />
             <source>External Content</source>
-            <translation>External Content</translation>
+            <translation>外部コンテンツ</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_general.ui" line="58" />
@@ -4456,7 +4453,7 @@ Would you like to delete the old save data?</translation>
         </message>
         <message>
             <source>VRAM Usage Mode</source>
-            <translation>VRAM Usage Mode</translation>
+            <translation>VRAM使用モード</translation>
         </message>
         <message>
             <source>Использование VRAM</source>
@@ -4472,7 +4469,7 @@ Would you like to delete the old save data?</translation>
         </message>
         <message>
             <source>ASTC Decoding Method</source>
-            <translation>ASTC Decoding Method</translation>
+            <translation>ASTCデコード方法</translation>
         </message>
         <message>
             <source>Декодирование ASTC</source>
@@ -4596,7 +4593,7 @@ Would you like to delete the old save data?</translation>
         </message>
         <message>
             <source>Vulkan Pipeline Cache</source>
-            <translation>Vulkan Pipeline Cache</translation>
+            <translation>Vulkan パイプラインキャッシュ</translation>
         </message>
         <message>
             <source>Кэш Vulkan</source>
@@ -4628,7 +4625,7 @@ Would you like to delete the old save data?</translation>
         <message>
             <location filename="../../src/yuzu/configuration/configure_graphics_extensions.ui" line="14" />
             <source>Form</source>
-            <translation>Form</translation>
+            <translation>フォーム</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_graphics_extensions.ui" line="17" />
@@ -4638,7 +4635,7 @@ Would you like to delete the old save data?</translation>
         <message>
             <location filename="../../src/yuzu/configuration/configure_graphics_extensions.ui" line="23" />
             <source>Hacks</source>
-            <translation>Hacks</translation>
+            <translation>ハック</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_graphics_extensions.ui" line="29" />
@@ -5097,7 +5094,7 @@ Would you like to delete the old save data?</translation>
         </message>
         <message>
             <source>Disables SDL WGI and XInput controller drivers. Prevents trigger conflicts, vibration issues, and synthetic Home button presses. Emulator restart required.</source>
-            <translation>Disables SDL WGI and XInput controller drivers. Prevents trigger conflicts, vibration issues, and synthetic Home button presses. Emulator restart required.</translation>
+            <translation>SDL WGI および XInput コントローラー ドライバーを無効化します。トリガーの競合、振動の問題、予期しない Home ボタンの押下を防ぎます。エミュレータの再起動が必要です。</translation>
         </message>
     </context>
     <context>
@@ -5945,11 +5942,11 @@ Current values are %1% and %2% respectively.</source>
         </message>
         <message>
             <source>GameBanana Mods</source>
-            <translation>GameBanana Mods</translation>
+            <translation>GameBanana Mod</translation>
         </message>
         <message>
             <source>Cheats</source>
-            <translation>Cheats</translation>
+            <translation>チート</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="79" />
@@ -5994,7 +5991,7 @@ Current values are %1% and %2% respectively.</source>
         <message>
             <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="87" />
             <source>Applets</source>
-            <translation>Applets</translation>
+            <translation>アプレット</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="90" />
@@ -6226,7 +6223,7 @@ Once deleted, these can NOT be recovered. Are you 100% sure you want to delete t
         <message>
             <location filename="../../src/yuzu/configuration/configure_profile_manager.cpp" line="291" />
             <source>Edit User</source>
-            <translation>Edit User</translation>
+            <translation>ユーザーを編集</translation>
         </message>
     </context>
     <context>
@@ -7009,7 +7006,7 @@ Drag points to change position, or double-click table cells to edit values.</sou
         <message>
             <location filename="../../src/yuzu/configuration/configure_web.ui" line="105" />
             <source>Generate</source>
-            <translation>Generate</translation>
+            <translation>生成</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_web.ui" line="130" />
@@ -7109,7 +7106,7 @@ Drag points to change position, or double-click table cells to edit values.</sou
         <message>
             <location filename="../../src/yuzu/data_widget.ui" line="14" />
             <source>Form</source>
-            <translation>Form</translation>
+            <translation>フォーム</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/data_widget.ui" line="22" />
@@ -7627,12 +7624,12 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
         <message>
             <location filename="../../src/qt_common/game_list/model.cpp" line="194" />
             <source>Name</source>
-            <translation>Name</translation>
+            <translation>タイトル</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/game_list/model.cpp" line="195" />
             <source>Add-ons</source>
-            <translation>Add-ons</translation>
+            <translation>アドオン</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/game_list/model.cpp" line="196" />
@@ -7642,7 +7639,7 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
         <message>
             <location filename="../../src/qt_common/game_list/model.cpp" line="197" />
             <source>Size</source>
-            <translation>Size</translation>
+            <translation>ファイルサイズ</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/game_list/model.cpp" line="198" />
@@ -7806,7 +7803,7 @@ Debug Message:</translation>
         <message>
             <location filename="../../src/qt_common/config/uisettings.cpp" line="41" />
             <source>Configure</source>
-            <translation>Configure</translation>
+            <translation>設定</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/uisettings.cpp" line="42" />
@@ -7851,7 +7848,7 @@ Debug Message:</translation>
         <message>
             <location filename="../../src/qt_common/config/uisettings.cpp" line="50" />
             <source>Create Room</source>
-            <translation>Create Room</translation>
+            <translation>ルーム作成</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/uisettings.cpp" line="51" />
@@ -7861,7 +7858,7 @@ Debug Message:</translation>
         <message>
             <location filename="../../src/qt_common/config/uisettings.cpp" line="52" />
             <source>Leave Room</source>
-            <translation>Leave Room</translation>
+            <translation>ルームを離れる</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/uisettings.cpp" line="53" />
@@ -8498,7 +8495,7 @@ Debug Message:</translation>
         <message>
             <location filename="../../src/yuzu/main.ui" line="589" />
             <source>Game Icon Size</source>
-            <translation>Game Icon Size</translation>
+            <translation>ゲームアイコンサイズ</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main.ui" line="594" />
@@ -8563,7 +8560,7 @@ Debug Message:</translation>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="876" />
             <source>Disable Web Applet</source>
-            <translation>Disable Web Applet</translation>
+            <translation>Webアプレットの無効化</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="880" />
@@ -8600,12 +8597,12 @@ Debug Message:</translation>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="1067" />
             <source>Unmute</source>
-            <translation>Unmute</translation>
+            <translation>ミュート解除</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="1067" />
             <source>Mute</source>
-            <translation>Mute</translation>
+            <translation>ミュート</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="1072" />
@@ -8763,7 +8760,7 @@ Debug Message:</translation>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="2475" />
             <source>Remove Play Time Data</source>
-            <translation>Remove Play Time Data</translation>
+            <translation>プレイ時間情報を削除</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="2475" />
@@ -8838,7 +8835,7 @@ Debug Message:</translation>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="2676" />
             <source>Properties</source>
-            <translation>Properties</translation>
+            <translation>プロパティ</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="2677" />
@@ -8854,7 +8851,7 @@ Debug Message:</translation>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="2743" />
             <source>Load File</source>
-            <translation>Load File</translation>
+            <translation>ファイルのロード</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="2756" />
@@ -8957,7 +8954,7 @@ Please, only use this feature to install updates and DLC.</translation>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="2913" />
             <source>Game</source>
-            <translation>Game</translation>
+            <translation>ゲーム</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="2914" />
@@ -9059,12 +9056,12 @@ Please, only use this feature to install updates and DLC.</translation>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="3699" />
             <source>The current amiibo has been removed</source>
-            <translation>The current amiibo has been removed</translation>
+            <translation>Amiiboを取り外しました</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="3704" />
             <source>Error</source>
-            <translation>Error</translation>
+            <translation>エラー</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="3704" />
@@ -9079,7 +9076,7 @@ Please, only use this feature to install updates and DLC.</translation>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="3711" />
             <source>Load Amiibo</source>
-            <translation>Load Amiibo</translation>
+            <translation>Amiiboを読み込む</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="3746" />
@@ -9089,7 +9086,7 @@ Please, only use this feature to install updates and DLC.</translation>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="3756" />
             <source>The selected file is not a valid amiibo</source>
-            <translation>The selected file is not a valid amiibo</translation>
+            <translation>無効なAmiiboデータです</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="3759" />
@@ -9099,7 +9096,7 @@ Please, only use this feature to install updates and DLC.</translation>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="3765" />
             <source>An unknown error occurred</source>
-            <translation>An unknown error occurred</translation>
+            <translation>不明なAmiiboエラーが発生しました</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="3868" />
@@ -9134,7 +9131,7 @@ Please, only use this feature to install updates and DLC.</translation>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="3975" />
             <source>Capture Screenshot</source>
-            <translation>Capture Screenshot</translation>
+            <translation>スクリーンショットを撮る</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="3976" />
@@ -9274,12 +9271,12 @@ Would you like to force it for future launches?</translation>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="4329" />
             <source>Slow</source>
-            <translation>Slow</translation>
+            <translation>スロー</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="4332" />
             <source>Turbo</source>
-            <translation>Turbo</translation>
+            <translation>ターボ</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="4336" />
@@ -9333,17 +9330,17 @@ Would you like to bypass this and exit anyway?</translation>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.h" line="38" />
             <source>Nearest</source>
-            <translation>Nearest</translation>
+            <translation>最近傍</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.h" line="40" />
             <source>Bilinear</source>
-            <translation>Bilinear</translation>
+            <translation>バイリニア</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.h" line="41" />
             <source>Bicubic</source>
-            <translation>Bicubic</translation>
+            <translation>バイキュービック</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.h" line="43" />
@@ -9368,12 +9365,12 @@ Would you like to bypass this and exit anyway?</translation>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.h" line="49" />
             <source>Gaussian</source>
-            <translation>Gaussian</translation>
+            <translation>ガウス</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.h" line="50" />
             <source>Lanczos</source>
-            <translation>Lanczos</translation>
+            <translation>ランチョス</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.h" line="52" />
@@ -9408,22 +9405,22 @@ Would you like to bypass this and exit anyway?</translation>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.h" line="61" />
             <source>Docked</source>
-            <translation>Docked</translation>
+            <translation>TV モード</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.h" line="62" />
             <source>Handheld</source>
-            <translation>Handheld</translation>
+            <translation>携帯モード</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.h" line="66" />
             <source>Fast</source>
-            <translation>Fast</translation>
+            <translation>高速</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.h" line="67" />
             <source>Accurate</source>
-            <translation>Accurate</translation>
+            <translation>正確</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.h" line="71" />
@@ -9504,7 +9501,7 @@ Would you like to bypass this and exit anyway?</translation>
         </message>
         <message>
             <source>Check for Updates...</source>
-            <translation>Check for Updates...</translation>
+            <translation>アップデートを確認...</translation>
         </message>
         <message>
             <source>Проверить обновления</source>
@@ -9524,7 +9521,7 @@ Would you like to bypass this and exit anyway?</translation>
         </message>
         <message>
             <source>QLaunch</source>
-            <translation>QLaunch</translation>
+            <translation>QLaunchボタン</translation>
         </message>
         <message>
             <source>Mii Editor</source>
@@ -9540,7 +9537,7 @@ Would you like to bypass this and exit anyway?</translation>
         </message>
         <message>
             <source>Cabinet</source>
-            <translation>Cabinet</translation>
+            <translation>キャビネット</translation>
         </message>
         <message>
             <source>Папка NAND</source>
@@ -9564,7 +9561,7 @@ Would you like to bypass this and exit anyway?</translation>
         </message>
         <message>
             <source>Install Files to NAND...</source>
-            <translation>Install Files to NAND...</translation>
+            <translation>NAND にファイルをインストール...</translation>
         </message>
         <message>
             <source>&amp;Install Files to NAND</source>
@@ -9644,7 +9641,7 @@ If you wish to clean up the files which were left in the old data location, you 
         <message>
             <location filename="../../src/yuzu/multiplayer/moderation_dialog.ui" line="6" />
             <source>Moderation</source>
-            <translation>Moderation</translation>
+            <translation>モデレーション</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/multiplayer/moderation_dialog.ui" line="20" />
@@ -9767,7 +9764,7 @@ Proceed anyway?</source>
         <message>
             <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="14" />
             <source>New User</source>
-            <translation>New User</translation>
+            <translation>新規ユーザー</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="30" />
@@ -9792,7 +9789,7 @@ Proceed anyway?</source>
         <message>
             <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="70" />
             <source>Username</source>
-            <translation>Username</translation>
+            <translation>ユーザー名</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="82" />
@@ -9802,7 +9799,7 @@ Proceed anyway?</source>
         <message>
             <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="89" />
             <source>Generate</source>
-            <translation>Generate</translation>
+            <translation>生成</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/system/new_user_dialog.cpp" line="138" />
@@ -9924,7 +9921,7 @@ p, li { white-space: pre-wrap; }
         <message>
             <location filename="../../src/yuzu/render/performance_overlay.ui" line="14" />
             <source>Form</source>
-            <translation>Form</translation>
+            <translation>フォーム</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/render/performance_overlay.ui" line="32" />
@@ -10044,13 +10041,6 @@ p, li { white-space: pre-wrap; }
             <location filename="../../src/yuzu/user_data_migration.cpp" line="68" />
             <source>Link Old Directory</source>
             <translation>Link Old Directory</translation>
-        </message>
-        <message>
-            <location filename="../../src/yuzu/user_data_migration.cpp" line="98" />
-            <source>
-      </source>
-            <translation>
-      </translation>
         </message>
         <message>
             <location filename="../../src/yuzu/user_data_migration.cpp" line="102" />
@@ -10227,7 +10217,7 @@ p, li { white-space: pre-wrap; }
         <message>
             <location filename="../../src/yuzu/configuration/configure_ringcon.cpp" line="94" />
             <source>Share</source>
-            <translation>Share</translation>
+            <translation>共有</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_ringcon.cpp" line="96" />
@@ -10559,7 +10549,7 @@ p, li { white-space: pre-wrap; }
         <message>
             <location filename="../../src/qt_common/util/content.cpp" line="30" />
             <source>Game Requires Firmware</source>
-            <translation>Game Requires Firmware</translation>
+            <translation>ゲームにはファームウェアが必要です</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/util/content.cpp" line="31" />
@@ -10608,7 +10598,7 @@ p, li { white-space: pre-wrap; }
         <message>
             <location filename="../../src/qt_common/util/content.cpp" line="223" />
             <source>Integrity verification succeeded!</source>
-            <translation>Integrity verification succeeded!</translation>
+            <translation>整合性の確認に成功しました!</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/util/content.cpp" line="224" />
@@ -10618,7 +10608,7 @@ p, li { white-space: pre-wrap; }
         <message>
             <location filename="../../src/qt_common/util/content.cpp" line="227" />
             <source>Integrity verification failed!</source>
-            <translation>Integrity verification failed!</translation>
+            <translation>整合性の確認に失敗しました!</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/util/content.cpp" line="228" />
@@ -11050,7 +11040,7 @@ Would you like to manually select a portable folder to use?</translation>
         <message>
             <location filename="../../src/qt_common/util/game.cpp" line="347" />
             <source>Reset Metadata Cache</source>
-            <translation>Reset Metadata Cache</translation>
+            <translation>メタデータのキャッシュをクリア</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/util/game.cpp" line="353" />
@@ -11070,7 +11060,7 @@ Would you like to manually select a portable folder to use?</translation>
         <message>
             <location filename="../../src/qt_common/util/game.cpp" line="381" />
             <source>Create Shortcut</source>
-            <translation>Create Shortcut</translation>
+            <translation>ショートカットを作成</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/util/game.cpp" line="381" />
@@ -11252,12 +11242,12 @@ Most mods are RomFS mods, but patches (.pchtxt) are typically ExeFS mods.</trans
         <message>
             <location filename="../../src/qt_common/qt_string_lookup.h" line="81" />
             <source>One or more keys failed to copy.</source>
-            <translation>One or more keys failed to copy.</translation>
+            <translation>1つ以上のキーのコピーに失敗しました。</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/qt_string_lookup.h" line="83" />
             <source>Verify your keys file has a .keys extension and try again.</source>
-            <translation>Verify your keys file has a .keys extension and try again.</translation>
+            <translation>キーファイルの拡張子が.keysであることを確認し、再度お試しください。</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/qt_string_lookup.h" line="85" />
@@ -11472,7 +11462,7 @@ This is recommended if you want to share data between emulators.</translation>
         <message>
             <location filename="../../src/yuzu/applets/qt_controller.ui" line="2293" />
             <source>Docked</source>
-            <translation>Docked</translation>
+            <translation>TV モード</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/applets/qt_controller.ui" line="2313" />
@@ -11870,7 +11860,7 @@ By selecting "From Eden", previous save data stored in Ryujinx will be deleted, 
         <message>
             <location filename="../../src/yuzu/updater/update_dialog.cpp" line="112" />
             <source>Downloading...</source>
-            <translation>Downloading...</translation>
+            <translation>ダウンロード中…</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/updater/update_dialog.cpp" line="112" />
@@ -12054,7 +12044,7 @@ Error code: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>初期値にリセット</translation>
         </message>
         </context>
     <context>
@@ -12201,7 +12191,7 @@ Error code: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>初期値にリセット</translation>
         </message>
         </context>
     <context>
@@ -12348,7 +12338,7 @@ Error code: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>初期値にリセット</translation>
         </message>
         </context>
     <context>
@@ -12495,7 +12485,7 @@ Error code: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>初期値にリセット</translation>
         </message>
         </context>
     <context>
@@ -12642,7 +12632,7 @@ Error code: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>初期値にリセット</translation>
         </message>
     </context>
     <context>
@@ -12789,7 +12779,7 @@ Error code: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>初期値にリセット</translation>
         </message>
     </context>
     <context>
@@ -12936,7 +12926,7 @@ Error code: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>初期値にリセット</translation>
         </message>
     </context>
     <context>
@@ -13083,7 +13073,7 @@ Error code: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>初期値にリセット</translation>
         </message>
     </context>
     <context>

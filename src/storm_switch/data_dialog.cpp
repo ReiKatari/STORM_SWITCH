@@ -11,7 +11,11 @@
 #include <QDesktopServices>
 #include <QFileDialog>
 #include <QFutureWatcher>
+#include <QPainter>
+#include <QPainterPath>
 #include <QProgressDialog>
+#include <QTabBar>
+#include "storm_switch/common/storm_lang.h"
 #include <QtConcurrentRun>
 
 #include <core/frontend/applets/profile_select.h>
@@ -22,6 +26,11 @@
 DataDialog::DataDialog(QWidget* parent) : QDialog(parent), ui(std::make_unique<Ui::DataDialog>()) {
     ui->setupUi(this);
     StormUI::StructureEngine::InstallEscDismiss(this);
+    ui->pages->setUsesScrollButtons(false);
+    if (auto* tb = ui->pages->tabBar()) {
+        tb->setUsesScrollButtons(false);
+        tb->setExpanding(true);
+    }
 
     // TODO: Should we make this a single widget that pulls data from a model?
 #define WIDGET(label, name)                                                                        \
@@ -50,10 +59,48 @@ DataWidget::DataWidget(FrontendCommon::DataManager::DataDir data_dir,
 
     ui->tooltip->setText(QtCommon::StringLookup::Lookup(tooltip));
 
-    ui->clear->setIcon(QIcon::fromTheme(QStringLiteral("user-trash")));
-    ui->open->setIcon(QIcon::fromTheme(QStringLiteral("folder")));
-    ui->upload->setIcon(QIcon::fromTheme(QStringLiteral("upload")));
-    ui->download->setIcon(QIcon::fromTheme(QStringLiteral("download")));
+    auto make_data_icon = [](int kind, const QColor& col) -> QIcon {
+        QPixmap pm(36, 36);
+        pm.fill(Qt::transparent);
+        QPainter p(&pm);
+        p.setRenderHint(QPainter::Antialiasing, true);
+        QPen pen(col, 2.6, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+        p.setPen(pen);
+        p.setBrush(Qt::NoBrush);
+        if (kind == 0) { // Folder
+            QPainterPath path;
+            path.moveTo(5, 10); path.lineTo(14, 10); path.lineTo(17, 13);
+            path.lineTo(31, 13); path.lineTo(31, 28); path.lineTo(5, 28);
+            path.closeSubpath();
+            p.drawPath(path);
+        } else if (kind == 1) { // Trash
+            p.drawLine(7, 11, 29, 11);
+            p.drawLine(14, 7, 22, 7);
+            p.drawRoundedRect(QRectF(10, 11, 16, 18), 2, 2);
+            p.drawLine(15, 16, 15, 24);
+            p.drawLine(21, 16, 21, 24);
+        } else if (kind == 2) { // Export (Upload)
+            p.drawLine(18, 22, 18, 7);
+            p.drawLine(12, 13, 18, 7);
+            p.drawLine(24, 13, 18, 7);
+            p.drawLine(7, 22, 7, 29); p.drawLine(7, 29, 29, 29); p.drawLine(29, 29, 29, 22);
+        } else { // Import (Download)
+            p.drawLine(18, 7, 18, 22);
+            p.drawLine(12, 16, 18, 22);
+            p.drawLine(24, 16, 18, 22);
+            p.drawLine(7, 22, 7, 29); p.drawLine(7, 29, 29, 29); p.drawLine(29, 29, 29, 22);
+        }
+        return QIcon(pm);
+    };
+
+    ui->open->setIcon(make_data_icon(0, QColor(QStringLiteral("#38BDF8"))));
+    ui->open->setText(StormLang(QStringLiteral("Открыть"), QStringLiteral("Open")));
+    ui->clear->setIcon(make_data_icon(1, QColor(QStringLiteral("#F87171"))));
+    ui->clear->setText(StormLang(QStringLiteral("Очистить"), QStringLiteral("Clear")));
+    ui->upload->setIcon(make_data_icon(2, QColor(QStringLiteral("#34D399"))));
+    ui->upload->setText(StormLang(QStringLiteral("Экспорт"), QStringLiteral("Export")));
+    ui->download->setIcon(make_data_icon(3, QColor(QStringLiteral("#A78BFA"))));
+    ui->download->setText(StormLang(QStringLiteral("Импорт"), QStringLiteral("Import")));
 
     connect(ui->clear, &QPushButton::clicked, this, &DataWidget::clear);
     connect(ui->open, &QPushButton::clicked, this, &DataWidget::open);

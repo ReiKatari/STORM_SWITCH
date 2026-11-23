@@ -1534,59 +1534,78 @@ void MacroEngine::Execute(Core::System& system, Engines::Maxwell3D& maxwell3d, u
                           std::span<const u32> parameters) {
     if (native_turing) {
         maxwell3d.RefreshParameters();
-        const auto context = reinterpret_cast<std::uintptr_t>(this);
-        static std::unordered_set<std::uintptr_t> captured_contexts;
-        if (std::getenv("EDEN_NATIVE_FRAME_CAPTURE") && captured_contexts.insert(context).second) {
-            std::ofstream dump("native-graphics-mme-" + std::to_string(context) + ".bin", std::ios::binary);
-            dump.write(reinterpret_cast<const char*>(native_code.data()), sizeof(native_code));
-        }
-        LOG_DEBUG(HW_GPU, "Native MME context={:#x}", context);
-        LOG_DEBUG(HW_GPU, "Native MME start={:#x}, parameters={}, data={:08x}", method, parameters.size(), fmt::join(parameters, ","));
-        if (native_fifo.capacity() < 64) {
-            native_fifo.reserve(64);
-        }
-        native_fifo.assign(parameters.begin(), parameters.end());
-        const auto emit = [&](u32 address, u32 value) {
-            if (HandleNativeDmaMethod(maxwell3d.AccessMemoryManager(), &maxwell3d.Rasterizer(),
-                                      address, value, &native_fifo)) {
-                return true;
+        static const bool capture_frame = std::getenv("EDEN_NATIVE_FRAME_CAPTURE") != nullptr;
+        static const bool draw_diag = std::getenv("EDEN_NATIVE_DRAW_DIAGNOSTICS") != nullptr;
+        if (capture_frame) [[unlikely]] {
+            const auto context = reinterpret_cast<std::uintptr_t>(this);
+            static std::unordered_set<std::uintptr_t> captured_contexts;
+            if (captured_contexts.insert(context).second) {
+                std::ofstream dump("native-graphics-mme-" + std::to_string(context) + ".bin", std::ios::binary);
+                dump.write(reinterpret_cast<const char*>(native_code.data()), sizeof(native_code));
             }
-            if (address >= 0xe00) return false;
-            maxwell3d.CallMethod(system, address, value, true);
+        }
+        if (draw_diag) [[unlikely]] {
+            const auto context = reinterpret_cast<std::uintptr_t>(this);
+            LOG_DEBUG(HW_GPU, "Native MME context={:#x}", context);
+            LOG_DEBUG(HW_GPU, "Native MME start={:#x}, parameters={}, data={:08x}", method, parameters.size(), fmt::join(parameters, ","));
+        }
+        bool fifo_copied = false;
+        const auto ensure_fifo = [&]() {
+            if (!fifo_copied) {
+                if (native_fifo.capacity() < 64) {
+                    native_fifo.reserve(64);
+                }
+                native_fifo.assign(parameters.begin(), parameters.end());
+                fifo_copied = true;
+            }
+        };
+        const auto emit = [&](u32 address, u32 value) {
+            if ((address >= 0x154 && address <= 0x15d) || address == 0x37b) [[unlikely]] {
+                ensure_fifo();
+                if (HandleNativeDmaMethod(maxwell3d.AccessMemoryManager(), &maxwell3d.Rasterizer(),
+                                          address, value, &native_fifo)) {
+                    return true;
+                }
+            }
+            if (address >= 0xe00) [[unlikely]] return false;
+            maxwell3d.CallNativeMacroMethod(address, value);
             return true;
         };
 #ifdef ARCHITECTURE_x86_64
         // Macro code runs compiled to x86-64 (macro_turing_jit.h) instead of through the interpreter;
         // EDEN_NX2_MME_JIT=0 goes back to the interpreter.
-        const bool use_jit = [] {
+        static const bool jit_env = [] {
             const char* value = std::getenv("EDEN_NX2_MME_JIT");
-            return (value == nullptr || value[0] != '0') &&
-                   !Settings::values.disable_macro_jit.GetValue();
+            return value == nullptr || value[0] != '0';
         }();
+        const bool use_jit = jit_env && !Settings::values.disable_macro_jit.GetValue();
         if (use_jit) {
             if (!native_jit) {
                 native_jit = std::make_shared<TuringMacroJit>();
             }
             native_jit->Prepare(native_code, native_code_generation);
             const auto result = native_jit->Execute(
-                method, native_fifo, std::span<u32>{native_interpreter.dram},
+                method, parameters, native_fifo, std::span<u32>{native_interpreter.dram},
+                maxwell3d.RegsPtr(), maxwell3d.ShadowRegsPtr(), maxwell3d.FastSkipMask(), maxwell3d.ShadowRamControlPtr(),
                 [&](u32 address) {
                     return address < Maxwell3D::Regs::NUM_REGS ? maxwell3d.GetRegisterValue(address) : 0U;
                 },
                 emit);
             if (!result.success) {
                 LOG_WARNING(HW_GPU, "Native MME (JIT) skipped: start={:#x}, pc={:#x}, consumed={}/{}, error={}",
-                            method, result.pc, result.consumed, native_fifo.size(), result.error);
+                            method, result.pc, result.consumed,
+                            fifo_copied ? native_fifo.size() : parameters.size(), result.error);
             }
             return;
         }
 #endif
+        ensure_fifo();
         const auto result = native_interpreter.Execute(
             native_code, method, native_fifo,
             [&](u32 address) { return address < Maxwell3D::Regs::NUM_REGS ? maxwell3d.GetRegisterValue(address) : 0U; },
             emit);
         if (!result.success) {
-            if (std::getenv("EDEN_NATIVE_DRAW_DIAGNOSTICS")) {
+            if (draw_diag) {
                 std::ofstream dump("native-mme-" + std::to_string(method) + ".bin", std::ios::binary);
                 dump.write(reinterpret_cast<const char*>(native_code.data()), sizeof(native_code));
             }

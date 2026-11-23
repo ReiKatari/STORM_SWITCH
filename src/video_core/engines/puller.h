@@ -49,6 +49,8 @@ namespace Tegra::Engines {
 
 class Puller final {
 public:
+    Puller() = default;
+    ~Puller();
     struct MethodCall {
         u32 method{};
         u32 argument{};

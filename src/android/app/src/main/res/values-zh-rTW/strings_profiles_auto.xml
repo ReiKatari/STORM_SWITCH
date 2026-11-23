@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="storm_prof_filter_all">全部</string>
+    <string name="storm_prof_btn_save">儲存</string>
+    <string name="storm_prof_btn_import">導入</string>
+    <string name="storm_prof_btn_apply">套用</string>
+    <string name="storm_prof_btn_share">分享</string>
+    <string name="storm_prof_btn_rename">重新命名</string>
+    <string name="storm_prof_btn_delete">刪除</string>
+    <string name="storm_prof_preset_balanced_name">平衡（推薦）</string>
+    <string name="storm_prof_save_btn">儲存</string>
+    <string name="storm_prof_rename_title">重新命名設定檔</string>
+    <string name="storm_prof_delete_title">刪除設定檔</string>
+    <string name="storm_auto_btn_reset">重設</string>
+    <string name="storm_auto_hw_soc_title">處理器 / SoC</string>
+    <string name="storm_auto_param_cpu_backend">CPU 后端</string>
+    <string name="storm_auto_btn_apply">套用最佳化設定</string>
+</resources>

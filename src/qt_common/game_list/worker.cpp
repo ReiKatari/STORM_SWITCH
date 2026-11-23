@@ -629,7 +629,7 @@ void GameListWorker::AddTitlesToGameList(GameListDir* parent_dir) {
                     continue; // Negative cache hit!
                 }
                 if (mem_entry.program_id != 0 && (mem_entry.program_id & 0xFFF) == 0) {
-                    const std::string dedup_key = fmt::format("{:016X}_{}", mem_entry.program_id & 0xFFFFFFFFFFFFE000ULL, mem_entry.file_type_string);
+                    const std::string dedup_key = BuildGameListDedupKey(mem_entry.program_id, mem_entry.file_type_string, full_path);
                     if (!emitted_entries.contains(full_path) && !emitted_entries.contains(dedup_key)) {
                         installed_batch.push_back(MakeCachedGameListEntry(
                             full_path, mem_entry.name, file_sz, mem_entry.icon,
@@ -666,7 +666,7 @@ void GameListWorker::AddTitlesToGameList(GameListDir* parent_dir) {
                 continue; // SKIP in O(1)!
             }
 
-            const std::string dedup_key = fmt::format("{:016X}_{}", cached.program_id & 0xFFFFFFFFFFFFE000ULL, cached.file_type_string);
+            const std::string dedup_key = BuildGameListDedupKey(cached.program_id, cached.file_type_string, full_path);
             if (!emitted_entries.contains(full_path) && !emitted_entries.contains(dedup_key) &&
                 cached.program_id != 0 && (cached.program_id & 0xFFF) == 0) {
                 std::vector<u8> icon_bytes;
@@ -785,7 +785,7 @@ void GameListWorker::AddTitlesToGameList(GameListDir* parent_dir) {
             s_mem_cache[full_path] = std::move(me);
         }
 
-        const std::string dedup_key = fmt::format("{:016X}_{}", program_id & 0xFFFFFFFFFFFFE000ULL, ftype.toStdString());
+        const std::string dedup_key = BuildGameListDedupKey(program_id, ftype.toStdString(), full_path);
         if (!emitted_entries.contains(full_path) && !emitted_entries.contains(dedup_key)) {
             installed_batch.push_back(entry);
             emitted_entries.insert(full_path);
@@ -1035,7 +1035,7 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
                                 deferred_provider_files.push_back(file_info.physical_name);
                             }
                         } else {
-                            const std::string dedup_key = fmt::format("{:016X}_{}", mem_entry.program_id & 0xFFFFFFFFFFFFE000ULL, mem_entry.file_type_string);
+                            const std::string dedup_key = BuildGameListDedupKey(mem_entry.program_id, mem_entry.file_type_string, file_info.physical_name);
                             if (!emitted_entries.contains(file_info.physical_name) && !emitted_entries.contains(dedup_key) &&
                                 mem_entry.program_id != 0 && (mem_entry.program_id & 0xFFF) == 0) {
                                 cached_batch.push_back(MakeCachedGameListEntry(
@@ -1075,7 +1075,7 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
                 continue;
             }
 
-            const std::string dedup_key = fmt::format("{:016X}_{}", cached.program_id & 0xFFFFFFFFFFFFE000ULL, cached.file_type_string);
+            const std::string dedup_key = BuildGameListDedupKey(cached.program_id, cached.file_type_string, file_info.physical_name);
             if (!emitted_entries.contains(file_info.physical_name) && !emitted_entries.contains(dedup_key) &&
                 cached.program_id != 0 && (cached.program_id & 0xFFF) == 0) {
                 // Do NOT synchronously open/read jpeg here - thumbnails are loaded lazily & async
@@ -1365,7 +1365,7 @@ void GameListWorker::ScanDirectory(const std::string& dir_path, bool deep_scan,
                     std::scoped_lock lk(s_mem_cache_mutex);
                     s_mem_cache[file_info.physical_name] = std::move(me);
                 }
-                const std::string dedup_key = fmt::format("{:016X}_{}", id & 0xFFFFFFFFFFFFE000ULL, file_type_str.toStdString());
+                const std::string dedup_key = BuildGameListDedupKey(id, file_type_str.toStdString(), file_info.physical_name);
                 const bool already_emitted = emitted_entries.contains(file_info.physical_name) || emitted_entries.contains(dedup_key);
                 emitted_entries.insert(file_info.physical_name);
                 emitted_entries.insert(dedup_key);

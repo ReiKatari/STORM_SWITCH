@@ -30,6 +30,8 @@ add_executable(tests
     video_core/memory_tracker.cpp
     video_core/storm_nextgen_arch.cpp
     video_core/syncpoint_actions.cpp
+    core/qt_software_keyboard.cpp
+    video_core/vk_texture_cache.cpp
     input_common/calibration_configuration_job.cpp
 )
 

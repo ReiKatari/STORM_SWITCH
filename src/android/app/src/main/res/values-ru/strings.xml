@@ -606,7 +606,7 @@
     <string name="use_auto_stub_description">Автоматически заглушает отсутствующие сервисы и функции. Может улучшить совместимость, но вызывать сбои и проблемы стабильности.</string>
 
     <string name="gpu">ГПУ</string>
-    <string name="renderer_api">API</string>
+    <string name="renderer_api">Графический API</string>
     <string name="renderer_debug">Отладка графики</string>
     <string name="renderer_debug_description">Переводит графический API в режим медленной отладки.</string>
     <string name="patch_old_qcom_drivers">Исправление текстур BCn</string>
@@ -1098,7 +1098,7 @@
     <string name="renderer_vsync_immediate">Моментальная (выключена) </string>
     <string name="renderer_vsync_mailbox">Mailbox</string>
     <string name="renderer_vsync_fifo">FIFO (Включена)</string>
-    <string name="renderer_vsync_fifo_relaxed">FIFO Relaxed</string>
+    <string name="renderer_vsync_fifo_relaxed">FIFO Relaxed (Адаптивный VSync)</string>
 
     <!-- Anti-Aliasing -->
     <string name="anti_aliasing_none">Выключено</string>
@@ -1687,7 +1687,7 @@
 
     <string name="gamebanana_delete_mod_confirm">Вы уверены, что хотите удалить мод «%1$s»?</string>
     <string name="anisotropic_filtering_2x">2x</string>
-    <string name="anisotropic_filtering_4x">4x</string>
+    <string name="anisotropic_filtering_4x">4x (Учетверение кадров)</string>
     <string name="anisotropic_filtering_8x">8x</string>
     <string name="anisotropic_filtering_16x">16x</string>
     <string name="anisotropic_filtering_default">По умолчанию</string>
@@ -1744,7 +1744,7 @@
     <string name="ratio_48_9">48:9 (Три монитора 16:9)</string>
     <string name="ratio_auto_window">Авто по пропорциям экрана (3D без растяжения)</string>
 
-    <string name="amiibo">Amiibo</string>
+    <string name="amiibo">Браузер Amiibo</string>
     <string name="amiibo_for_game_title">Amiibo: %1$s</string>
     <string name="storm_notif_channel_name">Загрузки STORM GAMES WORLD</string>
     <string name="storm_notif_channel_desc">Уведомления о скачивании игр и обновлений</string>
@@ -2503,4 +2503,27 @@
     <string name="apply_driver_negative">Отмена</string>
     <string name="apply_driver_positive">Применить</string>
     <string name="game_fix_launch_method">Способ запуска</string>
+    <string name="storm_use_device_sensors">Датчики движения устройства (гироскоп)</string>
+    <string name="storm_use_device_sensors_desc">Включает встроенный гироскоп и акселерометр смартфона для управления движением в играх.</string>
+    <string name="storm_gyro_on">Гироскоп: ВКЛ</string>
+    <string name="storm_gyro_off">Гироскоп: ВЫКЛ</string>
+    <string name="storm_touchscreen_on">Сенсорный экран: ВКЛ</string>
+    <string name="storm_touchscreen_off">Сенсорный экран: ВЫКЛ</string>
+    <string name="storm_cheat_active_in_game">АКТИВЕН В ИГРЕ</string>
+    <string name="storm_cheat_value_btn">Значение</string>
+    <string name="storm_prof_ram_placeholder">ОЗУ: 4 ГБ</string>
+    <string name="storm_error_fmt">Ошибка: %1$s</string>
+    <string name="storm_invalid_request_missing_tid">Некорректный запрос: отсутствует Title ID</string>
+    <string name="storm_qlaunch_failed_fmt">Не удалось запустить меню HOME: %1$s</string>
+    <string name="storm_sync_tooltip_refresh">Обновить список</string>
+    <string name="storm_world_tooltip_download">Скачать игру</string>
+    <string name="storm_sync_tooltip_close">Закрыть окно</string>
+    <string name="storm_sync_tooltip_copy_key">Копировать ключ подключения</string>
+    <string name="storm_sync_tooltip_connect">Подключиться к устройству</string>
+    <string name="storm_sync_tooltip_search_devices">Поиск устройств в локальной сети</string>
+    <string name="storm_sync_tooltip_sync_all">Синхронизировать все сохранения</string>
+    <string name="storm_world_tooltip_refresh">Обновить каталог</string>
+    <string name="storm_world_tooltip_close">Закрыть окно</string>
+    <string name="storm_world_tooltip_pause">Приостановить загрузку</string>
+    <string name="storm_world_tooltip_cancel">Отменить загрузку</string>
 </resources>

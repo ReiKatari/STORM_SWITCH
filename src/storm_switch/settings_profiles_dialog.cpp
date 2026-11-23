@@ -45,6 +45,10 @@ enum class ProfileVectorIcon {
     Search,
     Close,
     PresetStar,
+    PresetSpeed,
+    PresetBalance,
+    PresetUltra,
+    PresetEco,
     CustomUser,
 };
 
@@ -159,12 +163,61 @@ static QIcon DrawProfileVectorIcon(ProfileVectorIcon kind, const QColor& color, 
         p.drawLine(QPointF(s * 0.76, s * 0.24), QPointF(s * 0.24, s * 0.76));
         break;
     }
-    case ProfileVectorIcon::PresetStar: {
-        QPainterPath path;
-        path.addRoundedRect(QRectF(s * 0.18, s * 0.18, s * 0.64, s * 0.64), s * 0.18, s * 0.18);
-        p.drawPath(path);
-        p.drawLine(QPointF(s * 0.50, s * 0.32), QPointF(s * 0.50, s * 0.68));
-        p.drawLine(QPointF(s * 0.32, s * 0.50), QPointF(s * 0.68, s * 0.50));
+    case ProfileVectorIcon::PresetStar:
+    case ProfileVectorIcon::PresetSpeed: {
+        // Lightning bolt for Maximum FPS
+        QPainterPath bolt;
+        bolt.moveTo(s * 0.56, s * 0.14);
+        bolt.lineTo(s * 0.24, s * 0.54);
+        bolt.lineTo(s * 0.48, s * 0.54);
+        bolt.lineTo(s * 0.42, s * 0.86);
+        bolt.lineTo(s * 0.76, s * 0.44);
+        bolt.lineTo(s * 0.52, s * 0.44);
+        bolt.closeSubpath();
+        p.setBrush(QColor(color.red(), color.green(), color.blue(), 60));
+        p.drawPath(bolt);
+        break;
+    }
+    case ProfileVectorIcon::PresetBalance: {
+        // Balance scales for Balanced preset
+        p.drawLine(QPointF(s * 0.50, s * 0.18), QPointF(s * 0.50, s * 0.80));
+        p.drawLine(QPointF(s * 0.30, s * 0.80), QPointF(s * 0.70, s * 0.80));
+        p.drawLine(QPointF(s * 0.20, s * 0.32), QPointF(s * 0.80, s * 0.32));
+        p.drawLine(QPointF(s * 0.20, s * 0.32), QPointF(s * 0.14, s * 0.54));
+        p.drawLine(QPointF(s * 0.20, s * 0.32), QPointF(s * 0.26, s * 0.54));
+        p.drawLine(QPointF(s * 0.12, s * 0.54), QPointF(s * 0.28, s * 0.54));
+        p.drawLine(QPointF(s * 0.80, s * 0.32), QPointF(s * 0.74, s * 0.54));
+        p.drawLine(QPointF(s * 0.80, s * 0.32), QPointF(s * 0.86, s * 0.54));
+        p.drawLine(QPointF(s * 0.72, s * 0.54), QPointF(s * 0.88, s * 0.54));
+        break;
+    }
+    case ProfileVectorIcon::PresetUltra: {
+        // Diamond gem for Ultra 2K/4K Quality
+        QPainterPath gem;
+        gem.moveTo(s * 0.26, s * 0.24);
+        gem.lineTo(s * 0.74, s * 0.24);
+        gem.lineTo(s * 0.86, s * 0.44);
+        gem.lineTo(s * 0.50, s * 0.82);
+        gem.lineTo(s * 0.14, s * 0.44);
+        gem.closeSubpath();
+        p.setBrush(QColor(color.red(), color.green(), color.blue(), 55));
+        p.drawPath(gem);
+        p.setBrush(Qt::NoBrush);
+        p.drawLine(QPointF(s * 0.14, s * 0.44), QPointF(s * 0.86, s * 0.44));
+        p.drawLine(QPointF(s * 0.36, s * 0.24), QPointF(s * 0.50, s * 0.82));
+        p.drawLine(QPointF(s * 0.64, s * 0.24), QPointF(s * 0.50, s * 0.82));
+        break;
+    }
+    case ProfileVectorIcon::PresetEco: {
+        // Eco leaf for Quiet / Eco Mode
+        QPainterPath leaf;
+        leaf.moveTo(s * 0.22, s * 0.78);
+        leaf.cubicTo(s * 0.18, s * 0.36, s * 0.46, s * 0.18, s * 0.82, s * 0.20);
+        leaf.cubicTo(s * 0.80, s * 0.56, s * 0.62, s * 0.82, s * 0.22, s * 0.78);
+        p.setBrush(QColor(color.red(), color.green(), color.blue(), 55));
+        p.drawPath(leaf);
+        p.setBrush(Qt::NoBrush);
+        p.drawLine(QPointF(s * 0.22, s * 0.78), QPointF(s * 0.68, s * 0.34));
         break;
     }
     case ProfileVectorIcon::CustomUser: {
@@ -188,8 +241,8 @@ SettingsProfilesDialog::SettingsProfilesDialog(QWidget* parent, Core::System* sy
         QStringLiteral("STORM SWITCH - Einstellungen-Profile"),
         QStringLiteral("STORM SWITCH - Profils des paramètres")));
 
-    resize(860, 640);
-    setMinimumSize(720, 520);
+    resize(1060, 680);
+    setMinimumSize(920, 580);
     StormUI::StructureEngine::InstallEscDismiss(this);
 
     InitBuiltinPresets();
@@ -333,6 +386,7 @@ void SettingsProfilesDialog::SetupUI() {
         QStringLiteral("Save Current")), header_card);
     save_btn->setIcon(DrawProfileVectorIcon(ProfileVectorIcon::Save, QColor(pal.textPrimary), 14));
     save_btn->setCursor(Qt::PointingHandCursor);
+    save_btn->setMinimumWidth(168);
     connect(save_btn, &QPushButton::clicked, this, &SettingsProfilesDialog::SaveCurrentAsProfile);
     header_lay->addWidget(save_btn);
 
@@ -409,6 +463,7 @@ void SettingsProfilesDialog::SetupUI() {
     // -------------------------------------------------------------------------
     auto* scroll_area = new QScrollArea(this);
     scroll_area->setWidgetResizable(true);
+    scroll_area->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     scroll_area->setFrameShape(QFrame::NoFrame);
     StormUI::StructureEngine::EnforceScrollMargins(scroll_area, 14);
 
@@ -584,9 +639,19 @@ void SettingsProfilesDialog::RebuildCards() {
             card_lay->setSpacing(14);
 
             auto* icon_lbl = new QLabel(card);
-            icon_lbl->setPixmap(DrawProfileVectorIcon(ProfileVectorIcon::PresetStar, acc, 18).pixmap(36, 36));
+            const ProfileVectorIcon p_ico = (i == 0) ? ProfileVectorIcon::PresetSpeed
+                                          : (i == 1) ? ProfileVectorIcon::PresetBalance
+                                          : (i == 2) ? ProfileVectorIcon::PresetUltra
+                                                     : ProfileVectorIcon::PresetEco;
+            const QColor p_col = (i == 0) ? QColor(QStringLiteral("#F59E0B"))
+                               : (i == 1) ? acc
+                               : (i == 2) ? QColor(QStringLiteral("#38BDF8"))
+                                          : QColor(QStringLiteral("#34D399"));
+            icon_lbl->setFixedSize(40, 40);
+            icon_lbl->setAlignment(Qt::AlignCenter);
+            icon_lbl->setPixmap(DrawProfileVectorIcon(p_ico, p_col, 18).pixmap(36, 36));
             icon_lbl->setStyleSheet(QStringLiteral("border: none; background: transparent;"));
-            card_lay->addWidget(icon_lbl);
+            card_lay->addWidget(icon_lbl, 0, Qt::AlignTop);
 
             auto* info_lay = new QVBoxLayout();
             info_lay->setContentsMargins(0, 0, 0, 0);
@@ -605,17 +670,23 @@ void SettingsProfilesDialog::RebuildCards() {
             desc_lbl->setStyleSheet(QStringLiteral("color: %1; font-size: 11px; border: none; background: transparent;").arg(pal.textSecondary));
             info_lay->addWidget(desc_lbl);
 
-            auto* pills_lay = new QHBoxLayout();
-            pills_lay->setContentsMargins(0, 2, 0, 0);
-            pills_lay->setSpacing(6);
-            if (!p.res_pill.isEmpty()) pills_lay->addWidget(make_pill(p.res_pill));
-            if (!p.gpu_pill.isEmpty()) pills_lay->addWidget(make_pill(p.gpu_pill));
-            if (!p.shaders_pill.isEmpty()) pills_lay->addWidget(make_pill(p.shaders_pill));
-            if (!p.aa_pill.isEmpty()) pills_lay->addWidget(make_pill(p.aa_pill));
-            if (!p.cpu_pill.isEmpty()) pills_lay->addWidget(make_pill(p.cpu_pill));
-            if (!p.vsync_pill.isEmpty()) pills_lay->addWidget(make_pill(p.vsync_pill));
-            pills_lay->addStretch();
-            info_lay->addLayout(pills_lay);
+            auto* pills_row1 = new QHBoxLayout();
+            pills_row1->setContentsMargins(0, 2, 0, 0);
+            pills_row1->setSpacing(6);
+            if (!p.res_pill.isEmpty()) pills_row1->addWidget(make_pill(p.res_pill));
+            if (!p.gpu_pill.isEmpty()) pills_row1->addWidget(make_pill(p.gpu_pill));
+            if (!p.shaders_pill.isEmpty()) pills_row1->addWidget(make_pill(p.shaders_pill));
+            pills_row1->addStretch();
+            info_lay->addLayout(pills_row1);
+
+            auto* pills_row2 = new QHBoxLayout();
+            pills_row2->setContentsMargins(0, 0, 0, 0);
+            pills_row2->setSpacing(6);
+            if (!p.aa_pill.isEmpty()) pills_row2->addWidget(make_pill(p.aa_pill));
+            if (!p.cpu_pill.isEmpty()) pills_row2->addWidget(make_pill(p.cpu_pill));
+            if (!p.vsync_pill.isEmpty()) pills_row2->addWidget(make_pill(p.vsync_pill));
+            pills_row2->addStretch();
+            info_lay->addLayout(pills_row2);
 
             card_lay->addLayout(info_lay, 1);
 

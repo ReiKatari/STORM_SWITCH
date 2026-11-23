@@ -291,7 +291,8 @@ void Maxwell3D::DrawManager::ProcessDraw(Maxwell3D& maxwell3d, bool draw_indexed
                 LOG_ERROR(HW_GPU, "Native graphics shaders require the experimental Vulkan path");
                 return;
             }
-            if (std::getenv("EDEN_NATIVE_DRAW_DIAGNOSTICS")) {
+            static const bool native_draw_diag = std::getenv("EDEN_NATIVE_DRAW_DIAGNOSTICS") != nullptr;
+            if (native_draw_diag) [[unlikely]] {
                 static thread_local std::set<std::array<GPUVAddr, Maxwell3D::Regs::MaxShaderProgram>> captured;
                 std::array<GPUVAddr, Maxwell3D::Regs::MaxShaderProgram> programs{};
                 for (size_t stage = 0; stage < programs.size(); ++stage) {

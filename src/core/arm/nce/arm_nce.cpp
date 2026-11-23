@@ -257,13 +257,20 @@ bool ArmNce::HandleGuestAccessFault(GuestContext* guest_ctx, void* raw_info, voi
     const Common::ProcessAddress addr = (fault_addr & ~Memory::YUZU_PAGEMASK);
     auto& memory = guest_ctx->parent->m_running_thread->GetOwnerProcess()->GetMemory();
 
-    bool handled = memory.InvalidateNCE(addr, Memory::YUZU_PAGESIZE);
+    const auto action = memory.InvalidateNCE(addr, Memory::YUZU_PAGESIZE);
+    auto next_action = Memory::NCEAccessFaultAction::Unmapped;
     // Handle accesses which split a page boundary (e.g. unaligned 128-bit vector, STP Qn, or 64-byte DC ZVA)
     if ((fault_addr + 64) > (addr + Memory::YUZU_PAGESIZE)) {
-        handled |= memory.InvalidateNCE(addr + Memory::YUZU_PAGESIZE, Memory::YUZU_PAGESIZE);
+        next_action = memory.InvalidateNCE(addr + Memory::YUZU_PAGESIZE, Memory::YUZU_PAGESIZE);
     }
 
-    if (handled) {
+    if (action == Memory::NCEAccessFaultAction::Instruction ||
+        next_action == Memory::NCEAccessFaultAction::Instruction) {
+        return HandleGuestAlignmentFault(guest_ctx, raw_info, raw_context);
+    }
+
+    if (action == Memory::NCEAccessFaultAction::Retry ||
+        next_action == Memory::NCEAccessFaultAction::Retry) {
         // We handled the access successfully and are returning to guest code.
         return true;
     }

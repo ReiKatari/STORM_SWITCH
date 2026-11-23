@@ -239,7 +239,7 @@ void PerformanceOverlay::SetupUI() {
     m_compact_fps->setStyleSheet(QStringLiteral("font-size: 15px; font-weight: bold; color: #38BDF8;"));
     compact_stats_row->addWidget(m_compact_fps);
 
-    m_compact_ft = new QLabel(tr("0.0 ms"), m_compact_widget);
+    m_compact_ft = new QLabel(StormLang(QStringLiteral("0.0 мс"), QStringLiteral("0.0 ms")), m_compact_widget);
     m_compact_ft->setStyleSheet(QStringLiteral("font-size: 13px; font-weight: bold; color: %1;").arg(po_pal.accent));
     compact_stats_row->addWidget(m_compact_ft);
 
@@ -342,7 +342,7 @@ void PerformanceOverlay::SetupMonitoringTab(QWidget* tab) {
     ft_title->setStyleSheet(QStringLiteral("font-weight: bold; color: %1; font-size: 13px;").arg(po_pal.accent));
     ft_box->addWidget(ft_title);
 
-    m_lbl_ft = new QLabel(tr("0.00 ms"), tab);
+    m_lbl_ft = new QLabel(StormLang(QStringLiteral("0.00 мс"), QStringLiteral("0.00 ms")), tab);
     m_lbl_ft->setStyleSheet(QStringLiteral("font-weight: bold; font-size: 14px; color: %1;").arg(po_pal.textPrimary));
     ft_box->addWidget(m_lbl_ft);
 
@@ -754,7 +754,7 @@ void PerformanceOverlay::updateStats(const Core::PerfStatsResults& results,
         static constexpr double FT_SAMPLE_THRESHOLD = 500.0;
 
         double ft_ms = results.frametime * 1000.0;
-        QString ftText = tr("%1 ms").arg(ft_ms, 0, 'f', 2);
+        QString ftText = StormLang(QStringLiteral("%1 мс"), QStringLiteral("%1 ms")).arg(ft_ms, 0, 'f', 2);
         m_compact_ft->setText(ftText);
         if (m_lbl_ft) m_lbl_ft->setText(ftText);
 
@@ -1593,12 +1593,26 @@ void PerformanceOverlay::RefreshSidebarState() {
             QStringLiteral("Громкость: %1%").arg(vol),
             QStringLiteral("Volume: %1%").arg(vol)));
     }
-    if (m_sidebar_game_title && QtCommon::system && QtCommon::system->IsPoweredOn()) {
-        const u64 tid = QtCommon::system->GetApplicationProcessProgramID();
-        if (tid != 0) {
-            m_sidebar_game_title->setText(QStringLiteral("ID: %1").arg(StormFormat::FormatTitleId(tid)));
+    const bool is_running = QtCommon::system && QtCommon::system->IsPoweredOn();
+    if (m_sidebar_slot_combo) m_sidebar_slot_combo->setEnabled(is_running);
+    if (m_btn_sidebar_save) m_btn_sidebar_save->setEnabled(is_running);
+    if (m_btn_sidebar_load) m_btn_sidebar_load->setEnabled(is_running);
+    if (m_btn_sidebar_cheats) m_btn_sidebar_cheats->setEnabled(is_running);
+    if (m_btn_sidebar_amiibo_eject) m_btn_sidebar_amiibo_eject->setEnabled(is_running);
+    if (m_btn_sidebar_pause) m_btn_sidebar_pause->setEnabled(is_running);
+    if (m_btn_sidebar_restart) m_btn_sidebar_restart->setEnabled(is_running);
+    if (m_btn_sidebar_stop) m_btn_sidebar_stop->setEnabled(is_running);
+
+    if (m_sidebar_game_title) {
+        if (is_running) {
+            const u64 tid = QtCommon::system->GetApplicationProcessProgramID();
+            if (tid != 0) {
+                m_sidebar_game_title->setText(QStringLiteral("ID: %1").arg(StormFormat::FormatTitleId(tid)));
+            } else {
+                m_sidebar_game_title->setText(StormLang(QStringLiteral("Сессия эмулятора"), QStringLiteral("Emulation Session")));
+            }
         } else {
-            m_sidebar_game_title->setText(StormLang(QStringLiteral("Сессия эмулятора"), QStringLiteral("Emulation Session")));
+            m_sidebar_game_title->setText(StormLang(QStringLiteral("Игра не запущена"), QStringLiteral("No Game Running")));
         }
     }
 }

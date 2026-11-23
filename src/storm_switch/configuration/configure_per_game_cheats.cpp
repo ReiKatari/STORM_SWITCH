@@ -153,9 +153,8 @@ ConfigurePerGameCheats::ConfigurePerGameCheats(Core::System& system_, u64 title_
                 break;
             }
         }
-        if (build_id_str.isEmpty()) {
-            build_id_str = QString(QStringLiteral("%1")).arg(title_id, 16, 16, QLatin1Char('0')).toUpper();
-        }
+        // Do NOT substitute Title ID as Build ID (especially for Switch 2 titles).
+        // Keep build_id_str empty until real NSO Build ID is known from a running session or .txt file.
     }
 
     const auto pal = StormTheme::GetThemePalette();
@@ -177,7 +176,7 @@ ConfigurePerGameCheats::ConfigurePerGameCheats(Core::System& system_, u64 title_
     search_field->setStyleSheet(QStringLiteral(
         "QLineEdit {"
         "  background-color: %1;"
-        "  border: none;"
+        "  border: 1px solid %2;"
         "  border-radius: 6px;"
         "  padding: 6px 10px;"
         "  color: %3;"
@@ -185,7 +184,7 @@ ConfigurePerGameCheats::ConfigurePerGameCheats(Core::System& system_, u64 title_
         "  min-height: 28px;"
         "}"
         "QLineEdit:focus {"
-        "  border: none;"
+        "  border: 1px solid %4;"
         "  background-color: %5;"
         "}"
     ).arg(pal.inputBg, pal.border, pal.textPrimary, pal.accent, pal.surface));
@@ -209,14 +208,14 @@ ConfigurePerGameCheats::ConfigurePerGameCheats(Core::System& system_, u64 title_
         "  min-height: 28px;"
         "}"
         "QPushButton:hover {"
-        "  background-color: %4;"
+        "  background-color: %3;"
         "  border: none;"
         "  color: #FFFFFF;"
         "}"
         "QPushButton:pressed {"
-        "  background-color: %5;"
+        "  background-color: %4;"
         "}"
-    ).arg(pal.buttonBg, pal.accent, pal.buttonBorder, pal.accent, pal.surface));
+    ).arg(pal.buttonBg, pal.accent, pal.accent, pal.surface));
     toolbar_layout->addWidget(download_button);
 
     add_button = new QPushButton(StormLang(QStringLiteral("Добавить чит"), QStringLiteral("Add Custom Cheat")), this);
@@ -237,10 +236,10 @@ ConfigurePerGameCheats::ConfigurePerGameCheats(Core::System& system_, u64 title_
         "  min-height: 28px;"
         "}"
         "QPushButton:hover {"
-        "  background-color: %4;"
+        "  background-color: %3;"
         "  border: none;"
         "}"
-    ).arg(pal.buttonBg, pal.textPrimary, pal.buttonBorder, pal.itemHover, pal.accent));
+    ).arg(pal.buttonBg, pal.textPrimary, pal.itemHover));
     toolbar_layout->addWidget(add_button);
 
     open_folder_button = new QPushButton(StormLang(QStringLiteral("Открыть папку"), QStringLiteral("Open Folder")), this);
@@ -476,7 +475,10 @@ QString ConfigurePerGameCheats::GetCheatsDirectoryPath() const {
 
 QString ConfigurePerGameCheats::GetCheatsFilePath() const {
     const auto dir_path = GetCheatsDirectoryPath();
-    const auto clean_build_id = build_id_str.trimmed().toUpper();
+    QString clean_build_id = build_id_str.trimmed().toUpper();
+    if (clean_build_id.isEmpty()) {
+        clean_build_id = QString(QStringLiteral("%1")).arg(title_id, 16, 16, QLatin1Char('0')).toUpper();
+    }
     return QDir(dir_path).filePath(QStringLiteral("%1.txt").arg(clean_build_id));
 }
 

@@ -1067,12 +1067,12 @@ Mainly used for speedrunning.</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="303" />
       <source>Homebrew Args</source>
-      <translation>Homebrew Args</translation>
+      <translation>Homebrew 參數</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="304" />
       <source>Command-line arguments passed to homebrew at launch (e.g. -noglsl).</source>
-      <translation>Command-line arguments passed to homebrew at launch (e.g. -noglsl).</translation>
+      <translation>在啟動時傳遞給 Homebrew 的命令列參數（例如：-noglsl）</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="305" />
@@ -2216,7 +2216,43 @@ Accurate always waits for the GPU to finish (slowest, most accurate).</source><t
 平衡仅在需要时等待。
 精确始终等待 GPU 完成（最准）。</translation></message><message><source>Enables reading modified GPU buffers back to CPU memory.
 Required by some games for proper physics or rendering effects, but significantly reduces performance.</source><translation>启用将修改后的 GPU 缓冲区读回 CPU 内存。
-某些游戏需要此功能才能实现正常的物理或渲染效果，但会显著降低性能。</translation></message><message><source>Polish (polski)</source><translation>波兰语 (polski)</translation></message><message><source>Celsius (°C)</source><translation>摄氏度 (°C)</translation></message><message><source>Fahrenheit (°F)</source><translation>华氏度 (°F)</translation></message><message><source>Errors Only</source><translation>仅错误</translation></message><message><source>Standard</source><translation>标准</translation></message><message><source>Verbose</source><translation>详细</translation></message><message><source>All</source><translation>全部</translation></message><message><source>Turbo</source><translation>加速 (Turbo)</translation></message><message><source>Slow</source><translation>减速 (Slow)</translation></message></context>
+某些游戏需要此功能才能实现正常的物理或渲染效果，但会显著降低性能。</translation></message><message><source>Polish (polski)</source><translation>波兰语 (polski)</translation></message><message><source>Celsius (°C)</source><translation>摄氏度 (°C)</translation></message><message><source>Fahrenheit (°F)</source><translation>华氏度 (°F)</translation></message><message><source>Errors Only</source><translation>仅错误</translation></message><message><source>Standard</source><translation>标准</translation></message><message><source>Verbose</source><translation>详细</translation></message><message><source>All</source><translation>全部</translation></message><message><source>Turbo</source><translation>加速 (Turbo)</translation></message><message><source>Slow</source><translation>减速 (Slow)</translation></message>    <message>
+        <source>Theme:</source>
+        <translation>主題：</translation>
+    </message>
+    <message>
+        <source>Theme</source>
+        <translation>變更主題模式</translation>
+    </message>
+    <message>
+        <source>Interface language:</source>
+        <translation>介面語言：</translation>
+    </message>
+    <message>
+        <source>Reset All Settings</source>
+        <translation>重設所有設定</translation>
+    </message>
+    <message>
+        <source>Console Mode</source>
+        <translation>主機模式</translation>
+    </message>
+    <message>
+        <source>GPU Fence Behavior</source>
+        <translation>GPU 同步柵欄模式</translation>
+    </message>
+    <message>
+        <source>VRAM Usage Mode</source>
+        <translation>VRAM使用模式</translation>
+    </message>
+    <message>
+        <source>ASTC Decoding Method</source>
+        <translation>ASTC解碼方式</translation>
+    </message>
+    <message>
+        <source>Vulkan Pipeline Cache</source>
+        <translation>Vulkan 管線快取</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureApplets</name>
     <message>
@@ -2583,7 +2619,7 @@ Required by some games for proper physics or rendering effects, but significantl
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="235" />
       <source>Off</source>
-      <translation>Off</translation>
+      <translation>关闭</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="240" />
@@ -2593,17 +2629,17 @@ Required by some games for proper physics or rendering effects, but significantl
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="245" />
       <source>Standard</source>
-      <translation>Standard</translation>
+      <translation>标准</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="250" />
       <source>Verbose</source>
-      <translation>Verbose</translation>
+      <translation>详细</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="255" />
       <source>All</source>
-      <translation>All</translation>
+      <translation>全部</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="266" />
@@ -3353,7 +3389,23 @@ Would you like to delete the old save data?</translation>
       <source>VSync On</source>
       <translation>垂直同步開</translation>
     </message>
-  </context>
+      <message>
+        <source>API:</source>
+        <translation>图形 API:</translation>
+    </message>
+    <message>
+        <source>VSync Mode:</source>
+        <translation>垂直同步：</translation>
+    </message>
+    <message>
+        <source>Use asynchronous GPU emulation</source>
+        <translation>异步 GPU 模拟</translation>
+    </message>
+    <message>
+        <source>Eco Frame Pacing</source>
+        <translation>环保帧平滑</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureGraphicsAdvanced</name>
     <message>
@@ -3371,7 +3423,59 @@ Would you like to delete the old save data?</translation>
       <source>Advanced Graphics Settings</source>
       <translation>進階圖形設定</translation>
     </message>
-  </context>
+      <message>
+        <source>GPU Fence Behavior:</source>
+        <translation>GPU 栅栏同步行为:</translation>
+    </message>
+    <message>
+        <source>GPU Fence Behavior</source>
+        <translation>GPU 同步柵欄模式</translation>
+    </message>
+    <message>
+        <source>VRAM Usage Mode:</source>
+        <translation>VRAM 使用模式：</translation>
+    </message>
+    <message>
+        <source>VRAM Usage Mode</source>
+        <translation>VRAM使用模式</translation>
+    </message>
+    <message>
+        <source>ASTC Decoding Method:</source>
+        <translation>ASTC解碼方式：</translation>
+    </message>
+    <message>
+        <source>ASTC Decoding Method</source>
+        <translation>ASTC解碼方式</translation>
+    </message>
+    <message>
+        <source>Sync Memory Operations</source>
+        <translation>同步記憶體操作</translation>
+    </message>
+    <message>
+        <source>Force maximum clocks (Vulkan only)</source>
+        <translation>強制使用最大時脈（僅限Vulkan）</translation>
+    </message>
+    <message>
+        <source>Enable GPU buffer readback</source>
+        <translation>启用 GPU 缓冲区回读</translation>
+    </message>
+    <message>
+        <source>Smart Shader Throttle</source>
+        <translation>智能着色器节流</translation>
+    </message>
+    <message>
+        <source>Use Vulkan pipeline cache</source>
+        <translation>启用 Vulkan 管线缓存</translation>
+    </message>
+    <message>
+        <source>Vulkan Pipeline Cache</source>
+        <translation>Vulkan 管線快取</translation>
+    </message>
+    <message>
+        <source>VRAM Garbage Collection</source>
+        <translation>显存垃圾回收</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureGraphicsExtensions</name>
     <message>
@@ -4434,7 +4538,11 @@ To invert the axes, first move your joystick vertically, and then horizontally.<
       <source>Failed to save the input profile "%1"</source>
       <translation>儲存輸入設定檔「%1」失敗</translation>
     </message>
-  </context>
+      <message>
+        <source>Unknown</source>
+        <translation>未知</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureInputProfileDialog</name>
     <message>
@@ -4598,7 +4706,11 @@ To invert the axes, first move your joystick vertically, and then horizontally.<
       <source>UDP Test or calibration configuration is in progress.&lt;br&gt;Please wait for them to finish.</source>
       <translation>UDP 測試或觸控校正進行中。&lt;br&gt;請耐心等候。</translation>
     </message>
-  </context>
+      <message>
+        <source>Motion / Touch</source>
+        <translation>體感/觸控</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureMousePanning</name>
     <message>
@@ -4821,12 +4933,12 @@ Current values are %1% and %2% respectively.</source>
     <message>
       <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="86" />
       <source>Network</source>
-      <translation>Network</translation>
+      <translation>網路</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="87" />
       <source>Applets</source>
-      <translation>Applets</translation>
+      <translation>小程序</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="90" />
@@ -5232,7 +5344,19 @@ UUID: %2</translation>
       <source>Warning: "%1" is not a valid language for region "%2"</source>
       <translation>警告：“ %1 ”并不是“ %2 ”地区的有效语言。</translation>
     </message>
-  </context>
+      <message>
+        <source>Console Mode</source>
+        <translation>主機模式</translation>
+    </message>
+    <message>
+        <source>Limit Speed Percent</source>
+        <translation>執行速度限制</translation>
+    </message>
+    <message>
+        <source>Language:</source>
+        <translation>语言：</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureTas</name>
     <message>
@@ -5606,7 +5730,19 @@ Drag points to change position, or double-click table cells to edit values.</sou
       <comment>Screenshot width value</comment>
       <translation>自動 (%1 x %2, %3 x %4)</translation>
     </message>
-  </context>
+      <message>
+        <source>Theme</source>
+        <translation>變更主題模式</translation>
+    </message>
+    <message>
+        <source>Language:</source>
+        <translation>语言：</translation>
+    </message>
+    <message>
+        <source>Screenshots Path:</source>
+        <translation>螢幕截圖位置</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureVibration</name>
     <message>
@@ -5717,7 +5853,7 @@ Drag points to change position, or double-click table cells to edit values.</sou
     <message>
       <location filename="../../src/yuzu/configuration/configure_web.ui" line="105" />
       <source>Generate</source>
-      <translation>Generate</translation>
+      <translation>生成</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_web.ui" line="130" />
@@ -5753,7 +5889,11 @@ Drag points to change position, or double-click table cells to edit values.</sou
       <comment>Tooltip</comment>
       <translation>Must be 48 characters, and lowercase a-z</translation>
     </message>
-  </context>
+      <message>
+        <source>Username:</source>
+        <translation>使用者名稱：</translation>
+    </message>
+</context>
   <context>
     <name>ControllerDialog</name>
     <message>
@@ -5868,7 +6008,7 @@ Drag points to change position, or double-click table cells to edit values.</sou
     <message>
       <location filename="../../src/yuzu/deps_dialog.cpp" line="22" />
       <source>Version</source>
-      <translation>Version</translation>
+      <translation>版本</translation>
     </message>
   </context>
   <context>
@@ -6036,7 +6176,7 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
     <message>
       <location filename="../../src/yuzu/multiplayer/message.cpp" line="63" />
       <source>Error</source>
-      <translation>Error</translation>
+      <translation>錯誤</translation>
     </message>
   </context>
   <context>
@@ -6332,12 +6472,12 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="194" />
       <source>Name</source>
-      <translation>Name</translation>
+      <translation>名稱</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="195" />
       <source>Add-ons</source>
-      <translation>Add-ons</translation>
+      <translation>附加元件</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="196" />
@@ -6347,7 +6487,7 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="197" />
       <source>Size</source>
-      <translation>Size</translation>
+      <translation>大小</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="198" />
@@ -6543,7 +6683,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="41" />
       <source>Configure</source>
-      <translation>Configure</translation>
+      <translation>設定</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="42" />
@@ -6588,7 +6728,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="50" />
       <source>Create Room</source>
-      <translation>Create Room</translation>
+      <translation>建立房間</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="51" />
@@ -6598,7 +6738,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="52" />
       <source>Leave Room</source>
-      <translation>Leave Room</translation>
+      <translation>離開房間</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="53" />
@@ -7292,7 +7432,7 @@ Debug Message:</translation>
       <location filename="../../src/yuzu/main_window.cpp" line="876" />
       <location filename="../../src/yuzu/main_window.cpp" line="879" />
       <source>Disable Web Applet</source>
-      <translation>Disable Web Applet</translation>
+      <translation>停用 Web 小程式</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="880" />
@@ -7329,12 +7469,12 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="1067" />
       <source>Unmute</source>
-      <translation>Unmute</translation>
+      <translation>取消靜音</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="1067" />
       <source>Mute</source>
-      <translation>Mute</translation>
+      <translation>靜音</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="1072" />
@@ -7494,7 +7634,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2475" />
       <source>Remove Play Time Data</source>
-      <translation>Remove Play Time Data</translation>
+      <translation>清除遊玩時間</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2475" />
@@ -7571,7 +7711,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2676" />
       <source>Properties</source>
-      <translation>Properties</translation>
+      <translation>屬性</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2677" />
@@ -7587,7 +7727,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2743" />
       <source>Load File</source>
-      <translation>Load File</translation>
+      <translation>開啟檔案</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2756" />
@@ -7691,7 +7831,7 @@ Please, only use this feature to install updates and DLC.</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2913" />
       <source>Game</source>
-      <translation>Game</translation>
+      <translation>遊戲</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2914" />
@@ -7795,12 +7935,12 @@ Please, only use this feature to install updates and DLC.</translation>
       <location filename="../../src/yuzu/main_window.cpp" line="3699" />
       <location filename="../../src/yuzu/main_window.cpp" line="3750" />
       <source>The current amiibo has been removed</source>
-      <translation>The current amiibo has been removed</translation>
+      <translation>該amiibo已被移除</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3704" />
       <source>Error</source>
-      <translation>Error</translation>
+      <translation>錯誤</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3704" />
@@ -7816,7 +7956,7 @@ Please, only use this feature to install updates and DLC.</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3711" />
       <source>Load Amiibo</source>
-      <translation>Load Amiibo</translation>
+      <translation>導入Amiibo</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3746" />
@@ -7826,7 +7966,7 @@ Please, only use this feature to install updates and DLC.</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3756" />
       <source>The selected file is not a valid amiibo</source>
-      <translation>The selected file is not a valid amiibo</translation>
+      <translation>您所選擇的並不是正確的amiibo金鑰檔</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3759" />
@@ -7836,7 +7976,7 @@ Please, only use this feature to install updates and DLC.</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3765" />
       <source>An unknown error occurred</source>
-      <translation>An unknown error occurred</translation>
+      <translation>發生未知的錯誤</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3868" />
@@ -7871,7 +8011,7 @@ Please, only use this feature to install updates and DLC.</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3975" />
       <source>Capture Screenshot</source>
-      <translation>Capture Screenshot</translation>
+      <translation>截圖</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3976" />
@@ -8011,12 +8151,12 @@ Would you like to force it for future launches?</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="4329" />
       <source>Slow</source>
-      <translation>Slow</translation>
+      <translation>减速 (Slow)</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="4332" />
       <source>Turbo</source>
-      <translation>Turbo</translation>
+      <translation>加速 (Turbo)</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="4336" />
@@ -8077,12 +8217,12 @@ Would you like to bypass this and exit anyway?</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="40" />
       <source>Bilinear</source>
-      <translation>Bilinear</translation>
+      <translation>雙線性</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="41" />
       <source>Bicubic</source>
-      <translation>Bicubic</translation>
+      <translation>雙立方</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="43" />
@@ -8107,17 +8247,17 @@ Would you like to bypass this and exit anyway?</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="49" />
       <source>Gaussian</source>
-      <translation>Gaussian</translation>
+      <translation>高斯</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="50" />
       <source>Lanczos</source>
-      <translation>Lanczos</translation>
+      <translation>兰索斯</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="52" />
       <source>ScaleForce</source>
-      <translation>ScaleForce</translation>
+      <translation>強制縮放</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="53" />
@@ -8147,22 +8287,22 @@ Would you like to bypass this and exit anyway?</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="61" />
       <source>Docked</source>
-      <translation>Docked</translation>
+      <translation>TV</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="62" />
       <source>Handheld</source>
-      <translation>Handheld</translation>
+      <translation>掌機模式</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="66" />
       <source>Fast</source>
-      <translation>Fast</translation>
+      <translation>快速</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="67" />
       <source>Accurate</source>
-      <translation>Accurate</translation>
+      <translation>高精度</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="71" />
@@ -8187,9 +8327,33 @@ Would you like to bypass this and exit anyway?</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="78" />
       <source>Null</source>
-      <translation>Null</translation>
+      <translation>無</translation>
     </message>
-  </context>
+      <message>
+        <source>Fullscreen</source>
+        <translation>全螢幕</translation>
+    </message>
+    <message>
+        <source>Check for Updates</source>
+        <translation>檢查更新</translation>
+    </message>
+    <message>
+        <source>Mii Edit</source>
+        <translation>Mii 編輯</translation>
+    </message>
+    <message>
+        <source>NAND</source>
+        <translation>內部儲存空間</translation>
+    </message>
+    <message>
+        <source>Create Shortcut</source>
+        <translation>建立捷徑</translation>
+    </message>
+    <message>
+        <source>Install Files to NAND</source>
+        <translation>安裝檔案至內部儲存空間</translation>
+    </message>
+</context>
   <context>
     <name>MigrationWorker</name>
     <message>
@@ -8397,7 +8561,7 @@ Proceed anyway?</source>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="70" />
       <source>Username</source>
-      <translation>Username</translation>
+      <translation>使用者名稱</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="82" />
@@ -8407,7 +8571,7 @@ Proceed anyway?</source>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="89" />
       <source>Generate</source>
-      <translation>Generate</translation>
+      <translation>生成</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.cpp" line="138" />
@@ -8661,13 +8825,6 @@ p, li { white-space: pre-wrap; }
       <location filename="../../src/yuzu/user_data_migration.cpp" line="68" />
       <source>Link Old Directory</source>
       <translation>Link Old Directory</translation>
-    </message>
-    <message>
-      <location filename="../../src/yuzu/user_data_migration.cpp" line="98" />
-      <source>
-      </source>
-      <translation>
-      </translation>
     </message>
     <message>
       <location filename="../../src/yuzu/user_data_migration.cpp" line="102" />
@@ -9243,7 +9400,7 @@ p, li { white-space: pre-wrap; }
     <message>
       <location filename="../../src/qt_common/util/content.cpp" line="30" />
       <source>Game Requires Firmware</source>
-      <translation>Game Requires Firmware</translation>
+      <translation>遊戲需要韌體</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/content.cpp" line="31" />
@@ -9299,7 +9456,7 @@ p, li { white-space: pre-wrap; }
       <location filename="../../src/qt_common/util/content.cpp" line="223" />
       <location filename="../../src/qt_common/util/content.cpp" line="282" />
       <source>Integrity verification succeeded!</source>
-      <translation>Integrity verification succeeded!</translation>
+      <translation>完整性驗證成功！</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/content.cpp" line="224" />
@@ -9311,7 +9468,7 @@ p, li { white-space: pre-wrap; }
       <location filename="../../src/qt_common/util/content.cpp" line="227" />
       <location filename="../../src/qt_common/util/content.cpp" line="288" />
       <source>Integrity verification failed!</source>
-      <translation>Integrity verification failed!</translation>
+      <translation>完整性驗證失敗！</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/content.cpp" line="228" />
@@ -9321,7 +9478,7 @@ p, li { white-space: pre-wrap; }
     <message>
       <location filename="../../src/qt_common/util/content.cpp" line="232" />
       <source>Integrity verification couldn't be performed</source>
-      <translation>Integrity verification couldn't be performed</translation>
+      <translation>無法執行完整性驗證</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/content.cpp" line="233" />
@@ -9756,7 +9913,7 @@ Would you like to manually select a portable folder to use?</translation>
     <message>
       <location filename="../../src/qt_common/util/game.cpp" line="347" />
       <source>Reset Metadata Cache</source>
-      <translation>Reset Metadata Cache</translation>
+      <translation>重設中繼資料快取</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/game.cpp" line="353" />
@@ -9776,7 +9933,7 @@ Would you like to manually select a portable folder to use?</translation>
     <message>
       <location filename="../../src/qt_common/util/game.cpp" line="381" />
       <source>Create Shortcut</source>
-      <translation>Create Shortcut</translation>
+      <translation>建立捷徑</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/game.cpp" line="381" />
@@ -9955,12 +10112,12 @@ Most mods are RomFS mods, but patches (.pchtxt) are typically ExeFS mods.</trans
     <message>
       <location filename="../../src/qt_common/qt_string_lookup.h" line="81" />
       <source>One or more keys failed to copy.</source>
-      <translation>One or more keys failed to copy.</translation>
+      <translation>一個或多個金鑰安裝失敗</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/qt_string_lookup.h" line="83" />
       <source>Verify your keys file has a .keys extension and try again.</source>
-      <translation>Verify your keys file has a .keys extension and try again.</translation>
+      <translation>請確保金鑰檔案具有.keys副檔名後重試。</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/qt_string_lookup.h" line="85" />
@@ -10574,7 +10731,7 @@ By selecting "From Eden", previous save data stored in Ryujinx will be deleted, 
     <message>
       <location filename="../../src/yuzu/updater/update_dialog.ui" line="14" />
       <source>Update Available</source>
-      <translation>Update Available</translation>
+      <translation>偵測到新版本</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/updater/update_dialog.ui" line="20" />
@@ -10623,7 +10780,7 @@ By selecting "From Eden", previous save data stored in Ryujinx will be deleted, 
     <message>
       <location filename="../../src/yuzu/updater/update_dialog.cpp" line="112" />
       <source>Downloading...</source>
-      <translation>Downloading...</translation>
+      <translation>下載中…</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/updater/update_dialog.cpp" line="112" />
@@ -10663,4 +10820,423 @@ Error code: %3</translation>
       <translation>Successfully downloaded %1. Would you like to open it?</translation>
     </message>
   </context>
+<context>
+    <name>QPlatformTheme</name>
+    <message>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>套用</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>關閉</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>說明 (&amp;H)</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>確定</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>還原預設值</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>說明</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>重設 (&amp;R)</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>重設</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>中止</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>儲存</translation>
+    </message>
+    <message>
+        <source>Reset to Defaults</source>
+        <translation>還原為預設值</translation>
+    </message>
+</context>
+<context>
+    <name>QDialogButtonBox</name>
+    <message>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>套用</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>關閉</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>說明 (&amp;H)</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>確定</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>還原預設值</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>說明</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>重設 (&amp;R)</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>重設</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>中止</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>儲存</translation>
+    </message>
+    <message>
+        <source>Reset to Defaults</source>
+        <translation>還原為預設值</translation>
+    </message>
+</context>
+<context>
+    <name>QMessageBox</name>
+    <message>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>套用</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>關閉</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>說明 (&amp;H)</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>確定</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>還原預設值</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>說明</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>重設 (&amp;R)</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>重設</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>中止</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>儲存</translation>
+    </message>
+    <message>
+        <source>Reset to Defaults</source>
+        <translation>還原為預設值</translation>
+    </message>
+</context>
+<context>
+    <name>QGuiApplication</name>
+    <message>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>套用</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>關閉</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>說明 (&amp;H)</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>確定</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>還原預設值</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>說明</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>重設 (&amp;R)</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>重設</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>中止</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>儲存</translation>
+    </message>
+    <message>
+        <source>Reset to Defaults</source>
+        <translation>還原為預設值</translation>
+    </message>
+</context>
+<context>
+    <name>QAbstractButton</name>
+    <message>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>套用</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>關閉</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>說明 (&amp;H)</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>確定</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>還原預設值</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>說明</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>重設 (&amp;R)</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>重設</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>中止</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>儲存</translation>
+    </message>
+    <message>
+        <source>Reset to Defaults</source>
+        <translation>還原為預設值</translation>
+    </message>
+</context>
+<context>
+    <name>QColorDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>套用</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>關閉</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>說明 (&amp;H)</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>確定</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>還原預設值</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>說明</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>重設 (&amp;R)</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>重設</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>中止</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>儲存</translation>
+    </message>
+    <message>
+        <source>Reset to Defaults</source>
+        <translation>還原為預設值</translation>
+    </message>
+</context>
+<context>
+    <name>QFileDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>套用</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>關閉</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>說明 (&amp;H)</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>確定</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>還原預設值</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>說明</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>重設 (&amp;R)</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>重設</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>中止</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>儲存</translation>
+    </message>
+    <message>
+        <source>Reset to Defaults</source>
+        <translation>還原為預設值</translation>
+    </message>
+</context>
+<context>
+    <name>QFontDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>套用</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>關閉</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>說明 (&amp;H)</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>確定</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>還原預設值</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>說明</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>重設 (&amp;R)</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>重設</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>中止</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>儲存</translation>
+    </message>
+    <message>
+        <source>Reset to Defaults</source>
+        <translation>還原為預設值</translation>
+    </message>
+</context>
+<context>
+    <name>QtController</name>
+    <message>
+        <source>Console Mode</source>
+        <translation>主機模式</translation>
+    </message>
+    <message>
+        <source>Vibration</source>
+        <translation>震動</translation>
+    </message>
+</context>
 </TS>

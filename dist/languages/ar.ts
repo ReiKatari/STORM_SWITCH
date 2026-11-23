@@ -1822,7 +1822,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="584" />
       <source>GB</source>
-      <translation>GB</translation>
+      <translation>جيجابايت</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="585" />
@@ -2207,7 +2207,51 @@ Accurate always waits for the GPU to finish (slowest, most accurate).</source><t
 متوازن ينتظر عند الضرورة فقط.
 دقيق ينتظر دائماً انتهاء GPU.</translation></message><message><source>Enables reading modified GPU buffers back to CPU memory.
 Required by some games for proper physics or rendering effects, but significantly reduces performance.</source><translation>يمكّن قراءة مخازن GPU المعدلة مرة أخرى إلى ذاكرة CPU.
-مطلوب لبعض الألعاب للفيزياء أو التأثيرات، ولكنه يقلل الأداء.</translation></message><message><source>Polish (polski)</source><translation>البولندية (polski)</translation></message><message><source>Celsius (°C)</source><translation>مئوية (°C)</translation></message><message><source>Fahrenheit (°F)</source><translation>فهرنهايت (°F)</translation></message><message><source>Errors Only</source><translation>الأخطاء فقط</translation></message><message><source>Standard</source><translation>قياسي</translation></message><message><source>Verbose</source><translation>مفصل</translation></message><message><source>All</source><translation>الكل</translation></message><message><source>Turbo</source><translation>توربو</translation></message><message><source>Slow</source><translation>بطيء</translation></message></context>
+مطلوب لبعض الألعاب للفيزياء أو التأثيرات، ولكنه يقلل الأداء.</translation></message><message><source>Polish (polski)</source><translation>البولندية (polski)</translation></message><message><source>Celsius (°C)</source><translation>مئوية (°C)</translation></message><message><source>Fahrenheit (°F)</source><translation>فهرنهايت (°F)</translation></message><message><source>Errors Only</source><translation>الأخطاء فقط</translation></message><message><source>Standard</source><translation>قياسي</translation></message><message><source>Verbose</source><translation>مفصل</translation></message><message><source>All</source><translation>الكل</translation></message><message><source>Turbo</source><translation>توربو</translation></message><message><source>Slow</source><translation>بطيء</translation></message>    <message>
+        <source>Theme:</source>
+        <translation>:السمة</translation>
+    </message>
+    <message>
+        <source>Theme</source>
+        <translation>تغيير وضع السمة</translation>
+    </message>
+    <message>
+        <source>Interface language:</source>
+        <translation>:لغة الواجهة</translation>
+    </message>
+    <message>
+        <source>QLaunch</source>
+        <translation>القائمة الرئيسية</translation>
+    </message>
+    <message>
+        <source>Reset All Settings</source>
+        <translation>إعادة تعيين جميع الإعدادات</translation>
+    </message>
+    <message>
+        <source>Console Mode</source>
+        <translation>وضع وحدة التحكم</translation>
+    </message>
+    <message>
+        <source>API</source>
+        <translation>واجهة برمجة التطبيقات</translation>
+    </message>
+    <message>
+        <source>GPU Fence Behavior</source>
+        <translation>سلوك حاجز وحدة معالجة الرسومات</translation>
+    </message>
+    <message>
+        <source>VRAM Usage Mode</source>
+        <translation>وضع استخدام ذاكرة VRAM</translation>
+    </message>
+    <message>
+        <source>ASTC Decoding Method</source>
+        <translation>طريقة فك ضغط ASTC</translation>
+    </message>
+    <message>
+        <source>Cabinet</source>
+        <translation>الخزانة</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureApplets</name>
     <message>
@@ -2225,7 +2269,15 @@ Required by some games for proper physics or rendering effects, but significantl
       <source>Applet mode preference</source>
       <translation>تفضيلات وضع التطبيقات الصغيرة</translation>
     </message>
-  </context>
+      <message>
+        <source>QLaunch</source>
+        <translation>القائمة الرئيسية</translation>
+    </message>
+    <message>
+        <source>Cabinet</source>
+        <translation>الخزانة</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureAudio</name>
     <message>
@@ -2857,7 +2909,11 @@ Required by some games for proper physics or rendering effects, but significantl
       <source>**This will be reset automatically when Eden closes.</source>
       <translation>**سيتم إعادة تعيين هذا تلقائيًا عند إغلاق إيدن.</translation>
     </message>
-  </context>
+      <message>
+        <source>(bitmask)</source>
+        <translation>(قناع البت)</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureDebugController</name>
     <message>
@@ -3333,7 +3389,27 @@ Would you like to delete the old save data?</source>
       <source>VSync On</source>
       <translation>VSync مفعل</translation>
     </message>
-  </context>
+      <message>
+        <source>API:</source>
+        <translation>واجهة برمجة الرسوميات:</translation>
+    </message>
+    <message>
+        <source>API</source>
+        <translation>واجهة برمجة التطبيقات</translation>
+    </message>
+    <message>
+        <source>VSync Mode:</source>
+        <translation>وضع VSync:</translation>
+    </message>
+    <message>
+        <source>Use asynchronous GPU emulation</source>
+        <translation>محاكاة غير متزامنة لمعالج الرسوميات</translation>
+    </message>
+    <message>
+        <source>Eco Frame Pacing</source>
+        <translation>تنظيم الإطارات الاقتصادي</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureGraphicsAdvanced</name>
     <message>
@@ -3351,7 +3427,59 @@ Would you like to delete the old save data?</source>
       <source>Advanced Graphics Settings</source>
       <translation>إعدادات الرسومات المتقدمة</translation>
     </message>
-  </context>
+      <message>
+        <source>GPU Fence Behavior:</source>
+        <translation>سلوك حواجز معالج الرسوميات:</translation>
+    </message>
+    <message>
+        <source>GPU Fence Behavior</source>
+        <translation>سلوك حاجز وحدة معالجة الرسومات</translation>
+    </message>
+    <message>
+        <source>VRAM Usage Mode:</source>
+        <translation>وضع استخدام ذاكرة الفيديو:</translation>
+    </message>
+    <message>
+        <source>VRAM Usage Mode</source>
+        <translation>وضع استخدام ذاكرة VRAM</translation>
+    </message>
+    <message>
+        <source>ASTC Decoding Method:</source>
+        <translation>طريقة فك تشفير ASTC:</translation>
+    </message>
+    <message>
+        <source>ASTC Decoding Method</source>
+        <translation>طريقة فك ضغط ASTC</translation>
+    </message>
+    <message>
+        <source>Sync Memory Operations</source>
+        <translation>مزامنة عمليات الذاكرة</translation>
+    </message>
+    <message>
+        <source>Force maximum clocks (Vulkan only)</source>
+        <translation>فرض أقصى ترددات (Vulkan فقط)</translation>
+    </message>
+    <message>
+        <source>Enable GPU buffer readback</source>
+        <translation>تفعيل إعادة قراءة مخزن GPU</translation>
+    </message>
+    <message>
+        <source>Fix bloom effects</source>
+        <translation>إصلاح تأثيرات التوهج</translation>
+    </message>
+    <message>
+        <source>Smart Shader Throttle</source>
+        <translation>التحكم الذكي بمترجم الشيدر</translation>
+    </message>
+    <message>
+        <source>Use Vulkan pipeline cache</source>
+        <translation>استخدام ذاكرة خطوط أنابيب Vulkan</translation>
+    </message>
+    <message>
+        <source>VRAM Garbage Collection</source>
+        <translation>تنظيف ذاكرة الفيديو (VRAM)</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureGraphicsExtensions</name>
     <message>
@@ -3390,7 +3518,11 @@ Would you like to delete the old save data?</source>
       <source>Extended Dynamic State is disabled on macOS due to MoltenVK compatibility issues that cause black screens.</source>
       <translation>تم تعطيل الحالة الديناميكية الممتدة على نظام macOS بسبب مشكلات توافق MoltenVK التي تتسبب في ظهور شاشات سوداء.</translation>
     </message>
-  </context>
+      <message>
+        <source>Extensions</source>
+        <translation>ملحقات</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureHotkeys</name>
     <message>
@@ -4144,7 +4276,7 @@ Would you like to delete the old save data?</source>
       <location filename="../../src/yuzu/configuration/configure_input_player.ui" line="2169" />
       <location filename="../../src/yuzu/configuration/configure_input_player.ui" line="2208" />
       <source>B</source>
-      <translation>B</translation>
+      <translation>بت</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_input_player.ui" line="2218" />
@@ -4414,7 +4546,11 @@ To invert the axes, first move your joystick vertically, and then horizontally.<
       <source>Failed to save the input profile "%1"</source>
       <translation>"%1" فشل في حفظ ملف تعريف الإدخال</translation>
     </message>
-  </context>
+      <message>
+        <source>Unknown</source>
+        <translation>غير معروف</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureInputProfileDialog</name>
     <message>
@@ -4578,7 +4714,11 @@ To invert the axes, first move your joystick vertically, and then horizontally.<
       <source>UDP Test or calibration configuration is in progress.&lt;br&gt;Please wait for them to finish.</source>
       <translation>أو ضبط المعايرة قيد التقدم. &lt;br&gt;يرجى الانتظار حتى الانتهاء UDP اختبار</translation>
     </message>
-  </context>
+      <message>
+        <source>Motion / Touch</source>
+        <translation>حركة / لمس</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureMousePanning</name>
     <message>
@@ -4813,7 +4953,15 @@ Current values are %1% and %2% respectively.</source>
       <source>Properties</source>
       <translation>خصائص</translation>
     </message>
-  </context>
+      <message>
+        <source>GameBanana Mods</source>
+        <translation>تعديلات GameBanana</translation>
+    </message>
+    <message>
+        <source>Cheats</source>
+        <translation>الغش</translation>
+    </message>
+</context>
   <context>
     <name>ConfigurePerGameAddons</name>
     <message>
@@ -5214,7 +5362,19 @@ UUID: %2</source>
       <source>Warning: "%1" is not a valid language for region "%2"</source>
       <translation>تحذير: "%1" ليست لغة صالحة للمنطقة "%2"</translation>
     </message>
-  </context>
+      <message>
+        <source>Console Mode</source>
+        <translation>وضع وحدة التحكم</translation>
+    </message>
+    <message>
+        <source>Limit Speed Percent</source>
+        <translation>نسبة تحديد السرعة</translation>
+    </message>
+    <message>
+        <source>Language:</source>
+        <translation>اللغة:</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureTas</name>
     <message>
@@ -5588,7 +5748,19 @@ Drag points to change position, or double-click table cells to edit values.</sou
       <comment>Screenshot width value</comment>
       <translation>تلقائي (%1 x %2, %3 x %4)</translation>
     </message>
-  </context>
+      <message>
+        <source>Theme</source>
+        <translation>تغيير وضع السمة</translation>
+    </message>
+    <message>
+        <source>Language:</source>
+        <translation>اللغة:</translation>
+    </message>
+    <message>
+        <source>Screenshots Path:</source>
+        <translation>:مسار لقطات الشاشة</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureVibration</name>
     <message>
@@ -5735,7 +5907,15 @@ Drag points to change position, or double-click table cells to edit values.</sou
       <comment>Tooltip</comment>
       <translation>يجب أن يكون 48 حرفًا، وبأحرف صغيرة من a إلى z</translation>
     </message>
-  </context>
+      <message>
+        <source>Token:</source>
+        <translation>:الرمز</translation>
+    </message>
+    <message>
+        <source>Username:</source>
+        <translation>:اسم المستخدم</translation>
+    </message>
+</context>
   <context>
     <name>ControllerDialog</name>
     <message>
@@ -8108,12 +8288,12 @@ Would you like to bypass this and exit anyway?</source>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="40" />
       <source>Bilinear</source>
-      <translation>Bilinear</translation>
+      <translation>ثنائي الخطي</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="41" />
       <source>Bicubic</source>
-      <translation>Bicubic</translation>
+      <translation>ثنائي التكعيب</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="43" />
@@ -8138,12 +8318,12 @@ Would you like to bypass this and exit anyway?</source>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="49" />
       <source>Gaussian</source>
-      <translation>Gaussian</translation>
+      <translation>جاوسي</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="50" />
       <source>Lanczos</source>
-      <translation>Lanczos</translation>
+      <translation>لانكزوس</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="52" />
@@ -8220,7 +8400,39 @@ Would you like to bypass this and exit anyway?</source>
       <source>Null</source>
       <translation>لا شيء</translation>
     </message>
-  </context>
+      <message>
+        <source>Fullscreen</source>
+        <translation>ملء الشاشة</translation>
+    </message>
+    <message>
+        <source>Check for Updates</source>
+        <translation>التحقق من التحديثات</translation>
+    </message>
+    <message>
+        <source>QLaunch</source>
+        <translation>القائمة الرئيسية</translation>
+    </message>
+    <message>
+        <source>Mii Edit</source>
+        <translation>Mii تعديل الـ</translation>
+    </message>
+    <message>
+        <source>Cabinet</source>
+        <translation>الخزانة</translation>
+    </message>
+    <message>
+        <source>NAND</source>
+        <translation>الذاكرة الداخلية</translation>
+    </message>
+    <message>
+        <source>Create Shortcut</source>
+        <translation>إنشاء إختصار</translation>
+    </message>
+    <message>
+        <source>Install Files to NAND</source>
+        <translation>تثبيت الملفات في الذاكرة الداخلية</translation>
+    </message>
+</context>
   <context>
     <name>MigrationWorker</name>
     <message>
@@ -8698,13 +8910,6 @@ p, li { white-space: pre-wrap; }
       <translation>رابط المجلد القديم</translation>
     </message>
     <message>
-      <location filename="../../src/yuzu/user_data_migration.cpp" line="98" />
-      <source>
-      </source>
-      <translation>
-      </translation>
-    </message>
-    <message>
       <location filename="../../src/yuzu/user_data_migration.cpp" line="102" />
       <location filename="../../src/yuzu/user_data_migration.cpp" line="108" />
       <source>No</source>
@@ -8847,7 +9052,7 @@ p, li { white-space: pre-wrap; }
       <location filename="../../src/yuzu/configuration/configure_ringcon.cpp" line="66" />
       <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="88" />
       <source>B</source>
-      <translation>B</translation>
+      <translation>بت</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_ringcon.cpp" line="68" />
@@ -8865,7 +9070,7 @@ p, li { white-space: pre-wrap; }
       <location filename="../../src/yuzu/configuration/configure_ringcon.cpp" line="72" />
       <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="94" />
       <source>Start</source>
-      <translation>Start</translation>
+      <translation>بدء</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_ringcon.cpp" line="74" />
@@ -9430,7 +9635,7 @@ Only do this if you're 100% sure you want to delete this data.</source>
       <location filename="../../src/qt_common/util/content.cpp" line="429" />
       <location filename="../../src/qt_common/util/content.cpp" line="525" />
       <source>Zipped Archives (*.zip)</source>
-      <translation>Zipped Archives (*.zip)</translation>
+      <translation>(*.zip) موقع التعديل المضغوط</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/content.cpp" line="381" />
@@ -10696,4 +10901,423 @@ Error code: %3</source>
       <translation>تم تنزيل 1% بنجاح. هل تريد فتحه؟</translation>
     </message>
   </context>
+<context>
+    <name>QPlatformTheme</name>
+    <message>
+        <source>Cancel</source>
+        <translation>إلغاء</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>تفعيل</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>إغلاق</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;مساعدة</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>موافق</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>استعادة الإعدادات الافتراضية</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>مساعدة</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;إعادة تعيين</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>إعادة تعيين</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>إلغاء</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>حفظ</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>لا</translation>
+    </message>
+</context>
+<context>
+    <name>QDialogButtonBox</name>
+    <message>
+        <source>Cancel</source>
+        <translation>إلغاء</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>تفعيل</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>إغلاق</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;مساعدة</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>موافق</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>استعادة الإعدادات الافتراضية</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>مساعدة</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;إعادة تعيين</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>إعادة تعيين</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>إلغاء</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>حفظ</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>لا</translation>
+    </message>
+</context>
+<context>
+    <name>QMessageBox</name>
+    <message>
+        <source>Cancel</source>
+        <translation>إلغاء</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>تفعيل</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>إغلاق</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;مساعدة</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>موافق</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>استعادة الإعدادات الافتراضية</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>مساعدة</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;إعادة تعيين</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>إعادة تعيين</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>إلغاء</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>حفظ</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>لا</translation>
+    </message>
+</context>
+<context>
+    <name>QGuiApplication</name>
+    <message>
+        <source>Cancel</source>
+        <translation>إلغاء</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>تفعيل</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>إغلاق</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;مساعدة</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>موافق</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>استعادة الإعدادات الافتراضية</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>مساعدة</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;إعادة تعيين</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>إعادة تعيين</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>إلغاء</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>حفظ</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>لا</translation>
+    </message>
+</context>
+<context>
+    <name>QAbstractButton</name>
+    <message>
+        <source>Cancel</source>
+        <translation>إلغاء</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>تفعيل</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>إغلاق</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;مساعدة</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>موافق</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>استعادة الإعدادات الافتراضية</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>مساعدة</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;إعادة تعيين</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>إعادة تعيين</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>إلغاء</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>حفظ</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>لا</translation>
+    </message>
+</context>
+<context>
+    <name>QColorDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>إلغاء</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>تفعيل</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>إغلاق</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;مساعدة</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>موافق</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>استعادة الإعدادات الافتراضية</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>مساعدة</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;إعادة تعيين</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>إعادة تعيين</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>إلغاء</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>حفظ</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>لا</translation>
+    </message>
+</context>
+<context>
+    <name>QFileDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>إلغاء</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>تفعيل</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>إغلاق</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;مساعدة</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>موافق</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>استعادة الإعدادات الافتراضية</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>مساعدة</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;إعادة تعيين</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>إعادة تعيين</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>إلغاء</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>حفظ</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>لا</translation>
+    </message>
+</context>
+<context>
+    <name>QFontDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>إلغاء</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>تفعيل</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>إغلاق</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;مساعدة</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>موافق</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>استعادة الإعدادات الافتراضية</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>مساعدة</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;إعادة تعيين</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>إعادة تعيين</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>إلغاء</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>حفظ</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>لا</translation>
+    </message>
+</context>
+<context>
+    <name>QtController</name>
+    <message>
+        <source>Console Mode</source>
+        <translation>وضع وحدة التحكم</translation>
+    </message>
+    <message>
+        <source>Vibration</source>
+        <translation>الاهتزاز</translation>
+    </message>
+</context>
 </TS>

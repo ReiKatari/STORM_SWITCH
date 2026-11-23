@@ -394,15 +394,35 @@ object GameHelper {
         return ivA.compareTo(ivB)
     }
 
+    private val modTagRegex = Regex("\\[\\s*((?:MOD|PATCH|RUS PATCH|TRANSLAT|HACK|CUSTOM|UNOFFICIAL)[^\\]]*)\\]", RegexOption.IGNORE_CASE)
+    private val bundleModRegex = Regex("\\+([0-9]+M)(?:[^A-Z0-9]|$)", RegexOption.IGNORE_CASE)
+
+    private fun extractModVariantSuffix(path: String): String {
+        val decoded = runCatching { Uri.decode(path) }.getOrDefault(path)
+        val fname = decoded.substringAfterLast('/').substringAfterLast('\\').substringAfterLast(':')
+        val tagMatch = modTagRegex.find(fname)
+        if (tagMatch != null) {
+            val tag = tagMatch.groupValues[1].trim().uppercase(Locale.ROOT)
+            if (tag.isNotEmpty()) return "_VAR_${tag}"
+        }
+        val bundleMatch = bundleModRegex.find(fname)
+        if (bundleMatch != null) {
+            val tag = bundleMatch.groupValues[1].trim().uppercase(Locale.ROOT)
+            if (tag.isNotEmpty()) return "_VAR_BUNDLE_${tag}"
+        }
+        return ""
+    }
+
     fun getGameDeduplicationKey(game: Game): String {
         val ext = game.extension.uppercase(Locale.ROOT).ifEmpty { "NSP" }
+        val variant = extractModVariantSuffix(game.path)
         val basePid = getBaseProgramIdHex(game.programIdHex)
         if (basePid != "0" && basePid.isNotEmpty()) {
-            return "PID_${basePid}_FMT_${ext}"
+            return "PID_${basePid}_FMT_${ext}${variant}"
         }
         val cleanTitle = cleanGameTitle(game.title).lowercase(Locale.ROOT).trim()
         if (cleanTitle.isNotEmpty() && cleanTitle != "homebrew") {
-            return "TITLE_${cleanTitle}_FMT_${ext}"
+            return "TITLE_${cleanTitle}_FMT_${ext}${variant}"
         }
         return "${game.path}_FMT_${ext}"
     }
@@ -455,9 +475,10 @@ object GameHelper {
         val uniqueByTitleAndFormat = linkedMapOf<String, Game>()
         uniqueByPidMap.values.forEach { game ->
             val ext = game.extension.uppercase(Locale.ROOT).ifEmpty { "NSP" }
+            val variant = extractModVariantSuffix(game.path)
             val cleanTitle = cleanGameTitle(game.title).lowercase(Locale.ROOT).trim()
             val titleKey = if (cleanTitle.isNotEmpty() && cleanTitle != "homebrew") {
-                "TITLE_${cleanTitle}_FMT_${ext}"
+                "TITLE_${cleanTitle}_FMT_${ext}${variant}"
             } else {
                 getGameDeduplicationKey(game)
             }

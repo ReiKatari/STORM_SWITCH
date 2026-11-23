@@ -123,7 +123,8 @@ constexpr VkBorderColor ConvertBorderColor(const std::array<float, 4>& color) {
     }
 }
 
-[[nodiscard]] VkImageUsageFlags ImageUsageFlags(const MaxwellToVK::FormatInfo& info,
+[[nodiscard]] VkImageUsageFlags ImageUsageFlags(const Device& device,
+                                                const MaxwellToVK::FormatInfo& info,
                                                 PixelFormat format) {
     VkImageUsageFlags usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
                               VK_IMAGE_USAGE_SAMPLED_BIT;
@@ -131,11 +132,17 @@ constexpr VkBorderColor ConvertBorderColor(const std::array<float, 4>& color) {
         switch (VideoCore::Surface::GetFormatType(format)) {
         case VideoCore::Surface::SurfaceType::ColorTexture:
             usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+            if (device.UseInPassFeedbackLoopBarrier()) {
+                usage |= VK_IMAGE_USAGE_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT;
+            }
             break;
         case VideoCore::Surface::SurfaceType::Depth:
         case VideoCore::Surface::SurfaceType::Stencil:
         case VideoCore::Surface::SurfaceType::DepthStencil:
             usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+            if (device.UseInPassFeedbackLoopBarrier()) {
+                usage |= VK_IMAGE_USAGE_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT;
+            }
             break;
         default:
             LOG_ERROR(Render_Vulkan, "Invalid surface type");
@@ -195,7 +202,7 @@ constexpr VkBorderColor ConvertBorderColor(const std::array<float, 4>& color) {
         .arrayLayers = static_cast<u32>(info.resources.layers),
         .samples = ConvertSampleCount(info.num_samples),
         .tiling = VK_IMAGE_TILING_OPTIMAL,
-        .usage = ImageUsageFlags(format_info, info.format),
+        .usage = ImageUsageFlags(device, format_info, info.format),
         .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
         .queueFamilyIndexCount = 0,
         .pQueueFamilyIndices = nullptr,
@@ -651,8 +658,19 @@ void CopyBufferToImage(vk::CommandBuffer cmdbuf, VkBuffer src_buffer, VkImage im
             .subresourceRange = subresource_range,
     };
 
+    const VkBufferMemoryBarrier buf_barrier{
+        .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+        .pNext = nullptr,
+        .srcAccessMask = WRITE_ACCESS_FLAGS,
+        .dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
+        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .buffer = src_buffer,
+        .offset = 0,
+        .size = VK_WHOLE_SIZE,
+    };
     cmdbuf.PipelineBarrier(vk::PIPELINE_STAGE_GRAPHICS_COMPUTE_TRANSFER,
-                           VK_PIPELINE_STAGE_TRANSFER_BIT, 0, read_barrier);
+                           VK_PIPELINE_STAGE_TRANSFER_BIT, 0, nullptr, buf_barrier, read_barrier);
     cmdbuf.CopyBufferToImage(src_buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, copies);
     // TODO: Move this to another API
     cmdbuf.PipelineBarrier(VK_PIPELINE_STAGE_TRANSFER_BIT,
@@ -776,9 +794,8 @@ void TryTransformSwizzleIfNeeded(PixelFormat format, std::array<SwizzleSource, 4
 }
 
 void BlitScale(Scheduler& scheduler, VkImage src_image, VkImage dst_image, const ImageInfo& info,
-               VkImageAspectFlags aspect_mask, const Settings::ResolutionScalingInfo& resolution,
+               VkImageAspectFlags aspect_mask, VkExtent2D scaled_extent,
                bool up_scaling = true) {
-    const bool is_2d = info.type == ImageType::e2D;
     const auto resources = info.resources;
     const VkExtent2D extent{
         .width = info.size.width,
@@ -790,17 +807,15 @@ void BlitScale(Scheduler& scheduler, VkImage src_image, VkImage dst_image, const
     const VkFilter vk_filter = is_bilinear ? VK_FILTER_LINEAR : VK_FILTER_NEAREST;
 
     scheduler.RequestOutsideRenderPassOperationContext();
-    scheduler.Record([dst_image, src_image, extent, resources, aspect_mask, resolution, is_2d,
+    scheduler.Record([dst_image, src_image, extent, scaled_extent, resources, aspect_mask,
                       vk_filter, up_scaling](vk::CommandBuffer cmdbuf) {
         const VkOffset2D src_size{
-            .x = static_cast<s32>(up_scaling ? extent.width : resolution.ScaleUp(extent.width)),
-            .y = static_cast<s32>(is_2d && up_scaling ? extent.height
-                                                      : resolution.ScaleUp(extent.height)),
+            .x = static_cast<s32>(up_scaling ? extent.width : scaled_extent.width),
+            .y = static_cast<s32>(up_scaling ? extent.height : scaled_extent.height),
         };
         const VkOffset2D dst_size{
-            .x = static_cast<s32>(up_scaling ? resolution.ScaleUp(extent.width) : extent.width),
-            .y = static_cast<s32>(is_2d && up_scaling ? resolution.ScaleUp(extent.height)
-                                                      : extent.height),
+            .x = static_cast<s32>(up_scaling ? scaled_extent.width : extent.width),
+            .y = static_cast<s32>(up_scaling ? scaled_extent.height : extent.height),
         };
         boost::container::small_vector<VkImageBlit, 4> regions;
         regions.reserve(resources.levels);
@@ -1091,6 +1106,28 @@ void TextureCacheRuntime::EraseResolveShadow(VkImage msaa_image) {
 }
 
 void TextureCacheRuntime::BarrierFeedbackLoop() {
+    // Keep the active VkRenderPass open using an in-pass BY_REGION self-dependency barrier
+    // whenever VK_EXT_attachment_feedback_loop_layout is supported (eliminates ~65 tile-store
+    // render-pass splits/frame in G-buffer decal games like TotK on both Android & Desktop).
+    if (scheduler.IsRenderPassActive() && device.UseInPassFeedbackLoopBarrier()) {
+        scheduler.Record([](vk::CommandBuffer cmdbuf) {
+            static constexpr VkMemoryBarrier INPASS_FEEDBACK_BARRIER{
+                .sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER,
+                .pNext = nullptr,
+                .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+                                 VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+                .dstAccessMask = VK_ACCESS_SHADER_READ_BIT,
+            };
+            cmdbuf.PipelineBarrier(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
+                                       VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
+                                       VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+                                   VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                                   VK_DEPENDENCY_BY_REGION_BIT |
+                                       VK_DEPENDENCY_FEEDBACK_LOOP_BIT_EXT,
+                                   INPASS_FEEDBACK_BARRIER);
+        });
+        return;
+    }
     scheduler.RequestOutsideRenderPassOperationContext();
     scheduler.Record([](vk::CommandBuffer cmdbuf) {
         static constexpr VkMemoryBarrier FEEDBACK_BARRIER{
@@ -2407,6 +2444,50 @@ bool Image::IsRescaled() const noexcept {
     return True(flags & ImageFlagBits::Rescaled);
 }
 
+bool TextureCacheRuntime::CanScaleExtent(u32 width, u32 height, bool is_2d) const noexcept {
+    const u32 scaled_w = resolution.ScaleUp(width);
+    const u32 scaled_h = is_2d ? resolution.ScaleUp(height) : height;
+    const u32 max_img = (std::min)(device.GetMaxImageDimension2D(), 16384U);
+    const u32 max_fb_w = (std::min)(device.GetMaxFramebufferWidth(), 16384U);
+    const u32 max_fb_h = (std::min)(device.GetMaxFramebufferHeight(), 16384U);
+    if (scaled_w == 0 || scaled_h == 0 ||
+        scaled_w > max_img || scaled_h > max_img ||
+        scaled_w > max_fb_w || scaled_h > max_fb_h) {
+        return false;
+    }
+    // Guard against extreme 6X..8X VRAM / WDDM shared-RAM exhaustion:
+    // require a single 8-byte/px scaled target to stay within 2.5% of device-local VRAM
+    // and ensure live GPU memory usage remains below 75% of physical VRAM.
+    const u64 est_bytes = static_cast<u64>(scaled_w) * static_cast<u64>(scaled_h) * 8ULL;
+    const u64 vram_bytes = device.GetDeviceLocalMemory();
+    if (vram_bytes > 0) {
+        if (est_bytes > (vram_bytes / 40ULL)) {
+            return false;
+        }
+        if (CanReportMemoryUsage()) {
+            const u64 used = GetDeviceMemoryUsage();
+            if (used + est_bytes > (vram_bytes * 75ULL) / 100ULL) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+void Image::ReleaseScaledImage() {
+    if (True(flags & ImageFlagBits::Rescaled)) {
+        flags &= ~ImageFlagBits::Rescaled;
+        current_image = &Image::original_image;
+    }
+    storage_image_views.clear();
+    storage_image_views.resize(info.resources.levels);
+    scale_framebuffer.reset();
+    scale_view.reset();
+    scaled_image.reset();
+    scaled_extent = {};
+    has_scaled = false;
+}
+
 bool Image::ScaleUp(bool ignore) {
     if (!runtime) {
         return false;
@@ -2422,22 +2503,40 @@ bool Image::ScaleUp(bool ignore) {
     if (!info.rescaleable) {
         return false;
     }
-    flags |= ImageFlagBits::Rescaled;
-    has_scaled = true;
+    const bool is_2d = info.type == ImageType::e2D;
+    const u32 scaled_width = resolution.ScaleUp(info.size.width);
+    const u32 scaled_height = is_2d ? resolution.ScaleUp(info.size.height) : info.size.height;
+    if (!runtime->CanScaleExtent(info.size.width, info.size.height, is_2d)) {
+        return false;
+    }
+    if (scaled_image && (scaled_extent.width != scaled_width || scaled_extent.height != scaled_height)) {
+        scheduler->Finish();
+        ReleaseScaledImage();
+    }
     if (!scaled_image) {
-        const bool is_2d = info.type == ImageType::e2D;
-        const u32 scaled_width = resolution.ScaleUp(info.size.width);
-        const u32 scaled_height = is_2d ? resolution.ScaleUp(info.size.height) : info.size.height;
         auto scaled_info = info;
         scaled_info.size.width = scaled_width;
         scaled_info.size.height = scaled_height;
-        scaled_image = MakeImage(runtime->device, runtime->memory_allocator, scaled_info,
-                                 IsOpaqueBc1Astc(*runtime, scaled_info)
-                                     ? std::span<const VkFormat>{OPAQUE_ASTC_VIEW_FORMATS}
-                                     : runtime->ViewFormats(info.format),
-                                 AstcHostFormat(*runtime, scaled_info));
-        ignore = false;
+        try {
+            scaled_image = MakeImage(runtime->device, runtime->memory_allocator, scaled_info,
+                                     IsOpaqueBc1Astc(*runtime, scaled_info)
+                                         ? std::span<const VkFormat>{OPAQUE_ASTC_VIEW_FORMATS}
+                                         : runtime->ViewFormats(info.format),
+                                     AstcHostFormat(*runtime, scaled_info));
+            scaled_extent = {scaled_width, scaled_height};
+            ignore = false;
+        } catch (const vk::Exception& e) {
+            LOG_WARNING(Render_Vulkan,
+                        "ScaleUp allocation failed for {}x{} -> {}x{} ({}); staying at 1X",
+                        info.size.width, info.size.height, scaled_width, scaled_height, e.what());
+            scaled_image.reset();
+            scaled_extent = {};
+            has_scaled = false;
+            return false;
+        }
     }
+    flags |= ImageFlagBits::Rescaled;
+    has_scaled = true;
     current_image = &Image::scaled_image;
     storage_image_views.clear();
     storage_image_views.resize(info.resources.levels);
@@ -2458,17 +2557,13 @@ bool Image::ScaleUp(bool ignore) {
         }
         return true;
     } else {
-        BlitScale(*scheduler, *original_image, *scaled_image, info, aspect_mask, resolution);
+        BlitScale(*scheduler, *original_image, *scaled_image, info, aspect_mask, scaled_extent, true);
     }
     return true;
 }
 
 bool Image::ScaleDown(bool ignore) {
     if (!runtime) {
-        return false;
-    }
-    const auto& resolution = runtime->resolution;
-    if (!resolution.active) {
         return false;
     }
     if (False(flags & ImageFlagBits::Rescaled)) {
@@ -2479,7 +2574,7 @@ bool Image::ScaleDown(bool ignore) {
     current_image = &Image::original_image;
     storage_image_views.clear();
     storage_image_views.resize(info.resources.levels);
-    if (ignore) {
+    if (ignore || !scaled_image || scaled_extent.width == 0 || scaled_extent.height == 0) {
         return true;
     }
     if (aspect_mask == 0) {
@@ -2493,7 +2588,7 @@ bool Image::ScaleDown(bool ignore) {
         }
         return true;
     } else {
-        BlitScale(*scheduler, *scaled_image, *original_image, info, aspect_mask, resolution, false);
+        BlitScale(*scheduler, *scaled_image, *original_image, info, aspect_mask, scaled_extent, false);
     }
     return true;
 }
@@ -2508,8 +2603,8 @@ bool Image::BlitScaleHelper(bool scale_up) {
 
     const bool is_2d = info.type == ImageType::e2D;
     const auto& resolution = runtime->resolution;
-    const u32 scaled_width = resolution.ScaleUp(info.size.width);
-    const u32 scaled_height = is_2d ? resolution.ScaleUp(info.size.height) : info.size.height;
+    const u32 scaled_width = scaled_extent.width > 0 ? scaled_extent.width : resolution.ScaleUp(info.size.width);
+    const u32 scaled_height = scaled_extent.height > 0 ? scaled_extent.height : (is_2d ? resolution.ScaleUp(info.size.height) : info.size.height);
 
     if (!normal_view) {
         const auto prev_image = current_image;
@@ -2649,7 +2744,7 @@ ImageView::ImageView(TextureCacheRuntime& runtime, const VideoCommon::ImageViewI
 
     has_identity_swizzle = swizzle[0] == SwizzleSource::R && swizzle[1] == SwizzleSource::G &&
                            swizzle[2] == SwizzleSource::B && swizzle[3] == SwizzleSource::A;
-    const VkImageUsageFlags requested_view_usage = ImageUsageFlags(format_info, format);
+    const VkImageUsageFlags requested_view_usage = ImageUsageFlags(runtime.device, format_info, format);
     const VkImageUsageFlags image_usage = image.UsageFlags();
     const VkImageUsageFlags clamped_view_usage = requested_view_usage & image_usage;
     const VkImageViewUsageCreateInfo image_view_usage{
@@ -3046,6 +3141,9 @@ VkSampler Sampler::Emplace(VariantKey key) {
 
 VkSampler Sampler::HandleFor(const ImageView& image_view, bool is_depth) {
     VariantKey key = MakeKey(image_view, is_depth);
+    if (!variants.empty() && variants[0].key == key) [[likely]] {
+        return *variants[0].sampler;
+    }
     if (variants.size() >= MAX_VARIANTS) {
         key.srgb_border = false;
         key.swizzle = {};
@@ -3230,6 +3328,7 @@ void TextureCacheRuntime::AccelerateImageUpload(
     u32 z_start, u32 z_count) {
 
     if (IsPixelFormatASTC(image.info.format)) {
+        image.ScaleDown(true);
         if (!astc_decoder_pass) {
             astc_decoder_pass.emplace(device, scheduler, descriptor_pool, staging_buffer_pool,
                                       compute_pass_descriptor_queue, memory_allocator);

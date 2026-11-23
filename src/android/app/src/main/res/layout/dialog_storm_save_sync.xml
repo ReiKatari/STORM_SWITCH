@@ -53,6 +53,7 @@
 
         <ImageButton
             android:id="@+id/btn_refresh"
+            android:tooltipText="@string/storm_sync_tooltip_refresh"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_marginEnd="8dp"
@@ -66,6 +67,7 @@
 
         <ImageButton
             android:id="@+id/btn_close"
+            android:tooltipText="@string/storm_sync_tooltip_close"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:background="@drawable/storm_btn_3d_secondary"
@@ -139,6 +141,7 @@
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btn_copy_key"
+                            android:tooltipText="@string/storm_sync_tooltip_copy_key"
                             android:insetTop="0dp"
                             android:insetBottom="0dp"
                             style="@style/Widget.Material3.Button.TonalButton"
@@ -219,6 +222,7 @@
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btn_connect"
+                            android:tooltipText="@string/storm_sync_tooltip_connect"
                             android:insetTop="0dp"
                             android:insetBottom="0dp"
                             style="@style/Widget.Material3.Button.TonalButton"
@@ -246,6 +250,7 @@
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btn_search_devices"
+                            android:tooltipText="@string/storm_sync_tooltip_search_devices"
                             android:insetTop="0dp"
                             android:insetBottom="0dp"
                             style="@style/StormButton.Faceted.Secondary"
@@ -317,6 +322,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_sync_all"
+                    android:tooltipText="@string/storm_sync_tooltip_sync_all"
                             android:insetTop="0dp"
                             android:insetBottom="0dp"
                     style="@style/StormButton.Faceted.Primary"

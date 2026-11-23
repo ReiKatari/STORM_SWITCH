@@ -33,6 +33,19 @@ struct GameFixProfile {
 
     // Vendor-specific override maps (keys: "nvidia", "amd", "intel", "adreno", "mali", "xclipse", "other")
     std::unordered_map<std::string, std::unordered_map<std::string, std::string>> vendor_overrides{};
+
+    // Verified version-bound dynamic FPS / internal render-scale patch metadata (reference for STORM GameFix)
+    struct VersionPatchMetadata {
+        std::string version_tag;
+        std::string main_build_id;
+        std::vector<u32> supported_fps_targets;
+        u64 timing_world_clock_offset{};
+        u64 render_scale_site_offset{};
+        u64 dynamic_res_multiplier_offset{};
+        std::string notes_ru;
+        std::string notes_en;
+    };
+    std::vector<VersionPatchMetadata> version_patches{};
 };
 
 class GameFixDatabase {

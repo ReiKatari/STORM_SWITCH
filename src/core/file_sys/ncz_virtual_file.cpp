@@ -289,24 +289,32 @@ NCZVirtualFile::NCZVirtualFile(VirtualFile file_)
             file->ReadObject(&zstd_magic, offset);
 
             bool zstd_found = (zstd_magic == 0xFD2FB528);
-            if (!zstd_found) {
-                // Check if aligned or small padding
-                std::vector<u8> search_buffer(256);
-                file->ReadBytes(search_buffer.data(), search_buffer.size(), offset);
-                for (size_t i = 0; i < search_buffer.size() - 8; i++) {
-                    u64 m = 0;
-                    std::memcpy(&m, search_buffer.data() + i, sizeof(u64));
-                    if (m == MAGIC_NCZBLOCK) {
-                        offset += i;
-                        next_magic = MAGIC_NCZBLOCK;
-                        break;
+            // Always scan up to 4096 bytes for NCZBLOCK first so aligned/padded block NCZs
+            // are never misclassified as solid ZSTD streams.
+            {
+                const std::size_t scan_len = std::min<std::size_t>(4096, file->GetSize() > offset ? (file->GetSize() - offset) : 0);
+                if (scan_len >= 8) {
+                    std::vector<u8> search_buffer(scan_len);
+                    const std::size_t got = file->Read(search_buffer.data(), scan_len, offset);
+                    for (std::size_t i = 0; i + 8 <= got; ++i) {
+                        u64 m = 0;
+                        std::memcpy(&m, search_buffer.data() + i, sizeof(u64));
+                        if (m == MAGIC_NCZBLOCK) {
+                            offset += i;
+                            next_magic = MAGIC_NCZBLOCK;
+                            break;
+                        }
                     }
-                    u32 zm = 0;
-                    std::memcpy(&zm, search_buffer.data() + i, sizeof(u32));
-                    if (zm == 0xFD2FB528) {
-                        offset += i;
-                        zstd_found = true;
-                        break;
+                    if (next_magic != MAGIC_NCZBLOCK && !zstd_found) {
+                        for (std::size_t i = 0; i + 4 <= got; ++i) {
+                            u32 zm = 0;
+                            std::memcpy(&zm, search_buffer.data() + i, sizeof(u32));
+                            if (zm == 0xFD2FB528) {
+                                offset += i;
+                                zstd_found = true;
+                                break;
+                            }
+                        }
                     }
                 }
             }
@@ -745,7 +753,7 @@ std::size_t NCZVirtualFile::Read(u8* data, std::size_t length, std::size_t offse
                     std::memset(data + bytes_read + read, 0, copy_size - read);
                 }
             } else {
-                constexpr std::size_t MAX_CACHED_BLOCKS = 512;
+                constexpr std::size_t MAX_CACHED_BLOCKS = 64;
                 bool hit = false;
                 {
                     std::unique_lock<std::mutex> cache_lock(cache_mutex);

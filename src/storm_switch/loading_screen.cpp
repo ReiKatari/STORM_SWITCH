@@ -191,7 +191,7 @@ static void UpdateStepStyles(LoadingDashboardWidgets& dash, int active_step) {
                 "QFrame { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 229, 255, 0.22), stop:1 rgba(56, 189, 248, 0.14)); border: 1.5px solid #00E5FF; border-radius: 7px; }"));
             dash.step_labels[i]->setStyleSheet(QStringLiteral(
                 "QLabel { color: #FFFFFF; font-size: 11px; font-weight: 800; background: transparent; border: none; }"));
-            dash.step_labels[i]->setText(QStringLiteral("⚡ ") + names[i]);
+            dash.step_labels[i]->setText(QStringLiteral("") + names[i]);
         } else {
             dash.step_frames[i]->setStyleSheet(QStringLiteral(
                 "QFrame { background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(148, 163, 184, 0.18); border-radius: 7px; }"));
@@ -207,32 +207,32 @@ static void RefreshDashboardTexts(LoadingDashboardWidgets& dash) {
     if (dash.engine_badge) {
         if (autofix_on) {
             dash.engine_badge->setText(StormLang(
-                QStringLiteral("🛡️ АВТО-ИСПРАВЛЕНИЕ АКТИВНО"),
-                QStringLiteral("🛡️ AUTO-FIX PROFILE ACTIVE"),
-                QStringLiteral("🛡️ AUTO-FIX-PROFIL AKTIV"),
-                QStringLiteral("🛡️ PROFIL AUTO-FIX ACTIF"),
-                QStringLiteral("🛡️ 自动修复配置已激活"),
-                QStringLiteral("🛡️ 自動修正プロファイル有効"),
-                QStringLiteral("🛡️ ملف الإصلاح التلقائي نشط"),
-                QStringLiteral("🛡️ PERFIL AUTO-FIX ACTIVO"),
-                QStringLiteral("🛡️ PROFILO AUTO-FIX ATTIVO"),
-                QStringLiteral("🛡️ PERFIL AUTO-FIX ATIVO"),
-                QStringLiteral("🛡️ 자동 수정 프로필 활성")));
+                QStringLiteral("АВТО-ИСПРАВЛЕНИЕ АКТИВНО"),
+                QStringLiteral("AUTO-FIX PROFILE ACTIVE"),
+                QStringLiteral("AUTO-FIX-PROFIL AKTIV"),
+                QStringLiteral("PROFIL AUTO-FIX ACTIF"),
+                QStringLiteral("自动修复配置已激活"),
+                QStringLiteral("自動修正プロファイル有効"),
+                QStringLiteral("ملف الإصلاح التلقائي نشط"),
+                QStringLiteral("PERFIL AUTO-FIX ACTIVO"),
+                QStringLiteral("PROFILO AUTO-FIX ATTIVO"),
+                QStringLiteral("PERFIL AUTO-FIX ATIVO"),
+                QStringLiteral("자동 수정 프로필 활성")));
             dash.engine_badge->setStyleSheet(QStringLiteral(
                 "QLabel { background: rgba(16, 185, 129, 0.16); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.45); border-radius: 6px; padding: 3px 10px; font-size: 10.5px; font-weight: 800; letter-spacing: 0.5px; }"));
         } else {
             dash.engine_badge->setText(StormLang(
-                QStringLiteral("⚡ ДВИЖОК STORM SWITCH"),
-                QStringLiteral("⚡ STORM SWITCH ENGINE"),
-                QStringLiteral("⚡ STORM SWITCH ENGINE"),
-                QStringLiteral("⚡ MOTEUR STORM SWITCH"),
-                QStringLiteral("⚡ STORM SWITCH 高速引擎"),
-                QStringLiteral("⚡ STORM SWITCH エンジン"),
-                QStringLiteral("⚡ محرك STORM SWITCH"),
-                QStringLiteral("⚡ MOTOR STORM SWITCH"),
-                QStringLiteral("⚡ MOTORE STORM SWITCH"),
-                QStringLiteral("⚡ MOTOR STORM SWITCH"),
-                QStringLiteral("⚡ STORM SWITCH 엔진")));
+                QStringLiteral("ДВИЖОК STORM SWITCH"),
+                QStringLiteral("STORM SWITCH ENGINE"),
+                QStringLiteral("STORM SWITCH ENGINE"),
+                QStringLiteral("MOTEUR STORM SWITCH"),
+                QStringLiteral("STORM SWITCH 高速引擎"),
+                QStringLiteral("STORM SWITCH エンジン"),
+                QStringLiteral("محرك STORM SWITCH"),
+                QStringLiteral("MOTOR STORM SWITCH"),
+                QStringLiteral("MOTORE STORM SWITCH"),
+                QStringLiteral("MOTOR STORM SWITCH"),
+                QStringLiteral("STORM SWITCH 엔진")));
             dash.engine_badge->setStyleSheet(QStringLiteral(
                 "QLabel { background: rgba(0, 210, 255, 0.14); color: #38BDF8; border: 1px solid rgba(0, 210, 255, 0.40); border-radius: 6px; padding: 3px 10px; font-size: 10.5px; font-weight: 800; letter-spacing: 0.5px; }"));
         }
@@ -241,7 +241,7 @@ static void RefreshDashboardTexts(LoadingDashboardWidgets& dash) {
     if (dash.copy_tid_btn) {
         if (!dash.current_tid_hex.isEmpty()) {
             dash.copy_tid_btn->setVisible(true);
-            dash.copy_tid_btn->setText(QStringLiteral("🆔 %1 📋").arg(dash.current_tid_hex));
+            dash.copy_tid_btn->setText(QStringLiteral("%1").arg(dash.current_tid_hex));
             dash.copy_tid_btn->setToolTip(StormLang(
                 QStringLiteral("Нажмите, чтобы скопировать Title ID игры в буфер обмена"),
                 QStringLiteral("Click to copy the game's Title ID to clipboard"),
@@ -265,12 +265,22 @@ static void RefreshDashboardTexts(LoadingDashboardWidgets& dash) {
                                 : QStringLiteral("OpenGL");
     const auto gpu_acc = Settings::values.gpu_accuracy.GetValue();
     QString gpu_acc_str;
-    if (gpu_acc == Settings::GpuAccuracy::Low) {
-        gpu_acc_str = StormLang(QStringLiteral("Быстрая"), QStringLiteral("Fast"), QStringLiteral("Schnell"), QStringLiteral("Rapide"), QStringLiteral("快速"), QStringLiteral("高速"), QStringLiteral("سريع"), QStringLiteral("Rápida"), QStringLiteral("Veloce"), QStringLiteral("Rápida"), QStringLiteral("빠름"));
-    } else {
+    switch (gpu_acc) {
+    case Settings::GpuAccuracy::Low:
+        gpu_acc_str = StormLang(QStringLiteral("Низкая"), QStringLiteral("Low"), QStringLiteral("Niedrig"), QStringLiteral("Basse"), QStringLiteral("低"), QStringLiteral("低"), QStringLiteral("منخفض"), QStringLiteral("Baja"), QStringLiteral("Bassa"), QStringLiteral("Baixa"), QStringLiteral("낮음"));
+        break;
+    case Settings::GpuAccuracy::Normal:
+        gpu_acc_str = StormLang(QStringLiteral("Обычная"), QStringLiteral("Normal"), QStringLiteral("Normal"), QStringLiteral("Normale"), QStringLiteral("标准"), QStringLiteral("標準"), QStringLiteral("عادي"), QStringLiteral("Normal"), QStringLiteral("Normale"), QStringLiteral("Normal"), QStringLiteral("보통"));
+        break;
+    case Settings::GpuAccuracy::Extreme:
+        gpu_acc_str = StormLang(QStringLiteral("Экстремальная"), QStringLiteral("Extreme"), QStringLiteral("Extrem"), QStringLiteral("Extrême"), QStringLiteral("极高"), QStringLiteral("最高"), QStringLiteral("قصوى"), QStringLiteral("Extrema"), QStringLiteral("Estrema"), QStringLiteral("Extrema"), QStringLiteral("극한"));
+        break;
+    case Settings::GpuAccuracy::High:
+    default:
         gpu_acc_str = StormLang(QStringLiteral("Высокая"), QStringLiteral("High"), QStringLiteral("Hoch"), QStringLiteral("Élevée"), QStringLiteral("高"), QStringLiteral("高"), QStringLiteral("عالية"), QStringLiteral("Alta"), QStringLiteral("Alta"), QStringLiteral("Alta"), QStringLiteral("높음"));
+        break;
     }
-    if (dash.card_titles[0]) dash.card_titles[0]->setText(StormLang(QStringLiteral("🎮 ГРАФИКА И GPU"), QStringLiteral("🎮 GRAPHICS & GPU"), QStringLiteral("🎮 GRAFIK & GPU"), QStringLiteral("🎮 GRAPHISMES & GPU"), QStringLiteral("🎮 图形接口与精度"), QStringLiteral("🎮 グラフィックス＆GPU"), QStringLiteral("🎮 الرسومات و GPU"), QStringLiteral("🎮 GRÁFICOS Y GPU"), QStringLiteral("🎮 GRAFICA E GPU"), QStringLiteral("🎮 GRÁFICOS E GPU"), QStringLiteral("🎮 그래픽 및 GPU")));
+    if (dash.card_titles[0]) dash.card_titles[0]->setText(StormLang(QStringLiteral("ГРАФИКА И GPU"), QStringLiteral("GRAPHICS & GPU"), QStringLiteral("GRAFIK & GPU"), QStringLiteral("GRAPHISMES & GPU"), QStringLiteral("图形接口与精度"), QStringLiteral("グラフィックス＆GPU"), QStringLiteral("الرسومات و GPU"), QStringLiteral("GRÁFICOS Y GPU"), QStringLiteral("GRAFICA E GPU"), QStringLiteral("GRÁFICOS E GPU"), QStringLiteral("그래픽 및 GPU")));
     if (dash.card_values[0]) dash.card_values[0]->setText(QStringLiteral("%1 · %2").arg(api_str, gpu_acc_str));
 
     // 2. Resolution & Console Mode
@@ -295,7 +305,7 @@ static void RefreshDashboardTexts(LoadingDashboardWidgets& dash) {
     const QString dock_str = is_docked
         ? StormLang(QStringLiteral("Док-станция"), QStringLiteral("Docked"), QStringLiteral("Dock-Modus"), QStringLiteral("Docké"), QStringLiteral("主机底座"), QStringLiteral("ドック"), QStringLiteral("القاعدة"), QStringLiteral("Dock"), QStringLiteral("Dock"), QStringLiteral("Dock"), QStringLiteral("독 모드"))
         : StormLang(QStringLiteral("Портативный"), QStringLiteral("Handheld"), QStringLiteral("Handheld"), QStringLiteral("Portable"), QStringLiteral("掌机模式"), QStringLiteral("携帯"), QStringLiteral("محمول"), QStringLiteral("Portátil"), QStringLiteral("Portatile"), QStringLiteral("Portátil"), QStringLiteral("휴대 모드"));
-    if (dash.card_titles[1]) dash.card_titles[1]->setText(StormLang(QStringLiteral("🖥️ МАСШТАБ И РЕЖИМ"), QStringLiteral("🖥️ SCALE & MODE"), QStringLiteral("🖥️ SKALIERUNG & MODUS"), QStringLiteral("🖥️ ÉCHELLE & MODE"), QStringLiteral("🖥️ 分辨率与模式"), QStringLiteral("🖥️ 解像度＆モード"), QStringLiteral("🖥️ الدقة والوضع"), QStringLiteral("🖥️ ESCALA Y MODO"), QStringLiteral("🖥️ SCALA E MODALITÀ"), QStringLiteral("🖥️ ESCALA E MODO"), QStringLiteral("🖥️ 해상도 및 모드")));
+    if (dash.card_titles[1]) dash.card_titles[1]->setText(StormLang(QStringLiteral("МАСШТАБ И РЕЖИМ"), QStringLiteral("SCALE & MODE"), QStringLiteral("SKALIERUNG & MODUS"), QStringLiteral("ÉCHELLE & MODE"), QStringLiteral("分辨率与模式"), QStringLiteral("解像度＆モード"), QStringLiteral("الدقة والوضع"), QStringLiteral("ESCALA Y MODO"), QStringLiteral("SCALA E MODALITÀ"), QStringLiteral("ESCALA E MODO"), QStringLiteral("해상도 및 모드")));
     if (dash.card_values[1]) dash.card_values[1]->setText(QStringLiteral("%1 · %2").arg(res_str, dock_str));
 
     // 3. Scaling Filter & Anti-Aliasing
@@ -316,19 +326,21 @@ static void RefreshDashboardTexts(LoadingDashboardWidgets& dash) {
     case Settings::ScalingFilter::Spline1: filter_str = QStringLiteral("Spline-1"); break;
     case Settings::ScalingFilter::Sgsr: filter_str = QStringLiteral("Snapdragon SGSR"); break;
     case Settings::ScalingFilter::SgsrEdge: filter_str = QStringLiteral("SGSR Edge"); break;
+    case Settings::ScalingFilter::Cas: filter_str = QStringLiteral("AMD CAS"); break;
+    case Settings::ScalingFilter::OmniScale: filter_str = QStringLiteral("OmniScale"); break;
     default: break;
     }
     QString aa_str = StormLang(QStringLiteral("Отключено"), QStringLiteral("Off"), QStringLiteral("Aus"), QStringLiteral("Désactivé"), QStringLiteral("关闭"), QStringLiteral("オフ"), QStringLiteral("إيقاف"), QStringLiteral("Desact."), QStringLiteral("Disatt."), QStringLiteral("Desat."), QStringLiteral("끄기"));
     if (Settings::values.anti_aliasing.GetValue() == Settings::AntiAliasing::Fxaa) aa_str = QStringLiteral("FXAA");
     else if (Settings::values.anti_aliasing.GetValue() == Settings::AntiAliasing::Smaa) aa_str = QStringLiteral("SMAA");
-    if (dash.card_titles[2]) dash.card_titles[2]->setText(StormLang(QStringLiteral("✨ ФИЛЬТР И СГЛАЖИВАНИЕ"), QStringLiteral("✨ FILTER & AA"), QStringLiteral("✨ FILTER & GLÄTTUNG"), QStringLiteral("✨ FILTRE & AA"), QStringLiteral("✨ 缩放滤镜与抗锯齿"), QStringLiteral("✨ フィルター＆AA"), QStringLiteral("✨ المرشح والتنعيم"), QStringLiteral("✨ FILTRO Y AA"), QStringLiteral("✨ FILTRO E AA"), QStringLiteral("✨ FILTRO E AA"), QStringLiteral("✨ 필터 및 안티앨리어싱")));
+    if (dash.card_titles[2]) dash.card_titles[2]->setText(StormLang(QStringLiteral("ФИЛЬТР И СГЛАЖИВАНИЕ"), QStringLiteral("FILTER & AA"), QStringLiteral("FILTER & GLÄTTUNG"), QStringLiteral("FILTRE & AA"), QStringLiteral("缩放滤镜与抗锯齿"), QStringLiteral("フィルター＆AA"), QStringLiteral("المرشح والتنعيم"), QStringLiteral("FILTRO Y AA"), QStringLiteral("FILTRO E AA"), QStringLiteral("FILTRO E AA"), QStringLiteral("필터 및 안티앨리어싱")));
     if (dash.card_values[2]) dash.card_values[2]->setText(QStringLiteral("%1 · %2").arg(filter_str, aa_str));
 
     // 4. RetroArch Post-Processing Shader
     const int shader_idx = std::clamp(Settings::values.post_processing_shader.GetValue(), 0,
                                       static_cast<int>(StormShaders::GetRetroArchShaderCatalog().size()) - 1);
     QString shader_name = QString::fromUtf8(StormShaders::GetRetroArchShaderCatalog()[shader_idx].short_name);
-    if (dash.card_titles[3]) dash.card_titles[3]->setText(StormLang(QStringLiteral("🎨 ШЕЙДЕР RETROARCH"), QStringLiteral("🎨 RETROARCH SHADER"), QStringLiteral("🎨 RETROARCH-SHADER"), QStringLiteral("🎨 SHADER RETROARCH"), QStringLiteral("🎨 RetroArch 着色器"), QStringLiteral("🎨 RetroArch シェーダー"), QStringLiteral("🎨 مظلل RETROARCH"), QStringLiteral("🎨 SHADER RETROARCH"), QStringLiteral("🎨 SHADER RETROARCH"), QStringLiteral("🎨 SHADER RETROARCH"), QStringLiteral("🎨 RetroArch 셰이더")));
+    if (dash.card_titles[3]) dash.card_titles[3]->setText(StormLang(QStringLiteral("ШЕЙДЕР RETROARCH"), QStringLiteral("RETROARCH SHADER"), QStringLiteral("RETROARCH-SHADER"), QStringLiteral("SHADER RETROARCH"), QStringLiteral("RetroArch 着色器"), QStringLiteral("RetroArch シェーダー"), QStringLiteral("مظلل RETROARCH"), QStringLiteral("SHADER RETROARCH"), QStringLiteral("SHADER RETROARCH"), QStringLiteral("SHADER RETROARCH"), QStringLiteral("RetroArch 셰이더")));
     if (dash.card_values[3]) dash.card_values[3]->setText(shader_idx == 0 ? StormLang(QStringLiteral("Отключено (Оригинал)"), QStringLiteral("Off (Original)"), QStringLiteral("Aus (Original)"), QStringLiteral("Désactivé (Original)"), QStringLiteral("关闭 (原始画面)"), QStringLiteral("オフ (オリジナル)"), QStringLiteral("إيقاف (الأصلي)"), QStringLiteral("Desact. (Original)"), QStringLiteral("Disatt. (Originale)"), QStringLiteral("Desat. (Original)"), QStringLiteral("꺼짐 (원본)")) : shader_name);
 
     // 5. CPU & Memory Layout
@@ -338,7 +350,7 @@ static void RefreshDashboardTexts(LoadingDashboardWidgets& dash) {
     else if (mem_mode == Settings::MemoryLayout::Memory_8Gb) ram_str = QStringLiteral("8 GB");
     else if (mem_mode == Settings::MemoryLayout::Memory_10Gb) ram_str = QStringLiteral("10 GB");
     else if (mem_mode == Settings::MemoryLayout::Memory_12Gb) ram_str = QStringLiteral("12 GB");
-    if (dash.card_titles[4]) dash.card_titles[4]->setText(StormLang(QStringLiteral("🧠 ПРОЦЕССОР И ОЗУ"), QStringLiteral("🧠 CPU & MEMORY"), QStringLiteral("🧠 CPU & SPEICHER"), QStringLiteral("🧠 CPU & MÉMOIRE"), QStringLiteral("🧠 处理器与内存"), QStringLiteral("🧠 CPU＆メモリ"), QStringLiteral("🧠 المعالج والذاكرة"), QStringLiteral("🧠 CPU Y MEMORIA"), QStringLiteral("🧠 CPU E MEMORIA"), QStringLiteral("🧠 CPU E MEMÓRIA"), QStringLiteral("🧠 CPU 및 메모리")));
+    if (dash.card_titles[4]) dash.card_titles[4]->setText(StormLang(QStringLiteral("ПРОЦЕССОР И ОЗУ"), QStringLiteral("CPU & MEMORY"), QStringLiteral("CPU & SPEICHER"), QStringLiteral("CPU & MÉMOIRE"), QStringLiteral("处理器与内存"), QStringLiteral("CPU＆メモリ"), QStringLiteral("المعالج والذاكرة"), QStringLiteral("CPU Y MEMORIA"), QStringLiteral("CPU E MEMORIA"), QStringLiteral("CPU E MEMÓRIA"), QStringLiteral("CPU 및 메모리")));
     if (dash.card_values[4]) dash.card_values[4]->setText(QStringLiteral("Dynarmic JIT · %1").arg(ram_str));
 
     // 6. VSync & Frame Pacing
@@ -353,7 +365,7 @@ static void RefreshDashboardTexts(LoadingDashboardWidgets& dash) {
     const QString speed_str = Settings::values.use_speed_limit.GetValue()
         ? QStringLiteral("%1%").arg(Settings::values.speed_limit.GetValue())
         : StormLang(QStringLiteral("Максимум FPS"), QStringLiteral("Unlocked"), QStringLiteral("Entsperrt"), QStringLiteral("Débloqué"), QStringLiteral("不限帧率"), QStringLiteral("無制限"), QStringLiteral("غير محدود"), QStringLiteral("Desbloqueado"), QStringLiteral("Sbloccato"), QStringLiteral("Desbloqueado"), QStringLiteral("제한 없음"));
-    if (dash.card_titles[5]) dash.card_titles[5]->setText(StormLang(QStringLiteral("⚡ СИНХРОНИЗАЦИЯ КАДРОВ"), QStringLiteral("⚡ FRAME PACING"), QStringLiteral("⚡ BILDSYNCHRONISATION"), QStringLiteral("⚡ SYNCHRO D'IMAGES"), QStringLiteral("⚡ 垂直同步与帧率"), QStringLiteral("⚡ フレーム同期"), QStringLiteral("⚡ مزامنة الإطارات"), QStringLiteral("⚡ SINCRONIZACIÓN"), QStringLiteral("⚡ SINCRONIZZAZIONE"), QStringLiteral("⚡ SINCRONIZAÇÃO"), QStringLiteral("⚡ 프레임 동기화")));
+    if (dash.card_titles[5]) dash.card_titles[5]->setText(StormLang(QStringLiteral("СИНХРОНИЗАЦИЯ КАДРОВ"), QStringLiteral("FRAME PACING"), QStringLiteral("BILDSYNCHRONISATION"), QStringLiteral("SYNCHRO D'IMAGES"), QStringLiteral("垂直同步与帧率"), QStringLiteral("フレーム同期"), QStringLiteral("مزامنة الإطارات"), QStringLiteral("SINCRONIZACIÓN"), QStringLiteral("SINCRONIZZAZIONE"), QStringLiteral("SINCRONIZAÇÃO"), QStringLiteral("프레임 동기화")));
     if (dash.card_values[5]) dash.card_values[5]->setText(QStringLiteral("%1 · %2").arg(vsync_str, speed_str));
 
     // 7. Shader Cache & ASTC
@@ -363,47 +375,47 @@ static void RefreshDashboardTexts(LoadingDashboardWidgets& dash) {
     QString astc_str = QStringLiteral("ASTC GPU");
     if (Settings::values.accelerate_astc.GetValue() == Settings::AstcDecodeMode::Cpu) astc_str = QStringLiteral("ASTC CPU");
     else if (Settings::values.accelerate_astc.GetValue() == Settings::AstcDecodeMode::CpuAsynchronous) astc_str = QStringLiteral("ASTC Async");
-    if (dash.card_titles[6]) dash.card_titles[6]->setText(StormLang(QStringLiteral("💾 КЭШ И ТЕКСТУРЫ"), QStringLiteral("💾 CACHE & TEXTURES"), QStringLiteral("💾 CACHE & TEXTUREN"), QStringLiteral("💾 CACHE & TEXTURES"), QStringLiteral("💾 缓存与纹理加速"), QStringLiteral("💾 キャッシュ＆テクスチャ"), QStringLiteral("💾 التخزين والقوام"), QStringLiteral("💾 CACHÉ Y TEXTURAS"), QStringLiteral("💾 CACHE E TEXTURE"), QStringLiteral("💾 CACHE E TEXTURAS"), QStringLiteral("💾 캐시 및 텍스처")));
+    if (dash.card_titles[6]) dash.card_titles[6]->setText(StormLang(QStringLiteral("КЭШ И ТЕКСТУРЫ"), QStringLiteral("CACHE & TEXTURES"), QStringLiteral("CACHE & TEXTUREN"), QStringLiteral("CACHE & TEXTURES"), QStringLiteral("缓存与纹理加速"), QStringLiteral("キャッシュ＆テクスチャ"), QStringLiteral("التخزين والقوام"), QStringLiteral("CACHÉ Y TEXTURAS"), QStringLiteral("CACHE E TEXTURE"), QStringLiteral("CACHE E TEXTURAS"), QStringLiteral("캐시 및 텍스처")));
     if (dash.card_values[6]) dash.card_values[6]->setText(QStringLiteral("%1 · %2").arg(cache_str, astc_str));
 
     // 8. Launch Profile & Audio
     const QString prof_str = autofix_on
         ? StormLang(QStringLiteral("Авто-исправление"), QStringLiteral("Auto-Fix Active"), QStringLiteral("Auto-Fix Aktiv"), QStringLiteral("Auto-Fix Actif"), QStringLiteral("自动修复已启用"), QStringLiteral("自動修正適用中"), QStringLiteral("إصلاح تلقائي"), QStringLiteral("Auto-Fix Activo"), QStringLiteral("Auto-Fix Attivo"), QStringLiteral("Auto-Fix Ativo"), QStringLiteral("자동 수정 적용됨"))
         : StormLang(QStringLiteral("Стандартный"), QStringLiteral("Standard Profile"), QStringLiteral("Standardprofil"), QStringLiteral("Profil Standard"), QStringLiteral("标准全局配置"), QStringLiteral("標準プロファイル"), QStringLiteral("الملف القياسي"), QStringLiteral("Perfil Estándar"), QStringLiteral("Profilo Standard"), QStringLiteral("Perfil Padrão"), QStringLiteral("표준 프로필"));
-    if (dash.card_titles[7]) dash.card_titles[7]->setText(StormLang(QStringLiteral("🛡️ ПРОФИЛЬ ЗАПУСКА"), QStringLiteral("🛡️ LAUNCH PROFILE"), QStringLiteral("🛡️ STARTPROFIL"), QStringLiteral("🛡️ PROFIL DE LANCEMENT"), QStringLiteral("🛡️ 启动优化配置"), QStringLiteral("🛡️ 起動プロファイル"), QStringLiteral("🛡️ ملف التشغيل"), QStringLiteral("🛡️ PERFIL DE INICIO"), QStringLiteral("🛡️ PROFILO DI AVVIO"), QStringLiteral("🛡️ PERFIL DE INÍCIO"), QStringLiteral("🛡️ 실행 프로필")));
+    if (dash.card_titles[7]) dash.card_titles[7]->setText(StormLang(QStringLiteral("ПРОФИЛЬ ЗАПУСКА"), QStringLiteral("LAUNCH PROFILE"), QStringLiteral("STARTPROFIL"), QStringLiteral("PROFIL DE LANCEMENT"), QStringLiteral("启动优化配置"), QStringLiteral("起動プロファイル"), QStringLiteral("ملف التشغيل"), QStringLiteral("PERFIL DE INICIO"), QStringLiteral("PROFILO DI AVVIO"), QStringLiteral("PERFIL DE INÍCIO"), QStringLiteral("실행 프로필")));
     if (dash.card_values[7]) dash.card_values[7]->setText(prof_str);
 
     // Tips section
     if (dash.tip_title_badge) {
         dash.tip_title_badge->setText(StormLang(
-            QStringLiteral("💡 СОВЕТ (%1/%2)").arg((dash.current_tip_index % GetTipCount()) + 1).arg(GetTipCount()),
-            QStringLiteral("💡 PRO TIP (%1/%2)").arg((dash.current_tip_index % GetTipCount()) + 1).arg(GetTipCount()),
-            QStringLiteral("💡 TIPP (%1/%2)").arg((dash.current_tip_index % GetTipCount()) + 1).arg(GetTipCount()),
-            QStringLiteral("💡 ASTUCE (%1/%2)").arg((dash.current_tip_index % GetTipCount()) + 1).arg(GetTipCount()),
-            QStringLiteral("💡 实用技巧 (%1/%2)").arg((dash.current_tip_index % GetTipCount()) + 1).arg(GetTipCount()),
-            QStringLiteral("💡 ヒント (%1/%2)").arg((dash.current_tip_index % GetTipCount()) + 1).arg(GetTipCount()),
-            QStringLiteral("💡 نصيحة (%1/%2)").arg((dash.current_tip_index % GetTipCount()) + 1).arg(GetTipCount()),
-            QStringLiteral("💡 CONSEJO (%1/%2)").arg((dash.current_tip_index % GetTipCount()) + 1).arg(GetTipCount()),
-            QStringLiteral("💡 CONSIGLIO (%1/%2)").arg((dash.current_tip_index % GetTipCount()) + 1).arg(GetTipCount()),
-            QStringLiteral("💡 DICA (%1/%2)").arg((dash.current_tip_index % GetTipCount()) + 1).arg(GetTipCount()),
-            QStringLiteral("💡 팁 (%1/%2)").arg((dash.current_tip_index % GetTipCount()) + 1).arg(GetTipCount())));
+            QStringLiteral("СОВЕТ (%1/%2)").arg((dash.current_tip_index % GetTipCount()) + 1).arg(GetTipCount()),
+            QStringLiteral("PRO TIP (%1/%2)").arg((dash.current_tip_index % GetTipCount()) + 1).arg(GetTipCount()),
+            QStringLiteral("TIPP (%1/%2)").arg((dash.current_tip_index % GetTipCount()) + 1).arg(GetTipCount()),
+            QStringLiteral("ASTUCE (%1/%2)").arg((dash.current_tip_index % GetTipCount()) + 1).arg(GetTipCount()),
+            QStringLiteral("实用技巧 (%1/%2)").arg((dash.current_tip_index % GetTipCount()) + 1).arg(GetTipCount()),
+            QStringLiteral("ヒント (%1/%2)").arg((dash.current_tip_index % GetTipCount()) + 1).arg(GetTipCount()),
+            QStringLiteral("نصيحة (%1/%2)").arg((dash.current_tip_index % GetTipCount()) + 1).arg(GetTipCount()),
+            QStringLiteral("CONSEJO (%1/%2)").arg((dash.current_tip_index % GetTipCount()) + 1).arg(GetTipCount()),
+            QStringLiteral("CONSIGLIO (%1/%2)").arg((dash.current_tip_index % GetTipCount()) + 1).arg(GetTipCount()),
+            QStringLiteral("DICA (%1/%2)").arg((dash.current_tip_index % GetTipCount()) + 1).arg(GetTipCount()),
+            QStringLiteral("팁 (%1/%2)").arg((dash.current_tip_index % GetTipCount()) + 1).arg(GetTipCount())));
     }
     if (dash.tip_text_label) {
         dash.tip_text_label->setText(GetLocalizedTipText(dash.current_tip_index));
     }
     if (dash.next_tip_btn) {
         dash.next_tip_btn->setText(StormLang(
-            QStringLiteral("Следующий ➔"),
-            QStringLiteral("Next Tip ➔"),
-            QStringLiteral("Nächster ➔"),
-            QStringLiteral("Suivant ➔"),
-            QStringLiteral("下一条 ➔"),
-            QStringLiteral("次へ ➔"),
-            QStringLiteral("التالي ➔"),
-            QStringLiteral("Siguiente ➔"),
-            QStringLiteral("Successivo ➔"),
-            QStringLiteral("Próxima ➔"),
-            QStringLiteral("다음 팁 ➔")));
+            QStringLiteral("Следующий"),
+            QStringLiteral("Next Tip"),
+            QStringLiteral("Nächster"),
+            QStringLiteral("Suivant"),
+            QStringLiteral("下一条"),
+            QStringLiteral("次へ"),
+            QStringLiteral("التالي"),
+            QStringLiteral("Siguiente"),
+            QStringLiteral("Successivo"),
+            QStringLiteral("Próxima"),
+            QStringLiteral("다음 팁")));
     }
 
     UpdateStepStyles(dash, dash.active_step);
@@ -509,7 +521,7 @@ LoadingScreen::LoadingScreen(QWidget* parent)
             QTimer::singleShot(1800, this, [this]() {
                 auto it2 = s_dash_map.find(this);
                 if (it2 != s_dash_map.end() && it2->second.copy_tid_btn && !it2->second.current_tid_hex.isEmpty()) {
-                    it2->second.copy_tid_btn->setText(QStringLiteral("🆔 %1 📋").arg(it2->second.current_tid_hex));
+                    it2->second.copy_tid_btn->setText(QStringLiteral("%1").arg(it2->second.current_tid_hex));
                 }
             });
         }
@@ -571,7 +583,7 @@ LoadingScreen::LoadingScreen(QWidget* parent)
     dash.timer_badge = new QLabel(ui->center_card);
     dash.timer_badge->setStyleSheet(QStringLiteral(
         "QLabel { background: rgba(0, 242, 254, 0.12); color: #00F2FE; border: 1px solid rgba(0, 242, 254, 0.32); border-radius: 5px; padding: 2px 8px; font-family: 'Consolas', monospace; font-size: 11px; font-weight: 700; }"));
-    dash.timer_badge->setText(QStringLiteral("⏱ 00:00.0"));
+    dash.timer_badge->setText(QStringLiteral("00:00.0"));
     ui->stage_layout->insertWidget(1, dash.timer_badge, 0, Qt::AlignRight | Qt::AlignVCenter);
 
     // Interactive Pro-Tips & Hotkeys Banner at the bottom of center_card
@@ -639,7 +651,7 @@ LoadingScreen::LoadingScreen(QWidget* parent)
         const int tenths = static_cast<int>((elapsed_ms % 1000) / 100);
         if (it->second.timer_badge) {
             it->second.timer_badge->setText(
-                QStringLiteral("⏱ %1:%2.%3")
+                QStringLiteral("%1:%2.%3")
                     .arg(mins, 2, 10, QLatin1Char('0'))
                     .arg(secs, 2, 10, QLatin1Char('0'))
                     .arg(tenths));
@@ -970,17 +982,17 @@ void LoadingScreen::OnLoadProgress(VideoCore::LoadCallbackStage stage, std::size
                         .addMSecs(std::max<long>(eta_mseconds - diff.count() + 1000, 1000))
                         .toString(QStringLiteral("mm:ss"));
                     estimate = StormLang(
-                        QStringLiteral("⚡ %1 шейд./с · Осталось: %2"),
-                        QStringLiteral("⚡ %1 sh/s · ETA: %2"),
-                        QStringLiteral("⚡ %1 Sh./s · Restzeit: %2"),
-                        QStringLiteral("⚡ %1 sh/s · Restant : %2"),
-                        QStringLiteral("⚡ %1 个/秒 · 剩余: %2"),
-                        QStringLiteral("⚡ %1 sh/秒 · 残り: %2"),
-                        QStringLiteral("⚡ %1 مظلل/ث · المتبقي: %2"),
-                        QStringLiteral("⚡ %1 sh/s · Restante: %2"),
-                        QStringLiteral("⚡ %1 sh/s · Rimanente: %2"),
-                        QStringLiteral("⚡ %1 sh/s · Restante: %2"),
-                        QStringLiteral("⚡ %1 sh/초 · 남은 시간: %2")).arg(rate_per_sec).arg(eta_str);
+                        QStringLiteral("%1 шейд./с · Осталось: %2"),
+                        QStringLiteral("%1 sh/s · ETA: %2"),
+                        QStringLiteral("%1 Sh./s · Restzeit: %2"),
+                        QStringLiteral("%1 sh/s · Restant : %2"),
+                        QStringLiteral("%1 个/秒 · 剩余: %2"),
+                        QStringLiteral("%1 sh/秒 · 残り: %2"),
+                        QStringLiteral("%1 مظلل/ث · المتبقي: %2"),
+                        QStringLiteral("%1 sh/s · Restante: %2"),
+                        QStringLiteral("%1 sh/s · Rimanente: %2"),
+                        QStringLiteral("%1 sh/s · Restante: %2"),
+                        QStringLiteral("%1 sh/초 · 남은 시간: %2")).arg(rate_per_sec).arg(eta_str);
                 }
             }
             ui->value->setText(estimate);

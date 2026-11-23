@@ -52,7 +52,7 @@
      <item>
       <widget class="QGroupBox" name="groupBoxWebConfig">
        <property name="title">
-        <string>Веб-сервис STORM SWITCH</string>
+        <string>STORM SWITCH Web Service</string>
        </property>
        <layout class="QVBoxLayout" name="verticalLayoutYuzuWebService">
         <item>

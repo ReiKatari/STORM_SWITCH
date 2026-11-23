@@ -3138,10 +3138,12 @@ public:
 
     void SetNativeTuringMacroMode(bool enabled) {
         GetNativeMacroEngine().native_turing = enabled;
+        cached_native_turing = enabled;
         upload_state.SetNativePartialTransfers(enabled);
     }
     void SetNativeMacroContext(std::shared_ptr<NativeMacroContext> context) {
         native_macro_context = std::move(context);
+        cached_native_turing = GetNativeMacroEngine().native_turing;
     }
     MacroEngine& GetNativeMacroEngine() { return native_macro_context ? native_macro_context->engine : macro_engine; }
     std::span<u32> GetNativeMacroPositions() { return native_macro_context ? std::span<u32>{native_macro_context->positions} : std::span<u32>{macro_positions}; }
@@ -3161,6 +3163,9 @@ public:
 
     /// Write the value to the register identified by method.
     void CallMethod(Core::System& system, u32 method, u32 method_argument, bool is_last_call) override;
+
+    /// Ultra-fast register write path for Switch 2 native Turing MME emits (method < 0xe00).
+    void CallNativeMacroMethod(u32 method, u32 method_argument);
 
     /// Write multiple values to the register identified by method.
     void CallMultiMethod(Core::System& system, u32 method, const u32* base_start, u32 amount, u32 methods_pending) override;
@@ -3267,6 +3272,41 @@ private:
         }();
         return skip;
     }
+
+    bool cached_native_turing{false};
+    bool cached_skip_same_writes{SkipSameValueWrites()};
+    std::array<u8, Regs::NUM_REGS> fast_skip_mask{};
+
+public:
+    [[nodiscard]] const u32* RegsPtr() const noexcept {
+        return regs.reg_array.data();
+    }
+    [[nodiscard]] const u8* FastSkipMask() const noexcept {
+        return cached_skip_same_writes ? fast_skip_mask.data() : nullptr;
+    }
+    [[nodiscard]] u32* ShadowRegsPtr() noexcept {
+        return shadow_state.reg_array.data();
+    }
+    [[nodiscard]] const u32* ShadowRamControlPtr() const noexcept {
+        return reinterpret_cast<const u32*>(&shadow_state.shadow_ram_control);
+    }
+    [[nodiscard]] bool TryFastStateWrite(u32 method, u32 argument) noexcept {
+        const auto control = shadow_state.shadow_ram_control;
+        if (!cached_native_turing || !cached_skip_same_writes ||
+            control == Regs::ShadowRamControl::Replay ||
+            !method_sink.empty() || method >= Regs::NUM_REGS) [[unlikely]] {
+            return false;
+        }
+        if (control != Regs::ShadowRamControl::Passthrough) {
+            shadow_state.reg_array[method] = argument;
+        }
+        if (regs.reg_array[method] != argument) [[unlikely]] {
+            ProcessDirtyRegisters(method, argument);
+        }
+        return true;
+    }
+
+private:
 
     /// Handles writes to the macro uploading register.
     void ProcessMacroUpload(u32 data);

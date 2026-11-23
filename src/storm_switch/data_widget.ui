@@ -55,15 +55,15 @@
      <item>
       <widget class="QPushButton" name="open">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
          <horstretch>1</horstretch>
-         <verstretch>1</verstretch>
+         <verstretch>0</verstretch>
         </sizepolicy>
        </property>
        <property name="minimumSize">
         <size>
-         <width>52</width>
-         <height>47</height>
+         <width>124</width>
+         <height>42</height>
         </size>
        </property>
        <property name="toolTip">
@@ -71,10 +71,9 @@
        </property>
        <property name="styleSheet">
         <string notr="true">QPushButton {
-max-width: 50px;
-max-height: 45px;
-min-width: 50px;
-min-height: 45px;
+min-width: 120px;
+min-height: 40px;
+padding: 6px 12px;
 }</string>
        </property>
        <property name="text">
@@ -82,8 +81,8 @@ min-height: 45px;
        </property>
        <property name="iconSize">
         <size>
-         <width>28</width>
-         <height>28</height>
+         <width>18</width>
+         <height>18</height>
         </size>
        </property>
       </widget>
@@ -91,26 +90,25 @@ min-height: 45px;
      <item>
       <widget class="QPushButton" name="clear">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
          <horstretch>1</horstretch>
-         <verstretch>1</verstretch>
+         <verstretch>0</verstretch>
         </sizepolicy>
        </property>
        <property name="minimumSize">
         <size>
-         <width>52</width>
-         <height>47</height>
+         <width>124</width>
+         <height>42</height>
         </size>
        </property>
        <property name="toolTip">
-        <string>Delete all data in this directory. THIS IS 100% IRREVERSABLE!</string>
+        <string>Delete all data in this directory. THIS IS 100% IRREVERSIBLE!</string>
        </property>
        <property name="styleSheet">
         <string notr="true">QPushButton {
-max-width: 50px;
-max-height: 45px;
-min-width: 50px;
-min-height: 45px;
+min-width: 120px;
+min-height: 40px;
+padding: 6px 12px;
 }</string>
        </property>
        <property name="text">
@@ -118,8 +116,8 @@ min-height: 45px;
        </property>
        <property name="iconSize">
         <size>
-         <width>28</width>
-         <height>28</height>
+         <width>18</width>
+         <height>18</height>
         </size>
        </property>
       </widget>
@@ -127,15 +125,15 @@ min-height: 45px;
      <item>
       <widget class="QPushButton" name="upload">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
          <horstretch>1</horstretch>
-         <verstretch>1</verstretch>
+         <verstretch>0</verstretch>
         </sizepolicy>
        </property>
        <property name="minimumSize">
         <size>
-         <width>52</width>
-         <height>47</height>
+         <width>124</width>
+         <height>42</height>
         </size>
        </property>
        <property name="toolTip">
@@ -143,10 +141,9 @@ min-height: 45px;
        </property>
        <property name="styleSheet">
         <string notr="true">QPushButton {
-max-width: 50px;
-max-height: 45px;
-min-width: 50px;
-min-height: 45px;
+min-width: 120px;
+min-height: 40px;
+padding: 6px 12px;
 }</string>
        </property>
        <property name="text">
@@ -154,8 +151,8 @@ min-height: 45px;
        </property>
        <property name="iconSize">
         <size>
-         <width>28</width>
-         <height>28</height>
+         <width>18</width>
+         <height>18</height>
         </size>
        </property>
       </widget>
@@ -163,15 +160,15 @@ min-height: 45px;
      <item>
       <widget class="QPushButton" name="download">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
          <horstretch>1</horstretch>
-         <verstretch>1</verstretch>
+         <verstretch>0</verstretch>
         </sizepolicy>
        </property>
        <property name="minimumSize">
         <size>
-         <width>52</width>
-         <height>47</height>
+         <width>124</width>
+         <height>42</height>
         </size>
        </property>
        <property name="toolTip">
@@ -179,10 +176,9 @@ min-height: 45px;
        </property>
        <property name="styleSheet">
         <string notr="true">QPushButton {
-max-width: 50px;
-max-height: 45px;
-min-width: 50px;
-min-height: 45px;
+min-width: 120px;
+min-height: 40px;
+padding: 6px 12px;
 }</string>
        </property>
        <property name="text">
@@ -190,8 +186,8 @@ min-height: 45px;
        </property>
        <property name="iconSize">
         <size>
-         <width>28</width>
-         <height>28</height>
+         <width>18</width>
+         <height>18</height>
         </size>
        </property>
       </widget>

@@ -2058,7 +2058,7 @@ When a program attempts to open the controller applet, it is immediately closed.
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="642" />
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="655" />
       <source>Off</source>
-      <translation>Off</translation>
+      <translation>Uit</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="643" />
@@ -2192,7 +2192,23 @@ When a program attempts to open the controller applet, it is immediately closed.
       <source>Grid View</source>
       <translation>Grid View</translation>
     </message>
-  </context>
+      <message>
+        <source>Theme:</source>
+        <translation>Thema:</translation>
+    </message>
+    <message>
+        <source>Interface language:</source>
+        <translation>Interfacetaal:</translation>
+    </message>
+    <message>
+        <source>Reset All Settings</source>
+        <translation>Reset Alle Instellingen</translation>
+    </message>
+    <message>
+        <source>Console Mode</source>
+        <translation>Console-modus:</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureApplets</name>
     <message>
@@ -2548,7 +2564,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="235" />
       <source>Off</source>
-      <translation>Off</translation>
+      <translation>Uit</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="240" />
@@ -3318,7 +3334,11 @@ Would you like to delete the old save data?</translation>
       <source>VSync On</source>
       <translation>VSync Aan</translation>
     </message>
-  </context>
+      <message>
+        <source>VSync Mode:</source>
+        <translation>VSync-modus:</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureGraphicsAdvanced</name>
     <message>
@@ -3336,13 +3356,25 @@ Would you like to delete the old save data?</translation>
       <source>Advanced Graphics Settings</source>
       <translation>Geavanceerde Grafische Instellingen</translation>
     </message>
-  </context>
+      <message>
+        <source>ASTC Decoding Method:</source>
+        <translation>ASTC Decodeer Methode:</translation>
+    </message>
+    <message>
+        <source>Force maximum clocks (Vulkan only)</source>
+        <translation>Forceer maximale klokken (alleen Vulkan)</translation>
+    </message>
+    <message>
+        <source>Use Vulkan pipeline cache</source>
+        <translation>Gebruik Vulkan-pijplijn-cache</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureGraphicsExtensions</name>
     <message>
       <location filename="../../src/yuzu/configuration/configure_graphics_extensions.ui" line="14" />
       <source>Form</source>
-      <translation>Form</translation>
+      <translation>Vorm</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_graphics_extensions.ui" line="17" />
@@ -4563,7 +4595,11 @@ Om de assen om te keren, beweeg je de joystick eerst verticaal en vervolgens hor
       <source>UDP Test or calibration configuration is in progress.&lt;br&gt;Please wait for them to finish.</source>
       <translation>UDP-test of kalibratieconfiguratie is bezig.&lt;br&gt;Wacht tot ze klaar zijn.</translation>
     </message>
-  </context>
+      <message>
+        <source>Motion / Touch</source>
+        <translation>Beweging / Touch</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureMousePanning</name>
     <message>
@@ -4786,7 +4822,7 @@ De huidige waarden zijn %1% en %2%.</translation>
     <message>
       <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="86" />
       <source>Network</source>
-      <translation>Network</translation>
+      <translation>Netwerk</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="87" />
@@ -5197,7 +5233,19 @@ UUID: %2</translation>
       <source>Warning: "%1" is not a valid language for region "%2"</source>
       <translation>Waarschuwing: "%1" is geen geldige taal voor regio "%2"</translation>
     </message>
-  </context>
+      <message>
+        <source>Console Mode</source>
+        <translation>Console-modus:</translation>
+    </message>
+    <message>
+        <source>Limit Speed Percent</source>
+        <translation>Beperk Snelheidspercentage</translation>
+    </message>
+    <message>
+        <source>Language:</source>
+        <translation>Taal:</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureTas</name>
     <message>
@@ -5571,7 +5619,15 @@ Versleep punten om de positie te veranderen, of dubbelklik op tabelcellen om waa
       <comment>Screenshot width value</comment>
       <translation>Auto (%1 x %2, %3 x %4)</translation>
     </message>
-  </context>
+      <message>
+        <source>Language:</source>
+        <translation>Taal:</translation>
+    </message>
+    <message>
+        <source>Screenshots Path:</source>
+        <translation>Schermafbeeldingspad:</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureVibration</name>
     <message>
@@ -5718,7 +5774,11 @@ Versleep punten om de positie te veranderen, of dubbelklik op tabelcellen om waa
       <comment>Tooltip</comment>
       <translation>Must be 48 characters, and lowercase a-z</translation>
     </message>
-  </context>
+      <message>
+        <source>Username:</source>
+        <translation>Gebruikersnaam:</translation>
+    </message>
+</context>
   <context>
     <name>ControllerDialog</name>
     <message>
@@ -5775,7 +5835,7 @@ Versleep punten om de positie te veranderen, of dubbelklik op tabelcellen om waa
     <message>
       <location filename="../../src/yuzu/data_widget.ui" line="14" />
       <source>Form</source>
-      <translation>Form</translation>
+      <translation>Vorm</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/data_widget.ui" line="22" />
@@ -5833,7 +5893,7 @@ Versleep punten om de positie te veranderen, of dubbelklik op tabelcellen om waa
     <message>
       <location filename="../../src/yuzu/deps_dialog.cpp" line="22" />
       <source>Version</source>
-      <translation>Version</translation>
+      <translation>Versie</translation>
     </message>
   </context>
   <context>
@@ -6001,7 +6061,7 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
     <message>
       <location filename="../../src/yuzu/multiplayer/message.cpp" line="63" />
       <source>Error</source>
-      <translation>Error</translation>
+      <translation>Fout</translation>
     </message>
   </context>
   <context>
@@ -6297,7 +6357,7 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="194" />
       <source>Name</source>
-      <translation>Name</translation>
+      <translation>Naam</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="195" />
@@ -6312,7 +6372,7 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="197" />
       <source>Size</source>
-      <translation>Size</translation>
+      <translation>Groote</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="198" />
@@ -6509,7 +6569,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="41" />
       <source>Configure</source>
-      <translation>Configure</translation>
+      <translation>Configureer</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="42" />
@@ -6554,7 +6614,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="50" />
       <source>Create Room</source>
-      <translation>Create Room</translation>
+      <translation>Maak Kamer</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="51" />
@@ -6564,7 +6624,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="52" />
       <source>Leave Room</source>
-      <translation>Leave Room</translation>
+      <translation>Verlaat Kamer</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="53" />
@@ -7259,7 +7319,7 @@ Debug Message:</translation>
       <location filename="../../src/yuzu/main_window.cpp" line="876" />
       <location filename="../../src/yuzu/main_window.cpp" line="879" />
       <source>Disable Web Applet</source>
-      <translation>Disable Web Applet</translation>
+      <translation>Schakel Webapplet uit</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="880" />
@@ -7538,7 +7598,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2676" />
       <source>Properties</source>
-      <translation>Properties</translation>
+      <translation>Eigenschappen</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2677" />
@@ -7554,7 +7614,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2743" />
       <source>Load File</source>
-      <translation>Load File</translation>
+      <translation>Laad Bestand</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2756" />
@@ -7771,7 +7831,7 @@ Please, only use this feature to install updates and DLC.</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3704" />
       <source>Error</source>
-      <translation>Error</translation>
+      <translation>Fout</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3704" />
@@ -7842,7 +7902,7 @@ Please, only use this feature to install updates and DLC.</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3975" />
       <source>Capture Screenshot</source>
-      <translation>Capture Screenshot</translation>
+      <translation>Leg Schermafbeelding Vast</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3976" />
@@ -8134,7 +8194,7 @@ Would you like to bypass this and exit anyway?</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="67" />
       <source>Accurate</source>
-      <translation>Accurate</translation>
+      <translation>Accuraat</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="71" />
@@ -8161,7 +8221,19 @@ Would you like to bypass this and exit anyway?</translation>
       <source>Null</source>
       <translation>Null</translation>
     </message>
-  </context>
+      <message>
+        <source>Fullscreen</source>
+        <translation>Volledig Scherm</translation>
+    </message>
+    <message>
+        <source>Create Shortcut</source>
+        <translation>Maak Snelkoppeling</translation>
+    </message>
+    <message>
+        <source>Install Files to NAND</source>
+        <translation>Installeer Bestanden naar NAND</translation>
+    </message>
+</context>
   <context>
     <name>MigrationWorker</name>
     <message>
@@ -8369,7 +8441,7 @@ Toch doorgaan?</translation>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="70" />
       <source>Username</source>
-      <translation>Username</translation>
+      <translation>Gebruikersnaam</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="82" />
@@ -8505,7 +8577,7 @@ p, li { white-space: pre-wrap; }
     <message>
       <location filename="../../src/yuzu/render/performance_overlay.ui" line="14" />
       <source>Form</source>
-      <translation>Form</translation>
+      <translation>Vorm</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/render/performance_overlay.ui" line="32" />
@@ -8633,13 +8705,6 @@ p, li { white-space: pre-wrap; }
       <location filename="../../src/yuzu/user_data_migration.cpp" line="68" />
       <source>Link Old Directory</source>
       <translation>Link Old Directory</translation>
-    </message>
-    <message>
-      <location filename="../../src/yuzu/user_data_migration.cpp" line="98" />
-      <source>
-      </source>
-      <translation>
-      </translation>
     </message>
     <message>
       <location filename="../../src/yuzu/user_data_migration.cpp" line="102" />
@@ -9728,7 +9793,7 @@ Would you like to manually select a portable folder to use?</translation>
     <message>
       <location filename="../../src/qt_common/util/game.cpp" line="347" />
       <source>Reset Metadata Cache</source>
-      <translation>Reset Metadata Cache</translation>
+      <translation>Herstel Metagegevenscache</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/game.cpp" line="353" />
@@ -9748,7 +9813,7 @@ Would you like to manually select a portable folder to use?</translation>
     <message>
       <location filename="../../src/qt_common/util/game.cpp" line="381" />
       <source>Create Shortcut</source>
-      <translation>Create Shortcut</translation>
+      <translation>Maak Snelkoppeling</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/game.cpp" line="381" />
@@ -10635,4 +10700,167 @@ Error code: %3</translation>
       <translation>Successfully downloaded %1. Would you like to open it?</translation>
     </message>
   </context>
+<context>
+    <name>QPlatformTheme</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Annuleer</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Standaard Herstellen</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Herstel</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Opslaan</translation>
+    </message>
+</context>
+<context>
+    <name>QDialogButtonBox</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Annuleer</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Standaard Herstellen</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Herstel</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Opslaan</translation>
+    </message>
+</context>
+<context>
+    <name>QMessageBox</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Annuleer</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Standaard Herstellen</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Herstel</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Opslaan</translation>
+    </message>
+</context>
+<context>
+    <name>QGuiApplication</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Annuleer</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Standaard Herstellen</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Herstel</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Opslaan</translation>
+    </message>
+</context>
+<context>
+    <name>QAbstractButton</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Annuleer</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Standaard Herstellen</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Herstel</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Opslaan</translation>
+    </message>
+</context>
+<context>
+    <name>QColorDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Annuleer</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Standaard Herstellen</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Herstel</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Opslaan</translation>
+    </message>
+</context>
+<context>
+    <name>QFileDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Annuleer</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Standaard Herstellen</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Herstel</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Opslaan</translation>
+    </message>
+</context>
+<context>
+    <name>QFontDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Annuleer</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Standaard Herstellen</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Herstel</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Opslaan</translation>
+    </message>
+</context>
+<context>
+    <name>QtController</name>
+    <message>
+        <source>Console Mode</source>
+        <translation>Console-modus:</translation>
+    </message>
+    <message>
+        <source>Vibration</source>
+        <translation>Vibratie</translation>
+    </message>
+</context>
 </TS>

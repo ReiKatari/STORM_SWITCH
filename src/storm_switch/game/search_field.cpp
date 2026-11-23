@@ -9,6 +9,7 @@
 #include <QToolButton>
 
 #include "qt_common/config/uisettings.h"
+#include "storm_switch/common/storm_lang.h"
 #include "storm_switch/common/storm_theme.h"
 
 GameListSearchField::KeyReleaseEater::KeyReleaseEater(GameList* gamelist_, QObject* parent)
@@ -56,7 +57,13 @@ void GameListSearchField::setFilterResult(int visible_, int total_) {
     visible = visible_;
     total = total_;
 
-    label_filter_result->setText(tr("%1 из %2 игр").arg(visible).arg(total));
+    const QString ru_tpl = (total % 10 == 1 && total % 100 != 11)
+                               ? QStringLiteral("%1 из %2 игры")
+                               : QStringLiteral("%1 из %2 игр");
+    const QString en_tpl = (total == 1)
+                               ? QStringLiteral("%1 of %2 game")
+                               : QStringLiteral("%1 of %2 games");
+    label_filter_result->setText(StormLang(ru_tpl, en_tpl, QStringLiteral("%1 von %2 Spielen"), QStringLiteral("%1 sur %2 jeux"), QStringLiteral("%1 / %2 款游戏"), QStringLiteral("%1 / %2 本")).arg(visible).arg(total));
 }
 
 QString GameListSearchField::filterText() const {
@@ -122,11 +129,11 @@ GameListSearchField::GameListSearchField(GameList* parent) : QWidget{parent} {
 void GameListSearchField::UpdateViewMode(bool is_grid) {
     if (view_mode_toggle) {
         if (is_grid) {
-            view_mode_toggle->setText(tr("Дерево"));
-            view_mode_toggle->setToolTip(tr("Переключить в режим дерева"));
+            view_mode_toggle->setText(StormLang(QStringLiteral("☰ Список"), QStringLiteral("☰ List"), QStringLiteral("☰ Liste"), QStringLiteral("☰ Liste"), QStringLiteral("☰ 列表"), QStringLiteral("☰ リスト")));
+            view_mode_toggle->setToolTip(StormLang(QStringLiteral("Переключить в режим списка"), QStringLiteral("Switch to list view"), QStringLiteral("Zur Listenansicht wechseln"), QStringLiteral("Passer en vue liste"), QStringLiteral("切换到列表视图"), QStringLiteral("リスト表示に切り替え")));
         } else {
-            view_mode_toggle->setText(tr("Сетка"));
-            view_mode_toggle->setToolTip(tr("Переключить в режим сетки"));
+            view_mode_toggle->setText(StormLang(QStringLiteral("⊞ Сетка"), QStringLiteral("⊞ Grid"), QStringLiteral("⊞ Raster"), QStringLiteral("⊞ Grille"), QStringLiteral("⊞ 网格"), QStringLiteral("⊞ グリッド")));
+            view_mode_toggle->setToolTip(StormLang(QStringLiteral("Переключить в режим сетки"), QStringLiteral("Switch to grid view"), QStringLiteral("Zur Rasteransicht wechseln"), QStringLiteral("Passer en vue grille"), QStringLiteral("切换到网格视图"), QStringLiteral("グリッド表示に切り替え")));
         }
     }
 }
@@ -140,11 +147,17 @@ void GameListSearchField::changeEvent(QEvent* event) {
 }
 
 void GameListSearchField::RetranslateUI() {
-    label_filter->setText(tr("Фильтр:"));
-    edit_filter->setPlaceholderText(tr("Поиск по названию или Title ID..."));
+    label_filter->setText(StormLang(QStringLiteral("Фильтр:"), QStringLiteral("Filter:"), QStringLiteral("Filter:"), QStringLiteral("Filtre :"), QStringLiteral("筛选:"), QStringLiteral("フィルター:")));
+    edit_filter->setPlaceholderText(StormLang(QStringLiteral("Поиск по названию или Title ID..."), QStringLiteral("Search by title or Title ID..."), QStringLiteral("Nach Titel oder Title ID suchen..."), QStringLiteral("Rechercher par titre ou Title ID..."), QStringLiteral("按名称或 Title ID 搜索..."), QStringLiteral("タイトルまたは Title ID で検索...")));
 
     if (total > 0) {
-        label_filter_result->setText(tr("%1 из %2 игр").arg(visible).arg(total));
+        const QString ru_tpl = (total % 10 == 1 && total % 100 != 11)
+                                   ? QStringLiteral("%1 из %2 игры")
+                                   : QStringLiteral("%1 из %2 игр");
+        const QString en_tpl = (total == 1)
+                                   ? QStringLiteral("%1 of %2 game")
+                                   : QStringLiteral("%1 of %2 games");
+        label_filter_result->setText(StormLang(ru_tpl, en_tpl, QStringLiteral("%1 von %2 Spielen"), QStringLiteral("%1 sur %2 jeux"), QStringLiteral("%1 / %2 款游戏"), QStringLiteral("%1 / %2 本")).arg(visible).arg(total));
     } else {
         label_filter_result->clear();
     }
@@ -153,11 +166,11 @@ void GameListSearchField::RetranslateUI() {
         const int cur_idx = sort_combobox->currentIndex();
         sort_combobox->blockSignals(true);
         sort_combobox->clear();
-        sort_combobox->addItem(tr("Имя (А-Я)"), 0);
-        sort_combobox->addItem(tr("Имя (Я-А)"), 1);
-        sort_combobox->addItem(tr("Время игры"), 2);
-        sort_combobox->addItem(tr("Размер файла"), 3);
-        sort_combobox->addItem(tr("Switch 2 / 1"), 4);
+        sort_combobox->addItem(StormLang(QStringLiteral("Имя (А-Я)"), QStringLiteral("Name (A-Z)"), QStringLiteral("Name (A-Z)"), QStringLiteral("Nom (A-Z)"), QStringLiteral("名称 (A-Z)"), QStringLiteral("名前 (A-Z)")), 0);
+        sort_combobox->addItem(StormLang(QStringLiteral("Имя (Я-А)"), QStringLiteral("Name (Z-A)"), QStringLiteral("Name (Z-A)"), QStringLiteral("Nom (Z-A)"), QStringLiteral("名称 (Z-A)"), QStringLiteral("名前 (Z-A)")), 1);
+        sort_combobox->addItem(StormLang(QStringLiteral("Время игры"), QStringLiteral("Play time"), QStringLiteral("Spielzeit"), QStringLiteral("Temps de jeu"), QStringLiteral("游玩时间"), QStringLiteral("プレイ時間")), 2);
+        sort_combobox->addItem(StormLang(QStringLiteral("Размер файла"), QStringLiteral("File size"), QStringLiteral("Dateigröße"), QStringLiteral("Taille du fichier"), QStringLiteral("文件大小"), QStringLiteral("ファイルサイズ")), 3);
+        sort_combobox->addItem(QStringLiteral("Switch 2 / 1"), 4);
         if (cur_idx >= 0 && cur_idx < sort_combobox->count()) {
             sort_combobox->setCurrentIndex(cur_idx);
         }

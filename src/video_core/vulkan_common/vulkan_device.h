@@ -54,6 +54,8 @@ VK_DEFINE_HANDLE(VmaAllocator)
 
 // Define all features which may be used by the implementation and require an extension here.
 #define FOR_EACH_VK_FEATURE_EXT(FEATURE)                                                           \
+    FEATURE(EXT, AttachmentFeedbackLoopLayout, ATTACHMENT_FEEDBACK_LOOP_LAYOUT,                      \
+            attachment_feedback_loop_layout)                                                       \
     FEATURE(EXT, BorderColorSwizzle, BORDER_COLOR_SWIZZLE, border_color_swizzle)                   \
     FEATURE(EXT, ColorWriteEnable, COLOR_WRITE_ENABLE, color_write_enable)                         \
     FEATURE(EXT, CustomBorderColor, CUSTOM_BORDER_COLOR, custom_border_color)                      \
@@ -70,6 +72,8 @@ VK_DEFINE_HANDLE(VmaAllocator)
     FEATURE(EXT, PrimitiveTopologyListRestart, PRIMITIVE_TOPOLOGY_LIST_RESTART,                    \
             primitive_topology_list_restart)                                                       \
     FEATURE(EXT, ProvokingVertex, PROVOKING_VERTEX, provoking_vertex)                              \
+    FEATURE(EXT, RasterizationOrderAttachmentAccess, RASTERIZATION_ORDER_ATTACHMENT_ACCESS,        \
+            rasterization_order_attachment_access)                                                 \
     FEATURE(EXT, Robustness2, ROBUSTNESS_2, robustness2)                                           \
     FEATURE(EXT, TexelBufferAlignment, TEXEL_BUFFER_ALIGNMENT, texel_buffer_alignment)             \
     FEATURE(EXT, TransformFeedback, TRANSFORM_FEEDBACK, transform_feedback)                        \
@@ -386,6 +390,9 @@ public:
     }
 
 #define FN_MAX_LIMIT_LIST \
+    FN_MAX_LIMIT_ELEM(ImageDimension2D) \
+    FN_MAX_LIMIT_ELEM(FramebufferWidth) \
+    FN_MAX_LIMIT_ELEM(FramebufferHeight) \
     FN_MAX_LIMIT_ELEM(ComputeSharedMemorySize) \
     FN_MAX_LIMIT_ELEM(PerStageDescriptorSampledImages) \
     FN_MAX_LIMIT_ELEM(PerStageResources) \
@@ -868,6 +875,29 @@ FN_MAX_LIMIT_LIST
     /// Returns true if the device supports VK_EXT_vertex_input_dynamic_state.
     bool IsExtVertexInputDynamicStateSupported() const {
         return extensions.vertex_input_dynamic_state;
+    }
+
+    /// Returns true on tile-based mobile GPUs (Mali, Adreno/Turnip, Xclipse) where keeping
+    /// a VkRenderPass open across self-reading feedback-loop decals saves tile load/store bandwidth.
+    [[nodiscard]] bool IsTileBasedGpu() const noexcept {
+        return IsMali() || IsQualcomm() || IsTurnip() || IsXclipse();
+    }
+
+    /// Returns true if VK_EXT_attachment_feedback_loop_layout is supported and enabled.
+    bool IsExtAttachmentFeedbackLoopLayoutSupported() const {
+        return features.attachment_feedback_loop_layout.attachmentFeedbackLoopLayout != VK_FALSE;
+    }
+
+    /// Returns true when in-pass feedback-loop barriers should be used (tile GPUs only, keeping
+    /// desktop GPUs on full cross-pixel barriers and full lossless color compression).
+    bool UseInPassFeedbackLoopBarrier() const noexcept {
+        return IsTileBasedGpu() && IsExtAttachmentFeedbackLoopLayoutSupported();
+    }
+
+    /// Returns true if VK_EXT_rasterization_order_attachment_access is supported for color attachments.
+    bool IsExtRasterizationOrderColorAttachmentAccessSupported() const {
+        return features.rasterization_order_attachment_access.rasterizationOrderColorAttachmentAccess !=
+               VK_FALSE;
     }
 
     /// Returns true if VK_KHR_dynamic_rendering_local_read is supported and enabled.

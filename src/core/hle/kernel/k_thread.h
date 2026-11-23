@@ -627,8 +627,9 @@ public:
         m_is_kernel_address_key = true;
     }
 
-    void ClearWaitQueue() {
-        m_wait_queue = nullptr;
+    void ClearWaitQueue();
+    KThreadQueue* GetWaitQueue() const noexcept {
+        return m_wait_queue;
     }
 
     void BeginWait(KernelCore& kernel, KThreadQueue* queue);

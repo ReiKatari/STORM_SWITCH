@@ -173,14 +173,19 @@ struct KernelCore::Impl {
         // Next host thead ID to use, 0-3 IDs represent core threads, >3 represent others
         next_host_thread_id = Core::Hardware::NUM_CPU_CORES;
 
-        // Close kernel objects that were not freed on shutdown
+        // Close kernel objects that were not freed on shutdown.
+        // Move out under lock so object->Close() -> UnregisterInUseObject() never self-deadlocks.
         {
-            std::scoped_lock lk{registered_in_use_objects_lock};
-            if (registered_in_use_objects.size()) {
-                for (auto& object : registered_in_use_objects) {
+            std::vector<KAutoObject*> to_close;
+            {
+                std::scoped_lock lk{registered_in_use_objects_lock};
+                to_close.assign(registered_in_use_objects.begin(), registered_in_use_objects.end());
+                registered_in_use_objects.clear();
+            }
+            for (auto* object : to_close) {
+                if (object) {
                     object->Close(kernel);
                 }
-                registered_in_use_objects.clear();
             }
         }
 
@@ -205,9 +210,32 @@ struct KernelCore::Impl {
     }
 
     void CloseServices() {
-        // Ensures all servers gracefully shutdown.
-        std::scoped_lock lk{server_lock};
-        server_managers.clear();
+        // Move managers out under lock, signal stop on all in parallel, then destroy outside lock.
+        std::vector<std::unique_ptr<Service::ServerManager>> managers_to_close;
+        {
+            std::scoped_lock lk{server_lock};
+            managers_to_close.swap(server_managers);
+        }
+        for (auto& mgr : managers_to_close) {
+            if (mgr) {
+                mgr->RequestStop();
+            }
+        }
+        for (auto& mgr : managers_to_close) {
+            if (!mgr) {
+                continue;
+            }
+            const std::string name = mgr->DebugName();
+            LOG_DEBUG(Core, "CloseServices: closing server '{}'...", name);
+            const auto t0 = std::chrono::steady_clock::now();
+            mgr.reset();
+            const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                std::chrono::steady_clock::now() - t0)
+                                .count();
+            if (ms >= 250) {
+                LOG_WARNING(Core, "CloseServices: server '{}' took {} ms to close", name, ms);
+            }
+        }
     }
 
     void InitializePhysicalCores() {
@@ -994,6 +1022,7 @@ void KernelCore::RunServer(std::unique_ptr<Service::ServerManager>&& server_mana
             return;
         }
 
+        manager->MarkWillLoop();
         impl->server_managers.emplace_back(std::move(server_manager));
     }
 
@@ -1246,11 +1275,19 @@ void KernelCore::SuspendEmulation(bool suspended) {
 
     u32 wait_iterations = 0;
     while (!TryWait()) {
-        if (IsShuttingDown() && ++wait_iterations > 500) {
+        if (IsShuttingDown() && ++wait_iterations > 200) {
             break;
         }
-        std::this_thread::yield();
+        if (wait_iterations > 50) {
+            std::this_thread::sleep_for(std::chrono::milliseconds{1});
+        } else {
+            std::this_thread::yield();
+        }
     }
+}
+
+void KernelCore::PrepareShutdown() {
+    impl->is_shutting_down.store(true, std::memory_order_release);
 }
 
 void KernelCore::ShutdownCores() {

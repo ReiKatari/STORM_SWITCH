@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="storm_prof_filter_all">सभी</string>
+    <string name="storm_prof_btn_save">सहेजें</string>
+    <string name="storm_prof_btn_import">आयात करें</string>
+    <string name="storm_prof_btn_apply">लागू करें</string>
+    <string name="storm_prof_btn_delete">हटाएं</string>
+    <string name="storm_prof_preset_balanced_name">संतुलित (अनुशंसित)</string>
+    <string name="storm_prof_save_btn">सहेजें</string>
+    <string name="storm_prof_delete_title">हटाएं Profile</string>
+    <string name="storm_auto_btn_reset">रीसेट करें</string>
+    <string name="storm_auto_hw_soc_title">प्रोसेसर / SoC</string>
+    <string name="storm_auto_btn_apply">अनुकूलन लागू करें</string>
+</resources>

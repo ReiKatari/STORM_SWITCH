@@ -32,7 +32,7 @@ GameGrid::GameGrid(QWidget* parent) : QListView{parent} {
     setEditTriggers(QAbstractItemView::NoEditTriggers);
     setContextMenuPolicy(Qt::CustomContextMenu);
 
-    setSpacing(10);
+    setSpacing(12);
     setWordWrap(true);
     setTextElideMode(Qt::ElideNone);
     setFlow(QListView::LeftToRight);
@@ -105,37 +105,21 @@ void GameGrid::ApplyFilter(const QString& edit_filter_text, GameListModel* model
 }
 
 void GameGrid::UpdateIconSize() {
-    const u32 icon_size = UISettings::values.game_icon_size.GetValue();
+    const u32 raw_icon_size = UISettings::values.game_icon_size.GetValue();
+    // Keep GridView covers crisp & readable (152..256px) even when ListView uses 32/64px icons
+    const u32 icon_size = std::clamp<u32>(std::max<u32>(raw_icon_size, 152u), 152u, 256u);
 
-    int heightMargin = 20;
-    int widthMargin = 24;
-
-    if (UISettings::values.show_game_name) {
-        switch (icon_size) {
-        case 64:
-            heightMargin = 50;
-            widthMargin = 24;
-            break;
-        case 128:
-            heightMargin = 58;
-            widthMargin = 24;
-            break;
-        case 256:
-        default:
-            heightMargin = 64;
-            widthMargin = 24;
-            break;
-        }
-    }
+    const int heightMargin = UISettings::values.show_game_name ? 64 : 24;
+    const int widthMargin = 28;
 
     const int sb_width = style() ? style()->pixelMetric(QStyle::PM_ScrollBarExtent, nullptr, this) : 14;
-    const int view_width = std::max(100, this->width() - sb_width - 8);
+    const int view_width = std::max(200, this->width() - sb_width - 16);
 
-    const int min_item_width = icon_size + widthMargin;
+    const int min_item_width = static_cast<int>(icon_size) + widthMargin;
     const int columns = std::max(1, (view_width - 16) / min_item_width);
-    const int stretched_width = std::max(min_item_width, (view_width - 16) / columns);
+    const int stretched_width = std::min(min_item_width + 44, std::max(min_item_width, (view_width - 16) / columns));
 
-    QSize grid_size(stretched_width, icon_size + heightMargin);
+    QSize grid_size(stretched_width, static_cast<int>(icon_size) + heightMargin);
     if (gridSize() != grid_size) {
         setUpdatesEnabled(false);
         setGridSize(grid_size);

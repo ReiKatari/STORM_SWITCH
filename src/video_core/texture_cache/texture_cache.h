@@ -268,7 +268,44 @@ void TextureCache<P>::RunGarbageCollector() {
 }
 
 template <class P>
+void TextureCache<P>::HandleLiveResolutionChange() {
+    const u32 new_up = Settings::values.resolution_info.up_scale;
+    const u32 new_down = Settings::values.resolution_info.down_shift;
+    if (new_up == last_res_up_scale && new_down == last_res_down_shift) {
+        return;
+    }
+    LOG_INFO(HW_GPU, "Live resolution scale changed ({}/{} -> {}/{}); synchronizing texture cache",
+             last_res_up_scale, 1U << last_res_down_shift, new_up, 1U << new_down);
+    for (auto it = slot_images.begin(); it != slot_images.end(); ++it) {
+        Image& image = *(*it).second;
+        image.flags &= ~ImageFlagBits::IsRescalable;
+        if (True(image.flags & ImageFlagBits::Rescaled)) {
+            ScaleDown(image);
+        }
+    }
+    runtime.Finish();
+    for (auto it = slot_images.begin(); it != slot_images.end(); ++it) {
+        Image& image = *(*it).second;
+        if constexpr (requires { image.ReleaseScaledImage(); }) {
+            image.ReleaseScaledImage();
+        }
+    }
+    if constexpr (requires { runtime.ClearResolveShadows(); }) {
+        runtime.ClearResolveShadows();
+    }
+    for (const auto& [key, fb_id] : framebuffers) {
+        sentenced_framebuffers.Push(std::move(slot_framebuffers[fb_id]));
+        slot_framebuffers.erase(fb_id);
+    }
+    framebuffers.clear();
+    is_rescaling = false;
+    last_res_up_scale = new_up;
+    last_res_down_shift = new_down;
+}
+
+template <class P>
 void TextureCache<P>::TickFrame() {
+    HandleLiveResolutionChange();
     // If we can obtain the memory info, use it instead of the estimate.
     if (runtime.CanReportMemoryUsage()) {
         total_used_memory = runtime.GetDeviceMemoryUsage();
@@ -353,26 +390,13 @@ void TextureCache<P>::FillImageViews(std::span<ImageViewInOut> views, bool compu
 template <class P>
 void TextureCache<P>::CheckFeedbackLoop(std::span<const ImageViewInOut> views) {
     const bool barrier_feedback_loops = has_barrier_feedback_loops || Settings::values.barrier_feedback_loops.GetValue();
-    if (!barrier_feedback_loops) {
+    if (!barrier_feedback_loops || rt_active_mask == 0 || views.empty()) {
         return;
     }
 
-    if (render_targets_serial == last_feedback_loop_serial &&
-        texture_bindings_serial == last_feedback_texture_serial) {
-        if (last_feedback_loop_result) {
-            runtime.BarrierFeedbackLoop();
-        }
-        return;
-    }
-
-    if (rt_active_mask == 0) {
-        last_feedback_loop_serial = render_targets_serial;
-        last_feedback_texture_serial = texture_bindings_serial;
-        last_feedback_loop_result = false;
-        return;
-    }
     const u32 depth_bit = 1u << NUM_RT;
     const bool depth_active = (rt_active_mask & depth_bit) != 0;
+    const u32 color_mask = rt_active_mask & ((1u << NUM_RT) - 1);
 
     const bool requires_barrier = [&] {
         for (const auto& view : views) {
@@ -380,8 +404,9 @@ void TextureCache<P>::CheckFeedbackLoop(std::span<const ImageViewInOut> views) {
                 continue;
             }
 
-            for (size_t i = 0; i < 8; ++i) {
-                if ((rt_active_mask & (1u << i)) && render_targets.color_buffer_ids[i] &&
+            for (u32 m = color_mask; m != 0; m &= m - 1) {
+                const size_t i = static_cast<size_t>(std::countr_zero(m));
+                if (render_targets.color_buffer_ids[i] &&
                     view.id == render_targets.color_buffer_ids[i]) {
                     return true;
                 }
@@ -393,9 +418,9 @@ void TextureCache<P>::CheckFeedbackLoop(std::span<const ImageViewInOut> views) {
             }
 
             const ImageId view_image_id = slot_image_views[view.id].image_id;
-            for (size_t i = 0; i < 8; ++i) {
-                if ((rt_active_mask & (1u << i)) && rt_image_id[i] != ImageId{} &&
-                    view_image_id == rt_image_id[i]) {
+            for (u32 m = color_mask; m != 0; m &= m - 1) {
+                const size_t i = static_cast<size_t>(std::countr_zero(m));
+                if (rt_image_id[i] != ImageId{} && view_image_id == rt_image_id[i]) {
                     return true;
                 }
             }
@@ -409,9 +434,6 @@ void TextureCache<P>::CheckFeedbackLoop(std::span<const ImageViewInOut> views) {
         return false;
     }();
 
-    last_feedback_loop_serial = render_targets_serial;
-    last_feedback_texture_serial = texture_bindings_serial;
-    last_feedback_loop_result = requires_barrier;
     if (requires_barrier) {
         runtime.BarrierFeedbackLoop();
     }
@@ -429,14 +451,16 @@ SamplerId TextureCache<P>::GetSamplerId(u32 index, bool compute) {
         LOG_DEBUG(HW_GPU, "Invalid sampler index={}", index);
         return NULL_SAMPLER_ID;
     }
-    auto const map_index = index | (compute ? Common::SlotId::TAGGED_VALUE : 0);
-    auto const [descriptor, is_new] = table.Read(*gpu_memory, index);
-    if (is_new) {
-        auto const id = FindSampler(descriptor, compute);
-        channel_state->sampler_ids.insert_or_assign(map_index, id);
+    auto& ids = compute ? channel_state->compute_sampler_ids : channel_state->graphics_sampler_ids;
+    if (const auto* descriptor = table.ReadChanged(*gpu_memory, index); descriptor != nullptr) [[unlikely]] {
+        auto const id = FindSampler(*descriptor, compute);
+        if (index >= ids.size()) {
+            ids.resize(static_cast<size_t>(table.current_limit) + 1, NULL_SAMPLER_ID);
+        }
+        ids[index] = id;
         return id;
     }
-    return channel_state->sampler_ids.find(map_index)->second;
+    return ids[index];
 }
 
 template <class P>
@@ -533,10 +557,16 @@ bool TextureCache<P>::RescaleRenderTargets() {
 
         if (can_rescale) {
             rescaled = any_rescaled || scale_rating >= 2;
-            const auto scale_up = [this](ImageId image_id) {
+            bool all_scaled = true;
+            const auto scale_up = [this, &all_scaled](ImageId image_id) {
                 if (image_id != CORRUPT_ID && slot_images.contains(image_id)) {
                     Image& image = slot_images[image_id];
-                    ScaleUp(image);
+                    if (False(image.flags & ImageFlagBits::Rescaled)) {
+                        ScaleUp(image);
+                    }
+                    if (False(image.flags & ImageFlagBits::Rescaled)) {
+                        all_scaled = false;
+                    }
                 }
             };
             if (rescaled) {
@@ -544,7 +574,20 @@ bool TextureCache<P>::RescaleRenderTargets() {
                     scale_up(tmp_color_images[index]);
                 }
                 scale_up(tmp_depth_image);
-                scale_rating = 2;
+                if (!all_scaled) {
+                    const auto rollback = [this](ImageId image_id) {
+                        if (image_id != CORRUPT_ID && slot_images.contains(image_id)) {
+                            ScaleDown(slot_images[image_id]);
+                        }
+                    };
+                    for (size_t index = 0; index < NUM_RT; ++index) {
+                        rollback(tmp_color_images[index]);
+                    }
+                    rollback(tmp_depth_image);
+                    rescaled = false;
+                } else {
+                    scale_rating = 2;
+                }
             }
         } else {
             rescaled = false;
@@ -594,13 +637,16 @@ void TextureCache<P>::UpdateRenderTargets(bool is_clear) {
                (regs.stencil_two_side_enable != 0 && regs.stencil_back_mask != 0);
     };
     if (!flags[Dirty::RenderTargets]) {
-        for (size_t index = 0; index < NUM_RT; ++index) {
+        for (u32 m = rt_active_mask & ((1u << NUM_RT) - 1); m != 0; m &= m - 1) {
+            const size_t index = static_cast<size_t>(std::countr_zero(m));
             ImageViewId& color_buffer_id = render_targets.color_buffer_ids[index];
             PrepareImageView(color_buffer_id, true, is_clear && IsFullClear(color_buffer_id));
         }
-        const ImageViewId depth_buffer_id = render_targets.depth_buffer_id;
-        PrepareImageView(depth_buffer_id, true,
-                         is_clear && IsFullClear(depth_buffer_id));
+        if ((rt_active_mask & (1u << NUM_RT)) != 0) {
+            const ImageViewId depth_buffer_id = render_targets.depth_buffer_id;
+            PrepareImageView(depth_buffer_id, true,
+                             is_clear && IsFullClear(depth_buffer_id));
+        }
         return;
     }
 
@@ -655,7 +701,9 @@ void TextureCache<P>::UpdateRenderTargets(bool is_clear) {
         ++render_targets_serial;
     }
 
-    flags[Dirty::DepthBiasGlobal] = true;
+    if (render_targets.depth_buffer_id != previous_render_targets.depth_buffer_id) {
+        flags[Dirty::DepthBiasGlobal] = true;
+    }
 }
 
 template <class P>
@@ -672,30 +720,37 @@ typename P::Framebuffer* TextureCache<P>::GetFramebuffer() {
 template <class P>
 ImageViewId TextureCache<P>::VisitImageView(u32 index, bool compute) {
     auto& table = compute ? channel_state->compute_image_table : channel_state->graphics_image_table;
+    index = Tegra::Texture::TextureHeaderIndex(index, table.current_limit,
+                                               gpu_memory->UsesNativeTiling());
     if (index > table.current_limit) {
         LOG_DEBUG(HW_GPU, "Invalid image view index={}", index);
         return NULL_IMAGE_VIEW_ID;
     }
-    auto const map_index = index | (compute ? Common::SlotId::TAGGED_VALUE : 0);
+    auto& ids = compute ? channel_state->compute_image_view_ids : channel_state->graphics_image_view_ids;
     // Is new (on the tegra engine side)?
-    auto const [descriptor, is_new] = table.Read(*gpu_memory, index);
-    if (is_new) {
-        if (IsValidEntry(*gpu_memory, descriptor)) {
+    if (const auto* descriptor = table.ReadChanged(*gpu_memory, index); descriptor != nullptr) [[unlikely]] {
+        if (index >= ids.size()) {
+            ids.resize(static_cast<size_t>(table.current_limit) + 1, NULL_IMAGE_VIEW_ID);
+        }
+        if (IsValidEntry(*gpu_memory, *descriptor)) {
             // Is new (registered view) on the texture cache side?
-            const auto [pair, is_new_tc] = channel_state->image_views.try_emplace(descriptor);
+            const auto [pair, is_new_tc] = channel_state->image_views.try_emplace(*descriptor);
             if (is_new_tc)
-                pair->second = CreateImageView(descriptor);
+                pair->second = CreateImageView(*descriptor);
             PrepareImageView(pair->second, false, false);
-            channel_state->image_view_ids.insert_or_assign(map_index, pair->second);
+            ids[index] = pair->second;
             return pair->second;
         }
-        channel_state->image_view_ids.insert_or_assign(map_index, NULL_IMAGE_VIEW_ID);
+        ids[index] = NULL_IMAGE_VIEW_ID;
         return NULL_IMAGE_VIEW_ID;
     }
-    auto const it = channel_state->image_view_ids.find(map_index);
-    if (it->second != NULL_IMAGE_VIEW_ID)
-        PrepareImageView(it->second, false, false);
-    return it->second;
+    if (index >= ids.size()) {
+        return NULL_IMAGE_VIEW_ID;
+    }
+    const ImageViewId id = ids[index];
+    if (id != NULL_IMAGE_VIEW_ID)
+        PrepareImageView(id, false, false);
+    return id;
 }
 
 template <class P>
@@ -1086,33 +1141,31 @@ std::pair<typename P::ImageView*, bool> TextureCache<P>::TryFindFramebufferImage
     const size_t bytes_per_pixel = (config.pixel_format == Service::android::PixelFormat::Rgb565) ? 2 : 4;
     const size_t fb_size = static_cast<size_t>(config.stride > 0 ? config.stride : config.width) * config.height * bytes_per_pixel;
 
-    auto it = page_table.find(cpu_addr >> YUZU_PAGEBITS);
-    if (it == page_table.end() && config.address != 0 && config.address != cpu_addr) {
-        it = page_table.find(config.address >> YUZU_PAGEBITS);
-    }
-    const DAddr search_base = (config.address != 0) ? config.address : cpu_addr;
+    // cpu_addr already includes config.offset (framebuffer.address + framebuffer.offset).
+    // Always anchor page search at cpu_addr so games using large NVN swapchain offsets
+    // (e.g. Xenoblade Chronicles 3 & X with 16+ MiB pool offsets) find their exact framebuffer.
+    const DAddr search_base = (cpu_addr != 0) ? cpu_addr : config.address;
     const u64 start_page = search_base >> YUZU_PAGEBITS;
     const u64 end_page = (fb_size > 0) ? ((search_base + fb_size - 1) >> YUZU_PAGEBITS) : start_page;
-    if (it == page_table.end() && fb_size > 0) {
-        for (u64 page = start_page; page <= end_page; ++page) {
-            auto candidate_it = page_table.find(page);
-            if (candidate_it != page_table.end()) {
-                it = candidate_it;
-                break;
-            }
+
+    const auto view_format = [&]() {
+        switch (config.pixel_format) {
+        case Service::android::PixelFormat::Rgb565:
+            return PixelFormat::R5G6B5_UNORM;
+        case Service::android::PixelFormat::Bgra8888:
+            return PixelFormat::B8G8R8A8_UNORM;
+        default:
+            return PixelFormat::A8B8G8R8_UNORM;
         }
-    }
-    if (it == page_table.end()) {
-        return {};
-    }
+    }();
 
     boost::container::small_vector<ImageId, 4> valid_image_ids;
     bool any_overlap_gpu_modified = false;
 
-    for (u64 page = start_page; page <= end_page; ++page) {
+    const auto inspect_page = [&](u64 page) {
         const auto page_it = page_table.find(page);
         if (page_it == page_table.end()) {
-            continue;
+            return;
         }
         for (const ImageMapId map_id : page_it->second) {
             const ImageMapView& map = slot_map_views[map_id];
@@ -1135,13 +1188,14 @@ std::pair<typename P::ImageView*, bool> TextureCache<P>::TryFindFramebufferImage
             if (image.image_view_ids.empty()) {
                 continue;
             }
+            if (!VideoCore::Surface::IsViewCompatible(image.info.format, view_format, false, true)) {
+                continue;
+            }
 
             const bool addr_match =
-                (image.cpu_addr == cpu_addr) ||
-                (config.address != 0 && image.cpu_addr == config.address) ||
-                (cpu_addr >= image.cpu_addr && cpu_addr < image.cpu_addr + image.guest_size_bytes) ||
-                (config.address != 0 && config.address >= image.cpu_addr && config.address < image.cpu_addr + image.guest_size_bytes) ||
-                (map.cpu_addr <= cpu_addr && cpu_addr < map.cpu_addr + map.size);
+                (image.cpu_addr == search_base) ||
+                (search_base >= image.cpu_addr && search_base < image.cpu_addr + image.guest_size_bytes) ||
+                (map.cpu_addr <= search_base && search_base < map.cpu_addr + map.size);
             if (!addr_match) {
                 continue;
             }
@@ -1150,21 +1204,18 @@ std::pair<typename P::ImageView*, bool> TextureCache<P>::TryFindFramebufferImage
                 valid_image_ids.push_back(map.image_id);
             }
         }
+    };
+
+    // Fast O(1) lookup at the exact framebuffer base page first.
+    inspect_page(start_page);
+    if (valid_image_ids.empty() && end_page > start_page) {
+        for (u64 page = start_page + 1; page <= end_page; ++page) {
+            inspect_page(page);
+        }
     }
 
-    const auto view_format = [&]() {
-        switch (config.pixel_format) {
-        case Service::android::PixelFormat::Rgb565:
-            return PixelFormat::R5G6B5_UNORM;
-        case Service::android::PixelFormat::Bgra8888:
-            return PixelFormat::B8G8R8A8_UNORM;
-        default:
-            return PixelFormat::A8B8G8R8_UNORM;
-        }
-    }();
-
     const auto GetImageViewForFramebuffer = [&](ImageId image_id) {
-        if (True(slot_images[image_id].flags & ImageFlagBits::CpuModified)) {
+        if (!config.native_tiling && True(slot_images[image_id].flags & ImageFlagBits::CpuModified)) {
             RefreshContents(slot_images[image_id], image_id);
             SynchronizeAliases(image_id);
         }
@@ -1187,6 +1238,11 @@ std::pair<typename P::ImageView*, bool> TextureCache<P>::TryFindFramebufferImage
         auto most_recent = std::ranges::max_element(valid_image_ids, [&](ImageId a, ImageId b) {
             const auto& img_a = slot_images[a];
             const auto& img_b = slot_images[b];
+            const bool exact_addr_a = (img_a.cpu_addr == search_base);
+            const bool exact_addr_b = (img_b.cpu_addr == search_base);
+            if (exact_addr_a != exact_addr_b) {
+                return !exact_addr_a && exact_addr_b;
+            }
             const bool exact_a = (img_a.info.size.width == config.width && img_a.info.size.height == config.height);
             const bool exact_b = (img_b.info.size.width == config.width && img_b.info.size.height == config.height);
             if (exact_a != exact_b) {
@@ -1198,7 +1254,7 @@ std::pair<typename P::ImageView*, bool> TextureCache<P>::TryFindFramebufferImage
     }
 
     if (any_overlap_gpu_modified && fb_size > 0) {
-        DownloadMemory(cpu_addr, fb_size);
+        DownloadMemory(search_base, fb_size);
     }
 
     return {};
@@ -1578,7 +1634,6 @@ void TextureCache<P>::UploadImageContents(Image& image, StagingBuffer& staging) 
         return;
     }
     const GPUVAddr gpu_addr = image.gpu_addr;
-
     if (True(image.flags & ImageFlagBits::AcceleratedUpload)) {
         gpu_memory->ReadBlock(gpu_addr, mapped_span.data(), mapped_span.size_bytes(),
                               VideoCommon::CacheType::NoTextureCache);
@@ -1601,8 +1656,12 @@ void TextureCache<P>::UploadImageContents(Image& image, StagingBuffer& staging) 
 }
 
 template <class P>
-ImageViewId TextureCache<P>::CreateImageView(const TICEntry& config) {
+ImageViewId TextureCache<P>::CreateImageView(const TICEntry& raw_config) {
+    const TICEntry config = TextureViewHeader(raw_config, gpu_memory->UsesNativeTiling());
     const ImageInfo info(config);
+    if (info.format == PixelFormat::Invalid) {
+        return NULL_IMAGE_VIEW_ID;
+    }
     if (info.type == ImageType::Buffer) {
         const ImageViewInfo view_info(config, 0);
         return slot_image_views.insert(runtime, info, view_info, config.Address());
@@ -1691,6 +1750,15 @@ bool TextureCache<P>::ImageCanRescale(ImageBase& image) {
     if (!image.info.rescaleable) {
         return false;
     }
+    if constexpr (requires {
+                      runtime.CanScaleExtent(image.info.size.width, image.info.size.height,
+                                             image.info.type == ImageType::e2D);
+                  }) {
+        if (!runtime.CanScaleExtent(image.info.size.width, image.info.size.height,
+                                    image.info.type == ImageType::e2D)) {
+            return false;
+        }
+    }
     if (image.info.num_samples > 1 &&
         GetFormatType(image.info.format) != VideoCore::Surface::SurfaceType::ColorTexture) {
         return false;
@@ -1746,9 +1814,10 @@ void TextureCache<P>::InvalidateScale(Image& image) {
     for (size_t c : active_channel_ids) {
         auto& channel_info = channel_storage[c];
 
-        if constexpr (ENABLE_VALIDATION)
-            for (auto& e : channel_info.image_view_ids)
-                e.second = CORRUPT_ID;
+        if constexpr (ENABLE_VALIDATION) {
+            std::ranges::fill(channel_info.graphics_image_view_ids, CORRUPT_ID);
+            std::ranges::fill(channel_info.compute_image_view_ids, CORRUPT_ID);
+        }
         channel_info.graphics_image_table.Invalidate();
         channel_info.compute_image_table.Invalidate();
     }
@@ -1957,7 +2026,9 @@ ImageId TextureCache<P>::InsertImage(const ImageInfo& info, GPUVAddr gpu_addr,
         }
     }
     ASSERT_MSG(cpu_addr, "Tried to insert an image to an invalid gpu_addr={:#x}", gpu_addr);
-    const ImageId image_id = JoinImages(info, gpu_addr, *cpu_addr);
+    ImageInfo storage_info = info;
+    storage_info.native_tiling = gpu_memory->UsesNativeTiling();
+    const ImageId image_id = JoinImages(storage_info, gpu_addr, *cpu_addr);
     const Image& image = slot_images[image_id];
     // Using "image.gpu_addr" instead of "gpu_addr" is important because it might be different
     const auto [it, is_new] = image_allocs_table.try_emplace(image.gpu_addr);
@@ -2870,9 +2941,10 @@ void TextureCache<P>::DeleteImage(ImageId image_id, bool immediate_delete) {
     }
     for (size_t c : active_channel_ids) {
         auto& channel_info = channel_storage[c];
-        if constexpr (ENABLE_VALIDATION)
-            for (auto& e : channel_info.image_view_ids)
-                e.second = CORRUPT_ID;
+        if constexpr (ENABLE_VALIDATION) {
+            std::ranges::fill(channel_info.graphics_image_view_ids, CORRUPT_ID);
+            std::ranges::fill(channel_info.compute_image_view_ids, CORRUPT_ID);
+        }
         channel_info.graphics_image_table.Invalidate();
         channel_info.compute_image_table.Invalidate();
     }
@@ -2916,9 +2988,10 @@ void TextureCache<P>::RemoveFramebuffers(std::span<const ImageViewId> removed_vi
 
 template <class P>
 void TextureCache<P>::MarkModification(ImageBase& image) noexcept {
+    const bool first_modification = False(image.flags & ImageFlagBits::EverGpuModified);
     image.flags |= ImageFlagBits::GpuModified | ImageFlagBits::EverGpuModified;
     image.modification_tick = ++modification_tick;
-    if (VideoCore::Nx2IsActive() && image.cpu_addr != 0) {
+    if (first_modification && VideoCore::Nx2IsActive() && image.cpu_addr != 0) [[unlikely]] {
         Tegra::Nx2MarkGpuWritten(image.cpu_addr, image.guest_size_bytes);
     }
 }
@@ -2952,7 +3025,11 @@ void TextureCache<P>::SynchronizeAliases(ImageId image_id) {
     }
     image.modification_tick = most_recent_tick;
     if (any_modified) {
-        image.flags |= ImageFlagBits::GpuModified;
+        const bool first_mod = False(image.flags & ImageFlagBits::EverGpuModified);
+        image.flags |= ImageFlagBits::GpuModified | ImageFlagBits::EverGpuModified;
+        if (first_mod && VideoCore::Nx2IsActive() && image.cpu_addr != 0) [[unlikely]] {
+            Tegra::Nx2MarkGpuWritten(image.cpu_addr, image.guest_size_bytes);
+        }
     }
     std::ranges::sort(aliased_images, [this](const AliasedImage* lhs, const AliasedImage* rhs) {
         const ImageBase& lhs_image = slot_images[lhs->id];
@@ -2979,6 +3056,11 @@ void TextureCache<P>::SynchronizeAliases(ImageId image_id) {
 template <class P>
 void TextureCache<P>::PrepareImage(ImageId image_id, bool is_modification, bool invalidate) {
     Image& image = slot_images[image_id];
+    if (!invalidate && !is_modification && False(image.flags & ImageFlagBits::CpuModified) &&
+        True(image.flags & ImageFlagBits::Tracked) && image.aliased_images.empty() &&
+        image.last_frame_tick == frame_tick) [[likely]] {
+        return;
+    }
     if (invalidate) {
         image.flags &= ~(ImageFlagBits::CpuModified | ImageFlagBits::GpuModified);
         if (False(image.flags & ImageFlagBits::Tracked)) {
@@ -2993,9 +3075,11 @@ void TextureCache<P>::PrepareImage(ImageId image_id, bool is_modification, bool 
     if (is_modification) {
         MarkModification(image);
     }
-    lru_cache.Touch(image.lru_index, frame_tick);
-    image.generation = 0; // Promoted to Generation 0 (Active)
-    image.last_frame_tick = frame_tick;
+    if (image.last_frame_tick != frame_tick) [[unlikely]] {
+        lru_cache.Touch(image.lru_index, frame_tick);
+        image.generation = 0; // Promoted to Generation 0 (Active)
+        image.last_frame_tick = frame_tick;
+    }
 }
 
 template <class P>

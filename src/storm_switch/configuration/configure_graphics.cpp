@@ -448,69 +448,13 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
     presets_vbox->setContentsMargins(10, 8, 10, 8);
     presets_vbox->setSpacing(8);
 
-    auto* presets_hdr_lay = new QHBoxLayout();
-    presets_hdr_lay->setContentsMargins(0, 0, 0, 0);
-
     auto* presets_title = new QLabel(StormLang(
-        QStringLiteral("<b>Быстрые профили графики и производительности:</b>"),
-        QStringLiteral("<b>Quick Graphics & Performance Presets:</b>")), presets_frame);
+        QStringLiteral("<b>Быстрые профили графики и производительности (в 1 клик):</b>"),
+        QStringLiteral("<b>1-Click Graphics & Performance Presets:</b>")), presets_frame);
     presets_title->setObjectName(QStringLiteral("presetsTitleLabel"));
+    presets_title->setWordWrap(false);
     presets_title->setStyleSheet(QStringLiteral("color: %1; font-size: 11.5px; border: none; background: transparent;").arg(presets_pal.accent));
-    presets_hdr_lay->addWidget(presets_title);
-    presets_hdr_lay->addStretch();
-
-    // Clean entry buttons to open Settings Profiles and Auto-Config dialogs
-    auto* open_profiles_btn = new QPushButton(StormLang(
-        QStringLiteral("Профили настроек..."),
-        QStringLiteral("Settings Profiles...")), presets_frame);
-    open_profiles_btn->setCursor(Qt::PointingHandCursor);
-    open_profiles_btn->setStyleSheet(QStringLiteral(
-        "QPushButton {"
-        "    background: %1;"
-        "    color: %2;"
-        "    font-weight: 700;"
-        "    font-size: 11px;"
-        "    padding: 4px 10px;"
-        "    border-radius: 5px;"
-        "    border: none;"
-        "}"
-        "QPushButton:hover { background: %3; color: #FFFFFF; }"
-    ).arg(presets_pal.surface, presets_pal.accent, presets_pal.accent));
-    connect(open_profiles_btn, &QPushButton::clicked, this, [this]() {
-        SettingsProfilesDialog dlg(this, const_cast<Core::System*>(&system));
-        dlg.exec();
-        SetConfiguration();
-        ConfigurationShared::ReloadAllActiveWidgets();
-        ConfigurationShared::NotifyGlobalSettingChanged();
-    });
-    presets_hdr_lay->addWidget(open_profiles_btn);
-
-    auto* open_autoconfig_btn = new QPushButton(StormLang(
-        QStringLiteral("Авто-настройка..."),
-        QStringLiteral("Auto-Config...")), presets_frame);
-    open_autoconfig_btn->setCursor(Qt::PointingHandCursor);
-    open_autoconfig_btn->setStyleSheet(QStringLiteral(
-        "QPushButton {"
-        "    background: %1;"
-        "    color: %2;"
-        "    font-weight: 700;"
-        "    font-size: 11px;"
-        "    padding: 4px 10px;"
-        "    border-radius: 5px;"
-        "    border: none;"
-        "}"
-        "QPushButton:hover { background: %3; color: #FFFFFF; }"
-    ).arg(presets_pal.surface, presets_pal.accent, presets_pal.accent));
-    connect(open_autoconfig_btn, &QPushButton::clicked, this, [this]() {
-        GameFixDialog dlg(this, 0, QString(), true, const_cast<Core::System&>(system));
-        dlg.Execute();
-        SetConfiguration();
-        ConfigurationShared::ReloadAllActiveWidgets();
-        ConfigurationShared::NotifyGlobalSettingChanged();
-    });
-    presets_hdr_lay->addWidget(open_autoconfig_btn);
-
-    presets_vbox->addLayout(presets_hdr_lay);
+    presets_vbox->addWidget(presets_title);
 
     auto* presets_hbox = new QHBoxLayout();
     presets_hbox->setSpacing(8);

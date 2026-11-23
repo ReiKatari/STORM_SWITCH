@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1280</width>
-    <height>620</height>
+    <width>1360</width>
+    <height>780</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -103,7 +103,7 @@
            <item>
             <widget class="QLabel" name="label">
              <property name="text">
-              <string>Название</string>
+              <string>Title</string>
              </property>
              <property name="font">
               <font>
@@ -341,13 +341,13 @@
              <property name="minimumSize">
               <size>
                <width>0</width>
-               <height>58</height>
+               <height>78</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
                <width>16777215</width>
-               <height>66</height>
+               <height>92</height>
               </size>
              </property>
             </widget>

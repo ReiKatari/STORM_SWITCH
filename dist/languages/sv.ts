@@ -78,7 +78,7 @@ li.checked::marker { content: "\2612"; }
     <message>
       <location filename="../../src/yuzu/configuration/configure_motion_touch.cpp" line="59" />
       <source>OK</source>
-      <translation>OK</translation>
+      <translation>Ok</translation>
     </message>
   </context>
   <context>
@@ -2195,7 +2195,27 @@ När ett program försöker öppna kontrollerappletten stängs den omedelbart.</
       <source>Grid View</source>
       <translation>Rutnätsvy</translation>
     </message>
-  </context>
+      <message>
+        <source>Theme:</source>
+        <translation>Tema:</translation>
+    </message>
+    <message>
+        <source>Interface language:</source>
+        <translation>Gränssnittsspråk:</translation>
+    </message>
+    <message>
+        <source>Reset All Settings</source>
+        <translation>Återställ alla inställningar</translation>
+    </message>
+    <message>
+        <source>Console Mode</source>
+        <translation>Konsolläge</translation>
+    </message>
+    <message>
+        <source>Slow</source>
+        <translation>Långsam</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureApplets</name>
     <message>
@@ -2563,7 +2583,7 @@ När ett program försöker öppna kontrollerappletten stängs den omedelbart.</
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="235" />
       <source>Off</source>
-      <translation>Off</translation>
+      <translation>Av</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="240" />
@@ -3333,7 +3353,15 @@ Vill du ta bort gammalt sparat data?</translation>
       <source>VSync On</source>
       <translation>VSync På</translation>
     </message>
-  </context>
+      <message>
+        <source>VSync Mode:</source>
+        <translation>VSync-läge:</translation>
+    </message>
+    <message>
+        <source>Use asynchronous GPU emulation</source>
+        <translation>Använd asynkron GPU-emulering</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureGraphicsAdvanced</name>
     <message>
@@ -3351,7 +3379,31 @@ Vill du ta bort gammalt sparat data?</translation>
       <source>Advanced Graphics Settings</source>
       <translation>Avancerade grafikinställningar</translation>
     </message>
-  </context>
+      <message>
+        <source>VRAM Usage Mode:</source>
+        <translation>VRAM-användningsläge:</translation>
+    </message>
+    <message>
+        <source>ASTC Decoding Method:</source>
+        <translation>ASTC-avkodningsmetod:</translation>
+    </message>
+    <message>
+        <source>Sync Memory Operations</source>
+        <translation>Synkronisera minnesoperationer</translation>
+    </message>
+    <message>
+        <source>Force maximum clocks (Vulkan only)</source>
+        <translation>Tvinga fram maximal klockfrekvens (endast Vulkan)</translation>
+    </message>
+    <message>
+        <source>Fix bloom effects</source>
+        <translation>Korrigera bloom-effekter</translation>
+    </message>
+    <message>
+        <source>Use Vulkan pipeline cache</source>
+        <translation>Använda Vulkan pipeline-cache</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureGraphicsExtensions</name>
     <message>
@@ -4578,7 +4630,11 @@ Om du vill invertera axlarna för du joysticken först vertikalt och sedan horis
       <source>UDP Test or calibration configuration is in progress.&lt;br&gt;Please wait for them to finish.</source>
       <translation>UDP Test- eller kalibreringskonfiguration pågår.&lt;br&gt;Vänta tills de är klara.</translation>
     </message>
-  </context>
+      <message>
+        <source>Motion / Touch</source>
+        <translation>Rörelse / beröring</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureMousePanning</name>
     <message>
@@ -5214,7 +5270,19 @@ UUID: %2</translation>
       <source>Warning: "%1" is not a valid language for region "%2"</source>
       <translation>Varning: "%1" är inte ett giltigt språk för region "%2"</translation>
     </message>
-  </context>
+      <message>
+        <source>Console Mode</source>
+        <translation>Konsolläge</translation>
+    </message>
+    <message>
+        <source>Limit Speed Percent</source>
+        <translation>Begränsa hastighet i procent</translation>
+    </message>
+    <message>
+        <source>Language:</source>
+        <translation>Språk:</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureTas</name>
     <message>
@@ -5588,7 +5656,15 @@ Dra punkterna för att ändra position, eller dubbelklicka på tabellcellerna f�
       <comment>Screenshot width value</comment>
       <translation>Auto (%1 x %2, %3 x %4)</translation>
     </message>
-  </context>
+      <message>
+        <source>Language:</source>
+        <translation>Språk:</translation>
+    </message>
+    <message>
+        <source>Screenshots Path:</source>
+        <translation>Sökväg för skärmdumpar:</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureVibration</name>
     <message>
@@ -5735,7 +5811,11 @@ Dra punkterna för att ändra position, eller dubbelklicka på tabellcellerna f�
       <comment>Tooltip</comment>
       <translation>Måste bestå av 48 tecken och små bokstäver a-z</translation>
     </message>
-  </context>
+      <message>
+        <source>Username:</source>
+        <translation>Användarnamn:</translation>
+    </message>
+</context>
   <context>
     <name>ControllerDialog</name>
     <message>
@@ -6314,7 +6394,7 @@ Gå till Konfigurera -&gt; System -&gt; Nätverk och gör ett val.</translation>
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="194" />
       <source>Name</source>
-      <translation>Name</translation>
+      <translation>Namn</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="195" />
@@ -6329,7 +6409,7 @@ Gå till Konfigurera -&gt; System -&gt; Nätverk och gör ett val.</translation>
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="197" />
       <source>Size</source>
-      <translation>Size</translation>
+      <translation>Storlek</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="198" />
@@ -8102,7 +8182,7 @@ Vill du kringgå detta och stänga ändå?</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="49" />
       <source>Gaussian</source>
-      <translation>Gaussian</translation>
+      <translation>Gaussisk</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="50" />
@@ -8184,7 +8264,23 @@ Vill du kringgå detta och stänga ändå?</translation>
       <source>Null</source>
       <translation>Null</translation>
     </message>
-  </context>
+      <message>
+        <source>Fullscreen</source>
+        <translation>Helskärm</translation>
+    </message>
+    <message>
+        <source>Mii Edit</source>
+        <translation>Mii-redigering</translation>
+    </message>
+    <message>
+        <source>Create Shortcut</source>
+        <translation>Skapa genväg</translation>
+    </message>
+    <message>
+        <source>Install Files to NAND</source>
+        <translation>Installera filer till NAND</translation>
+    </message>
+</context>
   <context>
     <name>MigrationWorker</name>
     <message>
@@ -8511,7 +8607,7 @@ Fortsätt ändå?</translation>
       <location filename="../../src/yuzu/util/overlay_dialog.ui" line="152" />
       <location filename="../../src/yuzu/util/overlay_dialog.ui" line="371" />
       <source>OK</source>
-      <translation>OK</translation>
+      <translation>Ok</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/util/overlay_dialog.ui" line="313" />
@@ -8532,7 +8628,7 @@ p, li { white-space: pre-wrap; }
     <message>
       <location filename="../../src/yuzu/render/performance_overlay.ui" line="14" />
       <source>Form</source>
-      <translation>Form</translation>
+      <translation>Formulär</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/render/performance_overlay.ui" line="32" />
@@ -8660,13 +8756,6 @@ p, li { white-space: pre-wrap; }
       <location filename="../../src/yuzu/user_data_migration.cpp" line="68" />
       <source>Link Old Directory</source>
       <translation>Länka gammal katalog</translation>
-    </message>
-    <message>
-      <location filename="../../src/yuzu/user_data_migration.cpp" line="98" />
-      <source>
-      </source>
-      <translation>
-      </translation>
     </message>
     <message>
       <location filename="../../src/yuzu/user_data_migration.cpp" line="102" />
@@ -10482,7 +10571,7 @@ p, li { white-space: pre-wrap; }
       <location filename="../../src/yuzu/applets/qt_software_keyboard.cpp" line="405" />
       <location filename="../../src/yuzu/applets/qt_software_keyboard.cpp" line="415" />
       <source>OK</source>
-      <translation>OK</translation>
+      <translation>Ok</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/applets/qt_software_keyboard.cpp" line="415" />
@@ -10662,4 +10751,259 @@ Error code: %3</translation>
       <translation>Successfully downloaded %1. Would you like to open it?</translation>
     </message>
   </context>
+<context>
+    <name>QPlatformTheme</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Avbryt</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Hjälp</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Ok</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Återställ till standard</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>Starta &amp;om</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Spara</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Nej</translation>
+    </message>
+</context>
+<context>
+    <name>QDialogButtonBox</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Avbryt</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Hjälp</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Ok</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Återställ till standard</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>Starta &amp;om</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Spara</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Nej</translation>
+    </message>
+</context>
+<context>
+    <name>QMessageBox</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Avbryt</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Hjälp</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Ok</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Återställ till standard</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>Starta &amp;om</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Spara</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Nej</translation>
+    </message>
+</context>
+<context>
+    <name>QGuiApplication</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Avbryt</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Hjälp</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Ok</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Återställ till standard</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>Starta &amp;om</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Spara</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Nej</translation>
+    </message>
+</context>
+<context>
+    <name>QAbstractButton</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Avbryt</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Hjälp</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Ok</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Återställ till standard</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>Starta &amp;om</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Spara</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Nej</translation>
+    </message>
+</context>
+<context>
+    <name>QColorDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Avbryt</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Hjälp</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Ok</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Återställ till standard</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>Starta &amp;om</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Spara</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Nej</translation>
+    </message>
+</context>
+<context>
+    <name>QFileDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Avbryt</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Hjälp</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Ok</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Återställ till standard</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>Starta &amp;om</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Spara</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Nej</translation>
+    </message>
+</context>
+<context>
+    <name>QFontDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Avbryt</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Hjälp</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Ok</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Återställ till standard</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>Starta &amp;om</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Spara</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Nej</translation>
+    </message>
+</context>
+<context>
+    <name>QtController</name>
+    <message>
+        <source>Console Mode</source>
+        <translation>Konsolläge</translation>
+    </message>
+</context>
 </TS>

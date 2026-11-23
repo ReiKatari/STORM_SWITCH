@@ -186,6 +186,7 @@ struct AstcPushConstants {
     u32 x_shift;
     u32 block_height;
     u32 block_height_mask;
+    u32 native_tiling;
 };
 
 struct QueriesPrefixScanPushConstants {
@@ -670,6 +671,7 @@ void ASTCDecoderPass::Assemble(Image& image, const StagingBufferRef& map,
                 .x_shift = params.x_shift,
                 .block_height = params.block_height,
                 .block_height_mask = params.block_height_mask,
+                .native_tiling = params.native_tiling,
             };
             const VkDescriptorSet set = descriptor_allocator.Commit();
             device.GetLogical().UpdateDescriptorSet(set, *descriptor_template, descriptor_data);
@@ -683,7 +685,8 @@ void ASTCDecoderPass::Assemble(Image& image, const StagingBufferRef& map,
             .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
             .pNext = nullptr,
             .srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
-            .dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT,
+            .dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT |
+                             VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT,
             .oldLayout = VK_IMAGE_LAYOUT_GENERAL,
             .newLayout = VK_IMAGE_LAYOUT_GENERAL,
             .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
@@ -698,18 +701,33 @@ void ASTCDecoderPass::Assemble(Image& image, const StagingBufferRef& map,
             },
         };
         cmdbuf.PipelineBarrier(VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-                       vk::PIPELINE_STAGE_GRAPHICS_COMPUTE, 0, image_barrier);
+                       vk::PIPELINE_STAGE_GRAPHICS_COMPUTE | VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+                       image_barrier);
     });
-    // Each decode ends with a submit to the host GPU. Measured here
-    // (count and time per 5 s); EDEN_NX2_ASTC_FLUSH=0 waits for the host GPU to go idle instead.
-    static const bool flush_only = [] {
+    // Image memory barrier above already synchronizes COMPUTE -> GRAPHICS/COMPUTE within
+    // the active command buffer. Batch ASTC decodes (flush every 32 textures or 16 MiB)
+    // to eliminate per-texture vkQueueSubmit overhead while keeping staging RAM bounded.
+    static const int astc_sync_mode = [] {
         const char* value = std::getenv("EDEN_NX2_ASTC_FLUSH");
-        return value == nullptr || value[0] != '0';
+        if (value == nullptr) {
+            return 2; // Smart batched flush (fastest, bounded RAM)
+        }
+        return value[0] == '0' ? 0 : 1;
     }();
-    if (flush_only) {
+    if (astc_sync_mode == 1) {
         scheduler.Flush();
-    } else {
+    } else if (astc_sync_mode == 0) {
         scheduler.Finish();
+    } else {
+        static thread_local u32 batched_decodes = 0;
+        static thread_local u64 batched_bytes = 0;
+        batched_decodes += 1;
+        batched_bytes += image.guest_size_bytes;
+        if (batched_decodes >= 32 || batched_bytes >= 16ULL * 1024ULL * 1024ULL) {
+            batched_decodes = 0;
+            batched_bytes = 0;
+            scheduler.Flush();
+        }
     }
 }
 

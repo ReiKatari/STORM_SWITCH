@@ -56,7 +56,7 @@ public:
 
     /// Converts a picture to `format` in `out`: rows `pitch` bytes apart, NV12's chroma plane at
     /// `chroma_offset`, scaled to width x height.
-    void Render(const Nx2Picture& picture, Nx2PictureFormat format, u32 width, u32 height,
+    bool Render(const Nx2Picture& picture, Nx2PictureFormat format, u32 width, u32 height,
                 u64 pitch, u64 chroma_offset, std::span<u8> out);
 
 private:

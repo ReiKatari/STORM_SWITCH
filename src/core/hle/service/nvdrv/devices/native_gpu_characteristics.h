@@ -48,16 +48,18 @@ inline std::array<u8, NativeGpuCharacteristicsSize> MakeNativeGpuCharacteristics
     std::memcpy(result.data() + 0x6c, &dma_copy_class, sizeof(dma_copy_class));
 
     // Capability flags at +0x50: TSG (8), TSG_SUBCONTEXTS (22), SYNCPOINT_ADDRESS (26),
-    // MAPPING_MODIFY (34), and Ampere engine family bits (40..43).
+    // MAPPING_MODIFY (34), SUPPORT_REMAP (35 - sparse texture tile mapping), and
+    // Ampere engine family bits (40..44: 2D, 3D, compute, inline-to-memory, ZBC).
     u64_le flags;
     std::memcpy(&flags, legacy.data() + 0x50, sizeof(flags));
-    flags = static_cast<u64>(flags) | (1ULL << 8) | (1ULL << 22) | (1ULL << 26) | (1ULL << 34) | (0xfULL << 40);
+    flags = static_cast<u64>(flags) | (1ULL << 8) | (1ULL << 22) | (1ULL << 26) | (1ULL << 34) |
+            (1ULL << 35) | (0x1fULL << 40);
     std::memcpy(result.data() + 0x50, &flags, sizeof(flags));
 
     // Switch 2 keeps nine s16 interface versions at 0x70..0x80 (nvgpu *_ioctl_nr_last);
-    // Ounce NvRm requires [0x78] >= 6 and enables TSG subcontexts / setup_bind above 0xa, 0x1f, 0x26.
+    // Ounce NvRm enables features above 0xa, 0x1f, and 0x26 -> report 0x40 across all nine slots.
     constexpr std::array<s16, 9> levels{
-        0x1f, 0x0f, -1, 0x1d, 0x14, 0x0a, 0x0a, 0x0a, 0x0a,
+        0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40,
     };
     for (size_t i = 0; i < levels.size(); ++i) {
         const u16_le value{static_cast<u16>(levels[i])};

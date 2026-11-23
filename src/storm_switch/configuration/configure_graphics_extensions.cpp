@@ -18,20 +18,7 @@
 #include "storm_switch/configuration/shared_widget.h"
 #include "qt_common/config/uisettings.h"
 
-static QString StormLang(const QString& ru, const QString& en,
-                         const QString& de = QString(), const QString& fr = QString(),
-                         const QString& zh = QString(), const QString& ja = QString()) {
-    std::string lang = UISettings::values.language.GetValue();
-    if (lang.empty()) {
-        lang = QLocale::system().name().toStdString();
-    }
-    if (lang.rfind("ru", 0) == 0) return ru;
-    if (lang.rfind("de", 0) == 0 && !de.isEmpty()) return de;
-    if (lang.rfind("fr", 0) == 0 && !fr.isEmpty()) return fr;
-    if (lang.rfind("zh", 0) == 0 && !zh.isEmpty()) return zh;
-    if (lang.rfind("ja", 0) == 0 && !ja.isEmpty()) return ja;
-    return en;
-}
+#include "storm_switch/common/storm_lang.h"
 
 ConfigureGraphicsExtensions::ConfigureGraphicsExtensions(
     const Core::System& system_, std::shared_ptr<std::vector<ConfigurationShared::Tab*>> group_,

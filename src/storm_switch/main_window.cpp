@@ -794,34 +794,18 @@ static inline void EnsureModalDialogScalableAndStyled(QWidget* w) {
 
             const QString obj_name = dlg->objectName();
 
-            if (obj_name == QStringLiteral("ConfigureDialog") ||
-
-                obj_name == QStringLiteral("ConfigurePerGame")) {
-
-                if (QWidget* main_win = dlg->parentWidget() ? dlg->parentWidget()->window() : nullptr) {
-
-                    if (main_win->isVisible() && !main_win->isMinimized()) {
-
-                        if (avail.height() <= 920) {
-
-                            target_h = std::clamp(std::min(main_win->height() - 16, avail.height() - 68),
-
-                                                  std::min(460, max_h), max_h);
-
-                        } else {
-
-                            target_h = std::clamp(main_win->height(), std::min(540, max_h), max_h);
-
-                        }
-
-                    }
-
-                } else if (avail.height() <= 920) {
-
-                    target_h = std::clamp(avail.height() - 68, std::min(460, max_h), max_h);
-
+            if (obj_name == QStringLiteral("ConfigureDialog")) {
+                QWidget* main_win = dlg->parentWidget() ? dlg->parentWidget()->window() : nullptr;
+                if (main_win && main_win->isVisible() && !main_win->isMinimized()) {
+                    target_w = std::clamp(main_win->width() - 200, std::min(1000, max_w), max_w);
+                    target_h = std::clamp(main_win->height() - 200, std::min(560, max_h), max_h);
+                } else {
+                    target_w = std::clamp(avail.width() - 200, std::min(1000, max_w), max_w);
+                    target_h = std::clamp(avail.height() - 200, std::min(560, max_h), max_h);
                 }
-
+            } else if (obj_name == QStringLiteral("ConfigurePerGame")) {
+                target_w = std::clamp((avail.width() * 84) / 100, std::min(1340, max_w), std::min(1600, max_w));
+                target_h = std::clamp((avail.height() * 82) / 100, std::min(740, max_h), std::min(880, max_h));
             }
 
             if (target_w != dlg->width() || target_h != dlg->height()) {
@@ -4082,8 +4066,14 @@ void MainWindow::InitializeWidgets() {
                                        Settings::RendererBackend::Vulkan);
 
     auto show_renderer_menu = [this]() {
-
         QMenu context_menu(this);
+        if (emulation_running) {
+            auto* lock_hdr = context_menu.addAction(StormLang(
+                QStringLiteral("Недоступно во время игры (требуется остановка)"),
+                QStringLiteral("Unavailable while game is running (stop game first)")));
+            lock_hdr->setEnabled(false);
+            context_menu.addSeparator();
+        }
 
         const auto cur_api = Settings::values.renderer_backend.GetValue();
 
@@ -4118,9 +4108,10 @@ void MainWindow::InitializeWidgets() {
             act->setCheckable(true);
 
             act->setChecked(opt.first == cur_api);
-
+            if (emulation_running) {
+                act->setEnabled(false);
+            }
         }
-
         ShowMenuAtWidget(context_menu, renderer_status_button);
 
         renderer_status_button->repaint();
@@ -4522,8 +4513,14 @@ void MainWindow::InitializeWidgets() {
     UpdateAstcDecodeText();
 
     auto show_astc_decode_menu = [this]() {
-
         QMenu context_menu(this);
+        if (emulation_running) {
+            auto* lock_hdr = context_menu.addAction(StormLang(
+                QStringLiteral("Недоступно во время игры (требуется перезапуск)"),
+                QStringLiteral("Unavailable while running (restart required)")));
+            lock_hdr->setEnabled(false);
+            context_menu.addSeparator();
+        }
 
         const auto cur_dec = Settings::values.accelerate_astc.GetValue();
 
@@ -4560,9 +4557,10 @@ void MainWindow::InitializeWidgets() {
             act->setCheckable(true);
 
             act->setChecked(opt.first == cur_dec);
-
+            if (emulation_running) {
+                act->setEnabled(false);
+            }
         }
-
         ShowMenuAtWidget(context_menu, astc_decode_button);
 
     };
@@ -4586,8 +4584,14 @@ void MainWindow::InitializeWidgets() {
     UpdateAstcRecompressText();
 
     auto show_astc_recompress_menu = [this]() {
-
         QMenu context_menu(this);
+        if (emulation_running) {
+            auto* lock_hdr = context_menu.addAction(StormLang(
+                QStringLiteral("Недоступно во время игры (требуется перезапуск)"),
+                QStringLiteral("Unavailable while running (restart required)")));
+            lock_hdr->setEnabled(false);
+            context_menu.addSeparator();
+        }
 
         const auto cur_rec = Settings::values.astc_recompression.GetValue();
 
@@ -4624,9 +4628,10 @@ void MainWindow::InitializeWidgets() {
             act->setCheckable(true);
 
             act->setChecked(opt.first == cur_rec);
-
+            if (emulation_running) {
+                act->setEnabled(false);
+            }
         }
-
         ShowMenuAtWidget(context_menu, astc_recompress_button);
 
     };
@@ -4879,7 +4884,7 @@ void MainWindow::InitializeWidgets() {
 
                 } else if (patch.type == FileSys::PatchType::Mod) {
 
-                    icon = QStringLiteral("⚡");
+                    icon = QString{};
 
                 }
 
@@ -5095,17 +5100,17 @@ void MainWindow::InitializeWidgets() {
 
         auto* act_drs = context_menu.addAction(StormLang(
 
-            QStringLiteral("🔒 Блокировка динамического разрешения (100% DRS)"),
+            QStringLiteral("Блокировка динамического разрешения (100% DRS)"),
 
-            QStringLiteral("🔒 Dynamic Resolution Lock (100% DRS)"),
+            QStringLiteral("Dynamic Resolution Lock (100% DRS)"),
 
-            QStringLiteral("🔒 Dynamische Auflösungssperre (100% DRS)"),
+            QStringLiteral("Dynamische Auflösungssperre (100% DRS)"),
 
-            QStringLiteral("🔒 Verrouillage de résolution dynamique (100% DRS)"),
+            QStringLiteral("Verrouillage de résolution dynamique (100% DRS)"),
 
-            QStringLiteral("🔒 动态分辨率锁定 (100% DRS)"),
+            QStringLiteral("动态分辨率锁定 (100% DRS)"),
 
-            QStringLiteral("🔒 動的解像度ロック (100% DRS)")
+            QStringLiteral("動的解像度ロック (100% DRS)")
 
         ), [this] {
 
@@ -5814,8 +5819,14 @@ void MainWindow::InitializeWidgets() {
     UpdateNvdecText();
 
     auto show_nvdec_menu = [this]() {
-
         QMenu context_menu(this);
+        if (emulation_running) {
+            auto* lock_hdr = context_menu.addAction(StormLang(
+                QStringLiteral("Недоступно во время игры (требуется перезапуск)"),
+                QStringLiteral("Unavailable while running (restart required)")));
+            lock_hdr->setEnabled(false);
+            context_menu.addSeparator();
+        }
 
         const auto cur_nvdec = Settings::values.nvdec_emulation.GetValue();
 
@@ -5852,9 +5863,10 @@ void MainWindow::InitializeWidgets() {
             act->setCheckable(true);
 
             act->setChecked(opt.first == cur_nvdec);
-
+            if (emulation_running) {
+                act->setEnabled(false);
+            }
         }
-
         ShowMenuAtWidget(context_menu, nvdec_status_button);
 
     };
@@ -5878,8 +5890,14 @@ void MainWindow::InitializeWidgets() {
     UpdateCpuAccuracyText();
 
     auto show_cpu_menu = [this]() {
-
         QMenu context_menu(this);
+        if (emulation_running) {
+            auto* lock_hdr = context_menu.addAction(StormLang(
+                QStringLiteral("Недоступно во время игры (требуется перезапуск)"),
+                QStringLiteral("Unavailable while running (restart required)")));
+            lock_hdr->setEnabled(false);
+            context_menu.addSeparator();
+        }
 
         const auto cur_cpu = Settings::values.cpu_accuracy.GetValue();
 
@@ -5914,9 +5932,10 @@ void MainWindow::InitializeWidgets() {
             act->setCheckable(true);
 
             act->setChecked(opt.first == cur_cpu);
-
+            if (emulation_running) {
+                act->setEnabled(false);
+            }
         }
-
         ShowMenuAtWidget(context_menu, cpu_accuracy_button);
 
     };
@@ -5939,39 +5958,29 @@ void MainWindow::InitializeWidgets() {
 
     UpdateDiskCacheText();
 
-    connect(disk_cache_button, &QPushButton::clicked, this, [this] {
-
+    auto toggle_disk_cache = [this]() {
+        if (emulation_running) {
+            const QString msg = StormLang(
+                QStringLiteral("Кэш шейдеров на диске можно изменить только после остановки игры."),
+                QStringLiteral("Disk shader cache can only be changed after stopping the game."));
+            statusBar()->showMessage(msg, 3500);
+            if (in_game_notification) {
+                in_game_notification->ShowNotification(QStringLiteral("STORM SWITCH"), msg, QColor(245, 158, 11), QString{}, 3000);
+            }
+            return;
+        }
         ApplyStatusBarSwitchableSettingNoBackup(
-
             Settings::values.use_disk_shader_cache,
-
             !Settings::values.use_disk_shader_cache.GetValue(), current_game_path,
-
             last_filename_booted);
-
         UpdateDiskCacheText();
-
         ApplyDynamicSettingChange();
-
-    });
+    };
+    connect(disk_cache_button, &QPushButton::clicked, this, toggle_disk_cache);
 
     disk_cache_button->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    connect(disk_cache_button, &QPushButton::customContextMenuRequested, [this] {
-
-        ApplyStatusBarSwitchableSettingNoBackup(
-
-            Settings::values.use_disk_shader_cache,
-
-            !Settings::values.use_disk_shader_cache.GetValue(), current_game_path,
-
-            last_filename_booted);
-
-        UpdateDiskCacheText();
-
-        ApplyDynamicSettingChange();
-
-    });
+    connect(disk_cache_button, &QPushButton::customContextMenuRequested, this, toggle_disk_cache);
 
 
 
@@ -6084,113 +6093,57 @@ void MainWindow::InitializeWidgets() {
         container->setStyleSheet(QStringLiteral(
 
             "QWidget#StatusBarGroup {"
-
-            "  background-color: #0e1320;"
-
-            "  border: 1px solid rgba(255, 255, 255, 0.10);"
-
-            "  border-top: 2px solid %1;"
-
-            "  border-radius: 5px;"
-
-            "  margin: 1px 1px;"
-
-            "  padding: 1px 2px;"
-
+            "  background-color: rgba(18, 22, 36, 0.72);"
+            "  border: 1px solid rgba(255, 255, 255, 0.08);"
+            "  border-radius: 7px;"
+            "  margin: 0px 2px;"
+            "  padding: 1px 3px;"
             "}"
-
             "QWidget#StatusBarGroup:hover {"
-
-            "  background-color: #141b2e;"
-
+            "  background-color: rgba(28, 34, 56, 0.90);"
             "  border: 1px solid %1;"
-
-            "  border-top: 2px solid %1;"
-
             "}"
-
             "QPushButton#StatusBarGroupLabel {"
-
-            "  background-color: rgba(255, 255, 255, 0.07);"
-
-            "  color: %1;"
-
-            "  font-size: 6.8pt;"
-
-            "  font-weight: 800;"
-
-            "  letter-spacing: 0.8px;"
-
-            "  padding: 1px 8px;"
-
-            "  margin: 0px 1px 2px 1px;"
-
+            "  background-color: %1;"
+            "  color: transparent;"
             "  border: none;"
-
             "  border-radius: 3px;"
-
-            "  min-height: 12px;"
-
+            "  padding: 0px;"
+            "  margin: 2px 3px 2px 1px;"
+            "  min-width: 5px;"
+            "  max-width: 5px;"
+            "  min-height: 18px;"
+            "  max-height: 20px;"
             "}"
-
             "QPushButton#StatusBarGroupLabel:hover {"
-
-            "  background-color: %1;"
-
-            "  color: #000000;"
-
-            "  border: 1px solid %1;"
-
+            "  min-width: 8px;"
+            "  max-width: 8px;"
             "}"
-
             "QPushButton#TogglableStatusBarButton, QPushButton {"
-
-            "  background-color: #121826;"
-
-            "  color: #ffffff;"
-
-            "  border: none;"
-
-            "  border-radius: 4px;"
-
-            "  padding: 2px 3px;"
-
-            "  font-size: 6.8pt;"
-
-            "  font-weight: 700;"
-
-            "  min-height: 26px;"
-
-            "  min-width: 36px;"
-
+            "  background-color: transparent;"
+            "  color: #E2E8F0;"
+            "  border: 1px solid transparent;"
+            "  border-radius: 5px;"
+            "  padding: 2px 8px;"
+            "  font-size: 8pt;"
+            "  font-weight: 600;"
+            "  min-height: 22px;"
+            "  max-height: 24px;"
             "}"
-
             "QPushButton#TogglableStatusBarButton:hover, QPushButton:hover {"
-
-            "  background-color: rgba(255, 255, 255, 0.16);"
-
+            "  background-color: rgba(255, 255, 255, 0.11);"
             "  color: %1;"
-
             "  border: 1px solid %1;"
-
             "}"
-
             "QPushButton#TogglableStatusBarButton:pressed, QPushButton:pressed {"
-
             "  background-color: %1;"
-
-            "  color: #000000;"
-
+            "  color: #0B0F19;"
             "}"
-
             "QLabel {"
-
-            "  color: #ffffff;"
-
-            "  font-size: 6.8pt;"
-
-            "  font-weight: 700;"
-
+            "  color: #E2E8F0;"
+            "  font-size: 8pt;"
+            "  font-weight: 600;"
+            "  padding: 0px 6px;"
             "}"
 
             "QLabel:hover {"
@@ -6207,17 +6160,13 @@ void MainWindow::InitializeWidgets() {
 
 
 
-        auto* layout = new QVBoxLayout(container);
-
-        layout->setContentsMargins(2, 1, 2, 1);
-
-        layout->setSpacing(1);
-
-        layout->setAlignment(Qt::AlignCenter);
-
-
+        auto* layout = new QHBoxLayout(container);
+        layout->setContentsMargins(3, 2, 3, 2);
+        layout->setSpacing(2);
+        layout->setAlignment(Qt::AlignVCenter);
 
         auto* headerBtn = new QPushButton(title);
+        headerBtn->setFixedSize(6, 18);
 
         headerBtn->setObjectName(QStringLiteral("StatusBarGroupLabel"));
 
@@ -6266,12 +6215,9 @@ void MainWindow::InitializeWidgets() {
         btnLayout->setContentsMargins(0, 0, 0, 0);
 
         btnLayout->setSpacing(2);
-
-        btnLayout->setAlignment(Qt::AlignCenter);
-
+        btnLayout->setAlignment(Qt::AlignVCenter);
         for (auto* w : widgets) {
-
-            w->setMinimumHeight(26);
+            w->setMinimumHeight(22);
 
             btnLayout->addWidget(w);
 
@@ -6402,8 +6348,8 @@ void MainWindow::InitializeWidgets() {
 
 
 
+    statusBar()->setContentsMargins(6, 2, 6, 3);
     statusBar()->setVisible(true);
-
     setStyleSheet(QStringLiteral("QStatusBar::item{border: none;}"));
 
 }
@@ -6467,530 +6413,929 @@ void MainWindow::InitializeRecentFileMenuActions() {
 
 
 static QIcon CreateVectorMenuIcon(const QString& icon_type, const QColor& accent_color) {
-
     QPixmap pixmap(18, 18);
-
     pixmap.fill(Qt::transparent);
-
     QPainter painter(&pixmap);
-
     painter.setRenderHint(QPainter::Antialiasing);
-
     painter.setRenderHint(QPainter::SmoothPixmapTransform);
 
+    const auto fill_alpha = [&](int alpha) {
+        QColor c = accent_color;
+        c.setAlpha(alpha);
+        return c;
+    };
 
-
-    QPen pen(accent_color, 1.6, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
-
+    QPen pen(accent_color, 1.55, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
     painter.setPen(pen);
-
     painter.setBrush(Qt::NoBrush);
 
-
-
-    if (icon_type == QStringLiteral("nand") || icon_type == QStringLiteral("save")) {
-
-        QPainterPath path;
-
-        path.moveTo(3, 2);
-
-        path.lineTo(12, 2);
-
-        path.lineTo(15, 5);
-
-        path.lineTo(15, 16);
-
-        path.lineTo(3, 16);
-
-        path.closeSubpath();
-
-        painter.drawPath(path);
-
-        painter.drawRect(5, 2, 6, 4);
-
-        painter.fillRect(5, 9, 8, 5, accent_color);
-
-    } else if (icon_type == QStringLiteral("folder") || icon_type == QStringLiteral("folder_open")) {
-
-        QPainterPath path;
-
-        path.moveTo(2, 4);
-
-        path.lineTo(6, 4);
-
-        path.lineTo(8, 6);
-
-        path.lineTo(16, 6);
-
-        path.lineTo(16, 15);
-
-        path.lineTo(2, 15);
-
-        path.closeSubpath();
-
-        painter.setBrush(accent_color.lighter(110));
-
-        painter.drawPath(path);
-
+    // Dynamic Save/Load numbered slots (save_slot_1..10, load_slot_1..10)
+    if (icon_type.startsWith(QStringLiteral("save_slot_")) ||
+        icon_type.startsWith(QStringLiteral("load_slot_"))) {
+        const bool is_save = icon_type.startsWith(QStringLiteral("save_slot_"));
+        const QString num = icon_type.mid(icon_type.lastIndexOf(QLatin1Char('_')) + 1);
+        painter.setBrush(fill_alpha(45));
+        painter.drawRoundedRect(QRectF(2.0, 2.5, 14.0, 13.0), 2.5, 2.5);
         painter.setBrush(Qt::NoBrush);
-
-        if (icon_type == QStringLiteral("folder_open")) {
-
-            painter.setPen(QPen(Qt::white, 1.4));
-
-            painter.drawLine(5, 11, 13, 11);
-
-            painter.drawLine(9, 8, 9, 14);
-
+        // Tiny directional arrow on left
+        if (is_save) {
+            painter.drawLine(QPointF(5.0, 6.0), QPointF(5.0, 12.0));
+            painter.drawLine(QPointF(3.5, 10.0), QPointF(5.0, 12.0));
+            painter.drawLine(QPointF(6.5, 10.0), QPointF(5.0, 12.0));
+        } else {
+            painter.drawLine(QPointF(5.0, 12.0), QPointF(5.0, 6.0));
+            painter.drawLine(QPointF(3.5, 8.0), QPointF(5.0, 6.0));
+            painter.drawLine(QPointF(6.5, 8.0), QPointF(5.0, 6.0));
         }
-
-    } else if (icon_type == QStringLiteral("clock")) {
-
-        painter.drawEllipse(2, 2, 14, 14);
-
-        painter.drawLine(9, 9, 9, 5);
-
-        painter.drawLine(9, 9, 13, 9);
-
-    } else if (icon_type == QStringLiteral("tag") || icon_type == QStringLiteral("amiibo")) {
-
-        QPainterPath path;
-
-        path.moveTo(3, 8);
-
-        path.lineTo(8, 3);
-
-        path.lineTo(15, 3);
-
-        path.lineTo(15, 15);
-
-        path.lineTo(3, 15);
-
-        path.closeSubpath();
-
-        painter.drawPath(path);
-
-        painter.drawEllipse(10, 5, 2, 2);
-
-    } else if (icon_type == QStringLiteral("globe") || icon_type == QStringLiteral("web")) {
-
-        painter.drawEllipse(2, 2, 14, 14);
-
-        painter.drawLine(2, 9, 16, 9);
-
-        painter.drawEllipse(5, 2, 8, 14);
-
-    } else if (icon_type == QStringLiteral("door") || icon_type == QStringLiteral("exit")) {
-
-        painter.drawRect(2, 2, 8, 14);
-
-        painter.drawLine(10, 9, 16, 9);
-
-        painter.drawLine(13, 6, 16, 9);
-
-        painter.drawLine(13, 12, 16, 9);
-
-    } else if (icon_type == QStringLiteral("pause")) {
-
-        painter.fillRect(4, 3, 3, 12, accent_color);
-
-        painter.fillRect(11, 3, 3, 12, accent_color);
-
-    } else if (icon_type == QStringLiteral("stop")) {
-
-        painter.fillRect(3, 3, 12, 12, accent_color);
-
-    } else if (icon_type == QStringLiteral("play")) {
-
-        QPolygon polygon;
-
-        polygon << QPoint(5, 3) << QPoint(14, 9) << QPoint(5, 15);
-
-        painter.setBrush(accent_color);
-
-        painter.drawPolygon(polygon);
-
-    } else if (icon_type == QStringLiteral("refresh") || icon_type == QStringLiteral("restart")) {
-
-        painter.drawArc(2, 2, 14, 14, 45 * 16, 250 * 16);
-
-        painter.drawLine(14, 5, 16, 9);
-
-        painter.drawLine(11, 8, 16, 9);
-
-    } else if (icon_type == QStringLiteral("gear") || icon_type == QStringLiteral("config")) {
-
-        painter.drawEllipse(6, 6, 6, 6);
-
-        for (int i = 0; i < 8; ++i) {
-
-            painter.save();
-
-            painter.translate(9, 9);
-
-            painter.rotate(i * 45);
-
-            painter.fillRect(-1, -7, 2, 3, accent_color);
-
-            painter.restore();
-
-        }
-
-    } else if (icon_type == QStringLiteral("gamepad")) {
-
-        painter.drawRoundedRect(2, 4, 14, 10, 3, 3);
-
-        painter.drawLine(5, 9, 8, 9);
-
-        painter.drawLine(6.5, 7.5, 6.5, 10.5);
-
-        painter.drawPoint(12, 7.5);
-
-        painter.drawPoint(13.5, 9);
-
-        painter.drawPoint(12, 10.5);
-
-        painter.drawPoint(10.5, 9);
-
-    } else if (icon_type == QStringLiteral("fullscreen")) {
-
-        painter.drawLine(2, 6, 2, 2);
-
-        painter.drawLine(2, 2, 6, 2);
-
-        painter.drawLine(16, 6, 16, 2);
-
-        painter.drawLine(16, 2, 12, 2);
-
-        painter.drawLine(2, 12, 2, 16);
-
-        painter.drawLine(2, 16, 6, 16);
-
-        painter.drawLine(16, 12, 16, 16);
-
-        painter.drawLine(16, 16, 12, 16);
-
-    } else if (icon_type == QStringLiteral("window")) {
-
-        painter.drawRect(2, 3, 14, 12);
-
-        painter.drawLine(2, 6, 16, 6);
-
-    } else if (icon_type == QStringLiteral("display") || icon_type == QStringLiteral("screen")) {
-
-        painter.drawRect(2, 3, 14, 10);
-
-        painter.drawLine(9, 13, 9, 16);
-
-        painter.drawLine(6, 16, 12, 16);
-
-    } else if (icon_type == QStringLiteral("grid")) {
-
-        painter.drawRect(2, 2, 5, 5);
-
-        painter.drawRect(11, 2, 5, 5);
-
-        painter.drawRect(2, 11, 5, 5);
-
-        painter.drawRect(11, 11, 5, 5);
-
-    } else if (icon_type == QStringLiteral("list") || icon_type == QStringLiteral("tree")) {
-
-        painter.drawLine(6, 4, 16, 4);
-
-        painter.drawLine(6, 9, 16, 9);
-
-        painter.drawLine(6, 14, 16, 14);
-
-        painter.drawEllipse(2, 3, 2, 2);
-
-        painter.drawEllipse(2, 8, 2, 2);
-
-        painter.drawEllipse(2, 13, 2, 2);
-
-    } else if (icon_type == QStringLiteral("carousel")) {
-
-        painter.drawRect(5, 2, 8, 14);
-
-        painter.drawLine(2, 4, 2, 14);
-
-        painter.drawLine(16, 4, 16, 14);
-
-    } else if (icon_type == QStringLiteral("search")) {
-
-        painter.drawEllipse(3, 3, 8, 8);
-
-        painter.drawLine(10, 10, 15, 15);
-
-    } else if (icon_type == QStringLiteral("chart") || icon_type == QStringLiteral("stats")) {
-
-        painter.fillRect(3, 10, 3, 5, accent_color);
-
-        painter.fillRect(7, 6, 3, 9, accent_color);
-
-        painter.fillRect(11, 3, 3, 12, accent_color);
-
-    } else if (icon_type == QStringLiteral("key")) {
-
-        painter.drawEllipse(3, 6, 5, 5);
-
-        painter.drawLine(8, 8.5, 15, 8.5);
-
-        painter.drawLine(12, 8.5, 12, 11.5);
-
-        painter.drawLine(15, 8.5, 15, 11);
-
-    } else if (icon_type == QStringLiteral("check") || icon_type == QStringLiteral("verify")) {
-
-        QPainterPath path;
-
-        path.moveTo(9, 2);
-
-        path.lineTo(15, 4);
-
-        path.lineTo(15, 10);
-
-        path.quadTo(15, 15, 9, 16.5);
-
-        path.quadTo(3, 15, 3, 10);
-
-        path.lineTo(3, 4);
-
-        path.closeSubpath();
-
-        painter.drawPath(path);
-
-        painter.drawLine(6, 9, 8, 12);
-
-        painter.drawLine(8, 12, 13, 6);
-
-    } else if (icon_type == QStringLiteral("database") || icon_type == QStringLiteral("data")) {
-
-        painter.drawEllipse(3, 3, 12, 4);
-
-        painter.drawArc(3, 6, 12, 4, 180 * 16, 180 * 16);
-
-        painter.drawArc(3, 10, 12, 4, 180 * 16, 180 * 16);
-
-        painter.drawLine(3, 5, 3, 12);
-
-        painter.drawLine(15, 5, 15, 12);
-
-    } else if (icon_type == QStringLiteral("edit") || icon_type == QStringLiteral("pencil")) {
-
-        painter.drawLine(3, 15, 5, 15);
-
-        painter.drawLine(3, 15, 3, 13);
-
-        painter.drawLine(4, 12, 12, 4);
-
-        painter.drawLine(6, 14, 14, 6);
-
-        painter.drawLine(12, 4, 14, 6);
-
-    } else if (icon_type == QStringLiteral("trash")) {
-
-        painter.drawLine(2, 4, 16, 4);
-
-        painter.drawLine(6, 2, 12, 2);
-
-        painter.drawRect(4, 5, 10, 11);
-
-        painter.drawLine(7, 8, 7, 13);
-
-        painter.drawLine(11, 8, 11, 13);
-
-    } else if (icon_type == QStringLiteral("applet")) {
-
-        painter.drawRoundedRect(2, 2, 5, 5, 1, 1);
-
-        painter.drawRoundedRect(11, 2, 5, 5, 1, 1);
-
-        painter.drawRoundedRect(2, 11, 5, 5, 1, 1);
-
-        painter.drawRoundedRect(11, 11, 5, 5, 1, 1);
-
-    } else if (icon_type == QStringLiteral("photo")) {
-
-        painter.drawRect(2, 2, 14, 14);
-
-        painter.drawEllipse(5, 5, 2, 2);
-
-        painter.drawLine(3, 13, 7, 9);
-
-        painter.drawLine(7, 9, 11, 12);
-
-        painter.drawLine(11, 12, 15, 8);
-
-    } else if (icon_type == QStringLiteral("user") || icon_type == QStringLiteral("mii")) {
-
-        painter.drawEllipse(6, 3, 6, 6);
-
-        painter.drawArc(3, 10, 12, 8, 0, 180 * 16);
-
-    } else if (icon_type == QStringLiteral("home")) {
-
-        QPainterPath path;
-
-        path.moveTo(9, 3);
-
-        path.lineTo(15, 8);
-
-        path.lineTo(13, 8);
-
-        path.lineTo(13, 15);
-
-        path.lineTo(5, 15);
-
-        path.lineTo(5, 8);
-
-        path.lineTo(3, 8);
-
-        path.closeSubpath();
-
-        painter.drawPath(path);
-
-        painter.drawRect(7, 10, 4, 5);
-
-    } else if (icon_type == QStringLiteral("link") || icon_type == QStringLiteral("shortcut")) {
-
-        painter.drawRoundedRect(3, 6, 7, 6, 3, 3);
-
-        painter.drawRoundedRect(8, 6, 7, 6, 3, 3);
-
-    } else if (icon_type == QStringLiteral("camera") || icon_type == QStringLiteral("screenshot")) {
-
-        painter.drawRoundedRect(2, 5, 14, 11, 2, 2);
-
-        painter.drawRect(6, 3, 6, 2);
-
-        painter.drawEllipse(6, 7, 6, 6);
-
-    } else if (icon_type == QStringLiteral("translate")) {
-
-        painter.drawRoundedRect(2, 2, 9, 9, 2, 2);
-
-        painter.drawRoundedRect(7, 7, 9, 9, 2, 2);
-
         QFont f = painter.font();
-
-        f.setPixelSize(7);
-
+        f.setPixelSize(num.size() > 1 ? 7 : 9);
         f.setBold(true);
-
         painter.setFont(f);
-
-        painter.drawText(QRect(2, 2, 9, 9), Qt::AlignCenter, QStringLiteral("A"));
-
-        painter.drawText(QRect(7, 7, 9, 9), Qt::AlignCenter, QStringLiteral("文"));
-
-    } else if (icon_type == QStringLiteral("lightning") || icon_type == QStringLiteral("tas")) {
-
-        QPolygon poly;
-
-        poly << QPoint(10, 2) << QPoint(4, 9) << QPoint(9, 9) << QPoint(8, 16) << QPoint(14, 8) << QPoint(9, 8);
-
-        painter.setBrush(accent_color);
-
-        painter.drawPolygon(poly);
-
-    } else if (icon_type == QStringLiteral("record")) {
-
-        painter.drawEllipse(2, 2, 14, 14);
-
-        painter.setBrush(QColor(239, 68, 68));
-
-        painter.drawEllipse(5, 5, 8, 8);
-
-    } else if (icon_type == QStringLiteral("plus") || icon_type == QStringLiteral("add")) {
-
-        painter.drawLine(9, 3, 9, 15);
-
-        painter.drawLine(3, 9, 15, 9);
-
-    } else if (icon_type == QStringLiteral("users") || icon_type == QStringLiteral("lobby")) {
-
-        painter.drawEllipse(6, 3, 5, 5);
-
-        painter.drawArc(3, 9, 10, 7, 0, 180 * 16);
-
-        painter.drawEllipse(12, 5, 4, 4);
-
-        painter.drawArc(10, 10, 7, 6, 0, 180 * 16);
-
-    } else if (icon_type == QStringLiteral("book") || icon_type == QStringLiteral("guide")) {
-
-        painter.drawLine(9, 3, 9, 15);
-
-        painter.drawArc(3, 3, 12, 4, 180 * 16, 180 * 16);
-
-        painter.drawLine(3, 5, 3, 15);
-
-        painter.drawLine(15, 5, 15, 15);
-
-        painter.drawArc(3, 13, 12, 4, 180 * 16, 180 * 16);
-
-    } else if (icon_type == QStringLiteral("faq") || icon_type == QStringLiteral("question")) {
-
-        painter.drawEllipse(2, 2, 14, 14);
-
-        QFont f = painter.font();
-
-        f.setPixelSize(11);
-
-        f.setBold(true);
-
-        painter.setFont(f);
-
-    } else if (icon_type == QStringLiteral("puzzle") || icon_type == QStringLiteral("mod")) {
-
-        painter.drawRoundedRect(3, 3, 12, 12, 2, 2);
-
-        painter.drawEllipse(7, 1, 4, 4);
-
-        painter.drawEllipse(13, 7, 4, 4);
-
-        painter.drawLine(9, 3, 9, 15);
-
-        painter.drawLine(3, 9, 15, 9);
-
-    } else if (icon_type == QStringLiteral("info") || icon_type == QStringLiteral("about")) {
-
-        painter.drawEllipse(2, 2, 14, 14);
-
-        QFont f = painter.font();
-
-        f.setPixelSize(11);
-
-        f.setBold(true);
-
-        painter.setFont(f);
-
-        painter.drawText(QRect(0, 0, 18, 18), Qt::AlignCenter, QStringLiteral("i"));
-
-    } else if (icon_type == QStringLiteral("download")) {
-
-        painter.drawLine(9, 3, 9, 12);
-
-        painter.drawLine(6, 9, 9, 12);
-
-        painter.drawLine(12, 9, 9, 12);
-
-        painter.drawLine(4, 15, 14, 15);
-
-    } else {
-
-        painter.drawRect(5, 5, 8, 8);
-
+        painter.drawText(num.size() > 1 ? QRect(7, 3, 9, 12) : QRect(8, 3, 7, 12), Qt::AlignCenter, num);
+        return QIcon(pixmap);
     }
 
+    // ==================== FILE MENU ====================
+    if (icon_type == QStringLiteral("nand_install")) {
+        // NAND package box with downward install arrow
+        painter.setBrush(fill_alpha(40));
+        painter.drawRoundedRect(QRectF(2.5, 9.0, 13.0, 6.5), 1.5, 1.5);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(9.0, 2.0), QPointF(9.0, 11.5));
+        painter.drawLine(QPointF(6.2, 8.8), QPointF(9.0, 11.5));
+        painter.drawLine(QPointF(11.8, 8.8), QPointF(9.0, 11.5));
+        painter.drawLine(QPointF(5.0, 13.2), QPointF(13.0, 13.2));
+    } else if (icon_type == QStringLiteral("load_file")) {
+        // Document with folded corner & small play/open arrow
+        QPainterPath path;
+        path.moveTo(3.5, 2.0);
+        path.lineTo(10.5, 2.0);
+        path.lineTo(14.5, 6.0);
+        path.lineTo(14.5, 16.0);
+        path.lineTo(3.5, 16.0);
+        path.closeSubpath();
+        painter.setBrush(fill_alpha(38));
+        painter.drawPath(path);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(10.5, 2.0), QPointF(10.5, 6.0));
+        painter.drawLine(QPointF(10.5, 6.0), QPointF(14.5, 6.0));
+        QPolygonF tri;
+        tri << QPointF(7.2, 8.5) << QPointF(11.6, 11.2) << QPointF(7.2, 13.8);
+        painter.setBrush(accent_color);
+        painter.drawPolygon(tri);
+    } else if (icon_type == QStringLiteral("load_folder")) {
+        // Folder with plus inside
+        QPainterPath path;
+        path.moveTo(2.0, 4.0);
+        path.lineTo(6.5, 4.0);
+        path.lineTo(8.2, 6.0);
+        path.lineTo(16.0, 6.0);
+        path.lineTo(16.0, 15.0);
+        path.lineTo(2.0, 15.0);
+        path.closeSubpath();
+        painter.setBrush(fill_alpha(55));
+        painter.drawPath(path);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(9.0, 8.2), QPointF(9.0, 12.8));
+        painter.drawLine(QPointF(6.7, 10.5), QPointF(11.3, 10.5));
+    } else if (icon_type == QStringLiteral("clock")) {
+        // Recent files clock
+        painter.setBrush(fill_alpha(35));
+        painter.drawEllipse(QRectF(2.2, 2.2, 13.6, 13.6));
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(9.0, 9.0), QPointF(9.0, 5.0));
+        painter.drawLine(QPointF(9.0, 9.0), QPointF(12.5, 10.8));
+    } else if (icon_type == QStringLiteral("quick_save")) {
+        // Floppy disk
+        QPainterPath path;
+        path.moveTo(3.0, 2.2);
+        path.lineTo(12.2, 2.2);
+        path.lineTo(15.2, 5.2);
+        path.lineTo(15.2, 15.6);
+        path.lineTo(3.0, 15.6);
+        path.closeSubpath();
+        painter.setBrush(fill_alpha(40));
+        painter.drawPath(path);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawRect(QRectF(5.5, 2.2, 5.5, 4.0));
+        painter.fillRect(QRectF(5.2, 9.5, 7.6, 5.0), accent_color);
+    } else if (icon_type == QStringLiteral("quick_load")) {
+        // Upward upload/load from tray
+        painter.drawLine(QPointF(9.0, 12.5), QPointF(9.0, 3.0));
+        painter.drawLine(QPointF(5.5, 6.5), QPointF(9.0, 3.0));
+        painter.drawLine(QPointF(12.5, 6.5), QPointF(9.0, 3.0));
+        painter.drawLine(QPointF(3.0, 11.5), QPointF(3.0, 15.2));
+        painter.drawLine(QPointF(3.0, 15.2), QPointF(15.0, 15.2));
+        painter.drawLine(QPointF(15.0, 15.2), QPointF(15.0, 11.5));
+    } else if (icon_type == QStringLiteral("save_slots")) {
+        // Stacked slots with down-arrow badge
+        painter.setBrush(fill_alpha(45));
+        painter.drawRoundedRect(QRectF(2.0, 2.5, 9.5, 3.4), 1.0, 1.0);
+        painter.drawRoundedRect(QRectF(2.0, 7.3, 9.5, 3.4), 1.0, 1.0);
+        painter.drawRoundedRect(QRectF(2.0, 12.1, 9.5, 3.4), 1.0, 1.0);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(14.5, 4.0), QPointF(14.5, 13.5));
+        painter.drawLine(QPointF(12.5, 11.2), QPointF(14.5, 13.5));
+        painter.drawLine(QPointF(16.3, 11.2), QPointF(14.5, 13.5));
+    } else if (icon_type == QStringLiteral("load_slots")) {
+        // Stacked slots with up-arrow badge
+        painter.setBrush(fill_alpha(45));
+        painter.drawRoundedRect(QRectF(2.0, 2.5, 9.5, 3.4), 1.0, 1.0);
+        painter.drawRoundedRect(QRectF(2.0, 7.3, 9.5, 3.4), 1.0, 1.0);
+        painter.drawRoundedRect(QRectF(2.0, 12.1, 9.5, 3.4), 1.0, 1.0);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(14.5, 14.0), QPointF(14.5, 4.5));
+        painter.drawLine(QPointF(12.5, 6.8), QPointF(14.5, 4.5));
+        painter.drawLine(QPointF(16.3, 6.8), QPointF(14.5, 4.5));
+    } else if (icon_type == QStringLiteral("save_manager")) {
+        // Two-drawer filing cabinet
+        painter.setBrush(fill_alpha(38));
+        painter.drawRoundedRect(QRectF(3.0, 2.0, 12.0, 14.0), 1.6, 1.6);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(3.0, 9.0), QPointF(15.0, 9.0));
+        painter.drawLine(QPointF(7.2, 5.5), QPointF(10.8, 5.5));
+        painter.drawLine(QPointF(7.2, 12.5), QPointF(10.8, 12.5));
+    } else if (icon_type == QStringLiteral("amiibo")) {
+        // NFC tag with hole & radio waves
+        QPainterPath path;
+        path.moveTo(2.5, 8.0);
+        path.lineTo(8.0, 2.5);
+        path.lineTo(15.2, 2.5);
+        path.lineTo(15.2, 9.8);
+        path.lineTo(9.8, 15.2);
+        path.closeSubpath();
+        painter.setBrush(fill_alpha(42));
+        painter.drawPath(path);
+        painter.setBrush(accent_color);
+        painter.drawEllipse(QPointF(11.6, 6.2), 1.3, 1.3);
+    } else if (icon_type == QStringLiteral("amiibo_db")) {
+        // Cloud with small NFC dot waves
+        QPainterPath cloud;
+        cloud.moveTo(4.5, 13.5);
+        cloud.lineTo(13.5, 13.5);
+        cloud.quadTo(16.2, 13.5, 16.0, 10.8);
+        cloud.quadTo(16.0, 8.5, 13.5, 8.2);
+        cloud.quadTo(12.8, 4.5, 9.0, 4.5);
+        cloud.quadTo(5.6, 4.5, 5.0, 8.2);
+        cloud.quadTo(2.2, 8.5, 2.2, 11.0);
+        cloud.quadTo(2.2, 13.5, 4.5, 13.5);
+        painter.setBrush(fill_alpha(40));
+        painter.drawPath(cloud);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawArc(QRectF(6.5, 7.2, 5.0, 5.0), 30 * 16, 120 * 16);
+        painter.drawPoint(QPointF(9.0, 11.2));
+    } else if (icon_type == QStringLiteral("open_folders")) {
+        // Classic open folder with tilted front flap
+        QPainterPath back;
+        back.moveTo(2.0, 4.0);
+        back.lineTo(6.5, 4.0);
+        back.lineTo(8.0, 6.0);
+        back.lineTo(14.5, 6.0);
+        back.lineTo(14.5, 8.5);
+        painter.drawPath(back);
+        QPainterPath front;
+        front.moveTo(2.0, 4.0);
+        front.lineTo(2.0, 14.8);
+        front.lineTo(14.2, 14.8);
+        front.lineTo(16.4, 8.5);
+        front.lineTo(4.6, 8.5);
+        front.lineTo(2.0, 14.8);
+        painter.setBrush(fill_alpha(60));
+        painter.drawPath(front);
+    } else if (icon_type == QStringLiteral("folder_root")) {
+        // Root folder with roof chevron inside
+        QPainterPath path;
+        path.moveTo(2.0, 4.0);
+        path.lineTo(6.5, 4.0);
+        path.lineTo(8.0, 6.0);
+        path.lineTo(16.0, 6.0);
+        path.lineTo(16.0, 15.0);
+        path.lineTo(2.0, 15.0);
+        path.closeSubpath();
+        painter.setBrush(fill_alpha(45));
+        painter.drawPath(path);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(6.0, 11.5), QPointF(9.0, 8.5));
+        painter.drawLine(QPointF(9.0, 8.5), QPointF(12.0, 11.5));
+        painter.drawLine(QPointF(7.2, 13.0), QPointF(10.8, 13.0));
+    } else if (icon_type == QStringLiteral("folder_nand")) {
+        // Folder with microchip square inside
+        QPainterPath path;
+        path.moveTo(2.0, 4.0);
+        path.lineTo(6.5, 4.0);
+        path.lineTo(8.0, 6.0);
+        path.lineTo(16.0, 6.0);
+        path.lineTo(16.0, 15.0);
+        path.lineTo(2.0, 15.0);
+        path.closeSubpath();
+        painter.setBrush(fill_alpha(42));
+        painter.drawPath(path);
+        painter.setBrush(accent_color);
+        painter.drawRect(QRectF(7.2, 8.8, 3.6, 3.6));
+    } else if (icon_type == QStringLiteral("sd_card")) {
+        // MicroSD card silhouette with notched side
+        QPainterPath sd;
+        sd.moveTo(4.5, 2.2);
+        sd.lineTo(13.5, 2.2);
+        sd.lineTo(13.5, 7.2);
+        sd.lineTo(12.2, 8.5);
+        sd.lineTo(13.5, 9.8);
+        sd.lineTo(13.5, 15.8);
+        sd.lineTo(4.5, 15.8);
+        sd.closeSubpath();
+        painter.setBrush(fill_alpha(42));
+        painter.drawPath(sd);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(6.8, 4.0), QPointF(6.8, 6.8));
+        painter.drawLine(QPointF(9.0, 4.0), QPointF(9.0, 6.8));
+        painter.drawLine(QPointF(11.2, 4.0), QPointF(11.2, 6.8));
+    } else if (icon_type == QStringLiteral("folder_mods")) {
+        // Folder with diamond mod emblem inside
+        QPainterPath path;
+        path.moveTo(2.0, 4.0);
+        path.lineTo(6.5, 4.0);
+        path.lineTo(8.0, 6.0);
+        path.lineTo(16.0, 6.0);
+        path.lineTo(16.0, 15.0);
+        path.lineTo(2.0, 15.0);
+        path.closeSubpath();
+        painter.setBrush(fill_alpha(42));
+        painter.drawPath(path);
+        QPolygonF dia;
+        dia << QPointF(9.0, 8.0) << QPointF(11.6, 10.6) << QPointF(9.0, 13.2) << QPointF(6.4, 10.6);
+        painter.setBrush(accent_color);
+        painter.drawPolygon(dia);
+    } else if (icon_type == QStringLiteral("folder_logs")) {
+        // Log page with text lines
+        painter.setBrush(fill_alpha(35));
+        painter.drawRoundedRect(QRectF(3.2, 2.0, 11.6, 14.0), 1.5, 1.5);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(5.6, 5.5), QPointF(12.4, 5.5));
+        painter.drawLine(QPointF(5.6, 8.8), QPointF(12.4, 8.8));
+        painter.drawLine(QPointF(5.6, 12.1), QPointF(10.0, 12.1));
+    } else if (icon_type == QStringLiteral("exit")) {
+        // Exit door with right arrow
+        painter.drawLine(QPointF(9.5, 2.5), QPointF(3.0, 2.5));
+        painter.drawLine(QPointF(3.0, 2.5), QPointF(3.0, 15.5));
+        painter.drawLine(QPointF(3.0, 15.5), QPointF(9.5, 15.5));
+        painter.drawLine(QPointF(7.5, 9.0), QPointF(15.5, 9.0));
+        painter.drawLine(QPointF(12.5, 6.0), QPointF(15.5, 9.0));
+        painter.drawLine(QPointF(12.5, 12.0), QPointF(15.5, 9.0));
 
+    // ==================== EMULATION MENU ====================
+    } else if (icon_type == QStringLiteral("pause")) {
+        painter.setBrush(accent_color);
+        painter.drawRoundedRect(QRectF(4.0, 3.0, 3.2, 12.0), 1.0, 1.0);
+        painter.drawRoundedRect(QRectF(10.8, 3.0, 3.2, 12.0), 1.0, 1.0);
+    } else if (icon_type == QStringLiteral("stop")) {
+        painter.setBrush(accent_color);
+        painter.drawRoundedRect(QRectF(3.5, 3.5, 11.0, 11.0), 1.8, 1.8);
+    } else if (icon_type == QStringLiteral("restart")) {
+        painter.drawArc(QRectF(2.5, 2.5, 13.0, 13.0), 40 * 16, 265 * 16);
+        painter.drawLine(QPointF(13.8, 4.2), QPointF(15.5, 8.0));
+        painter.drawLine(QPointF(11.4, 7.5), QPointF(15.5, 8.0));
+    } else if (icon_type == QStringLiteral("gear")) {
+        painter.setBrush(fill_alpha(45));
+        painter.drawEllipse(QPointF(9.0, 9.0), 4.8, 4.8);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawEllipse(QPointF(9.0, 9.0), 2.1, 2.1);
+        for (int i = 0; i < 8; ++i) {
+            painter.save();
+            painter.translate(9.0, 9.0);
+            painter.rotate(i * 45.0);
+            painter.fillRect(QRectF(-1.0, -7.6, 2.0, 2.7), accent_color);
+            painter.restore();
+        }
+    } else if (icon_type == QStringLiteral("game_settings")) {
+        // Controller with wrench/config ring
+        painter.setBrush(fill_alpha(40));
+        painter.drawRoundedRect(QRectF(2.0, 4.2, 14.0, 9.6), 3.2, 3.2);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(4.8, 9.0), QPointF(7.8, 9.0));
+        painter.drawLine(QPointF(6.3, 7.5), QPointF(6.3, 10.5));
+        painter.setBrush(accent_color);
+        painter.drawEllipse(QPointF(12.2, 7.7), 1.0, 1.0);
+        painter.drawEllipse(QPointF(12.2, 10.4), 1.0, 1.0);
+        painter.drawEllipse(QPointF(10.8, 9.0), 1.0, 1.0);
+        painter.drawEllipse(QPointF(13.6, 9.0), 1.0, 1.0);
+    } else if (icon_type == QStringLiteral("sliders")) {
+        // 3 horizontal equalizer sliders with offset knobs (Settings Profiles)
+        painter.drawLine(QPointF(2.2, 4.2), QPointF(15.8, 4.2));
+        painter.drawLine(QPointF(2.2, 9.0), QPointF(15.8, 9.0));
+        painter.drawLine(QPointF(2.2, 13.8), QPointF(15.8, 13.8));
+        painter.setBrush(accent_color);
+        painter.drawEllipse(QPointF(6.2, 4.2), 2.0, 2.0);
+        painter.drawEllipse(QPointF(12.0, 9.0), 2.0, 2.0);
+        painter.drawEllipse(QPointF(7.6, 13.8), 2.0, 2.0);
+    } else if (icon_type == QStringLiteral("shield_bolt")) {
+        // Protective shield with optimization lightning bolt inside (STORM GameFix)
+        QPainterPath shield;
+        shield.moveTo(9.0, 2.0);
+        shield.lineTo(15.0, 4.2);
+        shield.lineTo(15.0, 9.2);
+        shield.quadTo(15.0, 14.4, 9.0, 16.2);
+        shield.quadTo(3.0, 14.4, 3.0, 9.2);
+        shield.lineTo(3.0, 4.2);
+        shield.closeSubpath();
+        painter.setBrush(fill_alpha(45));
+        painter.drawPath(shield);
+        QPolygonF bolt;
+        bolt << QPointF(9.8, 4.8) << QPointF(6.6, 9.5) << QPointF(9.0, 9.5)
+             << QPointF(8.2, 13.4) << QPointF(11.6, 8.4) << QPointF(9.2, 8.4);
+        painter.setBrush(accent_color);
+        painter.setPen(Qt::NoPen);
+        painter.drawPolygon(bolt);
+
+    // ==================== VIEW MENU ====================
+    } else if (icon_type == QStringLiteral("fullscreen")) {
+        painter.drawLine(QPointF(2.2, 6.2), QPointF(2.2, 2.2));
+        painter.drawLine(QPointF(2.2, 2.2), QPointF(6.2, 2.2));
+        painter.drawLine(QPointF(15.8, 6.2), QPointF(15.8, 2.2));
+        painter.drawLine(QPointF(15.8, 2.2), QPointF(11.8, 2.2));
+        painter.drawLine(QPointF(2.2, 11.8), QPointF(2.2, 15.8));
+        painter.drawLine(QPointF(2.2, 15.8), QPointF(6.2, 15.8));
+        painter.drawLine(QPointF(15.8, 11.8), QPointF(15.8, 15.8));
+        painter.drawLine(QPointF(15.8, 15.8), QPointF(11.8, 15.8));
+    } else if (icon_type == QStringLiteral("single_window")) {
+        painter.setBrush(fill_alpha(35));
+        painter.drawRoundedRect(QRectF(2.2, 3.0, 13.6, 12.0), 1.8, 1.8);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(2.2, 6.5), QPointF(15.8, 6.5));
+        painter.drawPoint(QPointF(4.6, 4.8));
+        painter.drawPoint(QPointF(6.8, 4.8));
+    } else if (icon_type == QStringLiteral("window_resize")) {
+        // Monitor with diagonal resize arrow inside
+        painter.setBrush(fill_alpha(35));
+        painter.drawRoundedRect(QRectF(2.0, 2.5, 14.0, 10.2), 1.5, 1.5);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(9.0, 12.7), QPointF(9.0, 15.5));
+        painter.drawLine(QPointF(6.0, 15.5), QPointF(12.0, 15.5));
+        painter.drawLine(QPointF(6.0, 9.8), QPointF(12.0, 5.2));
+        painter.drawLine(QPointF(9.5, 5.2), QPointF(12.0, 5.2));
+        painter.drawLine(QPointF(12.0, 5.2), QPointF(12.0, 7.6));
+    } else if (icon_type == QStringLiteral("res_720") ||
+               icon_type == QStringLiteral("res_900") ||
+               icon_type == QStringLiteral("res_1080")) {
+        // Crisp rounded resolution badge with distinct text label (720 / 900 / FHD)
+        painter.setBrush(fill_alpha(45));
+        painter.drawRoundedRect(QRectF(1.5, 3.5, 15.0, 11.0), 2.5, 2.5);
+        QFont f = painter.font();
+        f.setPixelSize(7);
+        f.setBold(true);
+        painter.setFont(f);
+        const QString label = (icon_type == QStringLiteral("res_720"))  ? QStringLiteral("720")
+                            : (icon_type == QStringLiteral("res_900"))  ? QStringLiteral("900")
+                                                                        : QStringLiteral("FHD");
+        painter.drawText(QRect(1, 3, 16, 12), Qt::AlignCenter, label);
+    } else if (icon_type == QStringLiteral("bug_debug")) {
+        // Debug beetle silhouette
+        painter.setBrush(fill_alpha(48));
+        painter.drawEllipse(QRectF(5.2, 5.5, 7.6, 9.2));
+        painter.setBrush(Qt::NoBrush);
+        painter.drawArc(QRectF(6.5, 3.0, 5.0, 4.0), 0, 180 * 16);
+        painter.drawLine(QPointF(9.0, 6.0), QPointF(9.0, 14.5));
+        painter.drawLine(QPointF(2.5, 8.0), QPointF(5.2, 8.5));
+        painter.drawLine(QPointF(2.2, 11.0), QPointF(5.2, 11.0));
+        painter.drawLine(QPointF(2.8, 14.0), QPointF(5.6, 13.0));
+        painter.drawLine(QPointF(15.5, 8.0), QPointF(12.8, 8.5));
+        painter.drawLine(QPointF(15.8, 11.0), QPointF(12.8, 11.0));
+        painter.drawLine(QPointF(15.2, 14.0), QPointF(12.4, 13.0));
+    } else if (icon_type == QStringLiteral("layout_mode")) {
+        // Split layout frame (sidebar + 2 right panes)
+        painter.setBrush(fill_alpha(38));
+        painter.drawRoundedRect(QRectF(2.2, 2.5, 13.6, 13.0), 1.6, 1.6);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(6.8, 2.5), QPointF(6.8, 15.5));
+        painter.drawLine(QPointF(6.8, 9.0), QPointF(15.8, 9.0));
+    } else if (icon_type == QStringLiteral("tree_view")) {
+        // Hierarchical indented tree branches
+        painter.drawLine(QPointF(3.5, 3.0), QPointF(3.5, 13.5));
+        painter.drawLine(QPointF(3.5, 4.5), QPointF(7.5, 4.5));
+        painter.drawLine(QPointF(3.5, 9.0), QPointF(9.5, 9.0));
+        painter.drawLine(QPointF(3.5, 13.5), QPointF(9.5, 13.5));
+        painter.setBrush(accent_color);
+        painter.drawRect(QRectF(7.5, 3.2, 7.5, 2.6));
+        painter.drawRect(QRectF(9.5, 7.7, 5.5, 2.6));
+        painter.drawRect(QRectF(9.5, 12.2, 5.5, 2.6));
+    } else if (icon_type == QStringLiteral("grid_view")) {
+        painter.setBrush(fill_alpha(55));
+        painter.drawRect(QRectF(2.4, 2.4, 5.2, 5.2));
+        painter.drawRect(QRectF(10.4, 2.4, 5.2, 5.2));
+        painter.drawRect(QRectF(2.4, 10.4, 5.2, 5.2));
+        painter.drawRect(QRectF(10.4, 10.4, 5.2, 5.2));
+    } else if (icon_type == QStringLiteral("carousel")) {
+        painter.setBrush(fill_alpha(45));
+        painter.drawRoundedRect(QRectF(5.2, 2.5, 7.6, 13.0), 1.4, 1.4);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(2.2, 4.5), QPointF(2.2, 13.5));
+        painter.drawLine(QPointF(15.8, 4.5), QPointF(15.8, 13.5));
+    } else if (icon_type == QStringLiteral("icon_size")) {
+        // Small-to-large scale squares with diagonal arrow
+        painter.setBrush(fill_alpha(40));
+        painter.drawRect(QRectF(2.5, 9.5, 5.8, 5.8));
+        painter.setBrush(Qt::NoBrush);
+        painter.drawRect(QRectF(7.5, 2.5, 8.0, 8.0));
+        painter.drawLine(QPointF(9.5, 8.5), QPointF(13.5, 4.5));
+        painter.drawLine(QPointF(11.0, 4.5), QPointF(13.5, 4.5));
+        painter.drawLine(QPointF(13.5, 4.5), QPointF(13.5, 7.0));
+    } else if (icon_type == QStringLiteral("search")) {
+        painter.setBrush(fill_alpha(38));
+        painter.drawEllipse(QRectF(2.8, 2.8, 8.4, 8.4));
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(10.2, 10.2), QPointF(15.2, 15.2));
+    } else if (icon_type == QStringLiteral("status_bar")) {
+        // Window with highlighted solid bottom bar
+        painter.drawRoundedRect(QRectF(2.2, 2.8, 13.6, 12.4), 1.6, 1.6);
+        painter.fillRect(QRectF(2.8, 11.4, 12.4, 3.2), accent_color);
+    } else if (icon_type == QStringLiteral("perf_gauge")) {
+        // Live FPS pulse waveform inside frame
+        painter.setBrush(fill_alpha(35));
+        painter.drawRoundedRect(QRectF(2.0, 3.0, 14.0, 12.0), 1.8, 1.8);
+        painter.setBrush(Qt::NoBrush);
+        QPainterPath pulse;
+        pulse.moveTo(3.5, 10.2);
+        pulse.lineTo(6.2, 10.2);
+        pulse.lineTo(7.8, 5.5);
+        pulse.lineTo(10.2, 12.5);
+        pulse.lineTo(11.8, 8.2);
+        pulse.lineTo(14.5, 8.2);
+        painter.drawPath(pulse);
+    } else if (icon_type == QStringLiteral("nand_manager")) {
+        // Hard drive / storage unit with activity LED
+        painter.setBrush(fill_alpha(42));
+        painter.drawRoundedRect(QRectF(2.2, 4.0, 13.6, 10.0), 2.0, 2.0);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(2.2, 10.0), QPointF(15.8, 10.0));
+        painter.setBrush(accent_color);
+        painter.drawEllipse(QPointF(12.6, 12.0), 1.0, 1.0);
+        painter.drawLine(QPointF(5.0, 12.0), QPointF(9.0, 12.0));
+    } else if (icon_type == QStringLiteral("title_label")) {
+        // Typography Aa label badge (Show Game Name)
+        painter.setBrush(fill_alpha(38));
+        painter.drawRoundedRect(QRectF(2.0, 3.2, 14.0, 11.6), 2.0, 2.0);
+        QFont f = painter.font();
+        f.setPixelSize(8);
+        f.setBold(true);
+        painter.setFont(f);
+        painter.drawText(QRect(2, 3, 14, 12), Qt::AlignCenter, QStringLiteral("Aa"));
+
+    // ==================== TOOLS MENU ====================
+    } else if (icon_type == QStringLiteral("store_download")) {
+        // Shopping bag / catalog store with downward download arrow
+        painter.setBrush(fill_alpha(40));
+        painter.drawRoundedRect(QRectF(3.0, 6.0, 12.0, 9.8), 1.8, 1.8);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawArc(QRectF(6.0, 2.5, 6.0, 6.5), 0, 180 * 16);
+        painter.drawLine(QPointF(9.0, 8.2), QPointF(9.0, 13.4));
+        painter.drawLine(QPointF(6.8, 11.4), QPointF(9.0, 13.4));
+        painter.drawLine(QPointF(11.2, 11.4), QPointF(9.0, 13.4));
+    } else if (icon_type == QStringLiteral("user_profiles")) {
+        // Dual user avatars
+        painter.setBrush(fill_alpha(45));
+        painter.drawEllipse(QRectF(4.8, 2.8, 5.2, 5.2));
+        painter.setBrush(Qt::NoBrush);
+        painter.drawArc(QRectF(2.2, 9.2, 10.4, 7.2), 0, 180 * 16);
+        painter.drawEllipse(QRectF(11.2, 4.8, 4.0, 4.0));
+        painter.drawArc(QRectF(10.0, 10.2, 6.4, 5.8), 0, 180 * 16);
+    } else if (icon_type == QStringLiteral("clear_shaders")) {
+        // Trash bin with sparkle/flame clear mark
+        painter.drawLine(QPointF(2.5, 4.5), QPointF(15.5, 4.5));
+        painter.drawLine(QPointF(6.5, 2.2), QPointF(11.5, 2.2));
+        painter.setBrush(fill_alpha(42));
+        painter.drawRoundedRect(QRectF(4.2, 4.5, 9.6, 11.2), 1.2, 1.2);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(7.2, 7.4), QPointF(10.8, 12.6));
+        painter.drawLine(QPointF(10.8, 7.4), QPointF(7.2, 12.6));
+    } else if (icon_type == QStringLiteral("cloud_sync")) {
+        // Cloud with bidirectional sync arrows
+        QPainterPath cloud;
+        cloud.moveTo(4.2, 11.8);
+        cloud.lineTo(13.8, 11.8);
+        cloud.quadTo(16.0, 11.8, 16.0, 9.4);
+        cloud.quadTo(16.0, 7.2, 13.6, 6.8);
+        cloud.quadTo(12.8, 3.2, 9.0, 3.2);
+        cloud.quadTo(5.4, 3.2, 4.8, 6.8);
+        cloud.quadTo(2.0, 7.2, 2.0, 9.5);
+        cloud.quadTo(2.0, 11.8, 4.2, 11.8);
+        painter.setBrush(fill_alpha(38));
+        painter.drawPath(cloud);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(6.5, 11.5), QPointF(6.5, 15.8));
+        painter.drawLine(QPointF(4.8, 13.8), QPointF(6.5, 15.8));
+        painter.drawLine(QPointF(8.2, 13.8), QPointF(6.5, 15.8));
+        painter.drawLine(QPointF(11.5, 15.8), QPointF(11.5, 11.5));
+        painter.drawLine(QPointF(9.8, 13.5), QPointF(11.5, 11.5));
+        painter.drawLine(QPointF(13.2, 13.5), QPointF(11.5, 11.5));
+    } else if (icon_type == QStringLiteral("key")) {
+        // Classic key
+        painter.setBrush(fill_alpha(42));
+        painter.drawEllipse(QRectF(2.4, 6.0, 5.6, 5.6));
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(8.0, 8.8), QPointF(15.6, 8.8));
+        painter.drawLine(QPointF(12.4, 8.8), QPointF(12.4, 12.2));
+        painter.drawLine(QPointF(15.2, 8.8), QPointF(15.2, 11.6));
+    } else if (icon_type == QStringLiteral("key_cloud")) {
+        // Cloud download with key ring (Install Keys Online)
+        QPainterPath cloud;
+        cloud.moveTo(4.2, 10.8);
+        cloud.lineTo(13.8, 10.8);
+        cloud.quadTo(16.0, 10.8, 16.0, 8.6);
+        cloud.quadTo(16.0, 6.4, 13.6, 6.0);
+        cloud.quadTo(12.8, 2.8, 9.0, 2.8);
+        cloud.quadTo(5.4, 2.8, 4.8, 6.0);
+        cloud.quadTo(2.0, 6.4, 2.0, 8.6);
+        cloud.quadTo(2.0, 10.8, 4.2, 10.8);
+        painter.setBrush(fill_alpha(40));
+        painter.drawPath(cloud);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawEllipse(QRectF(4.0, 12.2, 3.4, 3.4));
+        painter.drawLine(QPointF(7.4, 13.9), QPointF(13.8, 13.9));
+        painter.drawLine(QPointF(11.8, 13.9), QPointF(11.8, 15.8));
+    } else if (icon_type == QStringLiteral("key_zip")) {
+        // Zip archive with central zipper teeth
+        painter.setBrush(fill_alpha(40));
+        painter.drawRoundedRect(QRectF(3.0, 2.2, 12.0, 13.6), 1.8, 1.8);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(9.0, 2.2), QPointF(9.0, 11.0));
+        painter.drawLine(QPointF(7.2, 4.6), QPointF(9.0, 4.6));
+        painter.drawLine(QPointF(9.0, 6.8), QPointF(10.8, 6.8));
+        painter.drawLine(QPointF(7.2, 9.0), QPointF(9.0, 9.0));
+        painter.setBrush(accent_color);
+        painter.drawRect(QRectF(7.5, 11.2, 3.0, 2.8));
+    } else if (icon_type == QStringLiteral("key_file")) {
+        // Document file with key lock glyph (Install Keys from File)
+        QPainterPath doc;
+        doc.moveTo(3.2, 2.0);
+        doc.lineTo(10.8, 2.0);
+        doc.lineTo(14.8, 6.0);
+        doc.lineTo(14.8, 16.0);
+        doc.lineTo(3.2, 16.0);
+        doc.closeSubpath();
+        painter.setBrush(fill_alpha(38));
+        painter.drawPath(doc);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(10.8, 2.0), QPointF(10.8, 6.0));
+        painter.drawLine(QPointF(10.8, 6.0), QPointF(14.8, 6.0));
+        painter.drawEllipse(QRectF(5.5, 9.5, 3.2, 3.2));
+        painter.drawLine(QPointF(8.7, 11.1), QPointF(12.6, 11.1));
+        painter.drawLine(QPointF(11.4, 11.1), QPointF(11.4, 13.0));
+    } else if (icon_type == QStringLiteral("firmware_chip")) {
+        // CPU / Firmware microchip with pins on all 4 sides
+        painter.setBrush(fill_alpha(45));
+        painter.drawRoundedRect(QRectF(4.6, 4.6, 8.8, 8.8), 1.4, 1.4);
+        painter.setBrush(accent_color);
+        painter.drawRect(QRectF(7.4, 7.4, 3.2, 3.2));
+        painter.setBrush(Qt::NoBrush);
+        for (qreal p : {6.8, 11.2}) {
+            painter.drawLine(QPointF(p, 2.0), QPointF(p, 4.4));
+            painter.drawLine(QPointF(p, 13.6), QPointF(p, 16.0));
+            painter.drawLine(QPointF(2.0, p), QPointF(4.4, p));
+            painter.drawLine(QPointF(13.6, p), QPointF(16.0, p));
+        }
+    } else if (icon_type == QStringLiteral("firmware_cloud")) {
+        // Network/online download arrow into cloud (Install Firmware Online)
+        painter.setBrush(fill_alpha(35));
+        painter.drawEllipse(QRectF(2.4, 2.4, 10.6, 10.6));
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(2.4, 7.7), QPointF(13.0, 7.7));
+        painter.drawEllipse(QRectF(5.2, 2.4, 5.0, 10.6));
+        // Download arrow bottom-right
+        painter.drawLine(QPointF(13.8, 9.5), QPointF(13.8, 15.8));
+        painter.drawLine(QPointF(11.6, 13.6), QPointF(13.8, 15.8));
+        painter.drawLine(QPointF(16.0, 13.6), QPointF(13.8, 15.8));
+    } else if (icon_type == QStringLiteral("firmware_folder")) {
+        // Folder with downward arrow inside (Install Firmware from Folder)
+        QPainterPath path;
+        path.moveTo(2.0, 4.0);
+        path.lineTo(6.5, 4.0);
+        path.lineTo(8.0, 6.0);
+        path.lineTo(16.0, 6.0);
+        path.lineTo(16.0, 15.0);
+        path.lineTo(2.0, 15.0);
+        path.closeSubpath();
+        painter.setBrush(fill_alpha(45));
+        painter.drawPath(path);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(9.0, 8.0), QPointF(9.0, 13.0));
+        painter.drawLine(QPointF(6.8, 10.8), QPointF(9.0, 13.0));
+        painter.drawLine(QPointF(11.2, 10.8), QPointF(9.0, 13.0));
+    } else if (icon_type == QStringLiteral("firmware_zip")) {
+        // Sealed package box (Install Firmware from ZIP)
+        painter.setBrush(fill_alpha(42));
+        painter.drawRoundedRect(QRectF(2.5, 4.0, 13.0, 11.5), 1.5, 1.5);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(2.5, 7.5), QPointF(15.5, 7.5));
+        painter.drawLine(QPointF(9.0, 4.0), QPointF(9.0, 15.5));
+        painter.drawLine(QPointF(6.5, 2.2), QPointF(11.5, 2.2));
+    } else if (icon_type == QStringLiteral("verify_shield")) {
+        // Shield with checkmark inside
+        QPainterPath shield;
+        shield.moveTo(9.0, 2.0);
+        shield.lineTo(15.0, 4.2);
+        shield.lineTo(15.0, 9.4);
+        shield.quadTo(15.0, 14.5, 9.0, 16.2);
+        shield.quadTo(3.0, 14.5, 3.0, 9.4);
+        shield.lineTo(3.0, 4.2);
+        shield.closeSubpath();
+        painter.setBrush(fill_alpha(42));
+        painter.drawPath(shield);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(6.0, 9.2), QPointF(8.2, 11.6));
+        painter.drawLine(QPointF(8.2, 11.6), QPointF(12.4, 6.6));
+    } else if (icon_type == QStringLiteral("data_storage")) {
+        // 3-tier database cylinder
+        painter.setBrush(fill_alpha(40));
+        painter.drawEllipse(QRectF(3.0, 2.6, 12.0, 4.0));
+        painter.setBrush(Qt::NoBrush);
+        painter.drawArc(QRectF(3.0, 6.8, 12.0, 4.0), 180 * 16, 180 * 16);
+        painter.drawArc(QRectF(3.0, 11.0, 12.0, 4.0), 180 * 16, 180 * 16);
+        painter.drawLine(QPointF(3.0, 4.6), QPointF(3.0, 13.0));
+        painter.drawLine(QPointF(15.0, 4.6), QPointF(15.0, 13.0));
+    } else if (icon_type == QStringLiteral("amiibo_cabinet")) {
+        // Amiibo pedestal/figure stand
+        painter.setBrush(fill_alpha(45));
+        painter.drawEllipse(QRectF(6.2, 2.4, 5.6, 5.6));
+        painter.drawRoundedRect(QRectF(3.0, 12.2, 12.0, 3.4), 1.4, 1.4);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(9.0, 8.0), QPointF(9.0, 12.2));
+    } else if (icon_type == QStringLiteral("pencil")) {
+        // Diagonal editing pencil
+        painter.drawLine(QPointF(3.0, 15.0), QPointF(5.6, 15.0));
+        painter.drawLine(QPointF(3.0, 15.0), QPointF(3.0, 12.4));
+        painter.drawLine(QPointF(3.6, 12.0), QPointF(12.0, 3.6));
+        painter.drawLine(QPointF(6.0, 14.4), QPointF(14.4, 6.0));
+        painter.drawLine(QPointF(12.0, 3.6), QPointF(14.4, 6.0));
+    } else if (icon_type == QStringLiteral("eraser")) {
+        // Angled rubber eraser block
+        QPolygonF block;
+        block << QPointF(9.5, 3.0) << QPointF(15.2, 8.2) << QPointF(9.2, 14.5) << QPointF(3.5, 9.3);
+        painter.setBrush(fill_alpha(45));
+        painter.drawPolygon(block);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(6.5, 6.2), QPointF(12.0, 11.4));
+        painter.drawLine(QPointF(3.0, 15.2), QPointF(14.5, 15.2));
+    } else if (icon_type == QStringLiteral("restore_undo")) {
+        // Counter-clockwise restore arrow with center dot
+        painter.drawArc(QRectF(2.6, 2.6, 12.8, 12.8), 140 * 16, -260 * 16);
+        painter.drawLine(QPointF(4.2, 4.4), QPointF(2.6, 8.2));
+        painter.drawLine(QPointF(6.6, 7.6), QPointF(2.6, 8.2));
+        painter.setBrush(accent_color);
+        painter.drawEllipse(QPointF(9.0, 9.0), 1.6, 1.6);
+    } else if (icon_type == QStringLiteral("format_wipe")) {
+        // Disk/card with diagonal wipe slash
+        painter.setBrush(fill_alpha(38));
+        painter.drawEllipse(QRectF(2.6, 2.6, 12.8, 12.8));
+        painter.setBrush(Qt::NoBrush);
+        painter.drawEllipse(QPointF(9.0, 9.0), 2.2, 2.2);
+        painter.drawLine(QPointF(3.4, 14.6), QPointF(14.6, 3.4));
+    } else if (icon_type == QStringLiteral("applets")) {
+        // 3 rounded squares + 1 top-right rotated diamond (System Applets)
+        painter.setBrush(fill_alpha(45));
+        painter.drawRoundedRect(QRectF(2.2, 2.2, 5.2, 5.2), 1.2, 1.2);
+        painter.drawRoundedRect(QRectF(2.2, 10.6, 5.2, 5.2), 1.2, 1.2);
+        painter.drawRoundedRect(QRectF(10.6, 10.6, 5.2, 5.2), 1.2, 1.2);
+        QPolygonF dia;
+        dia << QPointF(13.2, 1.8) << QPointF(16.2, 4.8) << QPointF(13.2, 7.8) << QPointF(10.2, 4.8);
+        painter.setBrush(accent_color);
+        painter.drawPolygon(dia);
+    } else if (icon_type == QStringLiteral("photo")) {
+        // Landscape photo frame
+        painter.setBrush(fill_alpha(35));
+        painter.drawRoundedRect(QRectF(2.2, 2.5, 13.6, 13.0), 1.5, 1.5);
+        painter.setBrush(accent_color);
+        painter.drawEllipse(QPointF(5.8, 6.0), 1.3, 1.3);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(3.0, 13.5), QPointF(7.2, 9.2));
+        painter.drawLine(QPointF(7.2, 9.2), QPointF(10.6, 12.2));
+        painter.drawLine(QPointF(10.6, 12.2), QPointF(14.8, 8.0));
+    } else if (icon_type == QStringLiteral("mii_avatar")) {
+        // Smiling Mii face in circle
+        painter.setBrush(fill_alpha(38));
+        painter.drawEllipse(QRectF(2.4, 2.4, 13.2, 13.2));
+        painter.setBrush(accent_color);
+        painter.drawEllipse(QPointF(6.8, 7.4), 0.9, 0.9);
+        painter.drawEllipse(QPointF(11.2, 7.4), 0.9, 0.9);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawArc(QRectF(5.8, 7.8, 6.4, 4.8), 200 * 16, 140 * 16);
+    } else if (icon_type == QStringLiteral("joycon")) {
+        // Dual vertical Switch Joy-Con halves
+        painter.setBrush(fill_alpha(45));
+        painter.drawRoundedRect(QRectF(2.5, 2.5, 5.2, 13.0), 2.2, 2.2);
+        painter.drawRoundedRect(QRectF(10.3, 2.5, 5.2, 13.0), 2.2, 2.2);
+        painter.setBrush(accent_color);
+        painter.drawEllipse(QPointF(5.1, 6.2), 1.1, 1.1);
+        painter.drawEllipse(QPointF(12.9, 11.4), 1.1, 1.1);
+    } else if (icon_type == QStringLiteral("home")) {
+        QPainterPath house;
+        house.moveTo(9.0, 2.5);
+        house.lineTo(15.6, 8.2);
+        house.lineTo(13.6, 8.2);
+        house.lineTo(13.6, 15.4);
+        house.lineTo(4.4, 15.4);
+        house.lineTo(4.4, 8.2);
+        house.lineTo(2.4, 8.2);
+        house.closeSubpath();
+        painter.setBrush(fill_alpha(40));
+        painter.drawPath(house);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawRect(QRectF(7.2, 10.6, 3.6, 4.8));
+    } else if (icon_type == QStringLiteral("overlay_layers")) {
+        // Two overlapping offset overlay windows
+        painter.drawRoundedRect(QRectF(2.2, 2.4, 9.6, 8.6), 1.4, 1.4);
+        painter.setBrush(fill_alpha(55));
+        painter.drawRoundedRect(QRectF(6.2, 6.8, 9.6, 8.6), 1.4, 1.4);
+    } else if (icon_type == QStringLiteral("shortcut_arrow")) {
+        // Box with launch arrow jumping top-right
+        painter.drawLine(QPointF(9.5, 3.0), QPointF(3.0, 3.0));
+        painter.drawLine(QPointF(3.0, 3.0), QPointF(3.0, 15.0));
+        painter.drawLine(QPointF(3.0, 15.0), QPointF(15.0, 15.0));
+        painter.drawLine(QPointF(15.0, 15.0), QPointF(15.0, 8.5));
+        painter.drawLine(QPointF(8.2, 9.8), QPointF(15.2, 2.8));
+        painter.drawLine(QPointF(11.0, 2.8), QPointF(15.2, 2.8));
+        painter.drawLine(QPointF(15.2, 2.8), QPointF(15.2, 7.0));
+    } else if (icon_type == QStringLiteral("desktop_screen")) {
+        // Desktop monitor on stand
+        painter.setBrush(fill_alpha(40));
+        painter.drawRoundedRect(QRectF(2.0, 2.6, 14.0, 9.8), 1.4, 1.4);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(9.0, 12.4), QPointF(9.0, 15.4));
+        painter.drawLine(QPointF(5.5, 15.4), QPointF(12.5, 15.4));
+    } else if (icon_type == QStringLiteral("app_launcher")) {
+        // 3x3 application launcher grid dots
+        painter.setBrush(accent_color);
+        for (int r = 0; r < 3; ++r) {
+            for (int c = 0; c < 3; ++c) {
+                painter.drawEllipse(QPointF(4.2 + c * 4.8, 4.2 + r * 4.8), 1.25, 1.25);
+            }
+        }
+    } else if (icon_type == QStringLiteral("camera")) {
+        painter.setBrush(fill_alpha(40));
+        painter.drawRoundedRect(QRectF(2.0, 5.2, 14.0, 10.2), 2.0, 2.0);
+        painter.drawRect(QRectF(6.2, 3.0, 5.6, 2.2));
+        painter.setBrush(Qt::NoBrush);
+        painter.drawEllipse(QPointF(9.0, 10.3), 2.8, 2.8);
+    } else if (icon_type == QStringLiteral("translate")) {
+        painter.setBrush(fill_alpha(38));
+        painter.drawRoundedRect(QRectF(2.0, 2.0, 9.0, 9.0), 1.8, 1.8);
+        painter.drawRoundedRect(QRectF(7.0, 7.0, 9.0, 9.0), 1.8, 1.8);
+        QFont f = painter.font();
+        f.setPixelSize(7);
+        f.setBold(true);
+        painter.setFont(f);
+        painter.drawText(QRect(2, 2, 9, 9), Qt::AlignCenter, QStringLiteral("A"));
+        painter.drawText(QRect(7, 7, 9, 9), Qt::AlignCenter, QStringLiteral("文"));
+    } else if (icon_type == QStringLiteral("puzzle")) {
+        painter.setBrush(fill_alpha(45));
+        painter.drawRoundedRect(QRectF(3.5, 4.5, 10.5, 10.5), 1.8, 1.8);
+        painter.drawEllipse(QPointF(8.8, 4.2), 2.1, 2.1);
+        painter.drawEllipse(QPointF(14.2, 9.8), 2.1, 2.1);
+    } else if (icon_type == QStringLiteral("cheats_wand")) {
+        // 4-point magic star sparkle (Cheats)
+        QPainterPath star;
+        star.moveTo(9.0, 2.0);
+        star.quadTo(9.0, 9.0, 16.0, 9.0);
+        star.quadTo(9.0, 9.0, 9.0, 16.0);
+        star.quadTo(9.0, 9.0, 2.0, 9.0);
+        star.quadTo(9.0, 9.0, 9.0, 2.0);
+        painter.setBrush(fill_alpha(120));
+        painter.drawPath(star);
+    } else if (icon_type == QStringLiteral("tas_bolt")) {
+        QPolygonF poly;
+        poly << QPointF(10.2, 2.0) << QPointF(4.2, 9.4) << QPointF(8.8, 9.4)
+             << QPointF(7.8, 16.0) << QPointF(13.8, 8.4) << QPointF(9.2, 8.4);
+        painter.setBrush(accent_color);
+        painter.drawPolygon(poly);
+    } else if (icon_type == QStringLiteral("play")) {
+        QPolygonF poly;
+        poly << QPointF(5.0, 3.0) << QPointF(14.5, 9.0) << QPointF(5.0, 15.0);
+        painter.setBrush(accent_color);
+        painter.drawPolygon(poly);
+    } else if (icon_type == QStringLiteral("record")) {
+        painter.drawEllipse(QRectF(2.2, 2.2, 13.6, 13.6));
+        painter.setBrush(QColor(239, 68, 68));
+        painter.drawEllipse(QRectF(5.4, 5.4, 7.2, 7.2));
+    } else if (icon_type == QStringLiteral("rewind_reset")) {
+        // Double rewind << with stop bar |
+        painter.drawLine(QPointF(3.2, 4.2), QPointF(3.2, 13.8));
+        QPolygonF t1, t2;
+        t1 << QPointF(9.4, 4.6) << QPointF(4.6, 9.0) << QPointF(9.4, 13.4);
+        t2 << QPointF(15.2, 4.6) << QPointF(10.4, 9.0) << QPointF(15.2, 13.4);
+        painter.setBrush(fill_alpha(90));
+        painter.drawPolygon(t1);
+        painter.drawPolygon(t2);
+    } else if (icon_type == QStringLiteral("tas_tune")) {
+        // Diagonal wrench tool (Configure TAS)
+        painter.drawLine(QPointF(4.0, 14.0), QPointF(11.4, 6.6));
+        painter.drawArc(QRectF(10.0, 2.2, 5.6, 5.6), 45 * 16, 250 * 16);
+        painter.setBrush(accent_color);
+        painter.drawEllipse(QPointF(4.2, 13.8), 1.4, 1.4);
+    } else if (icon_type == QStringLiteral("terminal_log")) {
+        // Console terminal window with >_ prompt (Log Viewer)
+        painter.setBrush(fill_alpha(38));
+        painter.drawRoundedRect(QRectF(2.0, 2.8, 14.0, 12.4), 1.8, 1.8);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(4.8, 6.8), QPointF(7.6, 9.0));
+        painter.drawLine(QPointF(7.6, 9.0), QPointF(4.8, 11.2));
+        painter.drawLine(QPointF(9.2, 11.4), QPointF(13.2, 11.4));
+
+    // ==================== MULTIPLAYER MENU ====================
+    } else if (icon_type == QStringLiteral("lobby_globe")) {
+        painter.setBrush(fill_alpha(32));
+        painter.drawEllipse(QRectF(2.2, 2.2, 13.6, 13.6));
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(2.2, 9.0), QPointF(15.8, 9.0));
+        painter.drawEllipse(QRectF(5.5, 2.2, 7.0, 13.6));
+    } else if (icon_type == QStringLiteral("create_room")) {
+        painter.setBrush(fill_alpha(38));
+        painter.drawEllipse(QRectF(2.2, 2.2, 13.6, 13.6));
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(9.0, 5.4), QPointF(9.0, 12.6));
+        painter.drawLine(QPointF(5.4, 9.0), QPointF(12.6, 9.0));
+    } else if (icon_type == QStringLiteral("connect_link")) {
+        painter.drawRoundedRect(QRectF(2.5, 6.2, 7.4, 5.6), 2.8, 2.8);
+        painter.drawRoundedRect(QRectF(8.1, 6.2, 7.4, 5.6), 2.8, 2.8);
+    } else if (icon_type == QStringLiteral("room_members")) {
+        // Speech/room bubble with 3 member dots
+        QPainterPath bubble;
+        bubble.addRoundedRect(QRectF(2.2, 2.6, 13.6, 10.0), 2.5, 2.5);
+        painter.setBrush(fill_alpha(40));
+        painter.drawPath(bubble);
+        painter.drawLine(QPointF(5.5, 12.6), QPointF(4.0, 15.6));
+        painter.drawLine(QPointF(4.0, 15.6), QPointF(8.6, 12.6));
+        painter.setBrush(accent_color);
+        painter.drawEllipse(QPointF(5.8, 7.6), 1.0, 1.0);
+        painter.drawEllipse(QPointF(9.0, 7.6), 1.0, 1.0);
+        painter.drawEllipse(QPointF(12.2, 7.6), 1.0, 1.0);
+    } else if (icon_type == QStringLiteral("leave_room")) {
+        // Broken/disconnected link with slash
+        painter.drawRoundedRect(QRectF(2.2, 6.4, 6.2, 5.2), 2.4, 2.4);
+        painter.drawRoundedRect(QRectF(9.6, 6.4, 6.2, 5.2), 2.4, 2.4);
+        painter.drawLine(QPointF(5.0, 14.5), QPointF(13.0, 3.5));
+
+    // ==================== HELP MENU ====================
+    } else if (icon_type == QStringLiteral("check_updates")) {
+        // Circular badge with upward update arrow
+        painter.setBrush(fill_alpha(38));
+        painter.drawEllipse(QRectF(2.2, 2.2, 13.6, 13.6));
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(9.0, 12.6), QPointF(9.0, 5.4));
+        painter.drawLine(QPointF(6.2, 8.2), QPointF(9.0, 5.4));
+        painter.drawLine(QPointF(11.8, 8.2), QPointF(9.0, 5.4));
+    } else if (icon_type == QStringLiteral("guide_book")) {
+        // Open handbook
+        painter.drawLine(QPointF(9.0, 3.8), QPointF(9.0, 14.8));
+        painter.drawArc(QRectF(2.4, 2.6, 6.6, 3.2), 0, 180 * 16);
+        painter.drawArc(QRectF(9.0, 2.6, 6.6, 3.2), 0, 180 * 16);
+        painter.drawLine(QPointF(2.4, 4.2), QPointF(2.4, 14.2));
+        painter.drawLine(QPointF(15.6, 4.2), QPointF(15.6, 14.2));
+        painter.drawArc(QRectF(2.4, 12.8, 6.6, 3.2), 0, 180 * 16);
+        painter.drawArc(QRectF(9.0, 12.8, 6.6, 3.2), 0, 180 * 16);
+    } else if (icon_type == QStringLiteral("faq_question")) {
+        painter.setBrush(fill_alpha(35));
+        painter.drawEllipse(QRectF(2.2, 2.2, 13.6, 13.6));
+        QFont f = painter.font();
+        f.setPixelSize(11);
+        f.setBold(true);
+        painter.setFont(f);
+        painter.drawText(QRect(0, 0, 18, 18), Qt::AlignCenter, QStringLiteral("?"));
+    } else if (icon_type == QStringLiteral("mods_web")) {
+        // Cube with outward web spark
+        painter.setBrush(fill_alpha(40));
+        painter.drawRoundedRect(QRectF(2.6, 6.2, 9.2, 9.2), 1.6, 1.6);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(9.4, 8.6), QPointF(15.4, 2.6));
+        painter.drawLine(QPointF(11.6, 2.6), QPointF(15.4, 2.6));
+        painter.drawLine(QPointF(15.4, 2.6), QPointF(15.4, 6.4));
+    } else if (icon_type == QStringLiteral("dependencies_cubes")) {
+        // Stacked library layers / diamond blocks
+        QPainterPath top;
+        top.moveTo(9.0, 2.2);
+        top.lineTo(15.4, 5.6);
+        top.lineTo(9.0, 9.0);
+        top.lineTo(2.6, 5.6);
+        top.closeSubpath();
+        painter.setBrush(fill_alpha(55));
+        painter.drawPath(top);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(2.6, 9.2), QPointF(9.0, 12.6));
+        painter.drawLine(QPointF(9.0, 12.6), QPointF(15.4, 9.2));
+        painter.drawLine(QPointF(2.6, 12.4), QPointF(9.0, 15.8));
+        painter.drawLine(QPointF(9.0, 15.8), QPointF(15.4, 12.4));
+    } else if (icon_type == QStringLiteral("about_info")) {
+        painter.setBrush(fill_alpha(35));
+        painter.drawEllipse(QRectF(2.2, 2.2, 13.6, 13.6));
+        QFont f = painter.font();
+        f.setPixelSize(11);
+        f.setBold(true);
+        painter.setFont(f);
+        painter.drawText(QRect(0, 0, 18, 18), Qt::AlignCenter, QStringLiteral("i"));
+    } else {
+        // Fallback star (should never be hit - audited to 0 fallbacks)
+        painter.drawEllipse(QRectF(4.0, 4.0, 10.0, 10.0));
+    }
 
     return QIcon(pixmap);
-
 }
-
-
 
 void MainWindow::SetupMenuIcons() {
 
@@ -7008,7 +7353,7 @@ void MainWindow::SetupMenuIcons() {
 
         QString text = act->text();
 
-        static const QRegularExpression emoji_re(QStringLiteral(R"(^[\p{Emoji}\p{Symbol}\s]+)"), QRegularExpression::UseUnicodePropertiesOption);
+        static const QRegularExpression emoji_re(QStringLiteral(R"(^[\p{So}\p{Sk}\x{FE0E}\x{FE0F}\x{200D}\s]+)"), QRegularExpression::UseUnicodePropertiesOption);
 
         text.remove(emoji_re);
 
@@ -7018,14 +7363,62 @@ void MainWindow::SetupMenuIcons() {
 
 
 
+    auto make_checked_icon = [&](const QString& icon_type, const QColor& color, bool checked) -> QIcon {
+        QIcon base = CreateVectorMenuIcon(icon_type, color);
+        if (!checked) {
+            return base;
+        }
+        QPixmap pm = base.pixmap(QSize(18, 18), 2.0);
+        if (pm.isNull()) {
+            return base;
+        }
+        QPainter p(&pm);
+        p.setRenderHint(QPainter::Antialiasing, true);
+        p.setBrush(QColor(QStringLiteral("#10B981")));
+        p.setPen(QPen(QColor(QStringLiteral("#0B1120")), 1.0));
+        p.drawEllipse(QRectF(10.0, 10.0, 7.6, 7.6));
+        QPen chk_pen(Qt::white, 1.5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+        p.setPen(chk_pen);
+        p.drawLine(QPointF(11.8, 13.8), QPointF(13.2, 15.2));
+        p.drawLine(QPointF(13.2, 15.2), QPointF(15.8, 12.2));
+        return QIcon(pm);
+    };
+
     auto apply_action = [&](QAction* act, const QString& icon_type, const QColor& color) {
-
         if (!act) return;
-
         clean_action_text(act);
-
-        act->setIcon(CreateVectorMenuIcon(icon_type, color));
-
+        if (act->isCheckable()) {
+            act->setProperty("_stormIconType", icon_type);
+            act->setProperty("_stormIconColor", color.name());
+            act->setIcon(make_checked_icon(icon_type, color, act->isChecked()));
+            if (!act->property("_stormCheckBadgeBound").toBool()) {
+                act->setProperty("_stormCheckBadgeBound", true);
+                connect(act, &QAction::toggled, this, [act](bool checked) {
+                    const QString itype = act->property("_stormIconType").toString();
+                    const QColor icol(act->property("_stormIconColor").toString());
+                    QIcon base = CreateVectorMenuIcon(itype, icol.isValid() ? icol : QColor(QStringLiteral("#38BDF8")));
+                    if (!checked) {
+                        act->setIcon(base);
+                        return;
+                    }
+                    QPixmap pm = base.pixmap(QSize(18, 18), 2.0);
+                    if (!pm.isNull()) {
+                        QPainter p(&pm);
+                        p.setRenderHint(QPainter::Antialiasing, true);
+                        p.setBrush(QColor(QStringLiteral("#10B981")));
+                        p.setPen(QPen(QColor(QStringLiteral("#0B1120")), 1.0));
+                        p.drawEllipse(QRectF(10.0, 10.0, 7.6, 7.6));
+                        QPen chk_pen(Qt::white, 1.5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+                        p.setPen(chk_pen);
+                        p.drawLine(QPointF(11.8, 13.8), QPointF(13.2, 15.2));
+                        p.drawLine(QPointF(13.2, 15.2), QPointF(15.8, 12.2));
+                        act->setIcon(QIcon(pm));
+                    }
+                });
+            }
+        } else {
+            act->setIcon(CreateVectorMenuIcon(icon_type, color));
+        }
     };
 
 
@@ -7162,63 +7555,41 @@ void MainWindow::SetupMenuIcons() {
 
 
 
-        for (int i = 0; i < 5; ++i) {
-
+        for (int i = 0; i < 10; ++i) {
             const int slot_num = i + 1;
-
             save_slot_actions[i] = save_state_slots_menu->addAction(
-
                 tr("Слот %1").arg(slot_num), this, [this, slot_num]() {
-
                     OnSaveStateSlot(slot_num);
-
                 });
-
+            save_slot_actions[i]->setIcon(
+                CreateVectorMenuIcon(QStringLiteral("save_slot_%1").arg(slot_num), col_teal));
             load_slot_actions[i] = load_state_slots_menu->addAction(
-
                 tr("Слот %1").arg(slot_num), this, [this, slot_num]() {
-
                     OnLoadStateSlot(slot_num);
-
                 });
-
+            load_slot_actions[i]->setIcon(
+                CreateVectorMenuIcon(QStringLiteral("load_slot_%1").arg(slot_num), col_blue));
         }
-
         save_state_slots_menu->addSeparator();
-
         load_state_slots_menu->addSeparator();
-
-        save_state_slots_menu->addAction(
-
-            StormLang(QStringLiteral("🗂️ Менеджер быстрых сохранений..."),
-
-                      QStringLiteral("🗂️ Save State Manager..."),
-
-                      QStringLiteral("🗂️ Schnellspeicher-Manager..."),
-
-                      QStringLiteral("🗂️ Gestionnaire de sauvegardes rapides..."),
-
-                      QStringLiteral("🗂️ 快速保存管理器..."),
-
-                      QStringLiteral("🗂️ クイックセーブマネージャー...")),
-
+        QAction* save_sub_mgr = save_state_slots_menu->addAction(
+            StormLang(QStringLiteral("Менеджер быстрых сохранений..."),
+                      QStringLiteral("Save State Manager..."),
+                      QStringLiteral("Schnellspeicher-Manager..."),
+                      QStringLiteral("Gestionnaire de sauvegardes rapides..."),
+                      QStringLiteral("快速保存管理器..."),
+                      QStringLiteral("クイックセーブマネージャー...")),
             this, &MainWindow::OnSaveStateManager);
-
-        load_state_slots_menu->addAction(
-
-            StormLang(QStringLiteral("🗂️ Менеджер быстрых сохранений..."),
-
-                      QStringLiteral("🗂️ Save State Manager..."),
-
-                      QStringLiteral("🗂️ Schnellspeicher-Manager..."),
-
-                      QStringLiteral("🗂️ Gestionnaire de sauvegardes rapides..."),
-
-                      QStringLiteral("🗂️ 快速保存管理器..."),
-
-                      QStringLiteral("🗂️ クイックセーブマネージャー...")),
-
+        save_sub_mgr->setIcon(CreateVectorMenuIcon(QStringLiteral("save_manager"), col_amber));
+        QAction* load_sub_mgr = load_state_slots_menu->addAction(
+            StormLang(QStringLiteral("Менеджер быстрых сохранений..."),
+                      QStringLiteral("Save State Manager..."),
+                      QStringLiteral("Schnellspeicher-Manager..."),
+                      QStringLiteral("Gestionnaire de sauvegardes rapides..."),
+                      QStringLiteral("快速保存管理器..."),
+                      QStringLiteral("クイックセーブマネージャー...")),
             this, &MainWindow::OnSaveStateManager);
+        load_sub_mgr->setIcon(CreateVectorMenuIcon(QStringLiteral("save_manager"), col_amber));
 
 
 
@@ -7260,39 +7631,39 @@ void MainWindow::SetupMenuIcons() {
 
 
 
-    apply_action(ui->action_Install_File_NAND, QStringLiteral("nand"), col_blue);
+    apply_action(ui->action_Install_File_NAND, QStringLiteral("nand_install"), col_blue);
 
-    apply_action(ui->action_Load_File, QStringLiteral("folder_open"), col_yellow);
+    apply_action(ui->action_Load_File, QStringLiteral("load_file"), col_yellow);
 
-    apply_action(ui->action_Load_Folder, QStringLiteral("folder"), col_yellow);
+    apply_action(ui->action_Load_Folder, QStringLiteral("load_folder"), col_yellow);
 
     apply_menu(ui->menu_recent_files, QStringLiteral("clock"), col_teal);
 
-    apply_action(quick_save_action, QStringLiteral("save"), col_green);
+    apply_action(quick_save_action, QStringLiteral("quick_save"), col_green);
 
-    apply_action(quick_load_action, QStringLiteral("restart"), col_cyan);
+    apply_action(quick_load_action, QStringLiteral("quick_load"), col_cyan);
 
-    apply_menu(save_state_slots_menu, QStringLiteral("save"), col_teal);
+    apply_menu(save_state_slots_menu, QStringLiteral("save_slots"), col_teal);
 
-    apply_menu(load_state_slots_menu, QStringLiteral("folder_open"), col_blue);
+    apply_menu(load_state_slots_menu, QStringLiteral("load_slots"), col_blue);
 
-    apply_action(save_state_manager_action, QStringLiteral("database"), col_amber);
+    apply_action(save_state_manager_action, QStringLiteral("save_manager"), col_amber);
 
     apply_action(ui->action_Load_Amiibo, QStringLiteral("amiibo"), col_amber);
 
-    apply_action(ui->action_Amiibo_Online_Database, QStringLiteral("globe"), col_cyan);
+    apply_action(ui->action_Amiibo_Online_Database, QStringLiteral("amiibo_db"), col_cyan);
 
-    apply_menu(ui->menuOpen_Eden_Folders, QStringLiteral("folder"), col_yellow);
+    apply_menu(ui->menuOpen_Eden_Folders, QStringLiteral("open_folders"), col_yellow);
 
-    apply_action(ui->action_Root_Data_Folder, QStringLiteral("folder"), col_yellow);
+    apply_action(ui->action_Root_Data_Folder, QStringLiteral("folder_root"), col_yellow);
 
-    apply_action(ui->action_NAND_Folder, QStringLiteral("nand"), col_blue);
+    apply_action(ui->action_NAND_Folder, QStringLiteral("folder_nand"), col_blue);
 
-    apply_action(ui->action_SDMC_Folder, QStringLiteral("database"), col_amber);
+    apply_action(ui->action_SDMC_Folder, QStringLiteral("sd_card"), col_amber);
 
-    apply_action(ui->action_Mod_Folder, QStringLiteral("gear"), col_purple);
+    apply_action(ui->action_Mod_Folder, QStringLiteral("folder_mods"), col_purple);
 
-    apply_action(ui->action_Log_Folder, QStringLiteral("list"), col_grey);
+    apply_action(ui->action_Log_Folder, QStringLiteral("folder_logs"), col_grey);
 
     apply_action(ui->action_Exit, QStringLiteral("exit"), col_red);
 
@@ -7306,9 +7677,9 @@ void MainWindow::SetupMenuIcons() {
 
     apply_action(ui->action_Restart, QStringLiteral("restart"), col_cyan);
 
-    apply_action(ui->action_Configure, QStringLiteral("gear"), col_amber);
+    apply_action(ui->action_Configure, QStringLiteral("gear"), col_yellow);
 
-    apply_action(ui->action_Configure_Current_Game, QStringLiteral("gamepad"), col_green);
+    apply_action(ui->action_Configure_Current_Game, QStringLiteral("game_settings"), col_green);
 
 
 
@@ -7316,38 +7687,39 @@ void MainWindow::SetupMenuIcons() {
 
     apply_action(ui->action_Fullscreen, QStringLiteral("fullscreen"), col_indigo);
 
-    apply_action(ui->action_Single_Window_Mode, QStringLiteral("window"), col_blue);
+    apply_action(ui->action_Single_Window_Mode, QStringLiteral("single_window"), col_blue);
 
-    apply_menu(ui->menu_Reset_Window_Size, QStringLiteral("display"), col_blue);
+    apply_menu(ui->menu_Reset_Window_Size, QStringLiteral("window_resize"), col_blue);
 
-    apply_action(ui->action_Reset_Window_Size_720, QStringLiteral("display"), col_blue);
+    apply_action(ui->action_Reset_Window_Size_720, QStringLiteral("res_720"), col_blue);
 
-    apply_action(ui->action_Reset_Window_Size_900, QStringLiteral("display"), col_indigo);
+    apply_action(ui->action_Reset_Window_Size_900, QStringLiteral("res_900"), col_indigo);
 
-    apply_action(ui->action_Reset_Window_Size_1080, QStringLiteral("display"), col_purple);
+    apply_action(ui->action_Reset_Window_Size_1080, QStringLiteral("res_1080"), col_purple);
 
-    apply_menu(ui->menu_View_Debugging, QStringLiteral("gear"), col_amber);
+    apply_menu(ui->menu_View_Debugging, QStringLiteral("bug_debug"), col_amber);
 
-    apply_menu(ui->menu_Game_List_Mode, QStringLiteral("grid"), col_indigo);
+    apply_menu(ui->menu_Game_List_Mode, QStringLiteral("layout_mode"), col_indigo);
 
-    apply_action(ui->action_Tree_View, QStringLiteral("tree"), col_blue);
+    apply_action(ui->action_Tree_View, QStringLiteral("tree_view"), col_blue);
 
-    apply_action(ui->action_Grid_View, QStringLiteral("grid"), col_indigo);
+    apply_action(ui->action_Grid_View, QStringLiteral("grid_view"), col_indigo);
 
     apply_action(ui->action_Carousel_View, QStringLiteral("carousel"), col_pink);
     if (ui->action_Carousel_View) {
         ui->action_Carousel_View->setVisible(false);
     }
 
-    apply_menu(ui->menuGame_Icon_Size, QStringLiteral("stats"), col_cyan);
+    apply_menu(ui->menuGame_Icon_Size, QStringLiteral("icon_size"), col_cyan);
 
     apply_action(ui->action_Show_Filter_Bar, QStringLiteral("search"), col_cyan);
 
-    apply_action(ui->action_Show_Status_Bar, QStringLiteral("stats"), col_lime);
+    apply_action(ui->action_Show_Status_Bar, QStringLiteral("status_bar"), col_lime);
 
-    apply_action(ui->action_Show_Performance_Overlay, QStringLiteral("chart"), col_amber);
+    apply_action(ui->action_Show_Performance_Overlay, QStringLiteral("perf_gauge"), col_amber);
 
-    apply_action(ui->action_Nand_Manager, QStringLiteral("database"), col_cyan);
+    apply_action(ui->action_Nand_Manager, QStringLiteral("nand_manager"), col_cyan);
+    apply_action(ui->action_Show_Game_Name, QStringLiteral("title_label"), col_teal);
 
 
 
@@ -7355,69 +7727,69 @@ void MainWindow::SetupMenuIcons() {
 
     apply_menu(ui->menuInstall_Keys, QStringLiteral("key"), col_cyan);
 
-    apply_action(ui->action_Install_Keys_Online, QStringLiteral("network"), col_cyan);
+    apply_action(ui->action_Install_Keys_Online, QStringLiteral("key_cloud"), col_cyan);
 
-    apply_action(ui->action_Install_Keys_From_ZIP, QStringLiteral("save"), col_blue);
+    apply_action(ui->action_Install_Keys_From_ZIP, QStringLiteral("key_zip"), col_blue);
 
-    apply_action(ui->action_Install_Keys, QStringLiteral("file"), col_amber);
+    apply_action(ui->action_Install_Keys, QStringLiteral("key_file"), col_amber);
 
-    apply_menu(ui->menuInstall_Firmware, QStringLiteral("nand"), col_purple);
+    apply_menu(ui->menuInstall_Firmware, QStringLiteral("firmware_chip"), col_purple);
 
-    apply_action(ui->action_Firmware_Online, QStringLiteral("network"), col_cyan);
+    apply_action(ui->action_Firmware_Online, QStringLiteral("firmware_cloud"), col_cyan);
 
-    apply_action(ui->action_Firmware_From_Folder, QStringLiteral("folder"), col_yellow);
+    apply_action(ui->action_Firmware_From_Folder, QStringLiteral("firmware_folder"), col_yellow);
 
-    apply_action(ui->action_Firmware_From_ZIP, QStringLiteral("save"), col_blue);
+    apply_action(ui->action_Firmware_From_ZIP, QStringLiteral("firmware_zip"), col_blue);
 
-    apply_action(ui->action_Verify_installed_contents, QStringLiteral("verify"), col_green);
+    apply_action(ui->action_Verify_installed_contents, QStringLiteral("verify_shield"), col_green);
 
-    apply_action(ui->action_Data_Manager, QStringLiteral("data"), col_teal);
+    apply_action(ui->action_Data_Manager, QStringLiteral("data_storage"), col_teal);
 
-    apply_menu(ui->menu_cabinet_applet, QStringLiteral("edit"), col_cyan);
+    apply_menu(ui->menu_cabinet_applet, QStringLiteral("amiibo_cabinet"), col_cyan);
 
-    apply_action(ui->action_Launch_Cabinet_Nickname_Owner, QStringLiteral("edit"), col_cyan);
+    apply_action(ui->action_Launch_Cabinet_Nickname_Owner, QStringLiteral("pencil"), col_cyan);
 
-    apply_action(ui->action_Launch_Cabinet_Eraser, QStringLiteral("trash"), col_red);
+    apply_action(ui->action_Launch_Cabinet_Eraser, QStringLiteral("eraser"), col_red);
 
-    apply_action(ui->action_Launch_Cabinet_Restorer, QStringLiteral("restart"), col_green);
+    apply_action(ui->action_Launch_Cabinet_Restorer, QStringLiteral("restore_undo"), col_green);
 
-    apply_action(ui->action_Launch_Cabinet_Formatter, QStringLiteral("lightning"), col_amber);
+    apply_action(ui->action_Launch_Cabinet_Formatter, QStringLiteral("format_wipe"), col_amber);
 
-    apply_menu(ui->menu_Applets, QStringLiteral("applet"), col_purple);
+    apply_menu(ui->menu_Applets, QStringLiteral("applets"), col_purple);
 
     apply_action(ui->action_Launch_PhotoViewer, QStringLiteral("photo"), col_purple);
 
-    apply_action(ui->action_Launch_MiiEdit, QStringLiteral("mii"), col_indigo);
+    apply_action(ui->action_Launch_MiiEdit, QStringLiteral("mii_avatar"), col_indigo);
 
-    apply_action(ui->action_Launch_Controller, QStringLiteral("gamepad"), col_green);
+    apply_action(ui->action_Launch_Controller, QStringLiteral("joycon"), col_green);
 
     apply_action(ui->action_Launch_QLaunch, QStringLiteral("home"), col_teal);
 
-    apply_action(ui->action_Enable_Overlay_Applet, QStringLiteral("window"), col_cyan);
+    apply_action(ui->action_Enable_Overlay_Applet, QStringLiteral("overlay_layers"), col_cyan);
 
-    apply_menu(ui->menu_Create_Shortcuts, QStringLiteral("shortcut"), col_blue);
+    apply_menu(ui->menu_Create_Shortcuts, QStringLiteral("shortcut_arrow"), col_blue);
 
-    apply_action(ui->action_Desktop, QStringLiteral("display"), col_blue);
+    apply_action(ui->action_Desktop, QStringLiteral("desktop_screen"), col_blue);
 
-    apply_action(ui->action_Application_Menu, QStringLiteral("list"), col_indigo);
+    apply_action(ui->action_Application_Menu, QStringLiteral("app_launcher"), col_indigo);
 
-    apply_action(ui->action_Capture_Screenshot, QStringLiteral("screenshot"), col_pink);
+    apply_action(ui->action_Capture_Screenshot, QStringLiteral("camera"), col_pink);
 
     apply_action(ui->action_Translate_Screen, QStringLiteral("translate"), col_cyan);
 
     apply_action(ui->action_Mod_Manager, QStringLiteral("puzzle"), col_purple);
 
-    apply_action(ui->action_Cheats, QStringLiteral("lightning"), col_cyan);
+    apply_action(ui->action_Cheats, QStringLiteral("cheats_wand"), col_cyan);
 
-    apply_menu(ui->menuTAS, QStringLiteral("tas"), col_lime);
+    apply_menu(ui->menuTAS, QStringLiteral("tas_bolt"), col_lime);
 
     apply_action(ui->action_TAS_Start, QStringLiteral("play"), col_green);
 
     apply_action(ui->action_TAS_Record, QStringLiteral("record"), col_red);
 
-    apply_action(ui->action_TAS_Reset, QStringLiteral("restart"), col_amber);
+    apply_action(ui->action_TAS_Reset, QStringLiteral("rewind_reset"), col_amber);
 
-    apply_action(ui->action_Configure_Tas, QStringLiteral("gear"), col_grey);
+    apply_action(ui->action_Configure_Tas, QStringLiteral("tas_tune"), col_grey);
 
 
 
@@ -7437,7 +7809,6 @@ void MainWindow::SetupMenuIcons() {
             QStringLiteral("STORM GAMES WORLD (ゲームカタログ)...")
         ), this);
         storm_games_world_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+G")));
-        connect(storm_games_world_action, &QAction::triggered, this, &MainWindow::OnOpenStormGamesWorld);
     }
 
     if (!user_profiles_action) {
@@ -7449,8 +7820,11 @@ void MainWindow::SetupMenuIcons() {
             QStringLiteral("用户配置文件管理器..."),
             QStringLiteral("ユーザープロファイルマネージャー...")
         ), this);
-        user_profiles_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+U")));
+        user_profiles_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+U")));
         connect(user_profiles_action, &QAction::triggered, this, [this]() {
+            if (emulation_running) {
+                return;
+            }
             QDialog dlg(this);
             dlg.setWindowTitle(StormLang(QStringLiteral("Менеджер профилей пользователей"), QStringLiteral("User Profiles Manager")));
             auto* lay = new QVBoxLayout(&dlg);
@@ -7464,11 +7838,13 @@ void MainWindow::SetupMenuIcons() {
             lay->addWidget(pm);
             lay->addWidget(bbox);
             dlg.resize(640, 480);
-            dlg.exec();
+            if (dlg.exec() == QDialog::Accepted) {
+                OnSaveConfig();
+            }
         });
     }
 
-        if (!settings_profiles_action) {
+    if (!settings_profiles_action) {
         settings_profiles_action = new QAction(StormLang(
             QStringLiteral("Профили настроек..."),
             QStringLiteral("Settings Profiles..."),
@@ -7492,7 +7868,12 @@ void MainWindow::SetupMenuIcons() {
         ), this);
         auto_opt_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+F")));
         connect(auto_opt_action, &QAction::triggered, this, [this]() {
-            ShowGameFixDialog(m_current_addons_title_id, current_game_path, true /* force_show */);
+            const bool powered_on = QtCommon::system && QtCommon::system->IsPoweredOn();
+            const u64 target_tid = powered_on ? QtCommon::system->GetApplicationProcessProgramID()
+                                              : m_current_addons_title_id;
+            const QString target_path = powered_on ? current_game_path
+                                                   : QString::fromStdString(m_current_addons_game_path);
+            ShowGameFixDialog(target_tid, target_path, true /* force_show */);
         });
     }
 
@@ -7506,6 +7887,9 @@ void MainWindow::SetupMenuIcons() {
             QStringLiteral("シェーダーキャッシュをクリア...")
         ), this);
         connect(clear_shader_cache_action, &QAction::triggered, this, [this]() {
+            if (emulation_running) {
+                return;
+            }
             QMessageBox ask_box(this);
             ask_box.setWindowTitle(StormLang(
                 QStringLiteral("Очистка кэша шейдеров"),
@@ -7541,27 +7925,6 @@ void MainWindow::SetupMenuIcons() {
         });
     }
 
-    // Apply icons
-    apply_action(storm_games_world_action, QStringLiteral("download"), col_green);
-    apply_action(ui->action_Install_File_NAND, QStringLiteral("nand"), col_blue);
-    apply_action(user_profiles_action, QStringLiteral("users"), col_amber);
-    apply_action(settings_profiles_action, QStringLiteral("sliders"), col_cyan);
-    apply_action(auto_opt_action, QStringLiteral("shield"), col_cyan);
-    apply_action(clear_shader_cache_action, QStringLiteral("trash"), col_red);
-    apply_action(ui->action_Configure, QStringLiteral("config"), col_yellow);
-
-    // Re-populate menu_Tools in clean, logical groups with separators
-    ui->menu_Tools->clear();
-    // Group 1: Ecosystem & Installation
-    ui->menu_Tools->addAction(storm_games_world_action);
-    ui->menu_Tools->addAction(ui->action_Install_File_NAND);
-    ui->menu_Tools->addSeparator();
-
-    // Group 2: User Profiles & Optimization
-    ui->menu_Tools->addAction(user_profiles_action);
-    ui->menu_Tools->addAction(settings_profiles_action);
-    ui->menu_Tools->addAction(auto_opt_action);
-    ui->menu_Tools->addAction(clear_shader_cache_action);
     if (!storm_save_sync_action) {
         storm_save_sync_action = new QAction(StormLang(
             QStringLiteral("Синхронизация сохранений (STORM SAVE SYNC)..."),
@@ -7572,26 +7935,8 @@ void MainWindow::SetupMenuIcons() {
             QStringLiteral("セーブデータ同期 (STORM SAVE SYNC)...")
         ), this);
         storm_save_sync_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+S")));
-        connect(storm_save_sync_action, &QAction::triggered, this, &MainWindow::OnOpenStormSaveSync);
     }
-    apply_action(storm_save_sync_action, QStringLiteral("refresh"), col_cyan);
-    ui->menu_Tools->addAction(storm_save_sync_action);
-    ui->menu_Tools->addSeparator();
 
-    // Group 3: Firmware & Decryption
-    ui->menu_Tools->addMenu(ui->menuInstall_Keys);
-    ui->menu_Tools->addMenu(ui->menuInstall_Firmware);
-    ui->menu_Tools->addAction(ui->action_Verify_installed_contents);
-    ui->menu_Tools->addAction(ui->action_Data_Manager);
-    ui->menu_Tools->addSeparator();
-
-    // Group 4: Screen & Media
-    ui->menu_Tools->addAction(ui->action_Capture_Screenshot);
-    ui->menu_Tools->addAction(ui->action_Translate_Screen);
-    ui->menu_Tools->addAction(ui->action_Mod_Manager);
-    ui->menu_Tools->addAction(ui->action_Cheats);
-    ui->menu_Tools->addMenu(ui->menu_Applets);
-    ui->menu_Tools->addMenu(ui->menuTAS);
     if (!log_viewer_action) {
         log_viewer_action = new QAction(StormLang(
             QStringLiteral("Журнал работы (Логи)..."),
@@ -7601,50 +7946,90 @@ void MainWindow::SetupMenuIcons() {
             QStringLiteral("运行日志 (Logs)..."),
             QStringLiteral("動作ログ (Logs)...")
         ), this);
-        log_viewer_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+L")));
-        connect(log_viewer_action, &QAction::triggered, this, [this]() {
-            OnOpenLogViewer();
-        });
+        log_viewer_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+L")));
     }
-    apply_action(log_viewer_action, QStringLiteral("book"), col_blue);
-    ui->menu_Tools->addAction(log_viewer_action);
+
+    // Apply icons
+    apply_action(storm_games_world_action, QStringLiteral("store_download"), col_green);
+    apply_action(ui->action_Install_File_NAND, QStringLiteral("nand_install"), col_blue);
+    apply_action(user_profiles_action, QStringLiteral("user_profiles"), col_amber);
+    apply_action(settings_profiles_action, QStringLiteral("sliders"), col_cyan);
+    apply_action(auto_opt_action, QStringLiteral("shield_bolt"), col_cyan);
+    apply_action(clear_shader_cache_action, QStringLiteral("clear_shaders"), col_red);
+    apply_action(storm_save_sync_action, QStringLiteral("cloud_sync"), col_cyan);
+    apply_action(log_viewer_action, QStringLiteral("terminal_log"), col_blue);
+    apply_action(ui->action_Configure, QStringLiteral("gear"), col_yellow);
+
+    // Re-populate menu_Tools in clean, non-duplicated logical groups with all restored tools
+    ui->menu_Tools->clear();
+    // Group 1: Ecosystem & Sync
+    ui->menu_Tools->addAction(storm_games_world_action);
+    ui->menu_Tools->addAction(storm_save_sync_action);
     ui->menu_Tools->addSeparator();
 
-    // Group 5: Emulator Parameters
-    ui->menu_Tools->addAction(ui->action_Configure);
+    // Group 2: User Profiles & Cache
+    ui->menu_Tools->addAction(user_profiles_action);
+    ui->menu_Tools->addAction(clear_shader_cache_action);
+    ui->menu_Tools->addSeparator();
+
+    // Group 3: Firmware, Keys & NAND Storage
+    ui->menu_Tools->addMenu(ui->menuInstall_Keys);
+    ui->menu_Tools->addMenu(ui->menuInstall_Firmware);
+    ui->menu_Tools->addAction(ui->action_Verify_installed_contents);
+    ui->menu_Tools->addAction(ui->action_Nand_Manager);
+    ui->menu_Tools->addAction(ui->action_Data_Manager);
+    ui->menu_Tools->addSeparator();
+
+    // Group 4: Media, Mods, Cheats & Applets
+    ui->menu_Tools->addAction(ui->action_Capture_Screenshot);
+    ui->menu_Tools->addAction(ui->action_Translate_Screen);
+    ui->menu_Tools->addAction(ui->action_Mod_Manager);
+    ui->menu_Tools->addAction(ui->action_Cheats);
+    ui->menu_Tools->addMenu(ui->menu_cabinet_applet);
+    ui->menu_Tools->addMenu(ui->menu_Applets);
+    ui->menu_Tools->addMenu(ui->menuTAS);
+    ui->menu_Tools->addSeparator();
+
+    // Group 5: Shortcuts & Diagnostics
+    ui->menu_Tools->addMenu(ui->menu_Create_Shortcuts);
+    ui->menu_Tools->addAction(log_viewer_action);
 
     if (ui->menu_Emulation) {
-        ui->menu_Emulation->addAction(settings_profiles_action);
-        ui->menu_Emulation->addAction(auto_opt_action);
+        if (!ui->menu_Emulation->actions().contains(settings_profiles_action)) {
+            ui->menu_Emulation->addAction(settings_profiles_action);
+        }
+        if (!ui->menu_Emulation->actions().contains(auto_opt_action)) {
+            ui->menu_Emulation->addAction(auto_opt_action);
+        }
     }
 
     // Multiplayer Menu
 
-    apply_action(ui->action_View_Lobby, QStringLiteral("globe"), col_cyan);
+    apply_action(ui->action_View_Lobby, QStringLiteral("lobby_globe"), col_cyan);
 
-    apply_action(ui->action_Start_Room, QStringLiteral("plus"), col_green);
+    apply_action(ui->action_Start_Room, QStringLiteral("create_room"), col_green);
 
-    apply_action(ui->action_Connect_To_Room, QStringLiteral("link"), col_blue);
+    apply_action(ui->action_Connect_To_Room, QStringLiteral("connect_link"), col_blue);
 
-    apply_action(ui->action_Show_Room, QStringLiteral("users"), col_indigo);
+    apply_action(ui->action_Show_Room, QStringLiteral("room_members"), col_indigo);
 
-    apply_action(ui->action_Leave_Room, QStringLiteral("exit"), col_red);
+    apply_action(ui->action_Leave_Room, QStringLiteral("leave_room"), col_red);
 
 
 
     // Help Menu
 
-    apply_action(ui->action_Check_Updates, QStringLiteral("refresh"), col_green);
+    apply_action(ui->action_Check_Updates, QStringLiteral("check_updates"), col_green);
 
-    apply_action(ui->action_Open_Quickstart_Guide, QStringLiteral("guide"), col_blue);
+    apply_action(ui->action_Open_Quickstart_Guide, QStringLiteral("guide_book"), col_blue);
 
-    apply_action(ui->action_Open_FAQ, QStringLiteral("faq"), col_amber);
+    apply_action(ui->action_Open_FAQ, QStringLiteral("faq_question"), col_amber);
 
-    apply_action(ui->action_Open_Mods_Page, QStringLiteral("gear"), col_purple);
+    apply_action(ui->action_Open_Mods_Page, QStringLiteral("mods_web"), col_purple);
 
-    apply_action(ui->action_Eden_Dependencies, QStringLiteral("book"), col_teal);
+    apply_action(ui->action_Eden_Dependencies, QStringLiteral("dependencies_cubes"), col_teal);
 
-    apply_action(ui->action_About, QStringLiteral("about"), col_cyan);
+    apply_action(ui->action_About, QStringLiteral("about_info"), col_cyan);
 
 }
 
@@ -7796,23 +8181,13 @@ void MainWindow::InitializeHotkeys() {
 
 
 
-    auto* tesla_f6 = new QShortcut(QKeySequence(Qt::Key_F6), this);
-
-    connect(tesla_f6, &QShortcut::activated, this, tesla_toggle);
-
-
-
     auto* tesla_ctrl_f1 = new QShortcut(QKeySequence(QStringLiteral("Ctrl+F1")), this);
-
     connect(tesla_ctrl_f1, &QShortcut::activated, this, tesla_toggle);
 
-    auto* shortcut_sidebar_f10 = new QShortcut(QKeySequence(Qt::Key_F10), this);
-    shortcut_sidebar_f10->setContext(Qt::ApplicationShortcut);
-    connect(shortcut_sidebar_f10, &QShortcut::activated, this, &MainWindow::OnToggleInGameSidebar);
-
-    auto* shortcut_sidebar_f9 = new QShortcut(QKeySequence(Qt::Key_F9), this);
-    shortcut_sidebar_f9->setContext(Qt::ApplicationShortcut);
-    connect(shortcut_sidebar_f9, &QShortcut::activated, this, &MainWindow::OnToggleInGameSidebar);
+    // Quick Settings Sidebar moved to F3 so F9 belongs exclusively to Auto-Translator and F10 to Docked Mode
+    auto* shortcut_sidebar_f3 = new QShortcut(QKeySequence(Qt::Key_F3), this);
+    shortcut_sidebar_f3->setContext(Qt::ApplicationShortcut);
+    connect(shortcut_sidebar_f3, &QShortcut::activated, this, &MainWindow::OnToggleInGameSidebar);
 
 
 
@@ -8215,7 +8590,7 @@ void MainWindow::ConnectWidgetEvents() {
 
 
 
-    connect(game_list, &GameList::PopulatingCompleted, [this] {
+    connect(game_list, &GameList::PopulatingCompleted, this, [this] {
 
         multiplayer_state->UpdateGameList(game_list->GetModel());
 
@@ -8354,6 +8729,21 @@ void MainWindow::ConnectMenuEvents() {
     connect_menu(ui->action_Fullscreen, &MainWindow::ToggleFullscreen);
 
     connect_menu(ui->action_Single_Window_Mode, &MainWindow::ToggleWindowMode);
+    connect(ui->action_Enable_Overlay_Applet, &QAction::triggered, this, [this](bool checked) {
+        Settings::values.enable_overlay.SetValue(checked);
+        if (config) {
+            config->SaveAllValues();
+        }
+        statusBar()->showMessage(
+            checked
+                ? StormLang(QStringLiteral("Отображение апплета оверлея включено"), QStringLiteral("Overlay applet display enabled"),
+                            QStringLiteral("Overlay-Applet-Anzeige aktiviert"), QStringLiteral("Affichage de l'applet de superposition activé"),
+                            QStringLiteral("已启用叠加层小程序显示"), QStringLiteral("オーバーレイアプレット表示を有効にしました"))
+                : StormLang(QStringLiteral("Отображение апплета оверлея отключено"), QStringLiteral("Overlay applet display disabled"),
+                            QStringLiteral("Overlay-Applet-Anzeige deaktiviert"), QStringLiteral("Affichage de l'applet de superposition désactivé"),
+                            QStringLiteral("已禁用叠加层小程序显示"), QStringLiteral("オーバーレイアプレット表示を無効にしました")),
+            3500);
+    });
 
     connect_menu(ui->action_Show_Filter_Bar, &MainWindow::OnToggleFilterBar);
 
@@ -8618,91 +9008,68 @@ void MainWindow::ConnectMenuEvents() {
 
 
 void MainWindow::UpdateMenuState() {
-
     const bool is_paused = QtCommon::emu_thread == nullptr || !QtCommon::emu_thread->IsRunning();
-
     const bool is_firmware_available = CheckFirmwarePresence();
 
-
-
     const std::array running_actions{
-
         ui->action_Stop,
-
         ui->action_Restart,
-
         ui->action_Configure_Current_Game,
-
         ui->action_Load_Amiibo,
-
         ui->action_Pause,
-
     };
 
-
-
     const std::array applet_actions{
-
         ui->action_Launch_PhotoViewer,       ui->action_Launch_Cabinet_Nickname_Owner,
-
         ui->action_Launch_Cabinet_Eraser,    ui->action_Launch_Cabinet_Restorer,
-
         ui->action_Launch_Cabinet_Formatter, ui->action_Launch_MiiEdit,
-
         ui->action_Launch_QLaunch,           ui->action_Launch_Controller};
 
-
-
     for (QAction* action : running_actions) {
-
         action->setEnabled(emulation_running);
-
     }
 
-
-
+    // Lock destructive / NAND / shader / profile / firmware / sync actions while emulation is running
+    if (ui->menuInstall_Firmware) ui->menuInstall_Firmware->setEnabled(!emulation_running);
     ui->action_Firmware_Online->setEnabled(!emulation_running);
-
     ui->action_Firmware_From_Folder->setEnabled(!emulation_running);
-
     ui->action_Firmware_From_ZIP->setEnabled(!emulation_running);
-
     ui->menuInstall_Keys->setEnabled(!emulation_running);
-
     ui->action_Install_Keys_Online->setEnabled(!emulation_running);
-
     ui->action_Install_Keys_From_ZIP->setEnabled(!emulation_running);
-
     ui->action_Install_Keys->setEnabled(!emulation_running);
+    if (ui->action_Install_File_NAND) ui->action_Install_File_NAND->setEnabled(!emulation_running);
+    if (ui->action_Verify_installed_contents) ui->action_Verify_installed_contents->setEnabled(!emulation_running);
+    if (ui->action_Data_Manager) ui->action_Data_Manager->setEnabled(!emulation_running);
+    if (ui->action_Nand_Manager) ui->action_Nand_Manager->setEnabled(!emulation_running);
+    if (clear_shader_cache_action) clear_shader_cache_action->setEnabled(!emulation_running);
+    if (user_profiles_action) user_profiles_action->setEnabled(!emulation_running);
+    if (storm_save_sync_action) storm_save_sync_action->setEnabled(!emulation_running);
 
-
+    if (ui->menu_Applets) ui->menu_Applets->setEnabled(is_firmware_available && !emulation_running);
+    if (ui->menu_cabinet_applet) ui->menu_cabinet_applet->setEnabled(is_firmware_available && !emulation_running);
 
     for (QAction* action : applet_actions) {
-
         action->setEnabled(is_firmware_available && !emulation_running);
-
     }
 
-
+    // Quick Save / Load slots require an active game; Save State Manager remains available offline
+    if (quick_save_action) quick_save_action->setEnabled(emulation_running);
+    if (quick_load_action) quick_load_action->setEnabled(emulation_running);
+    if (save_state_slots_menu) save_state_slots_menu->setEnabled(emulation_running);
+    if (load_state_slots_menu) load_state_slots_menu->setEnabled(emulation_running);
 
     ui->action_Capture_Screenshot->setEnabled(emulation_running && !is_paused);
 
-
-
     if (emulation_running && is_paused) {
-
         ui->action_Pause->setText(tr("&Continue"));
-
+        ui->action_Pause->setIcon(CreateVectorMenuIcon(QStringLiteral("play"), QColor(QStringLiteral("#34D399"))));
     } else {
-
         ui->action_Pause->setText(tr("&Pause"));
-
+        ui->action_Pause->setIcon(CreateVectorMenuIcon(QStringLiteral("pause"), QColor(QStringLiteral("#FBBF24"))));
     }
 
-
-
     multiplayer_state->UpdateNotificationStatus();
-
 }
 
 
@@ -9654,7 +10021,9 @@ void MainWindow::OnOpenStormGamesWorld() {
 
 
 void MainWindow::OnOpenStormSaveSync(u64 target_program_id) {
-
+    if (emulation_running) {
+        return;
+    }
     StormSaveSyncDialog dialog(this, target_program_id);
 
     dialog.exec();
@@ -9820,11 +10189,17 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
     EnsureVkDeviceRecordsPopulated(vk_device_records, this->window()->windowHandle());
 
     if (emulation_running || (QtCommon::emu_thread && QtCommon::emu_thread->isRunning()) || QtCommon::system->IsPoweredOn()) {
-
-        LOG_WARNING(Frontend, "Emulation is already running or powering on. Ignoring BootGame request.");
-
-        return;
-
+        const auto reply = QMessageBox::question(
+            this,
+            StormLang(QStringLiteral("Запуск другой игры"), QStringLiteral("Launch Another Game")),
+            StormLang(
+                QStringLiteral("Эмуляция уже запущена. Остановить текущую игру и запустить выбранную?"),
+                QStringLiteral("A game is already running. Stop the current game and launch the selected one?")),
+            QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+        if (reply != QMessageBox::Yes) {
+            return;
+        }
+        ShutdownGame();
     }
 
 
@@ -9957,76 +10332,40 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
 
 
 
+    if (type == StartGameType::Normal) {
+        if (params.launch_type == Service::AM::LaunchType::ApplicationInitiated) {
+            Core::GameFixDatabase::SetFixesEnabled(true);
+        } else {
+            const auto fix_result = ShowGameFixDialog(title_id, filename, false /* force_show */);
+            if (fix_result == GameFixDialogResult::Cancel) {
+                LOG_INFO(Frontend, "Запуск игры отменен пользователем в диалоге авто-исправлений");
+                RestoreSessionSettings();
+                m_session_backup.is_active = false;
+                game_list->setEnabled(true);
+                return;
+            }
+        }
+    }
+
     if (title_id != 0 && type == StartGameType::Normal) {
-
         const auto file_path_hash = Common::CityHash64(utf8_str.constData(), static_cast<std::size_t>(utf8_str.size()));
-
         const auto specific_config = fmt::format("{:016X}_{:016X}", title_id, file_path_hash);
-
         const auto legacy_config = fmt::format("{:016X}", title_id);
-
-
 
         std::filesystem::path custom_path = Common::FS::GetEdenPath(Common::FS::EdenPath::ConfigDir) / "custom";
 
-        std::string target_ini = (custom_path / (specific_config + ".ini")).string();
-
-
-
-        // Load per game settings FIRST if custom configuration file exists so user per-game
-
-        // overrides have UsingGlobal() == false before Auto-Fix runs!
-
+        // Load per-game settings AFTER GameFix approval so cancelled boots never touch .ini files,
+        // and user overrides still have UsingGlobal() == false before Auto-Fix applies.
         std::string config_to_load = specific_config;
-
         bool has_custom_ini = HasUserPerGameSettings(custom_path / (specific_config + ".ini"));
-
         if (!has_custom_ini && HasUserPerGameSettings(custom_path / (legacy_config + ".ini"))) {
-
             config_to_load = legacy_config;
-
             has_custom_ini = true;
-
         }
-
-
 
         if (has_custom_ini) {
-
             QtConfig per_game_config(config_to_load, Config::ConfigType::PerGameConfig);
-
         }
-
-    }
-
-
-
-    if (type == StartGameType::Normal) {
-
-        if (params.launch_type == Service::AM::LaunchType::ApplicationInitiated) {
-
-            Core::GameFixDatabase::SetFixesEnabled(true);
-
-        } else {
-
-            const auto fix_result = ShowGameFixDialog(title_id, filename, false /* force_show */);
-
-            if (fix_result == GameFixDialogResult::Cancel) {
-
-                LOG_INFO(Frontend, "Запуск игры отменен пользователем в диалоге авто-исправлений");
-
-                RestoreSessionSettings();
-
-                m_session_backup.is_active = false;
-
-                game_list->setEnabled(true);
-
-                return;
-
-            }
-
-        }
-
     }
 
 
@@ -10572,6 +10911,7 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
     LOG_INFO(Frontend, "Booting game: {:016X} | {} | {} | {} | {}", title_id, full_file_name, display_version_str, internal_version_str, gpu_vendor);
 
     UpdateWindowTitle(full_file_name, display_version_str, internal_version_str, gpu_vendor);
+    UpdateGPUAccuracyButton();
 
     m_current_addons_game_path = filename.toStdString();
 
@@ -10638,11 +10978,22 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
 
 
     QtCommon::system->RegisterExitCallback([this] {
-
-        QtCommon::emu_thread->ForceStop();
-
-        render_window->Exit();
-
+        if (QtCommon::emu_thread) {
+            QtCommon::emu_thread->ForceStop();
+        }
+        // Return cleanly to the game library when a title exits or when Stop requests exit;
+        // never call render_window->Exit() (which triggers MainWindow::OnExit and closes the app).
+        QMetaObject::invokeMethod(
+            this,
+            [this]() {
+                if (emulation_running && !m_is_stopping_emulation &&
+                    !(QtCommon::system && QtCommon::system->IsShuttingDown())) {
+                    m_is_stopping_emulation = true;
+                    play_time_manager->Stop();
+                    OnEmulationStopped();
+                }
+            },
+            Qt::QueuedConnection);
     });
 
 
@@ -10672,8 +11023,8 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
     status_bar_update_timer.start(250);
 
     renderer_status_button->setDisabled(true);
-
     refresh_button->setDisabled(true);
+    refresh_button->setVisible(false);
 
     SetFPSSuffix();
 
@@ -10862,12 +11213,8 @@ bool MainWindow::OnShutdownBegin() {
 
 
 
-    if (ui->action_Single_Window_Mode->isChecked()) {
-
-        loading_screen->setGeometry(ui->centralwidget->rect());
-
-        loading_screen->ShowShutdownState();
-
+    if (loading_screen) {
+        loading_screen->hide();
     }
 
 
@@ -10879,23 +11226,11 @@ bool MainWindow::OnShutdownBegin() {
 
 
 void MainWindow::OnShutdownBeginDialog() {
-
-    if (ui->action_Single_Window_Mode->isChecked()) {
-
-        loading_screen->ShowShutdownState();
-
-    } else {
-
-        shutdown_dialog =
-
-            new OverlayDialog(this, *QtCommon::system, QString{}, tr("Closing software..."), QString{},
-
-                              QString{}, Qt::AlignHCenter | Qt::AlignVCenter);
-
-        shutdown_dialog->open();
-
+    // Do not show the blocking shutdown/loading card when stopping emulation;
+    // return cleanly to the game library once shutdown completes.
+    if (loading_screen) {
+        loading_screen->hide();
     }
-
 }
 
 
@@ -11090,8 +11425,9 @@ void MainWindow::OnEmulationStopped() {
         if (emu_ram_label) emu_ram_label->setVisible(false);
 
     renderer_status_button->setEnabled(!UISettings::values.has_broken_vulkan);
-
     refresh_button->setEnabled(true);
+    refresh_button->setVisible(true);
+    LoadFooterSettings();
 
 
 
@@ -12378,7 +12714,9 @@ void MainWindow::IncrementInstallProgress() {
 
 
 void MainWindow::OnMenuInstallToNAND() {
-
+    if (emulation_running) {
+        return;
+    }
     const QString file_filter =
 
         tr("Installable Switch File (*.nca *.nsp *.nsz *.xci *.xcz);;Nintendo Content Archive "
@@ -13243,47 +13581,35 @@ void MainWindow::OpenURL(const QUrl& url) {
 
 
 void MainWindow::OnOpenModsPage() {
-
-    OpenURL(QUrl(QStringLiteral("https://github.com/ReiKatari/STORM_SWITCH")));
-
+    OpenURL(QUrl(QStringLiteral("https://stormgamesworld.ru")));
 }
-
-
 
 void MainWindow::OnOpenQuickstartGuide() {
-
     OpenURL(QUrl(QStringLiteral("https://github.com/ReiKatari/STORM_SWITCH#readme")));
-
 }
 
-
-
 void MainWindow::OnOpenFAQ() {
-
-    OpenURL(QUrl(QStringLiteral("https://github.com/ReiKatari/STORM_SWITCH#readme")));
-
+    OpenURL(QUrl(QStringLiteral("https://github.com/ReiKatari/STORM_SWITCH#faq")));
 }
 
 
 
 void MainWindow::ToggleFullscreen() {
-
+    const bool want_fs = ui->action_Fullscreen->isChecked();
+    UISettings::values.fullscreen.SetValue(want_fs);
     if (!emulation_running) {
-
+        if (want_fs) {
+            showFullScreen();
+        } else {
+            showNormal();
+        }
         return;
-
     }
-
-    if (ui->action_Fullscreen->isChecked()) {
-
+    if (want_fs) {
         ShowFullscreen();
-
     } else {
-
         HideFullscreen();
-
     }
-
 }
 
 
@@ -13439,8 +13765,21 @@ void MainWindow::HideFullscreen() {
 
 
 void MainWindow::ToggleWindowMode() {
-
-    if (ui->action_Single_Window_Mode->isChecked()) {
+    const bool single_mode = ui->action_Single_Window_Mode->isChecked();
+    UISettings::values.single_window_mode.SetValue(single_mode);
+    if (config) {
+        config->SaveAllValues();
+    }
+    statusBar()->showMessage(
+        single_mode
+            ? StormLang(QStringLiteral("Режим одного окна включён"), QStringLiteral("Single window mode enabled"),
+                        QStringLiteral("Einzelfenster-Modus aktiviert"), QStringLiteral("Mode fenêtre unique activé"),
+                        QStringLiteral("已启用单窗口模式"), QStringLiteral("シングルウィンドウモードを有効にしました"))
+            : StormLang(QStringLiteral("Режим отдельного окна игры включён"), QStringLiteral("Separate game window mode enabled"),
+                        QStringLiteral("Separates Spielfenster aktiviert"), QStringLiteral("Mode fenêtre de jeu séparée activé"),
+                        QStringLiteral("已启用独立游戏窗口模式"), QStringLiteral("別ウィンドウモードを有効にしました")),
+        3500);
+    if (single_mode) {
 
         // Render in the main window...
 
@@ -14191,7 +14530,9 @@ void MainWindow::OnTasRecord() {
 
 
 void MainWindow::OnTasReset() {
-
+    if (!emulation_running || !input_subsystem) {
+        return;
+    }
     input_subsystem->GetTas()->Reset();
 
 }
@@ -14904,9 +15245,12 @@ void MainWindow::OnToggleAdaptingFilter() {
 
             QStringLiteral("활성 스케일링 필터: %1"),
 
-            QStringLiteral("مرشح التحجيم النشط: %1")).arg(filter_status_button->text());
-
-        in_game_notification->ShowNotification(f_title, f_sub, QColor(56, 189, 248), QStringLiteral("🔍"), 2400);
+            QStringLiteral("مرشح التحجيم النشط: %1")).arg([&]() {
+            QString raw = filter_status_button->text();
+            const int colon = raw.indexOf(QLatin1Char(':'));
+            return (colon >= 0) ? raw.mid(colon + 1).trimmed() : raw.trimmed();
+        }());
+        in_game_notification->ShowNotification(f_title, f_sub, QColor(56, 189, 248), QString{}, 2400);
 
     }
 
@@ -14983,7 +15327,9 @@ void MainWindow::OnToggleGraphicsAPI() {
 
 
 void MainWindow::OnConfigurePerGame() {
-
+    if (!emulation_running || !QtCommon::system || !QtCommon::system->IsPoweredOn()) {
+        return;
+    }
     const u64 title_id = QtCommon::system->GetApplicationProcessProgramID();
 
     OpenPerGameConfiguration(title_id, current_game_path.toStdString());
@@ -15043,7 +15389,9 @@ void MainWindow::OnModManagerDialog() {
 
 
 void MainWindow::OnNandManagerDialog() {
-
+    if (emulation_running) {
+        return;
+    }
     NandManagerDialog dialog(this, *QtCommon::system);
 
     dialog.exec();
@@ -15745,7 +16093,9 @@ void MainWindow::OnOpenLogFolder() {
 
 
 void MainWindow::OnVerifyInstalledContents() {
-
+    if (emulation_running) {
+        return;
+    }
     QtCommon::Content::VerifyInstalledContents();
 
 }
@@ -15753,7 +16103,9 @@ void MainWindow::OnVerifyInstalledContents() {
 
 
 void MainWindow::OnInstallFirmware() {
-
+    if (emulation_running || (QtCommon::emu_thread != nullptr && QtCommon::emu_thread->IsRunning())) {
+        return;
+    }
     QtCommon::Content::InstallFirmware();
 
     OnCheckFirmwareDecryption();
@@ -15763,7 +16115,9 @@ void MainWindow::OnInstallFirmware() {
 
 
 void MainWindow::OnInstallFirmwareFromZIP() {
-
+    if (emulation_running || (QtCommon::emu_thread != nullptr && QtCommon::emu_thread->IsRunning())) {
+        return;
+    }
     QtCommon::Content::InstallFirmwareZip();
 
     OnCheckFirmwareDecryption();
@@ -16074,7 +16428,7 @@ void MainWindow::OnCheckUpdates(bool manual_check) {
 
 
 
-        auto* title = new QLabel(tr("<h2 style='margin:0; color:%2;'>⚡ Доступна новая версия: %1</h2>")
+        auto* title = new QLabel(tr("<h2 style='margin:0; color:%2;'>Доступна новая версия: %1</h2>")
 
                                      .arg(best.release_name.isEmpty() ? best.tag_name : best.release_name, StormTheme::GetThemePalette().accent), &dlg);
 
@@ -16822,7 +17176,9 @@ void MainWindow::OnEdenDependencies() {
 
 
 void MainWindow::OnDataDialog() {
-
+    if (emulation_running) {
+        return;
+    }
     DataDialog dataDialog(this);
 
     dataDialog.exec();
@@ -16960,9 +17316,9 @@ void MainWindow::OnSaveStateSlot(int slot) {
 
                       QStringLiteral("クイックセーブ SESS v2")),
 
-            StormLang(QStringLiteral("Запустите игру, чтобы создать мгновенное быстрое сохранение (Слот %1).\nВо время игры вы также можете нажать клавишу F5 (или настроить удобную клавишу/кнопку геймпада в меню «Эмуляция -> Параметры -> Общие -> Горячие клавиши»).").arg(slot),
+            StormLang(QStringLiteral("Запустите игру, чтобы создать мгновенное быстрое сохранение (Слот %1).\nВо время игры вы также можете нажать клавишу F5 (или настроить удобную клавишу/кнопку геймпада в меню «Эмуляция -> Параметры -> Управление -> Горячие клавиши»).").arg(slot),
 
-                      QStringLiteral("Launch a game first to create an instant Quick Save (Slot %1).\nDuring gameplay you can also press F5 (or customize the hotkey in Emulation -> Configure -> General -> Hotkeys).").arg(slot),
+                      QStringLiteral("Launch a game first to create an instant Quick Save (Slot %1).\nDuring gameplay you can also press F5 (or customize the hotkey in Emulation -> Configure -> Controls -> Hotkeys).").arg(slot),
 
                       QStringLiteral("Starten Sie zuerst ein Spiel, um eine Schnell-Speicherung (Slot %1) zu erstellen.").arg(slot),
 
@@ -16987,7 +17343,7 @@ void MainWindow::OnSaveStateSlot(int slot) {
     const auto save_mode = Settings::values.save_states_mode.GetValue();
     if (save_mode == Settings::SaveStatesMode::Off) {
         const QString off_msg = StormLang11(
-            QStringLiteral("Быстрые сохранения отключены в настройках (Настройки → Система)."),
+            QStringLiteral("Быстрые сохранения отключены в настройках (Параметры -> Система)."),
             QStringLiteral("Save states are disabled in settings (Configure → System)."),
             QStringLiteral("Schnellspeichern ist in den Einstellungen deaktiviert (Einstellungen → System)."),
             QStringLiteral("Les sauvegardes rapides sont désactivées dans les paramètres (Paramètres → Système)."),
@@ -17007,12 +17363,12 @@ void MainWindow::OnSaveStateSlot(int slot) {
 
     if (save_mode == Settings::SaveStatesMode::VerifiedOnly && !Core::IsTitleSaveStateVerified(title_id)) {
         const QString unsupp_msg = StormLang11(
-            QStringLiteral("Быстрые сохранения для этой игры не поддерживаются. Используйте сохранения внутри игры. Включить экспериментальный режим можно в Настройки → Система."),
+            QStringLiteral("Быстрые сохранения для этой игры не поддерживаются. Используйте сохранения внутри игры. Включить экспериментальный режим можно в Параметры -> Система."),
             QStringLiteral("Save states are not supported for this game. Use in-game saves. Experimental mode can be enabled in Configure → System."),
             QStringLiteral("Schnellspeichern wird für dieses Spiel nicht unterstützt. Nutzen Sie Speicherstände im Spiel. Der experimentelle Modus kann unter Einstellungen → System aktiviert werden."),
             QStringLiteral("Les sauvegardes rapides ne sont pas prises en charge pour ce jeu. Utilisez les sauvegardes en jeu. Le mode expérimental peut être activé dans Paramètres → Système."),
             QStringLiteral("El guardado rápido no es compatible con este juego. Usa el guardado del juego. El modo experimental se puede activar en Configuración → Sistema."),
-            QStringLiteral("I salvataggi rapidi non sono supportati per questo gioco. Usa i salvataggi in-game. La modalità sperimentale может essere attivata in Impostazioni → Sistema."),
+            QStringLiteral("I salvataggi rapidi non sono supportati per questo gioco. Usa i salvataggi in-game. La modalità sperimentale può essere attivata in Impostazioni → Sistema."),
             QStringLiteral("Os salvamentos rápidos não são suportados para este jogo. Use os salvamentos internos do jogo. O modo experimental pode ser ativado em Configurações → Sistema."),
             QStringLiteral("此游戏不支持快速保存。请使用游戏内正常存档。可在“设置 → 系统”中启用实验性模式。"),
             QStringLiteral("このゲームはクイックセーブに対応していません。ゲーム内のセーブ機能をご利用ください。「設定 → システム」で実験的モードを有効化できます。"),
@@ -17201,9 +17557,9 @@ void MainWindow::OnLoadStateSlot(int slot) {
 
                       QStringLiteral("クイックロード SESS v2")),
 
-            StormLang(QStringLiteral("Запустите игру, чтобы загрузить быстрое сохранение из Слота %1.\nВо время игры вы можете нажать клавишу F7 (или настроить удобную клавишу/кнопку геймпада в меню «Эмуляция -> Параметры -> Общие -> Горячие клавиши»).").arg(slot),
+            StormLang(QStringLiteral("Запустите игру, чтобы загрузить быстрое сохранение из Слота %1.\nВо время игры вы можете нажать клавишу F7 (или настроить удобную клавишу/кнопку геймпада в меню «Эмуляция -> Параметры -> Управление -> Горячие клавиши»).").arg(slot),
 
-                      QStringLiteral("Launch a game first to load a Quick Save from Slot %1.\nDuring gameplay you can press F7 (or customize the hotkey in Emulation -> Configure -> General -> Hotkeys).").arg(slot),
+                      QStringLiteral("Launch a game first to load a Quick Save from Slot %1.\nDuring gameplay you can press F7 (or customize the hotkey in Emulation -> Configure -> Controls -> Hotkeys).").arg(slot),
 
                       QStringLiteral("Starten Sie zuerst ein Spiel, um aus Slot %1 zu laden.").arg(slot),
 
@@ -17228,7 +17584,7 @@ void MainWindow::OnLoadStateSlot(int slot) {
     const auto save_mode = Settings::values.save_states_mode.GetValue();
     if (save_mode == Settings::SaveStatesMode::Off) {
         const QString off_msg = StormLang11(
-            QStringLiteral("Быстрые сохранения отключены в настройках (Настройки → Система)."),
+            QStringLiteral("Быстрые сохранения отключены в настройках (Параметры -> Система)."),
             QStringLiteral("Save states are disabled in settings (Configure → System)."),
             QStringLiteral("Schnellspeichern ist in den Einstellungen deaktiviert (Einstellungen → System)."),
             QStringLiteral("Les sauvegardes rapides sont désactivées dans les paramètres (Paramètres → Système)."),
@@ -17248,12 +17604,12 @@ void MainWindow::OnLoadStateSlot(int slot) {
 
     if (save_mode == Settings::SaveStatesMode::VerifiedOnly && !Core::IsTitleSaveStateVerified(title_id)) {
         const QString unsupp_msg = StormLang11(
-            QStringLiteral("Быстрые сохранения для этой игры не поддерживаются. Используйте сохранения внутри игры. Включить экспериментальный режим можно в Настройки → Система."),
+            QStringLiteral("Быстрые сохранения для этой игры не поддерживаются. Используйте сохранения внутри игры. Включить экспериментальный режим можно в Параметры -> Система."),
             QStringLiteral("Save states are not supported for this game. Use in-game saves. Experimental mode can be enabled in Configure → System."),
             QStringLiteral("Schnellspeichern wird für dieses Spiel nicht unterstützt. Nutzen Sie Speicherstände im Spiel. Der experimentelle Modus kann unter Einstellungen → System aktiviert werden."),
             QStringLiteral("Les sauvegardes rapides ne sont pas prises en charge pour ce jeu. Utilisez les sauvegardes en jeu. Le mode expérimental peut être activé dans Paramètres → Système."),
             QStringLiteral("El guardado rápido no es compatible con este juego. Usa el guardado del juego. El modo experimental se puede activar en Configuración → Sistema."),
-            QStringLiteral("I salvataggi rapidi non sono supportati per questo gioco. Usa i salvataggi in-game. La modalità sperimentale может essere attivata in Impostazioni → Sistema."),
+            QStringLiteral("I salvataggi rapidi non sono supportati per questo gioco. Usa i salvataggi in-game. La modalità sperimentale può essere attivata in Impostazioni → Sistema."),
             QStringLiteral("Os salvamentos rápidos não são suportados para este jogo. Use os salvamentos internos do jogo. O modo experimental pode ser ativado em Configurações → Sistema."),
             QStringLiteral("此游戏不支持快速保存。请使用游戏内正常存档。可在“设置 → 系统”中启用实验性模式。"),
             QStringLiteral("このゲームはクイックセーブに対応していません。ゲーム内のセーブ機能をご利用ください。「設定 → システム」で実験的モードを有効化できます。"),
@@ -17497,7 +17853,7 @@ void MainWindow::OnLoadStateSlot(int slot) {
 
     if (in_game_notification) {
 
-        in_game_notification->ShowNotification(notif_title, notif_sub, QColor(52, 211, 153), QStringLiteral("⚡"), 2800);
+        in_game_notification->ShowNotification(notif_title, notif_sub, QColor(52, 211, 153), QString{}, 2800);
 
     }
 
@@ -17941,7 +18297,7 @@ void MainWindow::OnSaveStateManager() {
 
             p.drawText(QRect(0, 78, 640, 60), Qt::AlignCenter,
 
-                       exists ? QStringLiteral("⚡") : QStringLiteral("📭"));
+                       exists ? QString{} : QString{});
 
         }
 
@@ -17993,7 +18349,7 @@ void MainWindow::OnSaveStateManager() {
 
             p.drawText(QRect(30, 214, 580, 24), Qt::AlignCenter,
 
-                       QStringLiteral("🕒 %1").arg(dt_str));
+                       QStringLiteral("%1").arg(dt_str));
 
             if (!note_str.isEmpty()) {
 
@@ -18055,17 +18411,17 @@ void MainWindow::OnSaveStateManager() {
 
     dlg.setWindowTitle(StormLang(
 
-        QStringLiteral("🗂️ Менеджер быстрых сохранений (STORM SESS v2)"),
+        QStringLiteral("Менеджер быстрых сохранений (STORM SESS v2)"),
 
-        QStringLiteral("🗂️ Save State Manager (STORM SESS v2)"),
+        QStringLiteral("Save State Manager (STORM SESS v2)"),
 
-        QStringLiteral("🗂️ Schnellspeicher-Manager (STORM SESS v2)"),
+        QStringLiteral("Schnellspeicher-Manager (STORM SESS v2)"),
 
-        QStringLiteral("🗂️ Gestionnaire de sauvegardes rapides (STORM SESS v2)"),
+        QStringLiteral("Gestionnaire de sauvegardes rapides (STORM SESS v2)"),
 
-        QStringLiteral("🗂️ 快速保存管理器 (STORM SESS v2)"),
+        QStringLiteral("快速保存管理器 (STORM SESS v2)"),
 
-        QStringLiteral("🗂️ クイックセーブマネージャー (STORM SESS v2)")));
+        QStringLiteral("クイックセーブマネージャー (STORM SESS v2)")));
 
     dlg.setWindowFlags(dlg.windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
@@ -19267,7 +19623,7 @@ void MainWindow::OnSaveStateManager() {
 
             if (exists) {
 
-                item_text += tr("✅ %1 МБ  -  🕒 %2  -  %3 стр. 4КБ")
+                item_text += tr("%1 МБ  -  %2  -  %3 стр. 4КБ")
 
                                  .arg(QString::number(mb, 'f', 2), dt_str)
 
@@ -19275,7 +19631,7 @@ void MainWindow::OnSaveStateManager() {
 
                 if (!note_str.isEmpty()) {
 
-                    item_text += QStringLiteral("\n📝 ") + format_note_two_rows(note_str);
+                    item_text += QStringLiteral("\n") + format_note_two_rows(note_str);
 
                 }
 
@@ -19283,17 +19639,17 @@ void MainWindow::OnSaveStateManager() {
 
                 item_text += StormLang(
 
-                    QStringLiteral("⚪ [Пусто - доступно для сохранения или копирования]"),
+                    QStringLiteral("[Пусто - доступно для сохранения или копирования]"),
 
-                    QStringLiteral("⚪ [Empty - available for saving or copying]"),
+                    QStringLiteral("[Empty - available for saving or copying]"),
 
-                    QStringLiteral("⚪ [Leer - verfügbar zum Speichern oder Kopieren]"),
+                    QStringLiteral("[Leer - verfügbar zum Speichern oder Kopieren]"),
 
-                    QStringLiteral("⚪ [Vide - disponible pour sauvegarder ou copier]"),
+                    QStringLiteral("[Vide - disponible pour sauvegarder ou copier]"),
 
-                    QStringLiteral("⚪ [空 - 可用于保存或复制]"),
+                    QStringLiteral("[空 - 可用于保存或复制]"),
 
-                    QStringLiteral("⚪ [空 - 保存またはコピー可能]"));
+                    QStringLiteral("[空 - 保存またはコピー可能]"));
 
             }
 
@@ -19479,69 +19835,69 @@ void MainWindow::OnSaveStateManager() {
 
             lbl_meta_size->setText(StormLang(
 
-                QStringLiteral("📦 Размер: %1 МБ").arg(QString::number(mb, 'f', 2)),
+                QStringLiteral("Размер: %1 МБ").arg(QString::number(mb, 'f', 2)),
 
-                QStringLiteral("📦 Size: %1 MB").arg(QString::number(mb, 'f', 2)),
+                QStringLiteral("Size: %1 MB").arg(QString::number(mb, 'f', 2)),
 
-                QStringLiteral("📦 Größe: %1 MB").arg(QString::number(mb, 'f', 2)),
+                QStringLiteral("Größe: %1 MB").arg(QString::number(mb, 'f', 2)),
 
-                QStringLiteral("📦 Taille : %1 Mo").arg(QString::number(mb, 'f', 2)),
+                QStringLiteral("Taille : %1 Mo").arg(QString::number(mb, 'f', 2)),
 
-                QStringLiteral("📦 大小：%1 MB").arg(QString::number(mb, 'f', 2)),
+                QStringLiteral("大小：%1 MB").arg(QString::number(mb, 'f', 2)),
 
-                QStringLiteral("📦 サイズ: %1 MB").arg(QString::number(mb, 'f', 2))));
+                QStringLiteral("サイズ: %1 MB").arg(QString::number(mb, 'f', 2))));
 
             lbl_meta_date->setText(StormLang(
 
-                QStringLiteral("🕒 Создан: %1").arg(dt_str),
+                QStringLiteral("Создан: %1").arg(dt_str),
 
-                QStringLiteral("🕒 Created: %1").arg(dt_str),
+                QStringLiteral("Created: %1").arg(dt_str),
 
-                QStringLiteral("🕒 Erstellt: %1").arg(dt_str),
+                QStringLiteral("Erstellt: %1").arg(dt_str),
 
-                QStringLiteral("🕒 Créé : %1").arg(dt_str),
+                QStringLiteral("Créé : %1").arg(dt_str),
 
-                QStringLiteral("🕒 创建时间：%1").arg(dt_str),
+                QStringLiteral("创建时间：%1").arg(dt_str),
 
-                QStringLiteral("🕒 作成日時: %1").arg(dt_str)));
+                QStringLiteral("作成日時: %1").arg(dt_str)));
 
             lbl_meta_pages->setText(StormLang(
 
-                QStringLiteral("🧩 Страниц 4 КБ: %1 - Потоков: %2").arg(hdr.num_stored_pages).arg(hdr.num_threads),
+                QStringLiteral("Страниц 4 КБ: %1 - Потоков: %2").arg(hdr.num_stored_pages).arg(hdr.num_threads),
 
-                QStringLiteral("🧩 4KB Pages: %1 - Threads: %2").arg(hdr.num_stored_pages).arg(hdr.num_threads),
+                QStringLiteral("4KB Pages: %1 - Threads: %2").arg(hdr.num_stored_pages).arg(hdr.num_threads),
 
-                QStringLiteral("🧩 4KB-Seiten: %1 - Threads: %2").arg(hdr.num_stored_pages).arg(hdr.num_threads),
+                QStringLiteral("4KB-Seiten: %1 - Threads: %2").arg(hdr.num_stored_pages).arg(hdr.num_threads),
 
-                QStringLiteral("🧩 Pages 4 Ko : %1 - Threads : %2").arg(hdr.num_stored_pages).arg(hdr.num_threads),
+                QStringLiteral("Pages 4 Ko : %1 - Threads : %2").arg(hdr.num_stored_pages).arg(hdr.num_threads),
 
-                QStringLiteral("🧩 4KB 页面：%1 - 线程：%2").arg(hdr.num_stored_pages).arg(hdr.num_threads),
+                QStringLiteral("4KB 页面：%1 - 线程：%2").arg(hdr.num_stored_pages).arg(hdr.num_threads),
 
-                QStringLiteral("🧩 4KBページ: %1 - スレッド: %2").arg(hdr.num_stored_pages).arg(hdr.num_threads)));
+                QStringLiteral("4KBページ: %1 - スレッド: %2").arg(hdr.num_stored_pages).arg(hdr.num_threads)));
 
         } else {
 
             lbl_meta_status->setText(StormLang(
 
-                QStringLiteral("⚪ Статус: Слот пуст"),
+                QStringLiteral("Статус: Слот пуст"),
 
-                QStringLiteral("⚪ Status: Slot is Empty"),
+                QStringLiteral("Status: Slot is Empty"),
 
-                QStringLiteral("⚪ Status: Slot ist leer"),
+                QStringLiteral("Status: Slot ist leer"),
 
-                QStringLiteral("⚪ Statut : Emplacement vide"),
+                QStringLiteral("Statut : Emplacement vide"),
 
-                QStringLiteral("⚪ 状态：槽位为空"),
+                QStringLiteral("状态：槽位为空"),
 
-                QStringLiteral("⚪ 状態: 空きスロット")));
+                QStringLiteral("状態: 空きスロット")));
 
             lbl_meta_status->setStyleSheet(QStringLiteral("font-size: 9.5pt; font-weight: 700; color: #FFFFFF; border: none;"));
 
-            lbl_meta_size->setText(QStringLiteral("📦 -"));
+            lbl_meta_size->setText(QStringLiteral("-"));
 
-            lbl_meta_date->setText(QStringLiteral("🕒 -"));
+            lbl_meta_date->setText(QStringLiteral("-"));
 
-            lbl_meta_pages->setText(QStringLiteral("🧩 -"));
+            lbl_meta_pages->setText(QStringLiteral("-"));
 
         }
 
@@ -20356,22 +20712,14 @@ void MainWindow::OnSaveStateManager() {
 
 
 void MainWindow::RefreshSaveStateMenus() {
-
     u64 title_id = 0;
-
     if (emulation_running && QtCommon::system && QtCommon::system->IsPoweredOn()) {
-
         title_id = QtCommon::system->GetApplicationProcessProgramID();
-
     }
-
     if (title_id == 0) {
-
         title_id = m_current_addons_title_id;
-
     }
-
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < 10; ++i) {
 
         const int slot_num = i + 1;
 
@@ -20439,7 +20787,7 @@ void MainWindow::RefreshSaveStateMenus() {
 
             load_slot_actions[i]->setText(slot_prefix + suffix);
 
-            load_slot_actions[i]->setEnabled(has_file || title_id == 0);
+            load_slot_actions[i]->setEnabled(emulation_running && has_file);
 
         }
 
@@ -20714,27 +21062,27 @@ void MainWindow::OnCaptureScreenshot() {
 
     const QString sc_title = StormLang11(
 
-        QStringLiteral("📸 СКРИНШОТ СОХРАНЁН"),
+        QStringLiteral("СКРИНШОТ СОХРАНЁН"),
 
-        QStringLiteral("📸 SCREENSHOT CAPTURED"),
+        QStringLiteral("SCREENSHOT CAPTURED"),
 
-        QStringLiteral("📸 SCREENSHOT GESPEICHERT"),
+        QStringLiteral("SCREENSHOT GESPEICHERT"),
 
-        QStringLiteral("📸 CAPTURE D'ÉCRAN ENREGISTRÉE"),
+        QStringLiteral("CAPTURE D'ÉCRAN ENREGISTRÉE"),
 
-        QStringLiteral("📸 CAPTURA DE PANTALLA GUARDADA"),
+        QStringLiteral("CAPTURA DE PANTALLA GUARDADA"),
 
-        QStringLiteral("📸 SCREENSHOT SALVATO"),
+        QStringLiteral("SCREENSHOT SALVATO"),
 
-        QStringLiteral("📸 CAPTURA DE ECRÃ GUARDADA"),
+        QStringLiteral("CAPTURA DE ECRÃ GUARDADA"),
 
-        QStringLiteral("📸 屏幕截图已保存"),
+        QStringLiteral("屏幕截图已保存"),
 
-        QStringLiteral("📸 スクリーンショット保存完了"),
+        QStringLiteral("スクリーンショット保存完了"),
 
-        QStringLiteral("📸 스크린샷 저장됨"),
+        QStringLiteral("스크린샷 저장됨"),
 
-        QStringLiteral("📸 تم حفظ لقطة الشاشة"));
+        QStringLiteral("تم حفظ لقطة الشاشة"));
 
     const QString sc_sub = QFileInfo(filename).fileName();
 
@@ -20742,7 +21090,7 @@ void MainWindow::OnCaptureScreenshot() {
 
     if (in_game_notification) {
 
-        in_game_notification->ShowNotification(sc_title, sc_sub, QColor(56, 189, 248), QStringLiteral("📸"), 2800);
+        in_game_notification->ShowNotification(sc_title, sc_sub, QColor(56, 189, 248), QString{}, 2800);
 
     }
 
@@ -21534,26 +21882,19 @@ void MainWindow::UpdateGPUAccuracyButton() {
     const auto gpu_accuracy = Settings::values.gpu_accuracy.GetValue();
 
     QString text = (gpu_accuracy == Settings::GpuAccuracy::Low)
-
         ? StormLang(QStringLiteral("Быстрый"), QStringLiteral("Fast"), QStringLiteral("Schnell"), QStringLiteral("Rapide"), QStringLiteral("快速"), QStringLiteral("高速"))
-
-        : StormLang(QStringLiteral("Высокая"), QStringLiteral("High"), QStringLiteral("Hoch"), QStringLiteral("Élevée"), QStringLiteral("高"), QStringLiteral("高"));
+        : (gpu_accuracy == Settings::GpuAccuracy::Normal)
+              ? StormLang(QStringLiteral("Обычная"), QStringLiteral("Normal"), QStringLiteral("Normal"), QStringLiteral("Normale"), QStringLiteral("普通"), QStringLiteral("標準"))
+              : StormLang(QStringLiteral("Высокая"), QStringLiteral("High"), QStringLiteral("Hoch"), QStringLiteral("Élevée"), QStringLiteral("高"), QStringLiteral("高"));
 
     gpu_accuracy_button->setText(StormLang(
-
-        QStringLiteral("ТОЧНОСТЬ ГПУ:\n%1"),
-
-        QStringLiteral("GPU ACCURACY:\n%1"),
-
-        QStringLiteral("GPU-GENAUIGKEIT:\n%1"),
-
-        QStringLiteral("PRÉCISION GPU:\n%1"),
-
-        QStringLiteral("GPU 精度:\n%1"),
-
-        QStringLiteral("GPU 精度:\n%1")
-
-    ).arg(text.toUpper()));
+        QStringLiteral("ГПУ: %1"),
+        QStringLiteral("GPU: %1"),
+        QStringLiteral("GPU: %1"),
+        QStringLiteral("GPU : %1"),
+        QStringLiteral("GPU: %1"),
+        QStringLiteral("GPU: %1")
+    ).arg(text));
 
     gpu_accuracy_button->setChecked(gpu_accuracy != Settings::GpuAccuracy::Low);
     gpu_accuracy_button->setToolTip(StormLang(
@@ -21582,21 +21923,7 @@ void MainWindow::UpdateDockedButton() {
 
         : StormLang(QStringLiteral("ПОРТАТИВ"), QStringLiteral("HANDHELD"), QStringLiteral("HANDHELD"), QStringLiteral("PORTABLE"), QStringLiteral("掌机"), QStringLiteral("携帯"));
 
-    dock_status_button->setText(StormLang(
-
-        QStringLiteral("РЕЖИМ:\n%1"),
-
-        QStringLiteral("MODE:\n%1"),
-
-        QStringLiteral("MODUS:\n%1"),
-
-        QStringLiteral("MODE:\n%1"),
-
-        QStringLiteral("模式:\n%1"),
-
-        QStringLiteral("モード:\n%1")
-
-    ).arg(mode_text));
+    dock_status_button->setText(mode_text);
 
 }
 
@@ -21653,21 +21980,7 @@ void MainWindow::UpdateAPIText() {
 
     }
 
-    renderer_status_button->setText(StormLang(
-
-        QStringLiteral("РЕНДЕР:\n%1"),
-
-        QStringLiteral("RENDER:\n%1"),
-
-        QStringLiteral("RENDER:\n%1"),
-
-        QStringLiteral("RENDU:\n%1"),
-
-        QStringLiteral("渲染:\n%1"),
-
-        QStringLiteral("レンダー:\n%1")
-
-    ).arg(api_text));
+    renderer_status_button->setText(api_text);
 
 }
 
@@ -21856,20 +22169,13 @@ void MainWindow::UpdateFilterText() {
     }
 
     filter_status_button->setText(StormLang(
-
-        QStringLiteral("ФИЛЬТР:\n%1"),
-
-        QStringLiteral("FILTER:\n%1"),
-
-        QStringLiteral("FILTER:\n%1"),
-
-        QStringLiteral("FILTRE:\n%1"),
-
-        QStringLiteral("滤镜:\n%1"),
-
-        QStringLiteral("フィルター:\n%1")
-
-    ).arg(filter_text.toUpper()));
+        QStringLiteral("Фильтр: %1"),
+        QStringLiteral("Filter: %1"),
+        QStringLiteral("Filter: %1"),
+        QStringLiteral("Filtre : %1"),
+        QStringLiteral("滤镜: %1"),
+        QStringLiteral("フィルター: %1")
+    ).arg(filter_text));
 
 }
 
@@ -21964,19 +22270,12 @@ void MainWindow::UpdateVolumeUI() {
         volume_button->setChecked(false);
 
         volume_button->setText(StormLang(
-
-            QStringLiteral("ГРОМКОСТЬ:\nВЫКЛ"),
-
-            QStringLiteral("VOLUME:\nMUTE"),
-
-            QStringLiteral("LAUTSTÄRKE:\nSTUMM"),
-
-            QStringLiteral("VOLUME:\nMUET"),
-
-            QStringLiteral("音量:\n静音"),
-
-            QStringLiteral("音量:\n消音")
-
+            QStringLiteral("🔇 Выкл"),
+            QStringLiteral("🔇 Mute"),
+            QStringLiteral("🔇 Stumm"),
+            QStringLiteral("🔇 Muet"),
+            QStringLiteral("🔇 静音"),
+            QStringLiteral("🔇 消音")
         ));
 
     } else {
@@ -21985,17 +22284,17 @@ void MainWindow::UpdateVolumeUI() {
 
         volume_button->setText(StormLang(
 
-            QStringLiteral("ГРОМКОСТЬ:\n%1%"),
+            QStringLiteral("🔊 %1%"),
 
-            QStringLiteral("VOLUME:\n%1%"),
+            QStringLiteral("🔊 %1%"),
 
-            QStringLiteral("LAUTSTÄRKE:\n%1%"),
+            QStringLiteral("🔊 %1%"),
 
-            QStringLiteral("VOLUME:\n%1%"),
+            QStringLiteral("🔊 %1%"),
 
-            QStringLiteral("音量:\n%1%"),
+            QStringLiteral("🔊 %1%"),
 
-            QStringLiteral("音量:\n%1%")
+            QStringLiteral("🔊 %1%")
 
         ).arg(volume_value));
 
@@ -22617,21 +22916,7 @@ void MainWindow::UpdateResScaleText() {
 
     }
 
-    res_scale_button->setText(StormLang(
-
-        QStringLiteral("МАСШТАБ:\n%1"),
-
-        QStringLiteral("SCALE:\n%1"),
-
-        QStringLiteral("SKALIERUNG:\n%1"),
-
-        QStringLiteral("ÉCHELLE:\n%1"),
-
-        QStringLiteral("分辨率缩放:\n%1"),
-
-        QStringLiteral("解像度:\n%1")
-
-    ).arg(val_text));
+    res_scale_button->setText(val_text);
 
 }
 
@@ -22657,9 +22942,9 @@ void MainWindow::UpdateAddonsStatusButton(u64 title_id, const QString& game_name
 
         addons_status_button->setText(StormLang(
 
-            QStringLiteral("ДОПОЛНЕНИЯ:\nНЕТ"),
+            QStringLiteral("Моды: Нет"),
 
-            QStringLiteral("ADD-ONS:\nNONE"),
+            QStringLiteral("Add-ons: None"),
 
             QStringLiteral("ADD-ONS:\nKEINE"),
 
@@ -22713,11 +22998,11 @@ void MainWindow::UpdateAddonsStatusButton(u64 title_id, const QString& game_name
 
         addons_status_button->setText(StormLang(
 
-            QStringLiteral("ДОПОЛНЕНИЯ:\n%1"),
+            QStringLiteral("Моды: %1"),
 
-            QStringLiteral("ADD-ONS:\n%1"),
+            QStringLiteral("Add-ons: %1"),
 
-            QStringLiteral("ADD-ONS:\n%1"),
+            QStringLiteral("Add-ons: %1"),
 
             QStringLiteral("EXTENSIONS:\n%1"),
 
@@ -23033,9 +23318,9 @@ void MainWindow::UpdateGameFixStatusButton() {
 
         gamefix_status_button->setText(StormLang(
 
-            QStringLiteral("АВТО-ИСПРАВЛЕНИЕ:\nАКТИВНО"),
+            QStringLiteral("Авто-фикс: Вкл"),
 
-            QStringLiteral("AUTO-FIX:\nACTIVE"),
+            QStringLiteral("Auto-Fix: On"),
 
             QStringLiteral("AUTO-FIX:\nAKTIV"),
 
@@ -23086,7 +23371,7 @@ void MainWindow::UpdateGameFixStatusButton() {
 
         gamefix_status_button->setText(StormLang(
 
-            QStringLiteral("АВТО-ИСПРАВЛЕНИЕ:\nДОСТУПНО"),
+            QStringLiteral("Авто-фикс"),
 
             QStringLiteral("AUTO-FIX:\nREADY"),
 
@@ -23124,9 +23409,9 @@ void MainWindow::UpdateGameFixStatusButton() {
 
         gamefix_status_button->setText(fg_on
 
-            ? StormLang(QStringLiteral("БЫСТРЫЕ:\nLSFG ВКЛ"), QStringLiteral("QUICK:\nLSFG ON"), QStringLiteral("SCHNELL:\nLSFG EIN"), QStringLiteral("RAPIDE:\nLSFG ON"), QStringLiteral("快捷设置:\nLSFG 开启"), QStringLiteral("クイック:\nLSFG オン"))
+            ? StormLang(QStringLiteral("LSFG: Вкл"), QStringLiteral("LSFG: On"), QStringLiteral("SCHNELL:\nLSFG EIN"), QStringLiteral("RAPIDE:\nLSFG ON"), QStringLiteral("快捷设置:\nLSFG 开启"), QStringLiteral("クイック:\nLSFG オン"))
 
-            : StormLang(QStringLiteral("БЫСТРЫЕ:\nОПЦИИ"), QStringLiteral("QUICK:\nOPTIONS"), QStringLiteral("SCHNELL:\nOPTIONEN"), QStringLiteral("RAPIDE:\nOPTIONS"), QStringLiteral("快捷设置:\n选项"), QStringLiteral("クイック:\n設定")));
+            : StormLang(QStringLiteral("Быстро"), QStringLiteral("Quick"), QStringLiteral("SCHNELL:\nOPTIONEN"), QStringLiteral("RAPIDE:\nOPTIONS"), QStringLiteral("快捷设置:\n选项"), QStringLiteral("クイック:\n設定")));
 
         gamefix_status_button->setStyleSheet(QString{});
 
@@ -23251,19 +23536,12 @@ void MainWindow::UpdateSpeedLimitText() {
     if (!Settings::values.use_speed_limit.GetValue()) {
 
         speed_limit_button->setText(StormLang(
-
-            QStringLiteral("СКОРОСТЬ:\nБЕЗ ЛИМИТА"),
-
-            QStringLiteral("SPEED:\nUNLIMITED"),
-
-            QStringLiteral("GESCHW.:\nUNBEGRENZT"),
-
-            QStringLiteral("VITESSE:\nILLIMITÉE"),
-
-            QStringLiteral("速度:\n无限制"),
-
-            QStringLiteral("速度:\n無制限")
-
+            QStringLiteral("⏩ Без лимита"),
+            QStringLiteral("⏩ Unlimited"),
+            QStringLiteral("⏩ Unbegrenzt"),
+            QStringLiteral("⏩ Illimitée"),
+            QStringLiteral("⏩ 无限制"),
+            QStringLiteral("⏩ 無制限")
         ));
 
     } else {
@@ -23272,17 +23550,17 @@ void MainWindow::UpdateSpeedLimitText() {
 
         speed_limit_button->setText(StormLang(
 
-            QStringLiteral("СКОРОСТЬ:\n%1%"),
+            QStringLiteral("⏩ %1%"),
 
-            QStringLiteral("SPEED:\n%1%"),
+            QStringLiteral("⏩ %1%"),
 
-            QStringLiteral("GESCHW.:\n%1%"),
+            QStringLiteral("⏩ %1%"),
 
-            QStringLiteral("VITESSE:\n%1%"),
+            QStringLiteral("⏩ %1%"),
 
-            QStringLiteral("速度:\n%1%"),
+            QStringLiteral("⏩ %1%"),
 
-            QStringLiteral("速度:\n%1%")
+            QStringLiteral("⏩ %1%")
 
         ).arg(limit));
 
@@ -23427,19 +23705,12 @@ void MainWindow::UpdateRefreshButton() {
     if (!refresh_button) return;
 
     refresh_button->setText(StormLang(
-
-        QStringLiteral("СПИСОК:\nОБНОВИТЬ"),
-
-        QStringLiteral("LIST:\nREFRESH"),
-
-        QStringLiteral("LISTE:\nAKTUAL."),
-
-        QStringLiteral("LISTE:\nACTUAL."),
-
-        QStringLiteral("列表:\n刷新"),
-
-        QStringLiteral("リスト:\n更新")
-
+        QStringLiteral("↻ Обновить"),
+        QStringLiteral("↻ Refresh"),
+        QStringLiteral("↻ Aktualisieren"),
+        QStringLiteral("↻ Actualiser"),
+        QStringLiteral("↻ 刷新"),
+        QStringLiteral("↻ 更新")
     ));
 
     refresh_button->setToolTip(StormLang(
@@ -23613,20 +23884,14 @@ void MainWindow::LoadFooterSettings() {
     const std::string saved = UISettings::values.hidden_footer_items.GetValue();
     QStringList hidden = QString::fromStdString(saved).split(QLatin1Char(';'), Qt::SkipEmptyParts);
 
-    if (saved.empty() || hidden.size() >= 20) {
-        UISettings::values.hidden_footer_items.SetValue("");
-        for (auto* g : m_status_groups) {
-            if (g) {
-                g->setVisible(true);
-                for (auto* child : g->findChildren<QWidget*>()) {
-                    child->setVisible(true);
-                }
-            }
-        }
-        for (const auto& [id, w] : btns) {
-            if (w) w->setVisible(true);
-        }
-        return;
+    static const std::string kPrevDefault =
+        "grp_4;cpu_acc;dma;gpu_fence;nvdec;aa;shader;aspect;vram;anisotropy;disk_cache;astc_decode;astc_recompress;mute";
+    if (saved.empty() || saved == kPrevDefault || hidden.size() >= 22) {
+        // Ultra-clean compact default: 10 essential daily pills, every other setting 1 click away via group headers & gear
+        const std::string compact_default =
+            "grp_4;fullscreen;cpu_acc;vsync;dma;gpu_fence;nvdec;aa;shader;aspect;vram;anisotropy;disk_cache;astc_decode;astc_recompress;airplane;mute";
+        UISettings::values.hidden_footer_items.SetValue(compact_default);
+        hidden = QString::fromStdString(compact_default).split(QLatin1Char(';'), Qt::SkipEmptyParts);
     }
 
     for (int i = 0; i < static_cast<int>(m_status_groups.size()); ++i) {
@@ -23664,8 +23929,67 @@ void MainWindow::ShowFooterCustomizeMenu() {
 
 
 
+    auto* presets_hdr = context_menu.addAction(StormLang(
+        QStringLiteral("--- БЫСТРЫЕ РЕЖИМЫ ПОДВАЛА ---"),
+        QStringLiteral("--- QUICK FOOTER PRESETS ---"),
+        QStringLiteral("--- SCHNELL-VORLAGEN ---"),
+        QStringLiteral("--- PRÉRÉGLAGES RAPIDES ---"),
+        QStringLiteral("--- 底部栏快速预设 ---"),
+        QStringLiteral("--- クイックプリセット ---")
+    ));
+    presets_hdr->setEnabled(false);
+    auto apply_footer_preset = [this](const std::string& preset) {
+        for (auto* g : m_status_groups) {
+            if (g) {
+                g->setVisible(true);
+                for (auto* child : g->findChildren<QWidget*>()) {
+                    child->setVisible(true);
+                }
+            }
+        }
+        UISettings::values.hidden_footer_items.SetValue(preset);
+        LoadFooterSettings();
+    };
+    context_menu.addAction(StormLang(
+        QStringLiteral("Компактный (Рекомендуется)"),
+        QStringLiteral("Compact (Recommended)"),
+        QStringLiteral("Kompakt (Empfohlen)"),
+        QStringLiteral("Compact (Recommandé)"),
+        QStringLiteral("紧凑模式（推荐）"),
+        QStringLiteral("コンパクト（推奨）")
+    ), [apply_footer_preset]() {
+        apply_footer_preset("grp_4;fullscreen;cpu_acc;vsync;dma;gpu_fence;nvdec;aa;shader;aspect;vram;anisotropy;disk_cache;astc_decode;astc_recompress;airplane;mute");
+    });
+    context_menu.addAction(StormLang(
+        QStringLiteral("Минимальный (Только главное)"),
+        QStringLiteral("Minimal (Essentials only)"),
+        QStringLiteral("Minimal (Nur Wichtigstes)"),
+        QStringLiteral("Minimal (Essentiel)"),
+        QStringLiteral("极简模式（仅核心项）"),
+        QStringLiteral("ミニマル（主要項目のみ）")
+    ), [apply_footer_preset]() {
+        apply_footer_preset("grp_0;grp_1;grp_4;gpu_acc;cpu_acc;vsync;dma;gpu_fence;nvdec;aa;filter;shader;aspect;vram;anisotropy;disk_cache;astc_decode;astc_recompress;airplane;mute");
+    });
+    context_menu.addAction(StormLang(
+        QStringLiteral("Полный (Все индикаторы)"),
+        QStringLiteral("Full (All indicators)"),
+        QStringLiteral("Vollständig (Alle Anzeigen)"),
+        QStringLiteral("Complet (Tous les indicateurs)"),
+        QStringLiteral("完整模式（所有指示器）"),
+        QStringLiteral("フル表示（すべて）")
+    ), [this]() {
+        for (auto* g : m_status_groups) {
+            if (g) {
+                g->setVisible(true);
+                for (auto* child : g->findChildren<QWidget*>()) {
+                    child->setVisible(true);
+                }
+            }
+        }
+        UISettings::values.hidden_footer_items.SetValue("none");
+    });
+    context_menu.addSeparator();
     auto* header_act = context_menu.addAction(StormLang(
-
         QStringLiteral("--- РАЗДЕЛЫ ПОДВАЛА ---"),
 
         QStringLiteral("--- FOOTER SECTIONS ---"),
@@ -23750,23 +24074,14 @@ void MainWindow::ShowFooterCustomizeMenu() {
 
     context_menu.addSeparator();
 
-    auto* btn_header = context_menu.addAction(StormLang(
-
-        QStringLiteral("--- ОТДЕЛЬНЫЕ КНОПКИ ---"),
-
-        QStringLiteral("--- INDIVIDUAL BUTTONS ---"),
-
-        QStringLiteral("--- EINZELNE SCHALTFLÄCHEN ---"),
-
-        QStringLiteral("--- BOUTONS INDIVIDUELS ---"),
-
-        QStringLiteral("--- 单独按钮 ---"),
-
-        QStringLiteral("--- 個別ボタン ---")
-
+    QMenu* buttons_submenu = context_menu.addMenu(StormLang(
+        QStringLiteral("Отдельные кнопки..."),
+        QStringLiteral("Individual buttons..."),
+        QStringLiteral("Einzelne Schaltflächen..."),
+        QStringLiteral("Boutons individuels..."),
+        QStringLiteral("单独按钮..."),
+        QStringLiteral("個別ボタン...")
     ));
-
-    btn_header->setEnabled(false);
 
 
 
@@ -23840,12 +24155,9 @@ void MainWindow::ShowFooterCustomizeMenu() {
 
         if (!b.widget) continue;
 
-        auto* act = context_menu.addAction(b.name, [this, b] {
-
+        auto* act = buttons_submenu->addAction(b.name, [this, b] {
             b.widget->setVisible(b.widget->isHidden());
-
             SaveFooterSettings();
-
         });
 
         act->setCheckable(true);
@@ -23897,15 +24209,14 @@ void MainWindow::ShowFooterCustomizeMenu() {
         }
 
         UISettings::values.hidden_footer_items.SetValue("");
-
         SaveFooterSettings();
-
     });
 
-
-
-    context_menu.exec(QCursor::pos());
-
+    if (sender() == footer_customize_button && footer_customize_button) {
+        ShowMenuAtWidget(context_menu, footer_customize_button);
+    } else {
+        context_menu.exec(QCursor::pos());
+    }
 }
 
 
@@ -24074,17 +24385,17 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         auto* recomp_menu = context_menu.addMenu(StormLang(
 
-            QStringLiteral("📦 Пересжатие ASTC"),
+            QStringLiteral("Пересжатие ASTC"),
 
-            QStringLiteral("📦 ASTC Recompression"),
+            QStringLiteral("ASTC Recompression"),
 
-            QStringLiteral("📦 ASTC-Rekompression"),
+            QStringLiteral("ASTC-Rekompression"),
 
-            QStringLiteral("📦 Recompression ASTC"),
+            QStringLiteral("Recompression ASTC"),
 
-            QStringLiteral("📦 ASTC 重新压缩"),
+            QStringLiteral("ASTC 重新压缩"),
 
-            QStringLiteral("📦 ASTC 再圧縮")
+            QStringLiteral("ASTC 再圧縮")
 
         ));
 
@@ -25464,17 +25775,17 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         context_menu.addAction(StormLang(
 
-            QStringLiteral("📦 Установить прошивку из ZIP..."),
+            QStringLiteral("Установить прошивку из ZIP..."),
 
-            QStringLiteral("📦 Install Firmware from ZIP..."),
+            QStringLiteral("Install Firmware from ZIP..."),
 
-            QStringLiteral("📦 Firmware aus ZIP installieren..."),
+            QStringLiteral("Firmware aus ZIP installieren..."),
 
-            QStringLiteral("📦 Installer le firmware depuis un ZIP..."),
+            QStringLiteral("Installer le firmware depuis un ZIP..."),
 
-            QStringLiteral("📦 从 ZIP 安装固件..."),
+            QStringLiteral("从 ZIP 安装固件..."),
 
-            QStringLiteral("📦 ZIP からファームウェアをインストール...")
+            QStringLiteral("ZIP からファームウェアをインストール...")
 
         ), this, &MainWindow::OnInstallFirmwareFromZIP);
 
@@ -25514,17 +25825,17 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         context_menu.addAction(StormLang(
 
-            QStringLiteral("📦 Установить ключи из ZIP..."),
+            QStringLiteral("Установить ключи из ZIP..."),
 
-            QStringLiteral("📦 Install Keys from ZIP..."),
+            QStringLiteral("Install Keys from ZIP..."),
 
-            QStringLiteral("📦 Schlüssel aus ZIP installieren..."),
+            QStringLiteral("Schlüssel aus ZIP installieren..."),
 
-            QStringLiteral("📦 Installer les clés depuis un ZIP..."),
+            QStringLiteral("Installer les clés depuis un ZIP..."),
 
-            QStringLiteral("📦 从 ZIP 安装密钥..."),
+            QStringLiteral("从 ZIP 安装密钥..."),
 
-            QStringLiteral("📦 ZIP からキーをインストール...")
+            QStringLiteral("ZIP からキーをインストール...")
 
         ), this, &MainWindow::OnInstallKeysFromZIP);
 
@@ -25814,7 +26125,10 @@ void MainWindow::InitializeSystemTray() {
 
     m_tray_menu = new QMenu(this);
     m_tray_menu->setObjectName(QStringLiteral("StormSystemTrayMenu"));
-    m_tray_menu->setFont(QFont(QStringLiteral("Segoe UI"), 9));
+    const QString tray_font_family = UISettings::values.ui_font.GetValue().empty()
+                                         ? QStringLiteral("Segoe UI")
+                                         : QString::fromStdString(UISettings::values.ui_font.GetValue());
+    m_tray_menu->setFont(QFont(tray_font_family, 9));
 
     const StormTheme::Palette tray_pal = StormTheme::GetThemePalette();
     m_tray_menu->setStyleSheet(QStringLiteral(
@@ -25823,7 +26137,6 @@ void MainWindow::InitializeSystemTray() {
         "  color: %2;"
         "  border: 1px solid %3;"
         "  padding: 4px 0px;"
-        "  font-family: 'Segoe UI';"
         "  font-size: 9pt;"
         "}"
         "QMenu#StormSystemTrayMenu::item {"
@@ -25871,50 +26184,33 @@ void MainWindow::InitializeSystemTray() {
 
 
     // 1. Restore (Bold Segoe UI 9pt)
-
-    m_tray_restore_action = m_tray_menu->addAction(QStringLiteral("Развернуть STORM SWITCH"));
-
+    m_tray_restore_action = m_tray_menu->addAction(StormLang(
+        QStringLiteral("Развернуть STORM SWITCH"), QStringLiteral("Restore STORM SWITCH")));
     QFont bold_font(QStringLiteral("Segoe UI"), 9, QFont::Bold);
-
     m_tray_restore_action->setFont(bold_font);
-
     m_tray_restore_action->setIconVisibleInMenu(false);
 
-
-
     // 2. Pause / Resume
-
-    m_tray_pause_action = m_tray_menu->addAction(QStringLiteral("Пауза / Продолжить эмуляцию"));
-
+    m_tray_pause_action = m_tray_menu->addAction(StormLang(
+        QStringLiteral("Пауза / Продолжить эмуляцию"), QStringLiteral("Pause / Resume Emulation")));
     m_tray_pause_action->setIconVisibleInMenu(false);
 
-
-
     // 3. Settings...
-
-    m_tray_settings_action = m_tray_menu->addAction(QStringLiteral("Настройки..."));
-
+    m_tray_settings_action = m_tray_menu->addAction(StormLang(
+        QStringLiteral("Параметры..."), QStringLiteral("Configure...")));
     m_tray_settings_action->setIconVisibleInMenu(false);
 
-
-
     // 4. About
-
-    m_tray_about_action = m_tray_menu->addAction(QStringLiteral("О программе"));
-
+    m_tray_about_action = m_tray_menu->addAction(StormLang(
+        QStringLiteral("О программе"), QStringLiteral("About")));
     m_tray_about_action->setIconVisibleInMenu(false);
-
     connect(m_tray_about_action, &QAction::triggered, this, &MainWindow::OnAbout);
-
-
 
     m_tray_menu->addSeparator();
 
-
-
     // 5. Exit
-
-    m_tray_exit_action = m_tray_menu->addAction(QStringLiteral("Выход"));
+    m_tray_exit_action = m_tray_menu->addAction(StormLang(
+        QStringLiteral("Выход"), QStringLiteral("Exit")));
 
     m_tray_exit_action->setIconVisibleInMenu(false);
 
@@ -26345,17 +26641,17 @@ void MainWindow::ShowFirmwareContextMenu() {
 
     context_menu.addAction(StormLang(
 
-        QStringLiteral("📦 Установить прошивку из ZIP..."),
+        QStringLiteral("Установить прошивку из ZIP..."),
 
-        QStringLiteral("📦 Install Firmware from ZIP..."),
+        QStringLiteral("Install Firmware from ZIP..."),
 
-        QStringLiteral("📦 Firmware aus ZIP installieren..."),
+        QStringLiteral("Firmware aus ZIP installieren..."),
 
-        QStringLiteral("📦 Installer le firmware depuis un ZIP..."),
+        QStringLiteral("Installer le firmware depuis un ZIP..."),
 
-        QStringLiteral("📦 从 ZIP 安装固件..."),
+        QStringLiteral("从 ZIP 安装固件..."),
 
-        QStringLiteral("📦 ZIP からファームウェアをインストール...")
+        QStringLiteral("ZIP からファームウェアをインストール...")
 
     ), this, &MainWindow::OnInstallFirmwareFromZIP);
 
@@ -26395,17 +26691,17 @@ void MainWindow::ShowFirmwareContextMenu() {
 
     context_menu.addAction(StormLang(
 
-        QStringLiteral("📦 Установить ключи из ZIP..."),
+        QStringLiteral("Установить ключи из ZIP..."),
 
-        QStringLiteral("📦 Install Keys from ZIP..."),
+        QStringLiteral("Install Keys from ZIP..."),
 
-        QStringLiteral("📦 Schlüssel aus ZIP installieren..."),
+        QStringLiteral("Schlüssel aus ZIP installieren..."),
 
-        QStringLiteral("📦 Installer les clés depuis un ZIP..."),
+        QStringLiteral("Installer les clés depuis un ZIP..."),
 
-        QStringLiteral("📦 从 ZIP 安装密钥..."),
+        QStringLiteral("从 ZIP 安装密钥..."),
 
-        QStringLiteral("📦 ZIP からキーをインストール...")
+        QStringLiteral("ZIP からキーをインストール...")
 
     ), this, &MainWindow::OnInstallKeysFromZIP);
 
@@ -26443,10 +26739,11 @@ void MainWindow::ShowFirmwareContextMenu() {
 
     ), this, &MainWindow::OnOpenNANDFolder);
 
-
-
-    context_menu.exec(QCursor::pos());
-
+    if (firmware_label && firmware_label->isVisible()) {
+        ShowMenuAtWidget(context_menu, firmware_label);
+    } else {
+        context_menu.exec(QCursor::pos());
+    }
 }
 
 
@@ -26580,19 +26877,12 @@ void MainWindow::SetFirmwareVersion() {
         firmware_label->setAlignment(Qt::AlignCenter);
 
         firmware_label->setText(StormLang(
-
-            QStringLiteral("ПРОШИВКА:\nНЕТ"),
-
-            QStringLiteral("FIRMWARE:\nNONE"),
-
-            QStringLiteral("FIRMWARE:\nKEINE"),
-
-            QStringLiteral("FIRMWARE:\nAUCUN"),
-
-            QStringLiteral("固件:\n无"),
-
-            QStringLiteral("ファームウェア:\nなし")
-
+            QStringLiteral("FW: Нет"),
+            QStringLiteral("FW: None"),
+            QStringLiteral("FW: Keine"),
+            QStringLiteral("FW : Aucun"),
+            QStringLiteral("固件: 无"),
+            QStringLiteral("FW: なし")
         ));
 
         firmware_label->setToolTip(StormLang(
@@ -26647,21 +26937,7 @@ void MainWindow::SetFirmwareVersion() {
 
     firmware_label->setAlignment(Qt::AlignCenter);
 
-    firmware_label->setText(StormLang(
-
-        QStringLiteral("ПРОШИВКА:\n%1"),
-
-        QStringLiteral("FIRMWARE:\n%1"),
-
-        QStringLiteral("FIRMWARE:\n%1"),
-
-        QStringLiteral("FIRMWARE:\n%1"),
-
-        QStringLiteral("固件:\n%1"),
-
-        QStringLiteral("ファームウェア:\n%1")
-
-    ).arg(QString::fromStdString(display_version)));
+    firmware_label->setText(QStringLiteral("FW %1").arg(QString::fromStdString(display_version)));
 
     firmware_label->setToolTip(QString::fromStdString(display_title));
 
@@ -26860,19 +27136,6 @@ bool MainWindow::ConfirmClose() {
 
 
 void MainWindow::closeEvent(QCloseEvent* event) {
-
-    if (!is_exiting_from_tray && !m_is_quitting_from_tray && !(qGuiApp && qGuiApp->isSavingSession()) && m_tray_icon && m_tray_icon->isVisible()) {
-
-        hide();
-
-        event->ignore();
-
-        return;
-
-    }
-
-
-
     if (!(qGuiApp && qGuiApp->isSavingSession()) && !ConfirmClose()) {
 
         is_exiting_from_tray = false;
@@ -26911,8 +27174,8 @@ void MainWindow::closeEvent(QCloseEvent* event) {
 
 #endif
 
+    status_bar_update_timer.stop();
     update_input_timer.stop();
-
     mouse_hide_timer.stop();
 
 
@@ -26970,7 +27233,10 @@ void MainWindow::closeEvent(QCloseEvent* event) {
 
 
     QWidget::closeEvent(event);
-
+#ifdef _WIN32
+    Common::Log::SetColorConsoleBackendEnabled(false);
+    FreeConsole();
+#endif
     QCoreApplication::quit();
 
 }
@@ -28607,7 +28873,7 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
 
         QMenu menu(table);
 
-        menu.addAction(QObject::tr("Копировать ячейку"), [item] {
+        menu.addAction(StormLang(QStringLiteral("Копировать ячейку"), QStringLiteral("Copy Cell")), [item] {
 
             QGuiApplication::clipboard()->setText(item->text());
 
@@ -28619,7 +28885,7 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
 
         if (tid_item) {
 
-            menu.addAction(QObject::tr("Копировать Title ID"), [tid_item] {
+            menu.addAction(StormLang(QStringLiteral("Копировать Title ID"), QStringLiteral("Copy Title ID")), [tid_item] {
 
                 QGuiApplication::clipboard()->setText(tid_item->text());
 
@@ -28631,7 +28897,7 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
 
         if (name_item) {
 
-            menu.addAction(QObject::tr("Копировать название"), [name_item] {
+            menu.addAction(StormLang(QStringLiteral("Копировать название"), QStringLiteral("Copy Name")), [name_item] {
 
                 QGuiApplication::clipboard()->setText(name_item->text());
 
@@ -28643,7 +28909,7 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
 
         if (desc_item) {
 
-            menu.addAction(QObject::tr("Копировать описание"), [desc_item] {
+            menu.addAction(StormLang(QStringLiteral("Копировать описание"), QStringLiteral("Copy Description")), [desc_item] {
 
                 QGuiApplication::clipboard()->setText(desc_item->text());
 
@@ -28653,7 +28919,7 @@ void MainWindow::ShowDLCDialog(u64 title_id, const QString& game_name) {
 
         menu.addSeparator();
 
-        menu.addAction(QObject::tr("Копировать строку целиком"), [table, row] {
+        menu.addAction(StormLang(QStringLiteral("Копировать строку целиком"), QStringLiteral("Copy Entire Row")), [table, row] {
 
             QStringList cell_texts;
 
@@ -29129,12 +29395,25 @@ void MainWindow::UpdateUITheme() {
             "QPushButton#FooterCustomizeButton:hover { background-color: %1 !important; color: #FFFFFF !important; border-color: %1 !important; }\n"
         ).arg(accent_color);
 
-        // Apply active font (Law 6)
-        const QString font_family = QString::fromStdString(UISettings::values.ui_font.GetValue());
+        // Apply active font dynamically to QApplication, QSS stylesheet, menubar & tray (Law 6)
+        QString font_family = QString::fromStdString(UISettings::values.ui_font.GetValue());
+        font_family.replace(QLatin1Char('"'), QString());
         if (!font_family.isEmpty()) {
             QFont app_font(font_family, 9);
             app_font.setStyleHint(QFont::SansSerif);
             qApp->setFont(app_font);
+            if (ui && ui->menubar) {
+                QFont menu_fnt(font_family, 9);
+                menu_fnt.setWeight(QFont::DemiBold);
+                ui->menubar->setFont(menu_fnt);
+            }
+            if (m_tray_menu) {
+                m_tray_menu->setFont(app_font);
+            }
+            stylesheet.replace(
+                QStringLiteral("font-family: \"Segoe UI\", \"Outfit\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;"),
+                QStringLiteral("font-family: \"%1\", \"Segoe UI\", \"Outfit\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;").arg(font_family));
+            stylesheet += QStringLiteral("\nQWidget { font-family: \"%1\", \"Segoe UI\", \"Outfit\", sans-serif; }\n").arg(font_family);
         }
 
         // Apply matching QPalette so native Qt subwidgets never fall back to Windows white
@@ -29226,9 +29505,27 @@ void MainWindow::UpdateUITheme() {
 
 
 QString StormLookupMultiLang(const QString& en_key, const std::string& lang) {
-
-    return StormI18n::LookupMultiLang(en_key, lang);
-
+    const QString direct = StormI18n::LookupMultiLang(en_key, lang);
+    if (!direct.isEmpty()) {
+        return direct;
+    }
+    if (lang.rfind("en", 0) == 0 || en_key.isEmpty()) {
+        return {};
+    }
+    const QByteArray utf8 = en_key.toUtf8();
+    static constexpr const char* kQtContexts[] = {
+        "MainWindow", "ConfigurationShared", "QObject", "ConfigureDialog",
+        "ConfigureGeneral", "ConfigureSystem", "ConfigureGraphics",
+        "ConfigureGraphicsAdvanced", "ConfigureUi", "ConfigureAudio",
+        "ConfigureInput", "ConfigureInputPlayer", "ConfigureWeb", "Gamelist",
+    };
+    for (const char* ctx : kQtContexts) {
+        const QString tr_val = QCoreApplication::translate(ctx, utf8.constData());
+        if (!tr_val.isEmpty() && tr_val != en_key) {
+            return tr_val;
+        }
+    }
+    return {};
 }
 
 
@@ -30307,7 +30604,7 @@ void MainWindow::OnLanguageChanged(const QString& locale) {
 
         ui->action_About->setText(StormLang(
 
-            QStringLiteral("О STORM SWITCH"),
+            QStringLiteral("О программе STORM SWITCH"),
 
             QStringLiteral("About STORM SWITCH"),
 

@@ -260,7 +260,7 @@ This would ban both their forum username and their IP address.</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="40" />
       <source>Software keyboard</source>
-      <translation>Software keyboard</translation>
+      <translation>Softwarová klávesnice</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="41" />
@@ -403,7 +403,7 @@ Disabling it means unlocking the framerate to the maximum your PC can reach.</tr
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="85" />
       <source>Synchronize Core Speed</source>
-      <translation>Synchronize Core Speed</translation>
+      <translation>Synchronizovat rychlost jádra</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="86" />
@@ -443,7 +443,7 @@ Use Boost (1700MHz) to run at the Switch's highest native clock, or Fast (2000MH
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="103" />
       <source>Custom CPU Ticks</source>
-      <translation>Custom CPU Ticks</translation>
+      <translation>Vlastní hodnota CPU cyků</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="104" />
@@ -718,7 +718,7 @@ Aggressive mode may impact performance of other applications such as recording s
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="193" />
       <source>Skip CPU Inner Invalidation</source>
-      <translation>Skip CPU Inner Invalidation</translation>
+      <translation>Přeskočit vnitřní invalidaci CPU</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="194" />
@@ -744,7 +744,7 @@ Immediate (no synchronization) presents whatever is available and can exhibit te
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="209" />
       <source>Sync Memory Operations</source>
-      <translation>Sync Memory Operations</translation>
+      <translation>Synchronizace paměťových operací</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="210" />
@@ -978,7 +978,7 @@ Compute pipelines are always enabled on all other drivers.</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="270" />
       <source>Enable buffer history</source>
-      <translation>Enable buffer history</translation>
+      <translation>Zapnout historii bufferu</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="271" />
@@ -1012,7 +1012,7 @@ Legacy behavior workaround that fixes line artifacts on AMD and Intel GPUs, and 
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="282" />
       <source>Extended Dynamic State</source>
-      <translation>Extended Dynamic State</translation>
+      <translation>Úroveň EDS</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="283" />
@@ -1024,7 +1024,7 @@ Higher states allow for more features and can increase performance, but may caus
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="287" />
       <source>Vertex Input Dynamic State</source>
-      <translation>Vertex Input Dynamic State</translation>
+      <translation>Dynamický stav vstupu vrcholů (Vertex Input)</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="288" />
@@ -1228,17 +1228,17 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="388" />
       <source>Never</source>
-      <translation>Never</translation>
+      <translation>Nikdy</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="389" />
       <source>On Load</source>
-      <translation>On Load</translation>
+      <translation>Při načtení</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="390" />
       <source>Always</source>
-      <translation>Always</translation>
+      <translation>Vždy</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="394" />
@@ -1299,12 +1299,12 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="415" />
       <source>Conservative</source>
-      <translation>Conservative</translation>
+      <translation>Konzervativní</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="416" />
       <source>Aggressive</source>
-      <translation>Aggressive</translation>
+      <translation>Agresivní</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="420" />
@@ -1388,7 +1388,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="453" />
       <source>Debugging</source>
-      <translation>Debugging</translation>
+      <translation>Ladění</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="457" />
@@ -2165,7 +2165,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="686" />
       <source>Disabled</source>
-      <translation>Disabled</translation>
+      <translation>Vypnuto</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="687" />
@@ -2192,7 +2192,63 @@ When a program attempts to open the controller applet, it is immediately closed.
       <source>Grid View</source>
       <translation>Grid View</translation>
     </message>
-  </context>
+      <message>
+        <source>Theme:</source>
+        <translation>Vzhled:</translation>
+    </message>
+    <message>
+        <source>Theme</source>
+        <translation>Změnit styl vzhledu</translation>
+    </message>
+    <message>
+        <source>Interface language:</source>
+        <translation>Jazyk rozhraní:</translation>
+    </message>
+    <message>
+        <source>Reset All Settings</source>
+        <translation>Resetovat všechna nastavení</translation>
+    </message>
+    <message>
+        <source>Console Mode</source>
+        <translation>Režim konzole</translation>
+    </message>
+    <message>
+        <source>VRAM Usage Mode</source>
+        <translation>Režim využití VRAM</translation>
+    </message>
+    <message>
+        <source>ASTC Decoding Method</source>
+        <translation>Metoda dekódování ASTC</translation>
+    </message>
+    <message>
+        <source>Cabinet</source>
+        <translation>Kabinet</translation>
+    </message>
+    <message>
+        <source>Makes the game believe GPU work finishes faster than it does, so it stops lowering resolution and render distance to fit the Switch's clocks.</source>
+        <translation>Nutí většinu her běžet v nejvyšším nativním rozlišení. Použijte hodnotu 256 pro maximální výkon a 512 pro nejlepší kvalitu.</translation>
+    </message>
+    <message>
+        <source>CPU Clocks</source>
+        <translation>Přetaktování CPU</translation>
+    </message>
+    <message>
+        <source>GPU Clocks</source>
+        <translation>Rychlé časování GPU</translation>
+    </message>
+    <message>
+        <source>Custom RTC</source>
+        <translation>Vlastní RTC</translation>
+    </message>
+    <message>
+        <source>Boost</source>
+        <translation>Boost (1700MHz)</translation>
+    </message>
+    <message>
+        <source>Overclock</source>
+        <translation>Rychlé (2000MHz)</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureApplets</name>
     <message>
@@ -2203,21 +2259,25 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/yuzu/configuration/configure_applets.ui" line="17" />
       <source>Applets</source>
-      <translation>Applets</translation>
+      <translation>Aplety</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_applets.ui" line="25" />
       <source>Applet mode preference</source>
       <translation>Applet mode preference</translation>
     </message>
-  </context>
+      <message>
+        <source>Cabinet</source>
+        <translation>Kabinet</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureAudio</name>
     <message>
       <location filename="../../src/yuzu/configuration/configure_audio.ui" line="14" />
       <location filename="../../src/yuzu/configuration/configure_audio.ui" line="20" />
       <source>Audio</source>
-      <translation>Audio</translation>
+      <translation>Zvuk</translation>
     </message>
   </context>
   <context>
@@ -2702,7 +2762,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="462" />
       <source>Disable Buffer Reorder</source>
-      <translation>Disable Buffer Reorder</translation>
+      <translation>Zakázat přeřazování vyrovnávací paměti</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="469" />
@@ -2887,7 +2947,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/yuzu/configuration/configure_dialog.cpp" line="69" />
       <source>Applets</source>
-      <translation>Applets</translation>
+      <translation>Aplety</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_dialog.cpp" line="70" />
@@ -3340,13 +3400,25 @@ Would you like to delete the old save data?</translation>
       <source>Advanced Graphics Settings</source>
       <translation>Pokročilé nastavení grafiky</translation>
     </message>
-  </context>
+      <message>
+        <source>VRAM Usage Mode</source>
+        <translation>Režim využití VRAM</translation>
+    </message>
+    <message>
+        <source>ASTC Decoding Method</source>
+        <translation>Metoda dekódování ASTC</translation>
+    </message>
+    <message>
+        <source>Sync Memory Operations</source>
+        <translation>Synchronizace paměťových operací</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureGraphicsExtensions</name>
     <message>
       <location filename="../../src/yuzu/configuration/configure_graphics_extensions.ui" line="14" />
       <source>Form</source>
-      <translation>Form</translation>
+      <translation>Formulář</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_graphics_extensions.ui" line="17" />
@@ -3356,7 +3428,7 @@ Would you like to delete the old save data?</translation>
     <message>
       <location filename="../../src/yuzu/configuration/configure_graphics_extensions.ui" line="23" />
       <source>Hacks</source>
-      <translation>Hacks</translation>
+      <translation>Hacky</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_graphics_extensions.ui" line="29" />
@@ -3379,7 +3451,11 @@ Would you like to delete the old save data?</translation>
       <source>Extended Dynamic State is disabled on macOS due to MoltenVK compatibility issues that cause black screens.</source>
       <translation>Extended Dynamic State is disabled on macOS due to MoltenVK compatibility issues that cause black screens.</translation>
     </message>
-  </context>
+      <message>
+        <source>Extensions</source>
+        <translation>Rozšíření</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureHotkeys</name>
     <message>
@@ -4270,7 +4346,7 @@ Pro převrácení os nejprve posuňte joystick vertikálně, poté horizontáln�
     <message>
       <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="1102" />
       <source>Dual Joycons</source>
-      <translation>Dual Joycons</translation>
+      <translation>Oba Joycony</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="1106" />
@@ -4567,7 +4643,11 @@ Pro převrácení os nejprve posuňte joystick vertikálně, poté horizontáln�
       <source>UDP Test or calibration configuration is in progress.&lt;br&gt;Please wait for them to finish.</source>
       <translation>Probíhá test UDP nebo konfigurace kalibrace.&lt;br&gt;Prosím vyčkejte na dokončení.</translation>
     </message>
-  </context>
+      <message>
+        <source>Motion / Touch</source>
+        <translation>Pohyb / Dotyk</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureMousePanning</name>
     <message>
@@ -4790,12 +4870,12 @@ Current values are %1% and %2% respectively.</translation>
     <message>
       <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="86" />
       <source>Network</source>
-      <translation>Network</translation>
+      <translation>Síť</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="87" />
       <source>Applets</source>
-      <translation>Applets</translation>
+      <translation>Aplety</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="90" />
@@ -5201,7 +5281,19 @@ UUID: %2</translation>
       <source>Warning: "%1" is not a valid language for region "%2"</source>
       <translation>Warning: "%1" is not a valid language for region "%2"</translation>
     </message>
-  </context>
+      <message>
+        <source>Console Mode</source>
+        <translation>Režim konzole</translation>
+    </message>
+    <message>
+        <source>Limit Speed Percent</source>
+        <translation>Omezení rychlosti v procentech</translation>
+    </message>
+    <message>
+        <source>Language:</source>
+        <translation>Jazyk:</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureTas</name>
     <message>
@@ -5575,7 +5667,19 @@ Táhněte body pro změnu pozice nebo dvojitě klikněte na buňky tabulky pro z
       <comment>Screenshot width value</comment>
       <translation>Automaticky (%1 x %2, %3 x %4)</translation>
     </message>
-  </context>
+      <message>
+        <source>Theme</source>
+        <translation>Změnit styl vzhledu</translation>
+    </message>
+    <message>
+        <source>Language:</source>
+        <translation>Jazyk:</translation>
+    </message>
+    <message>
+        <source>Screenshots Path:</source>
+        <translation>Cesta snímků obrazovky:</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureVibration</name>
     <message>
@@ -5686,7 +5790,7 @@ Táhněte body pro změnu pozice nebo dvojitě klikněte na buňky tabulky pro z
     <message>
       <location filename="../../src/yuzu/configuration/configure_web.ui" line="105" />
       <source>Generate</source>
-      <translation>Generate</translation>
+      <translation>Generovat</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_web.ui" line="130" />
@@ -5722,7 +5826,11 @@ Táhněte body pro změnu pozice nebo dvojitě klikněte na buňky tabulky pro z
       <comment>Tooltip</comment>
       <translation>Must be 48 characters, and lowercase a-z</translation>
     </message>
-  </context>
+      <message>
+        <source>Username:</source>
+        <translation>Jméno:</translation>
+    </message>
+</context>
   <context>
     <name>ControllerDialog</name>
     <message>
@@ -5779,7 +5887,7 @@ Táhněte body pro změnu pozice nebo dvojitě klikněte na buňky tabulky pro z
     <message>
       <location filename="../../src/yuzu/data_widget.ui" line="14" />
       <source>Form</source>
-      <translation>Form</translation>
+      <translation>Formulář</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/data_widget.ui" line="22" />
@@ -5837,7 +5945,7 @@ Táhněte body pro změnu pozice nebo dvojitě klikněte na buňky tabulky pro z
     <message>
       <location filename="../../src/yuzu/deps_dialog.cpp" line="22" />
       <source>Version</source>
-      <translation>Version</translation>
+      <translation>Verze</translation>
     </message>
   </context>
   <context>
@@ -6301,12 +6409,12 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="194" />
       <source>Name</source>
-      <translation>Name</translation>
+      <translation>Název</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="195" />
       <source>Add-ons</source>
-      <translation>Add-ons</translation>
+      <translation>Modifkace</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="196" />
@@ -6316,7 +6424,7 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="197" />
       <source>Size</source>
-      <translation>Size</translation>
+      <translation>Velikost</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="198" />
@@ -6414,7 +6522,7 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
     <message>
       <location filename="../../src/yuzu/multiplayer/host_room.ui" line="189" />
       <source>Unlisted</source>
-      <translation>Unlisted</translation>
+      <translation>Neveřejné</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/multiplayer/host_room.ui" line="197" />
@@ -6514,7 +6622,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="41" />
       <source>Configure</source>
-      <translation>Configure</translation>
+      <translation>Nastavit</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="42" />
@@ -6559,7 +6667,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="50" />
       <source>Create Room</source>
-      <translation>Create Room</translation>
+      <translation>Vytvořit Místnost</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="51" />
@@ -6569,7 +6677,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="52" />
       <source>Leave Room</source>
-      <translation>Leave Room</translation>
+      <translation>Opustit Místnost</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="53" />
@@ -6744,12 +6852,12 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/yuzu/multiplayer/lobby.ui" line="83" />
       <source>Hide Empty Rooms</source>
-      <translation>Hide Empty Rooms</translation>
+      <translation>Skrýt prázdné místnosti</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/multiplayer/lobby.ui" line="90" />
       <source>Hide Full Rooms</source>
-      <translation>Hide Full Rooms</translation>
+      <translation>Skrýt plné místnosti</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/multiplayer/lobby.ui" line="110" />
@@ -7264,7 +7372,7 @@ Debug Message:</translation>
       <location filename="../../src/yuzu/main_window.cpp" line="876" />
       <location filename="../../src/yuzu/main_window.cpp" line="879" />
       <source>Disable Web Applet</source>
-      <translation>Disable Web Applet</translation>
+      <translation>Zakázat Web Applet</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="880" />
@@ -7301,12 +7409,12 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="1067" />
       <source>Unmute</source>
-      <translation>Unmute</translation>
+      <translation>Zrušit ztlumení</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="1067" />
       <source>Mute</source>
-      <translation>Mute</translation>
+      <translation>Ztlumit</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="1072" />
@@ -7466,7 +7574,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2475" />
       <source>Remove Play Time Data</source>
-      <translation>Remove Play Time Data</translation>
+      <translation>Odstranit data o době hraní</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2475" />
@@ -7543,7 +7651,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2676" />
       <source>Properties</source>
-      <translation>Properties</translation>
+      <translation>Vlastnosti</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2677" />
@@ -7559,7 +7667,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2743" />
       <source>Load File</source>
-      <translation>Load File</translation>
+      <translation>Načíst soubor</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2756" />
@@ -7671,7 +7779,7 @@ Please, only use this feature to install updates and DLC.</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2913" />
       <source>Game</source>
-      <translation>Game</translation>
+      <translation>Hra</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2914" />
@@ -7851,7 +7959,7 @@ Please, only use this feature to install updates and DLC.</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3975" />
       <source>Capture Screenshot</source>
-      <translation>Capture Screenshot</translation>
+      <translation>Pořídit Snímek Obrazovky</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3976" />
@@ -8059,7 +8167,7 @@ Would you like to bypass this and exit anyway?</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="40" />
       <source>Bilinear</source>
-      <translation>Bilinear</translation>
+      <translation>Bilineární</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="41" />
@@ -8129,12 +8237,12 @@ Would you like to bypass this and exit anyway?</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="61" />
       <source>Docked</source>
-      <translation>Docked</translation>
+      <translation>Zadokovaná</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="62" />
       <source>Handheld</source>
-      <translation>Handheld</translation>
+      <translation>Příruční</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="66" />
@@ -8144,7 +8252,7 @@ Would you like to bypass this and exit anyway?</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="67" />
       <source>Accurate</source>
-      <translation>Accurate</translation>
+      <translation>Přesné</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="71" />
@@ -8171,7 +8279,27 @@ Would you like to bypass this and exit anyway?</translation>
       <source>Null</source>
       <translation>Null</translation>
     </message>
-  </context>
+      <message>
+        <source>Fullscreen</source>
+        <translation>Celá Obrazovka</translation>
+    </message>
+    <message>
+        <source>Check for Updates</source>
+        <translation>Zkontrolovat aktualizace</translation>
+    </message>
+    <message>
+        <source>Cabinet</source>
+        <translation>Kabinet</translation>
+    </message>
+    <message>
+        <source>Create Shortcut</source>
+        <translation>Vytvořit Zástupce</translation>
+    </message>
+    <message>
+        <source>Install Files to NAND</source>
+        <translation>Instalovat soubory na NAND</translation>
+    </message>
+</context>
   <context>
     <name>MigrationWorker</name>
     <message>
@@ -8229,12 +8357,12 @@ If you wish to clean up the files which were left in the old data location, you 
     <message>
       <location filename="../../src/yuzu/multiplayer/moderation_dialog.ui" line="6" />
       <source>Moderation</source>
-      <translation>Moderation</translation>
+      <translation>Moderování</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/multiplayer/moderation_dialog.ui" line="20" />
       <source>Ban List</source>
-      <translation>Ban List</translation>
+      <translation>Seznam zablokovaných</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/multiplayer/moderation_dialog.ui" line="41" />
@@ -8245,7 +8373,7 @@ If you wish to clean up the files which were left in the old data location, you 
     <message>
       <location filename="../../src/yuzu/multiplayer/moderation_dialog.ui" line="51" />
       <source>Unban</source>
-      <translation>Unban</translation>
+      <translation>Odblokovat</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/multiplayer/moderation_dialog.cpp" line="42" />
@@ -8265,12 +8393,12 @@ If you wish to clean up the files which were left in the old data location, you 
     <message>
       <location filename="../../src/yuzu/multiplayer/moderation_dialog.cpp" line="90" />
       <source>IP Address</source>
-      <translation>IP Address</translation>
+      <translation>IP adresa</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/multiplayer/moderation_dialog.cpp" line="97" />
       <source>Refresh</source>
-      <translation>Refresh</translation>
+      <translation>Obnovit</translation>
     </message>
   </context>
   <context>
@@ -8379,7 +8507,7 @@ Proceed anyway?</translation>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="70" />
       <source>Username</source>
-      <translation>Username</translation>
+      <translation>Přezdívka</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="82" />
@@ -8389,7 +8517,7 @@ Proceed anyway?</translation>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="89" />
       <source>Generate</source>
-      <translation>Generate</translation>
+      <translation>Generovat</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.cpp" line="138" />
@@ -8515,7 +8643,7 @@ p, li { white-space: pre-wrap; }
     <message>
       <location filename="../../src/yuzu/render/performance_overlay.ui" line="14" />
       <source>Form</source>
-      <translation>Form</translation>
+      <translation>Formulář</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/render/performance_overlay.ui" line="32" />
@@ -8643,13 +8771,6 @@ p, li { white-space: pre-wrap; }
       <location filename="../../src/yuzu/user_data_migration.cpp" line="68" />
       <source>Link Old Directory</source>
       <translation>Link Old Directory</translation>
-    </message>
-    <message>
-      <location filename="../../src/yuzu/user_data_migration.cpp" line="98" />
-      <source>
-      </source>
-      <translation>
-      </translation>
     </message>
     <message>
       <location filename="../../src/yuzu/user_data_migration.cpp" line="102" />
@@ -9225,7 +9346,7 @@ p, li { white-space: pre-wrap; }
     <message>
       <location filename="../../src/qt_common/util/content.cpp" line="30" />
       <source>Game Requires Firmware</source>
-      <translation>Game Requires Firmware</translation>
+      <translation>Hra vyžaduje firmware</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/content.cpp" line="31" />
@@ -9281,7 +9402,7 @@ p, li { white-space: pre-wrap; }
       <location filename="../../src/qt_common/util/content.cpp" line="223" />
       <location filename="../../src/qt_common/util/content.cpp" line="282" />
       <source>Integrity verification succeeded!</source>
-      <translation>Integrity verification succeeded!</translation>
+      <translation>Integrita potvrzena</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/content.cpp" line="224" />
@@ -9293,7 +9414,7 @@ p, li { white-space: pre-wrap; }
       <location filename="../../src/qt_common/util/content.cpp" line="227" />
       <location filename="../../src/qt_common/util/content.cpp" line="288" />
       <source>Integrity verification failed!</source>
-      <translation>Integrity verification failed!</translation>
+      <translation>Chyba ověření</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/content.cpp" line="228" />
@@ -9303,7 +9424,7 @@ p, li { white-space: pre-wrap; }
     <message>
       <location filename="../../src/qt_common/util/content.cpp" line="232" />
       <source>Integrity verification couldn't be performed</source>
-      <translation>Integrity verification couldn't be performed</translation>
+      <translation>Ověření nelze provést</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/content.cpp" line="233" />
@@ -9738,7 +9859,7 @@ Would you like to manually select a portable folder to use?</translation>
     <message>
       <location filename="../../src/qt_common/util/game.cpp" line="347" />
       <source>Reset Metadata Cache</source>
-      <translation>Reset Metadata Cache</translation>
+      <translation>Resetovat mezipaměť metadat</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/game.cpp" line="353" />
@@ -9758,7 +9879,7 @@ Would you like to manually select a portable folder to use?</translation>
     <message>
       <location filename="../../src/qt_common/util/game.cpp" line="381" />
       <source>Create Shortcut</source>
-      <translation>Create Shortcut</translation>
+      <translation>Vytvořit Zástupce</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/game.cpp" line="381" />
@@ -9937,12 +10058,12 @@ Most mods are RomFS mods, but patches (.pchtxt) are typically ExeFS mods.</trans
     <message>
       <location filename="../../src/qt_common/qt_string_lookup.h" line="81" />
       <source>One or more keys failed to copy.</source>
-      <translation>One or more keys failed to copy.</translation>
+      <translation>Jeden nebo více klíčů se nepodařilo zkopírovat.</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/qt_string_lookup.h" line="83" />
       <source>Verify your keys file has a .keys extension and try again.</source>
-      <translation>Verify your keys file has a .keys extension and try again.</translation>
+      <translation>Ujistěte se, že soubor s klíči má příponu .keys a zkuste to znovu.</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/qt_string_lookup.h" line="85" />
@@ -10163,7 +10284,7 @@ This is recommended if you want to share data between emulators.</translation>
       <location filename="../../src/yuzu/applets/qt_controller.ui" line="2303" />
       <location filename="../../src/yuzu/applets/qt_controller.cpp" line="486" />
       <source>Handheld</source>
-      <translation>Handheld</translation>
+      <translation>Příruční</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/applets/qt_controller.ui" line="1126" />
@@ -10556,7 +10677,7 @@ By selecting "From Eden", previous save data stored in Ryujinx will be deleted, 
     <message>
       <location filename="../../src/yuzu/updater/update_dialog.ui" line="14" />
       <source>Update Available</source>
-      <translation>Update Available</translation>
+      <translation>Je dostupná aktualizace</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/updater/update_dialog.ui" line="20" />
@@ -10645,4 +10766,295 @@ Error code: %3</translation>
       <translation>Successfully downloaded %1. Would you like to open it?</translation>
     </message>
   </context>
+<context>
+    <name>QPlatformTheme</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Zrušit</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Zavřít</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Pomoc</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Vrátit výchozí nastavení</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Nápověda</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Resetovat</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Přerušit</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Uložit</translation>
+    </message>
+</context>
+<context>
+    <name>QDialogButtonBox</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Zrušit</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Zavřít</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Pomoc</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Vrátit výchozí nastavení</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Nápověda</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Resetovat</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Přerušit</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Uložit</translation>
+    </message>
+</context>
+<context>
+    <name>QMessageBox</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Zrušit</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Zavřít</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Pomoc</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Vrátit výchozí nastavení</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Nápověda</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Resetovat</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Přerušit</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Uložit</translation>
+    </message>
+</context>
+<context>
+    <name>QGuiApplication</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Zrušit</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Zavřít</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Pomoc</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Vrátit výchozí nastavení</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Nápověda</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Resetovat</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Přerušit</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Uložit</translation>
+    </message>
+</context>
+<context>
+    <name>QAbstractButton</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Zrušit</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Zavřít</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Pomoc</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Vrátit výchozí nastavení</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Nápověda</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Resetovat</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Přerušit</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Uložit</translation>
+    </message>
+</context>
+<context>
+    <name>QColorDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Zrušit</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Zavřít</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Pomoc</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Vrátit výchozí nastavení</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Nápověda</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Resetovat</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Přerušit</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Uložit</translation>
+    </message>
+</context>
+<context>
+    <name>QFileDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Zrušit</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Zavřít</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Pomoc</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Vrátit výchozí nastavení</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Nápověda</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Resetovat</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Přerušit</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Uložit</translation>
+    </message>
+</context>
+<context>
+    <name>QFontDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Zrušit</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Zavřít</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Pomoc</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Vrátit výchozí nastavení</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Nápověda</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Resetovat</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Přerušit</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Uložit</translation>
+    </message>
+</context>
+<context>
+    <name>QtController</name>
+    <message>
+        <source>Console Mode</source>
+        <translation>Režim konzole</translation>
+    </message>
+    <message>
+        <source>Vibration</source>
+        <translation>Vibrace</translation>
+    </message>
+</context>
 </TS>

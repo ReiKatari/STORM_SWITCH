@@ -64,8 +64,8 @@ ConfigurePerGameAddons::ConfigurePerGameAddons(Core::System& system_, QWidget* p
     tree_view->header()->resizeSection(0, 180);
     tree_view->header()->resizeSection(1, 480);
 
-    ui->folder->setText(tr("📁 Установить мод из папки..."));
-    ui->zip->setText(tr("📦 Установить мод из архива (ZIP)..."));
+    ui->folder->setText(tr("Установить мод из папки..."));
+    ui->zip->setText(tr("Установить мод из архива (ZIP)..."));
     ui->folder->setVisible(true);
     ui->zip->setVisible(true);
 
@@ -80,6 +80,8 @@ ConfigurePerGameAddons::ConfigurePerGameAddons(Core::System& system_, QWidget* p
     ui->scrollArea->setLayout(layout);
 
     ui->scrollArea->setEnabled(!system.IsPoweredOn());
+    ui->folder->setEnabled(!system.IsPoweredOn());
+    ui->zip->setEnabled(!system.IsPoweredOn());
 
     connect(item_model, &QStandardItemModel::itemChanged, this,
             &ConfigurePerGameAddons::OnItemChanged);
@@ -518,6 +520,9 @@ void ConfigurePerGameAddons::LoadConfiguration() {
                 version_display = QStringLiteral("1.0.0");
             }
         } else if (patch.type == FileSys::PatchType::Mod) {
+            if (QString::fromStdString(patch.name).compare(QStringLiteral("SDMC"), Qt::CaseInsensitive) == 0) {
+                continue;
+            }
             name = tr("Модификация #%1").arg(mod_counter++);
             version_display = QString::fromStdString(patch.name);
         }

@@ -2056,7 +2056,7 @@ When a program attempts to open the controller applet, it is immediately closed.
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="642" />
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="655" />
       <source>Off</source>
-      <translation>Off</translation>
+      <translation>Apagat</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="643" />
@@ -2190,7 +2190,27 @@ When a program attempts to open the controller applet, it is immediately closed.
       <source>Grid View</source>
       <translation>Grid View</translation>
     </message>
-  </context>
+      <message>
+        <source>Theme:</source>
+        <translation>Tema:</translation>
+    </message>
+    <message>
+        <source>Interface language:</source>
+        <translation>Idioma de la interfície:</translation>
+    </message>
+    <message>
+        <source>Reset All Settings</source>
+        <translation>Reiniciar tots els paràmetres</translation>
+    </message>
+    <message>
+        <source>Console Mode</source>
+        <translation>Mode de la consola</translation>
+    </message>
+    <message>
+        <source>Slow</source>
+        <translation>Lent</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureApplets</name>
     <message>
@@ -2557,7 +2577,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="235" />
       <source>Off</source>
-      <translation>Off</translation>
+      <translation>Apagat</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="240" />
@@ -3327,7 +3347,11 @@ Would you like to delete the old save data?</translation>
       <source>VSync On</source>
       <translation>VSync Encés</translation>
     </message>
-  </context>
+      <message>
+        <source>VSync Mode:</source>
+        <translation>Mode de sincronització vertical:</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureGraphicsAdvanced</name>
     <message>
@@ -3351,7 +3375,7 @@ Would you like to delete the old save data?</translation>
     <message>
       <location filename="../../src/yuzu/configuration/configure_graphics_extensions.ui" line="14" />
       <source>Form</source>
-      <translation>Form</translation>
+      <translation>Formulari</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_graphics_extensions.ui" line="17" />
@@ -4572,7 +4596,11 @@ Per invertir els eixos, primer moveu el joystick verticalment i després horitzo
       <source>UDP Test or calibration configuration is in progress.&lt;br&gt;Please wait for them to finish.</source>
       <translation>La prova del UDP o la configuració de la calibració està en curs.&lt;br&gt;Si us plau, esperi a que acabi el procés.</translation>
     </message>
-  </context>
+      <message>
+        <source>Motion / Touch</source>
+        <translation>Moviment / Tàctil</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureMousePanning</name>
     <message>
@@ -4795,7 +4823,7 @@ Current values are %1% and %2% respectively.</translation>
     <message>
       <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="86" />
       <source>Network</source>
-      <translation>Network</translation>
+      <translation>Xarxa</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="87" />
@@ -5206,7 +5234,19 @@ UUID: %2</translation>
       <source>Warning: "%1" is not a valid language for region "%2"</source>
       <translation>Alerta: "%1" no és un llenguatge vàlid per la regió "%2"</translation>
     </message>
-  </context>
+      <message>
+        <source>Console Mode</source>
+        <translation>Mode de la consola</translation>
+    </message>
+    <message>
+        <source>Limit Speed Percent</source>
+        <translation>Limitar percentatge de velocitat</translation>
+    </message>
+    <message>
+        <source>Language:</source>
+        <translation>Idioma:</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureTas</name>
     <message>
@@ -5580,7 +5620,15 @@ Arrossegui els punts per a canviar la posició, o faci doble clic a les cel·les
       <comment>Screenshot width value</comment>
       <translation>Automàtic (%1 x %2, %3 x %4)</translation>
     </message>
-  </context>
+      <message>
+        <source>Language:</source>
+        <translation>Idioma:</translation>
+    </message>
+    <message>
+        <source>Screenshots Path:</source>
+        <translation>Ruta de les captures de pantalla:</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureVibration</name>
     <message>
@@ -5727,7 +5775,11 @@ Arrossegui els punts per a canviar la posició, o faci doble clic a les cel·les
       <comment>Tooltip</comment>
       <translation>Must be 48 characters, and lowercase a-z</translation>
     </message>
-  </context>
+      <message>
+        <source>Username:</source>
+        <translation>Nom d'usuari:</translation>
+    </message>
+</context>
   <context>
     <name>ControllerDialog</name>
     <message>
@@ -5784,7 +5836,7 @@ Arrossegui els punts per a canviar la posició, o faci doble clic a les cel·les
     <message>
       <location filename="../../src/yuzu/data_widget.ui" line="14" />
       <source>Form</source>
-      <translation>Form</translation>
+      <translation>Formulari</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/data_widget.ui" line="22" />
@@ -6306,7 +6358,7 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="194" />
       <source>Name</source>
-      <translation>Name</translation>
+      <translation>Nom</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="195" />
@@ -6321,7 +6373,7 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="197" />
       <source>Size</source>
-      <translation>Size</translation>
+      <translation>Mida</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="198" />
@@ -6518,7 +6570,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="41" />
       <source>Configure</source>
-      <translation>Configure</translation>
+      <translation>Configurar</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="42" />
@@ -6563,7 +6615,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="50" />
       <source>Create Room</source>
-      <translation>Create Room</translation>
+      <translation>Crear sala</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="51" />
@@ -6573,7 +6625,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="52" />
       <source>Leave Room</source>
-      <translation>Leave Room</translation>
+      <translation>Abandonar la sala</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="53" />
@@ -7268,7 +7320,7 @@ Debug Message:</translation>
       <location filename="../../src/yuzu/main_window.cpp" line="876" />
       <location filename="../../src/yuzu/main_window.cpp" line="879" />
       <source>Disable Web Applet</source>
-      <translation>Disable Web Applet</translation>
+      <translation>Desactivar el Web Applet</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="880" />
@@ -7851,7 +7903,7 @@ Please, only use this feature to install updates and DLC.</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3975" />
       <source>Capture Screenshot</source>
-      <translation>Capture Screenshot</translation>
+      <translation>Captura de pantalla</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3976" />
@@ -8068,7 +8120,7 @@ Would you like to bypass this and exit anyway?</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="43" />
       <source>Zero-Tangent</source>
-      <translation>Zero-Tangent</translation>
+      <translation>Tangència zero</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="44" />
@@ -8138,12 +8190,12 @@ Would you like to bypass this and exit anyway?</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="66" />
       <source>Fast</source>
-      <translation>Fast</translation>
+      <translation>Ràpid</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="67" />
       <source>Accurate</source>
-      <translation>Accurate</translation>
+      <translation>Precís</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="71" />
@@ -8170,7 +8222,19 @@ Would you like to bypass this and exit anyway?</translation>
       <source>Null</source>
       <translation>Nul</translation>
     </message>
-  </context>
+      <message>
+        <source>Fullscreen</source>
+        <translation>Pantalla Completa</translation>
+    </message>
+    <message>
+        <source>Mii Edit</source>
+        <translation>Editor de Mii</translation>
+    </message>
+    <message>
+        <source>Install Files to NAND</source>
+        <translation>Instal·lar arxius a la NAND</translation>
+    </message>
+</context>
   <context>
     <name>MigrationWorker</name>
     <message>
@@ -8378,7 +8442,7 @@ Proceed anyway?</translation>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="70" />
       <source>Username</source>
-      <translation>Username</translation>
+      <translation>Nom d'usuari</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="82" />
@@ -8514,7 +8578,7 @@ p, li { white-space: pre-wrap; }
     <message>
       <location filename="../../src/yuzu/render/performance_overlay.ui" line="14" />
       <source>Form</source>
-      <translation>Form</translation>
+      <translation>Formulari</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/render/performance_overlay.ui" line="32" />
@@ -8642,13 +8706,6 @@ p, li { white-space: pre-wrap; }
       <location filename="../../src/yuzu/user_data_migration.cpp" line="68" />
       <source>Link Old Directory</source>
       <translation>Link Old Directory</translation>
-    </message>
-    <message>
-      <location filename="../../src/yuzu/user_data_migration.cpp" line="98" />
-      <source>
-      </source>
-      <translation>
-      </translation>
     </message>
     <message>
       <location filename="../../src/yuzu/user_data_migration.cpp" line="102" />
@@ -9737,7 +9794,7 @@ Would you like to manually select a portable folder to use?</translation>
     <message>
       <location filename="../../src/qt_common/util/game.cpp" line="347" />
       <source>Reset Metadata Cache</source>
-      <translation>Reset Metadata Cache</translation>
+      <translation>Reiniciar cache de metadades</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/game.cpp" line="353" />
@@ -10644,4 +10701,231 @@ Error code: %3</translation>
       <translation>Successfully downloaded %1. Would you like to open it?</translation>
     </message>
   </context>
+<context>
+    <name>QPlatformTheme</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Cancel·lar</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Ajuda</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>D'acord</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Restaurar els valors predeterminats</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Reiniciar</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Guardar</translation>
+    </message>
+</context>
+<context>
+    <name>QDialogButtonBox</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Cancel·lar</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Ajuda</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>D'acord</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Restaurar els valors predeterminats</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Reiniciar</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Guardar</translation>
+    </message>
+</context>
+<context>
+    <name>QMessageBox</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Cancel·lar</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Ajuda</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>D'acord</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Restaurar els valors predeterminats</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Reiniciar</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Guardar</translation>
+    </message>
+</context>
+<context>
+    <name>QGuiApplication</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Cancel·lar</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Ajuda</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>D'acord</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Restaurar els valors predeterminats</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Reiniciar</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Guardar</translation>
+    </message>
+</context>
+<context>
+    <name>QAbstractButton</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Cancel·lar</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Ajuda</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>D'acord</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Restaurar els valors predeterminats</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Reiniciar</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Guardar</translation>
+    </message>
+</context>
+<context>
+    <name>QColorDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Cancel·lar</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Ajuda</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>D'acord</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Restaurar els valors predeterminats</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Reiniciar</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Guardar</translation>
+    </message>
+</context>
+<context>
+    <name>QFileDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Cancel·lar</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Ajuda</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>D'acord</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Restaurar els valors predeterminats</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Reiniciar</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Guardar</translation>
+    </message>
+</context>
+<context>
+    <name>QFontDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Cancel·lar</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Ajuda</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>D'acord</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Restaurar els valors predeterminats</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Reiniciar</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Guardar</translation>
+    </message>
+</context>
+<context>
+    <name>QtController</name>
+    <message>
+        <source>Console Mode</source>
+        <translation>Mode de la consola</translation>
+    </message>
+    <message>
+        <source>Vibration</source>
+        <translation>Vibració</translation>
+    </message>
+</context>
 </TS>

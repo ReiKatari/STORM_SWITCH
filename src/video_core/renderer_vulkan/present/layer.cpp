@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <algorithm>
+#include <cstdlib>
 #include <chrono>
 #include <variant>
 #include "video_core/present.h"
@@ -204,11 +205,21 @@ void Layer::CreateRawImages(const Device& device, const Tegra::FramebufferConfig
     }
 }
 
+void Layer::WaitForAllResources() {
+    scheduler.RequestOutsideRenderPassOperationContext();
+    scheduler.Finish();
+    for (const u64 tick : resource_ticks) {
+        scheduler.Wait(tick);
+    }
+}
+
 void Layer::RefreshResources(const Device& device, const Tegra::FramebufferConfig& framebuffer) {
     if (framebuffer.width == raw_width && framebuffer.height == raw_height &&
         framebuffer.pixel_format == pixel_format && !raw_images.empty()) {
         return;
     }
+
+    WaitForAllResources();
 
     raw_width = framebuffer.width;
     raw_height = framebuffer.height;
@@ -222,48 +233,86 @@ void Layer::RefreshResources(const Device& device, const Tegra::FramebufferConfi
 
 void Layer::SetAntiAliasPass(const Device& device, VkExtent2D render_area) {
     const auto active_aa = filters.get_anti_aliasing();
-    if (!std::holds_alternative<std::monostate>(anti_alias) &&
-        anti_alias_setting == active_aa &&
+    if (anti_alias_setting == active_aa &&
         current_aa_extent.width == render_area.width &&
         current_aa_extent.height == render_area.height) {
         return;
     }
 
+    if (!std::holds_alternative<std::monostate>(anti_alias)) {
+        WaitForAllResources();
+    }
+
     anti_alias_setting = active_aa;
     current_aa_extent = render_area;
 
-    switch (anti_alias_setting) {
-    case Settings::AntiAliasing::Fxaa:
-        anti_alias.emplace<FXAA>(device, memory_allocator, image_count, render_area);
-        break;
-    case Settings::AntiAliasing::Smaa:
-        anti_alias.emplace<SMAA>(device, memory_allocator, image_count, render_area);
-        break;
-    default:
+    const u32 max_dim = (std::min)({device.GetMaxImageDimension2D(),
+                                    device.GetMaxFramebufferWidth(),
+                                    device.GetMaxFramebufferHeight()});
+    const u64 aa_pixels = static_cast<u64>(render_area.width) * static_cast<u64>(render_area.height);
+    // Above 4K (3X..8X), native supersampling downscaling already provides superior anti-aliasing,
+    // whereas full-res FP16 SMAA/FXAA buffers consume 2-8+ GB of VRAM and risk OOM/stalls.
+    if (render_area.width == 0 || render_area.height == 0 ||
+        render_area.width > max_dim || render_area.height > max_dim ||
+        aa_pixels > 3840ULL * 2160ULL) {
+        if (anti_alias_setting != Settings::AntiAliasing::None) {
+            LOG_INFO(Render_Vulkan,
+                     "Bypassing post-process AA pass at {}x{} (supersampled >=3X / max {})",
+                     render_area.width, render_area.height, max_dim);
+        }
         anti_alias.emplace<std::monostate>();
-        break;
+        return;
+    }
+
+    try {
+        switch (anti_alias_setting) {
+        case Settings::AntiAliasing::Fxaa:
+            anti_alias.emplace<FXAA>(device, memory_allocator, image_count, render_area);
+            break;
+        case Settings::AntiAliasing::Smaa:
+            anti_alias.emplace<SMAA>(device, memory_allocator, image_count, render_area);
+            break;
+        default:
+            anti_alias.emplace<std::monostate>();
+            break;
+        }
+    } catch (const vk::Exception& e) {
+        LOG_WARNING(Render_Vulkan,
+                    "AA pass allocation failed at {}x{} ({}); falling back to no AA",
+                    render_area.width, render_area.height, e.what());
+        anti_alias.emplace<std::monostate>();
     }
 }
 
 void Layer::UpdateScalingFilter(const Device& device, VkExtent2D output_size) {
     const auto active_filter = filters.get_scaling_filter();
-    if (!std::holds_alternative<std::monostate>(sr_filter) &&
-        scaling_filter_setting == active_filter &&
+    if (scaling_filter_setting == active_filter &&
         current_output_size.width == output_size.width &&
         current_output_size.height == output_size.height) {
         return;
     }
 
+    if (!std::holds_alternative<std::monostate>(sr_filter)) {
+        WaitForAllResources();
+    }
+
     scaling_filter_setting = active_filter;
     current_output_size = output_size;
 
-    if (scaling_filter_setting == Settings::ScalingFilter::Fsr) {
-        sr_filter.emplace<FSR>(device, memory_allocator, image_count, current_output_size);
-    } else if (scaling_filter_setting == Settings::ScalingFilter::Sgsr) {
-        sr_filter.emplace<SGSR>(device, memory_allocator, image_count, current_output_size, false);
-    } else if (scaling_filter_setting == Settings::ScalingFilter::SgsrEdge) {
-        sr_filter.emplace<SGSR>(device, memory_allocator, image_count, current_output_size, true);
-    } else {
+    try {
+        if (scaling_filter_setting == Settings::ScalingFilter::Fsr) {
+            sr_filter.emplace<FSR>(device, memory_allocator, image_count, current_output_size);
+        } else if (scaling_filter_setting == Settings::ScalingFilter::Sgsr) {
+            sr_filter.emplace<SGSR>(device, memory_allocator, image_count, current_output_size, false);
+        } else if (scaling_filter_setting == Settings::ScalingFilter::SgsrEdge) {
+            sr_filter.emplace<SGSR>(device, memory_allocator, image_count, current_output_size, true);
+        } else {
+            sr_filter.emplace<std::monostate>();
+        }
+    } catch (const vk::Exception& e) {
+        LOG_WARNING(Render_Vulkan,
+                    "Scaling filter allocation failed at {}x{} ({}); falling back to default",
+                    output_size.width, output_size.height, e.what());
         sr_filter.emplace<std::monostate>();
     }
 }

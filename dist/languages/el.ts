@@ -1388,7 +1388,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="453" />
       <source>Debugging</source>
-      <translation>Debugging</translation>
+      <translation>Εντοπισμός Σφαλμάτων</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="457" />
@@ -2192,7 +2192,23 @@ When a program attempts to open the controller applet, it is immediately closed.
       <source>Grid View</source>
       <translation>Grid View</translation>
     </message>
-  </context>
+      <message>
+        <source>Theme:</source>
+        <translation>Θέμα:</translation>
+    </message>
+    <message>
+        <source>Interface language:</source>
+        <translation>Γλώσσα διεπαφής:</translation>
+    </message>
+    <message>
+        <source>Reset All Settings</source>
+        <translation>Επαναφορά Όλων των Ρυθμίσεων</translation>
+    </message>
+    <message>
+        <source>Console Mode</source>
+        <translation>Λειτουργία Κονσόλας</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureApplets</name>
     <message>
@@ -3348,7 +3364,7 @@ Would you like to delete the old save data?</translation>
     <message>
       <location filename="../../src/yuzu/configuration/configure_graphics_extensions.ui" line="14" />
       <source>Form</source>
-      <translation>Form</translation>
+      <translation>Φόρμα</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_graphics_extensions.ui" line="17" />
@@ -4792,7 +4808,7 @@ Current values are %1% and %2% respectively.</translation>
     <message>
       <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="86" />
       <source>Network</source>
-      <translation>Network</translation>
+      <translation>Δίκτυο</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="87" />
@@ -5203,7 +5219,15 @@ UUID: %2</translation>
       <source>Warning: "%1" is not a valid language for region "%2"</source>
       <translation>Warning: "%1" is not a valid language for region "%2"</translation>
     </message>
-  </context>
+      <message>
+        <source>Console Mode</source>
+        <translation>Λειτουργία Κονσόλας</translation>
+    </message>
+    <message>
+        <source>Limit Speed Percent</source>
+        <translation>Όριο Ποσοστού Ταχύτητας</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureTas</name>
     <message>
@@ -5724,7 +5748,15 @@ Drag points to change position, or double-click table cells to edit values.</tra
       <comment>Tooltip</comment>
       <translation>Must be 48 characters, and lowercase a-z</translation>
     </message>
-  </context>
+      <message>
+        <source>Token:</source>
+        <translation>Διαπιστευτήριο:</translation>
+    </message>
+    <message>
+        <source>Username:</source>
+        <translation>Όνομα χρήστη:</translation>
+    </message>
+</context>
   <context>
     <name>ControllerDialog</name>
     <message>
@@ -5781,7 +5813,7 @@ Drag points to change position, or double-click table cells to edit values.</tra
     <message>
       <location filename="../../src/yuzu/data_widget.ui" line="14" />
       <source>Form</source>
-      <translation>Form</translation>
+      <translation>Φόρμα</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/data_widget.ui" line="22" />
@@ -5839,7 +5871,7 @@ Drag points to change position, or double-click table cells to edit values.</tra
     <message>
       <location filename="../../src/yuzu/deps_dialog.cpp" line="22" />
       <source>Version</source>
-      <translation>Version</translation>
+      <translation>Έκδοση</translation>
     </message>
   </context>
   <context>
@@ -6007,7 +6039,7 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
     <message>
       <location filename="../../src/yuzu/multiplayer/message.cpp" line="63" />
       <source>Error</source>
-      <translation>Error</translation>
+      <translation>Σφάλμα</translation>
     </message>
   </context>
   <context>
@@ -6303,7 +6335,7 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="194" />
       <source>Name</source>
-      <translation>Name</translation>
+      <translation>Όνομα</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="195" />
@@ -6318,7 +6350,7 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="197" />
       <source>Size</source>
-      <translation>Size</translation>
+      <translation>Μέγεθος</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="198" />
@@ -6515,7 +6547,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="41" />
       <source>Configure</source>
-      <translation>Configure</translation>
+      <translation>Διαμόρφωση</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="42" />
@@ -6570,7 +6602,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="52" />
       <source>Leave Room</source>
-      <translation>Leave Room</translation>
+      <translation>Αποχώρηση Δωματίου</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="53" />
@@ -7544,7 +7576,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2676" />
       <source>Properties</source>
-      <translation>Properties</translation>
+      <translation>Ιδιότητες</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2677" />
@@ -7560,7 +7592,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2743" />
       <source>Load File</source>
-      <translation>Load File</translation>
+      <translation>Φόρτωση αρχείου</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2756" />
@@ -7720,7 +7752,7 @@ Please, only use this feature to install updates and DLC.</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3082" />
       <source>OK</source>
-      <translation>OK</translation>
+      <translation>Εντάξει</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3100" />
@@ -7777,7 +7809,7 @@ Please, only use this feature to install updates and DLC.</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3704" />
       <source>Error</source>
-      <translation>Error</translation>
+      <translation>Σφάλμα</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3704" />
@@ -7848,7 +7880,7 @@ Please, only use this feature to install updates and DLC.</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3975" />
       <source>Capture Screenshot</source>
-      <translation>Capture Screenshot</translation>
+      <translation>Λήψη στιγμιότυπου οθόνης</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3976" />
@@ -8055,12 +8087,12 @@ Would you like to bypass this and exit anyway?</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="40" />
       <source>Bilinear</source>
-      <translation>Bilinear</translation>
+      <translation>Διγραμμικό</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="41" />
       <source>Bicubic</source>
-      <translation>Bicubic</translation>
+      <translation>Δικυβικό</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="43" />
@@ -8140,7 +8172,7 @@ Would you like to bypass this and exit anyway?</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="67" />
       <source>Accurate</source>
-      <translation>Accurate</translation>
+      <translation>Ακριβής</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="71" />
@@ -8167,7 +8199,11 @@ Would you like to bypass this and exit anyway?</translation>
       <source>Null</source>
       <translation>Null</translation>
     </message>
-  </context>
+      <message>
+        <source>Fullscreen</source>
+        <translation>Πλήρη Οθόνη</translation>
+    </message>
+</context>
   <context>
     <name>MigrationWorker</name>
     <message>
@@ -8375,7 +8411,7 @@ Proceed anyway?</source>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="70" />
       <source>Username</source>
-      <translation>Username</translation>
+      <translation>Όνομα χρήστη</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="82" />
@@ -8490,7 +8526,7 @@ Proceed anyway?</source>
       <location filename="../../src/yuzu/util/overlay_dialog.ui" line="152" />
       <location filename="../../src/yuzu/util/overlay_dialog.ui" line="371" />
       <source>OK</source>
-      <translation>OK</translation>
+      <translation>Εντάξει</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/util/overlay_dialog.ui" line="313" />
@@ -8511,7 +8547,7 @@ p, li { white-space: pre-wrap; }
     <message>
       <location filename="../../src/yuzu/render/performance_overlay.ui" line="14" />
       <source>Form</source>
-      <translation>Form</translation>
+      <translation>Φόρμα</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/render/performance_overlay.ui" line="32" />
@@ -8639,13 +8675,6 @@ p, li { white-space: pre-wrap; }
       <location filename="../../src/yuzu/user_data_migration.cpp" line="68" />
       <source>Link Old Directory</source>
       <translation>Link Old Directory</translation>
-    </message>
-    <message>
-      <location filename="../../src/yuzu/user_data_migration.cpp" line="98" />
-      <source>
-      </source>
-      <translation>
-      </translation>
     </message>
     <message>
       <location filename="../../src/yuzu/user_data_migration.cpp" line="102" />
@@ -9734,7 +9763,7 @@ Would you like to manually select a portable folder to use?</translation>
     <message>
       <location filename="../../src/qt_common/util/game.cpp" line="347" />
       <source>Reset Metadata Cache</source>
-      <translation>Reset Metadata Cache</translation>
+      <translation>Επαναφορά Προσωρινής Μνήμης Μεταδεδομένων</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/game.cpp" line="353" />
@@ -10461,7 +10490,7 @@ p, li { white-space: pre-wrap; }
       <location filename="../../src/yuzu/applets/qt_software_keyboard.cpp" line="405" />
       <location filename="../../src/yuzu/applets/qt_software_keyboard.cpp" line="415" />
       <source>OK</source>
-      <translation>OK</translation>
+      <translation>Εντάξει</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/applets/qt_software_keyboard.cpp" line="415" />
@@ -10641,4 +10670,167 @@ Error code: %3</translation>
       <translation>Successfully downloaded %1. Would you like to open it?</translation>
     </message>
   </context>
+<context>
+    <name>QPlatformTheme</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Άκυρο</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Εντάξει</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Επαναφορά Προεπιλογών</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Αποθήκευση</translation>
+    </message>
+</context>
+<context>
+    <name>QDialogButtonBox</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Άκυρο</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Εντάξει</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Επαναφορά Προεπιλογών</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Αποθήκευση</translation>
+    </message>
+</context>
+<context>
+    <name>QMessageBox</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Άκυρο</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Εντάξει</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Επαναφορά Προεπιλογών</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Αποθήκευση</translation>
+    </message>
+</context>
+<context>
+    <name>QGuiApplication</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Άκυρο</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Εντάξει</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Επαναφορά Προεπιλογών</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Αποθήκευση</translation>
+    </message>
+</context>
+<context>
+    <name>QAbstractButton</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Άκυρο</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Εντάξει</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Επαναφορά Προεπιλογών</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Αποθήκευση</translation>
+    </message>
+</context>
+<context>
+    <name>QColorDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Άκυρο</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Εντάξει</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Επαναφορά Προεπιλογών</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Αποθήκευση</translation>
+    </message>
+</context>
+<context>
+    <name>QFileDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Άκυρο</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Εντάξει</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Επαναφορά Προεπιλογών</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Αποθήκευση</translation>
+    </message>
+</context>
+<context>
+    <name>QFontDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Άκυρο</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Εντάξει</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Επαναφορά Προεπιλογών</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Αποθήκευση</translation>
+    </message>
+</context>
+<context>
+    <name>QtController</name>
+    <message>
+        <source>Console Mode</source>
+        <translation>Λειτουργία Κονσόλας</translation>
+    </message>
+    <message>
+        <source>Vibration</source>
+        <translation>Δόνηση</translation>
+    </message>
+</context>
 </TS>

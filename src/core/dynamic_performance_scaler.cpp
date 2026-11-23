@@ -205,11 +205,14 @@ void DynamicPerformanceScaler::Reset() {
     const double target_time = target_frame_time_ms.load(std::memory_order_relaxed);
     smoothed_frametime.store(target_time, std::memory_order_relaxed);
 
-    // Restore user's resolution
+    // Restore user's resolution only if DPS actually scaled down during the session
     const auto user_level = kLevelOrder[max_lvl];
     s_effective_scale.store(LevelToScaleMultiplier(user_level), std::memory_order_relaxed);
-    Settings::values.resolution_setup.SetValue(user_level);
-    Settings::UpdateRescalingInfo();
+    if (Settings::values.resolution_setup.GetValue() != user_level &&
+        Settings::values.dynamic_performance_scaler.GetValue()) {
+        Settings::values.resolution_setup.SetValue(user_level);
+        Settings::UpdateRescalingInfo();
+    }
 }
 
 } // namespace Core

@@ -98,8 +98,18 @@ Nx2VideoDecoder::Nx2VideoDecoder(std::string_view mime) : impl{std::make_unique<
         return;
     }
     impl->context.emplace(*impl->decoder);
+    // For Switch 2 VP8/VP9 video streams (e.g. looping 960x540 tutorial videos), Windows D3D11VA
+    // hardware decode frequently corrupts DPB reference frames across avcodec_flush_buffers() loops
+    // (causing black macroblocks & missing timestamps). FFmpeg software VP8/VP9 runs on the dedicated
+    // nx2:vdec host thread at >1000 FPS with <1% CPU and exact PTS/frame fidelity.
+    static const bool force_hw_vpx = [] {
+        const char* v = std::getenv("EDEN_NX2_VDEC_HW");
+        return v != nullptr && v[0] == '1';
+    }();
+    const bool use_hw =
+        force_hw_vpx || (*codec != NvdecCommon::VideoCodec::VP9 && *codec != NvdecCommon::VideoCodec::VP8);
     const auto nvdec_mode = Settings::values.nvdec_emulation.GetValue();
-    if (nvdec_mode == Settings::NvdecEmulation::Gpu || nvdec_mode == Settings::NvdecEmulation::Hybrid) {
+    if (use_hw && (nvdec_mode == Settings::NvdecEmulation::Gpu || nvdec_mode == Settings::NvdecEmulation::Hybrid)) {
         try {
             impl->hardware.emplace();
             if (!impl->hardware->InitializeForDecoder(*impl->context, *impl->decoder)) {
@@ -142,7 +152,14 @@ void Nx2VideoDecoder::Decode(std::span<const u8> data, u64 pts, std::vector<Nx2P
         impl->pending_pts.erase(impl->pending_pts.begin());
     }
     impl->pending_pts.insert(pts);
-    impl->context->SendPacket(packet);
+    int send_ret = avcodec_send_packet(impl->context->GetCodecContext(), packet.GetPacket());
+    if (send_ret == AVERROR(EAGAIN)) {
+        impl->Receive(pictures);
+        send_ret = avcodec_send_packet(impl->context->GetCodecContext(), packet.GetPacket());
+    }
+    if (send_ret < 0 && send_ret != AVERROR_EOF && send_ret != AVERROR(EAGAIN)) {
+        LOG_DEBUG(HW_GPU, "nx2 video: avcodec_send_packet returned {}", send_ret);
+    }
     impl->Receive(pictures);
 }
 
@@ -162,14 +179,20 @@ void Nx2VideoDecoder::Reset() {
     impl->pending_pts.clear();
 }
 
-void Nx2VideoDecoder::Render(const Nx2Picture& picture, Nx2PictureFormat format, u32 width,
+bool Nx2VideoDecoder::Render(const Nx2Picture& picture, Nx2PictureFormat format, u32 width,
                              u32 height, u64 pitch, u64 chroma_offset, std::span<u8> out) {
     const AVFrame* f = picture.frame->GetFrame();
+    if (f == nullptr || f->format == AV_PIX_FMT_NONE || f->format == AV_PIX_FMT_D3D11 ||
+        f->format == AV_PIX_FMT_D3D12 || f->format == AV_PIX_FMT_VULKAN ||
+        f->format == AV_PIX_FMT_DXVA2_VLD || f->format == AV_PIX_FMT_CUDA ||
+        f->format == AV_PIX_FMT_VAAPI || f->format == AV_PIX_FMT_VIDEOTOOLBOX) {
+        return false;
+    }
     const u64 needed = format == Nx2PictureFormat::Nv12
                            ? chroma_offset + pitch * ((u64{height} + 1) / 2)
                            : pitch * height;
     if (width == 0 || height == 0 || out.size() < needed) {
-        return;
+        return false;
     }
     const AVPixelFormat target = format == Nx2PictureFormat::Nv12    ? AV_PIX_FMT_NV12
                                  : format == Nx2PictureFormat::Rgba8 ? AV_PIX_FMT_RGBA
@@ -182,7 +205,7 @@ void Nx2VideoDecoder::Render(const Nx2Picture& picture, Nx2PictureFormat format,
         LOG_ERROR(HW_GPU, "nx2 video: cannot convert {} to {}",
                   av_get_pix_fmt_name(static_cast<AVPixelFormat>(f->format)),
                   av_get_pix_fmt_name(target));
-        return;
+        return false;
     }
     if (format != Nx2PictureFormat::Nv12) {
         // The stream's matrix and range; untagged HD video is BT.709.
@@ -204,6 +227,7 @@ void Nx2VideoDecoder::Render(const Nx2Picture& picture, Nx2PictureFormat format,
         strides[1] = static_cast<int>(pitch);
     }
     sws_scale(impl->scaler, f->data, f->linesize, 0, f->height, planes.data(), strides.data());
+    return true;
 }
 
 } // namespace Tegra::Host1x

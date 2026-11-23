@@ -2775,12 +2775,25 @@ void StormGamesWorldDialog::PopulateGameList(const QString bitand filter) {
         item->setText(2, sz_str);
         item->setForeground(2, QBrush(QColor(pal.textPrimary)));
 
+        auto format_dlc_label = [](int n) -> QString {
+            const int mod10 = n % 10;
+            const int mod100 = n % 100;
+            QString ru_word = QStringLiteral("дополнений");
+            if (mod10 == 1 && mod100 != 11) {
+                ru_word = QStringLiteral("дополнение");
+            } else if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
+                ru_word = QStringLiteral("дополнения");
+            }
+            return StormLang(
+                QStringLiteral("%1 %2").arg(n).arg(ru_word),
+                QStringLiteral("%1 DLC").arg(n));
+        };
         if (g.dlc_count > 0 && g.mod_count > 0) {
-            item->setText(3, tr("%1 DLC  •  +%2 MOD").arg(g.dlc_count).arg(g.mod_count));
+            item->setText(3, QStringLiteral("%1  •  +%2 MOD").arg(format_dlc_label(g.dlc_count)).arg(g.mod_count));
             item->setForeground(3, QBrush(QColor(pal.accent)));
             item->setToolTip(3, tr("Дополнений: %1, Модификаций: %2 (нажмите для списка дополнений)").arg(g.dlc_count).arg(g.mod_count));
         } else if (g.dlc_count > 0) {
-            item->setText(3, tr("%1 DLC").arg(g.dlc_count));
+            item->setText(3, format_dlc_label(g.dlc_count));
             item->setForeground(3, QBrush(QColor(pal.accent)));
             item->setToolTip(3, tr("Нажмите для просмотра списка дополнений"));
         } else if (g.mod_count > 0) {
@@ -3009,7 +3022,7 @@ void StormGamesWorldDialog::DisplayGameDetails(const StormWorldGame& game) {
         dlc_badge->setText(tr("Дополнений: 0"));
         dlc_badge->setStyleSheet(QStringLiteral(
             "background: %1; border: none; "
-            "border-radius: 4px; padding: 2px 8px; color: %3; font-size: 11px; font-weight: bold;").arg(pal.surface, pal.border, pal.textSecondary));
+            "border-radius: 4px; padding: 2px 8px; color: %2; font-size: 11px; font-weight: bold;").arg(pal.surface, pal.textSecondary));
         dlc_badge->setToolTip(QString());
     }
 

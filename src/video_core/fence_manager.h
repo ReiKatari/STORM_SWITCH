@@ -22,6 +22,7 @@
 #include "video_core/gpu.h"
 #include "video_core/host1x/host1x.h"
 #include "video_core/host1x/syncpoint_manager.h"
+#include "video_core/nx2_profile.h"
 #include "video_core/rasterizer_interface.h"
 
 namespace VideoCommon {
@@ -72,13 +73,22 @@ public:
     }
 
     void SignalFence(std::function<void()>&& func) {
+        VideoCommon::Nx2Profile::Scope fence_scope{VideoCommon::Nx2Profile::Zone::Fence};
         const bool delay_fence = Settings::IsGPUFenceBehaviorStrict();
         const bool early_release = Settings::values.early_release_fences.GetValue() && !Settings::IsGPULevelHigh() && !Settings::IsGPULevelExtreme();
-        const bool should_flush = ShouldFlush();
+        bool should_flush = false;
+        {
+            std::scoped_lock lock{buffer_cache.mutex, texture_cache.mutex};
+            should_flush = texture_cache.HasUncommittedFlushes() ||
+                           buffer_cache.HasUncommittedFlushes() ||
+                           query_cache.HasUncommittedFlushes();
+            texture_cache.CommitAsyncFlushes();
+            buffer_cache.CommitAsyncFlushes();
+        }
         if constexpr (!can_async_check) {
             TryReleasePendingFences<false>();
         }
-        CommitAsyncFlushes();
+        query_cache.CommitAsyncFlushes();
         TFence new_fence = CreateFence(!should_flush);
         if constexpr (can_async_check) {
             guard.lock();
@@ -123,7 +133,8 @@ public:
                 wait_finished.store(true, std::memory_order_relaxed);
                 wait_cv.notify_all();
             });
-            SignalFence(std::move(func));
+            SyncOperation(std::move(func));
+            SignalReference();
             std::unique_lock lk(wait_mutex);
             wait_cv.wait(
                 lk, [&wait_finished] { return wait_finished.load(std::memory_order_relaxed); });

@@ -6684,15 +6684,37 @@ GameFixProfile(
             "Pokémon Pokopia",
             "• Просадки кадровой частоты ниже 30 FPS и нестабильность рендера на Snapdragon / Mali\n• Сбои декомпозиции 64/128-бит SSBO буферов растительности",
             "• Frame drops below 30 FPS and render instability on Snapdragon / Mali GPUs\n• SSBO misaligned 64/128-bit vector foliage buffer faults",
-            "✓ Память: 6 ГБ DRAM\n✓ Точность ГПУ: Обычная (Normal 60 FPS)\n✓ Быстрое время ГПУ: Включено\n✓ Асинхронные шейдеры: Включено",
-            "✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Enabled\n✓ Asynchronous Shaders: Enabled",
+            "✓ Память: 6 ГБ DRAM\n✓ Точность ГПУ: Обычная (Normal 60 FPS)\n✓ Быстрое время ГПУ: Отключено\n✓ Асинхронные шейдеры: Включено",
+            "✓ Memory Layout: 6GB DRAM\n✓ GPU Accuracy: Normal (Smooth 60 FPS)\n✓ Fast GPU Time: Disabled\n✓ Asynchronous Shaders: Enabled",
             mapOf(
                 "System\\memory_layout_mode" to "1",
-                "Renderer\\gpu_accuracy" to "2",
-                "Renderer\\use_fast_gpu_time" to "true",
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\early_release_fences" to "false",
                 "Renderer\\use_asynchronous_shaders" to "true"
             ),
             listOf(0x0400A3A01EE4C001L)
+        ),
+        GameFixProfile(
+            0x040074A01BF12000L,
+            "Donkey Kong Bananza",
+            "• Черный экран и падение FPS в 0 после экрана загрузки (дедлок межканальных семафоров NVN2)\n• Конфликт точности ГПУ и заборов на Switch 2",
+            "• Black screen and 0 FPS deadlock after loading screen (NVN2 cross-channel semaphore hang)\n• Switch 2 GPU accuracy and fence behavior conflict",
+            "✓ Точность ГПУ: Обычная (Normal)\n✓ Поведение заборов ГПУ: По умолчанию (Default)\n✓ Быстрое время ГПУ: Отключено\n✓ Ранний сброс заборов: Отключено",
+            "✓ GPU Accuracy: Normal\n✓ GPU Fence Behavior: Default\n✓ Fast GPU Time: Disabled\n✓ Early Release Fences: Disabled",
+            mapOf(
+                "Renderer\\gpu_accuracy" to "1",
+                "Renderer\\gpu_fence_behavior" to "0",
+                "Renderer\\use_fast_gpu_time" to "false",
+                "Renderer\\early_release_fences" to "false",
+                "Renderer\\dynamic_performance_scaler" to "false",
+                "Renderer\\enable_frame_skipping" to "false",
+                "Renderer\\vram_budget_governor" to "false",
+                "Renderer\\use_reactive_flushing" to "false",
+                "Renderer\\use_asynchronous_shaders" to "false"
+            ),
+            emptyList()
         ),
         GameFixProfile(
             0x0400DB000C0DE000L,

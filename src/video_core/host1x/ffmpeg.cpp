@@ -65,10 +65,16 @@ AVPixelFormat GetGpuFormat(AVCodecContext* codec_context, const AVPixelFormat* p
                 break;
             }
 
+            bool matched = false;
             for (const auto type : PreferredGpuDecoders) {
                 if (config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX && config->device_type == type) {
                     codec_context->pix_fmt = config->pix_fmt;
+                    matched = true;
+                    break;
                 }
+            }
+            if (matched) {
+                break;
             }
         }
     }

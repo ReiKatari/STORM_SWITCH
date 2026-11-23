@@ -66,6 +66,9 @@ void KScheduler::DisableScheduling(KernelCore& kernel) {
 void KScheduler::EnableScheduling(KernelCore& kernel, u64 cores_needing_scheduling) {
     auto* cur_thread = GetCurrentThreadPointer(kernel);
     if (!cur_thread) {
+        if (cores_needing_scheduling != 0) {
+            KScheduler::RescheduleCores(kernel, cores_needing_scheduling);
+        }
         return;
     }
     ASSERT(cur_thread->GetDisableDispatchCount() >= 1);
@@ -88,11 +91,14 @@ void KScheduler::EnableScheduling(KernelCore& kernel, u64 cores_needing_scheduli
 }
 
 void KScheduler::RescheduleCurrentHLEThread(KernelCore& kernel) {
-    if (kernel.IsShuttingDown()) {
-        return;
-    }
     auto* cur_thread = GetCurrentThreadPointer(kernel);
     if (!cur_thread) {
+        return;
+    }
+    if (kernel.IsShuttingDown()) {
+        if (cur_thread->GetDisableDispatchCount() > 0) {
+            cur_thread->EnableDispatch(kernel);
+        }
         return;
     }
     // HACK: we cannot schedule from this thread, it is not a core thread

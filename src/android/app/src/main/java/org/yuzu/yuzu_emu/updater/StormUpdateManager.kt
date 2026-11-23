@@ -42,7 +42,7 @@ object StormUpdateManager {
 
     fun parseVersionParts(versionStr: String): List<Int> {
         val clean = versionStr.trim().removePrefix("v").removePrefix("V").trim()
-        val parts = Regex("\\\\d+").findAll(clean).map { it.value.toIntOrNull() ?: 0 }.toMutableList()
+        val parts = Regex("\\d+").findAll(clean).map { it.value.toIntOrNull() ?: 0 }.toMutableList()
         while (parts.size < 3) {
             parts.add(0)
         }

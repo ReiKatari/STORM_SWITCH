@@ -7,6 +7,7 @@
 #include "core/core.h"
 #include "core/hle/kernel/k_event.h"
 #include "core/hle/kernel/k_synchronization_object.h"
+#include "core/hle/kernel/svc_results.h"
 #include "core/hle/service/os/mutex.h"
 
 namespace Service {
@@ -27,15 +28,22 @@ Mutex::~Mutex() {
 }
 
 void Mutex::lock() {
-    // Infinitely retry until we successfully clear the event.
+    // Infinitely retry until we successfully clear the event (unless shutting down).
     while (R_FAILED(m_event->GetReadableEvent().Reset(m_system.Kernel()))) {
+        if (m_system.Kernel().IsShuttingDown()) {
+            return;
+        }
         s32 index;
         Kernel::KSynchronizationObject* obj = &m_event->GetReadableEvent();
 
         // The event was already cleared!
         // Wait for it to become signaled again.
-        ASSERT(R_SUCCEEDED(
-            Kernel::KSynchronizationObject::Wait(m_system.Kernel(), &index, &obj, 1, -1)));
+        const Result res =
+            Kernel::KSynchronizationObject::Wait(m_system.Kernel(), &index, &obj, 1, -1);
+        if (res == Kernel::ResultTerminationRequested || m_system.Kernel().IsShuttingDown()) {
+            return;
+        }
+        ASSERT(R_SUCCEEDED(res));
     }
 
     // We successfully cleared the event, and now have exclusive ownership.

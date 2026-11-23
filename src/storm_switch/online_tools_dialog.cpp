@@ -94,7 +94,7 @@ public:
         const auto otd_pal = StormTheme::GetThemePalette();
         m_selected_badge->setStyleSheet(QStringLiteral(
             "background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 %1, stop:1 %2); "
-            "color: #06101e; "
+            "color: #FFFFFF; "
             ""
             "font-size: 11px; "
             "font-weight: bold; "
@@ -118,7 +118,7 @@ public:
                 "    border-radius: 8px;"
                 "}").arg(otd_pal.surface, otd_pal.bg, otd_pal.accent));
             m_title_label->setStyleSheet(QStringLiteral(
-                "font-size: 14px; font-weight: bold; color: %1; background: transparent;"));
+                "font-size: 14px; font-weight: bold; color: %1; background: transparent;").arg(otd_pal.textPrimary));
             m_sub_label->setStyleSheet(QStringLiteral(
                 "font-size: 11px; color: #38bdf8; background: transparent;"));
             m_selected_badge->setVisible(true);
@@ -131,9 +131,9 @@ public:
                 "    border-radius: 8px;"
                 "}").arg(otd_pal.card, otd_pal.border));
             m_title_label->setStyleSheet(QStringLiteral(
-                "font-size: 14px; font-weight: 500; color: %1; background: transparent;"));
+                "font-size: 14px; font-weight: 500; color: %1; background: transparent;").arg(otd_pal.textPrimary));
             m_sub_label->setStyleSheet(QStringLiteral(
-                "font-size: 11px; color: %1; background: transparent;"));
+                "font-size: 11px; color: %1; background: transparent;").arg(otd_pal.textSecondary));
             m_selected_badge->setVisible(false);
         }
     }

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="storm_prof_filter_all">Усі</string>
+    <string name="storm_prof_btn_save">Зберегти</string>
+    <string name="storm_prof_btn_import">Імпорт</string>
+    <string name="storm_prof_btn_apply">Застосувати</string>
+    <string name="storm_prof_btn_share">Створити</string>
+    <string name="storm_prof_btn_rename">Перейменувати</string>
+    <string name="storm_prof_btn_delete">Видалити</string>
+    <string name="storm_prof_preset_balanced_name">Баланс (Рекомендовано)</string>
+    <string name="storm_prof_save_btn">Зберегти</string>
+    <string name="storm_prof_rename_title">Перейменувати профіль</string>
+    <string name="storm_prof_delete_title">Видалити профіль</string>
+    <string name="storm_auto_btn_reset">Скинути</string>
+    <string name="storm_auto_param_cpu_backend">Бекенд ЦП</string>
+</resources>

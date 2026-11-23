@@ -76,9 +76,15 @@
               <property name="placeholderText">
                <string notr="true" extracomment="placeholder string that tells user default port">24872</string>
               </property>
+              <property name="minimumSize">
+               <size>
+                <width>88</width>
+                <height>0</height>
+               </size>
+              </property>
               <property name="maximumSize">
                <size>
-                <width>65</width>
+                <width>115</width>
                 <height>50</height>
                </size>
               </property>

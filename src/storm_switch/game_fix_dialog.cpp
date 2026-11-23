@@ -20,8 +20,11 @@
 #include <QDir>
 #include <QFile>
 #include <QFileDialog>
+#include <QGridLayout>
 #include <QGroupBox>
+#include <QGuiApplication>
 #include <QHBoxLayout>
+#include <QScreen>
 #include <QHeaderView>
 #include <QInputDialog>
 #include <QJsonDocument>
@@ -240,8 +243,19 @@ GameFixDialog::GameFixDialog(QWidget* parent, u64 title_id_, const QString& game
         QStringLiteral("STORM SWITCH - Auto-Konfiguration & Optimierung"),
         QStringLiteral("STORM SWITCH - Auto-configuration et optimisation")));
 
-    resize(860, 680);
-    setMinimumSize(720, 540);
+    QScreen* scr = (parent && parent->screen()) ? parent->screen() : QGuiApplication::primaryScreen();
+    if (scr) {
+        const QRect avail = scr->availableGeometry();
+        const int max_w = std::max(960, avail.width() - 60);
+        const int max_h = std::max(560, avail.height() - 80);
+        const int target_w = std::clamp(avail.width() - 90, std::min(1220, max_w), std::min(1400, max_w));
+        const int target_h = std::clamp((avail.height() * 76) / 100, std::min(600, max_h), std::min(740, max_h));
+        resize(target_w, target_h);
+        setMinimumSize(std::min(960, max_w), std::min(560, max_h));
+    } else {
+        resize(1280, 700);
+        setMinimumSize(960, 560);
+    }
     StormUI::StructureEngine::InstallEscDismiss(this);
 
 }
@@ -477,10 +491,10 @@ QString GameFixDialog::FormatSettingValue(const std::string& raw_key, const std:
     const std::string k = raw_key;
 
     if (k.find("gpu_accuracy") != std::string::npos) {
-        if (val == "0") return StormLang(QStringLiteral("Нормальная"), QStringLiteral("Normal"));
-        if (val == "1") return StormLang(QStringLiteral("Высокая"), QStringLiteral("High"));
-        if (val == "2") return StormLang(QStringLiteral("Экстремальная"), QStringLiteral("Extreme"));
-        if (val == "-1") return StormLang(QStringLiteral("Низкая"), QStringLiteral("Low"));
+        if (val == "0" || val == "-1") return StormLang(QStringLiteral("Низкая"), QStringLiteral("Low"));
+        if (val == "1") return StormLang(QStringLiteral("Обычная"), QStringLiteral("Normal"));
+        if (val == "2") return StormLang(QStringLiteral("Высокая"), QStringLiteral("High"));
+        if (val == "3") return StormLang(QStringLiteral("Экстремальная"), QStringLiteral("Extreme"));
     }
     if (k.find("cpu_accuracy") != std::string::npos) {
         if (val == "0") return StormLang(QStringLiteral("Авто"), QStringLiteral("Auto"));
@@ -613,24 +627,54 @@ void GameFixDialog::SetupUI() {
     const auto pal = StormTheme::GetThemePalette();
     const QColor acc(pal.accent);
     setProperty("_stormDialogThemed", true);
+    const QString mode_sel_bg = pal.is_light
+        ? QStringLiteral("rgba(%1, %2, %3, 0.14)").arg(acc.red()).arg(acc.green()).arg(acc.blue())
+        : QStringLiteral("rgba(%1, %2, %3, 0.20)").arg(acc.red()).arg(acc.green()).arg(acc.blue());
+    const QString mode_hover_bg = pal.is_light
+        ? QStringLiteral("rgba(%1, %2, %3, 0.08)").arg(acc.red()).arg(acc.green()).arg(acc.blue())
+        : QStringLiteral("rgba(%1, %2, %3, 0.11)").arg(acc.red()).arg(acc.green()).arg(acc.blue());
     setStyleSheet(StormDesign::BuildDialogStylesheet(pal) + QStringLiteral(
         "QScrollArea { background: transparent; border: none; }"
         "QWidget#ScrollContent { background: transparent; }"
-    ));
+        "QPushButton#GameFixModeCard {"
+        "  background: %1;"
+        "  background-color: %1;"
+        "  border: 1px solid %2;"
+        "  border-radius: 10px;"
+        "  text-align: left;"
+        "  padding: 0px;"
+        "}"
+        "QPushButton#GameFixModeCard:hover {"
+        "  background: %3;"
+        "  background-color: %3;"
+        "  border: 1px solid %4;"
+        "}"
+        "QPushButton#GameFixModeCard:checked {"
+        "  background: %5;"
+        "  background-color: %5;"
+        "  border: 2px solid %4;"
+        "}"
+        "QPushButton#GameFixModeCard:checked:hover {"
+        "  background: %5;"
+        "  background-color: %5;"
+        "  border: 2px solid %6;"
+        "}"
+    ).arg(pal.surface, pal.border, mode_hover_bg, pal.accent, mode_sel_bg, pal.accentHover));
 
     auto* root_lay = new QVBoxLayout(this);
-    root_lay->setContentsMargins(18, 18, 18, 18);
-    root_lay->setSpacing(12);
+    root_lay->setContentsMargins(14, 12, 14, 12);
+    root_lay->setSpacing(10);
 
     auto* scroll_area = new QScrollArea(this);
     scroll_area->setWidgetResizable(true);
     scroll_area->setFrameShape(QFrame::NoFrame);
-    StormUI::StructureEngine::EnforceScrollMargins(scroll_area, 14);
+    StormUI::StructureEngine::EnforceScrollMargins(scroll_area, 10);
 
     auto* scroll_content = new QWidget(scroll_area);
+    scroll_content->setObjectName(QStringLiteral("ScrollContent"));
     auto* scroll_lay = new QVBoxLayout(scroll_content);
     scroll_lay->setContentsMargins(0, 0, 0, 0);
-    scroll_lay->setSpacing(14);
+    scroll_lay->setSpacing(10);
 
     // -------------------------------------------------------------------------
     // Группа 1: «Диагностика системы / Профиль игры»
@@ -639,8 +683,8 @@ void GameFixDialog::SetupUI() {
         QStringLiteral("ГРУППА 1: ДИАГНОСТИКА СИСТЕМЫ И ЦЕЛЕВОЙ ПРОФИЛЬ"),
         QStringLiteral("GROUP 1: SYSTEM DIAGNOSTICS & TARGET PROFILE")), scroll_content);
     auto* grp1_lay = new QVBoxLayout(grp1);
-    grp1_lay->setContentsMargins(16, 14, 16, 14);
-    grp1_lay->setSpacing(12);
+    grp1_lay->setContentsMargins(12, 10, 12, 10);
+    grp1_lay->setSpacing(8);
 
     // Hardware pills bar
     auto* hw_bar = new QWidget(grp1);
@@ -651,16 +695,18 @@ void GameFixDialog::SetupUI() {
     const auto make_hw_pill = [&](const QString& label, const QString& val, GameFixVectorIcon ico) {
         auto* pill = new QWidget(hw_bar);
         pill->setStyleSheet(QStringLiteral(
-            "background-color: %1; border: none; border-radius: 8px; padding: 6px 12px;"
-        ).arg(pal.surface));
+            "background-color: %1; border: 1px solid %2; border-radius: 8px; padding: 4px 10px;"
+        ).arg(pal.surface, pal.border));
         auto* p_lay = new QHBoxLayout(pill);
-        p_lay->setContentsMargins(4, 2, 4, 2);
+        p_lay->setContentsMargins(2, 1, 2, 1);
         p_lay->setSpacing(8);
 
         auto* p_icon = new QLabel(pill);
-        p_icon->setPixmap(DrawGameFixVectorIcon(ico, acc, 14).pixmap(28, 28));
+        p_icon->setFixedSize(26, 26);
+        p_icon->setAlignment(Qt::AlignCenter);
+        p_icon->setPixmap(DrawGameFixVectorIcon(ico, acc, 13).pixmap(24, 24));
         p_icon->setStyleSheet(QStringLiteral("border: none; background: transparent;"));
-        p_lay->addWidget(p_icon);
+        p_lay->addWidget(p_icon, 0, Qt::AlignVCenter);
 
         auto* t_lay = new QVBoxLayout();
         t_lay->setContentsMargins(0, 0, 0, 0);
@@ -674,7 +720,7 @@ void GameFixDialog::SetupUI() {
         v_lbl->setStyleSheet(QStringLiteral("color: %1; font-size: 12px; font-weight: bold; border: none; background: transparent;").arg(pal.textPrimary));
         t_lay->addWidget(v_lbl);
 
-        p_lay->addLayout(t_lay);
+        p_lay->addLayout(t_lay, 1);
         return pill;
     };
 
@@ -691,7 +737,7 @@ void GameFixDialog::SetupUI() {
 
     if (m_title_id != 0 || m_profile != nullptr) {
         auto* cover_label = new QLabel(target_row);
-        cover_label->setFixedSize(64, 64);
+        cover_label->setFixedSize(48, 48);
         cover_label->setStyleSheet(QStringLiteral("background: transparent; border: none;"));
 
         QPixmap raw_cover = m_game_icon;
@@ -817,37 +863,44 @@ void GameFixDialog::SetupUI() {
         QStringLiteral("ГРУППА 2: РЕЖИМ АВТОМАТИЧЕСКОЙ ОПТИМИЗАЦИИ"),
         QStringLiteral("GROUP 2: AUTOMATIC OPTIMIZATION MODE")), scroll_content);
     auto* grp2_lay = new QHBoxLayout(grp2);
-    grp2_lay->setContentsMargins(14, 14, 14, 14);
+    grp2_lay->setContentsMargins(12, 10, 12, 10);
     grp2_lay->setSpacing(10);
 
+    const QString readable_desc_color = pal.is_light ? QStringLiteral("#334155") : QStringLiteral("#CBD5E1");
     const auto make_mode_btn = [&](const QString& title, const QString& desc, GameFixVectorIcon ico, OptimizationMode mode) {
         auto* btn = new QPushButton(grp2);
+        btn->setObjectName(QStringLiteral("GameFixModeCard"));
         btn->setCheckable(true);
         btn->setCursor(Qt::PointingHandCursor);
-        btn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
-        btn->setMinimumHeight(116);
+        btn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+        btn->setMinimumHeight(80);
 
         auto* b_lay = new QVBoxLayout(btn);
         b_lay->setSizeConstraint(QLayout::SetMinimumSize);
-        b_lay->setContentsMargins(12, 12, 12, 12);
-        b_lay->setSpacing(4);
+        b_lay->setContentsMargins(11, 9, 11, 9);
+        b_lay->setSpacing(5);
+
+        auto* hdr_row = new QHBoxLayout();
+        hdr_row->setContentsMargins(0, 0, 0, 0);
+        hdr_row->setSpacing(7);
 
         auto* i_lbl = new QLabel(btn);
-        i_lbl->setPixmap(DrawGameFixVectorIcon(ico, acc, 16).pixmap(32, 32));
+        i_lbl->setPixmap(DrawGameFixVectorIcon(ico, acc, 14).pixmap(24, 24));
         i_lbl->setStyleSheet(QStringLiteral("border: none; background: transparent;"));
-        b_lay->addWidget(i_lbl);
+        hdr_row->addWidget(i_lbl, 0, Qt::AlignVCenter);
 
         auto* t_lbl = new QLabel(title, btn);
         QFont btf = t_lbl->font();
         btf.setBold(true);
-        btf.setPointSize(11);
+        btf.setPointSize(10);
         t_lbl->setFont(btf);
-        t_lbl->setStyleSheet(QStringLiteral("color: %1; font-weight: bold; border: none; background: transparent;").arg(pal.textPrimary));
-        b_lay->addWidget(t_lbl);
+        t_lbl->setStyleSheet(QStringLiteral("color: %1; font-weight: 700; border: none; background: transparent;").arg(pal.textPrimary));
+        hdr_row->addWidget(t_lbl, 1, Qt::AlignVCenter);
+        b_lay->addLayout(hdr_row);
 
         auto* d_lbl = new QLabel(desc, btn);
         d_lbl->setWordWrap(true);
-        d_lbl->setStyleSheet(QStringLiteral("color: %1; font-size: 10.5px; border: none; background: transparent;").arg(pal.textSecondary));
+        d_lbl->setStyleSheet(QStringLiteral("color: %1; font-size: 10.5px; border: none; background: transparent;").arg(readable_desc_color));
         b_lay->addWidget(d_lbl);
 
         connect(btn, &QPushButton::clicked, this, [this, mode]() {
@@ -891,16 +944,20 @@ void GameFixDialog::SetupUI() {
     auto* grp3 = new QGroupBox(StormLang(
         QStringLiteral("ГРУППА 3: РЕКОМЕНДУЕМЫЕ ПАРАМЕТРЫ ПО КАТЕГОРИЯМ"),
         QStringLiteral("GROUP 3: RECOMMENDED SETTINGS BY CATEGORY")), scroll_content);
-    auto* grp3_lay = new QVBoxLayout(grp3);
-    grp3_lay->setContentsMargins(14, 14, 14, 14);
-    grp3_lay->setSpacing(12);
+    auto* grp3_lay = new QGridLayout(grp3);
+    grp3_lay->setContentsMargins(12, 10, 12, 10);
+    grp3_lay->setHorizontalSpacing(10);
+    grp3_lay->setVerticalSpacing(10);
+    grp3_lay->setColumnStretch(0, 1);
+    grp3_lay->setColumnStretch(1, 1);
+    grp3_lay->setColumnStretch(2, 1);
 
     // Sub-card 1: Графика, Vulkan и шейдеры
     auto* cat_gfx_box = new QWidget(grp3);
-    cat_gfx_box->setStyleSheet(QStringLiteral("background-color: %1; border: none; border-radius: 8px; padding: 10px;").arg(pal.surface));
+    cat_gfx_box->setStyleSheet(QStringLiteral("background-color: %1; border: 1px solid %2; border-radius: 8px;").arg(pal.surface, pal.border));
     auto* cg_outer = new QVBoxLayout(cat_gfx_box);
     cg_outer->setContentsMargins(10, 8, 10, 8);
-    cg_outer->setSpacing(6);
+    cg_outer->setSpacing(4);
 
     auto* cg_hdr_lay = new QHBoxLayout();
     auto* cg_icon = new QLabel(cat_gfx_box);
@@ -917,17 +974,18 @@ void GameFixDialog::SetupUI() {
     cg_outer->addLayout(cg_hdr_lay);
 
     m_cat_graphics_lay = new QVBoxLayout();
-    m_cat_graphics_lay->setContentsMargins(0, 4, 0, 0);
-    m_cat_graphics_lay->setSpacing(6);
+    m_cat_graphics_lay->setContentsMargins(0, 2, 0, 0);
+    m_cat_graphics_lay->setSpacing(3);
     cg_outer->addLayout(m_cat_graphics_lay);
-    grp3_lay->addWidget(cat_gfx_box);
+    cg_outer->addStretch(1);
+    grp3_lay->addWidget(cat_gfx_box, 0, 0);
 
     // Sub-card 2: Процессор, NCE/JIT и память
     auto* cat_cpu_box = new QWidget(grp3);
-    cat_cpu_box->setStyleSheet(QStringLiteral("background-color: %1; border: none; border-radius: 8px; padding: 10px;").arg(pal.surface));
+    cat_cpu_box->setStyleSheet(QStringLiteral("background-color: %1; border: 1px solid %2; border-radius: 8px;").arg(pal.surface, pal.border));
     auto* cc_outer = new QVBoxLayout(cat_cpu_box);
     cc_outer->setContentsMargins(10, 8, 10, 8);
-    cc_outer->setSpacing(6);
+    cc_outer->setSpacing(4);
 
     auto* cc_hdr_lay = new QHBoxLayout();
     auto* cc_icon = new QLabel(cat_cpu_box);
@@ -944,17 +1002,18 @@ void GameFixDialog::SetupUI() {
     cc_outer->addLayout(cc_hdr_lay);
 
     m_cat_cpu_lay = new QVBoxLayout();
-    m_cat_cpu_lay->setContentsMargins(0, 4, 0, 0);
-    m_cat_cpu_lay->setSpacing(6);
+    m_cat_cpu_lay->setContentsMargins(0, 2, 0, 0);
+    m_cat_cpu_lay->setSpacing(3);
     cc_outer->addLayout(m_cat_cpu_lay);
-    grp3_lay->addWidget(cat_cpu_box);
+    cc_outer->addStretch(1);
+    grp3_lay->addWidget(cat_cpu_box, 0, 1);
 
     // Sub-card 3: Синхронизация и стабильность движка
     auto* cat_sync_box = new QWidget(grp3);
-    cat_sync_box->setStyleSheet(QStringLiteral("background-color: %1; border: none; border-radius: 8px; padding: 10px;").arg(pal.surface));
+    cat_sync_box->setStyleSheet(QStringLiteral("background-color: %1; border: 1px solid %2; border-radius: 8px;").arg(pal.surface, pal.border));
     auto* cs_outer = new QVBoxLayout(cat_sync_box);
     cs_outer->setContentsMargins(10, 8, 10, 8);
-    cs_outer->setSpacing(6);
+    cs_outer->setSpacing(4);
 
     auto* cs_hdr_lay = new QHBoxLayout();
     auto* cs_icon = new QLabel(cat_sync_box);
@@ -971,10 +1030,11 @@ void GameFixDialog::SetupUI() {
     cs_outer->addLayout(cs_hdr_lay);
 
     m_cat_sync_lay = new QVBoxLayout();
-    m_cat_sync_lay->setContentsMargins(0, 4, 0, 0);
-    m_cat_sync_lay->setSpacing(6);
+    m_cat_sync_lay->setContentsMargins(0, 2, 0, 0);
+    m_cat_sync_lay->setSpacing(3);
     cs_outer->addLayout(m_cat_sync_lay);
-    grp3_lay->addWidget(cat_sync_box);
+    cs_outer->addStretch(1);
+    grp3_lay->addWidget(cat_sync_box, 0, 2);
 
     PopulateProfileData();
     scroll_lay->addWidget(grp3);

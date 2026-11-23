@@ -272,6 +272,9 @@ public:
     /// Exceptional exit application process.
     void ExceptionalExitApplication();
 
+    /// Marks the kernel as shutting down so SuspendEmulation cannot deadlock on blocked guest cores.
+    void PrepareShutdown();
+
     /// Notify emulated CPU cores to shut down.
     void ShutdownCores();
 

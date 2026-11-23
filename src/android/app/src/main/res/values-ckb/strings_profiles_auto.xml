@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="storm_prof_btn_save">هەڵگرتن</string>
+    <string name="storm_prof_btn_import">هاوردەکردن</string>
+    <string name="storm_prof_btn_delete">سڕینەوە</string>
+    <string name="storm_prof_preset_balanced_name">متوازن (مستحسن)</string>
+    <string name="storm_prof_save_btn">هەڵگرتن</string>
+</resources>

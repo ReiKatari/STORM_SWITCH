@@ -226,10 +226,19 @@ namespace Vulkan {
 
     vk::Image MemoryAllocator::CreateImage(const VkImageCreateInfo &ci) const
     {
+        VkImageCreateInfo safe_image_ci = ci;
+        safe_image_ci.extent.width = (std::max)(1u, safe_image_ci.extent.width);
+        safe_image_ci.extent.height = (std::max)(1u, safe_image_ci.extent.height);
+        safe_image_ci.extent.depth = (std::max)(1u, safe_image_ci.extent.depth);
+
+        const u64 img_pixels = static_cast<u64>(safe_image_ci.extent.width) *
+                               static_cast<u64>(safe_image_ci.extent.height);
+        const bool is_giant_rt = img_pixels > 4096ULL * 4096ULL;
+
         const VmaAllocationCreateInfo alloc_ci = {
                 .flags = VMA_ALLOCATION_CREATE_WITHIN_BUDGET_BIT,
                 .usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE,
-                .requiredFlags = 0,
+                .requiredFlags = is_giant_rt ? static_cast<VkMemoryPropertyFlags>(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) : 0U,
                 .preferredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                 .memoryTypeBits = 0,
                 .pool = VK_NULL_HANDLE,
@@ -237,19 +246,21 @@ namespace Vulkan {
                 .priority = 0.f,
         };
 
-        VkImageCreateInfo safe_image_ci = ci;
-        safe_image_ci.extent.width = (std::max)(1u, safe_image_ci.extent.width);
-        safe_image_ci.extent.height = (std::max)(1u, safe_image_ci.extent.height);
-        safe_image_ci.extent.depth = (std::max)(1u, safe_image_ci.extent.depth);
-
         VkImage handle{};
         VmaAllocation allocation{};
         VmaAllocationInfo alloc_info{};
         VkResult res_image = vmaCreateImage(allocator, &safe_image_ci, &alloc_ci, &handle, &allocation, &alloc_info);
-        if (res_image != VK_SUCCESS) {
+        if (res_image != VK_SUCCESS && !is_giant_rt) {
             auto alloc_ci_relax = alloc_ci;
             alloc_ci_relax.flags &= ~VMA_ALLOCATION_CREATE_WITHIN_BUDGET_BIT;
             res_image = vmaCreateImage(allocator, &safe_image_ci, &alloc_ci_relax, &handle, &allocation, &alloc_info);
+        }
+        if (res_image != VK_SUCCESS && !is_giant_rt) {
+            auto alloc_ci_spill = alloc_ci;
+            alloc_ci_spill.flags &= ~VMA_ALLOCATION_CREATE_WITHIN_BUDGET_BIT;
+            alloc_ci_spill.usage = VMA_MEMORY_USAGE_AUTO;
+            alloc_ci_spill.preferredFlags = 0;
+            res_image = vmaCreateImage(allocator, &safe_image_ci, &alloc_ci_spill, &handle, &allocation, &alloc_info);
         }
         vk::Check(res_image);
 

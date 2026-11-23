@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>607</width>
-    <height>211</height>
+    <width>740</width>
+    <height>280</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -53,7 +53,14 @@
          </widget>
         </item>
         <item row="1" column="1">
-         <widget class="QComboBox" name="game_list"/>
+         <widget class="QComboBox" name="game_list">
+          <property name="minimumSize">
+           <size>
+            <width>240</width>
+            <height>0</height>
+           </size>
+          </property>
+         </widget>
         </item>
         <item row="2" column="0">
          <widget class="QLabel" name="label_2">
@@ -94,6 +101,12 @@
         </item>
         <item row="1" column="1">
          <widget class="QLineEdit" name="password">
+          <property name="minimumSize">
+           <size>
+            <width>220</width>
+            <height>0</height>
+           </size>
+          </property>
           <property name="echoMode">
            <enum>QLineEdit::PasswordEchoOnEdit</enum>
           </property>

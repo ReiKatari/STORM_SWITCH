@@ -17,6 +17,7 @@
 #include "core/core_timing.h"
 #include "video_core/dirty_flags.h"
 #include "video_core/engines/maxwell_3d.h"
+#include "video_core/nx2.h"
 #include "video_core/engines/maxwell_3d.h"
 #include "video_core/gpu.h"
 #include "video_core/memory_manager.h"
@@ -43,8 +44,15 @@ Maxwell3D::Maxwell3D(MemoryManager& memory_manager_)
     dirty.flags.flip();
     InitializeRegisterDefaults();
     execution_mask.reset();
-    for (size_t i = 0; i < execution_mask.size(); i++)
-        execution_mask[i] = IsMethodExecutable(u32(i));
+    fast_skip_mask.fill(0);
+    for (size_t i = 0; i < execution_mask.size(); i++) {
+        const bool exec = IsMethodExecutable(u32(i));
+        execution_mask[i] = exec;
+        if (!exec && i < Regs::NUM_REGS && !(i >= 0x154 && i <= 0x15d) && i != 0x37b &&
+            i != MAXWELL3D_REG_INDEX(shadow_ram_control)) {
+            fast_skip_mask[i] = 1;
+        }
+    }
 }
 
 Maxwell3D::~Maxwell3D() = default;
@@ -219,6 +227,7 @@ bool Maxwell3D::IsMethodExecutable(u32 method) {
 }
 
 void Maxwell3D::ProcessMacro(Core::System& system, u32 method, const u32* base_start, u32 amount, bool is_last_call) {
+    VideoCommon::Nx2Profile::Scope macro_scope{VideoCommon::Nx2Profile::Zone::Macro};
     if (executing_macro == 0) {
         if ((method % 2) != 0) {
             method -= 1;
@@ -238,18 +247,22 @@ void Maxwell3D::ProcessMacro(Core::System& system, u32 method, const u32* base_s
         executing_macro = method;
     }
 
-    macro_segments.emplace_back(current_dma_segment, amount);
     current_macro_dirty |= current_dirty;
     current_dirty = false;
 
     // Nearly every call arrives whole in one method run (title 1 makes ~1,000,000 a second):
-    // copy it to the stack instead of growing the parameter vector. Still a copy: the command
-    // list is often guest memory read in place, which the guest may reuse while the macro runs
-    // (and the macro memo stores the parameters after it ran). Only accurate GPU mode rewrites
-    // the parameters in place (RefreshParameters), so it keeps the vector.
+    // copy it to the stack instead of growing the parameter vector. On Switch 2 (native_turing),
+    // MacroEngine::Execute copies parameters directly into its reusable native_fifo buffer, so
+    // skip the redundant stack copy and unused macro_segments tracking when clean.
     // EDEN_NX2_MACRO_COPY=1: always use the vector (for comparisons).
     static const bool always_copy = std::getenv("EDEN_NX2_MACRO_COPY") != nullptr;
-    if (is_last_call && macro_params.empty() && !always_copy && !Settings::IsGPULevelHigh()) {
+    if (is_last_call && macro_params.empty() && !always_copy && !Settings::IsGPULevelHigh()) [[likely]] {
+        if (cached_native_turing && !current_macro_dirty) [[likely]] {
+            ConsumeSink(system);
+            CallMacroMethod(system, executing_macro, std::span<const u32>{base_start, amount});
+            return;
+        }
+        macro_segments.emplace_back(current_dma_segment, amount);
         if (amount <= 64) {
             std::array<u32, 64> parameters;
             std::copy_n(base_start, amount, parameters.begin());
@@ -265,6 +278,7 @@ void Maxwell3D::ProcessMacro(Core::System& system, u32 method, const u32* base_s
         current_macro_dirty = false;
         return;
     }
+    macro_segments.emplace_back(current_dma_segment, amount);
     macro_params.insert(macro_params.end(), base_start, base_start + amount);
 
     // Call the macro when there are no more parameters in the command buffer
@@ -361,8 +375,12 @@ void Maxwell3D::ConsumeSinkImpl(Core::System& system) {
     // CallMethod does.
     // ProcessDirtyRegisters MUST ALWAYS be called for every register write (and during
     // ShadowRamControl::Replay), because StateTracker clears dirty.flags after each draw call.
+    const bool skip_same = cached_native_turing &&
+                           control != Regs::ShadowRamControl::Replay && cached_skip_same_writes;
     const auto process = [&](u32 method, u32 value) {
-        ProcessDirtyRegisters(method, value);
+        if (!skip_same || regs.reg_array[method] != value) {
+            ProcessDirtyRegisters(method, value);
+        }
     };
     if (control == Regs::ShadowRamControl::Track || control == Regs::ShadowRamControl::TrackWithFilter) {
         for (auto [method, value] : method_sink) {
@@ -401,7 +419,8 @@ void Maxwell3D::ProcessMethodCall(u32 method, u32 argument, u32 nonshadow_argume
         if (method == MAXWELL3D_REG_INDEX(clear_surface)) {
             LOG_DEBUG(HW_GPU, "Native GPU surface clear: value={:#x}", argument);
         }
-        if (GetNativeMacroEngine().HandleNativeDmaMethod(memory_manager, rasterizer, method, argument, nullptr)) {
+        if (((method >= 0x154 && method <= 0x15d) || method == 0x37b) &&
+            GetNativeMacroEngine().HandleNativeDmaMethod(memory_manager, rasterizer, method, argument, nullptr)) [[unlikely]] {
             return;
         }
     }
@@ -532,16 +551,45 @@ void Maxwell3D::CallMethod(Core::System& system, u32 method, u32 method_argument
     // Methods with side effects (execution_mask: draws, clears, constant buffer data and
     // binds, semaphores, ...) always run. EDEN_NX2_SKIP_SAME=0 turns it off.
     if (!execution_mask[method]) {
-        // ProcessMethodCall (and the draw manager behind it) acts only on executable methods.
-        // ProcessDirtyRegisters MUST ALWAYS be called for every non-executable register write
-        // (and during ShadowRamControl::Replay), because StateTracker clears dirty.flags after
-        // each draw call, and skipping ProcessDirtyRegisters when regs.reg_array[method] == argument
-        // leaves vertex buffers, viewports, scissors, and descriptors unbound.
+        // On Switch 2 (native_turing), ~83% of 3D state register writes repeat the current value;
+        // skipping unchanged non-executable state writes (outside ShadowRam Replay) avoids millions
+        // of redundant dirty-flag sweeps while keeping Switch 1 behavior untouched.
+        if (cached_native_turing &&
+            shadow_state.shadow_ram_control != Regs::ShadowRamControl::Replay &&
+            cached_skip_same_writes && regs.reg_array[method] == argument) [[likely]] {
+            return;
+        }
         ProcessDirtyRegisters(method, argument);
         return;
     }
     ProcessDirtyRegisters(method, argument);
     ProcessMethodCall(method, argument, method_argument, is_last_call);
+}
+
+void Maxwell3D::CallNativeMacroMethod(u32 method, u32 method_argument) {
+    if (VideoCommon::Nx2Profile::Enabled()) [[unlikely]] {
+        VideoCommon::Nx2Profile::Add(VideoCommon::Nx2Profile::Counter::MethodWrites, 1);
+        if (regs.reg_array[method] == method_argument) {
+            VideoCommon::Nx2Profile::Add(VideoCommon::Nx2Profile::Counter::SameValueWrites, 1);
+        }
+    }
+    const auto control = shadow_state.shadow_ram_control;
+    u32 argument = method_argument;
+    if (control == Regs::ShadowRamControl::Track || control == Regs::ShadowRamControl::TrackWithFilter) {
+        shadow_state.reg_array[method] = method_argument;
+    } else if (control == Regs::ShadowRamControl::Replay) [[unlikely]] {
+        argument = shadow_state.reg_array[method];
+    }
+    if (!execution_mask[method]) [[likely]] {
+        if (control != Regs::ShadowRamControl::Replay && regs.reg_array[method] == argument &&
+            cached_skip_same_writes) [[likely]] {
+            return;
+        }
+        ProcessDirtyRegisters(method, argument);
+        return;
+    }
+    ProcessDirtyRegisters(method, argument);
+    ProcessMethodCall(method, argument, method_argument, true);
 }
 
 void Maxwell3D::CallMultiMethod(Core::System& system, u32 method, const u32* base_start, u32 amount, u32 methods_pending) {
@@ -583,6 +631,18 @@ void Maxwell3D::CallMultiMethod(Core::System& system, u32 method, const u32* bas
         }
         [[fallthrough]];
     default:
+        if (amount > 0 && executing_macro == 0 && method < Regs::NUM_REGS &&
+            !execution_mask[method] && cached_native_turing && cached_skip_same_writes &&
+            shadow_state.shadow_ram_control != Regs::ShadowRamControl::Replay) {
+            const u32 last_val = base_start[amount - 1];
+            if (shadow_state.shadow_ram_control != Regs::ShadowRamControl::Passthrough) {
+                shadow_state.reg_array[method] = last_val;
+            }
+            if (regs.reg_array[method] != last_val) {
+                ProcessDirtyRegisters(method, last_val);
+            }
+            break;
+        }
         for (u32 i = 0; i < amount; i++) {
             CallMethod(system, method, base_start[i], methods_pending - i <= 1);
         }
@@ -608,12 +668,18 @@ void Maxwell3D::ProcessFirmwareCall4() {
 
 void Maxwell3D::StampQueryResult(Core::System& system, u64 payload, bool long_query) {
     const GPUVAddr sequence_address{regs.report_semaphore.Address()};
-    if (long_query) {
-        memory_manager.Write<u64>(sequence_address + sizeof(u64), system.GPU().GetTicks());
-        memory_manager.Write<u64>(sequence_address, payload);
-    } else {
-        memory_manager.Write<u32>(sequence_address, static_cast<u32>(payload));
-    }
+    const auto stamp_at = [&](GPUVAddr target_addr) {
+        if (long_query) {
+            memory_manager.Write<u64>(target_addr + sizeof(u64), system.GPU().GetTicks());
+            memory_manager.Write<u64>(target_addr, payload);
+        } else {
+            memory_manager.Write<u32>(target_addr, static_cast<u32>(payload));
+        }
+        if (const auto cpu_addr = memory_manager.GpuToCpuAddress(target_addr)) {
+            Tegra::Nx2SemaphoreWaiters::Get().OnWrite(*cpu_addr, static_cast<u32>(payload));
+        }
+    };
+    stamp_at(sequence_address);
 }
 
 void Maxwell3D::ProcessQueryGet() {

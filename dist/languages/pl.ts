@@ -310,7 +310,7 @@ To zbanuje jego/jej nick na forum, oraz jego/jej adres IP.</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="50" />
       <source>Enables Horizon's built-in overlay applet. Press and hold the home button for 1 second to show it.</source>
-      <translation>Enables Horizon's built-in overlay applet. Press and hold the home button for 1 second to show it.</translation>
+      <translation>Włącza wbudowany aplet nakładki systemu Horizon. Przytrzymaj przycisk Home przez 1 sekundę, aby go wyświetlić.</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="54" />
@@ -2189,7 +2189,83 @@ Jeśli emulowane oprogramowanie próbuje otworzyć aplet kontrolera, jest on nat
       <source>Grid View</source>
       <translation>Grid View</translation>
     </message>
-  </context>
+      <message>
+        <source>Theme:</source>
+        <translation>Motyw:</translation>
+    </message>
+    <message>
+        <source>Theme</source>
+        <translation>Zmień tryb motywu</translation>
+    </message>
+    <message>
+        <source>Interface language:</source>
+        <translation>Język interfejsu:</translation>
+    </message>
+    <message>
+        <source>Reset All Settings</source>
+        <translation>Resetuj wszystkie ustawienia</translation>
+    </message>
+    <message>
+        <source>Console Mode</source>
+        <translation>Tryb Konsoli</translation>
+    </message>
+    <message>
+        <source>API</source>
+        <translation>Interfejs graficzny</translation>
+    </message>
+    <message>
+        <source>VRAM Usage Mode</source>
+        <translation>Tryb użycia VRAM</translation>
+    </message>
+    <message>
+        <source>ASTC Decoding Method</source>
+        <translation>Metoda dekodowania ASTC</translation>
+    </message>
+    <message>
+        <source>Eco Frame Pacing</source>
+        <translation>Pacing klatek Eco</translation>
+    </message>
+    <message>
+        <source>Vulkan Pipeline Cache</source>
+        <translation>Pamięć podręczna potoków Vulkan</translation>
+    </message>
+    <message>
+        <source>VRAM Garbage Collection</source>
+        <translation>Czyszczenie pamięci VRAM</translation>
+    </message>
+    <message>
+        <source>CPU Affinity Pinning</source>
+        <translation>Przypisanie rdzeni procesora</translation>
+    </message>
+    <message>
+        <source>Makes the game believe GPU work finishes faster than it does, so it stops lowering resolution and render distance to fit the Switch's clocks.</source>
+        <translation>Wymusza działanie większości gier w ich najwyższej natywnej rozdzielczości. Ustaw 256 dla maksymalnej wydajności, a 512 dla maksymalnej jakości grafiki.</translation>
+    </message>
+    <message>
+        <source>CPU Clocks</source>
+        <translation>Podkręcanie CPU</translation>
+    </message>
+    <message>
+        <source>GPU Clocks</source>
+        <translation>Szybki czas GPU</translation>
+    </message>
+    <message>
+        <source>Custom RTC</source>
+        <translation>Niestandardowy RTC</translation>
+    </message>
+    <message>
+        <source>Normal</source>
+        <translation>Normalny (Zalecane)</translation>
+    </message>
+    <message>
+        <source>Boost</source>
+        <translation>Boost (1700MHz)</translation>
+    </message>
+    <message>
+        <source>Overclock</source>
+        <translation>Szybkie (2000MHz)</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureApplets</name>
     <message>
@@ -2555,7 +2631,7 @@ Gdy ta opcja jest włączona, niedopasowanie jest uruchamiane tylko wtedy, gdy d
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="235" />
       <source>Off</source>
-      <translation>Off</translation>
+      <translation>Wyłączone</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="240" />
@@ -2837,7 +2913,11 @@ Gdy ta opcja jest włączona, niedopasowanie jest uruchamiane tylko wtedy, gdy d
       <source>**This will be reset automatically when Eden closes.</source>
       <translation>**To zostanie automatycznie zresetowane po zamknięciu Edena.</translation>
     </message>
-  </context>
+      <message>
+        <source>(bitmask)</source>
+        <translation>(maska bitowa)</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureDebugController</name>
     <message>
@@ -2867,7 +2947,7 @@ Gdy ta opcja jest włączona, niedopasowanie jest uruchamiane tylko wtedy, gdy d
       <location filename="../../src/yuzu/configuration/configure_debug_tab.ui" line="17" />
       <location filename="../../src/yuzu/configuration/configure_debug_tab.cpp" line="16" />
       <source>Debug</source>
-      <translation>Debug</translation>
+      <translation>Wyszukiwanie usterek</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug_tab.cpp" line="17" />
@@ -3325,7 +3405,19 @@ Czy chcesz usunąć stare dane zapisu?</translation>
       <source>VSync On</source>
       <translation>VSync aktywny</translation>
     </message>
-  </context>
+      <message>
+        <source>API</source>
+        <translation>Interfejs graficzny</translation>
+    </message>
+    <message>
+        <source>VSync Mode:</source>
+        <translation>Tryb synchronizacji pionowej:</translation>
+    </message>
+    <message>
+        <source>Eco Frame Pacing</source>
+        <translation>Pacing klatek Eco</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureGraphicsAdvanced</name>
     <message>
@@ -3343,7 +3435,43 @@ Czy chcesz usunąć stare dane zapisu?</translation>
       <source>Advanced Graphics Settings</source>
       <translation>Zaawansowane ustawienia grafiki</translation>
     </message>
-  </context>
+      <message>
+        <source>VRAM Usage Mode:</source>
+        <translation>Tryb wykorzystania VRAM:</translation>
+    </message>
+    <message>
+        <source>VRAM Usage Mode</source>
+        <translation>Tryb użycia VRAM</translation>
+    </message>
+    <message>
+        <source>ASTC Decoding Method:</source>
+        <translation>Metoda dekodowania ASTC:</translation>
+    </message>
+    <message>
+        <source>ASTC Decoding Method</source>
+        <translation>Metoda dekodowania ASTC</translation>
+    </message>
+    <message>
+        <source>Sync Memory Operations</source>
+        <translation>Synchronizuj operacje pamięci</translation>
+    </message>
+    <message>
+        <source>Force maximum clocks (Vulkan only)</source>
+        <translation>Wymuś maksymalne zegary (Tylko Vulkan)</translation>
+    </message>
+    <message>
+        <source>Use Vulkan pipeline cache</source>
+        <translation>Użyj pamięci podręcznej strumienia dla Vulkana</translation>
+    </message>
+    <message>
+        <source>Vulkan Pipeline Cache</source>
+        <translation>Pamięć podręczna potoków Vulkan</translation>
+    </message>
+    <message>
+        <source>VRAM Garbage Collection</source>
+        <translation>Czyszczenie pamięci VRAM</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureGraphicsExtensions</name>
     <message>
@@ -3382,7 +3510,11 @@ Czy chcesz usunąć stare dane zapisu?</translation>
       <source>Extended Dynamic State is disabled on macOS due to MoltenVK compatibility issues that cause black screens.</source>
       <translation>Extended Dynamic State jest wyłączony na macOS z powodu problemów zgodności z MoltenVK, które powodują czarne ekrany.</translation>
     </message>
-  </context>
+      <message>
+        <source>Extensions</source>
+        <translation>Rozszerzenia</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureHotkeys</name>
     <message>
@@ -4268,7 +4400,7 @@ Aby odwrócić osie, najpierw przesuń joystick pionowo, a następnie poziomo.</
       <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="753" />
       <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="1098" />
       <source>Pro Controller</source>
-      <translation>Pro Controller</translation>
+      <translation>Pro kontroler</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="1102" />
@@ -4288,7 +4420,7 @@ Aby odwrócić osie, najpierw przesuń joystick pionowo, a następnie poziomo.</
     <message>
       <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="1114" />
       <source>Handheld</source>
-      <translation>Handheld</translation>
+      <translation>Przenośnie</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="1118" />
@@ -4406,7 +4538,11 @@ Aby odwrócić osie, najpierw przesuń joystick pionowo, a następnie poziomo.</
       <source>Failed to save the input profile "%1"</source>
       <translation>Nie udało się zapisać profilu wejściowego "%1"</translation>
     </message>
-  </context>
+      <message>
+        <source>Unknown</source>
+        <translation>Nieznany</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureInputProfileDialog</name>
     <message>
@@ -4477,7 +4613,7 @@ Aby odwrócić osie, najpierw przesuń joystick pionowo, a następnie poziomo.</
     <message>
       <location filename="../../src/yuzu/configuration/configure_motion_touch.ui" line="161" />
       <source>Port:</source>
-      <translation>Port:</translation>
+      <translation>Port</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_motion_touch.ui" line="194" />
@@ -4570,7 +4706,11 @@ Aby odwrócić osie, najpierw przesuń joystick pionowo, a następnie poziomo.</
       <source>UDP Test or calibration configuration is in progress.&lt;br&gt;Please wait for them to finish.</source>
       <translation>Trwa konfiguracja testu UDP lub kalibracji.&lt;br&gt;Poczekaj na zakończenie.</translation>
     </message>
-  </context>
+      <message>
+        <source>Motion / Touch</source>
+        <translation>Ruch / Dotyk</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureMousePanning</name>
     <message>
@@ -4798,7 +4938,7 @@ Obecne wartości to odpowiednio %1% i %2%.</translation>
     <message>
       <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="87" />
       <source>Applets</source>
-      <translation>Applets</translation>
+      <translation>Aplety</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="90" />
@@ -4875,7 +5015,7 @@ Check the log for details.</translation>
     <message>
       <location filename="../../src/yuzu/configuration/configure_per_game_addons.cpp" line="196" />
       <source>Zipped Archives (*.zip)</source>
-      <translation>Zipped Archives (*.zip)</translation>
+      <translation>Archiwa ZIP (.zip)</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_per_game_addons.cpp" line="214" />
@@ -5204,7 +5344,19 @@ UUID: %2</translation>
       <source>Warning: "%1" is not a valid language for region "%2"</source>
       <translation>Uwaga: "%1" nie jest poprawnym językiem dla regionu "%2"</translation>
     </message>
-  </context>
+      <message>
+        <source>Console Mode</source>
+        <translation>Tryb Konsoli</translation>
+    </message>
+    <message>
+        <source>Limit Speed Percent</source>
+        <translation>Procent limitu prędkości</translation>
+    </message>
+    <message>
+        <source>Language:</source>
+        <translation>Język:</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureTas</name>
     <message>
@@ -5578,7 +5730,19 @@ Przeciągnij punkty, aby zmienić pozycję, lub kliknij dwukrotnie komórki tabe
       <comment>Screenshot width value</comment>
       <translation>Automatycznie (%1 x %2, %3 x %4)</translation>
     </message>
-  </context>
+      <message>
+        <source>Theme</source>
+        <translation>Zmień tryb motywu</translation>
+    </message>
+    <message>
+        <source>Language:</source>
+        <translation>Język:</translation>
+    </message>
+    <message>
+        <source>Screenshots Path:</source>
+        <translation>Ścieżka zrzutów ekranu:</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureVibration</name>
     <message>
@@ -5725,7 +5889,11 @@ Przeciągnij punkty, aby zmienić pozycję, lub kliknij dwukrotnie komórki tabe
       <comment>Tooltip</comment>
       <translation>Musi mieć 48 znaków i składać się z małych liter a-z</translation>
     </message>
-  </context>
+      <message>
+        <source>Username:</source>
+        <translation>Nazwa użytkownika:</translation>
+    </message>
+</context>
   <context>
     <name>ControllerDialog</name>
     <message>
@@ -6304,12 +6472,12 @@ Przejdź do sekcji Konfiguracja -&gt; System -&gt; Sieć i dokonaj wyboru.</tran
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="194" />
       <source>Name</source>
-      <translation>Name</translation>
+      <translation>Nazwa</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="195" />
       <source>Add-ons</source>
-      <translation>Add-ons</translation>
+      <translation>Dodatki</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="196" />
@@ -6319,7 +6487,7 @@ Przejdź do sekcji Konfiguracja -&gt; System -&gt; Sieć i dokonaj wyboru.</tran
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="197" />
       <source>Size</source>
-      <translation>Size</translation>
+      <translation>Rozmiar</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="198" />
@@ -6563,7 +6731,7 @@ Komunikat debugowania: </translation>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="50" />
       <source>Create Room</source>
-      <translation>Create Room</translation>
+      <translation>Utwórz Pokój</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="51" />
@@ -6573,7 +6741,7 @@ Komunikat debugowania: </translation>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="52" />
       <source>Leave Room</source>
-      <translation>Leave Room</translation>
+      <translation>Wyjdź z Pokoju Multiplayer</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="53" />
@@ -8129,7 +8297,7 @@ Czy chcesz to pominąć i wyjść mimo to?</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="54" />
       <source>Area</source>
-      <translation>Area</translation>
+      <translation>Obszar</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="55" />
@@ -8191,7 +8359,27 @@ Czy chcesz to pominąć i wyjść mimo to?</translation>
       <source>Null</source>
       <translation>Null</translation>
     </message>
-  </context>
+      <message>
+        <source>Fullscreen</source>
+        <translation>Pełny ekran</translation>
+    </message>
+    <message>
+        <source>Check for Updates</source>
+        <translation>Sprawdź aktualizacje</translation>
+    </message>
+    <message>
+        <source>Mii Edit</source>
+        <translation>Edycja Mii</translation>
+    </message>
+    <message>
+        <source>Create Shortcut</source>
+        <translation>Utwórz skrót</translation>
+    </message>
+    <message>
+        <source>Install Files to NAND</source>
+        <translation>Zainstaluj pliki na NAND</translation>
+    </message>
+</context>
   <context>
     <name>MigrationWorker</name>
     <message>
@@ -8269,7 +8457,7 @@ Jeśli chcesz usunąć pliki, które pozostały w starej lokalizacji danych, mo�
     <message>
       <location filename="../../src/yuzu/multiplayer/moderation_dialog.ui" line="51" />
       <source>Unban</source>
-      <translation>Unban</translation>
+      <translation>Odbanuj</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/multiplayer/moderation_dialog.cpp" line="42" />
@@ -8403,7 +8591,7 @@ Czy kontynuować mimo to?</translation>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="70" />
       <source>Username</source>
-      <translation>Username</translation>
+      <translation>Nazwa Użytkownika</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="82" />
@@ -8413,7 +8601,7 @@ Czy kontynuować mimo to?</translation>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="89" />
       <source>Generate</source>
-      <translation>Generate</translation>
+      <translation>Generuj</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.cpp" line="138" />
@@ -8428,7 +8616,7 @@ Czy kontynuować mimo to?</translation>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.cpp" line="171" />
       <source>No firmware available</source>
-      <translation>No firmware available</translation>
+      <translation>Brak dostępnego firmware'u</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.cpp" line="172" />
@@ -8486,7 +8674,7 @@ Czy kontynuować mimo to?</translation>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.cpp" line="346" />
       <source>All Good</source>
       <comment>Tooltip</comment>
-      <translation>All Good</translation>
+      <translation>Wszystko w porządku</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.cpp" line="341" />
@@ -8539,7 +8727,7 @@ p, li { white-space: pre-wrap; }
     <message>
       <location filename="../../src/yuzu/render/performance_overlay.ui" line="14" />
       <source>Form</source>
-      <translation>Form</translation>
+      <translation>Forma</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/render/performance_overlay.ui" line="32" />
@@ -8667,13 +8855,6 @@ p, li { white-space: pre-wrap; }
       <location filename="../../src/yuzu/user_data_migration.cpp" line="68" />
       <source>Link Old Directory</source>
       <translation>Połącz stary katalog</translation>
-    </message>
-    <message>
-      <location filename="../../src/yuzu/user_data_migration.cpp" line="98" />
-      <source>
-      </source>
-      <translation>
-      </translation>
     </message>
     <message>
       <location filename="../../src/yuzu/user_data_migration.cpp" line="102" />
@@ -10185,7 +10366,7 @@ Zalecane, jeśli chcesz współdzielić dane między emulatorami.</translation>
       <location filename="../../src/yuzu/applets/qt_controller.ui" line="2303" />
       <location filename="../../src/yuzu/applets/qt_controller.cpp" line="486" />
       <source>Handheld</source>
-      <translation>Handheld</translation>
+      <translation>Przenośnie</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/applets/qt_controller.ui" line="1126" />
@@ -10578,7 +10759,7 @@ Wybierając „Z Eden”, dotychczasowe dane zapisu przechowywane w Ryujinx zost
     <message>
       <location filename="../../src/yuzu/updater/update_dialog.ui" line="14" />
       <source>Update Available</source>
-      <translation>Update Available</translation>
+      <translation>Dostępna aktualizacja</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/updater/update_dialog.ui" line="20" />
@@ -10627,7 +10808,7 @@ Wybierając „Z Eden”, dotychczasowe dane zapisu przechowywane w Ryujinx zost
     <message>
       <location filename="../../src/yuzu/updater/update_dialog.cpp" line="112" />
       <source>Downloading...</source>
-      <translation>Downloading...</translation>
+      <translation>Pobieranie…</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/updater/update_dialog.cpp" line="112" />
@@ -10667,4 +10848,391 @@ Error code: %3</translation>
       <translation>Successfully downloaded %1. Would you like to open it?</translation>
     </message>
   </context>
+<context>
+    <name>QPlatformTheme</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Anuluj</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>Zastosuj</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Zamknij</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Pomoc</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Przywróć domyślne</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Pomoc</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Zresetuj</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>Resetuj</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Przerwij</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Zapisz</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Nie</translation>
+    </message>
+</context>
+<context>
+    <name>QDialogButtonBox</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Anuluj</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>Zastosuj</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Zamknij</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Pomoc</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Przywróć domyślne</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Pomoc</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Zresetuj</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>Resetuj</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Przerwij</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Zapisz</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Nie</translation>
+    </message>
+</context>
+<context>
+    <name>QMessageBox</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Anuluj</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>Zastosuj</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Zamknij</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Pomoc</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Przywróć domyślne</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Pomoc</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Zresetuj</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>Resetuj</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Przerwij</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Zapisz</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Nie</translation>
+    </message>
+</context>
+<context>
+    <name>QGuiApplication</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Anuluj</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>Zastosuj</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Zamknij</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Pomoc</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Przywróć domyślne</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Pomoc</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Zresetuj</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>Resetuj</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Przerwij</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Zapisz</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Nie</translation>
+    </message>
+</context>
+<context>
+    <name>QAbstractButton</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Anuluj</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>Zastosuj</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Zamknij</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Pomoc</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Przywróć domyślne</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Pomoc</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Zresetuj</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>Resetuj</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Przerwij</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Zapisz</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Nie</translation>
+    </message>
+</context>
+<context>
+    <name>QColorDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Anuluj</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>Zastosuj</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Zamknij</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Pomoc</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Przywróć domyślne</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Pomoc</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Zresetuj</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>Resetuj</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Przerwij</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Zapisz</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Nie</translation>
+    </message>
+</context>
+<context>
+    <name>QFileDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Anuluj</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>Zastosuj</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Zamknij</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Pomoc</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Przywróć domyślne</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Pomoc</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Zresetuj</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>Resetuj</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Przerwij</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Zapisz</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Nie</translation>
+    </message>
+</context>
+<context>
+    <name>QFontDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Anuluj</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>Zastosuj</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Zamknij</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Pomoc</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Przywróć domyślne</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Pomoc</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Zresetuj</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>Resetuj</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Przerwij</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Zapisz</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Nie</translation>
+    </message>
+</context>
+<context>
+    <name>QtController</name>
+    <message>
+        <source>Console Mode</source>
+        <translation>Tryb Konsoli</translation>
+    </message>
+    <message>
+        <source>Vibration</source>
+        <translation>Wibracje</translation>
+    </message>
+</context>
 </TS>

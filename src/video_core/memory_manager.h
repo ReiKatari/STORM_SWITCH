@@ -155,6 +155,10 @@ public:
     size_t GetMemoryLayoutSize(GPUVAddr gpu_addr,
                                size_t max_size = (std::numeric_limits<size_t>::max)()) const;
 
+    [[nodiscard]] bool HasPendingInvalidations() const noexcept {
+        return !accumulator.Empty();
+    }
+
     void FlushCaching();
 
     const u8* GetSpan(const GPUVAddr src_addr, const std::size_t size) const;

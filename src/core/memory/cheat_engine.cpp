@@ -16,6 +16,7 @@
 #include "core/hle/service/hid/hid_server.h"
 #include "core/hle/service/sm/sm.h"
 #include "core/memory.h"
+#include <cstring>
 #include "core/memory/cheat_engine.h"
 #include "hid_core/resource_manager.h"
 #include "hid_core/resources/npad/npad.h"
@@ -50,13 +51,60 @@ void StandardVmCallbacks::MemoryReadUnsafe(VAddr address, void* data, u64 size) 
 
 void StandardVmCallbacks::MemoryWriteUnsafe(VAddr address, const void* data, u64 size) {
     // Skip invalid memory write address
-    if (!IsAddressInRange(address) || !process.GetMemory().IsValidVirtualAddress(address)) {
+    if (size == 0 || !IsAddressInRange(address) || !process.GetMemory().IsValidVirtualAddress(address)) {
         return;
     }
 
-    if (process.GetMemory().WriteBlock(address, data, size)) {
+    // Skip redundant writes that change nothing (avoids repeated writes & cache flushes)
+    std::array<u8, 16> current{};
+    const bool have_current =
+        size <= current.size() && process.GetMemory().ReadBlock(address, current.data(), size);
+    if (have_current && std::memcmp(current.data(), data, size) == 0) {
+        return;
+    }
+
+    const auto is_executable = [this](VAddr page_address) {
+        Kernel::KMemoryInfo info{};
+        Kernel::Svc::PageInfo page_info{};
+        if (process.GetPageTable().QueryInfo(&info, &page_info, page_address) != ResultSuccess) {
+            return true;
+        }
+        return True(info.GetPermission() & Kernel::KMemoryPermission::UserExecute);
+    };
+    const bool code = is_executable(address) || is_executable(address + size - 1);
+    if (code && have_current) {
+        for (u64 i = 0; i < size; ++i) {
+            original_code.try_emplace(address + i, current[i]);
+        }
+    }
+
+    if (!process.GetMemory().WriteBlock(address, data, size)) {
+        return;
+    }
+    // Only invalidate JIT instruction cache when executable code pages are modified.
+    if (code) {
         Core::InvalidateInstructionCacheRange(&process, address, size);
     }
+}
+
+void StandardVmCallbacks::RestoreOriginalCode() {
+    std::size_t restored = 0;
+    for (auto it = original_code.begin(); it != original_code.end();) {
+        const VAddr start = it->first;
+        std::vector<u8> run;
+        for (VAddr next = start; it != original_code.end() && it->first == next; ++it, ++next) {
+            run.push_back(it->second);
+        }
+        if (process.GetMemory().IsValidVirtualAddress(start) &&
+            process.GetMemory().WriteBlock(start, run.data(), run.size())) {
+            Core::InvalidateInstructionCacheRange(&process, start, run.size());
+            restored += run.size();
+        }
+    }
+    if (restored != 0) {
+        LOG_INFO(CheatEngine, "Restored {} bytes of original game code after cheat change", restored);
+    }
+    original_code.clear();
 }
 
 u64 StandardVmCallbacks::HidKeysDown() {
@@ -177,6 +225,7 @@ bool CheatEngine::SetCheatEnabled(u32 id, bool enabled) {
     for (auto& cheat : cheats) {
         if (!cheat.is_master && cheat.enabled != enabled && IsInGroup(menu, cheat.cheat_id, id)) {
             cheat.enabled = enabled;
+            is_pending_restore = true;
             is_pending_reload = true;
         }
     }
@@ -193,6 +242,11 @@ void CheatEngine::Execute() {
         return;
     }
 
+    if (std::exchange(is_pending_restore, false)) {
+        if (auto* cb = static_cast<StandardVmCallbacks*>(vm.GetCallbacks())) {
+            cb->RestoreOriginalCode();
+        }
+    }
     if (std::exchange(is_pending_reload, false)) {
         vm.LoadProgram(cheats);
     }

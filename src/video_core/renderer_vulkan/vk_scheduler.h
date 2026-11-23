@@ -97,6 +97,15 @@ public:
     /// Returns true when the descriptor buffer chunk has to be bound into the command buffer.
     bool UpdateDescriptorBufferChunk(u32 descriptor_chunk);
 
+    /// Deduplicates index/vertex buffer binds within a command buffer.
+    bool UpdateIndexBuffer(VkBuffer buffer, VkDeviceSize offset, VkIndexType type) noexcept;
+    void InvalidateIndexBuffer() noexcept;
+    bool UpdateVertexBuffer(u32 index, VkBuffer buffer, VkDeviceSize offset, VkDeviceSize size,
+                            VkDeviceSize stride) noexcept;
+    bool UpdateVertexBuffers(u32 min_binding, u32 count, const VkBuffer* buffers,
+                             const VkDeviceSize* offsets, const VkDeviceSize* sizes,
+                             const VkDeviceSize* strides) noexcept;
+
     /// Invalidates current command buffer state except for render passes
     void InvalidateState();
 
@@ -117,6 +126,11 @@ public:
     // Registers a callback to perform on queue submission.
     void RegisterOnSubmit(std::function<void()>&& func) {
         on_submit = std::move(func);
+    }
+
+    // Registers a callback invoked right after EndRenderPass() ends the active render pass.
+    void RegisterOnEndRenderPass(std::function<void()>&& func) {
+        on_end_renderpass = std::move(func);
     }
 
     /// Send work to a separate thread.
@@ -282,10 +296,19 @@ private:
         GraphicsPipeline* graphics_pipeline = nullptr;
         bool is_rescaling = false;
         bool rescaling_defined = false;
+        f32 rescaling_down_factor = 1.0f;
         bool needs_state_enable_refresh = false;
         u32 descriptor_buffer_chunk = 0;
         bool descriptor_buffer_bound = false;
         bool has_xfb = false;
+        VkBuffer index_buffer = VK_NULL_HANDLE;
+        VkDeviceSize index_offset = 0;
+        VkIndexType index_type = VK_INDEX_TYPE_MAX_ENUM;
+        u32 vertex_buffer_valid_mask = 0;
+        std::array<VkBuffer, 32> vertex_buffers{};
+        std::array<VkDeviceSize, 32> vertex_offsets{};
+        std::array<VkDeviceSize, 32> vertex_sizes{};
+        std::array<VkDeviceSize, 32> vertex_strides{};
     };
 
     struct DeferredClear {
@@ -333,6 +356,7 @@ private:
 
     std::unique_ptr<CommandChunk> chunk;
     std::function<void()> on_submit;
+    std::function<void()> on_end_renderpass;
 
     State state;
 

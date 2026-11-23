@@ -7,6 +7,7 @@
 #pragma once
 
 #include <array>
+#include <atomic>
 #include <memory>
 #include <mutex>
 #include <span>
@@ -152,6 +153,8 @@ private:
     ankerl::unordered_dense::map<u64, std::vector<Entry*>> invalidation_cache;
     std::vector<std::unique_ptr<ShaderInfo>> storage;
     std::vector<Entry*> marked_for_removal;
+    ankerl::unordered_dense::set<VAddr> failed_native_shaders;
+    std::atomic<bool> has_failed_native_shaders{false};
 };
 
 } // namespace VideoCommon

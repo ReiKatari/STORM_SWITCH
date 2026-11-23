@@ -28,7 +28,7 @@ DepsDialog::DepsDialog(QWidget* parent) : QDialog(parent), ui{std::make_unique<U
 
     const std::vector<ProjectEntry> acknowledgements = {
         {tr("Eden Emulator Project и Camille LaVey"), QStringLiteral("https://git.eden-emu.dev/eden-emu/eden"), tr("Базовый форк эмулятора Switch")},
-        {QStringLiteral("Yuzu Emulator Team"), QStringLiteral("https://yuzu-emu.org"), tr("Архитектура ядра эмуляции Switch")},
+        {QStringLiteral("Nintendo Switch Emulation Heritage"), QStringLiteral("https://github.com/ReiKatari/STORM_SWITCH"), tr("Базовая архитектура ядра эмуляции Switch")},
         {QStringLiteral("Ryujinx Team"), QStringLiteral("https://ryujinx.org"), tr("Исследования FS и Horizon OS")},
         {tr("Sudachi и Citron Projects"), QStringLiteral("https://github.com/sudachi-emu"), tr("Оптимизации производительности")},
         {tr("Tinfoil и Blawar"), QStringLiteral("https://tinfoil.io"), tr("Формат NSZ/NCZ и база TitleDB")},
@@ -47,9 +47,10 @@ DepsDialog::DepsDialog(QWidget* parent) : QDialog(parent), ui{std::make_unique<U
     labels << tr("Проект / Зависимость") << tr("Назначение / Версия");
 
     ui->tableDeps->setHorizontalHeaderLabels(labels);
-    ui->tableDeps->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeMode::Stretch);
-    ui->tableDeps->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeMode::Interactive);
-    ui->tableDeps->horizontalHeader()->setMinimumSectionSize(220);
+    ui->tableDeps->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeMode::Interactive);
+    ui->tableDeps->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeMode::Stretch);
+    ui->tableDeps->horizontalHeader()->setMinimumSectionSize(180);
+    ui->tableDeps->setColumnWidth(0, 290);
 
     int row = 0;
     for (const auto& ack : acknowledgements) {

@@ -7,6 +7,7 @@
 #pragma once
 
 #include <functional>
+#include <atomic>
 #include <mutex>
 #include <optional>
 #include <span>
@@ -109,6 +110,8 @@ public:
 
     bool HasUncommittedFlushes() const;
 
+    bool HasPendingSyncOrUnregister() const;
+
     bool ShouldWaitAsyncFlushes();
 
     void PopAsyncFlushes();
@@ -120,6 +123,9 @@ public:
 protected:
     template <bool remove_from_cache, typename Func>
     void IterateCache(VAddr addr, std::size_t size, Func&& func) {
+        if (!has_cached_queries.load(std::memory_order_acquire)) [[likely]] {
+            return;
+        }
         static constexpr bool RETURNS_BOOL =
             std::is_same_v<std::invoke_result<Func, QueryLocation>, bool>;
         const u64 addr_begin = addr;
@@ -168,6 +174,8 @@ protected:
     void RequestGuestHostSync();
     void UnregisterPending();
 
+    std::atomic<bool> has_cached_queries{false};
+    std::atomic<bool> has_pending_unregister{false};
     ankerl::unordered_dense::map<u64, ankerl::unordered_dense::map<u32, QueryLocation>> cached_queries;
     std::mutex cache_mutex;
 

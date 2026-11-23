@@ -12,6 +12,7 @@
 #include <span>
 #include <utility>
 #include <vector>
+#include <boost/container/small_vector.hpp>
 
 #include "common/alignment.h"
 #include "common/common_funcs.h"
@@ -115,19 +116,22 @@ struct WordManager {
     /// @param enable        If enabling or disabling
     /// @param dirty_addr    Base address to mark or unmark as modified
     /// @param size          Size in bytes to mark or unmark as modified
-    void ChangeRegionState(Type type, bool enable, u64 dirty_addr, u64 size) noexcept {
+    void ChangeRegionState(Type type, bool enable, u64 dirty_addr, u64 size,
+                           bool keep_tracking = false) noexcept {
         std::span<u64> state_words = Span(type);
         [[maybe_unused]] std::span<u64> untracked_words = Span(Type::Untracked);
         [[maybe_unused]] std::span<u64> cached_words = Span(Type::CachedCPU);
-        std::vector<std::pair<VAddr, u64>> ranges;
+        boost::container::small_vector<std::pair<VAddr, u64>, 16> ranges;
         IterateWords(dirty_addr - cpu_addr, size, [&](size_t index, u64 mask) {
             if (type == Type::CPU || type == Type::CachedCPU) {
-                CollectChangedRanges(!enable, index, untracked_words[index], mask, ranges);
+                CollectChangedRanges(!enable || keep_tracking, index, untracked_words[index], mask,
+                                     ranges);
             }
             if (enable) {
                 state_words[index] |= mask;
                 if (type == Type::CPU || type == Type::CachedCPU)
-                    untracked_words[index] |= mask;
+                    untracked_words[index] =
+                        (untracked_words[index] & ~mask) | (keep_tracking ? u64{0} : mask);
                 if (type == Type::CPU)
                     cached_words[index] &= ~mask;
             } else {
@@ -139,7 +143,7 @@ struct WordManager {
             }
         });
         if (!ranges.empty()) {
-            ApplyCollectedRanges(ranges, (!enable) ? 1 : -1);
+            ApplyCollectedRanges(ranges, (!enable || keep_tracking) ? 1 : -1);
         }
     }
 
@@ -164,7 +168,7 @@ struct WordManager {
             func(cpu_addr + pending_offset * BYTES_PER_PAGE,
                  (pending_pointer - pending_offset) * BYTES_PER_PAGE);
         };
-        std::vector<std::pair<VAddr, u64>> ranges;
+        boost::container::small_vector<std::pair<VAddr, u64>, 16> ranges;
         IterateWords(offset, size, [&](size_t index, u64 mask) {
             if (type == Type::GPU)
                 mask &= ~untracked_words[index];
@@ -247,7 +251,7 @@ struct WordManager {
         auto const cached_words = Span(Type::CachedCPU);
         auto const untracked_words = Span(Type::Untracked);
         auto const cpu_words = Span(Type::CPU);
-        std::vector<std::pair<VAddr, u64>> ranges;
+        boost::container::small_vector<std::pair<VAddr, u64>, 16> ranges;
         for (u64 word_index = 0; word_index < num_words; ++word_index) {
             const u64 cached_bits = cached_words[word_index];
             CollectChangedRanges(false, word_index, untracked_words[word_index], cached_bits, ranges);
@@ -266,7 +270,7 @@ struct WordManager {
     /// @param current_bits   Current state of the word
     /// @param new_bits       New state of the word
     /// @tparam add_to_tracker True when the tracker should start tracking the new pages
-    void CollectChangedRanges(bool add_to_tracker, u64 word_index, u64 current_bits, u64 new_bits, std::vector<std::pair<VAddr, u64>>& out_ranges) const {
+    void CollectChangedRanges(bool add_to_tracker, u64 word_index, u64 current_bits, u64 new_bits, boost::container::small_vector<std::pair<VAddr, u64>, 16>& out_ranges) const {
         u64 changed_bits = (add_to_tracker ? current_bits : ~current_bits) & new_bits;
         VAddr addr = cpu_addr + word_index * BYTES_PER_WORD;
         IteratePages(changed_bits, [&](size_t offset, size_t size) {
@@ -274,7 +278,7 @@ struct WordManager {
         });
     }
 
-    void ApplyCollectedRanges(std::vector<std::pair<VAddr, u64>>& ranges, int delta) const {
+    void ApplyCollectedRanges(boost::container::small_vector<std::pair<VAddr, u64>, 16>& ranges, int delta) const {
         if (ranges.empty())
             return;
         std::sort(ranges.begin(), ranges.end(), [](const auto& a, const auto& b) { return a.first < b.first; });

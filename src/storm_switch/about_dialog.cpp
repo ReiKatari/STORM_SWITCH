@@ -116,8 +116,7 @@ AboutDialog::AboutDialog(QWidget* parent)
         "<html><head/><body><p>"
         "<a href='https://stormgamesworld.ru/programs/STORM_SWITCH'><span style='text-decoration: underline; color:%1;'>STORM GAMES WORLD</span></a> | "
         "<a href='https://github.com/ReiKatari/STORM_SWITCH'><span style='text-decoration: underline; color:%1;'>%2</span></a> | "
-        "<a href='https://eden-emulator.github.io/'><span style='text-decoration: underline; color:%1;'>Eden Project</span></a> | "
-        "<a href='https://git.eden-emu.dev/eden-emu/eden/src/branch/master/LICENSE.txt'><span style='text-decoration: underline; color:%1;'>%3</span></a>"
+        "<a href='https://www.gnu.org/licenses/gpl-3.0.html'><span style='text-decoration: underline; color:%1;'>%3</span></a>"
         "</p></body></html>")
         .arg(pal.accent, link_source, link_license));
 

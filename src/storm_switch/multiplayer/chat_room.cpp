@@ -6,7 +6,9 @@
 #include <array>
 #include <future>
 #include <QColor>
+#include <QClipboard>
 #include <QDesktopServices>
+#include <QGuiApplication>
 #include <QFutureWatcher>
 #include <QImage>
 #include <QList>
@@ -443,10 +445,11 @@ void ChatRoom::PopupContextMenu(const QPoint& menu_location) {
 
     QString username = player_list->item(item.row())->data(PlayerListItem::UsernameRole).toString();
     if (!username.isEmpty()) {
-        QAction* view_profile_action = context_menu.addAction(tr("View Profile"));
-        connect(view_profile_action, &QAction::triggered, [username] {
-            QDesktopServices::openUrl(
-                QUrl(QStringLiteral("https://community.citra-emu.org/u/%1").arg(username)));
+        QAction* copy_user_action = context_menu.addAction(tr("Copy Username"));
+        connect(copy_user_action, &QAction::triggered, [username] {
+            if (auto* cb = QGuiApplication::clipboard()) {
+                cb->setText(username);
+            }
         });
     }
 

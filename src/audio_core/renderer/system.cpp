@@ -444,7 +444,7 @@ void System::Stop() {
         PoolMapper::ClearUseState(memory_pool_workbuffer, memory_pool_count);
     }
 
-    if (execution_mode == ExecutionMode::Auto) {
+    if (execution_mode == ExecutionMode::Auto && core.IsPoweredOn() && !core.IsShuttingDown()) {
         terminate_event.Wait();
     }
 }

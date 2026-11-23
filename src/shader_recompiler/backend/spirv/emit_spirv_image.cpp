@@ -643,10 +643,41 @@ Id EmitImageGather(EmitContext& ctx, IR::Inst* inst, const IR::Value& index, Id 
     const auto info{inst->Flags<IR::TextureInstInfo>()};
     const bool is_integer{IsTextureInteger(ctx, info)};
     const Id result_type{is_integer ? ctx.U32[4] : ctx.F32[4]};
-    const ImageOperands operands(ctx, offset, offset2);
+    const Id elem_type{is_integer ? ctx.U32[1] : ctx.F32[1]};
     if (ctx.profile.need_gather_subpixel_offset) {
         coords = ImageGatherSubpixelOffset(ctx, info, TextureImage(ctx, info, index), coords);
     }
+    if (!offset2.IsEmpty() && !ctx.profile.support_texture_gather_offsets) {
+        const std::array values{offset.InstRecursive(), offset2.InstRecursive()};
+        if (values[0]->AreAllArgsImmediates() && values[1]->AreAllArgsImmediates() &&
+            values[0]->GetOpcode() == IR::Opcode::CompositeConstructU32x4 &&
+            values[1]->GetOpcode() == IR::Opcode::CompositeConstructU32x4) {
+            auto read{[&](unsigned int a, unsigned int b) {
+                return static_cast<s32>(values[a]->Arg(b).U32());
+            }};
+            const std::array<std::pair<s32, s32>, 4> pairs{{
+                {read(0, 0), read(0, 1)},
+                {read(0, 2), read(0, 3)},
+                {read(1, 0), read(1, 1)},
+                {read(1, 2), read(1, 3)},
+            }};
+            const Id tex = Texture(ctx, info, index);
+            const Id comp = ctx.Const(info.gather_component);
+            std::array<Id, 4> lanes{};
+            for (size_t i = 0; i < 4; ++i) {
+                const Id off_id = ctx.SConst(pairs[i].first, pairs[i].second);
+                const std::array<Id, 1> op_span{off_id};
+                const Id sample = Emit(&EmitContext::OpImageSparseGather,
+                                       &EmitContext::OpImageGather, ctx, inst, result_type, tex,
+                                       coords, comp, spv::ImageOperandsMask::ConstOffset, op_span);
+                lanes[i] = ctx.OpCompositeExtract(elem_type, sample, 3U);
+            }
+            Id color = ctx.OpCompositeConstruct(result_type, lanes[0], lanes[1], lanes[2], lanes[3]);
+            color = SanitizeBloomSample(ctx, color, is_integer);
+            return is_integer ? ctx.OpBitcast(ctx.F32[4], color) : color;
+        }
+    }
+    const ImageOperands operands(ctx, offset, offset2);
     Id color{Emit(&EmitContext::OpImageSparseGather, &EmitContext::OpImageGather, ctx, inst,
                   result_type, Texture(ctx, info, index), coords,
                   ctx.Const(info.gather_component), operands.MaskOptional(),
@@ -660,10 +691,40 @@ Id EmitImageGatherDref(EmitContext& ctx, IR::Inst* inst, const IR::Value& index,
     const auto info{inst->Flags<IR::TextureInstInfo>()};
     const bool is_integer{IsTextureInteger(ctx, info)};
     const Id result_type{is_integer ? ctx.U32[4] : ctx.F32[4]};
-    const ImageOperands operands(ctx, offset, offset2);
+    const Id elem_type{is_integer ? ctx.U32[1] : ctx.F32[1]};
     if (ctx.profile.need_gather_subpixel_offset) {
         coords = ImageGatherSubpixelOffset(ctx, info, TextureImage(ctx, info, index), coords);
     }
+    if (!offset2.IsEmpty() && !ctx.profile.support_texture_gather_offsets) {
+        const std::array values{offset.InstRecursive(), offset2.InstRecursive()};
+        if (values[0]->AreAllArgsImmediates() && values[1]->AreAllArgsImmediates() &&
+            values[0]->GetOpcode() == IR::Opcode::CompositeConstructU32x4 &&
+            values[1]->GetOpcode() == IR::Opcode::CompositeConstructU32x4) {
+            auto read{[&](unsigned int a, unsigned int b) {
+                return static_cast<s32>(values[a]->Arg(b).U32());
+            }};
+            const std::array<std::pair<s32, s32>, 4> pairs{{
+                {read(0, 0), read(0, 1)},
+                {read(0, 2), read(0, 3)},
+                {read(1, 0), read(1, 1)},
+                {read(1, 2), read(1, 3)},
+            }};
+            const Id tex = Texture(ctx, info, index);
+            std::array<Id, 4> lanes{};
+            for (size_t i = 0; i < 4; ++i) {
+                const Id off_id = ctx.SConst(pairs[i].first, pairs[i].second);
+                const std::array<Id, 1> op_span{off_id};
+                const Id sample = Emit(&EmitContext::OpImageSparseDrefGather,
+                                       &EmitContext::OpImageDrefGather, ctx, inst, result_type, tex,
+                                       coords, dref, spv::ImageOperandsMask::ConstOffset, op_span);
+                lanes[i] = ctx.OpCompositeExtract(elem_type, sample, 3U);
+            }
+            Id color = ctx.OpCompositeConstruct(result_type, lanes[0], lanes[1], lanes[2], lanes[3]);
+            color = SanitizeBloomSample(ctx, color, is_integer);
+            return is_integer ? ctx.OpBitcast(ctx.F32[4], color) : color;
+        }
+    }
+    const ImageOperands operands(ctx, offset, offset2);
     Id color{Emit(&EmitContext::OpImageSparseDrefGather, &EmitContext::OpImageDrefGather,
                   ctx, inst, result_type, Texture(ctx, info, index), coords, dref,
                   operands.MaskOptional(), operands.Span())};

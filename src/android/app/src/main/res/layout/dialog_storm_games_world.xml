@@ -54,6 +54,7 @@
 
         <ImageButton
             android:id="@+id/btn_refresh"
+            android:tooltipText="@string/storm_world_tooltip_refresh"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_marginEnd="8dp"
@@ -67,6 +68,7 @@
 
         <ImageButton
             android:id="@+id/btn_close"
+            android:tooltipText="@string/storm_world_tooltip_close"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:background="@drawable/storm_btn_3d_secondary"
@@ -668,6 +670,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_start_download"
+                    android:tooltipText="@string/storm_world_tooltip_download"
                     android:layout_width="0dp"
                     android:layout_height="42dp"
                     android:insetTop="0dp"
@@ -729,6 +732,7 @@
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_pause_download"
+                        android:tooltipText="@string/storm_world_tooltip_pause"
                         style="@style/Widget.Material3.Button.TonalButton"
                         android:layout_width="wrap_content"
                         android:layout_height="32dp"
@@ -751,6 +755,7 @@
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_cancel_download"
+                        android:tooltipText="@string/storm_world_tooltip_cancel"
                         style="@style/Widget.Material3.Button.TonalButton"
                         android:layout_width="wrap_content"
                         android:layout_height="32dp"

@@ -101,6 +101,9 @@ MultiWaitHolder* EventObserver::WaitSignaled(std::stop_token stop_token) {
         }
 
         auto* selected = m_multi_wait.WaitAny(m_system.Kernel());
+        if (selected == nullptr) {
+            return nullptr;
+        }
         if (selected != std::addressof(m_wakeup_holder)) {
             // Unlink the process.
             selected->UnlinkFromMultiWait();

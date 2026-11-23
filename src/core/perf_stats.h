@@ -6,6 +6,7 @@
 #include <array>
 #include <atomic>
 #include <chrono>
+#include "common/frame_pacer.h"
 #include <cstddef>
 #include <mutex>
 #include "common/common_types.h"
@@ -96,6 +97,8 @@ private:
     /// Walltime at the last limiter invocation
     Clock::time_point previous_walltime = Clock::now();
 
+    /// Monotonic stutter-free pacer (prevents fast-forward catch-up bursts after load spikes)
+    Common::FramePacer frame_pacer{};
     /// Accumulated difference between walltime and emulated time
     std::chrono::microseconds speed_limiting_delta_err{0};
 };

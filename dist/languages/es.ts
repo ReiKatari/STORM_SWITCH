@@ -792,9 +792,9 @@ Es seguro configurarlo en 16x en la mayoría de las GPU.</translation>
             <source>Controls the GPU emulation mode.
 Most games render fine with Fast, but Accurate is still required for some.
 Particles tend to only render correctly with Accurate mode.</source>
-            <translation>Controls the GPU emulation mode.
-Most games render fine with Fast, but Accurate is still required for some.
-Particles tend to only render correctly with Accurate mode.</translation>
+            <translation>Nivel de precisión de GPU.
+Normal es más rápido, pero puede causar fallos gráficos en algunos juegos.
+Alto es más lento, pero corrige errores gráficos.</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="225" />
@@ -823,12 +823,11 @@ Balanced offers better compatibility and may fix issues in some games.
 Accurate further improves compatibility at the cost of some performance.
 Strict is the slowest option, but can fix issues that require stricter synchronization.
 Default follows the GPU Accuracy setting.</source>
-            <translation>Controls the GPU fence synchronization behavior.
-Immediate is the fastest option, but can introduce some issues.
-Balanced offers better compatibility and may fix issues in some games.
-Accurate further improves compatibility at the cost of some performance.
-Strict is the slowest option, but can fix issues that require stricter synchronization.
-Default follows the GPU Accuracy setting.</translation>
+            <translation>Controla cómo se sincronizan las vallas (fences) de GPU.
+Predeterminado sigue la precisión de GPU.
+Inmediato señala al instante.
+Equilibrado espera solo cuando es necesario.
+Preciso espera siempre a la GPU.</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="229" />
@@ -839,8 +838,8 @@ Default follows the GPU Accuracy setting.</translation>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="230" />
             <source>Preserves GPU-modified data by reading it back before uploading.
 Some games require this to render certain effects properly.</source>
-            <translation>Preserves GPU-modified data by reading it back before uploading.
-Some games require this to render certain effects properly.</translation>
+            <translation>Habilita la lectura de búferes de GPU modificados de vuelta a la memoria de CPU.
+Necesario en algunos juegos para físicas o efectos, pero reduce el rendimiento.</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="231" />
@@ -2432,7 +2431,7 @@ Cuando un programa intenta abrir el applet del controlador, se cierra inmediatam
         </message>
         <message>
             <source>VRAM Usage Mode</source>
-            <translation>VRAM Usage Mode</translation>
+            <translation>Modo de uso de VRAM</translation>
         </message>
         <message>
             <source>Использование VRAM:</source>
@@ -2452,7 +2451,7 @@ Cuando un programa intenta abrir el applet del controlador, se cierra inmediatam
         </message>
         <message>
             <source>ASTC Decoding Method</source>
-            <translation>ASTC Decoding Method</translation>
+            <translation>Método de decodificación ASTC</translation>
         </message>
         <message>
             <source>Декодирование ASTC</source>
@@ -2588,7 +2587,7 @@ Cuando un programa intenta abrir el applet del controlador, se cierra inmediatam
         </message>
         <message>
             <source>Vulkan Pipeline Cache</source>
-            <translation>Vulkan Pipeline Cache</translation>
+            <translation>Caché de canalizaciones Vulkan</translation>
         </message>
         <message>
             <source>Кэш Vulkan</source>
@@ -2882,15 +2881,15 @@ Las CPUs menos potentes pueden ver reducido su rendimiento.</translation>
         </message>
         <message>
             <source>Normal</source>
-            <translation>Normal</translation>
+            <translation>Normal (Recomendado)</translation>
         </message>
         <message>
             <source>Boost</source>
-            <translation>Boost</translation>
+            <translation>Impulsado (1700MHz)</translation>
         </message>
         <message>
             <source>Overclock</source>
-            <translation>Overclock</translation>
+            <translation>Rápido (2000MHz)</translation>
         </message>
         <message>
             <source>BC5 (High quality)</source>
@@ -3163,7 +3162,7 @@ Necesario en algunos juegos para físicas o efectos, pero reduce el rendimiento.
         <message>
             <location filename="../../src/yuzu/configuration/configure_camera.cpp" line="135" />
             <source>Auto</source>
-            <translation>Auto</translation>
+            <translation>Automático</translation>
         </message>
     </context>
     <context>
@@ -4453,7 +4452,7 @@ Would you like to delete the old save data?</source>
         </message>
         <message>
             <source>VRAM Usage Mode</source>
-            <translation>VRAM Usage Mode</translation>
+            <translation>Modo de uso de VRAM</translation>
         </message>
         <message>
             <source>Использование VRAM</source>
@@ -4469,7 +4468,7 @@ Would you like to delete the old save data?</source>
         </message>
         <message>
             <source>ASTC Decoding Method</source>
-            <translation>ASTC Decoding Method</translation>
+            <translation>Método de decodificación ASTC</translation>
         </message>
         <message>
             <source>Декодирование ASTC</source>
@@ -4593,7 +4592,7 @@ Would you like to delete the old save data?</source>
         </message>
         <message>
             <source>Vulkan Pipeline Cache</source>
-            <translation>Vulkan Pipeline Cache</translation>
+            <translation>Caché de canalizaciones Vulkan</translation>
         </message>
         <message>
             <source>Кэш Vulkan</source>
@@ -4660,7 +4659,7 @@ Would you like to delete the old save data?</source>
         </message>
         <message>
             <source>Extensions</source>
-            <translation>Extensions</translation>
+            <translation>Extensiones</translation>
         </message>
         <message>
             <source>Modifying these settings can cause problems. For advanced users only!</source>
@@ -5517,7 +5516,7 @@ Para invertir los ejes, mueve primero el joystick de manera vertical, y luego ho
         <message>
             <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="1378" />
             <source>C-Stick</source>
-            <translation>C-Stick</translation>
+            <translation>Palanca-C</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="1479" />
@@ -5943,11 +5942,11 @@ Los valores actuales son %1% y %2% respectivamente.</translation>
         </message>
         <message>
             <source>GameBanana Mods</source>
-            <translation>GameBanana Mods</translation>
+            <translation>Mods de GameBanana</translation>
         </message>
         <message>
             <source>Cheats</source>
-            <translation>Cheats</translation>
+            <translation>Trucos</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="79" />
@@ -6902,7 +6901,7 @@ Arrastre los puntos para cambiar de posición, o haga doble clic en las celdas d
         </message>
         <message>
             <source>Screenshots Path:</source>
-            <translation>Screenshots Path:</translation>
+            <translation>Ruta de las capturas de pantalla:</translation>
         </message>
     </context>
     <context>
@@ -7049,7 +7048,7 @@ Arrastre los puntos para cambiar de posición, o haga doble clic en las celdas d
         </message>
         <message>
             <source>Username:</source>
-            <translation>Username:</translation>
+            <translation>Nombre de usuario:</translation>
         </message>
     </context>
     <context>
@@ -9373,7 +9372,7 @@ Would you like to bypass this and exit anyway?</source>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.h" line="44" />
             <source>B-Spline</source>
-            <translation>B-Spline</translation>
+            <translation>Ranura B</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.h" line="46" />
@@ -9512,7 +9511,7 @@ Would you like to bypass this and exit anyway?</source>
         </message>
         <message>
             <source>Check for Updates</source>
-            <translation>Check for Updates</translation>
+            <translation>Buscar actualizaciones</translation>
         </message>
         <message>
             <source>&amp;Check for Updates</source>
@@ -10068,13 +10067,6 @@ p, li { white-space: pre-wrap; }
             <location filename="../../src/yuzu/user_data_migration.cpp" line="68" />
             <source>Link Old Directory</source>
             <translation>Vincular directorio antiguo</translation>
-        </message>
-        <message>
-            <location filename="../../src/yuzu/user_data_migration.cpp" line="98" />
-            <source>
-      </source>
-            <translation>
-      </translation>
         </message>
         <message>
             <location filename="../../src/yuzu/user_data_migration.cpp" line="102" />
@@ -12084,7 +12076,7 @@ Código de error: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>Restablecer valores predeterminados</translation>
         </message>
         </context>
     <context>
@@ -12231,7 +12223,7 @@ Código de error: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>Restablecer valores predeterminados</translation>
         </message>
         </context>
     <context>
@@ -12378,7 +12370,7 @@ Código de error: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>Restablecer valores predeterminados</translation>
         </message>
         </context>
     <context>
@@ -12525,7 +12517,7 @@ Código de error: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>Restablecer valores predeterminados</translation>
         </message>
         </context>
     <context>
@@ -12672,7 +12664,7 @@ Código de error: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>Restablecer valores predeterminados</translation>
         </message>
     </context>
     <context>
@@ -12819,7 +12811,7 @@ Código de error: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>Restablecer valores predeterminados</translation>
         </message>
     </context>
     <context>
@@ -12966,7 +12958,7 @@ Código de error: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>Restablecer valores predeterminados</translation>
         </message>
     </context>
     <context>
@@ -13113,7 +13105,7 @@ Código de error: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>Restablecer valores predeterminados</translation>
         </message>
     </context>
     <context>

@@ -798,9 +798,9 @@ Safe to set at 16x on most GPUs.</source>
             <source>Controls the GPU emulation mode.
 Most games render fine with Fast, but Accurate is still required for some.
 Particles tend to only render correctly with Accurate mode.</source>
-            <translation>Controls the GPU emulation mode.
-Most games render fine with Fast, but Accurate is still required for some.
-Particles tend to only render correctly with Accurate mode.</translation>
+            <translation>要使用的 GPU 精度级别。
+标准速度更快，但在某些游戏中可能导致图形问题。
+高精度较慢，但可修复图形问题。</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="225" />
@@ -812,9 +812,9 @@ Particles tend to only render correctly with Accurate mode.</translation>
             <source>Controls the DMA read mode.
 Unsafe is faster, while Safe is more stable and can fix issues in some games.
 Default follows the GPU Accuracy setting.</source>
-            <translation>Controls the DMA read mode.
-Unsafe is faster, while Safe is more stable and can fix issues in some games.
-Default follows the GPU Accuracy setting.</translation>
+            <translation>要使用的 DMA 精度级别。
+标准速度更快，但可能导致图形问题。
+安全较慢，但可修复图形问题。</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="227" />
@@ -829,12 +829,11 @@ Balanced offers better compatibility and may fix issues in some games.
 Accurate further improves compatibility at the cost of some performance.
 Strict is the slowest option, but can fix issues that require stricter synchronization.
 Default follows the GPU Accuracy setting.</source>
-            <translation>Controls the GPU fence synchronization behavior.
-Immediate is the fastest option, but can introduce some issues.
-Balanced offers better compatibility and may fix issues in some games.
-Accurate further improves compatibility at the cost of some performance.
-Strict is the slowest option, but can fix issues that require stricter synchronization.
-Default follows the GPU Accuracy setting.</translation>
+            <translation>控制 GPU 栅栏（Fence）的同步方式。
+默认遵循 GPU 精度设置。
+立即会马上发出信号（最快）。
+平衡仅在需要时等待。
+精确始终等待 GPU 完成（最准）。</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="229" />
@@ -845,8 +844,8 @@ Default follows the GPU Accuracy setting.</translation>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="230" />
             <source>Preserves GPU-modified data by reading it back before uploading.
 Some games require this to render certain effects properly.</source>
-            <translation>Preserves GPU-modified data by reading it back before uploading.
-Some games require this to render certain effects properly.</translation>
+            <translation>启用将修改后的 GPU 缓冲区读回 CPU 内存。
+某些游戏需要此功能才能实现正常的物理或渲染效果，但会显著降低性能。</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="231" />
@@ -2438,7 +2437,7 @@ When a program attempts to open the controller applet, it is immediately closed.
         </message>
         <message>
             <source>VRAM Usage Mode</source>
-            <translation>VRAM Usage Mode</translation>
+            <translation>显存使用模式</translation>
         </message>
         <message>
             <source>Использование VRAM:</source>
@@ -2458,7 +2457,7 @@ When a program attempts to open the controller applet, it is immediately closed.
         </message>
         <message>
             <source>ASTC Decoding Method</source>
-            <translation>ASTC Decoding Method</translation>
+            <translation>ASTC解码方式</translation>
         </message>
         <message>
             <source>Декодирование ASTC</source>
@@ -2594,7 +2593,7 @@ When a program attempts to open the controller applet, it is immediately closed.
         </message>
         <message>
             <source>Vulkan Pipeline Cache</source>
-            <translation>Vulkan Pipeline Cache</translation>
+            <translation>Vulkan 管线缓存</translation>
         </message>
         <message>
             <source>Кэш Vulkan</source>
@@ -3796,7 +3795,7 @@ Required by some games for proper physics or rendering effects, but significantl
         </message>
         <message>
             <source>(bitmask)</source>
-            <translation>(bitmask)</translation>
+            <translation>(位掩码)</translation>
         </message>
     </context>
     <context>
@@ -4447,7 +4446,7 @@ Would you like to delete the old save data?</source>
         </message>
         <message>
             <source>VRAM Usage Mode</source>
-            <translation>VRAM Usage Mode</translation>
+            <translation>显存使用模式</translation>
         </message>
         <message>
             <source>Использование VRAM</source>
@@ -4463,7 +4462,7 @@ Would you like to delete the old save data?</source>
         </message>
         <message>
             <source>ASTC Decoding Method</source>
-            <translation>ASTC Decoding Method</translation>
+            <translation>ASTC解码方式</translation>
         </message>
         <message>
             <source>Декодирование ASTC</source>
@@ -4587,7 +4586,7 @@ Would you like to delete the old save data?</source>
         </message>
         <message>
             <source>Vulkan Pipeline Cache</source>
-            <translation>Vulkan Pipeline Cache</translation>
+            <translation>Vulkan 管线缓存</translation>
         </message>
         <message>
             <source>Кэш Vulkan</source>
@@ -4629,7 +4628,7 @@ Would you like to delete the old save data?</source>
         <message>
             <location filename="../../src/yuzu/configuration/configure_graphics_extensions.ui" line="23" />
             <source>Hacks</source>
-            <translation>Hacks</translation>
+            <translation>Hack</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_graphics_extensions.ui" line="29" />
@@ -5088,7 +5087,7 @@ Would you like to delete the old save data?</source>
         </message>
         <message>
             <source>Disables SDL WGI and XInput controller drivers. Prevents trigger conflicts, vibration issues, and synthetic Home button presses. Emulator restart required.</source>
-            <translation>Disables SDL WGI and XInput controller drivers. Prevents trigger conflicts, vibration issues, and synthetic Home button presses. Emulator restart required.</translation>
+            <translation>禁用 SDL WGI 和 XInput 控制器驱动程序。防止扳机冲突、震动问题和意外的 Home 键按下。需要重启模拟器。</translation>
         </message>
     </context>
     <context>
@@ -5937,11 +5936,11 @@ Current values are %1% and %2% respectively.</source>
         </message>
         <message>
             <source>GameBanana Mods</source>
-            <translation>GameBanana Mods</translation>
+            <translation>GameBanana 模组</translation>
         </message>
         <message>
             <source>Cheats</source>
-            <translation>Cheats</translation>
+            <translation>作弊码</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="79" />
@@ -7749,8 +7748,8 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</source>
             <location filename="../../src/yuzu/multiplayer/host_room.cpp" line="187" />
             <source>Failed to announce the room to the public lobby. In order to host a room publicly, you must have a valid Eden account configured in Emulation -&gt; Configure -&gt; Web. If you do not want to publish a room in the public lobby, then select Unlisted instead.
 Debug Message: </source>
-            <translation>
-      </translation>
+            <translation>Failed to announce the room to the public lobby. In order to host a room publicly, you must have a valid Eden account configured in Emulation -&gt; Configure -&gt; Web. If you do not want to publish a room in the public lobby, then select Unlisted instead.
+Debug Message: </translation>
         </message>
     </context>
     <context>
@@ -9317,12 +9316,12 @@ Would you like to bypass this and exit anyway?</source>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.h" line="32" />
             <source>FXAA</source>
-            <translation>FXAA</translation>
+            <translation>快速近似抗锯齿</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.h" line="33" />
             <source>SMAA</source>
-            <translation>SMAA</translation>
+            <translation>子像素形态学抗锯齿</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.h" line="38" />
@@ -9362,17 +9361,17 @@ Would you like to bypass this and exit anyway?</source>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.h" line="49" />
             <source>Gaussian</source>
-            <translation>Gaussian</translation>
+            <translation>高斯</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.h" line="50" />
             <source>Lanczos</source>
-            <translation>Lanczos</translation>
+            <translation>兰索斯</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.h" line="52" />
             <source>ScaleForce</source>
-            <translation>ScaleForce</translation>
+            <translation>强制缩放</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.h" line="53" />
@@ -9382,7 +9381,7 @@ Would you like to bypass this and exit anyway?</source>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.h" line="54" />
             <source>Area</source>
-            <translation>Area</translation>
+            <translation>区域</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.h" line="55" />
@@ -9486,7 +9485,7 @@ Would you like to bypass this and exit anyway?</source>
         </message>
         <message>
             <source>Check for Updates</source>
-            <translation>Check for Updates</translation>
+            <translation>检查更新</translation>
         </message>
         <message>
             <source>&amp;Check for Updates</source>
@@ -9498,7 +9497,7 @@ Would you like to bypass this and exit anyway?</source>
         </message>
         <message>
             <source>Check for Updates...</source>
-            <translation>Check for Updates...</translation>
+            <translation>检查更新...</translation>
         </message>
         <message>
             <source>Проверить обновления</source>
@@ -9558,7 +9557,7 @@ Would you like to bypass this and exit anyway?</source>
         </message>
         <message>
             <source>Install Files to NAND...</source>
-            <translation>Install Files to NAND...</translation>
+            <translation>安装文件到 NAND...</translation>
         </message>
         <message>
             <source>&amp;Install Files to NAND</source>
@@ -10042,13 +10041,6 @@ p, li { white-space: pre-wrap; }
             <location filename="../../src/yuzu/user_data_migration.cpp" line="68" />
             <source>Link Old Directory</source>
             <translation>链接旧目录</translation>
-        </message>
-        <message>
-            <location filename="../../src/yuzu/user_data_migration.cpp" line="98" />
-            <source>
-      </source>
-            <translation>
-      </translation>
         </message>
         <message>
             <location filename="../../src/yuzu/user_data_migration.cpp" line="102" />
@@ -12050,7 +12042,7 @@ Error code: %3</source>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>重置为默认</translation>
         </message>
         </context>
     <context>
@@ -12197,7 +12189,7 @@ Error code: %3</source>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>重置为默认</translation>
         </message>
         </context>
     <context>
@@ -12344,7 +12336,7 @@ Error code: %3</source>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>重置为默认</translation>
         </message>
         </context>
     <context>
@@ -12491,7 +12483,7 @@ Error code: %3</source>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>重置为默认</translation>
         </message>
         </context>
     <context>
@@ -12638,7 +12630,7 @@ Error code: %3</source>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>重置为默认</translation>
         </message>
     </context>
     <context>
@@ -12785,7 +12777,7 @@ Error code: %3</source>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>重置为默认</translation>
         </message>
     </context>
     <context>
@@ -12932,7 +12924,7 @@ Error code: %3</source>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>重置为默认</translation>
         </message>
     </context>
     <context>
@@ -13079,7 +13071,7 @@ Error code: %3</source>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>重置为默认</translation>
         </message>
     </context>
     <context>

@@ -20,6 +20,7 @@
 #include "qt_common/config/uisettings.h"
 #include "ui_configure_audio.h"
 #include "storm_switch/configuration/configuration_shared.h"
+#include "storm_switch/common/storm_lang.h"
 #include "storm_switch/configuration/configure_audio.h"
 #include "storm_switch/configuration/shared_widget.h"
 
@@ -211,7 +212,12 @@ void ConfigureAudio::SetOutputSinkFromSinkID() {
         return std::string("null");
     }();
 
-    sink_combo_box->setCurrentText(QString::fromStdString(new_sink_id));
+    const int idx = sink_combo_box->findData(QString::fromStdString(new_sink_id));
+    if (idx >= 0) {
+        sink_combo_box->setCurrentIndex(idx);
+    } else {
+        sink_combo_box->setCurrentText(QString::fromStdString(new_sink_id));
+    }
 }
 
 void ConfigureAudio::SetOutputDevicesFromDeviceID() {
@@ -220,7 +226,8 @@ void ConfigureAudio::SetOutputDevicesFromDeviceID() {
     const QString output_device_id =
         QString::fromStdString(Settings::values.audio_output_device_id.GetValue());
     for (int index = 0; index < output_device_combo_box->count(); index++) {
-        if (output_device_combo_box->itemText(index) == output_device_id) {
+        const QString canonical = output_device_combo_box->itemData(index).toString();
+        if ((canonical.isEmpty() ? output_device_combo_box->itemText(index) : canonical) == output_device_id) {
             new_device_index = index;
             break;
         }
@@ -234,7 +241,8 @@ void ConfigureAudio::SetInputDevicesFromDeviceID() {
     const QString input_device_id =
         QString::fromStdString(Settings::values.audio_input_device_id.GetValue());
     for (int index = 0; index < input_device_combo_box->count(); index++) {
-        if (input_device_combo_box->itemText(index) == input_device_id) {
+        const QString canonical = input_device_combo_box->itemData(index).toString();
+        if ((canonical.isEmpty() ? input_device_combo_box->itemText(index) : canonical) == input_device_id) {
             new_device_index = index;
             break;
         }
@@ -250,7 +258,8 @@ void ConfigureAudio::ApplyConfiguration() {
     }
 
     const u32 new_sink_id = [this]() {
-        const std::string sink_id = sink_combo_box->currentText().toStdString();
+        const QString cur_data = sink_combo_box->currentData().toString();
+        const std::string sink_id = (cur_data.isEmpty() ? sink_combo_box->currentText() : cur_data).toStdString();
         const auto canonicalizations =
             Settings::EnumMetadata<Settings::AudioEngine>::Canonicalizations();
 
@@ -262,11 +271,15 @@ void ConfigureAudio::ApplyConfiguration() {
         return u32(0);
     }();
 
+    const auto get_combo_canonical = [](QComboBox* cb) -> std::string {
+        const int idx = cb->currentIndex();
+        const QString data = cb->itemData(idx).toString();
+        return (data.isEmpty() ? cb->itemText(idx) : data).toStdString();
+    };
+
     Settings::values.sink_id.SetValue(Settings::AudioEngine(new_sink_id));
-    Settings::values.audio_output_device_id.SetValue(
-        output_device_combo_box->itemText(output_device_combo_box->currentIndex()).toStdString());
-    Settings::values.audio_input_device_id.SetValue(
-        input_device_combo_box->itemText(input_device_combo_box->currentIndex()).toStdString());
+    Settings::values.audio_output_device_id.SetValue(get_combo_canonical(output_device_combo_box));
+    Settings::values.audio_input_device_id.SetValue(get_combo_canonical(input_device_combo_box));
 }
 
 void ConfigureAudio::changeEvent(QEvent* event) {
@@ -279,29 +292,38 @@ void ConfigureAudio::changeEvent(QEvent* event) {
 
 void ConfigureAudio::UpdateAudioDevices(int sink_index) {
     updating_devices = true;
-    output_device_combo_box->clear();
-    output_device_combo_box->addItem(QString::fromUtf8(AudioCore::Sink::auto_device_name));
+    const QString auto_canonical = QString::fromUtf8(AudioCore::Sink::auto_device_name);
+    const QString auto_label = StormLang(QStringLiteral("Авто"), QStringLiteral("Auto"));
 
-    const auto sink_id =
-        Settings::ToEnum<Settings::AudioEngine>(sink_combo_box->itemText(sink_index).toStdString());
+    output_device_combo_box->clear();
+    output_device_combo_box->addItem(auto_label, auto_canonical);
+
+    const QString sink_key = sink_combo_box->itemData(sink_index).toString();
+    const auto sink_id = Settings::ToEnum<Settings::AudioEngine>(
+        (sink_key.isEmpty() ? sink_combo_box->itemText(sink_index) : sink_key).toStdString());
     for (const auto& device : AudioCore::Sink::GetDeviceListForSink(sink_id, false)) {
-        output_device_combo_box->addItem(QString::fromStdString(device));
+        const QString dev_str = QString::fromStdString(device);
+        output_device_combo_box->addItem(dev_str, dev_str);
     }
 
     input_device_combo_box->clear();
-    input_device_combo_box->addItem(QString::fromUtf8(AudioCore::Sink::auto_device_name));
+    input_device_combo_box->addItem(auto_label, auto_canonical);
     for (const auto& device : AudioCore::Sink::GetDeviceListForSink(sink_id, true)) {
-        input_device_combo_box->addItem(QString::fromStdString(device));
+        const QString dev_str = QString::fromStdString(device);
+        input_device_combo_box->addItem(dev_str, dev_str);
     }
     updating_devices = false;
 }
 
 void ConfigureAudio::InitializeAudioSinkComboBox() {
+    const QString auto_canonical = QString::fromUtf8(AudioCore::Sink::auto_device_name);
+    const QString auto_label = StormLang(QStringLiteral("Авто"), QStringLiteral("Auto"));
     sink_combo_box->clear();
-    sink_combo_box->addItem(QString::fromUtf8(AudioCore::Sink::auto_device_name));
-    for (const auto& id : AudioCore::Sink::GetSinkIDs())
-        sink_combo_box->addItem(
-            QString::fromStdString(std::string{Settings::CanonicalizeEnum(id)}));
+    sink_combo_box->addItem(auto_label, auto_canonical);
+    for (const auto& id : AudioCore::Sink::GetSinkIDs()) {
+        const QString canon = QString::fromStdString(std::string{Settings::CanonicalizeEnum(id)});
+        sink_combo_box->addItem(canon, canon);
+    }
 }
 
 void ConfigureAudio::RetranslateUI() {

@@ -67,6 +67,7 @@ private:
     void RefreshResources(const Device& device, const Tegra::FramebufferConfig& framebuffer);
     void SetAntiAliasPass(const Device& device, VkExtent2D render_area);
     void UpdateScalingFilter(const Device& device, VkExtent2D output_size);
+    void WaitForAllResources();
     void ReleaseRawImages();
 
     u64 CalculateBufferSize(const Tegra::FramebufferConfig& framebuffer) const;

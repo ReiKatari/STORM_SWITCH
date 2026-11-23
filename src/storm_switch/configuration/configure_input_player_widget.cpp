@@ -336,18 +336,19 @@ void PlayerControlPreview::UpdateColors() {
         break;
 
     case ControllerSkin::CyberStorm:
-        colors.primary = QColor(12, 14, 20, 248);
-        colors.left = QColor(0, 232, 255);
-        colors.right = QColor(255, 24, 102);
-        colors.grip_left_highlight = QColor(135, 248, 255);
-        colors.grip_right_highlight = QColor(255, 115, 168);
-        colors.grip_left_shadow = QColor(0, 110, 138);
-        colors.grip_right_shadow = QColor(142, 10, 52);
-        colors.body_inner = QColor(6, 8, 14, 238);
-        colors.body_rim = QColor(0, 245, 255, 210);
-        colors.emblem = QColor(0, 248, 255);
-        colors.emblem_secondary = QColor(255, 28, 118);
-        colors.home_led = QColor(0, 255, 242);
+        // Official Nintendo Switch Pro Controller - Splatoon 2 Edition (Neon Green & Neon Pink)
+        colors.primary = QColor(34, 37, 44, 242);
+        colors.left = QColor(62, 214, 42);
+        colors.right = QColor(238, 42, 108);
+        colors.grip_left_highlight = QColor(126, 244, 104);
+        colors.grip_right_highlight = QColor(255, 112, 162);
+        colors.grip_left_shadow = QColor(24, 128, 18);
+        colors.grip_right_shadow = QColor(144, 16, 62);
+        colors.body_inner = QColor(22, 25, 31, 212);
+        colors.body_rim = QColor(78, 84, 96);
+        colors.emblem = QColor(62, 214, 42, 165);
+        colors.emblem_secondary = QColor(238, 42, 108, 165);
+        colors.home_led = QColor(62, 230, 100);
         break;
     }
 
@@ -1325,9 +1326,9 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
     // Responsive scaling so 3D controller and side HUD cards never overlap at any window size
     const float hud_w = static_cast<float>(rect().width());
     const float hud_h = static_cast<float>(rect().height());
-    const float avail_ctrl_w = std::max(160.0f, hud_w - 250.0f);
-    const float avail_ctrl_h = std::max(140.0f, hud_h - 32.0f);
-    const float base_scale = std::clamp(std::min(avail_ctrl_w / 375.0f, avail_ctrl_h / 295.0f), 0.54f, 1.18f);
+    const float avail_ctrl_w = std::max(190.0f, hud_w - 150.0f);
+    const float avail_ctrl_h = std::max(160.0f, hud_h - 32.0f);
+    const float base_scale = std::clamp(std::min(avail_ctrl_w / 348.0f, avail_ctrl_h / 290.0f), 0.62f, 1.12f);
     const QPointF controller_center(hud_w * 0.5f, hud_h * 0.5f + 6.0f * base_scale);
 
     auto Project = [&](float x, float y, float z = 0.0f) -> ProjectedPt {
@@ -2272,67 +2273,25 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
     }
 
     case ControllerSkin::CyberStorm: {
+        // Official Splatoon 2 Edition subtle matte ink-splatter finish on smoked polycarbonate shell
         p.save();
         p.setRenderHint(QPainter::Antialiasing);
-        auto DrawNeonLine = [&](float x1, float y1, float x2, float y2, const QColor& col, float width = 1.9f) {
-            const auto pa = Project(x1, y1, Z_ART + 0.04f);
-            const auto pb = Project(x2, y2, Z_ART + 0.04f);
-            p.setPen(QPen(QColor(col.red(), col.green(), col.blue(), 65), (width + 4.5f) * zoom, Qt::SolidLine, Qt::RoundCap));
-            p.drawLine(pa.pt, pb.pt);
-            p.setPen(QPen(col, width * zoom, Qt::SolidLine, Qt::RoundCap));
-            p.drawLine(pa.pt, pb.pt);
-        };
-
-        // Upper & lower cybernetic PCB bus traces
-        DrawNeonLine(-62.0f, -25.0f, -30.0f, -25.0f, QColor(0, 248, 255, 250));
-        DrawNeonLine(-30.0f, -25.0f, -12.0f, -46.0f, QColor(0, 248, 255, 250));
-        DrawNeonLine(-12.0f, -46.0f,  12.0f, -46.0f, QColor(0, 248, 255, 250));
-        DrawNeonLine( 12.0f, -46.0f,  30.0f, -25.0f, QColor(0, 248, 255, 250));
-        DrawNeonLine( 30.0f, -25.0f,  62.0f, -25.0f, QColor(0, 248, 255, 250));
-        DrawNeonLine(-52.0f, -10.0f, -20.0f, -10.0f, QColor(0, 248, 255, 190), 1.3f);
-        DrawNeonLine( 20.0f, -10.0f,  52.0f, -10.0f, QColor(0, 248, 255, 190), 1.3f);
-        DrawNeonLine(-34.0f,  26.0f,  -8.0f,  12.0f, QColor(255, 28, 118, 210), 1.4f);
-        DrawNeonLine(  8.0f,  12.0f,  34.0f,  26.0f, QColor(255, 28, 118, 210), 1.4f);
-
         p.setPen(Qt::NoPen);
-        for (auto& np_pos : {std::pair{-62.0f, -25.0f}, std::pair{-30.0f, -25.0f},
-                             std::pair{30.0f, -25.0f}, std::pair{62.0f, -25.0f},
-                             std::pair{-12.0f, -46.0f}, std::pair{12.0f, -46.0f}}) {
-            const auto np = Project(np_pos.first, np_pos.second, Z_ART + 0.06f);
-            QRadialGradient dot_glow(np.pt, 5.5f * np.scale);
-            dot_glow.setColorAt(0.0, QColor(0, 248, 255, 225));
-            dot_glow.setColorAt(0.5, QColor(0, 248, 255, 70));
-            dot_glow.setColorAt(1.0, QColor(0, 248, 255, 0));
-            p.setBrush(dot_glow);
-            p.drawEllipse(np.pt, 5.5f * np.scale, 5.5f * np.scale);
-            p.setBrush(QColor(180, 255, 255));
-            p.drawEllipse(np.pt, 2.4f * np.scale, 2.4f * np.scale);
-        }
-
-        // STORM Cyber Hex Emblem + Lightning Core
-        QPolygonF hex;
-        for (int i = 0; i < 6; ++i) {
-            const float a = i * (PI_CONST / 3.0f) + (PI_CONST / 6.0f);
-            hex << Project(std::cos(a) * 16.0f, -14.0f + std::sin(a) * 16.0f, Z_ART + 0.05f).pt;
-        }
-        p.setPen(QPen(QColor(0, 248, 255, 200), 1.4f * zoom));
-        p.setBrush(QColor(8, 14, 26, 210));
-        p.drawPolygon(hex);
-
-        DrawNeonLine( 4.5f, -26.0f, -4.5f, -14.0f, QColor(255, 28, 118, 255), 2.6f);
-        DrawNeonLine(-4.5f, -14.0f,  2.5f, -14.0f, QColor(255, 28, 118, 255), 2.6f);
-        DrawNeonLine( 2.5f, -14.0f, -3.0f,  -2.0f, QColor(255, 28, 118, 255), 2.6f);
-
-        {
-            const auto bolt_c = Project(0.0f, -14.0f, Z_ART + 0.08f);
-            QRadialGradient bg(bolt_c.pt, 18.0f * bolt_c.scale);
-            bg.setColorAt(0.0, QColor(255, 28, 118, 80));
-            bg.setColorAt(0.6, QColor(0, 248, 255, 25));
-            bg.setColorAt(1.0, QColor(0, 248, 255, 0));
-            p.setPen(Qt::NoPen);
-            p.setBrush(bg);
-            p.drawEllipse(bolt_c.pt, 18.0f * bolt_c.scale, 18.0f * bolt_c.scale);
-        }
+        auto DrawSplatter = [&](float sx, float sy, float sr, const QColor& col) {
+            const auto sp = Project(sx, sy, Z_ART + 0.04f);
+            QRadialGradient sg(sp.pt, sr * sp.scale);
+            sg.setColorAt(0.0, QColor(col.red(), col.green(), col.blue(), 110));
+            sg.setColorAt(0.7, QColor(col.red(), col.green(), col.blue(), 70));
+            sg.setColorAt(1.0, QColor(col.red(), col.green(), col.blue(), 0));
+            p.setBrush(sg);
+            p.drawEllipse(sp.pt, sr * sp.scale, sr * sp.scale);
+        };
+        DrawSplatter(-54.0f, -18.0f, 15.0f, QColor(62, 214, 42));
+        DrawSplatter(-36.0f, -34.0f, 8.5f,  QColor(62, 214, 42));
+        DrawSplatter(-42.0f,  14.0f, 10.0f, QColor(62, 214, 42));
+        DrawSplatter( 50.0f, -16.0f, 16.0f, QColor(238, 42, 108));
+        DrawSplatter( 34.0f,  12.0f, 11.0f, QColor(238, 42, 108));
+        DrawSplatter( 18.0f, -38.0f, 7.5f,  QColor(238, 42, 108));
         p.restore();
         break;
     }
@@ -2667,7 +2626,17 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
         auto DrawDpadArm = [&](Direction dir, bool is_pressed, float ax, float ay) {
             const float top_z = GetTopZ(ax, ay);
             const auto arm_proj = Project(cx + ax, cy + ay, top_z + 0.15f);
-            const QColor arr_col = is_pressed ? colors.indicator
+            if (is_pressed) {
+                const float gr = 14.0f * arm_proj.scale;
+                QRadialGradient dglow(arm_proj.pt, gr);
+                dglow.setColorAt(0.0, QColor(colors.indicator.red(), colors.indicator.green(), colors.indicator.blue(), 210));
+                dglow.setColorAt(0.6, QColor(colors.indicator.red(), colors.indicator.green(), colors.indicator.blue(), 85));
+                dglow.setColorAt(1.0, QColor(colors.indicator.red(), colors.indicator.green(), colors.indicator.blue(), 0));
+                p.setPen(Qt::NoPen);
+                p.setBrush(dglow);
+                p.drawEllipse(arm_proj.pt, gr, gr);
+            }
+            const QColor arr_col = is_pressed ? QColor(255, 255, 255)
                                  : ((current_skin == ControllerSkin::ZeldaTotk) ? QColor(46, 238, 186) : colors.font2);
             p.setPen(arr_col);
             p.setBrush(arr_col);
@@ -2718,13 +2687,20 @@ void PlayerControlPreview::DrawProController(QPainter& p, const QPointF center) 
             }
         }
 
-        // 3. Acrylic Dome Cap at top_z
+        // 3. Acrylic Dome Cap at top_z + Radiant Press Glow Halo
         const auto b_center = Project(bx, by, top_z);
-        QColor rim_pen = pressed ? colors.font : QColor(22, 24, 30);
-        if (!pressed && current_skin == ControllerSkin::CyberStorm) {
-            rim_pen = QColor(0, 248, 255, 190);
+        if (pressed) {
+            const float halo_r = (r + 11.0f) * b_center.scale;
+            QRadialGradient halo(b_center.pt, halo_r);
+            halo.setColorAt(0.0, QColor(colors.indicator.red(), colors.indicator.green(), colors.indicator.blue(), 195));
+            halo.setColorAt(0.55, QColor(colors.indicator.red(), colors.indicator.green(), colors.indicator.blue(), 95));
+            halo.setColorAt(1.0, QColor(colors.indicator.red(), colors.indicator.green(), colors.indicator.blue(), 0));
+            p.setPen(Qt::NoPen);
+            p.setBrush(halo);
+            p.drawEllipse(b_center.pt, halo_r, halo_r);
         }
-        p.setPen(QPen(rim_pen, 1.25f));
+        const QColor rim_pen = pressed ? QColor(255, 255, 255, 240) : QColor(42, 46, 56, 210);
+        p.setPen(QPen(rim_pen, pressed ? 1.8f : 1.15f));
         if (pressed) {
             QRadialGradient glow_grad(b_center.pt, r * b_center.scale);
             glow_grad.setColorAt(0.0, colors.indicator.lighter(145));

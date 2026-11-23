@@ -68,8 +68,23 @@ bool ShaderCache::RefreshStages(std::array<u64, 6>& unique_hashes) try {
             unique_hashes[index] = 0;
             continue;
         }
+        static const bool enable_native_gs = [] {
+            const char* v = std::getenv("EDEN_NX2_ENABLE_GS");
+            return v != nullptr && v[0] == '1';
+        }();
+        if (native && program != Tegra::Engines::Maxwell3D::Regs::ShaderType::VertexB &&
+            (!enable_native_gs || program != Tegra::Engines::Maxwell3D::Regs::ShaderType::Geometry) &&
+            program != Tegra::Engines::Maxwell3D::Regs::ShaderType::Pixel) {
+            last_shaders_valid = false;
+            static std::atomic<u32> rejected_stage_shaders{0};
+            if (rejected_stage_shaders.fetch_add(1, std::memory_order_relaxed) < 32) {
+                LOG_WARNING(HW_GPU, "Native graphics shader skipped: Unsupported native graphics shader stage {}",
+                            static_cast<u32>(program));
+            }
+            return false;
+        }
         const GPUVAddr shader_addr{native
-            ? (static_cast<u64>(shader_config.reserved[0] & 0xff) << 32) | shader_config.reserved[1]
+            ? (static_cast<u64>(shader_config.reserved[0] & 0x1ffff) << 32) | shader_config.reserved[1]
             : base_addr + shader_config.offset};
         const std::optional<VAddr> cpu_shader_addr{gpu_memory->GpuToCpuAddress(shader_addr)};
         if (!cpu_shader_addr) {
@@ -79,9 +94,31 @@ bool ShaderCache::RefreshStages(std::array<u64, 6>& unique_hashes) try {
         }
         const ShaderInfo* shader_info{TryGet(*cpu_shader_addr)};
         if (!shader_info) {
+            if (native && has_failed_native_shaders.load(std::memory_order_relaxed)) {
+                std::scoped_lock lock{lookup_mutex};
+                if (failed_native_shaders.contains(*cpu_shader_addr)) {
+                    last_shaders_valid = false;
+                    return false;
+                }
+            }
             const u32 start_address{native ? 0 : shader_config.offset};
-            GraphicsEnvironment env{*maxwell3d, *gpu_memory, program, native ? shader_addr : base_addr, start_address};
-            shader_info = MakeShaderInfo(env, *cpu_shader_addr);
+            try {
+                GraphicsEnvironment env{*maxwell3d, *gpu_memory, program, native ? shader_addr : base_addr, start_address};
+                shader_info = MakeShaderInfo(env, *cpu_shader_addr);
+            } catch (const Shader::Exception& error) {
+                if (!native) throw;
+                {
+                    std::scoped_lock lock{lookup_mutex};
+                    failed_native_shaders.insert(*cpu_shader_addr);
+                    has_failed_native_shaders.store(true, std::memory_order_relaxed);
+                }
+                last_shaders_valid = false;
+                static std::atomic<u32> rejected_gfx_shaders{0};
+                if (rejected_gfx_shaders.fetch_add(1, std::memory_order_relaxed) < 32) {
+                    LOG_WARNING(HW_GPU, "Native graphics shader skipped: {}", error.what());
+                }
+                return false;
+            }
         }
         shader_infos[index] = shader_info;
         unique_hashes[index] = shader_info->unique_hash;
@@ -174,6 +211,19 @@ void ShaderCache::Register(std::unique_ptr<ShaderInfo> data, VAddr addr, size_t 
 
 void ShaderCache::InvalidatePagesInRegion(VAddr addr, size_t size) {
     const VAddr addr_end = addr + size;
+    if (has_failed_native_shaders.load(std::memory_order_relaxed)) {
+        std::scoped_lock lock{lookup_mutex};
+        for (auto it = failed_native_shaders.begin(); it != failed_native_shaders.end();) {
+            if (*it >= addr && *it < addr_end) {
+                it = failed_native_shaders.erase(it);
+            } else {
+                ++it;
+            }
+        }
+        if (failed_native_shaders.empty()) {
+            has_failed_native_shaders.store(false, std::memory_order_relaxed);
+        }
+    }
     const u64 page_end = (addr_end + YUZU_PAGESIZE - 1) >> YUZU_PAGEBITS;
     for (u64 page = addr >> YUZU_PAGEBITS; page < page_end; ++page) {
         auto it = invalidation_cache.find(page);

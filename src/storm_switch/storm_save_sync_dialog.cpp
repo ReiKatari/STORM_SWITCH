@@ -934,7 +934,7 @@ void StormSaveSyncDialog::SetupUI() {
 
     m_discovered_combo = new QComboBox(conn_frame);
     m_discovered_combo->addItem(tr("Обнаруженные устройства в сети (0)"));
-    m_discovered_combo->setMinimumWidth(220);
+    m_discovered_combo->setMinimumWidth(270);
     m_discovered_combo->setMinimumHeight(28);
     connect(m_discovered_combo, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, &StormSaveSyncDialog::OnDiscoveredDeviceSelected);
@@ -989,7 +989,7 @@ void StormSaveSyncDialog::SetupUI() {
         }
         const QString portal_host = m_remote_key_edit && m_remote_key_edit->text().startsWith(QStringLiteral("http"))
             ? m_remote_key_edit->text().trimmed()
-            : QStringLiteral("http://192.168.1.154:3000");
+            : (qEnvironmentVariableIsSet("STORM_PORTAL_URL") ? qEnvironmentVariable("STORM_PORTAL_URL").trimmed() : QStringLiteral("https://stormgamesworld.ru"));
         const QUrl sync_url(QStringLiteral("%1/api/emulator/save-sync").arg(portal_host));
 
         const auto save_dir = GetLocalSaveDirForTitle(tid);
@@ -1076,8 +1076,9 @@ void StormSaveSyncDialog::SetupUI() {
     m_saves_table->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
     m_saves_table->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
     m_saves_table->horizontalHeader()->setSectionResizeMode(4, QHeaderView::ResizeToContents);
-    m_saves_table->horizontalHeader()->setSectionResizeMode(5, QHeaderView::ResizeToContents);
-    m_saves_table->verticalHeader()->setDefaultSectionSize(38);
+    m_saves_table->horizontalHeader()->setSectionResizeMode(5, QHeaderView::Fixed);
+    m_saves_table->setColumnWidth(5, 175);
+    m_saves_table->verticalHeader()->setDefaultSectionSize(42);
     m_saves_table->verticalHeader()->setVisible(false);
     m_saves_table->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_saves_table->setAlternatingRowColors(true);

@@ -443,7 +443,7 @@ Use Boost (1700MHz) to run at the Switch's highest native clock, or Fast (2000MH
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="103" />
       <source>Custom CPU Ticks</source>
-      <translation>Custom CPU Ticks</translation>
+      <translation>Egendefinerte CPU-takter</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="104" />
@@ -718,7 +718,7 @@ Aggressive mode may impact performance of other applications such as recording s
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="193" />
       <source>Skip CPU Inner Invalidation</source>
-      <translation>Skip CPU Inner Invalidation</translation>
+      <translation>Hopp over CPU intern invalidering</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="194" />
@@ -744,7 +744,7 @@ Immediate (no synchronization) presents whatever is available and can exhibit te
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="209" />
       <source>Sync Memory Operations</source>
-      <translation>Sync Memory Operations</translation>
+      <translation>Synkroniser minneoperasjoner</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="210" />
@@ -1012,7 +1012,7 @@ Legacy behavior workaround that fixes line artifacts on AMD and Intel GPUs, and 
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="282" />
       <source>Extended Dynamic State</source>
-      <translation>Extended Dynamic State</translation>
+      <translation>Utvidet dynamisk tilstand</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="283" />
@@ -1233,7 +1233,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="389" />
       <source>On Load</source>
-      <translation>On Load</translation>
+      <translation>Ved lasting</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="390" />
@@ -1299,7 +1299,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="415" />
       <source>Conservative</source>
-      <translation>Conservative</translation>
+      <translation>Konservativ</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="416" />
@@ -1388,7 +1388,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="453" />
       <source>Debugging</source>
-      <translation>Debugging</translation>
+      <translation>Feilsøking</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="457" />
@@ -2192,7 +2192,55 @@ When a program attempts to open the controller applet, it is immediately closed.
       <source>Grid View</source>
       <translation>Grid View</translation>
     </message>
-  </context>
+      <message>
+        <source>Theme:</source>
+        <translation>Tema:</translation>
+    </message>
+    <message>
+        <source>Theme</source>
+        <translation>Endre temamodus</translation>
+    </message>
+    <message>
+        <source>Interface language:</source>
+        <translation>Grensesnittspråk:</translation>
+    </message>
+    <message>
+        <source>Reset All Settings</source>
+        <translation>Tilbakestill alle innstillinger</translation>
+    </message>
+    <message>
+        <source>Console Mode</source>
+        <translation>Bærbar modus</translation>
+    </message>
+    <message>
+        <source>VRAM Usage Mode</source>
+        <translation>VRAM-bruk</translation>
+    </message>
+    <message>
+        <source>ASTC Decoding Method</source>
+        <translation>ASTC-dekoding</translation>
+    </message>
+    <message>
+        <source>Cabinet</source>
+        <translation>Kabinet</translation>
+    </message>
+    <message>
+        <source>Custom RTC</source>
+        <translation>Tilpasset Sannhetstidsklokke</translation>
+    </message>
+    <message>
+        <source>Boost</source>
+        <translation>Boost (1700MHz)</translation>
+    </message>
+    <message>
+        <source>Overclock</source>
+        <translation>Rask (2000MHz)</translation>
+    </message>
+    <message>
+        <source>Slow</source>
+        <translation>Treg</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureApplets</name>
     <message>
@@ -2210,7 +2258,11 @@ When a program attempts to open the controller applet, it is immediately closed.
       <source>Applet mode preference</source>
       <translation>Applet mode preference</translation>
     </message>
-  </context>
+      <message>
+        <source>Cabinet</source>
+        <translation>Kabinet</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureAudio</name>
     <message>
@@ -2560,7 +2612,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="235" />
       <source>Off</source>
-      <translation>Off</translation>
+      <translation>Av</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="240" />
@@ -2710,7 +2762,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="462" />
       <source>Disable Buffer Reorder</source>
-      <translation>Disable Buffer Reorder</translation>
+      <translation>Deaktiver bufferomorganisering</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="469" />
@@ -3330,7 +3382,11 @@ Would you like to delete the old save data?</translation>
       <source>VSync On</source>
       <translation>VSync På</translation>
     </message>
-  </context>
+      <message>
+        <source>VSync Mode:</source>
+        <translation>VSync-modus:</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureGraphicsAdvanced</name>
     <message>
@@ -3348,13 +3404,33 @@ Would you like to delete the old save data?</translation>
       <source>Advanced Graphics Settings</source>
       <translation>Avanserte grafikkinnstillinger</translation>
     </message>
-  </context>
+      <message>
+        <source>VRAM Usage Mode</source>
+        <translation>VRAM-bruk</translation>
+    </message>
+    <message>
+        <source>ASTC Decoding Method</source>
+        <translation>ASTC-dekoding</translation>
+    </message>
+    <message>
+        <source>Sync Memory Operations</source>
+        <translation>Synkroniser minneoperasjoner</translation>
+    </message>
+    <message>
+        <source>Force maximum clocks (Vulkan only)</source>
+        <translation>Tving maksikal klokkehastighet (kun Vulkan)</translation>
+    </message>
+    <message>
+        <source>Use Vulkan pipeline cache</source>
+        <translation>Bruk Vulkan-rørledningsbuffer</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureGraphicsExtensions</name>
     <message>
       <location filename="../../src/yuzu/configuration/configure_graphics_extensions.ui" line="14" />
       <source>Form</source>
-      <translation>Form</translation>
+      <translation>Skjema</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_graphics_extensions.ui" line="17" />
@@ -4273,7 +4349,7 @@ For å invertere aksene, flytt først stikken vertikalt, og så horistonalt.</tr
       <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="753" />
       <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="1098" />
       <source>Pro Controller</source>
-      <translation>Pro Controller</translation>
+      <translation>Pro-Kontroller</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="1102" />
@@ -4575,7 +4651,11 @@ For å invertere aksene, flytt først stikken vertikalt, og så horistonalt.</tr
       <source>UDP Test or calibration configuration is in progress.&lt;br&gt;Please wait for them to finish.</source>
       <translation>UDP-test eller kalibrasjonskonfigurering er i fremgang.&lt;br&gt;Vennligst vent for dem til å bli ferdig.</translation>
     </message>
-  </context>
+      <message>
+        <source>Motion / Touch</source>
+        <translation>Bevegelse / Berøring</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureMousePanning</name>
     <message>
@@ -5208,7 +5288,19 @@ UUID: %2</source>
       <source>Warning: "%1" is not a valid language for region "%2"</source>
       <translation>Advarsel: "%1" er ikke et gyldig språk for region "%2"</translation>
     </message>
-  </context>
+      <message>
+        <source>Console Mode</source>
+        <translation>Bærbar modus</translation>
+    </message>
+    <message>
+        <source>Limit Speed Percent</source>
+        <translation>Begrens Farts-Prosent</translation>
+    </message>
+    <message>
+        <source>Language:</source>
+        <translation>Språk:</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureTas</name>
     <message>
@@ -5582,7 +5674,19 @@ Dra punkter for å endre posisjon, eller dobbelttrykk på tabellfelter for å re
       <comment>Screenshot width value</comment>
       <translation>Auto (%1 x %2, %3 x %4)</translation>
     </message>
-  </context>
+      <message>
+        <source>Theme</source>
+        <translation>Endre temamodus</translation>
+    </message>
+    <message>
+        <source>Language:</source>
+        <translation>Språk:</translation>
+    </message>
+    <message>
+        <source>Screenshots Path:</source>
+        <translation>Skjermbilde-filbane:</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureVibration</name>
     <message>
@@ -5693,7 +5797,7 @@ Dra punkter for å endre posisjon, eller dobbelttrykk på tabellfelter for å re
     <message>
       <location filename="../../src/yuzu/configuration/configure_web.ui" line="105" />
       <source>Generate</source>
-      <translation>Generate</translation>
+      <translation>Generer</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_web.ui" line="130" />
@@ -5729,7 +5833,15 @@ Dra punkter for å endre posisjon, eller dobbelttrykk på tabellfelter for å re
       <comment>Tooltip</comment>
       <translation>Must be 48 characters, and lowercase a-z</translation>
     </message>
-  </context>
+      <message>
+        <source>Token:</source>
+        <translation>Sjetong:</translation>
+    </message>
+    <message>
+        <source>Username:</source>
+        <translation>Brukernavn:</translation>
+    </message>
+</context>
   <context>
     <name>ControllerDialog</name>
     <message>
@@ -5786,7 +5898,7 @@ Dra punkter for å endre posisjon, eller dobbelttrykk på tabellfelter for å re
     <message>
       <location filename="../../src/yuzu/data_widget.ui" line="14" />
       <source>Form</source>
-      <translation>Form</translation>
+      <translation>Skjema</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/data_widget.ui" line="22" />
@@ -6308,12 +6420,12 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="194" />
       <source>Name</source>
-      <translation>Name</translation>
+      <translation>Navn</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="195" />
       <source>Add-ons</source>
-      <translation>Add-ons</translation>
+      <translation>Tilleggsprogrammer</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="196" />
@@ -6323,7 +6435,7 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="197" />
       <source>Size</source>
-      <translation>Size</translation>
+      <translation>Størrelse</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="198" />
@@ -7270,7 +7382,7 @@ Debug Message:</translation>
       <location filename="../../src/yuzu/main_window.cpp" line="876" />
       <location filename="../../src/yuzu/main_window.cpp" line="879" />
       <source>Disable Web Applet</source>
-      <translation>Disable Web Applet</translation>
+      <translation>Slå av web-applet</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="880" />
@@ -7565,7 +7677,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2743" />
       <source>Load File</source>
-      <translation>Load File</translation>
+      <translation>Last inn Fil</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2756" />
@@ -8172,7 +8284,23 @@ Would you like to bypass this and exit anyway?</translation>
       <source>Null</source>
       <translation>Null</translation>
     </message>
-  </context>
+      <message>
+        <source>Fullscreen</source>
+        <translation>Fullskjerm</translation>
+    </message>
+    <message>
+        <source>Cabinet</source>
+        <translation>Kabinet</translation>
+    </message>
+    <message>
+        <source>Create Shortcut</source>
+        <translation>Opprett snarvei</translation>
+    </message>
+    <message>
+        <source>Install Files to NAND</source>
+        <translation>Installér filer til NAND</translation>
+    </message>
+</context>
   <context>
     <name>MigrationWorker</name>
     <message>
@@ -8390,7 +8518,7 @@ Fortsette likevel?</translation>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="89" />
       <source>Generate</source>
-      <translation>Generate</translation>
+      <translation>Generer</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.cpp" line="138" />
@@ -8516,7 +8644,7 @@ p, li { white-space: pre-wrap; }
     <message>
       <location filename="../../src/yuzu/render/performance_overlay.ui" line="14" />
       <source>Form</source>
-      <translation>Form</translation>
+      <translation>Skjema</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/render/performance_overlay.ui" line="32" />
@@ -8644,13 +8772,6 @@ p, li { white-space: pre-wrap; }
       <location filename="../../src/yuzu/user_data_migration.cpp" line="68" />
       <source>Link Old Directory</source>
       <translation>Link Old Directory</translation>
-    </message>
-    <message>
-      <location filename="../../src/yuzu/user_data_migration.cpp" line="98" />
-      <source>
-      </source>
-      <translation>
-      </translation>
     </message>
     <message>
       <location filename="../../src/yuzu/user_data_migration.cpp" line="102" />
@@ -9282,7 +9403,7 @@ p, li { white-space: pre-wrap; }
       <location filename="../../src/qt_common/util/content.cpp" line="223" />
       <location filename="../../src/qt_common/util/content.cpp" line="282" />
       <source>Integrity verification succeeded!</source>
-      <translation>Integrity verification succeeded!</translation>
+      <translation>Integritetsverifisering vellykket!</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/content.cpp" line="224" />
@@ -9294,7 +9415,7 @@ p, li { white-space: pre-wrap; }
       <location filename="../../src/qt_common/util/content.cpp" line="227" />
       <location filename="../../src/qt_common/util/content.cpp" line="288" />
       <source>Integrity verification failed!</source>
-      <translation>Integrity verification failed!</translation>
+      <translation>Integritetsverifisering mislyktes!</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/content.cpp" line="228" />
@@ -9739,7 +9860,7 @@ Would you like to manually select a portable folder to use?</translation>
     <message>
       <location filename="../../src/qt_common/util/game.cpp" line="347" />
       <source>Reset Metadata Cache</source>
-      <translation>Reset Metadata Cache</translation>
+      <translation>Tilbakestill mellomlageret for metadata</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/game.cpp" line="353" />
@@ -9938,12 +10059,12 @@ Most mods are RomFS mods, but patches (.pchtxt) are typically ExeFS mods.</trans
     <message>
       <location filename="../../src/qt_common/qt_string_lookup.h" line="81" />
       <source>One or more keys failed to copy.</source>
-      <translation>One or more keys failed to copy.</translation>
+      <translation>En eller flere nøkler kunne ikke kopieres.</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/qt_string_lookup.h" line="83" />
       <source>Verify your keys file has a .keys extension and try again.</source>
-      <translation>Verify your keys file has a .keys extension and try again.</translation>
+      <translation>Kontroller at nøkkelfilen din har filendelsen .keys og prøv på nytt.</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/qt_string_lookup.h" line="85" />
@@ -10096,7 +10217,7 @@ This is recommended if you want to share data between emulators.</translation>
       <location filename="../../src/yuzu/applets/qt_controller.ui" line="2054" />
       <location filename="../../src/yuzu/applets/qt_controller.cpp" line="470" />
       <source>Pro Controller</source>
-      <translation>Pro Controller</translation>
+      <translation>Pro-Kontroller</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/applets/qt_controller.ui" line="519" />
@@ -10646,4 +10767,327 @@ Error code: %3</translation>
       <translation>Successfully downloaded %1. Would you like to open it?</translation>
     </message>
   </context>
+<context>
+    <name>QPlatformTheme</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Avbryt</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Lukk</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Hjelp</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Gjenopprett standarder</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Hjelp</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Omstart</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Avbryt</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Lagre</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Nei</translation>
+    </message>
+</context>
+<context>
+    <name>QDialogButtonBox</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Avbryt</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Lukk</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Hjelp</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Gjenopprett standarder</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Hjelp</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Omstart</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Avbryt</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Lagre</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Nei</translation>
+    </message>
+</context>
+<context>
+    <name>QMessageBox</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Avbryt</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Lukk</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Hjelp</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Gjenopprett standarder</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Hjelp</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Omstart</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Avbryt</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Lagre</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Nei</translation>
+    </message>
+</context>
+<context>
+    <name>QGuiApplication</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Avbryt</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Lukk</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Hjelp</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Gjenopprett standarder</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Hjelp</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Omstart</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Avbryt</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Lagre</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Nei</translation>
+    </message>
+</context>
+<context>
+    <name>QAbstractButton</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Avbryt</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Lukk</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Hjelp</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Gjenopprett standarder</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Hjelp</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Omstart</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Avbryt</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Lagre</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Nei</translation>
+    </message>
+</context>
+<context>
+    <name>QColorDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Avbryt</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Lukk</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Hjelp</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Gjenopprett standarder</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Hjelp</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Omstart</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Avbryt</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Lagre</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Nei</translation>
+    </message>
+</context>
+<context>
+    <name>QFileDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Avbryt</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Lukk</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Hjelp</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Gjenopprett standarder</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Hjelp</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Omstart</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Avbryt</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Lagre</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Nei</translation>
+    </message>
+</context>
+<context>
+    <name>QFontDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Avbryt</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Lukk</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Hjelp</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Gjenopprett standarder</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Hjelp</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Omstart</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Avbryt</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Lagre</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Nei</translation>
+    </message>
+</context>
+<context>
+    <name>QtController</name>
+    <message>
+        <source>Console Mode</source>
+        <translation>Bærbar modus</translation>
+    </message>
+    <message>
+        <source>Vibration</source>
+        <translation>Vibrering</translation>
+    </message>
+</context>
 </TS>

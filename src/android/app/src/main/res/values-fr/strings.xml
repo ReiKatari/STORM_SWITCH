@@ -636,7 +636,7 @@
     <string name="settings_reset">Paramètres réinitialisés</string>
     <string name="close">Fermer</string>
     <string name="learn_more">En savoir plus</string>
-    <string name="auto">Auto</string>
+    <string name="auto">Automatique</string>
     <string name="submit">Soumettre</string>
     <string name="string_null">Nul</string>
     <string name="string_import">Importer</string>
@@ -698,7 +698,7 @@
     <string name="quick_settings">Paramètres rapides</string>
     <string name="enable_quick_settings">Activer les paramètres rapides</string>
     <string name="enable_quick_settings_description">Autoriser l\'accès aux paramètres rapides par le balayage de l\'écran et le bouton du menu</string>
-    <string name="preferences_audio">Audio</string>
+    <string name="preferences_audio">Son</string>
     <string name="preferences_audio_description">Moteur de sortie, volume</string>
     <string name="preferences_controls">Contrôles</string>
     <string name="preferences_controls_description">Mapper l\'entrée du contrôleur</string>
@@ -725,7 +725,7 @@
     <string name="skip_migration">Sauter</string>
 
     <!-- Game properties -->
-    <string name="info">Info</string>
+    <string name="info">Infos</string>
     <string name="info_description">ID du programme, développeur, version</string>
     <string name="per_game_settings">Paramètres spécifiques au jeu</string>
     <string name="per_game_settings_description">Modifier les paramètres spécifiques à ce jeu</string>
@@ -935,10 +935,10 @@
     <string name="temperature_fahrenheit">Fahrenheit</string>
 
     <!-- Memory Sizes -->
-    <string name="memory_byte_shorthand">B</string>
+    <string name="memory_byte_shorthand">o</string>
     <string name="memory_kilobyte">Ko</string>
     <string name="memory_megabyte">Mo</string>
-    <string name="memory_gigabyte">GB</string>
+    <string name="memory_gigabyte">Go</string>
     <string name="memory_terabyte">To</string>
     <string name="memory_petabyte">Po</string>
     <string name="memory_exabyte">Eo</string>
@@ -966,7 +966,7 @@
     <!-- Anti-Aliasing -->
     <string name="anti_aliasing_none">Aucune</string>
     <!-- Screen Layouts -->
-    <string name="screen_layout_auto">Auto</string>
+    <string name="screen_layout_auto">Automatique</string>
     <string name="screen_layout_sensor_landscape">Paysage</string>
     <string name="screen_layout_landscape">Paysage</string>
     <string name="screen_layout_reverse_landscape">Paysage inversé</string>
@@ -1420,14 +1420,14 @@
     <string name="all_files_permission_required">L\'autorisation d\'accès à tous les fichiers est requise pour les chemins personnalisés</string>
     <string name="driver_shader_wipe_dialog_title">Caches de shaders effacés</string>
     <string name="driver_shader_wipe_dialog_message">STORM SWITCH a automatiquement nettoyé tous les caches de shaders pour maintenir la validation des pipelines Vulkan lors du changement de pilote GPU.</string>
-    <string name="clock_normal">Normal</string>
-    <string name="fast_gpu_normal">Normal</string>
+    <string name="clock_normal">Normal (Recommandé)</string>
+    <string name="fast_gpu_normal">Normal (Recommandé)</string>
     <string name="gpu_fence_behavior_default">Par défaut</string>
     <string name="gpu_fence_behavior_immediate">Immédiat</string>
     <string name="gpu_fence_behavior_balanced">Équilibré</string>
     <string name="gpu_fence_behavior_accurate">Précis</string>
     <string name="gpu_fence_behavior_strict">Strict</string>
-    <string name="vram_usage_normal">Normal</string>
+    <string name="vram_usage_normal">Normal (Recommandé)</string>
     <string name="cpu_backend_nce">NCE (Exécution de code natif - Recommandé)</string>
     <string name="cpu_backend_dynarmic">Dynarmic (JIT)</string>
     <string name="freedreno_var_name">Nom de la variable (ex: TU_DEBUG)</string>
@@ -1520,7 +1520,7 @@
     <string name="ratio_48_9">48:9 (Triple 16:9)</string>
     <string name="ratio_auto_window">Auto selon l\'écran (3D natif)</string>
 
-    <string name="nvdec_emulation_hybrid">Hybrid</string>
+    <string name="nvdec_emulation_hybrid">Hybride</string>
     <string name="auto_correction_title">Auto-correction</string>
     <string name="auto_correction_description">Dynamic thermal cooling and FPS boost for overheating and frame drops</string>
     <string name="auto_correction_dialog_title">Thermal cooling and FPS boost</string>
@@ -1542,7 +1542,7 @@
     <string name="online_install_keys_description">Download and install prod.keys and title.keys directly without saving archives to storage</string>
     <string name="resolution_change_warning">Changing resolution in-game may cause visual artifacts. Restarting the game is recommended.</string>
     <string name="quick_settings_gesture_hint">Quick settings: 3-finger swipe up</string>
-    <string name="accelerate_astc_hybrid">Hybrid</string>
+    <string name="accelerate_astc_hybrid">Hybride</string>
     <string name="gamebanana_install_manual">Install mod manually</string>
     <string name="gamebanana_install_manual_description">Select a ZIP archive containing the mod to unpack and structure in load</string>
     <string name="gamebanana_installing_manual">Extracting and organizing mod structure…</string>
@@ -1551,7 +1551,7 @@
     <string name="gamebanana_manual_source_zip">Select ZIP archive</string>
     <string name="gamebanana_manual_source_folder">Select mod folder</string>
     <string name="amiibo_tab_catalog">Catalog</string>
-    <string name="amiibo_tab_installed">Installed</string>
+    <string name="amiibo_tab_installed">Installé</string>
     <string name="no_installed_amiibo_found">No installed Amiibos found</string>
     <string name="overlay_ctrl_button_a">Button A</string>
     <string name="overlay_ctrl_button_a_desc">Primary action and confirm</string>
@@ -1561,11 +1561,11 @@
     <string name="overlay_ctrl_button_x_desc">Secondary action and menu</string>
     <string name="overlay_ctrl_button_y">Button Y</string>
     <string name="overlay_ctrl_button_y_desc">Attack and interaction</string>
-    <string name="overlay_ctrl_dpad">D-Pad</string>
+    <string name="overlay_ctrl_dpad">Croix directionnelle</string>
     <string name="overlay_ctrl_dpad_desc">Directional pad and quick select</string>
-    <string name="overlay_ctrl_stick_l">Left stick</string>
+    <string name="overlay_ctrl_stick_l">Stick gauche</string>
     <string name="overlay_ctrl_stick_l_desc">Character movement</string>
-    <string name="overlay_ctrl_stick_r">Right stick</string>
+    <string name="overlay_ctrl_stick_r">Stick droit</string>
     <string name="overlay_ctrl_stick_r_desc">Camera control</string>
     <string name="overlay_ctrl_stick_l3">L-stick click (L3)</string>
     <string name="overlay_ctrl_stick_l3_desc">Run and secondary action</string>
@@ -1591,11 +1591,11 @@
     <string name="anisotropic_filtering_4x">4x</string>
     <string name="anisotropic_filtering_8x">8x</string>
     <string name="anisotropic_filtering_16x">16x</string>
-    <string name="anisotropic_filtering_default">Default</string>
-    <string name="anisotropic_filtering_automatic">Automatic</string>
+    <string name="anisotropic_filtering_default">Par défaut</string>
+    <string name="anisotropic_filtering_automatic">Automatique</string>
     <string name="oboe">Oboe</string>
     <string name="apply_driver_current_game">For the current game</string>
-    <string name="storm_tier2_compiler">STORM Tier-2 JIT Compiler</string>
+    <string name="storm_tier2_compiler">Compilateur JIT STORM Tier-2</string>
     <string name="storm_tier2_compiler_description">Zero-overhead instruction pre-optimizer and superblock JIT tuner (canonicalizes ARMv8.3 PAC/BTI hints and accelerates CNTVCT_EL0 counter reads)</string>
     <string name="storm_notif_channel_name">Téléchargements STORM SWITCH</string>
     <string name="storm_notif_channel_desc">Téléchargement de jeux en arrière-plan depuis STORM GAMES WORLD</string>
@@ -1664,8 +1664,8 @@ Lancez un jeu ou connectez-vous à un autre appareil.</string>
     <string name="storm_sync_badge_local_only">Local only</string>
     <string name="storm_sync_btn_send">Send</string>
     <string name="storm_sync_badge_remote_only">Remote only</string>
-    <string name="storm_sync_btn_download">Download</string>
-    <string name="storm_sync_badge_unknown">Unknown</string>
+    <string name="storm_sync_btn_download">Télécharger</string>
+    <string name="storm_sync_badge_unknown">Inconnu</string>
     <string name="storm_world_subtitle">Catalogue cloud officiel de jeux Nintendo Switch</string>
     <string name="storm_world_search_hint">Rechercher un jeu par titre ou ID…</string>
     <string name="storm_world_filter_all_langs">All languages</string>
@@ -1691,15 +1691,15 @@ Lancez un jeu ou connectez-vous à un autre appareil.</string>
     <string name="storm_world_dlc_subtitle">Official add-ons and content included with the game</string>
     <string name="storm_world_dlc_empty">Add-ons list is empty</string>
     <string name="storm_world_btn_got_it">Got it</string>
-    <string name="storm_world_badge_recommended">Recommended</string>
-    <string name="storm_world_folder_default_name">Folder</string>
+    <string name="storm_world_badge_recommended">Recommandé</string>
+    <string name="storm_world_folder_default_name">Dossier</string>
     <string name="storm_world_folder_label_fmt">Folder: %1$s</string>
     <string name="storm_world_toast_download_folder_fmt">Download folder: %1$s</string>
     <string name="storm_world_toast_bg_download">Game download continues in the background</string>
     <string name="storm_world_status_available_fmt">Jeux disponibles dans le cloud : %1$d</string>
     <string name="storm_world_status_syncing">Synchronisation avec le catalogue cloud…</string>
     <string name="storm_world_empty_cloud">No games available in cloud</string>
-    <string name="storm_world_error_network_default">Network error</string>
+    <string name="storm_world_error_network_default">Erreur réseau</string>
     <string name="storm_world_error_connection_fmt">Connection error: %1$s</string>
     <string name="storm_world_toast_catalog_failed">Failed to load catalog</string>
     <string name="storm_world_pagination_fmt">Page %1$d of %2$d (%3$d)</string>
@@ -1714,7 +1714,7 @@ Lancez un jeu ou connectez-vous à un autre appareil.</string>
     <string name="storm_world_dialog_folder_title">Game download folder</string>
     <string name="storm_world_bg_download_status_fmt">Background download: %1$s (%2$d%%)</string>
     <string name="storm_dl_error_default">Download error</string>
-    <string name="storm_dl_stats_error_fmt">Error: %1$s</string>
+    <string name="storm_dl_stats_error_fmt">Erreur : %1$s</string>
     <string name="storm_dl_connecting">Connecting to download server...</string>
     <string name="storm_dl_paused">Download paused</string>
     <string name="storm_dl_paused_pct_fmt">Download paused (%1$d%%)</string>
@@ -1735,7 +1735,7 @@ Lancez un jeu ou connectez-vous à un autre appareil.</string>
     <string name="storm_dl_interrupted_resume">Download interrupted. Tap \"Resume\".</string>
     <string name="storm_dl_subtext_speed_eta_fmt">%1$s MB/s • ETA: %2$d min</string>
     <string name="storm_dl_progress_pct_fmt">Downloading: %1$d%%</string>
-    <string name="storm_dl_game_fallback">Game</string>
+    <string name="storm_dl_game_fallback">Jeu</string>
     <string name="auto_opt_detected_hw">Detected Hardware</string>
     <string name="auto_opt_form_tablet">Tablet</string>
     <string name="auto_opt_form_phone">Smartphone</string>
@@ -1751,7 +1751,7 @@ Lancez un jeu ou connectez-vous à un autre appareil.</string>
     <string name="cheats_search_hint">Search...</string>
     <string name="cheats_summary_zero">Total cheats: 0 | Enabled: 0</string>
     <string name="cheat_item_desc_placeholder">Description</string>
-    <string name="cheat_btn_edit_qty">Value</string>
+    <string name="cheat_btn_edit_qty">Valeur</string>
     <string name="cheat_header_version_prefix"> | Version: </string>
     <string name="cheat_header_in_game"> | In Game</string>
     <string name="cheat_header_offline">| Offline</string>
@@ -1810,12 +1810,12 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="cheat_desc_custom">Custom Atmosphere Cheat Code</string>
     <string name="log_viewer_title">JOURNAL DES ÉVÉNEMENTS (LOG)</string>
     <string name="log_viewer_save_file">Save to file</string>
-    <string name="log_viewer_share">Share</string>
+    <string name="log_viewer_share">Partager</string>
     <string name="log_viewer_search_hint">Search logs (Error, Warning, Vulkan, NSO...)</string>
-    <string name="log_viewer_chip_all">All</string>
-    <string name="log_viewer_chip_errors">Errors</string>
-    <string name="log_viewer_chip_warnings">Warnings</string>
-    <string name="log_viewer_chip_info">Info</string>
+    <string name="log_viewer_chip_all">Tout</string>
+    <string name="log_viewer_chip_errors">Erreurs</string>
+    <string name="log_viewer_chip_warnings">Avertissements</string>
+    <string name="log_viewer_chip_info">Infos</string>
     <string name="log_viewer_status_ingame">In Game</string>
     <string name="log_viewer_status_offline">Offline</string>
     <string name="log_viewer_toast_refreshing">Refreshing log...</string>
@@ -1842,19 +1842,19 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="log_viewer_share_tg_title">Send log to Telegram / MAX</string>
     <string name="mapping_press_prompt">Press a button or move a stick on the controller</string>
     <string name="overlay_toggle_subtitle">Configure visibility of touch controls</string>
-    <string name="online_tools_badge_active">ACTIVE</string>
+    <string name="online_tools_badge_active">ACTIF</string>
     <string name="online_tools_badge_not_installed">NOT INSTALLED</string>
     <string name="online_tools_select_prompt">Select a version from the list above</string>
     <string name="online_tools_btn_download_install">Download &amp; Install</string>
     <string name="online_tools_btn_reinstall">Reinstall</string>
-    <string name="online_tools_btn_update">Update</string>
+    <string name="online_tools_btn_update">Mise à jour</string>
     <string name="online_tools_badge_installed">INSTALLED</string>
     <string name="online_tools_badge_top">TOP</string>
     <string name="online_tools_badge_selected">SELECTED</string>
-    <string name="online_tools_status_unknown">Unknown</string>
+    <string name="online_tools_status_unknown">Inconnu</string>
     <string name="online_tools_installed_ver_fmt">Installed version: %1$s</string>
     <string name="online_tools_fw_installed">Switch firmware installed</string>
-    <string name="online_tools_fw_not_installed">Firmware not installed</string>
+    <string name="online_tools_fw_not_installed">Aucun firmware installé</string>
     <string name="online_tools_keys_installed">Keys installed (prod.keys)</string>
     <string name="online_tools_keys_not_installed">Keys not installed</string>
     <string name="online_tools_fw_title_fmt">Firmware %1$s</string>
@@ -1916,8 +1916,8 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="translator_engine_custom_ai">Neural / Custom AI (OpenAI / Claude / Gemini / DeepSeek)</string>
     <string name="translator_lang_auto">Auto-detect</string>
     <string name="translator_lang_ja">Japanese</string>
-    <string name="translator_lang_en">English</string>
-    <string name="translator_lang_zh">Chinese</string>
+    <string name="translator_lang_en">Anglais</string>
+    <string name="translator_lang_zh">Chinois</string>
     <string name="translator_lang_ko">Korean</string>
     <string name="translator_lang_es">Spanish</string>
     <string name="translator_lang_fr">French</string>
@@ -1939,9 +1939,9 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="translator_toast_no_text_screen">No text detected on screen</string>
     <string name="translator_overlay_region_fmt">Region %1$d</string>
     <string name="translator_overlay_btn_add">+ Add region</string>
-    <string name="translator_overlay_btn_clear">Clear</string>
-    <string name="translator_overlay_btn_save">Save</string>
-    <string name="translator_overlay_btn_close">Close</string>
+    <string name="translator_overlay_btn_clear">Effacer</string>
+    <string name="translator_overlay_btn_save">Enregistrer</string>
+    <string name="translator_overlay_btn_close">Fermer</string>
     <string name="translator_snack_auto_on">Auto-translation enabled</string>
     <string name="translator_snack_auto_off">Auto-translation disabled</string>
     <string name="translator_snack_tts_on">TTS voice readout enabled</string>
@@ -1967,7 +1967,7 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="sysinfo_lbl_gpu_model">• GPU Model: </string>
     <string name="sysinfo_lbl_driver_ver">• Driver Version: </string>
     <string name="sysinfo_lbl_frame_gen">• Frame Generation: </string>
-    <string name="sysinfo_val_supported">Supported</string>
+    <string name="sysinfo_val_supported">Pris en charge</string>
     <string name="sysinfo_val_not_supported">Not supported</string>
     <string name="sysinfo_lbl_status">• Status: </string>
     <string name="sysinfo_lbl_total_ram">• Total RAM: </string>
@@ -1990,11 +1990,11 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="release_dl_mirror_fmt">Downloading via mirror %1$d...</string>
     <string name="release_dl_progress_mb_fmt">Downloading: %1$s / %2$s MB</string>
     <string name="release_dl_done_mb_fmt">Downloaded: %1$s MB</string>
-    <string name="profile_default_balanced_name">Balanced</string>
+    <string name="profile_default_balanced_name">Équilibré</string>
     <string name="profile_default_balanced_desc">Optimal balance of performance, thermals, and visual quality</string>
     <string name="profile_default_perf_name">Maximum Performance</string>
     <string name="profile_default_perf_desc">Priority on maximum framerate and reduced power consumption</string>
-    <string name="profile_default_quality_name">Maximum Quality</string>
+    <string name="profile_default_quality_name">Qualité maximale</string>
     <string name="profile_default_quality_desc">Priority on high resolution, rendering accuracy, and visual effects</string>
     <string name="profile_default_eco_name">Battery Saver (2D &amp; Indie)</string>
     <string name="profile_default_eco_desc">Maximum battery life and minimum heat for 2D and indie games</string>
@@ -2034,10 +2034,10 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="cheat_desc_timer">Freezes In-Game Timer / Infinite Time</string>
     <string name="cheat_desc_master">Master Code (required for other cheats)</string>
     <string name="cheat_desc_qty_fmt" formatted="false">%1$s (Value: %2$d)</string>
-    <string name="storm_world_unit_gb">GB</string>
-    <string name="storm_world_unit_mb">MB</string>
-    <string name="storm_world_unit_kb">KB</string>
-    <string name="storm_world_unit_b">B</string>
+    <string name="storm_world_unit_gb">Go</string>
+    <string name="storm_world_unit_mb">Mo</string>
+    <string name="storm_world_unit_kb">Ko</string>
+    <string name="storm_world_unit_b">o</string>
     <string name="overlay_style_switch_joycon">Switch Joy-Con (Red / Blue)</string>
     <string name="overlay_style_titanium_mecha">Titanium Mecha (Metallic)</string>
     <string name="overlay_style_arcade_candy">Arcade Candy (Vibrant)</string>
@@ -2051,10 +2051,10 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="translator_engine_opt_libre">LibreTranslate (Open-source API)</string>
     <string name="translator_engine_opt_mymemory">MyMemory (Translation memory archive)</string>
     <string name="translator_engine_opt_custom_ai">OpenAI / DeepSeek / Gemini (Smart AI Context)</string>
-    <string name="log_viewer_filter_all_label">All</string>
-    <string name="log_viewer_filter_errors_label">Errors</string>
-    <string name="log_viewer_filter_info_label">Info</string>
-    <string name="log_viewer_filter_warnings_label">Warnings</string>
+    <string name="log_viewer_filter_all_label">Tout</string>
+    <string name="log_viewer_filter_errors_label">Erreurs</string>
+    <string name="log_viewer_filter_info_label">Infos</string>
+    <string name="log_viewer_filter_warnings_label">Avertissements</string>
     <string name="post_processing_shader">Shader de post-traitement (RetroArch)</string>
     <string name="post_processing_shader_description">Applique des shaders de post-traitement RetroArch en temps réel (CRT, LCD, consoles portables, upscalers, netteté, colorimétrie).</string>
     <string name="post_shader_1">CRT-Royale (Grille d\'ouverture Sony Trinitron + Halation du phosphore)</string>
@@ -2286,7 +2286,7 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="log_filter">Filtre de journal</string>
     <string name="log_filter_description">Contrôle les catégories du journal de l\'émulateur. Exemple : *:Info Service.LM:Debug</string>
     <string name="emulation_button_slide">Glissement entre les boutons</string>
-    <string name="renderer_accuracy_normal">Normal</string>
+    <string name="renderer_accuracy_normal">Normal (Recommandé)</string>
     <string name="renderer_accuracy_extreme">Extrême</string>
     <string name="install_mod_title">Installer un mod ou des codes</string>
     <string name="install_mod_from_archive">Installer depuis une archive (.zip / .7z / .rar)</string>
@@ -2366,4 +2366,27 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="open_settings">Ouvrir les paramètres</string>
     <string name="open_in_browser">Ouvrir dans le navigateur</string>
     <string name="retry">Réessayer</string>
+    <string name="storm_use_device_sensors">Capteurs de mouvement de l\'appareil (Gyroscope)</string>
+    <string name="storm_use_device_sensors_desc">Active le gyroscope et l\'accéléromètre intégrés pour les commandes par mouvement dans les jeux.</string>
+    <string name="storm_gyro_on">Gyroscope : ACTIVÉ</string>
+    <string name="storm_gyro_off">Gyroscope : DÉSACTIVÉ</string>
+    <string name="storm_touchscreen_on">Écran tactile : ACTIVÉ</string>
+    <string name="storm_touchscreen_off">Écran tactile : DÉSACTIVÉ</string>
+    <string name="storm_cheat_active_in_game">ACTIF EN JEU</string>
+    <string name="storm_cheat_value_btn">Valeur</string>
+    <string name="storm_prof_ram_placeholder">RAM : 4 Go</string>
+    <string name="storm_error_fmt">Erreur : %1$s</string>
+    <string name="storm_invalid_request_missing_tid">Requête invalide : Title ID manquant</string>
+    <string name="storm_qlaunch_failed_fmt">Échec du lancement du menu HOME : %1$s</string>
+    <string name="storm_sync_tooltip_refresh">Actualiser la liste</string>
+    <string name="storm_world_tooltip_download">Télécharger le jeu</string>
+    <string name="storm_sync_tooltip_close">Fermer la fenêtre</string>
+    <string name="storm_sync_tooltip_copy_key">Copier la clé de connexion</string>
+    <string name="storm_sync_tooltip_connect">Se connecter à l\'appareil</string>
+    <string name="storm_sync_tooltip_search_devices">Rechercher sur le réseau local</string>
+    <string name="storm_sync_tooltip_sync_all">Synchroniser toutes les sauvegardes</string>
+    <string name="storm_world_tooltip_refresh">Actualiser le catalogue</string>
+    <string name="storm_world_tooltip_close">Fermer la fenêtre</string>
+    <string name="storm_world_tooltip_pause">Mettre en pause</string>
+    <string name="storm_world_tooltip_cancel">Annuler le téléchargement</string>
 </resources>

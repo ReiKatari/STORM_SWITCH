@@ -18,6 +18,7 @@
 #include "video_core/dma_pusher.h"
 #include "video_core/gpu.h"
 #include "video_core/gpu_thread.h"
+#include "video_core/nx2_profile.h"
 #include "video_core/rasterizer_interface.h"
 #include "video_core/host1x/host1x.h"
 #include "video_core/renderer_base.h"
@@ -46,28 +47,54 @@ void ThreadManager::StartThread(VideoCore::RendererBase& renderer, Core::Fronten
         CommandDataContainer next;
         u32 pending_idle_polls = 0;
         while (!stop_token.stop_requested()) {
+            Nx2Profile::Report("GPU thread");
             if (scheduler.HasPendingNativeChannels()) {
-                const bool resumed = scheduler.ResumePending(system.GPU());
+                bool resumed = false;
+                {
+                    Nx2Profile::Scope scope{Nx2Profile::Zone::ResumePending};
+                    resumed = scheduler.ResumePending(system.GPU());
+                }
                 if (resumed) {
                     pending_idle_polls = 0;
                 }
                 if (scheduler.HasPendingNativeChannels()) {
+                    if (pending_idle_polls == 0 || pending_idle_polls == 2 || pending_idle_polls == 8) {
+                        if (auto* rast = renderer.ReadRasterizer()) {
+                            rast->FlushCommands();
+                            rast->ReleaseFences(false);
+                        }
+                    }
                     const auto wait_us = std::chrono::microseconds{
-                        resumed ? 250U : (std::min)(16000U, 500U << (std::min)(pending_idle_polls, 5U))};
-                    if (!state.queue.TryPopWait(next, wait_us, stop_token)) {
+                        resumed ? 50U : (std::min)(2000U, 50U << (std::min)(pending_idle_polls, 6U))};
+                    bool popped = false;
+                    {
+                        Nx2Profile::Scope scope{Nx2Profile::Zone::PendingSleep};
+                        popped = state.queue.TryPopWait(next, wait_us, stop_token);
+                    }
+                    if (!popped) {
                         ++pending_idle_polls;
                         continue;
                     }
                     pending_idle_polls = 0;
                 } else {
                     pending_idle_polls = 0;
-                    if (!state.queue.TryPopWait(next, std::chrono::milliseconds{16}, stop_token)) {
+                    bool popped = false;
+                    {
+                        Nx2Profile::Scope scope{Nx2Profile::Zone::Idle};
+                        popped = state.queue.TryPopWait(next, std::chrono::milliseconds{16}, stop_token);
+                    }
+                    if (!popped) {
                         continue;
                     }
                 }
             } else {
                 pending_idle_polls = 0;
-                if (!state.queue.TryPopWait(next, std::chrono::milliseconds{16}, stop_token)) {
+                bool popped = false;
+                {
+                    Nx2Profile::Scope scope{Nx2Profile::Zone::Idle};
+                    popped = state.queue.TryPopWait(next, std::chrono::milliseconds{16}, stop_token);
+                }
+                if (!popped) {
                     continue;
                 }
             }
@@ -75,12 +102,16 @@ void ThreadManager::StartThread(VideoCore::RendererBase& renderer, Core::Fronten
                 break;
             }
             if (auto* submit_list = std::get_if<SubmitListCommand>(&next.data)) {
+                Nx2Profile::Scope scope{Nx2Profile::Zone::Push};
                 scheduler.Push(system.GPU(), submit_list->channel, std::move(submit_list->entries));
             } else if (std::holds_alternative<GPUTickCommand>(next.data)) {
+                Nx2Profile::Scope scope{Nx2Profile::Zone::Tick};
                 system.GPU().TickWork();
             } else if (const auto* flush = std::get_if<FlushRegionCommand>(&next.data)) {
+                Nx2Profile::Scope scope{Nx2Profile::Zone::FlushInvalidate};
                 renderer.ReadRasterizer()->FlushRegion(flush->addr, flush->size);
             } else if (const auto* invalidate = std::get_if<InvalidateRegionCommand>(&next.data)) {
+                Nx2Profile::Scope scope{Nx2Profile::Zone::FlushInvalidate};
                 renderer.ReadRasterizer()->OnCacheInvalidation(invalidate->addr, invalidate->size);
             } else {
                 LOG_WARNING(HW_GPU, "Unknown GPU thread command variant index={}", next.data.index());

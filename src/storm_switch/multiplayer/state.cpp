@@ -145,10 +145,7 @@ void MultiplayerState::UpdateNotificationStatus() {
         break;
     }
 
-    // Clean up status bar if game is running
-    if (system.IsPoweredOn()) {
-        status_text->clear();
-    }
+    // Keep network status text readable inside net_group during gameplay
 }
 
 void MultiplayerState::OnNetworkStateChanged(const Network::RoomMember::State& state) {

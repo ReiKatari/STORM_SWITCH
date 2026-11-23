@@ -155,7 +155,11 @@ VkRenderPass RenderPassCache::Get(const RenderPassKey& key) {
             .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
                              VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
             .dstAccessMask = VK_ACCESS_SHADER_READ_BIT,
-            .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT
+            .dependencyFlags = static_cast<VkDependencyFlags>(
+                VK_DEPENDENCY_BY_REGION_BIT |
+                (device->UseInPassFeedbackLoopBarrier()
+                     ? VK_DEPENDENCY_FEEDBACK_LOOP_BIT_EXT
+                     : 0))
     };
     pair->second = device->GetLogical().CreateRenderPass({
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,

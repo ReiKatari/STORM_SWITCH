@@ -7,6 +7,7 @@
 #include "common/algorithm.h"
 #include "common/assert.h"
 #include "common/logging.h"
+#include <cstdio>
 #include <ranges>
 #include "common/settings.h"
 #include "core/core.h"

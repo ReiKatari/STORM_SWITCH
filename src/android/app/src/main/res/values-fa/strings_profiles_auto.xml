@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="storm_prof_btn_import">وارد کردن</string>
+    <string name="storm_prof_btn_delete">حذف</string>
+    <string name="storm_prof_preset_balanced_name">متوازن (مستحسن)</string>
+</resources>

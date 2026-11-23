@@ -807,7 +807,7 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
     }
 
     override fun onSensorChanged(event: SensorEvent) {
-        if (!NativeLibrary.isRunning() || NativeLibrary.isPaused()) {
+        if (!NativeLibrary.isRunning() || NativeLibrary.isPaused() || !BooleanSetting.USE_DEVICE_SENSORS.getBoolean()) {
             return
         }
 

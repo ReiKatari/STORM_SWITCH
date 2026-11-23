@@ -403,7 +403,7 @@ Disabling it means unlocking the framerate to the maximum your PC can reach.</tr
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="85" />
       <source>Synchronize Core Speed</source>
-      <translation>Synchronize Core Speed</translation>
+      <translation>Magsebesség szinkronizálása</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="86" />
@@ -443,7 +443,7 @@ Use Boost (1700MHz) to run at the Switch's highest native clock, or Fast (2000MH
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="103" />
       <source>Custom CPU Ticks</source>
-      <translation>Custom CPU Ticks</translation>
+      <translation>Egyéni CPU tick-ek</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="104" />
@@ -718,7 +718,7 @@ Aggressive mode may impact performance of other applications such as recording s
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="193" />
       <source>Skip CPU Inner Invalidation</source>
-      <translation>Skip CPU Inner Invalidation</translation>
+      <translation>CPU belső érvénytelenítés kihagyása</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="194" />
@@ -744,7 +744,7 @@ Immediate (no synchronization) presents whatever is available and can exhibit te
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="209" />
       <source>Sync Memory Operations</source>
-      <translation>Sync Memory Operations</translation>
+      <translation>Memória-műveletek szinkronizálása</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="210" />
@@ -1012,7 +1012,7 @@ Legacy behavior workaround that fixes line artifacts on AMD and Intel GPUs, and 
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="282" />
       <source>Extended Dynamic State</source>
-      <translation>Extended Dynamic State</translation>
+      <translation>Kiterjesztett Dinamikus Állapot</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="283" />
@@ -1228,17 +1228,17 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="388" />
       <source>Never</source>
-      <translation>Never</translation>
+      <translation>Soha</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="389" />
       <source>On Load</source>
-      <translation>On Load</translation>
+      <translation>Betöltéskor</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="390" />
       <source>Always</source>
-      <translation>Always</translation>
+      <translation>Mindig</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="394" />
@@ -1388,7 +1388,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="453" />
       <source>Debugging</source>
-      <translation>Debugging</translation>
+      <translation>Hibakeresés</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="457" />
@@ -2058,7 +2058,7 @@ When a program attempts to open the controller applet, it is immediately closed.
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="642" />
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="655" />
       <source>Off</source>
-      <translation>Off</translation>
+      <translation>Ki</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="643" />
@@ -2165,7 +2165,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="686" />
       <source>Disabled</source>
-      <translation>Disabled</translation>
+      <translation>Letiltva</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="687" />
@@ -2192,7 +2192,51 @@ When a program attempts to open the controller applet, it is immediately closed.
       <source>Grid View</source>
       <translation>Grid View</translation>
     </message>
-  </context>
+      <message>
+        <source>Theme:</source>
+        <translation>Téma:</translation>
+    </message>
+    <message>
+        <source>Theme</source>
+        <translation>Téma váltása</translation>
+    </message>
+    <message>
+        <source>Interface language:</source>
+        <translation>Felület nyelve:</translation>
+    </message>
+    <message>
+        <source>Reset All Settings</source>
+        <translation>Összes beállítás visszaállítása</translation>
+    </message>
+    <message>
+        <source>Console Mode</source>
+        <translation>Konzol mód</translation>
+    </message>
+    <message>
+        <source>VRAM Usage Mode</source>
+        <translation>VRAM használati mód</translation>
+    </message>
+    <message>
+        <source>ASTC Decoding Method</source>
+        <translation>ASTC dekódolási módszer</translation>
+    </message>
+    <message>
+        <source>Cabinet</source>
+        <translation>Kabinet</translation>
+    </message>
+    <message>
+        <source>Custom RTC</source>
+        <translation>Egyéni RTC</translation>
+    </message>
+    <message>
+        <source>Boost</source>
+        <translation>Boost (1700MHz)</translation>
+    </message>
+    <message>
+        <source>Overclock</source>
+        <translation>Gyors (2000MHz)</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureApplets</name>
     <message>
@@ -2210,7 +2254,11 @@ When a program attempts to open the controller applet, it is immediately closed.
       <source>Applet mode preference</source>
       <translation>Applet mód preferencia</translation>
     </message>
-  </context>
+      <message>
+        <source>Cabinet</source>
+        <translation>Kabinet</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureAudio</name>
     <message>
@@ -2542,7 +2590,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="235" />
       <source>Off</source>
-      <translation>Off</translation>
+      <translation>Ki</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="240" />
@@ -3312,7 +3360,11 @@ Would you like to delete the old save data?</translation>
       <source>VSync On</source>
       <translation>VSync Be</translation>
     </message>
-  </context>
+      <message>
+        <source>VSync Mode:</source>
+        <translation>VSync mód:</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureGraphicsAdvanced</name>
     <message>
@@ -3330,13 +3382,41 @@ Would you like to delete the old save data?</translation>
       <source>Advanced Graphics Settings</source>
       <translation>Haladó grafikai beállítások</translation>
     </message>
-  </context>
+      <message>
+        <source>VRAM Usage Mode:</source>
+        <translation>VRAM használati mód:</translation>
+    </message>
+    <message>
+        <source>VRAM Usage Mode</source>
+        <translation>VRAM használati mód</translation>
+    </message>
+    <message>
+        <source>ASTC Decoding Method:</source>
+        <translation>ASTC dekódoló módszer:</translation>
+    </message>
+    <message>
+        <source>ASTC Decoding Method</source>
+        <translation>ASTC dekódolási módszer</translation>
+    </message>
+    <message>
+        <source>Sync Memory Operations</source>
+        <translation>Memória-műveletek szinkronizálása</translation>
+    </message>
+    <message>
+        <source>Force maximum clocks (Vulkan only)</source>
+        <translation>Maximális órajelek kényszerítése (csak Vulkan)</translation>
+    </message>
+    <message>
+        <source>Use Vulkan pipeline cache</source>
+        <translation>Vulkan pipeline gyorsítótár használata.</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureGraphicsExtensions</name>
     <message>
       <location filename="../../src/yuzu/configuration/configure_graphics_extensions.ui" line="14" />
       <source>Form</source>
-      <translation>Form</translation>
+      <translation>Forma</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_graphics_extensions.ui" line="17" />
@@ -4393,7 +4473,11 @@ A tengely megfordításához mozgasd a kart először függőlegesen, majd vízs
       <source>Failed to save the input profile "%1"</source>
       <translation>A "%1" beviteli profilt nem sikerült elmenteni</translation>
     </message>
-  </context>
+      <message>
+        <source>Unknown</source>
+        <translation>Ismeretlen</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureInputProfileDialog</name>
     <message>
@@ -4557,7 +4641,11 @@ A tengely megfordításához mozgasd a kart először függőlegesen, majd vízs
       <source>UDP Test or calibration configuration is in progress.&lt;br&gt;Please wait for them to finish.</source>
       <translation>UDP tesztelés vagy a kalibrálás konfigurálása folyamatban van.&lt;br&gt;Kérjük, várj, amíg befejeződik.</translation>
     </message>
-  </context>
+      <message>
+        <source>Motion / Touch</source>
+        <translation>Mozgás / Érintés</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureMousePanning</name>
     <message>
@@ -4780,12 +4868,12 @@ A jelenlegi érték %1% és %2%.</translation>
     <message>
       <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="86" />
       <source>Network</source>
-      <translation>Network</translation>
+      <translation>Hálózat</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="87" />
       <source>Applets</source>
-      <translation>Applets</translation>
+      <translation>Appletek</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="90" />
@@ -5191,7 +5279,19 @@ UUID: %2</translation>
       <source>Warning: "%1" is not a valid language for region "%2"</source>
       <translation>Figyelmeztetés: A(z) "%1" nyelv nem érvényes a(z) "%2" régióra</translation>
     </message>
-  </context>
+      <message>
+        <source>Console Mode</source>
+        <translation>Konzol mód</translation>
+    </message>
+    <message>
+        <source>Limit Speed Percent</source>
+        <translation>Sebesség korlátozása</translation>
+    </message>
+    <message>
+        <source>Language:</source>
+        <translation>Nyelv:</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureTas</name>
     <message>
@@ -5565,7 +5665,19 @@ Húzd a pontokat a pozíció megváltoztatásához, vagy kattints duplán a táb
       <comment>Screenshot width value</comment>
       <translation>Automatikus (%1 x %2, %3 x %4)</translation>
     </message>
-  </context>
+      <message>
+        <source>Theme</source>
+        <translation>Téma váltása</translation>
+    </message>
+    <message>
+        <source>Language:</source>
+        <translation>Nyelv:</translation>
+    </message>
+    <message>
+        <source>Screenshots Path:</source>
+        <translation>Képernyőmentések útvonala:</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureVibration</name>
     <message>
@@ -5676,7 +5788,7 @@ Húzd a pontokat a pozíció megváltoztatásához, vagy kattints duplán a táb
     <message>
       <location filename="../../src/yuzu/configuration/configure_web.ui" line="105" />
       <source>Generate</source>
-      <translation>Generate</translation>
+      <translation>Generálás</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_web.ui" line="130" />
@@ -5712,7 +5824,11 @@ Húzd a pontokat a pozíció megváltoztatásához, vagy kattints duplán a táb
       <comment>Tooltip</comment>
       <translation>Must be 48 characters, and lowercase a-z</translation>
     </message>
-  </context>
+      <message>
+        <source>Username:</source>
+        <translation>Felhasználónév:</translation>
+    </message>
+</context>
   <context>
     <name>ControllerDialog</name>
     <message>
@@ -5769,7 +5885,7 @@ Húzd a pontokat a pozíció megváltoztatásához, vagy kattints duplán a táb
     <message>
       <location filename="../../src/yuzu/data_widget.ui" line="14" />
       <source>Form</source>
-      <translation>Form</translation>
+      <translation>Forma</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/data_widget.ui" line="22" />
@@ -5827,7 +5943,7 @@ Húzd a pontokat a pozíció megváltoztatásához, vagy kattints duplán a táb
     <message>
       <location filename="../../src/yuzu/deps_dialog.cpp" line="22" />
       <source>Version</source>
-      <translation>Version</translation>
+      <translation>Verzió</translation>
     </message>
   </context>
   <context>
@@ -5995,7 +6111,7 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
     <message>
       <location filename="../../src/yuzu/multiplayer/message.cpp" line="63" />
       <source>Error</source>
-      <translation>Error</translation>
+      <translation>Hiba</translation>
     </message>
   </context>
   <context>
@@ -6291,12 +6407,12 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="194" />
       <source>Name</source>
-      <translation>Name</translation>
+      <translation>Név</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="195" />
       <source>Add-ons</source>
-      <translation>Add-ons</translation>
+      <translation>Kiegészítők</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="196" />
@@ -6306,7 +6422,7 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="197" />
       <source>Size</source>
-      <translation>Size</translation>
+      <translation>Méret</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="198" />
@@ -6503,7 +6619,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="41" />
       <source>Configure</source>
-      <translation>Configure</translation>
+      <translation>Konfigurálás</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="42" />
@@ -6548,7 +6664,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="50" />
       <source>Create Room</source>
-      <translation>Create Room</translation>
+      <translation>Szoba létrehozása</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="51" />
@@ -6558,7 +6674,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="52" />
       <source>Leave Room</source>
-      <translation>Leave Room</translation>
+      <translation>Szoba elhagyása</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="53" />
@@ -7253,7 +7369,7 @@ Debug Message:</translation>
       <location filename="../../src/yuzu/main_window.cpp" line="876" />
       <location filename="../../src/yuzu/main_window.cpp" line="879" />
       <source>Disable Web Applet</source>
-      <translation>Disable Web Applet</translation>
+      <translation>Web applet letiltása</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="880" />
@@ -7290,12 +7406,12 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="1067" />
       <source>Unmute</source>
-      <translation>Unmute</translation>
+      <translation>Némítás feloldása</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="1067" />
       <source>Mute</source>
-      <translation>Mute</translation>
+      <translation>Némítás</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="1072" />
@@ -7455,7 +7571,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2475" />
       <source>Remove Play Time Data</source>
-      <translation>Remove Play Time Data</translation>
+      <translation>Játékidő törlése</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2475" />
@@ -7532,7 +7648,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2676" />
       <source>Properties</source>
-      <translation>Properties</translation>
+      <translation>Tulajdonságok</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2677" />
@@ -7548,7 +7664,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2743" />
       <source>Load File</source>
-      <translation>Load File</translation>
+      <translation>Fájl betöltése</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2756" />
@@ -7652,7 +7768,7 @@ Please, only use this feature to install updates and DLC.</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2913" />
       <source>Game</source>
-      <translation>Game</translation>
+      <translation>Játék</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2914" />
@@ -7761,7 +7877,7 @@ Please, only use this feature to install updates and DLC.</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3704" />
       <source>Error</source>
-      <translation>Error</translation>
+      <translation>Hiba</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3704" />
@@ -7832,7 +7948,7 @@ Please, only use this feature to install updates and DLC.</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3975" />
       <source>Capture Screenshot</source>
-      <translation>Capture Screenshot</translation>
+      <translation>Képernyőkép készítése</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3976" />
@@ -8038,12 +8154,12 @@ Would you like to bypass this and exit anyway?</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="40" />
       <source>Bilinear</source>
-      <translation>Bilinear</translation>
+      <translation>Bilineáris</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="41" />
       <source>Bicubic</source>
-      <translation>Bicubic</translation>
+      <translation>Bikubikus</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="43" />
@@ -8068,7 +8184,7 @@ Would you like to bypass this and exit anyway?</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="49" />
       <source>Gaussian</source>
-      <translation>Gaussian</translation>
+      <translation>Gauss-féle</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="50" />
@@ -8108,12 +8224,12 @@ Would you like to bypass this and exit anyway?</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="61" />
       <source>Docked</source>
-      <translation>Docked</translation>
+      <translation>Dokkolt</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="62" />
       <source>Handheld</source>
-      <translation>Handheld</translation>
+      <translation>Kézi</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="66" />
@@ -8123,7 +8239,7 @@ Would you like to bypass this and exit anyway?</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="67" />
       <source>Accurate</source>
-      <translation>Accurate</translation>
+      <translation>Pontos</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="71" />
@@ -8150,7 +8266,27 @@ Would you like to bypass this and exit anyway?</translation>
       <source>Null</source>
       <translation>Null</translation>
     </message>
-  </context>
+      <message>
+        <source>Fullscreen</source>
+        <translation>Teljes képernyő</translation>
+    </message>
+    <message>
+        <source>Mii Edit</source>
+        <translation>Mii szerkesztés</translation>
+    </message>
+    <message>
+        <source>Cabinet</source>
+        <translation>Kabinet</translation>
+    </message>
+    <message>
+        <source>Create Shortcut</source>
+        <translation>Parancsikon létrehozása</translation>
+    </message>
+    <message>
+        <source>Install Files to NAND</source>
+        <translation>Fájlok telepítése a NAND-ra</translation>
+    </message>
+</context>
   <context>
     <name>MigrationWorker</name>
     <message>
@@ -8358,7 +8494,7 @@ Mindenképp folytatod?</translation>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="70" />
       <source>Username</source>
-      <translation>Username</translation>
+      <translation>Felhasználónév</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="82" />
@@ -8368,7 +8504,7 @@ Mindenképp folytatod?</translation>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="89" />
       <source>Generate</source>
-      <translation>Generate</translation>
+      <translation>Generálás</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.cpp" line="138" />
@@ -8494,7 +8630,7 @@ p, li { white-space: pre-wrap; }
     <message>
       <location filename="../../src/yuzu/render/performance_overlay.ui" line="14" />
       <source>Form</source>
-      <translation>Form</translation>
+      <translation>Forma</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/render/performance_overlay.ui" line="32" />
@@ -8622,13 +8758,6 @@ p, li { white-space: pre-wrap; }
       <location filename="../../src/yuzu/user_data_migration.cpp" line="68" />
       <source>Link Old Directory</source>
       <translation>Link Old Directory</translation>
-    </message>
-    <message>
-      <location filename="../../src/yuzu/user_data_migration.cpp" line="98" />
-      <source>
-      </source>
-      <translation>
-      </translation>
     </message>
     <message>
       <location filename="../../src/yuzu/user_data_migration.cpp" line="102" />
@@ -9204,7 +9333,7 @@ p, li { white-space: pre-wrap; }
     <message>
       <location filename="../../src/qt_common/util/content.cpp" line="30" />
       <source>Game Requires Firmware</source>
-      <translation>Game Requires Firmware</translation>
+      <translation>A játék firmware-t igényel</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/content.cpp" line="31" />
@@ -9260,7 +9389,7 @@ p, li { white-space: pre-wrap; }
       <location filename="../../src/qt_common/util/content.cpp" line="223" />
       <location filename="../../src/qt_common/util/content.cpp" line="282" />
       <source>Integrity verification succeeded!</source>
-      <translation>Integrity verification succeeded!</translation>
+      <translation>Integritás ellenőrzése sikeres!</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/content.cpp" line="224" />
@@ -9272,7 +9401,7 @@ p, li { white-space: pre-wrap; }
       <location filename="../../src/qt_common/util/content.cpp" line="227" />
       <location filename="../../src/qt_common/util/content.cpp" line="288" />
       <source>Integrity verification failed!</source>
-      <translation>Integrity verification failed!</translation>
+      <translation>Az integritás ellenőrzése sikertelen!</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/content.cpp" line="228" />
@@ -9282,7 +9411,7 @@ p, li { white-space: pre-wrap; }
     <message>
       <location filename="../../src/qt_common/util/content.cpp" line="232" />
       <source>Integrity verification couldn't be performed</source>
-      <translation>Integrity verification couldn't be performed</translation>
+      <translation>Az integritás ellenőrzését nem lehetett elvégezni</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/content.cpp" line="233" />
@@ -9717,7 +9846,7 @@ Would you like to manually select a portable folder to use?</translation>
     <message>
       <location filename="../../src/qt_common/util/game.cpp" line="347" />
       <source>Reset Metadata Cache</source>
-      <translation>Reset Metadata Cache</translation>
+      <translation>Metaadat gyorsítótár visszaállítása</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/game.cpp" line="353" />
@@ -9737,7 +9866,7 @@ Would you like to manually select a portable folder to use?</translation>
     <message>
       <location filename="../../src/qt_common/util/game.cpp" line="381" />
       <source>Create Shortcut</source>
-      <translation>Create Shortcut</translation>
+      <translation>Parancsikon létrehozása</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/game.cpp" line="381" />
@@ -9916,12 +10045,12 @@ Most mods are RomFS mods, but patches (.pchtxt) are typically ExeFS mods.</trans
     <message>
       <location filename="../../src/qt_common/qt_string_lookup.h" line="81" />
       <source>One or more keys failed to copy.</source>
-      <translation>One or more keys failed to copy.</translation>
+      <translation>Egy vagy több kulcs másolása sikertelen.</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/qt_string_lookup.h" line="83" />
       <source>Verify your keys file has a .keys extension and try again.</source>
-      <translation>Verify your keys file has a .keys extension and try again.</translation>
+      <translation>Győződjön meg róla, hogy a kulcsfájl .keys kiterjesztésű, és próbálja újra.</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/qt_string_lookup.h" line="85" />
@@ -10624,4 +10753,295 @@ Error code: %3</translation>
       <translation>Successfully downloaded %1. Would you like to open it?</translation>
     </message>
   </context>
+<context>
+    <name>QPlatformTheme</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Mégse</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Bezárás</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Segítség</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Visszaállítás</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Segítség</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Visszaállítás</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Megszakítás</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Mentés</translation>
+    </message>
+</context>
+<context>
+    <name>QDialogButtonBox</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Mégse</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Bezárás</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Segítség</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Visszaállítás</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Segítség</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Visszaállítás</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Megszakítás</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Mentés</translation>
+    </message>
+</context>
+<context>
+    <name>QMessageBox</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Mégse</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Bezárás</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Segítség</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Visszaállítás</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Segítség</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Visszaállítás</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Megszakítás</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Mentés</translation>
+    </message>
+</context>
+<context>
+    <name>QGuiApplication</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Mégse</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Bezárás</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Segítség</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Visszaállítás</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Segítség</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Visszaállítás</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Megszakítás</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Mentés</translation>
+    </message>
+</context>
+<context>
+    <name>QAbstractButton</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Mégse</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Bezárás</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Segítség</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Visszaállítás</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Segítség</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Visszaállítás</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Megszakítás</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Mentés</translation>
+    </message>
+</context>
+<context>
+    <name>QColorDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Mégse</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Bezárás</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Segítség</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Visszaállítás</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Segítség</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Visszaállítás</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Megszakítás</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Mentés</translation>
+    </message>
+</context>
+<context>
+    <name>QFileDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Mégse</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Bezárás</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Segítség</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Visszaállítás</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Segítség</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Visszaállítás</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Megszakítás</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Mentés</translation>
+    </message>
+</context>
+<context>
+    <name>QFontDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Mégse</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Bezárás</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Segítség</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Visszaállítás</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Segítség</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Visszaállítás</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Megszakítás</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Mentés</translation>
+    </message>
+</context>
+<context>
+    <name>QtController</name>
+    <message>
+        <source>Console Mode</source>
+        <translation>Konzol mód</translation>
+    </message>
+    <message>
+        <source>Vibration</source>
+        <translation>Rezgés</translation>
+    </message>
+</context>
 </TS>

@@ -21,6 +21,7 @@
 #include "video_core/engines/maxwell_3d.h"
 #include "video_core/gpu.h"
 #include "video_core/native_query_trace.h"
+#include "video_core/nx2.h"
 #include "video_core/host1x/gpu_device_memory_manager.h"
 #include "video_core/memory_manager.h"
 #include "video_core/query_cache/bank_base.h"
@@ -270,6 +271,7 @@ void QueryCacheBase<Traits>::CounterReport(GPUVAddr addr, QueryType counter_type
                 std::memcpy(pointer, &payload, sizeof(payload));
             }
         }
+        Tegra::Nx2SemaphoreWaiters::Get().OnWrite(cpu_addr, payload);
         return;
     }
     const size_t new_query_id = streamer->WriteCounter(cpu_addr, has_timestamp, payload, subreport);
@@ -300,6 +302,7 @@ void QueryCacheBase<Traits>::CounterReport(GPUVAddr addr, QueryType counter_type
             }
         }
         sub_container.insert_or_assign(base, query_location);
+        has_cached_queries.store(true, std::memory_order_release);
     }
 
     bool is_synced = (Settings::IsGPUFenceBehaviorDefault() ? !Settings::IsGPULevelHigh() : !Settings::IsGPUFenceBehaviorBalanced() && !Settings::IsGPUFenceBehaviorAccurate()) && is_fence;
@@ -313,49 +316,48 @@ void QueryCacheBase<Traits>::CounterReport(GPUVAddr addr, QueryType counter_type
             if (!is_synced) [[likely]] {
                 std::scoped_lock lk(impl->unregister_mutex);
                 impl->pending_unregister.push_back(query_location);
+                has_pending_unregister.store(true, std::memory_order_release);
             }
             return;
         }
-        if (False(query_base->flags & QueryFlagBits::IsFinalValueSynced)) [[unlikely]] {
-            if (native_trace) TraceNativeQuery(3, trace_asid, addr, cpu_addr, static_cast<u32>(counter_type), query_base->value, static_cast<u32>(query_base->flags));
-            LOG_DEBUG(HW_GPU,
-                      "Query report value not synchronized; writing current value fallback.");
+        const auto write_and_notify = [&](u64 val) {
             if (True(query_base->flags & QueryFlagBits::HasTimestamp)) {
                 u64 timestamp = impl->gpu.GetTicks();
                 if (pointer_timestamp) {
                     std::memcpy(pointer_timestamp, &timestamp, sizeof(timestamp));
                 }
                 if (pointer) {
-                    std::memcpy(pointer, &query_base->value, sizeof(query_base->value));
+                    std::memcpy(pointer, &val, sizeof(val));
+                }
+            } else {
+                u32 value32 = static_cast<u32>(val);
+                if (pointer) {
+                    std::memcpy(pointer, &value32, sizeof(value32));
                 }
             }
+            Tegra::Nx2SemaphoreWaiters::Get().OnWrite(cpu_addr, static_cast<u32>(val));
+        };
+        if (False(query_base->flags & QueryFlagBits::IsFinalValueSynced)) [[unlikely]] {
+            if (native_trace) TraceNativeQuery(3, trace_asid, addr, cpu_addr, static_cast<u32>(counter_type), query_base->value, static_cast<u32>(query_base->flags));
+            LOG_DEBUG(HW_GPU,
+                      "Query report value not synchronized; writing current value fallback.");
+            write_and_notify(query_base->value);
             if (!is_synced) [[likely]] {
                 std::scoped_lock lk(impl->unregister_mutex);
                 impl->pending_unregister.push_back(query_location);
+                has_pending_unregister.store(true, std::memory_order_release);
             }
             return;
         }
         query_base->value += streamer->GetAmendValue();
         streamer->SetAccumulationValue(query_base->value);
-        if (True(query_base->flags & QueryFlagBits::HasTimestamp)) {
-            u64 timestamp = impl->gpu.GetTicks();
-            if (pointer_timestamp) {
-                std::memcpy(pointer_timestamp, &timestamp, sizeof(timestamp));
-            }
-            if (pointer) {
-                std::memcpy(pointer, &query_base->value, sizeof(query_base->value));
-            }
-        } else {
-            u32 value = static_cast<u32>(query_base->value);
-            if (pointer) {
-                std::memcpy(pointer, &value, sizeof(value));
-            }
-        }
+        write_and_notify(query_base->value);
         query_base->flags |= QueryFlagBits::IsGuestSynced;
         if (native_trace) TraceNativeQuery(1, trace_asid, addr, cpu_addr, static_cast<u32>(counter_type), query_base->value, static_cast<u32>(query_base->flags));
         if (!is_synced) [[likely]] {
             std::scoped_lock lk(impl->unregister_mutex);
             impl->pending_unregister.push_back(query_location);
+            has_pending_unregister.store(true, std::memory_order_release);
         }
     });
     if (is_fence) {
@@ -378,6 +380,7 @@ void QueryCacheBase<Traits>::UnregisterPending() {
             return;
         }
         pending.swap(impl->pending_unregister);
+        has_pending_unregister.store(false, std::memory_order_release);
     }
     std::scoped_lock lock(cache_mutex);
     for (QueryLocation loc : pending) {
@@ -527,8 +530,10 @@ void QueryCacheBase<Traits>::CommitAsyncFlushes() {
         });
         impl->flushes_pending.push_back(mask);
     }
-    std::function<void()> func([this] { UnregisterPending(); });
-    impl->rasterizer.SyncOperation(std::move(func));
+    if (mask != 0 || has_pending_unregister.load(std::memory_order_acquire)) {
+        std::function<void()> func([this] { UnregisterPending(); });
+        impl->rasterizer.SyncOperation(std::move(func));
+    }
     if (mask == 0) {
         return;
     }
@@ -555,6 +560,20 @@ bool QueryCacheBase<Traits>::HasUncommittedFlushes() const {
         return result;
     });
     return result;
+}
+
+
+template <typename Traits>
+bool QueryCacheBase<Traits>::HasPendingSyncOrUnregister() const {
+    if (has_pending_unregister.load(std::memory_order_acquire)) {
+        return true;
+    }
+    bool pending_sync = false;
+    impl->ForEachStreamer([&pending_sync](StreamerInterface* streamer) {
+        pending_sync |= streamer->HasPendingSync();
+        return pending_sync;
+    });
+    return pending_sync;
 }
 
 template <typename Traits>
@@ -597,6 +616,9 @@ void QueryCacheBase<Traits>::InvalidateQuery(QueryCacheBase<Traits>::QueryLocati
     if (!query_base) {
         return;
     }
+    if (VideoCore::Nx2IsActive() && True(query_base->flags & QueryFlagBits::IsFence)) {
+        return;
+    }
     query_base->flags |= QueryFlagBits::IsInvalidated;
 }
 
@@ -629,6 +651,8 @@ bool QueryCacheBase<Traits>::SemiFlushQueryDirty(QueryCacheBase<Traits>::QueryLo
             if (ptr) {
                 std::memcpy(ptr, &query_base->value, sizeof(query_base->value));
             }
+            Tegra::Nx2SemaphoreWaiters::Get().OnWrite(query_base->guest_address,
+                                                      static_cast<u32>(query_base->value));
             query_base->flags |= QueryFlagBits::IsGuestSynced;
             return false;
         }
@@ -636,6 +660,8 @@ bool QueryCacheBase<Traits>::SemiFlushQueryDirty(QueryCacheBase<Traits>::QueryLo
             u32 value_l = static_cast<u32>(query_base->value);
             std::memcpy(ptr, &value_l, sizeof(value_l));
         }
+        Tegra::Nx2SemaphoreWaiters::Get().OnWrite(query_base->guest_address,
+                                                  static_cast<u32>(query_base->value));
         query_base->flags |= QueryFlagBits::IsGuestSynced;
         return false;
     }

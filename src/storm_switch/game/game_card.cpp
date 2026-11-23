@@ -51,7 +51,7 @@ void GameCard::paint(QPainter* painter, const QStyleOptionViewItem& option,
     painter->setPen(QPen(borderColor, is_selected ? 2 : 1));
     painter->drawRoundedRect(cardRect, cardCornerRadius, cardCornerRadius);
 
-    const u32 icon_size = UISettings::values.game_icon_size.GetValue();
+    const u32 icon_size = std::clamp<u32>(std::max<u32>(UISettings::values.game_icon_size.GetValue(), 152u), 152u, 256u);
     const u64 program_id = index.data(GameListItemPath::ProgramIdRole).toULongLong();
 
     // 2. Cover pixmap
@@ -138,7 +138,11 @@ void GameCard::paint(QPainter* painter, const QStyleOptionViewItem& option,
         painter->restore();
     }
 
-    // 3. BADGES
+    // 3. BADGES (strictly clipped inside iconRect so badges never bleed across neighboring cards)
+    painter->save();
+    QPainterPath badge_clip;
+    badge_clip.addRoundedRect(iconRect, 8, 8);
+    painter->setClipPath(badge_clip);
     // Version badge (bottom-left): e.g. "1.0.0 · 131072" or "1.0.0"
     QString ver_badge = index.data(GameListItemPath::VersionRole).toString().trimmed();
     while (ver_badge.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
@@ -187,6 +191,8 @@ void GameCard::paint(QPainter* painter, const QStyleOptionViewItem& option,
     if (platform == 1) {
         DrawSwitch2Badge(painter, iconRect);
     }
+
+    painter->restore();
 
     // 4. Game Title below cover - two cleanly wrapped & elided lines, zero clipped 3rd line
     if (UISettings::values.show_game_name.GetValue()) {

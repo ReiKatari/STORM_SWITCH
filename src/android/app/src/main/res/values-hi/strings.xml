@@ -103,7 +103,7 @@
     <string name="buffer_reorder_disable">अक्षम करें Buffer Reorder</string>
     <string name="buffer_reorder_disable_description">When checked, disables reordering of mapped मेमोरी uploads which allows to associate uploads with specific draws. May reduce प्रदर्शन in some cases.</string>
 
-    <string name="use_sync_core">Synchronize Core Speed</string>
+    <string name="use_sync_core">कोर गति सिंक्रनाइज़ करें</string>
     <string name="use_sync_core_description">Synchronize the core tick speed to the maximum speed percentage to improve प्रदर्शन without altering the game\'s actual speed.</string>
     <string name="cpuopt_unsafe_host_mmu">सक्षम करें Host MMU Emulation</string>
     <string name="cpuopt_unsafe_host_mmu_description">This optimization speeds up मेमोरी accesses by the guest program. Enabling it causes guest मेमोरी reads/writes to be done directly into मेमोरी and make use of Host\'s MMU. Disabling this forces सभी मेमोरी accesses to use Software MMU Emulation.</string>
@@ -117,7 +117,7 @@
     <string name="nvdec_emulation_cpu" translatable="false">CPU</string>
     <string name="nvdec_emulation_gpu" translatable="false">GPU</string>
     <string name="nvdec_emulation_none">कोई नहीं</string>
-    <string name="nvdec_emulation_hybrid">Hybrid</string>
+    <string name="nvdec_emulation_hybrid">हाइब्रिड</string>
 
     <!-- Auto-Correction and Thermal Cooling -->
     <string name="auto_correction_title">स्वतः-correction</string>
@@ -137,9 +137,9 @@
     <string name="auto_correction_recommendations_content">रिज़ॉल्यूशन: 0.75X (540p / 810p) (reduces SoC temperature by 4-6°C and boosts FPS)\n ASTC Recompression: Uncompressed (maximum texture quality with zero missing textures)\n GPU Timings: Boost (eliminates GPU command latency and keeps stable 30+ FPS)\n Reactive Flushing: अक्षम (reduces GPU लोड करें and micro-stutter)\n Host MMU Emulation (Fastmem): सक्षम (maximum CPU प्रदर्शन with reduced heat)\n Eco Thermal Mode and Pacing: सक्षम (prevents SoC thermal throttling spikes)\n एनिस्ट्रॉपिक फ़िल्टरिंग: डिफ़ॉल्ट (eliminates redundant texture sampling overhead)</string>
 
     <!-- Optimize SPIRV output -->
-    <string name="never">Never</string>
+    <string name="never">कभी नहीं</string>
     <string name="on_load">On लोड करें</string>
-    <string name="always">Always</string>
+    <string name="always">हमेशा</string>
 
     <!-- Multiplayer -->
     <string name="multiplayer">Multiplayer</string>
@@ -263,7 +263,7 @@
     <string name="update_installed_successfully">अपडेट करें installed सफलतापूर्वक</string>
     <string name="update_install_failed">करने में विफल: इंस्टॉल करें अपडेट करें: %1$s</string>
     <string name="home_search">खोजें</string>
-    <string name="home_settings">Settings</string>
+    <string name="home_settings">सेटिंग्स</string>
     <string name="empty_gamelist">नहीं files were found or नहीं game निर्देशिका has been selected yet.</string>
     <string name="manage_game_folders">Manage game folders</string>
     <string name="select_games_folder_description">Allows Eden to populate the games list</string>
@@ -291,7 +291,7 @@
     <string name="notifications_description">Grant the notification permission with the button below.</string>
     <string name="permission_denied">Permission denied</string>
     <string name="permission_denied_description">You denied this permission too many times and now you have to manually grant it in सिस्टम सेटिंग्स.</string>
-    <string name="about">About</string>
+    <string name="about">के बारे में</string>
     <string name="about_description">Build version, credits, and more</string>
     <string name="system_information">System Information</string>
     <string name="system_information_description">View detailed device information</string>
@@ -312,7 +312,7 @@
     <string name="total_memory">Total मेमोरी</string>
     <string name="soc">SOC:</string>
 
-    <string name="warning_help">Help</string>
+    <string name="warning_help">सहायता</string>
     <string name="warning">चेतावनी</string>
     <string name="warning_skip">Skip</string>
     <string name="warning_cancel">रद्द करें</string>
@@ -543,7 +543,7 @@
     <string name="set_custom_rtc">Set कस्टम RTC</string>
 
     <!-- CPU -->
-    <string name="fast_cpu_time">CPU Clocks</string>
+    <string name="fast_cpu_time">CPU क्लॉक</string>
     <string name="fast_cpu_time_description">Raises the clock the emulated CPU reports, which removes some FPS limiters. Weaker CPUs may see reduced प्रदर्शन, and certain games may behave improperly.</string>
     <string name="custom_cpu_ticks">कस्टम CPU Ticks</string>
     <string name="custom_cpu_ticks_description">Set a कस्टम value of CPU ticks. Higher values can increase प्रदर्शन, but may also cause the game to freeze. A range of 77-21000 is recommended.</string>
@@ -569,13 +569,13 @@
     <string name="renderer_anti_aliasing">एंटी-अलियासिंग method</string>
 
 
-    <string name="advanced">Advanced</string>
+    <string name="advanced">उन्नत</string>
 
     <string name="renderer_accuracy">GPU Mode</string>
     <string name="renderer_accuracy_description">Controls the GPU emulation mode. Most games render fine with तेज़, but सटीक is still required for some. Particles tend to only render correctly with सटीक mode.</string>
     <string name="dma_accuracy">DMA सटीकता</string>
     <string name="dma_accuracy_description">Controls the DMA precision सटीकता. सुरक्षित precision can fix issues in some games, but it can also impact प्रदर्शन in some cases. If unsure, leave this on डिफ़ॉल्ट.</string>
-    <string name="gpu_fence_behavior">GPU Fence Behavior</string>
+    <string name="gpu_fence_behavior">GPU फेंस व्यवहार</string>
     <string name="gpu_fence_behavior_description">Controls the GPU fence synchronization behavior. Immediate is the fastest option, but can introduce some issues. Balanced offers better compatibility and may fix issues in some games. सटीक further improves compatibility at the cost of some प्रदर्शन. Strict is the slowest option, but can fix issues that require stricter synchronization. डिफ़ॉल्ट follows the GPU सटीकता setting.</string>
     <string name="anisotropic_filtering">एनिस्ट्रॉपिक फ़िल्टरिंग</string>
     <string name="anisotropic_filtering_description">Improves the quality of textures when viewed at oblique angles</string>
@@ -611,7 +611,7 @@
 
     <string name="renderer_early_release_fences">Release Fences Early</string>
     <string name="renderer_early_release_fences_description">Prevents 0 FPS deadlocks in games like Ori 2, DKCR:HD, Subnautica Below Zero by minimizing frame wait latency.</string>
-    <string name="renderer_optimize_spirv_output">Optimize SPIR-V Output</string>
+    <string name="renderer_optimize_spirv_output">SPIR-V आउटपुट अनुकूलित करें</string>
     <string name="renderer_optimize_spirv_output_description">Passes shaders through spirv-opt to reduce driver compile overhead, eliminate stutter, and keep SoC cooler.</string>
     <string name="enable_frame_skipping">सक्षम करें Frame Skipping</string>
     <string name="enable_frame_skipping_description">Skips intermediate non-critical frames during rendering dips, maintaining smooth gameplay speed and lower temperatures.</string>
@@ -620,13 +620,13 @@
 
     <string name="hacks">Hacks</string>
 
-    <string name="fast_gpu_time">GPU Clocks</string>
+    <string name="fast_gpu_time">GPU क्लॉक</string>
     <string name="fast_gpu_time_description">Makes the game believe GPU work finishes faster than it does, so it stops lowering रिज़ॉल्यूशन and render distance to fit the Switch\'s clocks.</string>
-    <string name="skip_cpu_inner_invalidation">Skip CPU Inner Invalidation</string>
+    <string name="skip_cpu_inner_invalidation">CPU आंतरिक अमान्यता को छोड़ें</string>
     <string name="skip_cpu_inner_invalidation_description">Skips certain CPU-side cache invalidations during मेमोरी updates, reducing CPU usage and improving it\'s प्रदर्शन. This may cause glitches or crashes on some games.</string>
     <string name="fix_bloom_effects">Fix Bloom Effects</string>
     <string name="fix_bloom_effects_description">Reduces bloom blur in LA/EOW (Adreno A6XX - A7XX/ Turnip), removes bloom in Burnout. चेतावनी: may cause graphical artifacts in other games.</string>
-    <string name="emulate_bgr565">Emulate BGR565</string>
+    <string name="emulate_bgr565">BGR565 एमुलेट करें</string>
     <string name="emulate_bgr565_description">Fixes problems with inverted colors in games or strange artifacts or strange shadows.</string>
     <string name="rescale_hack">सक्षम करें Legacy Rescale Pass</string>
     <string name="rescale_hack_description">Enables a legacy handling for the rescale configuration pass for games by using a quick rescale path</string>
@@ -636,23 +636,23 @@
     <string name="gpu_unswizzle_settings_description">Configure GPU-based texture unswizzling parameters or अक्षम करें it entirely. Adjust these settings to balance प्रदर्शन and texture loading quality.</string>
     <string name="gpu_unswizzle_enable">सक्षम करें GPU Unswizzle</string>
     <string name="gpu_unswizzle_disabled">अक्षम</string>
-    <string name="gpu_unswizzle_texture_size">GPU Unswizzle Max Texture Size</string>
+    <string name="gpu_unswizzle_texture_size">GPU अनस्विज़ल अधिकतम टेक्सचर आकार</string>
     <string name="gpu_unswizzle_texture_size_description">Sets the maximum size (MB) for GPU-based texture unswizzling. While the GPU is faster for मध्यम and large textures, the CPU may be more efficient for very small ones. Adjust this to find the balance between GPU acceleration and CPU overhead.</string>
-    <string name="gpu_unswizzle_stream_size">GPU Unswizzle Stream Size</string>
+    <string name="gpu_unswizzle_stream_size">GPU अनस्विज़ल स्ट्रीम आकार</string>
     <string name="gpu_unswizzle_stream_size_description">Sets the data limit per frame for unswizzling large textures. Higher values speed up texture loading at the cost of higher frame latency; lower values reduce GPU overhead but may cause visible texture pop-in.</string>
-    <string name="gpu_unswizzle_chunk_size">GPU Unswizzle Chunk Size</string>
+    <string name="gpu_unswizzle_chunk_size">GPU अनस्विज़ल चंक आकार</string>
     <string name="gpu_unswizzle_chunk_size_description">Defines the number of depth slices processed per batch for 3D textures. Increasing this improves throughput efficiency on powerful GPUs but may cause stuttering or driver timeouts on weaker hardware.</string>
     <string name="gpu_unswizzle_default_button">डिफ़ॉल्ट</string>
 
 
-    <string name="extensions">Extensions</string>
+    <string name="extensions">एक्सटेंशन</string>
 
-    <string name="dyna_state">Extended Dynamic State</string>
+    <string name="dyna_state">विस्तारित गतिशील स्थिति</string>
     <string name="dyna_state_description">Controls the number of features that can be used in ExtendedDynamicState (EDS). The higher value will allow to reduce the amount of pipeline compilations based on the dynamic state supported by driver.</string>
     <string name="disabled">अक्षम</string>
-    <string name="vertex_input_dynamic_state">Vertex Input Dynamic State</string>
+    <string name="vertex_input_dynamic_state">वर्टेक्स इनपुट डायनेमिक स्टेट</string>
     <string name="vertex_input_dynamic_state_description">Enabling this feature allows for more flexible vertex input handling, potentially reducing pipeline compilation time in vertex/buffer.</string>
-    <string name="sample_shading_fraction">Sample Shading</string>
+    <string name="sample_shading_fraction">सैंपल शेडिंग</string>
     <string name="sample_shading_fraction_description">Allows the fragment shader to execute per sample in a multi-sampled fragment instead once per fragment. Improves graphics quality at the cost of some प्रदर्शन.</string>
 
 
@@ -667,12 +667,12 @@
     <string name="warning_resolution">रिज़ॉल्यूशन scaling to 2x or higher is known to cause issues, and may result in significant slowdowns of your device.</string>
 
     <!-- Debug settings strings -->
-    <string name="cpu">CPU</string>
+    <string name="cpu">सीपीयू (CPU)</string>
     <string name="clocks">Clocks</string>
     <string name="use_auto_stub">Use स्वतः Stub</string>
     <string name="use_auto_stub_description">Automatically stub missing services and functions. This may improve compatibility but can cause crashes and stability issues.</string>
 
-    <string name="gpu">GPU</string>
+    <string name="gpu">GPU (ग्राफ़िक्स)</string>
     <string name="renderer_api">API</string>
     <string name="renderer_debug">Graphics debugging</string>
     <string name="renderer_debug_description">Sets the graphics API to a slow debugging mode.</string>
@@ -688,10 +688,10 @@
     <string name="gpu_logging_header">GPU Logging</string>
     <string name="gpu_log_level">Log Level</string>
     <string name="gpu_log_level_description">Detail level for GPU logs (higher = more detail, more overhead)</string>
-    <string name="gpu_log_level_off">Off</string>
+    <string name="gpu_log_level_off">बंद</string>
     <string name="gpu_log_level_errors_only">Errors only</string>
-    <string name="gpu_log_level_standard">Standard</string>
-    <string name="gpu_log_level_verbose">Verbose</string>
+    <string name="gpu_log_level_standard">मानक</string>
+    <string name="gpu_log_level_verbose">विस्तृत</string>
     <string name="gpu_log_level_all">सभी</string>
     <string name="gpu_log_vulkan_calls">Log Vulkan API Calls</string>
     <string name="gpu_log_vulkan_calls_description">Track सभी Vulkan API calls in ring buffer</string>
@@ -709,7 +709,7 @@
     <string name="gpu_log_ring_buffer_size_description">Number of recent Vulkan calls to track (डिफ़ॉल्ट: 512)</string>
     <string name="gpu_log_ring_buffer_size_hint">64 to 4096 entries</string>
 
-    <string name="general">General</string>
+    <string name="general">सामान्य</string>
 
     <!-- Audio settings strings -->
     <string name="audio_output_engine">Output engine</string>
@@ -753,7 +753,7 @@
     <string name="button_z" translatable="false">Z</string>
     <string name="invalid">Invalid</string>
     <string name="not_set">Not set</string>
-    <string name="unknown">Unknown</string>
+    <string name="unknown">अज्ञात</string>
     <string name="qualified_hat">%1$s%2$s%3$sHat %4$s</string>
     <string name="qualified_button_stick_axis">%1$s%2$s%3$sAxis %4$s</string>
     <string name="qualified_button">%1$s%2$s%3$sButton %4$s</string>
@@ -766,7 +766,7 @@
     <string name="attempted_auto_map">%1$s के साथ स्वतः-मानचित्रण का प्रयास किया गया</string>
     <string name="controller_type">कंट्रोलर type</string>
     <string name="pro_controller">Pro कंट्रोलर</string>
-    <string name="handheld">Handheld</string>
+    <string name="handheld">हैंडहेल्ड (Handheld)</string>
     <string name="dual_joycons">Dual Joycons</string>
     <string name="left_joycon">Left Joycon</string>
     <string name="right_joycon">Right Joycon</string>
@@ -815,7 +815,7 @@
     <string name="learn_more">Learn more</string>
     <string name="auto">स्वतः</string>
     <string name="submit">Submit</string>
-    <string name="string_null">Null</string>
+    <string name="string_null">रिक्त (Null)</string>
     <string name="string_import">आयात करें</string>
     <string name="export">निर्यात करें</string>
     <string name="export_failed">निर्यात करें failed</string>
@@ -827,7 +827,7 @@
     <string name="edit">Edit</string>
     <string name="import_success">Imported सफलतापूर्वक</string>
     <string name="export_success">Exported सफलतापूर्वक</string>
-    <string name="start">Start</string>
+    <string name="start">शुरू करें</string>
     <string name="global">Global</string>
     <string name="custom">कस्टम</string>
     <string name="import_complete">आयात करें complete</string>
@@ -871,18 +871,18 @@
     <string name="unsupported_gpu_warning">Your GPU does not support driver injection. Attempting to set कस्टम drivers is not recommended.</string>
 
     <!-- Preferences Screen -->
-    <string name="preferences_settings">Settings</string>
-    <string name="preferences_system">System</string>
+    <string name="preferences_settings">सेटिंग्स</string>
+    <string name="preferences_system">सिस्टम</string>
     <string name="preferences_system_description">डॉक्ड मोड, region, भाषा</string>
-    <string name="preferences_graphics">Graphics</string>
+    <string name="preferences_graphics">ग्राफिक्स</string>
     <string name="preferences_graphics_description">सटीकता level, रिज़ॉल्यूशन, shader cache</string>
     <string name="quick_settings">Quick settings</string>
     <string name="enable_quick_settings">Quick settings</string>
     <string name="enable_quick_settings_description">Access quick settings during gameplay via three-finger upward swipe or in-game menu</string>
     <string name="quick_settings_gesture_hint">Quick settings: 3-finger swipe up</string>
-    <string name="preferences_audio">Audio</string>
+    <string name="preferences_audio">ऑडियो</string>
     <string name="preferences_audio_description">Output engine, ध्वनि</string>
-    <string name="preferences_controls">Controls</string>
+    <string name="preferences_controls">नियंत्रण</string>
     <string name="preferences_controls_description">Map कंट्रोलर input</string>
     <string name="preferences_player">Player %d</string>
     <string name="preferences_debug">Debug</string>
@@ -920,7 +920,7 @@
     <string name="developer">Developer</string>
     <string name="version">Version</string>
     <string name="copy_details">Copy details</string>
-    <string name="add_ons">Add-ons</string>
+    <string name="add_ons">ऐड-ऑन</string>
     <string name="add_ons_description">Toggle mods, updates and DLC</string>
     <string name="playtime">Playtime:</string>
     <string name="reset_playtime">साफ़ करें Playtime</string>
@@ -1046,7 +1046,7 @@
     <string name="touchscreen">Touchscreen</string>
     <string name="lock_drawer">Lock drawer</string>
     <string name="unlock_drawer">Unlock drawer</string>
-    <string name="reset">Reset</string>
+    <string name="reset">रीसेट करें</string>
     <string name="game_fix_manual_override_warning">Manual settings prioritized: %s. स्वतः-fix partially overridden.</string>
 
     <!-- Amiibo -->
@@ -1063,7 +1063,7 @@
     <string name="software_keyboard">Software keyboard</string>
 
     <!-- Errors and warnings -->
-    <string name="abort_button">Abort</string>
+    <string name="abort_button">रोकें</string>
     <string name="continue_button">Continue</string>
     <string name="system_archive_not_found">System Archive Not Found</string>
     <string name="system_archive_not_found_message">%s अनुपलब्ध है। कृपया अपने सिस्टम अभिलेखागार को डंप करें।\nएम्यूलेशन जारी रखने से क्रैश हो सकता है।</string>
@@ -1093,20 +1093,20 @@
 
     <!-- CPU clock levels -->
     <string name="clock_normal">सामान्य</string>
-    <string name="clock_boost">Boost</string>
-    <string name="clock_fast">Overclock</string>
+    <string name="clock_boost">बूस्ट</string>
+    <string name="clock_fast">ओवरक्लॉक</string>
 
     <!-- GPU clock levels -->
     <string name="fast_gpu_normal">सामान्य</string>
-    <string name="fast_gpu_medium">Boost</string>
-    <string name="fast_gpu_high">Overclock</string>
+    <string name="fast_gpu_medium">बूस्ट</string>
+    <string name="fast_gpu_high">ओवरक्लॉक</string>
 
     <!-- GPU swizzle texture size -->
-    <string name="gpu_texturesizeswizzle_verysmall">Very Small (16 MB)</string>
-    <string name="gpu_texturesizeswizzle_small">Small (32 MB)</string>
+    <string name="gpu_texturesizeswizzle_verysmall">बहुत छोटा (16 MB)</string>
+    <string name="gpu_texturesizeswizzle_small">छोटा (32 MB)</string>
     <string name="gpu_texturesizeswizzle_normal">सामान्य (128 MB)</string>
-    <string name="gpu_texturesizeswizzle_large">Large (256 MB)</string>
-    <string name="gpu_texturesizeswizzle_verylarge">Very Large (512 MB)</string>
+    <string name="gpu_texturesizeswizzle_large">बड़ा (256 MB)</string>
+    <string name="gpu_texturesizeswizzle_verylarge">बहुत बड़ा (512 MB)</string>
 
     <!-- GPU swizzle streams -->
     <string name="gpu_swizzle_verylow">Very निम्न (4 MB)</string>
@@ -1178,24 +1178,24 @@
 
     <!-- GPU Fence Behavior -->
     <string name="gpu_fence_behavior_default">डिफ़ॉल्ट</string>
-    <string name="gpu_fence_behavior_immediate">Immediate</string>
-    <string name="gpu_fence_behavior_balanced">Balanced</string>
+    <string name="gpu_fence_behavior_immediate">तत्काल (Immediate)</string>
+    <string name="gpu_fence_behavior_balanced">संतुलित</string>
     <string name="gpu_fence_behavior_accurate">सटीक</string>
-    <string name="gpu_fence_behavior_strict">Strict</string>
+    <string name="gpu_fence_behavior_strict">सख़्त (Strict)</string>
 
     <!-- ASTC Decoding Method Choices -->
     <string name="accelerate_astc_cpu" translatable="false">CPU</string>
     <string name="accelerate_astc_gpu" translatable="false">GPU</string>
     <string name="accelerate_astc_async" translatable="false">CPU Async</string>
-    <string name="accelerate_astc_hybrid">Hybrid</string>
+    <string name="accelerate_astc_hybrid">हाइब्रिड</string>
 
 
-    <string name="vram_usage_conservative">Conservative</string>
+    <string name="vram_usage_conservative">संरक्षित (किफ़ायती)</string>
     <string name="vram_usage_normal">सामान्य</string>
-    <string name="vram_usage_aggressive">Aggressive</string>
-    <string name="vram_usage_mode_conservative">Conservative</string>
+    <string name="vram_usage_aggressive">आक्रामक</string>
+    <string name="vram_usage_mode_conservative">संरक्षित (किफ़ायती)</string>
     <string name="vram_usage_mode_normal">सामान्य</string>
-    <string name="vram_usage_mode_aggressive">Aggressive</string>
+    <string name="vram_usage_mode_aggressive">आक्रामक</string>
 
     <!-- Resolutions -->
     <string name="resolution_quarter" translatable="false">0.25X (180p/270p)</string>
@@ -1284,7 +1284,7 @@
     <string name="cpu_accuracy_accurate">सटीक</string>
     <string name="cpu_accuracy_unsafe">असुरक्षित</string>
     <string name="cpu_accuracy_paranoid">Paranoid</string>
-    <string name="cpu_accuracy_debugging">Debugging</string>
+    <string name="cpu_accuracy_debugging">डीबगिंग</string>
 
     <!-- Freedreno Settings -->
     <string name="freedreno_settings_title">Freedreno Settings</string>
@@ -1414,7 +1414,7 @@
 
     <!-- GameBanana &amp; Add-ons -->
     <string name="search">खोजें</string>
-    <string name="gamebanana_mods">GameBanana Mods</string>
+    <string name="gamebanana_mods">GameBanana मॉड्स</string>
     <string name="gamebanana_mods_description">Browse and डाउनलोड करें community mods from GameBanana</string>
     <string name="gamebanana_search_hint">खोजें mods on GameBanana…</string>
     <string name="gamebanana_no_mods">नहीं mods found for this game</string>
@@ -1438,8 +1438,8 @@
     <!-- Picture-In-Picture -->
     <string name="pause">Pause</string>
     <string name="play">Play</string>
-    <string name="mute">Mute</string>
-    <string name="unmute">Unmute</string>
+    <string name="mute">म्यूट करें</string>
+    <string name="unmute">अनम्यूट करें</string>
 
     <!-- Emulation vertical alignment -->
     <string name="top">Top</string>
@@ -1455,11 +1455,11 @@
 
     <string name="swkbd_applet">Software Keyboard</string>
 
-    <string name="airplane_mode">Airplane Mode</string>
+    <string name="airplane_mode">हवाई जहाज मोड</string>
     <string name="airplane_mode_description">Passes Airplane Mode to the Switch OS</string>
 
     <string name="enable_overlay">सक्षम करें Overlay Applet</string>
-    <string name="enable_overlay_description">Enables Horizon\'s built-in overlay applet. Press and hold the home button for 1 second to show it.</string>
+    <string name="enable_overlay_description">Horizon के अंतर्निहित ओवरले एप्लेट को सक्षम करता है। इसे दिखाने के लिए HOME बटन को 1 सेकंड तक दबाए रखें।</string>
 
     <!-- Profile Management -->
     <string name="profile_manager">Profile Manager</string>
@@ -2073,7 +2073,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="amiibo_no_attached">नहीं Amiibo currently active on कंट्रोलर</string>
     <string name="amiibo_removed_toast">Amiibo removed from कंट्रोलर</string>
 
-    <string name="translator_floating_btn_title">Floating Translate Button</string>
+    <string name="translator_floating_btn_title">फ़्लोटिंग अनुवाद बटन</string>
     <string name="translator_floating_btn_description">Show floating screen translation button during gameplay</string>
     <string name="hotkey_quick_actions">Hotkeys and Quick Actions</string>
     <string name="hotkey_quick_actions_desc">Configure on-screen hotkeys and तेज़ action overlays</string>
@@ -2099,15 +2099,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="optimization_features">Optimization and Thermals</string>
     <string name="eco_thermal_mode">Eco / Thermal Governor</string>
     <string name="eco_thermal_mode_description">Controls burst clocks and throttles non-essential background draw calls to prevent device overheating and thermal throttling.</string>
-    <string name="eco_frame_pacing">Eco Frame Pacing</string>
+    <string name="eco_frame_pacing">इको फ़्रेम पेसिंग</string>
     <string name="eco_frame_pacing_description">Eliminates wasted CPU spin cycles during frame presentation intervals, significantly lowering device temperature while keeping a solid 60 FPS.</string>
     <string name="smart_shader_throttle">Smart Background Shader Pacing</string>
     <string name="smart_shader_throttle_description">Dynamically balances background pipeline compilation across efficiency cores so the main game thread never drops frames or overheats.</string>
-    <string name="cpu_affinity_pinning">CPU Affinity Pinning</string>
+    <string name="cpu_affinity_pinning">CPU कोर एफिनिटी पिनिंग</string>
     <string name="cpu_affinity_pinning_description">Pins critical JIT and GPU emulation threads to उच्च-प्रदर्शन Big/Mid Cortex cores and routes helper tasks to efficiency cores.</string>
     <string name="vulkan_pipeline_cache">Vulkan Pipeline Cache</string>
     <string name="vulkan_pipeline_cache_description">Precompiles and serializes Vulkan binary pipeline caches on स्टोरेज to eliminate runtime shader compilation stutter.</string>
-    <string name="vram_garbage_collection">VRAM Garbage Collection</string>
+    <string name="vram_garbage_collection">VRAM गार्बेज कलेक्शन</string>
     <string name="vram_garbage_collection_description">Periodically frees unreferenced texture मेमोरी and stale ASTC buffers to prevent Android LMK (निम्न मेमोरी Killer) stutter.</string>
 
     <!-- Auto Optimization Wizard -->
@@ -2136,7 +2136,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="game_fix_skip_and_launch">Launch Without Changes</string>
 
     <!-- Launch Modes and Global Settings -->
-    <string name="launch_method_title">Launch method</string>
+    <string name="launch_method_title">लॉन्च विधि</string>
     <string name="launch_mode_auto_fix">स्वतः-fix</string>
     <string name="launch_mode_auto_fix_description">Clean reference STORM SOFT profile for maximum stability</string>
     <string name="launch_mode_auto_fix_with_custom">स्वतः-fix with कस्टम settings</string>
@@ -2157,13 +2157,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="settings_profiles_description">Create, सहेजें, quickly लोड करें, rename, निर्यात करें and share settings profiles.</string>
     <string name="profile_preset_fast_title">तेज़ (Maximum FPS and निम्न Temp)</string>
     <string name="profile_preset_fast_desc">0.75X रिज़ॉल्यूशन, तेज़ JIT, असिंक्रोनस शेडर्स, अक्षम reactive flushing, 6GB DRAM, cool SoC.</string>
-    <string name="profile_preset_balanced_title">Balanced (Recommended)</string>
+    <string name="profile_preset_balanced_title">संतुलित (अनुशंसित)</string>
     <string name="profile_preset_balanced_desc" formatted="false">1.0X (720p/1080p), FSR 85%, fast JIT, async shaders, EDS1 dynamic state, 6GB DRAM.</string>
     <string name="profile_preset_accurate_title">उच्च Quality (सटीक)</string>
     <string name="profile_preset_accurate_desc">1.0X-1.5X, उच्च GPU सटीकता, strict sync, FXAA/SMAA, 8GB DRAM.</string>
     <string name="profile_preset_saver_title">Battery Saver and Cool SoC</string>
     <string name="profile_preset_saver_desc" formatted="false">0.75X resolution, 100% speed limit, battery-efficient VRAM, minimum thermal output.</string>
-    <string name="profile_btn_apply">Apply</string>
+    <string name="profile_btn_apply">लागू करें</string>
     <string name="profile_btn_share">Share</string>
     <string name="profile_btn_rename">Rename</string>
     <string name="profile_btn_delete">हटाएं</string>
@@ -2239,7 +2239,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="anisotropic_filtering_8x">8x</string>
     <string name="anisotropic_filtering_16x">16x</string>
     <string name="anisotropic_filtering_default">डिफ़ॉल्ट</string>
-    <string name="anisotropic_filtering_automatic">Automatic</string>
+    <string name="anisotropic_filtering_automatic">स्वचालित</string>
     <string name="oboe">Oboe</string>
     <string name="driver_incompatible_adreno8xx">Turnip a6xx/a7xx driver is incompatible with Adreno 8xx (Snapdragon 8 Elite). Switched to System Driver.</string>
     <string name="apply_driver_title">Apply GPU ड्राइवर</string>
@@ -2277,18 +2277,18 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="thermal_emergency_limit">Thermal pause limit</string>
     <string name="thermal_emergency_limit_description">Threshold temperature for emergency pause</string>
     <string name="thermal_emergency_pause_toast">Emergency pause: chipset temperature %1$s°C. Cooling device down...</string>
-    <string name="storm_tier2_compiler">STORM Tier-2 JIT Compiler</string>
+    <string name="storm_tier2_compiler">STORM Tier-2 JIT कंपाइलर</string>
     <string name="storm_tier2_compiler_description">Zero-overhead instruction pre-optimizer and superblock JIT tuner (canonicalizes ARMv8.3 PAC/BTI hints and accelerates CNTVCT_EL0 counter reads)</string>
-    <string name="ratio_32_9">32:9 (Super Ultrawide)</string>
-    <string name="ratio_1_1">1:1 (Square)</string>
-    <string name="ratio_3_2">3:2 (Surface / Tablets)</string>
+    <string name="ratio_32_9">32:9 (सुपर अल्ट्रावाइड)</string>
+    <string name="ratio_1_1">1:1 (वर्गाकार)</string>
+    <string name="ratio_3_2">3:2 (Surface / टैबलेट)</string>
     <string name="ratio_5_4">5:4 (SXGA)</string>
-    <string name="ratio_18_9">18:9 / 2:1 (Univisium Mobile)</string>
-    <string name="ratio_19_5_9">19.5:9 (Modern Smartphones)</string>
-    <string name="ratio_20_9">20:9 (Gaming Smartphones)</string>
-    <string name="ratio_21_10">21:10 (Widescreen)</string>
-    <string name="ratio_24_10">24:10 / 2.4:1 (Cinema)</string>
-    <string name="ratio_32_10">32:10 (Dual 16:10)</string>
+    <string name="ratio_18_9">18:9 / 2:1 (Univisium मोबाइल)</string>
+    <string name="ratio_19_5_9">19.5:9 (आधुनिक स्मार्टफोन)</string>
+    <string name="ratio_20_9">20:9 (गेमिंग स्मार्टफोन)</string>
+    <string name="ratio_21_10">21:10 (वाइडस्क्रीन)</string>
+    <string name="ratio_24_10">24:10 / 2.4:1 (सिनेमा)</string>
+    <string name="ratio_32_10">32:10 (दोहरा 16:10)</string>
     <string name="ratio_48_9">48:9 (Triple 16:9)</string>
     <string name="ratio_auto_window">स्वतः Window Aspect (3D Native)</string>
 
@@ -2298,7 +2298,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="storm_sync_refresh">Refresh</string>
     <string name="storm_sync_close">बंद करें</string>
     <string name="storm_sync_device_key_label">This device key</string>
-    <string name="storm_sync_copy">Copy</string>
+    <string name="storm_sync_copy">कॉपी करें</string>
     <string name="storm_sync_server_active">Sync server active (Waiting for connections)</string>
     <string name="storm_sync_remote_connect_title">Connect to remote device</string>
     <string name="storm_sync_remote_key_hint">Enter key or IP:port...</string>
@@ -2359,7 +2359,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="storm_sync_btn_send">Send</string>
     <string name="storm_sync_badge_remote_only">Remote only</string>
     <string name="storm_sync_btn_download">डाउनलोड करें</string>
-    <string name="storm_sync_badge_unknown">Unknown</string>
+    <string name="storm_sync_badge_unknown">अज्ञात</string>
     <string name="storm_world_subtitle">Nintendo Switch Games Catalog</string>
     <string name="storm_world_search_hint">खोजें games by title or ID...</string>
     <string name="storm_world_filter_all_langs">सभी languages</string>
@@ -2370,7 +2370,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="storm_world_btn_pause">Pause</string>
     <string name="storm_world_btn_resume">Resume</string>
     <string name="storm_world_btn_unpause">Resume</string>
-    <string name="storm_world_btn_retry">Retry</string>
+    <string name="storm_world_btn_retry">पुनः प्रयास करें</string>
     <string name="storm_world_btn_downloaded">Downloaded</string>
     <string name="storm_world_btn_download_short">डाउनलोड करें</string>
     <string name="storm_world_btn_connecting">Connecting...</string>
@@ -2446,7 +2446,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="cheats_search_hint">खोजें...</string>
     <string name="cheats_summary_zero">Total चीट्स: 0 | सक्षम: 0</string>
     <string name="cheat_item_desc_placeholder">Description</string>
-    <string name="cheat_btn_edit_qty">Value</string>
+    <string name="cheat_btn_edit_qty">मान</string>
     <string name="cheat_header_version_prefix"> | Version: </string>
     <string name="cheat_header_in_game"> | In Game</string>
     <string name="cheat_header_offline">| Offline</string>
@@ -2537,7 +2537,7 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="log_viewer_share_tg_title">Send log to Telegram / MAX</string>
     <string name="mapping_press_prompt">Press a button or move a stick on the कंट्रोलर</string>
     <string name="overlay_toggle_subtitle">Configure visibility of touch controls</string>
-    <string name="online_tools_badge_active">ACTIVE</string>
+    <string name="online_tools_badge_active">सक्रिय</string>
     <string name="online_tools_badge_not_installed">NOT INSTALLED</string>
     <string name="online_tools_select_prompt">Select a version from the list above</string>
     <string name="online_tools_btn_download_install">डाउनलोड करें &amp; इंस्टॉल करें</string>
@@ -2546,7 +2546,7 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="online_tools_badge_installed">INSTALLED</string>
     <string name="online_tools_badge_top">TOP</string>
     <string name="online_tools_badge_selected">SELECTED</string>
-    <string name="online_tools_status_unknown">Unknown</string>
+    <string name="online_tools_status_unknown">अज्ञात</string>
     <string name="online_tools_installed_ver_fmt">Installed version: %1$s</string>
     <string name="online_tools_fw_installed">Switch firmware installed</string>
     <string name="online_tools_fw_not_installed">Firmware not installed</string>
@@ -2613,7 +2613,7 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="translator_lang_auto">स्वतः-detect</string>
     <string name="translator_lang_ja">Japanese</string>
     <string name="translator_lang_en">English</string>
-    <string name="translator_lang_zh">Chinese</string>
+    <string name="translator_lang_zh">चीनी</string>
     <string name="translator_lang_ko">Korean</string>
     <string name="translator_lang_es">Spanish</string>
     <string name="translator_lang_fr">French</string>
@@ -2686,11 +2686,11 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="release_dl_mirror_fmt">Downloading via mirror %1$d...</string>
     <string name="release_dl_progress_mb_fmt">Downloading: %1$s / %2$s MB</string>
     <string name="release_dl_done_mb_fmt">Downloaded: %1$s MB</string>
-    <string name="profile_default_balanced_name">Balanced</string>
+    <string name="profile_default_balanced_name">संतुलित</string>
     <string name="profile_default_balanced_desc">Optimal balance of प्रदर्शन, thermals, and visual quality</string>
     <string name="profile_default_perf_name">Maximum प्रदर्शन</string>
     <string name="profile_default_perf_desc">Priority on maximum framerate and reduced power consumption</string>
-    <string name="profile_default_quality_name">Maximum Quality</string>
+    <string name="profile_default_quality_name">अधिकतम गुणवत्ता</string>
     <string name="profile_default_quality_desc">Priority on उच्च रिज़ॉल्यूशन, rendering सटीकता, and visual effects</string>
     <string name="profile_default_eco_name">Battery Saver (2D &amp; Indie)</string>
     <string name="profile_default_eco_desc">Maximum battery life and minimum heat for 2D and indie games</string>
@@ -2902,9 +2902,9 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="per_game_custom_badge">कस्टम</string>
     <string name="vulkan_legacy_driver_warning">%2$s पर सिस्टम Vulkan %1$s का पता चला। कई Switch शीर्षकों के लिए Vulkan 1.3 सुविधाओं की आवश्यकता होती है। सेटिंग्स -> GPU ड्राइवर मैनेजर में Mesa Turnip ड्राइवर स्थापित करने की अनुशंसा की जाती है।</string>
 
-    <string name="save_states_mode">Save States Mode</string>
+    <string name="save_states_mode">क्विक सेव मोड</string>
     <string name="save_states_mode_description">Controls quick save and load behavior. RAM/CPU states may freeze unverified games.</string>
-    <string name="save_states_mode_off">Off</string>
+    <string name="save_states_mode_off">बंद</string>
     <string name="save_states_mode_verified_only">Verified games only (Recommended)</string>
     <string name="save_states_mode_all_games">All games (experimental, risky)</string>
     <string name="save_state_unsupported_toast">Save states are not supported for this game. Use in-game saves. Experimental mode can be enabled in Settings → System.</string>
@@ -3032,4 +3032,27 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="open_settings">सेटिंग्स खोलें</string>
     <string name="open_in_browser">ब्राउज़र में खोलें</string>
     <string name="retry">पुनः प्रयास करें</string>
+    <string name="storm_use_device_sensors">डिवाइस मोशन सेंसर (जायरोस्कोप)</string>
+    <string name="storm_use_device_sensors_desc">गेम में मोशन कंट्रोल के लिए इन-बिल्ट जायरोस्कोप और एक्सेलेरोमीटर सक्षम करता है।</string>
+    <string name="storm_gyro_on">जायरोस्कोप: चालू</string>
+    <string name="storm_gyro_off">जायरोस्कोप: बंद</string>
+    <string name="storm_touchscreen_on">टचस्क्रीन इनपुट: चालू</string>
+    <string name="storm_touchscreen_off">टचस्क्रीन इनपुट: बंद</string>
+    <string name="storm_cheat_active_in_game">गेम में सक्रिय</string>
+    <string name="storm_cheat_value_btn">मान</string>
+    <string name="storm_prof_ram_placeholder">रैम: 4 GB</string>
+    <string name="storm_error_fmt">त्रुटि: %1$s</string>
+    <string name="storm_invalid_request_missing_tid">अमान्य अनुरोध: Title ID अनुपस्थित है</string>
+    <string name="storm_qlaunch_failed_fmt">HOME मेनू लॉन्च करने में विफल: %1$s</string>
+    <string name="storm_world_tooltip_download">डाउनलोड करें game</string>
+    <string name="storm_sync_tooltip_close">संवाद बंद करें</string>
+    <string name="storm_sync_tooltip_copy_key">कनेक्शन कुंजी कॉपी करें</string>
+    <string name="storm_sync_tooltip_connect">रिमोट डिवाइस से जुड़ें</string>
+    <string name="storm_sync_tooltip_search_devices">लोकल नेटवर्क (LAN) खोजें</string>
+    <string name="storm_sync_tooltip_sync_all">सभी सेव डेटा सिंक करें</string>
+    <string name="storm_world_tooltip_refresh">कैटलॉग रीफ़्रेश करें</string>
+    <string name="storm_world_tooltip_close">संवाद बंद करें</string>
+    <string name="storm_world_tooltip_pause">डाउनलोड रोकें</string>
+    <string name="storm_world_tooltip_cancel">डाउनलोड रद्द करें</string>
+    <string name="storm_sync_tooltip_refresh">सूची ताज़ा करें</string>
 </resources>

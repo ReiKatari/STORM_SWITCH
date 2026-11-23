@@ -19,6 +19,8 @@ SPDX-License-Identifier: GPL-2.0-or-later
     <qresource prefix="/icons">
 
         <file alias="down_arrow.svg">../../dist/down_arrow.svg</file>
+        <file alias="down_arrow.png">../../dist/down_arrow.png</file>
+        <file alias="check_white.png">../../dist/check_white.png</file>
 
     </qresource>
 

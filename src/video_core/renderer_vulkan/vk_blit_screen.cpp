@@ -175,6 +175,9 @@ void BlitScreen::DrawToFrame(const Device& device, RasterizerVulkan& rasterizer,
     }
 
     if (layers.size() != framebuffers.size()) {
+        if (!layers.empty()) {
+            WaitIdle(device);
+        }
         layers.clear();
         for (size_t i = 0; i < framebuffers.size(); ++i) {
             layers.emplace_back(device, memory_allocator, scheduler, device_memory, image_count,

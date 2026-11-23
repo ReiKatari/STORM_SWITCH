@@ -36,12 +36,16 @@ void Scheduler::Push(GPU& gpu, s32 channel, CommandList&& entries) {
         std::unique_lock lk(scheduling_guard);
         if (std::find(pending_native_channels.begin(), pending_native_channels.end(), channel_state) == pending_native_channels.end()) {
             pending_native_channels.push_back(channel_state);
+            has_pending_native.store(true, std::memory_order_release);
         }
     }
     ResumePending(gpu);
 }
 
 bool Scheduler::ResumePending(GPU& gpu) {
+    if (!has_pending_native.load(std::memory_order_acquire)) [[likely]] {
+        return false;
+    }
     std::vector<std::shared_ptr<ChannelState>> pending_copy;
     {
         std::unique_lock lk(scheduling_guard);
@@ -77,6 +81,7 @@ bool Scheduler::ResumePending(GPU& gpu) {
             [](const auto& state) {
                 return !state || !state->payload || !state->payload->dma_pusher.HasPendingNativeAcquire();
             });
+        has_pending_native.store(!pending_native_channels.empty(), std::memory_order_release);
     }
     return resumed_count > 0;
 }

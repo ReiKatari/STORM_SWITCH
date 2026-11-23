@@ -7,6 +7,7 @@
 #pragma once
 
 #include <array>
+#include <map>
 #include <vector>
 #include "common/common_types.h"
 #include "core/memory/cheat_parser.h"
@@ -37,12 +38,15 @@ public:
     void CommandLog(std::string_view data) override;
     [[nodiscard]] bool IsCommandLogEnabled() const override;
 
+    void RestoreOriginalCode();
+
 private:
     bool IsAddressInRange(VAddr address) const;
 
     const CheatProcessMetadata& metadata;
     Core::System& system;
     Kernel::KProcess& process;
+    std::map<VAddr, u8> original_code;
 };
 
 // Runs a CheatList against the process that loaded it. Not thread-safe: System serializes every
@@ -67,6 +71,7 @@ private:
     // Read-only GUI metadata indexed by menu id; enabled states are tracked in `cheats` only.
     std::vector<RuntimeCheatInfo> menu;
     bool is_pending_reload{true};
+    bool is_pending_restore{false};
 
     Kernel::KProcess& process;
 };

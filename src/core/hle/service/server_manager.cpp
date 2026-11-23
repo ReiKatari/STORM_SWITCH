@@ -94,19 +94,36 @@ ServerManager::ServerManager(Core::System& system)
     m_wakeup_holder->LinkToMultiWait(std::addressof(m_deferred_list));
 }
 
+void ServerManager::RequestStop() {
+    m_stop_source.request_stop();
+    if (m_wakeup_event) {
+        m_wakeup_event->Signal(m_system.Kernel());
+    }
+}
+
 ServerManager::~ServerManager() {
     // Signal stop.
-    m_stop_source.request_stop();
-    m_wakeup_event->Signal(m_system.Kernel());
+    RequestStop();
 
-    // Wait for processing to stop.
-    m_stopped.Wait();
+    // Wait for processing to stop only if LoopProcess was scheduled/started.
+    if (m_will_loop.load(std::memory_order_acquire)) {
+        m_stopped.Wait();
+    }
     m_threads.clear();
+
+    // Unlink holders before destroying ports, sessions, and events.
+    if (m_wakeup_holder) {
+        m_wakeup_holder->UnlinkFromMultiWait();
+    }
+    if (m_deferral_holder) {
+        m_deferral_holder->UnlinkFromMultiWait();
+    }
 
     // Clean up ports.
     auto port_it = m_servers.begin();
     while (port_it != m_servers.end()) {
         auto* const port = std::addressof(*port_it);
+        port->UnlinkFromMultiWait();
         port_it = m_servers.erase(port_it);
         delete port;
     }
@@ -115,6 +132,7 @@ ServerManager::~ServerManager() {
     auto session_it = m_sessions.begin();
     while (session_it != m_sessions.end()) {
         auto* const session = std::addressof(*session_it);
+        session->UnlinkFromMultiWait();
         session_it = m_sessions.erase(session_it);
         delete session;
     }
@@ -153,6 +171,9 @@ Result ServerManager::RegisterSession(Kernel::KServerSession* server_session,
 Result ServerManager::RegisterNamedService(const std::string& service_name,
                                            SessionRequestHandlerFactory&& handler_factory,
                                            u32 max_sessions) {
+    if (m_debug_name.empty()) {
+        m_debug_name = service_name;
+    }
     // Add the new server to sm: and get the moved server port.
     Kernel::KServerPort* server_port{};
     R_ASSERT(m_system.ServiceManager().RegisterService(std::addressof(server_port), service_name,
@@ -186,6 +207,9 @@ Result ServerManager::RegisterNamedService(const std::string& service_name,
 Result ServerManager::ManageNamedPort(const std::string& service_name,
                                       SessionRequestHandlerFactory&& handler_factory,
                                       u32 max_sessions) {
+    if (m_debug_name.empty()) {
+        m_debug_name = service_name;
+    }
     // Create a new port.
     auto* port = Kernel::KPort::Create(m_system.Kernel());
     port->Initialize(m_system.Kernel(), max_sessions, false, 0);
@@ -254,6 +278,7 @@ void ServerManager::StartAdditionalHostThreads(const char* name, size_t num_thre
 }
 
 Result ServerManager::LoopProcess() {
+    m_will_loop.store(true, std::memory_order_release);
     SCOPE_EXIT {
         m_stopped.Set();
     };
@@ -281,15 +306,22 @@ MultiWaitHolder* ServerManager::WaitSignaled() {
     // Ensure we are the only thread waiting for this server.
     std::scoped_lock lk{m_selection_mutex};
 
+    if (m_stop_source.stop_requested() || m_system.Kernel().IsShuttingDown()) {
+        return nullptr;
+    }
+
     while (true) {
         this->LinkDeferred();
 
         // If we're done, return before we start waiting.
-        if (m_stop_source.stop_requested()) {
+        if (m_stop_source.stop_requested() || m_system.Kernel().IsShuttingDown()) {
             return nullptr;
         }
 
         auto* selected = m_multi_wait.WaitAny(m_system.Kernel());
+        if (selected == nullptr) {
+            return nullptr;
+        }
         if (selected == std::addressof(*m_wakeup_holder)) {
             // Clear and restart if we were woken up.
             m_wakeup_event->Clear(m_system.Kernel());
@@ -325,7 +357,7 @@ bool ServerManager::WaitAndProcessImpl() {
 }
 
 Result ServerManager::LoopProcessImpl() {
-    while (!m_stop_source.stop_requested()) {
+    while (!m_stop_source.stop_requested() && !m_system.Kernel().IsShuttingDown()) {
         this->WaitAndProcessImpl();
     }
 

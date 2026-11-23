@@ -147,7 +147,10 @@ struct GPU::Impl {
 
     void WaitForSyncOperation(const u64 fence) {
         std::unique_lock lck{sync_request_mutex};
-        sync_request_cv.wait(lck, [this, fence] { return CurrentSyncRequestFence() >= fence; });
+        sync_request_cv.wait(lck, [this, fence] {
+            return CurrentSyncRequestFence() >= fence ||
+                   shutting_down.load(std::memory_order_acquire);
+        });
     }
 
     u64 RunOnGpuThread(std::function<void()>&& action) {
@@ -198,10 +201,11 @@ struct GPU::Impl {
         const u64 mult = GpuClockMultiplier(clock);
         if (Settings::values.use_fast_gpu_time.GetValue() ||
             Settings::values.storm_lowend_turbo.GetValue()) {
-            if (Settings::values.drs_resolution_lock.GetValue()) {
-                return gpu_tick / (512 * mult);
-            }
-            return gpu_tick / (256 * mult);
+            const u64 divisor = Settings::values.drs_resolution_lock.GetValue()
+                                    ? (std::min)(u64{512}, u64{256} * mult)
+                                    : (256ULL * mult);
+            const u64 scaled = gpu_tick / divisor;
+            return (gpu_tick > 0 && scaled == 0) ? u64{1} : scaled;
         }
         return gpu_tick / mult;
     }
@@ -219,11 +223,24 @@ struct GPU::Impl {
     }
 
     void NotifyShutdown() {
+        shutting_down.store(true, std::memory_order_release);
+        {
+            std::scoped_lock lk{sync_mutex};
+            sync_cv.notify_all();
+        }
+        {
+            std::scoped_lock lk{sync_request_mutex};
+            sync_request_cv.notify_all();
+        }
         gpu_thread.NotifyShutdown();
-        std::unique_lock lk{sync_mutex};
-        shutting_down.store(true, std::memory_order::relaxed);
-        sync_cv.notify_all();
-        sync_request_cv.notify_all();
+        {
+            std::scoped_lock lk{sync_mutex};
+            sync_cv.notify_all();
+        }
+        {
+            std::scoped_lock lk{sync_request_mutex};
+            sync_request_cv.notify_all();
+        }
     }
 
     /// Obtain the CPU Context
@@ -270,6 +287,13 @@ struct GPU::Impl {
 
     bool OnCPUWrite(DAddr addr, u64 size) {
         return renderer->ReadRasterizer()->OnCPUWrite(addr, size);
+    }
+
+    bool MustFlushRegion(DAddr addr, u64 size) {
+        if (!renderer || !renderer->ReadRasterizer()) {
+            return false;
+        }
+        return renderer->ReadRasterizer()->MustFlushRegion(addr, size);
     }
 
     /// Notify rasterizer that any caches of the specified region should be flushed and invalidated
@@ -629,8 +653,18 @@ void GPU::InvalidateRegion(DAddr addr, u64 size, bool preserve_gpu_writes) {
     impl->InvalidateRegion(addr, size, preserve_gpu_writes);
 }
 
+void GPU::InvalidateRegionImmediate(DAddr addr, u64 size) {
+    if (impl->renderer && impl->renderer->ReadRasterizer()) {
+        impl->renderer->ReadRasterizer()->InvalidateRegion(addr, size);
+    }
+}
+
 bool GPU::OnCPUWrite(DAddr addr, u64 size) {
     return impl->OnCPUWrite(addr, size);
+}
+
+bool GPU::MustFlushRegion(DAddr addr, u64 size) {
+    return impl->MustFlushRegion(addr, size);
 }
 
 void GPU::FlushAndInvalidateRegion(DAddr addr, u64 size) {

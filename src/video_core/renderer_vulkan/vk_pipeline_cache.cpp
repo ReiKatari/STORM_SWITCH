@@ -490,6 +490,7 @@ PipelineCache::PipelineCache(Tegra::MaxwellDeviceMemoryManager& device_memory_,
                                        driver_id == VK_DRIVER_ID_INTEL_OPEN_SOURCE_MESA ||
                                        driver_id == VK_DRIVER_ID_QUALCOMM_PROPRIETARY ||
                                        driver_id == VK_DRIVER_ID_MESA_TURNIP,
+        .support_texture_gather_offsets = !(device.IsQualcomm() || device.IsMali()),
 
         .has_broken_spirv_clamp = driver_id == VK_DRIVER_ID_INTEL_PROPRIETARY_WINDOWS ||
                                   driver_id == VK_DRIVER_ID_QUALCOMM_PROPRIETARY ||
@@ -706,6 +707,22 @@ void PipelineCache::LoadDiskResources(u64 title_id, std::stop_token stop_loading
         tag.write(reinterpret_cast<const char*>(&current_driver_ver), sizeof(current_driver_ver));
         tag.write(reinterpret_cast<const char*>(current_uuid.data()), current_uuid.size());
     }
+    if ((title_id >> 52) == 0x040ULL) {
+        constexpr u32 CURRENT_NX2_CACHE_VER = 3;
+        const auto nx2_ver_file = base_dir / "nx2_cache.ver";
+        u32 saved_nx2_ver{};
+        if (std::ifstream nf{nx2_ver_file, std::ios::binary}) {
+            nf.read(reinterpret_cast<char*>(&saved_nx2_ver), sizeof(saved_nx2_ver));
+        }
+        if (saved_nx2_ver != CURRENT_NX2_CACHE_VER) {
+            LOG_INFO(Render_Vulkan, "Switch 2 shader ABI updated (v{} -> v{}). Invalidating shader disk cache for title {:016x}",
+                     saved_nx2_ver, CURRENT_NX2_CACHE_VER, title_id);
+            Common::FS::RemoveFile(pipeline_cache_filename);
+            Common::FS::RemoveFile(vulkan_pipeline_cache_filename);
+            std::ofstream nf{nx2_ver_file, std::ios::binary};
+            nf.write(reinterpret_cast<const char*>(&CURRENT_NX2_CACHE_VER), sizeof(CURRENT_NX2_CACHE_VER));
+        }
+    }
 
     if (use_vulkan_pipeline_cache) {
         vulkan_pipeline_cache =
@@ -742,7 +759,11 @@ void PipelineCache::LoadDiskResources(u64 title_id, std::stop_token stop_loading
     Common::ThreadWorker preload_workers(preload_threads, "VkPipelinePreload", {},
                                          Common::ThreadPlacement::Default);
     constexpr size_t CRITICAL_BATCH_SIZE = 512;
-    const bool async_shaders = Settings::values.use_asynchronous_shaders.GetValue();
+    const bool is_switch2_title = (title_id >> 52) == 0x040ULL;
+    // Switch 2 always enables two-phase background shader warmup (prefetch on workers after the
+    // critical batch) without ever skipping draw calls at render time (BuiltPipeline waits cleanly).
+    const bool async_shaders =
+        Settings::values.use_asynchronous_shaders.GetValue() || is_switch2_title;
 
     const auto load_compute{[&](std::ifstream& file, FileEnvironment env) {
         ComputePipelineCacheKey key;
@@ -946,7 +967,7 @@ GraphicsPipeline* PipelineCache::BuiltPipeline(GraphicsPipeline* pipeline) const
     if (pipeline->IsBuilt()) {
         return pipeline;
     }
-    if (maxwell3d->GetNativeMacroEngine().native_turing || !use_asynchronous_shaders) {
+    if (!use_asynchronous_shaders || maxwell3d->GetNativeMacroEngine().native_turing) {
         return pipeline;
     }
     // Draws into small off-screen targets often build something used for a long time (lookup

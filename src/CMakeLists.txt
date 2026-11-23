@@ -86,7 +86,7 @@ if (MSVC AND NOT CXX_CLANG)
     # /Zc:preprocessor    - Enable standards-conforming preprocessor
     # /Zc:throwingNew     - Let codegen assume `operator new` (without std::nothrow) will never return null
     # /GT                 - Supports fiber safety for data allocated using static thread-local storage
-    add_compile_options(-Wno-deprecated-declarations
+    add_compile_options(/wd4996
         /MP1
         /Zm200
         /Zo
@@ -135,7 +135,7 @@ if (MSVC AND NOT CXX_CLANG)
     )
 
     if (NOT CXX_CLANG)
-        add_compile_options(-Wno-deprecated-declarations
+        add_compile_options(/wd4996
             # Warnings
             /W4
             /WX-
@@ -143,7 +143,7 @@ if (MSVC AND NOT CXX_CLANG)
     endif()
 
     if (ARCHITECTURE_x86_64)
-        add_compile_options(-Wno-deprecated-declarations /QIntel-jcc-erratum)
+        add_compile_options(/wd4996 /QIntel-jcc-erratum)
     endif()
 
     set(CMAKE_EXE_LINKER_FLAGS_DEBUG   "/DEBUG /MANIFEST:NO" CACHE STRING "" FORCE)

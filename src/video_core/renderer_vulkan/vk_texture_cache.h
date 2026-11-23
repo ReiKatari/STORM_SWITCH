@@ -155,6 +155,10 @@ public:
 
     bool IsFormatDitherable(VideoCore::Surface::PixelFormat format);
     bool IsFormatScalable(VideoCore::Surface::PixelFormat format);
+    bool CanScaleExtent(u32 width, u32 height, bool is_2d) const noexcept;
+    void ClearResolveShadows() {
+        resolve_shadows.clear();
+    }
 
     VkFormat GetSupportedFormat(VkFormat requested_format, VkFormatFeatureFlags required_features) const;
 
@@ -341,6 +345,8 @@ public:
 
     bool ScaleDown(bool ignore = false);
 
+    void ReleaseScaledImage();
+
     u64 allocation_tick;
 
     friend class BlockLinearUnswizzle3DPass;
@@ -355,6 +361,7 @@ private:
 
     vk::Image original_image;
     vk::Image scaled_image;
+    VkExtent2D scaled_extent{};
 
     vk::Buffer compute_unswizzle_buffer;
     VkDeviceSize compute_unswizzle_buffer_size = 0;

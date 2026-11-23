@@ -8,6 +8,7 @@
 #include <fstream>
 #include <cstring>
 #include "common/assert.h"
+#include "common/fs/path_util.h"
 #include "common/logging.h"
 #include "core/core.h"
 #include "core/hle/kernel/k_process.h"
@@ -411,10 +412,12 @@ NvResult nvhost_gpu::SubmitGPFIFOImpl(IoctlSubmitGpfifo& params, Tegra::CommandL
                 channel_state->memory_manager->GpuToCpuAddress(entry.addr).has_value() &&
                 channel_state->memory_manager->IsFullyMappedRange(entry.addr, bytes);
             if (mapped) { channel_state->memory_manager->ReadBlockUnsafe(entry.addr, words.data(), bytes); }
-            if (mapped && entry.size > 1000 && std::getenv("EDEN_NATIVE_FRAME_CAPTURE")) {
+            static const bool native_frame_capture_init = std::getenv("EDEN_NATIVE_FRAME_CAPTURE") != nullptr;
+            if (native_frame_capture_init && mapped && entry.size > 1000) [[unlikely]] {
                 std::vector<u32> contents(static_cast<size_t>(entry.size));
                 channel_state->memory_manager->ReadBlockUnsafe(entry.addr, contents.data(), contents.size() * sizeof(u32));
-                std::ofstream dump("native-init-channel-" + std::to_string(channel_state->bind_id) + "-" + std::to_string(i) + ".bin", std::ios::binary);
+                const auto dump_path = Common::FS::GetEdenPath(Common::FS::EdenPath::LogDir) / ("native-init-channel-" + std::to_string(channel_state->bind_id) + "-" + std::to_string(i) + ".bin");
+                std::ofstream dump(dump_path, std::ios::binary);
                 dump.write(reinterpret_cast<const char*>(contents.data()), contents.size() * sizeof(u32));
             }
             LOG_DEBUG(Service_NVDRV, "native pushbuffer entry={} raw={:#x}, address={:#x}, words={}, mapped={}, data={:08x}",
@@ -422,7 +425,8 @@ NvResult nvhost_gpu::SubmitGPFIFOImpl(IoctlSubmitGpfifo& params, Tegra::CommandL
         }
     }
 
-    if (UsesNativeAbi() && std::getenv("EDEN_NATIVE_FRAME_CAPTURE") && native_submit_logs < 100) {
+    static const bool native_frame_capture_sub = std::getenv("EDEN_NATIVE_FRAME_CAPTURE") != nullptr;
+    if (native_frame_capture_sub && UsesNativeAbi() && native_submit_logs < 100) [[unlikely]] {
         for (size_t i = 0; i < entries.command_lists.size(); ++i) {
             const auto& entry = entries.command_lists[i];
             const auto bytes = static_cast<size_t>(entry.size) * sizeof(u32);
@@ -431,7 +435,8 @@ NvResult nvhost_gpu::SubmitGPFIFOImpl(IoctlSubmitGpfifo& params, Tegra::CommandL
                 !channel_state->memory_manager->IsFullyMappedRange(entry.addr, bytes)) continue;
             std::vector<u32> contents(static_cast<size_t>(entry.size));
             channel_state->memory_manager->ReadBlockUnsafe(entry.addr, contents.data(), bytes);
-            std::ofstream dump("native-submit-" + std::to_string(channel_state->bind_id) + "-" + std::to_string(native_submit_logs) + "-" + std::to_string(i) + ".bin", std::ios::binary);
+            const auto dump_path = Common::FS::GetEdenPath(Common::FS::EdenPath::LogDir) / ("native-submit-" + std::to_string(channel_state->bind_id) + "-" + std::to_string(native_submit_logs) + "-" + std::to_string(i) + ".bin");
+            std::ofstream dump(dump_path, std::ios::binary);
             dump.write(reinterpret_cast<const char*>(contents.data()), bytes);
         }
     }

@@ -436,6 +436,7 @@ struct System::Impl {
     }
 
     SystemResultStatus Load(System& system, Frontend::EmuWindow& emu_window, const std::string& filepath, Service::AM::FrontendAppletParameters& params) {
+        SetShuttingDown(false);
         if (params.launch_type == Service::AM::LaunchType::FrontendInitiated) {
             fs_controller.InitTempStorage();
         }
@@ -526,16 +527,132 @@ struct System::Impl {
             Settings::values.use_fast_gpu_time.SetValue(false);
             Settings::values.dynamic_performance_scaler.SetGlobal(false);
             Settings::values.dynamic_performance_scaler.SetValue(false);
+            Settings::values.vram_budget_governor.SetGlobal(false);
+            Settings::values.vram_budget_governor.SetValue(false);
             Settings::values.smart_shader_throttle.SetGlobal(false);
             Settings::values.smart_shader_throttle.SetValue(false);
             Settings::values.use_video_framerate.SetGlobal(false);
             Settings::values.use_video_framerate.SetValue(false);
             Settings::values.enable_gpu_buffer_readback.SetGlobal(false);
             Settings::values.enable_gpu_buffer_readback.SetValue(false);
+            Settings::values.use_reactive_flushing.SetGlobal(false);
+            Settings::values.use_reactive_flushing.SetValue(false);
+            Settings::values.use_asynchronous_shaders.SetGlobal(false);
+            Settings::values.use_asynchronous_shaders.SetValue(false);
+            Settings::values.gpu_fence_behavior.SetGlobal(false);
+            Settings::values.gpu_fence_behavior.SetValue(Settings::GpuFenceBehavior::Default);
+            if (Settings::values.nvdec_emulation.GetValue() == Settings::NvdecEmulation::Hybrid) {
+                Settings::values.nvdec_emulation.SetGlobal(false);
+                Settings::values.nvdec_emulation.SetValue(Settings::NvdecEmulation::Gpu);
+            }
+            Settings::values.cpu_clock.SetGlobal(false);
+            Settings::values.cpu_clock.SetValue(Settings::CpuClock::Normal);
+            Settings::values.gpu_clock.SetGlobal(false);
+            Settings::values.gpu_clock.SetValue(Settings::GpuClock::Normal);
             if (Settings::values.gpu_accuracy.GetValue() != Settings::GpuAccuracy::Normal) {
                 Settings::values.gpu_accuracy.SetGlobal(false);
                 Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::Normal);
             }
+        }
+
+        // Xenoblade Chronicles 3 & X: Definitive Edition (Monolith Soft engine)
+        // Require >=6GB DRAM before kernel init and fail/deadlock at 0 FPS when
+        // enable_gpu_buffer_readback, sync shaders, DRS lock, or Boost clocks are active.
+        const u64 monolith_base_tid = params.program_id & ~0x1FFFULL;
+        if (monolith_base_tid == 0x010074F013262000ULL || monolith_base_tid == 0x0100453019AA8000ULL) {
+            if (Settings::values.memory_layout_mode.GetValue() == Settings::MemoryLayout::Memory_4Gb) {
+                Settings::values.memory_layout_mode.SetGlobal(false);
+                Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_6Gb);
+            }
+            Settings::values.enable_gpu_buffer_readback.SetGlobal(false);
+            Settings::values.enable_gpu_buffer_readback.SetValue(false);
+            Settings::values.gpu_accuracy.SetGlobal(false);
+            Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::High);
+            Settings::values.use_asynchronous_shaders.SetGlobal(false);
+            Settings::values.use_asynchronous_shaders.SetValue(false);
+            Settings::values.use_reactive_flushing.SetGlobal(false);
+            Settings::values.use_reactive_flushing.SetValue(true);
+            Settings::values.dynamic_performance_scaler.SetGlobal(false);
+            Settings::values.dynamic_performance_scaler.SetValue(false);
+            Settings::values.vram_budget_governor.SetGlobal(false);
+            Settings::values.vram_budget_governor.SetValue(false);
+            Settings::values.vram_garbage_collection.SetGlobal(false);
+            Settings::values.vram_garbage_collection.SetValue(false);
+            Settings::values.smart_shader_throttle.SetGlobal(false);
+            Settings::values.smart_shader_throttle.SetValue(false);
+            Settings::values.use_video_framerate.SetGlobal(false);
+            Settings::values.use_video_framerate.SetValue(false);
+            Settings::values.early_release_fences.SetGlobal(false);
+            Settings::values.early_release_fences.SetValue(false);
+            Settings::values.enable_frame_skipping.SetGlobal(false);
+            Settings::values.enable_frame_skipping.SetValue(false);
+            Settings::values.drs_resolution_lock.SetGlobal(false);
+            Settings::values.drs_resolution_lock.SetValue(false);
+            Settings::values.use_fast_gpu_time.SetGlobal(false);
+            Settings::values.use_fast_gpu_time.SetValue(false);
+            Settings::values.sync_memory_operations.SetGlobal(false);
+            Settings::values.sync_memory_operations.SetValue(false);
+            Settings::values.gpu_fence_behavior.SetGlobal(false);
+            Settings::values.gpu_fence_behavior.SetValue(Settings::GpuFenceBehavior::Default);
+            if (Settings::values.nvdec_emulation.GetValue() == Settings::NvdecEmulation::Hybrid) {
+                Settings::values.nvdec_emulation.SetGlobal(false);
+                Settings::values.nvdec_emulation.SetValue(Settings::NvdecEmulation::Gpu);
+            }
+            // Monolith Soft deferred TAA/post-processing pipeline turns 3D scene black under
+            // non-1X emulator rescaling (resolution_info.active == true); keep native 1X safely.
+            if (Settings::values.resolution_setup.GetValue() != Settings::ResolutionSetup::Res1X) {
+                Settings::values.resolution_setup.SetGlobal(false);
+                Settings::values.resolution_setup.SetValue(Settings::ResolutionSetup::Res1X);
+                Settings::UpdateRescalingInfo();
+            }
+            // Xenoblade Chronicles X:DE has "ru" in its NSO language table (0x0186D348) but no
+            // bdat/ru or ui/ru assets on cartridge; under Russian without an IPS redirect, the game
+            // boots to a black screen at 30 FPS. Both vanilla (English) and MOD - M. RUS (romfs/bdat/us)
+            // render properly when language_index is session-locally set to EnglishAmerican.
+            if (monolith_base_tid == 0x0100453019AA8000ULL &&
+                Settings::values.language_index.GetValue() == Settings::Language::Russian) {
+                Settings::values.language_index.SetGlobal(false);
+                Settings::values.language_index.SetValue(Settings::Language::EnglishAmerican);
+                LOG_INFO(Core, "Xenoblade Chronicles X:DE: remapped session language Russian -> EnglishAmerican to prevent missing-locale black screen");
+            }
+            Settings::values.gpu_clock.SetGlobal(false);
+            Settings::values.gpu_clock.SetValue(Settings::GpuClock::Normal);
+            Settings::values.cpu_clock.SetGlobal(false);
+            Settings::values.cpu_clock.SetValue(Settings::CpuClock::Normal);
+            LOG_INFO(Core, "Applied Monolith Soft Xenoblade safe boot profile for {:016X}", params.program_id);
+        } else if (monolith_base_tid == 0x0100FF500E34A000ULL || monolith_base_tid == 0x0100E95004038000ULL) {
+            // Xenoblade Chronicles: DE & Xenoblade Chronicles 2 (Monolith Soft engine):
+            // Experimental fence/async/GC/DRS toggles cause stretched black polygons and missing geometry
+            // while preserving user-selected resolution scaling (1X..8X).
+            if (Settings::values.memory_layout_mode.GetValue() == Settings::MemoryLayout::Memory_4Gb) {
+                Settings::values.memory_layout_mode.SetGlobal(false);
+                Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_6Gb);
+            }
+            Settings::values.gpu_accuracy.SetGlobal(false);
+            Settings::values.gpu_accuracy.SetValue(Settings::GpuAccuracy::High);
+            Settings::values.use_asynchronous_shaders.SetGlobal(false);
+            Settings::values.use_asynchronous_shaders.SetValue(false);
+            Settings::values.use_reactive_flushing.SetGlobal(false);
+            Settings::values.use_reactive_flushing.SetValue(true);
+            Settings::values.early_release_fences.SetGlobal(false);
+            Settings::values.early_release_fences.SetValue(false);
+            Settings::values.enable_frame_skipping.SetGlobal(false);
+            Settings::values.enable_frame_skipping.SetValue(false);
+            Settings::values.drs_resolution_lock.SetGlobal(false);
+            Settings::values.drs_resolution_lock.SetValue(false);
+            Settings::values.use_fast_gpu_time.SetGlobal(false);
+            Settings::values.use_fast_gpu_time.SetValue(false);
+            Settings::values.dynamic_performance_scaler.SetGlobal(false);
+            Settings::values.dynamic_performance_scaler.SetValue(false);
+            Settings::values.vram_budget_governor.SetGlobal(false);
+            Settings::values.vram_budget_governor.SetValue(false);
+            Settings::values.vram_garbage_collection.SetGlobal(false);
+            Settings::values.vram_garbage_collection.SetValue(false);
+            Settings::values.smart_shader_throttle.SetGlobal(false);
+            Settings::values.smart_shader_throttle.SetValue(false);
+            Settings::values.gpu_fence_behavior.SetGlobal(false);
+            Settings::values.gpu_fence_behavior.SetValue(Settings::GpuFenceBehavior::Default);
+            LOG_INFO(Core, "Applied Xenoblade DE/2 stability & graphics protection for {:016X}", params.program_id);
         }
 
         const u64 cntfrq = forced_cntfrq != 0 ? forced_cntfrq
@@ -626,7 +743,9 @@ struct System::Impl {
     }
 
     void ShutdownMainProcess() {
-        if (is_shutting_down) {
+        std::scoped_lock shutdown_lock{shutdown_mutex};
+        if (!is_powered_on.load() && !gpu_core && !host1x_core && !services && !app_loader) {
+            SetShuttingDown(false);
             return;
         }
         SetShuttingDown(true);
@@ -640,6 +759,7 @@ struct System::Impl {
         // completes would read its own request back and abort (2010-0212, a Userspace PANIC on
         // every stop). Keep guest threads from running again first; the wait for running ones
         // comes after the GPU has released any that it holds in host code.
+        kernel.PrepareShutdown();
         kernel.RequestSuspendEmulation();
         const bool was_powered_on = is_powered_on.exchange(false);
         exit_locked = false;
@@ -650,25 +770,39 @@ struct System::Impl {
         stop_event.request_stop();
         core_timing.SyncPause(false);
         Network::CancelPendingSocketOperations();
+        LOG_DEBUG(Core, "ShutdownMainProcess: [1/10] kernel.SuspendEmulation");
         kernel.SuspendEmulation(true);
+        LOG_DEBUG(Core, "ShutdownMainProcess: [2/10] kernel.CloseServices");
         kernel.CloseServices();
         if (was_powered_on) {
+            LOG_DEBUG(Core, "ShutdownMainProcess: [3/10] kernel.ShutdownCores");
             kernel.ShutdownCores();
         }
+        LOG_DEBUG(Core, "ShutdownMainProcess: [4/10] cpu_manager.Shutdown");
         cpu_manager.Shutdown();
 
-        // Reset Host1x before GPU and Audio so video/VIC frame queue tears down before rasterizer
-        host1x_core.reset();
-        gpu_core.reset();
-        audio_core.reset();
-
-        services.reset();
-        service_manager.reset();
-        fs_controller.Reset();
+        // Stop and clear cheat engines first so a running cheat tick cannot access freed mutexes.
+        core_timing.UnscheduleEvent(cheat_engines_event, Timing::UnscheduleEventType::NoWait);
         {
             std::scoped_lock lock{cheat_engines_mutex};
             cheat_engines.clear();
         }
+        // Tear down services (nvdrv/nvmap/vi/am) BEFORE host1x & gpu_core so DeviceMemoryManager::Unmap()
+        // always runs while Tegra::GPU (device_inter) is still alive (fixes 0xC0000005 crash on Stop!).
+        LOG_DEBUG(Core, "ShutdownMainProcess: [5/10] services.reset");
+        services.reset();
+        LOG_DEBUG(Core, "ShutdownMainProcess: [6/10] service_manager.reset");
+        service_manager.reset();
+        LOG_DEBUG(Core, "ShutdownMainProcess: [7/10] audio_core.reset");
+        audio_core.reset();
+        if (host1x_core) {
+            host1x_core->MemoryManager().BindInterface(nullptr);
+        }
+        LOG_DEBUG(Core, "ShutdownMainProcess: [8/10] gpu_core.reset");
+        gpu_core.reset();
+        LOG_DEBUG(Core, "ShutdownMainProcess: [9/10] host1x_core.reset");
+        host1x_core.reset();
+        fs_controller.Reset();
         main_nso_begin = 0;
         main_nso_size = 0;
         core_timing.ClearPendingEvents();
@@ -676,6 +810,7 @@ struct System::Impl {
         perf_stats.reset();
 
         debugger.reset();
+        LOG_DEBUG(Core, "ShutdownMainProcess: [10/10] kernel.Shutdown");
         kernel.Shutdown();
         device_memory.reset();
         stop_event = {};
@@ -688,8 +823,9 @@ struct System::Impl {
 
         // Reset all glue registrations
         arp_manager.ResetAll();
+        SetShuttingDown(false);
 
-        LOG_DEBUG(Core, "Shutdown OK");
+        LOG_DEBUG(Core, "ShutdownMainProcess: DONE");
     }
 
     bool IsShuttingDown() const {
@@ -777,6 +913,7 @@ struct System::Impl {
     std::stop_source stop_event;
 
     mutable std::mutex suspend_guard;
+    std::mutex shutdown_mutex;
     std::mutex general_channel_mutex;
     std::atomic_bool is_paused{};
     std::atomic_bool is_shutting_down{};

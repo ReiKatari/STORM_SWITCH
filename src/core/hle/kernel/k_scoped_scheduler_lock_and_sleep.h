@@ -26,8 +26,9 @@ public:
     }
 
     ~KScopedSchedulerLockAndSleep() {
-        // Register the sleep.
-        if (m_timeout_tick > 0) {
+        // Register the sleep unless the kernel is shutting down or thread is terminating.
+        if (m_timeout_tick > 0 && !m_kernel.IsShuttingDown() &&
+            (m_thread == nullptr || !m_thread->IsTerminationRequested())) {
             m_timer->RegisterAbsoluteTask(m_thread, m_timeout_tick);
         }
 

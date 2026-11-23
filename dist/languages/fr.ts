@@ -793,9 +793,9 @@ Il est sûr de le régler à 16x sur la plupart des GPU.</translation>
             <source>Controls the GPU emulation mode.
 Most games render fine with Fast, but Accurate is still required for some.
 Particles tend to only render correctly with Accurate mode.</source>
-            <translation>Controls the GPU emulation mode.
-Most games render fine with Fast, but Accurate is still required for some.
-Particles tend to only render correctly with Accurate mode.</translation>
+            <translation>Le niveau de précision du GPU à utiliser.
+Normal est plus rapide, mais peut causer des problèmes graphiques.
+Élevé est plus lent, mais corrige les problèmes graphiques.</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="225" />
@@ -807,9 +807,9 @@ Particles tend to only render correctly with Accurate mode.</translation>
             <source>Controls the DMA read mode.
 Unsafe is faster, while Safe is more stable and can fix issues in some games.
 Default follows the GPU Accuracy setting.</source>
-            <translation>Controls the DMA read mode.
-Unsafe is faster, while Safe is more stable and can fix issues in some games.
-Default follows the GPU Accuracy setting.</translation>
+            <translation>Le niveau de précision DMA à utiliser.
+Normal est plus rapide, mais peut causer des problèmes graphiques.
+Sûr est plus lent, mais corrige les problèmes graphiques.</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="227" />
@@ -824,12 +824,11 @@ Balanced offers better compatibility and may fix issues in some games.
 Accurate further improves compatibility at the cost of some performance.
 Strict is the slowest option, but can fix issues that require stricter synchronization.
 Default follows the GPU Accuracy setting.</source>
-            <translation>Controls the GPU fence synchronization behavior.
-Immediate is the fastest option, but can introduce some issues.
-Balanced offers better compatibility and may fix issues in some games.
-Accurate further improves compatibility at the cost of some performance.
-Strict is the slowest option, but can fix issues that require stricter synchronization.
-Default follows the GPU Accuracy setting.</translation>
+            <translation>Contrôle la synchronisation des barrières GPU.
+Par défaut suit la précision GPU.
+Immédiat signale immédiatement.
+Équilibré attend uniquement si nécessaire.
+Précis attend toujours la fin du GPU.</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="229" />
@@ -840,8 +839,8 @@ Default follows the GPU Accuracy setting.</translation>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="230" />
             <source>Preserves GPU-modified data by reading it back before uploading.
 Some games require this to render certain effects properly.</source>
-            <translation>Preserves GPU-modified data by reading it back before uploading.
-Some games require this to render certain effects properly.</translation>
+            <translation>Active la relecture des tampons GPU modifiés vers la mémoire CPU.
+Requis par certains jeux pour la physique ou les effets, mais réduit les performances.</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="231" />
@@ -996,7 +995,7 @@ This option may improve rendering quality and performance consistency in some ga
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="275" />
             <source>Enable Legacy Rescale Pass</source>
-            <translation>Enable Legacy Rescale Pass</translation>
+            <translation>Activer le redimensionnement hérité</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="276" />
@@ -1008,7 +1007,7 @@ Legacy behavior workaround that fixes line artifacts on AMD and Intel GPUs, and 
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="282" />
             <source>Extended Dynamic State</source>
-            <translation>Extended Dynamic State</translation>
+            <translation>État dynamique étendu</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="283" />
@@ -1020,7 +1019,7 @@ Higher states allow for more features and can increase performance, but may caus
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="287" />
             <source>Vertex Input Dynamic State</source>
-            <translation>Vertex Input Dynamic State</translation>
+            <translation>État dynamique d'entrée de sommet</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="288" />
@@ -1065,12 +1064,12 @@ Principalement utilisé pour le speedrun.</translation>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="303" />
             <source>Homebrew Args</source>
-            <translation>Homebrew Args</translation>
+            <translation>Arguments Homebrew</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="304" />
             <source>Command-line arguments passed to homebrew at launch (e.g. -noglsl).</source>
-            <translation>Command-line arguments passed to homebrew at launch (e.g. -noglsl).</translation>
+            <translation>Arguments de ligne de commande transmis aux homebrews au lancement.</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="305" />
@@ -1270,7 +1269,7 @@ Lorsqu’un programme tente d’ouvrir ce menu, il est immédiatement fermé.</t
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="407" />
             <source>Auto</source>
-            <translation>Auto</translation>
+            <translation>Automatique</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="408" />
@@ -1546,7 +1545,7 @@ Lorsqu’un programme tente d’ouvrir ce menu, il est immédiatement fermé.</t
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="499" />
             <source>Zero-Tangent</source>
-            <translation>Zero-Tangent</translation>
+            <translation>Zero-Tangente</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="500" />
@@ -1838,7 +1837,7 @@ Lorsqu’un programme tente d’ouvrir ce menu, il est immédiatement fermé.</t
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="584" />
             <source>GB</source>
-            <translation>GB</translation>
+            <translation>Go</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="585" />
@@ -2437,7 +2436,7 @@ Lorsqu’un programme tente d’ouvrir ce menu, il est immédiatement fermé.</t
         </message>
         <message>
             <source>VRAM Usage Mode</source>
-            <translation>VRAM Usage Mode</translation>
+            <translation>Mode VRAM</translation>
         </message>
         <message>
             <source>Использование VRAM:</source>
@@ -2457,7 +2456,7 @@ Lorsqu’un programme tente d’ouvrir ce menu, il est immédiatement fermé.</t
         </message>
         <message>
             <source>ASTC Decoding Method</source>
-            <translation>ASTC Decoding Method</translation>
+            <translation>Méthode ASTC</translation>
         </message>
         <message>
             <source>Декодирование ASTC</source>
@@ -2593,7 +2592,7 @@ Lorsqu’un programme tente d’ouvrir ce menu, il est immédiatement fermé.</t
         </message>
         <message>
             <source>Vulkan Pipeline Cache</source>
-            <translation>Vulkan Pipeline Cache</translation>
+            <translation>Cache de pipelines Vulkan</translation>
         </message>
         <message>
             <source>Кэш Vulkan</source>
@@ -2887,11 +2886,11 @@ Les processeurs moins puissants peuvent voir leurs performances réduites.</tran
         </message>
         <message>
             <source>Normal</source>
-            <translation>Normal</translation>
+            <translation>Normal (Recommandé)</translation>
         </message>
         <message>
             <source>Boost</source>
-            <translation>Boost</translation>
+            <translation>Boost (1700MHz)</translation>
         </message>
         <message>
             <source>Overclock</source>
@@ -3120,7 +3119,7 @@ Requis par certains jeux pour la physique ou les effets, mais réduit les perfor
         <message>
             <location filename="../../src/yuzu/configuration/configure_audio.ui" line="14" />
             <source>Audio</source>
-            <translation>Audio</translation>
+            <translation>Son</translation>
         </message>
     </context>
     <context>
@@ -3168,7 +3167,7 @@ Requis par certains jeux pour la physique ou les effets, mais réduit les perfor
         <message>
             <location filename="../../src/yuzu/configuration/configure_camera.cpp" line="135" />
             <source>Auto</source>
-            <translation>Auto</translation>
+            <translation>Automatique</translation>
         </message>
     </context>
     <context>
@@ -3495,12 +3494,12 @@ Requis par certains jeux pour la physique ou les effets, mais réduit les perfor
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="235" />
             <source>Off</source>
-            <translation>Off</translation>
+            <translation>Désactivé</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="240" />
             <source>Errors</source>
-            <translation>Errors</translation>
+            <translation>Erreurs</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="245" />
@@ -3510,12 +3509,12 @@ Requis par certains jeux pour la physique ou les effets, mais réduit les perfor
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="250" />
             <source>Verbose</source>
-            <translation>Verbose</translation>
+            <translation>Détaillé</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="255" />
             <source>All</source>
-            <translation>All</translation>
+            <translation>Tout</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="266" />
@@ -3590,7 +3589,7 @@ Requis par certains jeux pour la physique ou les effets, mais réduit les perfor
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="380" />
             <source>Dump Guest (Maxwell) Shaders</source>
-            <translation>Dump Guest (Maxwell) Shaders</translation>
+            <translation>Exporter les shaders invités (Maxwell)</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="387" />
@@ -3655,7 +3654,7 @@ Requis par certains jeux pour la physique ou les effets, mais réduit les perfor
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="472" />
             <source>Dump SPIR-V Shaders</source>
-            <translation>Dump SPIR-V Shaders</translation>
+            <translation>Exporter les shaders SPIR-V</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="482" />
@@ -3978,7 +3977,7 @@ Requis par certains jeux pour la physique ou les effets, mais réduit les perfor
         <message>
             <location filename="../../src/yuzu/configuration/configure_filesystem.ui" line="65" />
             <source>Save Data</source>
-            <translation>Save Data</translation>
+            <translation>Données de sauvegarde</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_filesystem.ui" line="101" />
@@ -4073,7 +4072,7 @@ Requis par certains jeux pour la physique ou les effets, mais réduit les perfor
         <message>
             <location filename="../../src/yuzu/configuration/configure_filesystem.cpp" line="148" />
             <source>Save Data Directory</source>
-            <translation>Save Data Directory</translation>
+            <translation>Sauvegarder le répertoire des données</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_filesystem.cpp" line="149" />
@@ -4121,7 +4120,7 @@ To: %2</translation>
         <message>
             <location filename="../../src/yuzu/configuration/configure_filesystem.cpp" line="224" />
             <source>Migrate Save Data</source>
-            <translation>Migrate Save Data</translation>
+            <translation>Migrer les données de sauvegarde</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_filesystem.cpp" line="231" />
@@ -4188,7 +4187,7 @@ Would you like to delete the old save data?</translation>
         <message>
             <location filename="../../src/yuzu/configuration/configure_general.ui" line="52" />
             <source>External Content</source>
-            <translation>External Content</translation>
+            <translation>Contenu externe</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_general.ui" line="58" />
@@ -4458,7 +4457,7 @@ Would you like to delete the old save data?</translation>
         </message>
         <message>
             <source>VRAM Usage Mode</source>
-            <translation>VRAM Usage Mode</translation>
+            <translation>Mode VRAM</translation>
         </message>
         <message>
             <source>Использование VRAM</source>
@@ -4474,7 +4473,7 @@ Would you like to delete the old save data?</translation>
         </message>
         <message>
             <source>ASTC Decoding Method</source>
-            <translation>ASTC Decoding Method</translation>
+            <translation>Méthode ASTC</translation>
         </message>
         <message>
             <source>Декодирование ASTC</source>
@@ -4598,7 +4597,7 @@ Would you like to delete the old save data?</translation>
         </message>
         <message>
             <source>Vulkan Pipeline Cache</source>
-            <translation>Vulkan Pipeline Cache</translation>
+            <translation>Cache de pipelines Vulkan</translation>
         </message>
         <message>
             <source>Кэш Vulkan</source>
@@ -4640,7 +4639,7 @@ Would you like to delete the old save data?</translation>
         <message>
             <location filename="../../src/yuzu/configuration/configure_graphics_extensions.ui" line="23" />
             <source>Hacks</source>
-            <translation>Hacks</translation>
+            <translation>Contournements</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_graphics_extensions.ui" line="29" />
@@ -4650,7 +4649,7 @@ Would you like to delete the old save data?</translation>
         <message>
             <location filename="../../src/yuzu/configuration/configure_graphics_extensions.ui" line="62" />
             <source>Vulkan Extensions</source>
-            <translation>Vulkan Extensions</translation>
+            <translation>Extensions Vulkan</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_graphics_extensions.cpp" line="49" />
@@ -5099,7 +5098,7 @@ Would you like to delete the old save data?</translation>
         </message>
         <message>
             <source>Disables SDL WGI and XInput controller drivers. Prevents trigger conflicts, vibration issues, and synthetic Home button presses. Emulator restart required.</source>
-            <translation>Disables SDL WGI and XInput controller drivers. Prevents trigger conflicts, vibration issues, and synthetic Home button presses. Emulator restart required.</translation>
+            <translation>Désactive les pilotes de manette SDL WGI et XInput. Évite les conflits de gâchettes, les problèmes de vibration et les appuis involontaires sur le bouton Home. Redémarrage de l'émulateur requis.</translation>
         </message>
     </context>
     <context>
@@ -5340,7 +5339,7 @@ Would you like to delete the old save data?</translation>
         <message>
             <location filename="../../src/yuzu/configuration/configure_input_player.ui" line="2169" />
             <source>B</source>
-            <translation>B</translation>
+            <translation>o</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_input_player.ui" line="2218" />
@@ -5674,7 +5673,7 @@ Pour inverser les axes, bougez d'abord votre joystick verticalement, puis horizo
         <message>
             <location filename="../../src/yuzu/configuration/configure_motion_touch.ui" line="161" />
             <source>Port:</source>
-            <translation>Port:</translation>
+            <translation>Port :</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_motion_touch.ui" line="194" />
@@ -5899,7 +5898,7 @@ Les valeurs actuelles sont respectivement de %1% et %2%.</translation>
         <message>
             <location filename="../../src/yuzu/configuration/configure_per_game.ui" line="34" />
             <source>Info</source>
-            <translation>Info</translation>
+            <translation>Infos</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_per_game.ui" line="93" />
@@ -5948,11 +5947,11 @@ Les valeurs actuelles sont respectivement de %1% et %2%.</translation>
         </message>
         <message>
             <source>GameBanana Mods</source>
-            <translation>GameBanana Mods</translation>
+            <translation>Mods GameBanana</translation>
         </message>
         <message>
             <source>Cheats</source>
-            <translation>Cheats</translation>
+            <translation>Triche</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="79" />
@@ -5982,7 +5981,7 @@ Les valeurs actuelles sont respectivement de %1% et %2%.</translation>
         <message>
             <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="84" />
             <source>Audio</source>
-            <translation>Audio</translation>
+            <translation>Son</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="85" />
@@ -5992,7 +5991,7 @@ Les valeurs actuelles sont respectivement de %1% et %2%.</translation>
         <message>
             <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="86" />
             <source>Network</source>
-            <translation>Network</translation>
+            <translation>Réseau</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="87" />
@@ -6074,7 +6073,7 @@ Check the log for details.</translation>
         <message>
             <location filename="../../src/yuzu/configuration/configure_per_game_addons.cpp" line="196" />
             <source>Zipped Archives (*.zip)</source>
-            <translation>Zipped Archives (*.zip)</translation>
+            <translation>Archives compressées (*.zip)</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_per_game_addons.cpp" line="214" />
@@ -6229,7 +6228,7 @@ Once deleted, these can NOT be recovered. Are you 100% sure you want to delete t
         <message>
             <location filename="../../src/yuzu/configuration/configure_profile_manager.cpp" line="291" />
             <source>Edit User</source>
-            <translation>Edit User</translation>
+            <translation>Modifier l'utilisateur</translation>
         </message>
     </context>
     <context>
@@ -7112,7 +7111,7 @@ Faites glisser les points pour modifier la position ou double-cliquez sur les ce
         <message>
             <location filename="../../src/yuzu/data_widget.ui" line="14" />
             <source>Form</source>
-            <translation>Form</translation>
+            <translation>Formulaire</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/data_widget.ui" line="22" />
@@ -7630,12 +7629,12 @@ Veuillez aller dans Configurer -&gt; Système -&gt; Réseau puis en choisir une.
         <message>
             <location filename="../../src/qt_common/game_list/model.cpp" line="194" />
             <source>Name</source>
-            <translation>Name</translation>
+            <translation>Nom</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/game_list/model.cpp" line="195" />
             <source>Add-ons</source>
-            <translation>Add-ons</translation>
+            <translation>Extensions</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/game_list/model.cpp" line="196" />
@@ -7645,7 +7644,7 @@ Veuillez aller dans Configurer -&gt; Système -&gt; Réseau puis en choisir une.
         <message>
             <location filename="../../src/qt_common/game_list/model.cpp" line="197" />
             <source>Size</source>
-            <translation>Size</translation>
+            <translation>Taille</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/game_list/model.cpp" line="198" />
@@ -7856,7 +7855,7 @@ Message de débogage :</translation>
         <message>
             <location filename="../../src/qt_common/config/uisettings.cpp" line="50" />
             <source>Create Room</source>
-            <translation>Create Room</translation>
+            <translation>Créer un salon</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/uisettings.cpp" line="51" />
@@ -7866,7 +7865,7 @@ Message de débogage :</translation>
         <message>
             <location filename="../../src/qt_common/config/uisettings.cpp" line="52" />
             <source>Leave Room</source>
-            <translation>Leave Room</translation>
+            <translation>Quitter le Salon</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/uisettings.cpp" line="53" />
@@ -8503,7 +8502,7 @@ Message de débogage :</translation>
         <message>
             <location filename="../../src/yuzu/main.ui" line="589" />
             <source>Game Icon Size</source>
-            <translation>Game Icon Size</translation>
+            <translation>Taille des icônes de jeux</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main.ui" line="594" />
@@ -8568,7 +8567,7 @@ Message de débogage :</translation>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="876" />
             <source>Disable Web Applet</source>
-            <translation>Disable Web Applet</translation>
+            <translation>Désactiver l'applet web</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="880" />
@@ -8768,7 +8767,7 @@ Message de débogage :</translation>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="2475" />
             <source>Remove Play Time Data</source>
-            <translation>Remove Play Time Data</translation>
+            <translation>Supprimer les données de temps de jeu</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="2475" />
@@ -8828,7 +8827,7 @@ Message de débogage :</translation>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="2592" />
             <source>The operation completed successfully.</source>
-            <translation>The operation completed successfully.</translation>
+            <translation>L'opération s'est déroulée avec succès.</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="2638" />
@@ -8859,7 +8858,7 @@ Message de débogage :</translation>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="2743" />
             <source>Load File</source>
-            <translation>Load File</translation>
+            <translation>Charger un fichier</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="2756" />
@@ -9068,7 +9067,7 @@ Please, only use this feature to install updates and DLC.</translation>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="3699" />
             <source>The current amiibo has been removed</source>
-            <translation>The current amiibo has been removed</translation>
+            <translation>L’Amiibo actuel a été supprimé</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="3704" />
@@ -9098,7 +9097,7 @@ Please, only use this feature to install updates and DLC.</translation>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="3756" />
             <source>The selected file is not a valid amiibo</source>
-            <translation>The selected file is not a valid amiibo</translation>
+            <translation>Le fichier sélectionné n’est pas un Amiibo valide</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="3759" />
@@ -9108,12 +9107,12 @@ Please, only use this feature to install updates and DLC.</translation>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="3765" />
             <source>An unknown error occurred</source>
-            <translation>An unknown error occurred</translation>
+            <translation>Une erreur inconnue est survenue</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="3868" />
             <source>No firmware available</source>
-            <translation>No firmware available</translation>
+            <translation>Pas de firmware disponible</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="3872" />
@@ -9143,7 +9142,7 @@ Please, only use this feature to install updates and DLC.</translation>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="3975" />
             <source>Capture Screenshot</source>
-            <translation>Capture Screenshot</translation>
+            <translation>Prendre une capture d'ecran</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="3976" />
@@ -9284,7 +9283,7 @@ Would you like to force it for future launches?</translation>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="4329" />
             <source>Slow</source>
-            <translation>Slow</translation>
+            <translation>Lent</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/main_window.cpp" line="4332" />
@@ -9398,7 +9397,7 @@ Would you like to bypass this and exit anyway?</translation>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.h" line="54" />
             <source>Area</source>
-            <translation>Area</translation>
+            <translation>Area (Par zone)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.h" line="55" />
@@ -9428,12 +9427,12 @@ Would you like to bypass this and exit anyway?</translation>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.h" line="66" />
             <source>Fast</source>
-            <translation>Fast</translation>
+            <translation>Rapide</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.h" line="67" />
             <source>Accurate</source>
-            <translation>Accurate</translation>
+            <translation>Précis</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.h" line="71" />
@@ -9458,7 +9457,7 @@ Would you like to bypass this and exit anyway?</translation>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.h" line="78" />
             <source>Null</source>
-            <translation>Null</translation>
+            <translation>Nul</translation>
         </message>
         <message>
             <source>F&amp;amp;ullscreen</source>
@@ -9502,7 +9501,7 @@ Would you like to bypass this and exit anyway?</translation>
         </message>
         <message>
             <source>Check for Updates</source>
-            <translation>Check for Updates</translation>
+            <translation>Rechercher des mises à jour</translation>
         </message>
         <message>
             <source>&amp;Check for Updates</source>
@@ -9514,7 +9513,7 @@ Would you like to bypass this and exit anyway?</translation>
         </message>
         <message>
             <source>Check for Updates...</source>
-            <translation>Check for Updates...</translation>
+            <translation>Rechercher des mises à jour...</translation>
         </message>
         <message>
             <source>Проверить обновления</source>
@@ -9574,7 +9573,7 @@ Would you like to bypass this and exit anyway?</translation>
         </message>
         <message>
             <source>Install Files to NAND...</source>
-            <translation>Install Files to NAND...</translation>
+            <translation>Installer les fichiers dans la NAND...</translation>
         </message>
         <message>
             <source>&amp;Install Files to NAND</source>
@@ -9781,7 +9780,7 @@ Continuer quand même ?</translation>
         <message>
             <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="14" />
             <source>New User</source>
-            <translation>New User</translation>
+            <translation>Nouvel utilisateur</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="30" />
@@ -9806,7 +9805,7 @@ Continuer quand même ?</translation>
         <message>
             <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="70" />
             <source>Username</source>
-            <translation>Username</translation>
+            <translation>Nom d'utilisateur</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="82" />
@@ -9816,7 +9815,7 @@ Continuer quand même ?</translation>
         <message>
             <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="89" />
             <source>Generate</source>
-            <translation>Generate</translation>
+            <translation>Générer</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/system/new_user_dialog.cpp" line="138" />
@@ -9831,7 +9830,7 @@ Continuer quand même ?</translation>
         <message>
             <location filename="../../src/yuzu/configuration/system/new_user_dialog.cpp" line="171" />
             <source>No firmware available</source>
-            <translation>No firmware available</translation>
+            <translation>Pas de firmware disponible</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/system/new_user_dialog.cpp" line="172" />
@@ -9887,7 +9886,7 @@ Continuer quand même ?</translation>
             <location filename="../../src/yuzu/configuration/system/new_user_dialog.cpp" line="338" />
             <source>All Good</source>
             <comment>Tooltip</comment>
-            <translation>All Good</translation>
+            <translation>Tout est OK.</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/system/new_user_dialog.cpp" line="341" />
@@ -9938,7 +9937,7 @@ p, li { white-space: pre-wrap; }
         <message>
             <location filename="../../src/yuzu/render/performance_overlay.ui" line="14" />
             <source>Form</source>
-            <translation>Form</translation>
+            <translation>Formulaire</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/render/performance_overlay.ui" line="32" />
@@ -10060,13 +10059,6 @@ p, li { white-space: pre-wrap; }
             <translation>Associer l’Ancien Répertoire</translation>
         </message>
         <message>
-            <location filename="../../src/yuzu/user_data_migration.cpp" line="98" />
-            <source>
-      </source>
-            <translation>
-      </translation>
-        </message>
-        <message>
             <location filename="../../src/yuzu/user_data_migration.cpp" line="102" />
             <source>No</source>
             <translation>Non</translation>
@@ -10171,7 +10163,7 @@ p, li { white-space: pre-wrap; }
         <message>
             <location filename="../../src/yuzu/configuration/configure_ringcon.cpp" line="66" />
             <source>B</source>
-            <translation>B</translation>
+            <translation>o</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_ringcon.cpp" line="68" />
@@ -11789,12 +11781,12 @@ En sélectionnant « Depuis Eden », les données de sauvegarde précédemment s
         <message>
             <location filename="../../src/yuzu/ryujinx_dialog.cpp" line="37" />
             <source>Failed to link save data</source>
-            <translation>Failed to link save data</translation>
+            <translation>Échec de la liaison des données de sauvegarde</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/ryujinx_dialog.cpp" line="38" />
             <source>OS returned error: %1</source>
-            <translation>OS returned error: %1</translation>
+            <translation>Le système a renvoyé l’erreur : %1</translation>
         </message>
     </context>
     <context>
@@ -11838,7 +11830,7 @@ En sélectionnant « Depuis Eden », les données de sauvegarde précédemment s
         <message>
             <location filename="../../src/yuzu/updater/update_dialog.ui" line="14" />
             <source>Update Available</source>
-            <translation>Update Available</translation>
+            <translation>Mise à jour disponible</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/updater/update_dialog.ui" line="20" />
@@ -11883,7 +11875,7 @@ En sélectionnant « Depuis Eden », les données de sauvegarde précédemment s
         <message>
             <location filename="../../src/yuzu/updater/update_dialog.cpp" line="112" />
             <source>Downloading...</source>
-            <translation>Downloading...</translation>
+            <translation>Téléchargement…</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/updater/update_dialog.cpp" line="112" />
@@ -12067,7 +12059,7 @@ Error code: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>Rétablir les valeurs par défaut</translation>
         </message>
         </context>
     <context>
@@ -12214,7 +12206,7 @@ Error code: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>Rétablir les valeurs par défaut</translation>
         </message>
         </context>
     <context>
@@ -12361,7 +12353,7 @@ Error code: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>Rétablir les valeurs par défaut</translation>
         </message>
         </context>
     <context>
@@ -12508,7 +12500,7 @@ Error code: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>Rétablir les valeurs par défaut</translation>
         </message>
         </context>
     <context>
@@ -12655,7 +12647,7 @@ Error code: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>Rétablir les valeurs par défaut</translation>
         </message>
     </context>
     <context>
@@ -12802,7 +12794,7 @@ Error code: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>Rétablir les valeurs par défaut</translation>
         </message>
     </context>
     <context>
@@ -12949,7 +12941,7 @@ Error code: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>Rétablir les valeurs par défaut</translation>
         </message>
     </context>
     <context>
@@ -13096,7 +13088,7 @@ Error code: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>Rétablir les valeurs par défaut</translation>
         </message>
     </context>
     <context>

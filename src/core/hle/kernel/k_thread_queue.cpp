@@ -10,6 +10,15 @@
 
 namespace Kernel {
 
+KThreadQueue::~KThreadQueue() {
+    if (m_bound_thread != nullptr && m_kernel != nullptr) {
+        KScopedSchedulerLock sl{*m_kernel};
+        if (m_bound_thread->GetWaitQueue() == this) {
+            m_bound_thread->ClearWaitQueue();
+        }
+    }
+}
+
 void KThreadQueue::NotifyAvailable(KernelCore& kernel, KThread* waiting_thread, KSynchronizationObject* signaled_object, Result wait_result) {
 }
 

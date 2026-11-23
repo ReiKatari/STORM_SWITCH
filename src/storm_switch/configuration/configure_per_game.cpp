@@ -203,9 +203,8 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
         }
     });
 
-    if (ui->verticalLayout) {
-        ui->verticalLayout->addWidget(m_reset_hero_btn);
-    }
+    // Keep single clear Reset button in footer buttonBox to avoid duplicate Reset buttons
+    m_reset_hero_btn->setVisible(false);
 
 
 
@@ -318,22 +317,26 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
                     target_h = std::clamp(std::min(main_win->height() - 16, avail.height() - 68),
                                           std::min(500, max_h), std::min(620, max_h));
                 } else {
-                    target_h = std::clamp(main_win->height() - 80, std::min(500, max_h), std::min(620, max_h));
+                    target_h = std::clamp(main_win->height() - 60, std::min(720, max_h), std::min(840, max_h));
                 }
             }
         } else if (avail.height() <= 920) {
-            target_h = std::clamp(avail.height() - 68, std::min(500, max_h), std::min(620, max_h));
+            target_h = std::clamp(avail.height() - 48, std::min(700, max_h), std::min(820, max_h));
+        } else {
+            target_h = std::clamp((avail.height() * 80) / 100, std::min(740, max_h), std::min(860, max_h));
         }
         resize(target_w, target_h);
     } else {
-        setMinimumSize(1240, 500);
-        resize(1280, 620);
+        setMinimumSize(1240, 660);
+        resize(1360, 780);
     }
 
     ui->display_name->setLineWrapMode(QTextEdit::WidgetWidth);
     ui->display_filename->setLineWrapMode(QTextEdit::WidgetWidth);
     ui->display_name->setAcceptRichText(false);
     ui->display_filename->setAcceptRichText(false);
+    ui->display_filename->setMinimumHeight(78);
+    ui->display_filename->setMaximumHeight(92);
 
     QFont bold_font = font();
     bold_font.setBold(true);
@@ -359,15 +362,30 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
 
     QPushButton* reset_button = ui->buttonBox->addButton(QDialogButtonBox::RestoreDefaults);
     reset_button->setText(StormLang(
-        QStringLiteral("↺ Сбросить настройки"),
-        QStringLiteral("↺ Restore Defaults"),
-        QStringLiteral("↺ Standardeinstellungen"),
-        QStringLiteral("↺ Paramètres par défaut"),
-        QStringLiteral("↺ 恢复默认设置"),
-        QStringLiteral("↺ デフォルトに戻す"),
-        QStringLiteral("↺ استعادة الإعدادات الافتراضية"),
-        QStringLiteral("↺ Restaurar valores predeterminados")));
+        QStringLiteral("↺ Сбросить настройки игры"),
+        QStringLiteral("↺ Reset Per-Game Settings"),
+        QStringLiteral("↺ Spieleinstellungen zurücksetzen"),
+        QStringLiteral("↺ Réinitialiser les paramètres du jeu"),
+        QStringLiteral("↺ 重置此游戏设置"),
+        QStringLiteral("↺ ゲーム設定をリセット"),
+        QStringLiteral("↺ استعادة إعدادات اللعبة"),
+        QStringLiteral("↺ Restablecer ajustes del juego")));
+    reset_button->setToolTip(StormLang(
+        QStringLiteral("Сбросить все индивидуальные настройки этой игры и вернуть глобальные настройки эмулятора"),
+        QStringLiteral("Reset all custom settings for this game and revert to global emulator settings")));
     connect(reset_button, &QAbstractButton::clicked, this, [this, specific_config, legacy_config, custom_path]() {
+        QMessageBox ask_box(this);
+        ask_box.setWindowTitle(StormLang(QStringLiteral("Сброс настроек игры"), QStringLiteral("Reset Per-Game Settings")));
+        ask_box.setText(StormLang(
+            QStringLiteral("<b>Вы уверены, что хотите сбросить все индивидуальные настройки этой игры?</b><br><br>Игра будет использовать стандартные глобальные настройки эмулятора."),
+            QStringLiteral("<b>Are you sure you want to reset all custom settings for this game?</b><br><br>The game will revert to global emulator settings.")));
+        ask_box.setIcon(QMessageBox::Question);
+        auto* ok_btn = ask_box.addButton(StormLang(QStringLiteral("Сбросить"), QStringLiteral("Reset")), QMessageBox::AcceptRole);
+        ask_box.addButton(StormLang(QStringLiteral("Отмена"), QStringLiteral("Cancel")), QMessageBox::RejectRole);
+        ask_box.exec();
+        if (ask_box.clickedButton() != ok_btn) {
+            return;
+        }
         std::error_code ec;
         std::filesystem::remove(custom_path / (specific_config + ".ini"), ec);
         std::filesystem::remove(custom_path / (legacy_config + ".ini"), ec);
@@ -377,6 +395,7 @@ ConfigurePerGame::ConfigurePerGame(QWidget* parent, u64 title_id_, const std::st
             tab->SetConfiguration();
         }
         ConfigurationShared::ReloadAllActiveWidgets();
+        RefreshOverrideBadges();
         QMessageBox::information(
             this,
             StormLang(QStringLiteral("Сброс настроек"), QStringLiteral("Reset Settings"),
@@ -893,7 +912,7 @@ void ConfigurePerGame::LoadConfiguration() {
     ui->display_format->setCursorPosition(0);
     ui->display_format->home(false);
 
-    const auto valueText = QtCommon::ReadableByteSize(file->GetSize());
+    const auto valueText = StormFormat::ReadableByteSize(static_cast<qulonglong>(file->GetSize()));
     ui->display_size->setText(valueText);
     ui->display_size->setCursorPosition(0);
     ui->display_size->home(false);

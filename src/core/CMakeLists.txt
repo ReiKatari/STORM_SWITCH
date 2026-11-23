@@ -396,6 +396,8 @@ add_library(core STATIC
     hle/result.h
     hle/service/game_fix_database.cpp
     hle/service/game_fix_database.h
+    hle/service/game_fix_profiles.cpp
+    hle/service/game_fix_profiles.h
     hle/service/acc/acc.cpp
     hle/service/acc/acc.h
     hle/service/acc/acc_aa.cpp

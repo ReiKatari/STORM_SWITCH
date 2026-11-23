@@ -316,9 +316,13 @@ std::optional<u64> GenericEnvironment::TryFindSize() {
 Tegra::Texture::TICEntry GenericEnvironment::ReadTextureInfo(GPUVAddr tic_addr, u32 tic_limit,
                                                              bool via_header_index, u32 raw) {
     const auto handle{Tegra::Texture::TexturePair(raw, via_header_index)};
-    ASSERT(handle.first <= tic_limit);
-    const GPUVAddr descriptor_addr{tic_addr + handle.first * sizeof(Tegra::Texture::TICEntry)};
-    Tegra::Texture::TICEntry entry;
+    const u32 index{Tegra::Texture::TextureHeaderIndex(handle.first, tic_limit,
+                                                       gpu_memory->UsesNativeTiling())};
+    if (index > tic_limit) {
+        return {};
+    }
+    const GPUVAddr descriptor_addr{tic_addr + index * sizeof(Tegra::Texture::TICEntry)};
+    Tegra::Texture::TICEntry entry{};
     gpu_memory->ReadBlock(descriptor_addr, &entry, sizeof(entry));
     return entry;
 }
@@ -343,7 +347,9 @@ void GenericEnvironment::InitializeNativeCode(u32 source_header_size) {
     }
     auto lowered = Shader::Ampere::LowerToMaxwell(native);
     if (!lowered) {
-        if (const char* directory = std::getenv("EDEN_NATIVE_SHADER_OVERRIDE_DIR")) {
+        static const char* const override_dir = std::getenv("EDEN_NATIVE_SHADER_OVERRIDE_DIR");
+        if (override_dir != nullptr) [[unlikely]] {
+            const char* directory = override_dir;
             const auto key = fmt::format("{:016x}", Shader::Ampere::NativeProgramKey(native));
             const auto folder = std::filesystem::path{directory};
             std::filesystem::create_directories(folder);
@@ -395,8 +401,15 @@ void GenericEnvironment::InitializeNativeCode(u32 source_header_size) {
         }
     }
     if (!lowered) {
-        LOG_WARNING(Shader, "Native shader lowering failed at {:#x}, instruction {:#x}: {}",
-                    program_base, lowered.error_offset, lowered.error);
+        const size_t fail_idx = lowered.error_offset / sizeof(Shader::Ampere::Instruction);
+        if (fail_idx < native.size()) {
+            const auto& w = native[fail_idx].words;
+            LOG_WARNING(Shader, "Native shader lowering failed at {:#x}, instruction {:#x} ({:08x} {:08x} {:08x} {:08x}): {}",
+                        program_base, lowered.error_offset, w[0], w[1], w[2], w[3], lowered.error);
+        } else {
+            LOG_WARNING(Shader, "Native shader lowering failed at {:#x}, instruction {:#x}: {}",
+                        program_base, lowered.error_offset, lowered.error);
+        }
         throw Shader::RuntimeError("Native shader at {:#x}, instruction {:#x}: {}",
                                    program_base, lowered.error_offset, lowered.error);
     }
@@ -432,11 +445,20 @@ GraphicsEnvironment::GraphicsEnvironment(Tegra::Engines::Maxwell3D& maxwell3d_,
     initial_offset = sizeof(sph);
     texture_bound = maxwell3d->regs.bindless_texture_const_buffer_slot;
     if (maxwell3d->GetNativeMacroEngine().native_turing) {
-        if (program != Maxwell::ShaderType::VertexB && program != Maxwell::ShaderType::Pixel) {
+        static const bool enable_native_gs = [] {
+            const char* v = std::getenv("EDEN_NX2_ENABLE_GS");
+            return v != nullptr && v[0] == '1';
+        }();
+        if (program != Maxwell::ShaderType::VertexB &&
+            (!enable_native_gs || program != Maxwell::ShaderType::Geometry) &&
+            program != Maxwell::ShaderType::Pixel) {
             throw Shader::RuntimeError("Unsupported native graphics shader stage {}", static_cast<u32>(program));
         }
-        if (std::getenv("EDEN_NATIVE_DRAW_DIAGNOSTICS")) {
-            const u32 native_stage = program == Maxwell::ShaderType::Pixel ? 4 : 0;
+        static const bool native_draw_diag = std::getenv("EDEN_NATIVE_DRAW_DIAGNOSTICS") != nullptr;
+        if (native_draw_diag) [[unlikely]] {
+            const u32 native_stage = program == Maxwell::ShaderType::Pixel    ? 4
+                                   : program == Maxwell::ShaderType::Geometry ? 3
+                                                                              : 0;
             const auto& table = maxwell3d->state.shader_stages[native_stage].const_buffers[1];
             if (table.enabled && table.size && table.size <= Tegra::Engines::Maxwell3D::Regs::MaxConstBufferSize) {
                 std::vector<u8> bytes(table.size);
@@ -482,7 +504,9 @@ GraphicsEnvironment::GraphicsEnvironment(Tegra::Engines::Maxwell3D& maxwell3d_,
     const u64 max_allowed_local = static_cast<u64>((std::numeric_limits<u32>::max)()) - crs_size;
     const u64 clamped_local_size = std::min<u64>(local_size, max_allowed_local);
     local_memory_size = static_cast<u32>(clamped_local_size) + static_cast<u32>(crs_size);
-    texture_bound = maxwell3d->regs.bindless_texture_const_buffer_slot;
+    // Do NOT overwrite texture_bound here: line 445 already initialized it from
+    // bindless_texture_const_buffer_slot BEFORE InitializeNativeCode(), which sets
+    // texture_bound = lowered.required_texture_buffer (e.g. cbuf 2) for Switch 2 Ampere shaders.
     is_proprietary_driver = maxwell3d->GetNativeMacroEngine().native_turing || texture_bound == 2;
     has_hle_engine_state =
         maxwell3d->engine_state == Tegra::Engines::Maxwell3D::EngineHint::OnHLEMacro;

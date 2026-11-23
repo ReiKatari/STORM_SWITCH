@@ -622,7 +622,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                     Log.error("[EmulationFragment] Error processing EmuReady intent: ${e.message}")
                     Toast.makeText(
                         requireContext(),
-                        "Error: ${e.message?.take(50) ?: "Unknown error"}",
+                        getString(R.string.storm_error_fmt, e.message?.take(50) ?: ""),
                         Toast.LENGTH_LONG
                     ).show()
                     requireActivity().finish()
@@ -632,7 +632,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
             Log.error("[EmulationFragment] EmuReady intent missing title_id")
             Toast.makeText(
                 requireContext(),
-                "Invalid request: missing title ID",
+                getString(R.string.storm_invalid_request_missing_tid),
                 Toast.LENGTH_SHORT
             ).show()
             requireActivity().finish()
@@ -3976,19 +3976,34 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 toggleFastForward()
             }
             OverlayControl.BUTTON_REWIND.id -> {
-                showEdenSnackbar(getString(R.string.storm_ov20_ctrl_rewind), true)
+                quickLoadSlot(1)
             }
             OverlayControl.BUTTON_FRAME_STEP.id -> {
-                showEdenSnackbar(getString(R.string.storm_ov20_ctrl_frame_step), true)
+                if (this::emulationState.isInitialized) {
+                    if (emulationState.isPaused) {
+                        resumeEmulationFromUi()
+                        perfStatsUpdateHandler.postDelayed({
+                            if (isAdded && this::emulationState.isInitialized && !emulationState.isPaused) {
+                                pauseEmulationAndCaptureFrame()
+                            }
+                        }, 16L)
+                    } else {
+                        pauseEmulationAndCaptureFrame()
+                    }
+                }
             }
             OverlayControl.BUTTON_AI_TRANSLATOR.id -> {
                 binding.buttonFloatingTranslate.let { it.visibility = View.VISIBLE; it.performClick() }
             }
             OverlayControl.BUTTON_AUTO_FIX.id -> {
-                showEdenSnackbar(getString(R.string.storm_ov20_ctrl_auto_fix), true)
+                val currentGame = game ?: args.game
+                if (currentGame != null) {
+                    AutoCorrectionDialogFragment.newInstance(currentGame)
+                        .show(childFragmentManager, AutoCorrectionDialogFragment.TAG)
+                }
             }
             OverlayControl.BUTTON_TURBO_HOLD.id -> {
-                showEdenSnackbar(getString(R.string.storm_ov20_ctrl_turbo_hold), true)
+                toggleFastForward()
             }
             OverlayControl.BUTTON_PAUSE_COOLING.id -> {
                 if (emulationState.isPaused) {
@@ -4003,19 +4018,22 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 NativeConfig.saveGlobalConfig()
             }
             OverlayControl.BUTTON_GYRO_TOGGLE.id -> {
-                val motion = BooleanSetting.USE_DEVICE_SENSORS.getBoolean()
-                BooleanSetting.USE_DEVICE_SENSORS.setBoolean(!motion)
+                val motion = !BooleanSetting.USE_DEVICE_SENSORS.getBoolean()
+                BooleanSetting.USE_DEVICE_SENSORS.setBoolean(motion)
                 NativeConfig.saveGlobalConfig()
-                showEdenSnackbar(if (!motion) "Gyroscope ON" else "Gyroscope OFF", true)
+                showEdenSnackbar(getString(if (motion) R.string.storm_gyro_on else R.string.storm_gyro_off), true)
             }
             OverlayControl.BUTTON_MOUSE_MODE.id -> {
-                showEdenSnackbar(getString(R.string.storm_ov20_ctrl_mouse_mode), true)
+                val touchEnabled = !BooleanSetting.TOUCHSCREEN.getBoolean()
+                BooleanSetting.TOUCHSCREEN.setBoolean(touchEnabled)
+                NativeConfig.saveGlobalConfig()
+                showEdenSnackbar(getString(if (touchEnabled) R.string.storm_touchscreen_on else R.string.storm_touchscreen_off), true)
             }
             OverlayControl.BUTTON_MACRO_M1.id -> {
-                showEdenSnackbar(getString(R.string.storm_ov20_ctrl_macro_m1), true)
+                toggleQuickSpeedLimit()
             }
             OverlayControl.BUTTON_GAME_CHAT.id -> {
-                showEdenSnackbar(getString(R.string.storm_ov20_ctrl_game_chat), true)
+                (activity as? EmulationActivity)?.displayMultiplayerDialog()
             }
         }
     }

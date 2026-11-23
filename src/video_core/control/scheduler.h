@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <memory>
 #include <mutex>
 #include <ankerl/unordered_dense.h>
@@ -26,8 +27,7 @@ public:
 
     bool ResumePending(GPU& gpu);
     [[nodiscard]] bool HasPendingNativeChannels() const {
-        std::scoped_lock lock{scheduling_guard};
-        return !pending_native_channels.empty();
+        return has_pending_native.load(std::memory_order_acquire);
     }
 
     void DeclareChannel(std::shared_ptr<ChannelState> new_channel);
@@ -35,6 +35,7 @@ public:
 private:
     ankerl::unordered_dense::map<s32, std::shared_ptr<ChannelState>> channels;
     mutable std::mutex scheduling_guard;
+    std::atomic<bool> has_pending_native{false};
     std::vector<std::shared_ptr<ChannelState>> pending_native_channels;
 };
 

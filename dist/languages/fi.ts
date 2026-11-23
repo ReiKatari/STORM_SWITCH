@@ -1234,7 +1234,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="394" />
       <source>CPU</source>
-      <translation>CPU</translation>
+      <translation>CPU (prosessori)</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="395" />
@@ -1379,7 +1379,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="453" />
       <source>Debugging</source>
-      <translation>Debugging</translation>
+      <translation>Virheenjäljitys</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="457" />
@@ -2043,7 +2043,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="638" />
       <source>Handheld</source>
-      <translation>Handheld</translation>
+      <translation>Käsikonsolimoodi</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="642" />
@@ -2183,13 +2183,21 @@ When a program attempts to open the controller applet, it is immediately closed.
       <source>Grid View</source>
       <translation>Grid View</translation>
     </message>
-  </context>
+      <message>
+        <source>Theme:</source>
+        <translation>Teema:</translation>
+    </message>
+    <message>
+        <source>Interface language:</source>
+        <translation>Käyttöliittymän kieli:</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureApplets</name>
     <message>
       <location filename="../../src/yuzu/configuration/configure_applets.ui" line="14" />
       <source>Form</source>
-      <translation>Form</translation>
+      <translation>Muoto</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_applets.ui" line="17" />
@@ -2251,7 +2259,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/yuzu/configuration/configure_camera.ui" line="140" />
       <source>Restore Defaults</source>
-      <translation>Restore Defaults</translation>
+      <translation>Palauta oletukset</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_camera.cpp" line="135" />
@@ -2503,7 +2511,7 @@ Ota sisäiset sivutaulukot käyttöön</translation>
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="119" />
       <source>Port:</source>
-      <translation>Port:</translation>
+      <translation>Portti:</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="157" />
@@ -3322,7 +3330,7 @@ Would you like to delete the old save data?</translation>
     <message>
       <location filename="../../src/yuzu/configuration/configure_graphics_extensions.ui" line="14" />
       <source>Form</source>
-      <translation>Form</translation>
+      <translation>Muoto</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_graphics_extensions.ui" line="17" />
@@ -3531,7 +3539,7 @@ Would you like to delete the old save data?</translation>
     <message>
       <location filename="../../src/yuzu/configuration/configure_input.ui" line="169" />
       <source>Handheld</source>
-      <translation>Handheld</translation>
+      <translation>Käsikonsolimoodi</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_input.ui" line="179" />
@@ -3597,7 +3605,7 @@ Would you like to delete the old save data?</translation>
     <message>
       <location filename="../../src/yuzu/configuration/configure_input.ui" line="435" />
       <source>Connected</source>
-      <translation>Connected</translation>
+      <translation>Yhdistetty</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_input.ui" line="494" />
@@ -3821,7 +3829,7 @@ Would you like to delete the old save data?</translation>
     <message>
       <location filename="../../src/yuzu/configuration/configure_input_per_game.ui" line="14" />
       <source>Form</source>
-      <translation>Form</translation>
+      <translation>Muoto</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_input_per_game.ui" line="17" />
@@ -4137,7 +4145,7 @@ Would you like to delete the old save data?</translation>
     <message>
       <location filename="../../src/yuzu/configuration/configure_input_player.ui" line="2875" />
       <source>Configure</source>
-      <translation>Configure</translation>
+      <translation>Säädä</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="387" />
@@ -5090,17 +5098,17 @@ UUID: %2</translation>
     <message>
       <location filename="../../src/yuzu/configuration/configure_ringcon.ui" line="344" />
       <source>Restore Defaults</source>
-      <translation>Restore Defaults</translation>
+      <translation>Palauta oletukset</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_ringcon.cpp" line="171" />
       <source>Clear</source>
-      <translation>Clear</translation>
+      <translation>Tyhjennä</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_ringcon.cpp" line="173" />
       <source>[not set]</source>
-      <translation>[not set]</translation>
+      <translation>[ei asetettu]</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_ringcon.cpp" line="175" />
@@ -5177,7 +5185,11 @@ UUID: %2</translation>
       <source>Warning: "%1" is not a valid language for region "%2"</source>
       <translation>Warning: "%1" is not a valid language for region "%2"</translation>
     </message>
-  </context>
+      <message>
+        <source>Limit Speed Percent</source>
+        <translation>Nopeuden prosenttiraja</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureTas</name>
     <message>
@@ -5390,7 +5402,7 @@ Drag points to change position, or double-click table cells to edit values.</tra
       <location filename="../../src/yuzu/configuration/configure_ui.cpp" line="35" />
       <location filename="../../src/yuzu/configuration/configure_ui.cpp" line="47" />
       <source>None</source>
-      <translation>None</translation>
+      <translation>Ei mitään</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_ui.cpp" line="36" />
@@ -5551,7 +5563,11 @@ Drag points to change position, or double-click table cells to edit values.</tra
       <comment>Screenshot width value</comment>
       <translation>Automaattinen (%1 x %2, %3 x %4)</translation>
     </message>
-  </context>
+      <message>
+        <source>Screenshots Path:</source>
+        <translation>Kuvakaappauksien polku:</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureVibration</name>
     <message>
@@ -5698,7 +5714,15 @@ Drag points to change position, or double-click table cells to edit values.</tra
       <comment>Tooltip</comment>
       <translation>Must be 48 characters, and lowercase a-z</translation>
     </message>
-  </context>
+      <message>
+        <source>Token:</source>
+        <translation>Tokeni:</translation>
+    </message>
+    <message>
+        <source>Username:</source>
+        <translation>Nimimerkki:</translation>
+    </message>
+</context>
   <context>
     <name>ControllerDialog</name>
     <message>
@@ -5755,7 +5779,7 @@ Drag points to change position, or double-click table cells to edit values.</tra
     <message>
       <location filename="../../src/yuzu/data_widget.ui" line="14" />
       <source>Form</source>
-      <translation>Form</translation>
+      <translation>Muoto</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/data_widget.ui" line="22" />
@@ -5813,7 +5837,7 @@ Drag points to change position, or double-click table cells to edit values.</tra
     <message>
       <location filename="../../src/yuzu/deps_dialog.cpp" line="22" />
       <source>Version</source>
-      <translation>Version</translation>
+      <translation>Versio</translation>
     </message>
   </context>
   <context>
@@ -5981,7 +6005,7 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
     <message>
       <location filename="../../src/yuzu/multiplayer/message.cpp" line="63" />
       <source>Error</source>
-      <translation>Error</translation>
+      <translation>Virhe</translation>
     </message>
   </context>
   <context>
@@ -6277,7 +6301,7 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="194" />
       <source>Name</source>
-      <translation>Name</translation>
+      <translation>Nimi</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="195" />
@@ -6292,7 +6316,7 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="197" />
       <source>Size</source>
-      <translation>Size</translation>
+      <translation>Koko</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="198" />
@@ -6354,7 +6378,7 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
     <message>
       <location filename="../../src/yuzu/multiplayer/host_room.ui" line="91" />
       <source>Username</source>
-      <translation>Username</translation>
+      <translation>Nimimerkki</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/multiplayer/host_room.ui" line="101" />
@@ -6374,7 +6398,7 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
     <message>
       <location filename="../../src/yuzu/multiplayer/host_room.ui" line="139" />
       <source>Room Description</source>
-      <translation>Room Description</translation>
+      <translation>Huoneen kuvaus</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/multiplayer/host_room.ui" line="153" />
@@ -6402,7 +6426,7 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
     <message>
       <location filename="../../src/yuzu/multiplayer/host_room.cpp" line="186" />
       <source>Error</source>
-      <translation>Error</translation>
+      <translation>Virhe</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/multiplayer/host_room.cpp" line="187" />
@@ -6489,7 +6513,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="41" />
       <source>Configure</source>
-      <translation>Configure</translation>
+      <translation>Säädä</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="42" />
@@ -6544,7 +6568,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="52" />
       <source>Leave Room</source>
-      <translation>Leave Room</translation>
+      <translation>Poistu huoneesta</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="53" />
@@ -7518,7 +7542,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2676" />
       <source>Properties</source>
-      <translation>Properties</translation>
+      <translation>Ominaisuudet</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2677" />
@@ -7751,7 +7775,7 @@ Please, only use this feature to install updates and DLC.</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3704" />
       <source>Error</source>
-      <translation>Error</translation>
+      <translation>Virhe</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3704" />
@@ -8104,7 +8128,7 @@ Would you like to bypass this and exit anyway?</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="62" />
       <source>Handheld</source>
-      <translation>Handheld</translation>
+      <translation>Käsikonsolimoodi</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="66" />
@@ -8141,7 +8165,15 @@ Would you like to bypass this and exit anyway?</translation>
       <source>Null</source>
       <translation>Null</translation>
     </message>
-  </context>
+      <message>
+        <source>Mii Edit</source>
+        <translation>Miin muokkaus</translation>
+    </message>
+    <message>
+        <source>Install Files to NAND</source>
+        <translation>Asenna tiedosto NAND-muistiin</translation>
+    </message>
+</context>
   <context>
     <name>MigrationWorker</name>
     <message>
@@ -8263,7 +8295,7 @@ If you wish to clean up the files which were left in the old data location, you 
     <message>
       <location filename="../../src/yuzu/multiplayer/state.cpp" line="131" />
       <source>Connected</source>
-      <translation>Connected</translation>
+      <translation>Yhdistetty</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/multiplayer/state.cpp" line="138" />
@@ -8273,7 +8305,7 @@ If you wish to clean up the files which were left in the old data location, you 
     <message>
       <location filename="../../src/yuzu/multiplayer/state.cpp" line="209" />
       <source>Error</source>
-      <translation>Error</translation>
+      <translation>Virhe</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/multiplayer/state.cpp" line="210" />
@@ -8300,7 +8332,7 @@ Proceed anyway?</translation>
     <message>
       <location filename="../../src/yuzu/multiplayer/message.cpp" line="75" />
       <source>Leave Room</source>
-      <translation>Leave Room</translation>
+      <translation>Poistu huoneesta</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/multiplayer/message.cpp" line="76" />
@@ -8349,7 +8381,7 @@ Proceed anyway?</translation>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="70" />
       <source>Username</source>
-      <translation>Username</translation>
+      <translation>Nimimerkki</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="82" />
@@ -8485,7 +8517,7 @@ p, li { white-space: pre-wrap; }
     <message>
       <location filename="../../src/yuzu/render/performance_overlay.ui" line="14" />
       <source>Form</source>
-      <translation>Form</translation>
+      <translation>Muoto</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/render/performance_overlay.ui" line="32" />
@@ -8613,13 +8645,6 @@ p, li { white-space: pre-wrap; }
       <location filename="../../src/yuzu/user_data_migration.cpp" line="68" />
       <source>Link Old Directory</source>
       <translation>Link Old Directory</translation>
-    </message>
-    <message>
-      <location filename="../../src/yuzu/user_data_migration.cpp" line="98" />
-      <source>
-      </source>
-      <translation>
-      </translation>
     </message>
     <message>
       <location filename="../../src/yuzu/user_data_migration.cpp" line="102" />
@@ -9102,7 +9127,7 @@ p, li { white-space: pre-wrap; }
     <message>
       <location filename="../../src/yuzu/applets/qt_amiibo_settings.ui" line="217" />
       <source>Name</source>
-      <translation>Name</translation>
+      <translation>Nimi</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/applets/qt_amiibo_settings.ui" line="242" />
@@ -10224,7 +10249,7 @@ This is recommended if you want to share data between emulators.</translation>
     <message>
       <location filename="../../src/yuzu/applets/qt_controller.ui" line="2538" />
       <source>Connected</source>
-      <translation>Connected</translation>
+      <translation>Yhdistetty</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/applets/qt_controller.ui" line="2552" />
@@ -10615,4 +10640,156 @@ Error code: %3</translation>
       <translation>Successfully downloaded %1. Would you like to open it?</translation>
     </message>
   </context>
+<context>
+    <name>QPlatformTheme</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Peruuta</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Apu</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Palauta oletukset</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Tallenna</translation>
+    </message>
+</context>
+<context>
+    <name>QDialogButtonBox</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Peruuta</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Apu</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Palauta oletukset</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Tallenna</translation>
+    </message>
+</context>
+<context>
+    <name>QMessageBox</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Peruuta</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Apu</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Palauta oletukset</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Tallenna</translation>
+    </message>
+</context>
+<context>
+    <name>QGuiApplication</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Peruuta</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Apu</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Palauta oletukset</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Tallenna</translation>
+    </message>
+</context>
+<context>
+    <name>QAbstractButton</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Peruuta</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Apu</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Palauta oletukset</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Tallenna</translation>
+    </message>
+</context>
+<context>
+    <name>QColorDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Peruuta</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Apu</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Palauta oletukset</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Tallenna</translation>
+    </message>
+</context>
+<context>
+    <name>QFileDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Peruuta</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Apu</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Palauta oletukset</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Tallenna</translation>
+    </message>
+</context>
+<context>
+    <name>QFontDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Peruuta</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Apu</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Palauta oletukset</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Tallenna</translation>
+    </message>
+</context>
 </TS>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="storm_prof_title">Einstellungsprofile</string>
+    <string name="storm_prof_filter_all">Alle</string>
+    <string name="storm_prof_btn_save">Speichern</string>
+    <string name="storm_prof_btn_import">Importieren</string>
+    <string name="storm_prof_btn_apply">Anwenden</string>
+    <string name="storm_prof_btn_share">Teilen</string>
+    <string name="storm_prof_btn_rename">Umbenennen</string>
+    <string name="storm_prof_btn_delete">Löschen</string>
+    <string name="storm_prof_preset_balanced_name">Ausbalanciert (Empfohlen)</string>
+    <string name="storm_prof_save_hint">Profilname</string>
+    <string name="storm_prof_save_btn">Speichern</string>
+    <string name="storm_prof_rename_title">Profil umbenennen</string>
+    <string name="storm_prof_delete_title">Profil löschen</string>
+    <string name="storm_auto_btn_reset">Zurücksetzen</string>
+    <string name="storm_auto_hw_soc_title">Prozessor / SoC</string>
+    <string name="storm_auto_param_resolution">Auflösungsskalierung</string>
+    <string name="storm_auto_param_cpu_backend">CPU-Backend</string>
+    <string name="storm_auto_btn_apply">Optimierung anwenden</string>
+</resources>

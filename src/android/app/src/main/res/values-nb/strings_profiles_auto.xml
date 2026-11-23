@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="storm_prof_btn_save">Lagre</string>
+    <string name="storm_prof_btn_import">Importer</string>
+    <string name="storm_prof_btn_share">Del</string>
+    <string name="storm_prof_btn_rename">Endre navn</string>
+    <string name="storm_prof_btn_delete">Slett</string>
+    <string name="storm_prof_preset_balanced_name">Balansert (Anbefalt)</string>
+    <string name="storm_prof_save_btn">Lagre</string>
+    <string name="storm_prof_rename_title">Gi nytt navn til profil</string>
+    <string name="storm_prof_delete_title">Slett profil</string>
+</resources>

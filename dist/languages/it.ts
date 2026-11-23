@@ -309,7 +309,7 @@ Questo bannerà sia il suo nome utente del forum che il suo indirizzo IP.</trans
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="50" />
             <source>Enables Horizon's built-in overlay applet. Press and hold the home button for 1 second to show it.</source>
-            <translation>Enables Horizon's built-in overlay applet. Press and hold the home button for 1 second to show it.</translation>
+            <translation>Abilita l'applet overlay integrato di Horizon. Tieni premuto il pulsante HOME per 1 secondo per aprirlo.</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="54" />
@@ -530,7 +530,7 @@ Nota che questo può causare stalli e altre race condition.</translation>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="142" />
             <source>API:</source>
-            <translation>API:</translation>
+            <translation>API grafica:</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="143" />
@@ -691,7 +691,7 @@ BC1/BC3: Il formato intermedio sarà ricompresso nel formato BC1 o BC3, risparmi
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="186" />
             <source>Frame Pacing Mode (Vulkan only)</source>
-            <translation>Frame Pacing Mode (Vulkan only)</translation>
+            <translation>Modalità frame pacing (solo Vulkan)</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="187" />
@@ -792,9 +792,8 @@ Si può utilizzare in modo sicuro al 16x su quasi tutte le GPU.</translation>
             <source>Controls the GPU emulation mode.
 Most games render fine with Fast, but Accurate is still required for some.
 Particles tend to only render correctly with Accurate mode.</source>
-            <translation>Controls the GPU emulation mode.
-Most games render fine with Fast, but Accurate is still required for some.
-Particles tend to only render correctly with Accurate mode.</translation>
+            <translation>Controlla la precisione dell'emulazione GPU.
+La modalità normale è più veloce, ma la modalità accurata risolve glitch e particelle in alcuni giochi.</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="225" />
@@ -806,14 +805,14 @@ Particles tend to only render correctly with Accurate mode.</translation>
             <source>Controls the DMA read mode.
 Unsafe is faster, while Safe is more stable and can fix issues in some games.
 Default follows the GPU Accuracy setting.</source>
-            <translation>Controls the DMA read mode.
-Unsafe is faster, while Safe is more stable and can fix issues in some games.
-Default follows the GPU Accuracy setting.</translation>
+            <translation>Controlla la modalità di lettura DMA.
+Non sicuro è più veloce, mentre Sicuro è più stabile e corregge errori grafici.
+Predefinito segue la precisione GPU.</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="227" />
             <source>GPU Fence Behavior:</source>
-            <translation>GPU Fence Behavior:</translation>
+            <translation>Comportamento fence GPU:</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="228" />
@@ -823,24 +822,20 @@ Balanced offers better compatibility and may fix issues in some games.
 Accurate further improves compatibility at the cost of some performance.
 Strict is the slowest option, but can fix issues that require stricter synchronization.
 Default follows the GPU Accuracy setting.</source>
-            <translation>Controls the GPU fence synchronization behavior.
-Immediate is the fastest option, but can introduce some issues.
-Balanced offers better compatibility and may fix issues in some games.
-Accurate further improves compatibility at the cost of some performance.
-Strict is the slowest option, but can fix issues that require stricter synchronization.
-Default follows the GPU Accuracy setting.</translation>
+            <translation>Controlla la sincronizzazione delle fence GPU.
+Immediato è il più veloce; Bilanciato e Accurato migliorano la compatibilità; Rigoroso risolve problemi di sincronizzazione complessi.</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="229" />
             <source>Enable GPU buffer readback</source>
-            <translation>Enable GPU buffer readback</translation>
+            <translation>Abilita rilettura buffer GPU</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="230" />
             <source>Preserves GPU-modified data by reading it back before uploading.
 Some games require this to render certain effects properly.</source>
-            <translation>Preserves GPU-modified data by reading it back before uploading.
-Some games require this to render certain effects properly.</translation>
+            <translation>Preserva i dati modificati dalla GPU rileggendoli prima del caricamento.
+Necessario in alcuni giochi per rendere correttamente fisica o effetti speciali.</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="231" />
@@ -867,7 +862,7 @@ Usa 256 per massimizzare le prestazioni e 512 per massimizzare la qualità visiv
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="236" />
             <source>GPU Unswizzle</source>
-            <translation>GPU Unswizzle</translation>
+            <translation>Unswizzle GPU</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="237" />
@@ -879,7 +874,7 @@ Disable if experiencing crashes or graphical glitches.</translation>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="239" />
             <source>GPU Unswizzle Max Texture Size</source>
-            <translation>GPU Unswizzle Max Texture Size</translation>
+            <translation>Dimensione massima texture Unswizzle GPU</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="240" />
@@ -893,7 +888,7 @@ Adjust this to find the balance between GPU acceleration and CPU overhead.</tran
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="244" />
             <source>GPU Unswizzle Stream Size</source>
-            <translation>GPU Unswizzle Stream Size</translation>
+            <translation>Dimensione flusso Unswizzle GPU</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="245" />
@@ -905,7 +900,7 @@ Higher values can reduce stutter during texture loading but may impact frame con
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="248" />
             <source>GPU Unswizzle Chunk Size</source>
-            <translation>GPU Unswizzle Chunk Size</translation>
+            <translation>Dimensione blocco Unswizzle GPU</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="249" />
@@ -963,7 +958,7 @@ Le compute pipelines sono sempre attivate su tutti gli altri drivers.</translati
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="268" />
             <source>Barrier feedback loops</source>
-            <translation>Barrier feedback loops</translation>
+            <translation>Cicli di feedback dei barrier</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="269" />
@@ -973,7 +968,7 @@ Le compute pipelines sono sempre attivate su tutti gli altri drivers.</translati
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="270" />
             <source>Enable buffer history</source>
-            <translation>Enable buffer history</translation>
+            <translation>Abilita cronologia buffer</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="271" />
@@ -1019,7 +1014,7 @@ Gli stati più alti consentono più funzionalità e possono migliorare le presta
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="287" />
             <source>Vertex Input Dynamic State</source>
-            <translation>Vertex Input Dynamic State</translation>
+            <translation>Stato dinamico input vertici</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="288" />
@@ -1353,7 +1348,7 @@ Quando un programma proverà ad aprire l'applet del controller, quest'ultimo ver
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="441" />
             <source>Immediate</source>
-            <translation>Immediate</translation>
+            <translation>Immediato</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="442" />
@@ -1363,7 +1358,7 @@ Quando un programma proverà ad aprire l'applet del controller, quest'ultimo ver
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="444" />
             <source>Strict</source>
-            <translation>Strict</translation>
+            <translation>Rigoroso</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="451" />
@@ -1507,7 +1502,7 @@ Quando un programma proverà ad aprire l'applet del controller, quest'ultimo ver
         </message>
         <message>
             <source>Lanczos</source>
-            <translation>Lanczos</translation>
+            <translation>Lanczos 3</translation>
         </message>
         <message>
             <source>Area (Pixel Area Super-Sampling)</source>
@@ -2036,7 +2031,7 @@ Quando un programma proverà ad aprire l'applet del controller, quest'ultimo ver
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="631" />
             <source>8GB DRAM</source>
-            <translation>8GB DRAM</translation>
+            <translation>8 GB DRAM</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.cpp" line="632" />
@@ -2435,7 +2430,7 @@ Quando un programma proverà ad aprire l'applet del controller, quest'ultimo ver
         </message>
         <message>
             <source>VRAM Usage Mode</source>
-            <translation>VRAM Usage Mode</translation>
+            <translation>Modalità uso VRAM</translation>
         </message>
         <message>
             <source>Использование VRAM:</source>
@@ -2455,7 +2450,7 @@ Quando un programma proverà ad aprire l'applet del controller, quest'ultimo ver
         </message>
         <message>
             <source>ASTC Decoding Method</source>
-            <translation>ASTC Decoding Method</translation>
+            <translation>Metodo decodifica ASTC</translation>
         </message>
         <message>
             <source>Декодирование ASTC</source>
@@ -2563,7 +2558,7 @@ Quando un programma proverà ad aprire l'applet del controller, quest'ultimo ver
         </message>
         <message>
             <source>Eco Frame Pacing</source>
-            <translation>Eco Frame Pacing</translation>
+            <translation>Compensación de fotogramas ecológica</translation>
         </message>
         <message>
             <source>Выравнивание кадров</source>
@@ -2579,7 +2574,7 @@ Quando un programma proverà ad aprire l'applet del controller, quest'ultimo ver
         </message>
         <message>
             <source>Smart Shader Throttle</source>
-            <translation>Smart Shader Throttle</translation>
+            <translation>Regulador inteligente de shaders</translation>
         </message>
         <message>
             <source>Троттлинг шейдеров</source>
@@ -2591,7 +2586,7 @@ Quando un programma proverà ad aprire l'applet del controller, quest'ultimo ver
         </message>
         <message>
             <source>Vulkan Pipeline Cache</source>
-            <translation>Vulkan Pipeline Cache</translation>
+            <translation>Cache pipeline Vulkan</translation>
         </message>
         <message>
             <source>Кэш Vulkan</source>
@@ -2603,7 +2598,7 @@ Quando un programma proverà ad aprire l'applet del controller, quest'ultimo ver
         </message>
         <message>
             <source>VRAM Garbage Collection</source>
-            <translation>VRAM Garbage Collection</translation>
+            <translation>Recolección de basura VRAM</translation>
         </message>
         <message>
             <source>Сборка мусора VRAM</source>
@@ -2659,65 +2654,65 @@ Quando un programma proverà ad aprire l'applet del controller, quest'ultimo ver
         </message>
         <message>
             <source>CPU Affinity Pinning</source>
-            <translation>CPU Affinity Pinning</translation>
+            <translation>Fijación de afinidad de CPU</translation>
         </message>
         <message>
             <source>FP16 Frame Generation</source>
-            <translation>FP16 Frame Generation</translation>
+            <translation>Generación de fotogramas FP16</translation>
         </message>
         <message>
             <source>Auto Optical Flow Scale</source>
-            <translation>Auto Optical Flow Scale</translation>
+            <translation>Escala de flujo óptico automático</translation>
         </message>
         <message>
             <source>Emulate BGR565</source>
-            <translation>Emulate BGR565</translation>
+            <translation>Emular BGR565</translation>
         </message>
         <message>
             <source>Low-End Turbo</source>
-            <translation>Low-End Turbo</translation>
+            <translation>Turbo para gama baja</translation>
         </message>
         <message>
             <source>Thermal Governor</source>
-            <translation>Thermal Governor</translation>
+            <translation>Regulador térmico</translation>
         </message>
         <message>
             <source>Raises the clock the emulated CPU reports, which removes some FPS limiters.
 Weaker CPUs may see reduced performance, and certain games may behave improperly.</source>
-            <translation>Raises the clock the emulated CPU reports, which removes some FPS limiters.
-Weaker CPUs may see reduced performance, and certain games may behave improperly.</translation>
+            <translation>Aumenta la frequenza segnalata dalla CPU emulata, rimuovendo alcuni limitatori di FPS.
+Le CPU più deboli potrebbero subire cali di prestazioni.</translation>
         </message>
         <message>
             <source>Makes the game believe GPU work finishes faster than it does, so it stops lowering resolution and render distance to fit the Switch's clocks.</source>
-            <translation>Makes the game believe GPU work finishes faster than it does, so it stops lowering resolution and render distance to fit the Switch's clocks.</translation>
+            <translation>Hace que el juego crea que el trabajo de la GPU termina más rápido, evitando que baje la resolución dinámica y la distancia de dibujado.</translation>
         </message>
         <message>
             <source>Pins emulation threads to physical performance cores.</source>
-            <translation>Pins emulation threads to physical performance cores.</translation>
+            <translation>Fija los hilos de emulación a núcleos de rendimiento físicos.</translation>
         </message>
         <message>
             <source>Reduces power draw and frame stuttering with adaptive delivery.</source>
-            <translation>Reduces power draw and frame stuttering with adaptive delivery.</translation>
+            <translation>Reduce el consumo de energía y los tirones con entrega adaptativa de fotogramas.</translation>
         </message>
         <message>
             <source>Locks dynamic resolution scale to prevent resolution drops.</source>
-            <translation>Locks dynamic resolution scale to prevent resolution drops.</translation>
+            <translation>Bloquea la escala de resolución dinámica para evitar caídas de resolución.</translation>
         </message>
         <message>
             <source>Dynamically regulates priority of background shader compilation threads to prevent microstutters.</source>
-            <translation>Dynamically regulates priority of background shader compilation threads to prevent microstutters.</translation>
+            <translation>Regula dinámicamente la prioridad de los hilos de compilación de shaders para evitar microtirones.</translation>
         </message>
         <message>
             <source>Periodic background collection of unused texture buffers and ASTC cache to prevent VRAM leaks.</source>
-            <translation>Periodic background collection of unused texture buffers and ASTC cache to prevent VRAM leaks.</translation>
+            <translation>Limpieza periódica en segundo plano de búferes de textura no utilizados y caché ASTC para evitar fugas de VRAM.</translation>
         </message>
         <message>
             <source>Prevents out-of-memory crashes by unloading textures when VRAM exceeds 85%.</source>
-            <translation>Prevents out-of-memory crashes by unloading textures when VRAM exceeds 85%.</translation>
+            <translation>Evita cierres por falta de memoria descargando texturas inactivas cuando el uso de VRAM supera el 85%.</translation>
         </message>
         <message>
             <source>Maximizes smoothness on entry-level multi-core processors and weak GPUs.</source>
-            <translation>Maximizes smoothness on entry-level multi-core processors and weak GPUs.</translation>
+            <translation>Maximiza la fluidez en procesadores multinúcleo básicos y GPUs de gama baja.</translation>
         </message>
         <message>
             <source>Reduces CPU and GPU temperatures by 10-15°C during frame wait intervals without dropping target frame rate.</source>
@@ -2725,163 +2720,163 @@ Weaker CPUs may see reduced performance, and certain games may behave improperly
         </message>
         <message>
             <source>Locks maximum performance for CPU and GPU, disables aggressive throttling and power saving.</source>
-            <translation>Locks maximum performance for CPU and GPU, disables aggressive throttling and power saving.</translation>
+            <translation>Fija el rendimiento máximo para CPU y GPU, deshabilitando el ahorro de energía agresivo.</translation>
         </message>
         <message>
             <source>Enables HDR10 (BT.2020 PQ / ST2084) color space for compatible HDR and OLED displays.</source>
-            <translation>Enables HDR10 (BT.2020 PQ / ST2084) color space for compatible HDR and OLED displays.</translation>
+            <translation>Habilita el espacio de color HDR10 (BT.2020 PQ / ST2084) para pantallas compatibles.</translation>
         </message>
         <message>
             <source>Uses 16-bit half precision floating point for frame generation.</source>
-            <translation>Uses 16-bit half precision floating point for frame generation.</translation>
+            <translation>Utiliza coma flotante de media precisión de 16 bits para la generación de fotogramas.</translation>
         </message>
         <message>
             <source>Automatically calculates optical flow grid scale for frame generation.</source>
-            <translation>Automatically calculates optical flow grid scale for frame generation.</translation>
+            <translation>Calcula automáticamente la escala de cuadrícula de flujo óptico para la generación de fotogramas.</translation>
         </message>
         <message>
             <source>Emulates BGR565 color format by software swapping red and blue channels.</source>
-            <translation>Emulates BGR565 color format by software swapping red and blue channels.</translation>
+            <translation>Emula el formato de color BGR565 intercambiando por software los canales rojo y azul.</translation>
         </message>
         <message>
             <source>Releases synchronization fences earlier to reduce frame presentation latency.</source>
-            <translation>Releases synchronization fences earlier to reduce frame presentation latency.</translation>
+            <translation>Libera las barreras de sincronización antes para reducir la latencia de presentación de fotogramas.</translation>
         </message>
         <message>
             <source>Runs optimization passes on compiled SPIR-V shaders.</source>
-            <translation>Runs optimization passes on compiled SPIR-V shaders.</translation>
+            <translation>Ejecuta pasadas de optimización en shaders SPIR-V compilados.</translation>
         </message>
         <message>
             <source>Uses fast monotonic GPU timer queries for frame pacing.</source>
-            <translation>Uses fast monotonic GPU timer queries for frame pacing.</translation>
+            <translation>Utiliza consultas de temporizador GPU monótonas y rápidas para el ritmo de fotogramas.</translation>
         </message>
         <message>
             <source>Skips rendering non-critical frames when emulation falls behind target rate.</source>
-            <translation>Skips rendering non-critical frames when emulation falls behind target rate.</translation>
+            <translation>Omite el renderizado de fotogramas no críticos cuando la emulación se retrasa respecto a la velocidad objetivo.</translation>
         </message>
         <message>
             <source>Reduces power consumption and fan noise on portable devices.</source>
-            <translation>Reduces power consumption and fan noise on portable devices.</translation>
+            <translation>Reduce el consumo de energía y el ruido del ventilador en dispositivos portátiles.</translation>
         </message>
         <message>
             <source>Displays floating quick translation overlay button.</source>
-            <translation>Displays floating quick translation overlay button.</translation>
+            <translation>Muestra un botón flotante de traducción rápida.</translation>
         </message>
         <message>
             <source>CPU Clocks</source>
-            <translation>CPU Clocks</translation>
+            <translation>Frecuencias CPU</translation>
         </message>
         <message>
             <source>GPU Clocks</source>
-            <translation>GPU Clocks</translation>
+            <translation>Frecuencias GPU</translation>
         </message>
         <message>
             <source>Eco Thermal Mode</source>
-            <translation>Eco Thermal Mode</translation>
+            <translation>Modo térmico ecológico</translation>
         </message>
         <message>
             <source>Custom RTC Offset:</source>
-            <translation>Custom RTC Offset:</translation>
+            <translation>Compensación RTC:</translation>
         </message>
         <message>
             <source>Custom RTC Offset</source>
-            <translation>Custom RTC Offset</translation>
+            <translation>Compensación RTC</translation>
         </message>
         <message>
             <source>Custom RTC</source>
-            <translation>Custom RTC</translation>
+            <translation>Fecha RTC personalizada</translation>
         </message>
         <message>
             <source>Custom RNG Seed</source>
-            <translation>Custom RNG Seed</translation>
+            <translation>Semilla RNG personalizada</translation>
         </message>
         <message>
             <source>STORM Tier-2 JIT Compiler</source>
-            <translation>STORM Tier-2 JIT Compiler</translation>
+            <translation>Compilador JIT STORM Tier-2</translation>
         </message>
         <message>
             <source>Enables the zero-overhead STORM Tier-2 instruction pre-optimizer and superblock JIT tuner (canonicalizes ARMv8.3 PAC/BTI hints and accelerates CNTVCT_EL0 counter reads).</source>
-            <translation>Enables the zero-overhead STORM Tier-2 instruction pre-optimizer and superblock JIT tuner (canonicalizes ARMv8.3 PAC/BTI hints and accelerates CNTVCT_EL0 counter reads).</translation>
+            <translation>Habilita el preoptimizador de instrucciones STORM Tier-2 sin sobrecarga y el ajustador JIT de superbloques.</translation>
         </message>
         <message>
             <source>Enable Frame Generation (LSFG)</source>
-            <translation>Enable Frame Generation (LSFG)</translation>
+            <translation>Habilitar generación de fotogramas (LSFG)</translation>
         </message>
         <message>
             <source>Generates intermediate frames using Lossless Scaling optical flow to double or quadruple FPS.</source>
-            <translation>Generates intermediate frames using Lossless Scaling optical flow to double or quadruple FPS.</translation>
+            <translation>Genera fotogramas intermedios mediante flujo óptico Lossless Scaling para duplicar o cuadruplicar los FPS.</translation>
         </message>
         <message>
             <source>Frame Generation Multiplier:</source>
-            <translation>Frame Generation Multiplier:</translation>
+            <translation>Multiplicador de generación de fotogramas:</translation>
         </message>
         <message>
             <source>Multiplier for generated frames (2x = double FPS, 3x = triple FPS, 4x = quadruple FPS).</source>
-            <translation>Multiplier for generated frames (2x = double FPS, 3x = triple FPS, 4x = quadruple FPS).</translation>
+            <translation>Multiplicador de fotogramas generados (2x = doble FPS, 3x = triple FPS, 4x = cuádruple FPS).</translation>
         </message>
         <message>
             <source>Target Frame Rate (Hz):</source>
-            <translation>Target Frame Rate (Hz):</translation>
+            <translation>Tasa de fotogramas objetivo (Hz):</translation>
         </message>
         <message>
             <source>Target output frame rate in Hz for Frame Generation.</source>
-            <translation>Target output frame rate in Hz for Frame Generation.</translation>
+            <translation>Tasa de fotogramas de salida objetivo en Hz para la generación de fotogramas.</translation>
         </message>
         <message>
             <source>Optical Flow Scale (%):</source>
-            <translation>Optical Flow Scale (%):</translation>
+            <translation>Escala de flujo óptico (%):</translation>
         </message>
         <message>
             <source>Manual resolution scale percentage for optical flow estimation.</source>
-            <translation>Manual resolution scale percentage for optical flow estimation.</translation>
+            <translation>Porcentaje de escala de resolución manual para la estimación de flujo óptico.</translation>
         </message>
         <message>
             <source>Frame Queue Depth:</source>
-            <translation>Frame Queue Depth:</translation>
+            <translation>Profundidad de cola de fotogramas:</translation>
         </message>
         <message>
             <source>Number of frames queued for optical flow interpolation.</source>
-            <translation>Number of frames queued for optical flow interpolation.</translation>
+            <translation>Número de fotogramas en cola para la interpolación de flujo óptico.</translation>
         </message>
         <message>
             <source>Debug Optical Flow Vectors</source>
-            <translation>Debug Optical Flow Vectors</translation>
+            <translation>Depurar vectores de flujo óptico</translation>
         </message>
         <message>
             <source>Visualizes optical flow motion vectors on screen for debugging.</source>
-            <translation>Visualizes optical flow motion vectors on screen for debugging.</translation>
+            <translation>Visualiza los vectores de movimiento de flujo óptico en pantalla para depuración.</translation>
         </message>
         <message>
             <source>Lock Dynamic Resolution</source>
-            <translation>Lock Dynamic Resolution</translation>
+            <translation>Bloquear resolución dinámica</translation>
         </message>
         <message>
             <source>Force Maximum Clocks (PC and Mobile)</source>
-            <translation>Force Maximum Clocks (PC and Mobile)</translation>
+            <translation>Forzar frecuencias máximas</translation>
         </message>
         <message>
             <source>Early Release Fences</source>
-            <translation>Early Release Fences</translation>
+            <translation>Liberación temprana de barreras</translation>
         </message>
         <message>
             <source>Optimize SPIR-V Output</source>
-            <translation>Optimize SPIR-V Output</translation>
+            <translation>Optimizar salida SPIR-V</translation>
         </message>
         <message>
             <source>Enable Frame Skipping</source>
-            <translation>Enable Frame Skipping</translation>
+            <translation>Habilitar salto de fotogramas</translation>
         </message>
         <message>
             <source>Enable HDR10</source>
-            <translation>Enable HDR10</translation>
+            <translation>Habilitar HDR10</translation>
         </message>
         <message>
             <source>VRAM Budget Governor</source>
-            <translation>VRAM Budget Governor</translation>
+            <translation>Regulador de presupuesto VRAM</translation>
         </message>
         <message>
             <source>Floating Translate Button</source>
-            <translation>Floating Translate Button</translation>
+            <translation>Botón de traducción flotante</translation>
         </message>
         <message>
             <source>Normal</source>
@@ -2889,83 +2884,83 @@ Weaker CPUs may see reduced performance, and certain games may behave improperly
         </message>
         <message>
             <source>Boost</source>
-            <translation>Boost</translation>
+            <translation>Boost (1700MHz)</translation>
         </message>
         <message>
             <source>Overclock</source>
-            <translation>Overclock</translation>
+            <translation>Veloce (2000MHz)</translation>
         </message>
         <message>
             <source>BC5 (High quality)</source>
-            <translation>BC5 (High quality)</translation>
+            <translation>BC5 (alta calidad)</translation>
         </message>
         <message>
             <source>Hybrid Video Decoding</source>
-            <translation>Hybrid Video Decoding</translation>
+            <translation>Híbrido</translation>
         </message>
         <message>
             <source>Hybrid</source>
-            <translation>Hybrid</translation>
+            <translation>Híbrido</translation>
         </message>
         <message>
             <source>Carousel View</source>
-            <translation>Carousel View</translation>
+            <translation>Vista de carrusel</translation>
         </message>
         <message>
             <source>Force 32:9 (Super UltraWide)</source>
-            <translation>Force 32:9 (Super UltraWide)</translation>
+            <translation>Forzar 32:9</translation>
         </message>
         <message>
             <source>Force 1:1 (Square)</source>
-            <translation>Force 1:1 (Square)</translation>
+            <translation>Forzar 1:1</translation>
         </message>
         <message>
             <source>Force 3:2 (Portable / Surface)</source>
-            <translation>Force 3:2 (Portable / Surface)</translation>
+            <translation>Forzar 3:2</translation>
         </message>
         <message>
             <source>Force 5:4 (SXGA)</source>
-            <translation>Force 5:4 (SXGA)</translation>
+            <translation>Forzar 5:4</translation>
         </message>
         <message>
             <source>Force 18:9 (2:1 Univisium)</source>
-            <translation>Force 18:9 (2:1 Univisium)</translation>
+            <translation>Forzar 18:9</translation>
         </message>
         <message>
             <source>Force 19.5:9 (Modern Mobile)</source>
-            <translation>Force 19.5:9 (Modern Mobile)</translation>
+            <translation>Forzar 19.5:9</translation>
         </message>
         <message>
             <source>Force 20:9 (Cinema Mobile)</source>
-            <translation>Force 20:9 (Cinema Mobile)</translation>
+            <translation>Forzar 20:9</translation>
         </message>
         <message>
             <source>Force 21:10 (Wide 16:10)</source>
-            <translation>Force 21:10 (Wide 16:10)</translation>
+            <translation>Forzar 21:10</translation>
         </message>
         <message>
             <source>Force 24:10 (3840x1600 UltraWide+)</source>
-            <translation>Force 24:10 (3840x1600 UltraWide+)</translation>
+            <translation>Forzar 24:10</translation>
         </message>
         <message>
             <source>Force 32:10 (Super UltraWide 16:10)</source>
-            <translation>Force 32:10 (Super UltraWide 16:10)</translation>
+            <translation>Forzar 32:10</translation>
         </message>
         <message>
             <source>Force 48:9 (Triple Monitor 3x16:9)</source>
-            <translation>Force 48:9 (Triple Monitor 3x16:9)</translation>
+            <translation>Forzar 48:9</translation>
         </message>
         <message>
             <source>Auto Window Aspect (True 3D Fit)</source>
-            <translation>Auto Window Aspect (True 3D Fit)</translation>
+            <translation>Ajuste automático a la ventana (3D)</translation>
         </message>
         <message>
             <source>Auto-Patch 3D Aspect Ratio (No Stretch)</source>
-            <translation>Auto-Patch 3D Aspect Ratio (No Stretch)</translation>
+            <translation>Parche automático de aspecto 3D</translation>
         </message>
         <message>
             <source>Auto-Unlock 60/120 FPS</source>
-            <translation>Auto-Unlock 60/120 FPS</translation>
+            <translation>Desbloqueo automático de 60/120 FPS</translation>
         </message>
         <message>
             <source>Portuguese (Português)</source>
@@ -2977,31 +2972,30 @@ Weaker CPUs may see reduced performance, and certain games may behave improperly
         </message>
         <message>
             <source>Brazilian Portuguese</source>
-            <translation>Brazilian Portuguese</translation>
+            <translation>Portugués brasileño</translation>
         </message>
         <message>
             <source>Dynamic performance scaler</source>
-            <translation>Dynamic performance scaler</translation>
+            <translation>Escalador dinámico de rendimiento</translation>
         </message>
         <message>
             <source>Automatically adjusts rendering resolution to maintain the target frame rate. When frames take too long, resolution steps down; when frames are fast, it recovers. Inspired by Atmosphere's dynamic resolution system.</source>
-            <translation>Automatically adjusts rendering resolution to maintain the target frame rate. When frames take too long, resolution steps down; when frames are fast, it recovers. Inspired by Atmosphere's dynamic resolution system.</translation>
+            <translation>Ajusta automáticamente la resolución de renderizado para mantener los FPS objetivo. Cuando los fotogramas tardan más, la resolución se reduce; cuando van rápido, se restablece.</translation>
         </message>
         <message>
             <source>Automatically patches 3D camera frustum constants in game executables to match the selected aspect ratio (4:3, 16:10, 18:9, 21:9, 32:9, 48:9, etc.) without stretching 3D geometry.</source>
-            <translation>Automatically patches 3D camera frustum constants in game executables to match the selected aspect ratio (4:3, 16:10, 18:9, 21:9, 32:9, 48:9, etc.) without stretching 3D geometry.</translation>
+            <translation>Parchea automáticamente las constantes de cámara 3D en los ejecutables del juego según la relación de aspecto seleccionada (4:3, 16:10, 18:9, 21:9, 32:9, 48:9, etc.) sin estirar la geometría 3D.</translation>
         </message>
         <message>
             <source>Automatically unlocks 30 FPS VSync/swap-interval caps to allow 60/120 FPS rendering.</source>
-            <translation>Automatically unlocks 30 FPS VSync/swap-interval caps to allow 60/120 FPS rendering.</translation>
+            <translation>Desbloquea automáticamente el límite VSync de 30 FPS para permitir el renderizado a 60/120 FPS.</translation>
         </message>
         <message>
             <source>Selects the scaling filter used when adapting the rendered image to the window size.
 Bilinear and Bicubic are standard filters.
 AMD FidelityFX Super Resolution (FSR) and Qualcomm SGSR provide sharp upscaling.</source>
-            <translation>Selects the scaling filter used when adapting the rendered image to the window size.
-Bilinear and Bicubic are standard filters.
-AMD FidelityFX Super Resolution (FSR) and Qualcomm SGSR provide sharp upscaling.</translation>
+            <translation>Seleziona il filtro di ridimensionamento usato per adattare l'immagine alla finestra.
+Bilineare e Bicubico sono standard; AMD FSR e Qualcomm SGSR offrono upscaling nitido.</translation>
         </message>
         <message>
             <source>The GPU Accuracy Level to use.
@@ -3041,7 +3035,7 @@ Required by some games for proper physics or rendering effects, but significantl
         </message>
         <message>
             <source>Polish (polski)</source>
-            <translation>Polish (polski)</translation>
+            <translation>Polaco (polski)</translation>
         </message>
         <message>
             <source>Celsius (°C)</source>
@@ -3053,7 +3047,7 @@ Required by some games for proper physics or rendering effects, but significantl
         </message>
         <message>
             <source>Errors Only</source>
-            <translation>Errors Only</translation>
+            <translation>Solo errores</translation>
         </message>
         <message>
             <source>Standard</source>
@@ -3061,11 +3055,11 @@ Required by some games for proper physics or rendering effects, but significantl
         </message>
         <message>
             <source>Verbose</source>
-            <translation>Verbose</translation>
+            <translation>Dettagliato</translation>
         </message>
         <message>
             <source>All</source>
-            <translation>All</translation>
+            <translation>Tutti</translation>
         </message>
         <message>
             <source>Turbo</source>
@@ -3167,7 +3161,7 @@ Required by some games for proper physics or rendering effects, but significantl
         <message>
             <location filename="../../src/yuzu/configuration/configure_camera.cpp" line="135" />
             <source>Auto</source>
-            <translation>Auto</translation>
+            <translation>Automatico</translation>
         </message>
     </context>
     <context>
@@ -3472,7 +3466,7 @@ Required by some games for proper physics or rendering effects, but significantl
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="157" />
             <source>Logging</source>
-            <translation>Logging</translation>
+            <translation>Registrazione</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="190" />
@@ -3492,7 +3486,7 @@ Required by some games for proper physics or rendering effects, but significantl
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="235" />
             <source>Off</source>
-            <translation>Off</translation>
+            <translation>Disattivo</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="240" />
@@ -3507,12 +3501,12 @@ Required by some games for proper physics or rendering effects, but significantl
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="250" />
             <source>Verbose</source>
-            <translation>Verbose</translation>
+            <translation>Dettagliato</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="255" />
             <source>All</source>
-            <translation>All</translation>
+            <translation>Tutti</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_debug.ui" line="266" />
@@ -3866,7 +3860,7 @@ Required by some games for proper physics or rendering effects, but significantl
         <message>
             <location filename="../../src/yuzu/configuration/configure_dialog.cpp" line="73" />
             <source>Filesystem</source>
-            <translation>Filesystem</translation>
+            <translation>File system</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_dialog.cpp" line="74" />
@@ -3945,7 +3939,7 @@ Required by some games for proper physics or rendering effects, but significantl
         <message>
             <location filename="../../src/yuzu/configuration/configure_filesystem.ui" line="14" />
             <source>Form</source>
-            <translation>Form</translation>
+            <translation>Modulo</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_filesystem.ui" line="17" />
@@ -4175,7 +4169,7 @@ Vuoi cancellare i dati precedenti?</translation>
         <message>
             <location filename="../../src/yuzu/configuration/configure_general.ui" line="14" />
             <source>Form</source>
-            <translation>Form</translation>
+            <translation>Modulo</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_general.ui" line="17" />
@@ -4262,7 +4256,7 @@ Vuoi cancellare i dati precedenti?</translation>
         <message>
             <location filename="../../src/yuzu/configuration/configure_graphics.ui" line="14" />
             <source>Form</source>
-            <translation>Form</translation>
+            <translation>Modulo</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_graphics.ui" line="17" />
@@ -4317,7 +4311,7 @@ Vuoi cancellare i dati precedenti?</translation>
         </message>
         <message>
             <source>API:</source>
-            <translation>API:</translation>
+            <translation>API grafica:</translation>
         </message>
         <message>
             <source>API</source>
@@ -4401,7 +4395,7 @@ Vuoi cancellare i dati precedenti?</translation>
         </message>
         <message>
             <source>Eco Frame Pacing</source>
-            <translation>Eco Frame Pacing</translation>
+            <translation>Compensación de fotogramas ecológica</translation>
         </message>
         <message>
             <source>Выравнивание кадров</source>
@@ -4431,7 +4425,7 @@ Vuoi cancellare i dati precedenti?</translation>
         </message>
         <message>
             <source>GPU Fence Behavior:</source>
-            <translation>GPU Fence Behavior:</translation>
+            <translation>Comportamento fence GPU:</translation>
         </message>
         <message>
             <source>GPU Fence Behavior</source>
@@ -4455,7 +4449,7 @@ Vuoi cancellare i dati precedenti?</translation>
         </message>
         <message>
             <source>VRAM Usage Mode</source>
-            <translation>VRAM Usage Mode</translation>
+            <translation>Modalità uso VRAM</translation>
         </message>
         <message>
             <source>Использование VRAM</source>
@@ -4471,7 +4465,7 @@ Vuoi cancellare i dati precedenti?</translation>
         </message>
         <message>
             <source>ASTC Decoding Method</source>
-            <translation>ASTC Decoding Method</translation>
+            <translation>Metodo decodifica ASTC</translation>
         </message>
         <message>
             <source>Декодирование ASTC</source>
@@ -4531,7 +4525,7 @@ Vuoi cancellare i dati precedenti?</translation>
         </message>
         <message>
             <source>Enable GPU buffer readback</source>
-            <translation>Enable GPU buffer readback</translation>
+            <translation>Abilita rilettura buffer GPU</translation>
         </message>
         <message>
             <source>Обратное чтение GPU</source>
@@ -4579,7 +4573,7 @@ Vuoi cancellare i dati precedenti?</translation>
         </message>
         <message>
             <source>Smart Shader Throttle</source>
-            <translation>Smart Shader Throttle</translation>
+            <translation>Regulador inteligente de shaders</translation>
         </message>
         <message>
             <source>Троттлинг шейдеров</source>
@@ -4595,7 +4589,7 @@ Vuoi cancellare i dati precedenti?</translation>
         </message>
         <message>
             <source>Vulkan Pipeline Cache</source>
-            <translation>Vulkan Pipeline Cache</translation>
+            <translation>Cache pipeline Vulkan</translation>
         </message>
         <message>
             <source>Кэш Vulkan</source>
@@ -4607,7 +4601,7 @@ Vuoi cancellare i dati precedenti?</translation>
         </message>
         <message>
             <source>VRAM Garbage Collection</source>
-            <translation>VRAM Garbage Collection</translation>
+            <translation>Recolección de basura VRAM</translation>
         </message>
         <message>
             <source>Сборка мусора VRAM</source>
@@ -4662,7 +4656,7 @@ Vuoi cancellare i dati precedenti?</translation>
         </message>
         <message>
             <source>Extensions</source>
-            <translation>Extensions</translation>
+            <translation>Extensiones</translation>
         </message>
         <message>
             <source>Modifying these settings can cause problems. For advanced users only!</source>
@@ -5910,7 +5904,7 @@ Per attivarlo, disattiva il mouse emulato.</translation>
         <message>
             <location filename="../../src/yuzu/configuration/configure_per_game.ui" line="100" />
             <source>Title ID</source>
-            <translation>Title ID</translation>
+            <translation>ID del gioco (Title ID)</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_per_game.ui" line="137" />
@@ -5949,11 +5943,11 @@ Per attivarlo, disattiva il mouse emulato.</translation>
         </message>
         <message>
             <source>GameBanana Mods</source>
-            <translation>GameBanana Mods</translation>
+            <translation>Mods de GameBanana</translation>
         </message>
         <message>
             <source>Cheats</source>
-            <translation>Cheats</translation>
+            <translation>Trucos</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="79" />
@@ -6134,7 +6128,7 @@ Una volta rimosse, non potranno più essere recuperate. Sei assolutamente sicuro
         <message>
             <location filename="../../src/yuzu/configuration/configure_profile_manager.ui" line="14" />
             <source>Form</source>
-            <translation>Form</translation>
+            <translation>Modulo</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_profile_manager.ui" line="17" />
@@ -6383,7 +6377,7 @@ UUID: %2</translation>
         <message>
             <location filename="../../src/yuzu/configuration/configure_system.ui" line="14" />
             <source>Form</source>
-            <translation>Form</translation>
+            <translation>Modulo</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_system.ui" line="17" />
@@ -6761,7 +6755,7 @@ Trascina i punti per cambiare posizione, oppure clicca due volte la cella in tab
         <message>
             <location filename="../../src/yuzu/configuration/configure_ui.ui" line="14" />
             <source>Form</source>
-            <translation>Form</translation>
+            <translation>Modulo</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_ui.ui" line="17" />
@@ -6909,7 +6903,7 @@ Trascina i punti per cambiare posizione, oppure clicca due volte la cella in tab
         </message>
         <message>
             <source>Screenshots Path:</source>
-            <translation>Screenshots Path:</translation>
+            <translation>Percorso degli screenshot:</translation>
         </message>
     </context>
     <context>
@@ -6990,7 +6984,7 @@ Trascina i punti per cambiare posizione, oppure clicca due volte la cella in tab
         <message>
             <location filename="../../src/yuzu/configuration/configure_web.ui" line="14" />
             <source>Form</source>
-            <translation>Form</translation>
+            <translation>Modulo</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_web.ui" line="17" />
@@ -7056,7 +7050,7 @@ Trascina i punti per cambiare posizione, oppure clicca due volte la cella in tab
         </message>
         <message>
             <source>Username:</source>
-            <translation>Username:</translation>
+            <translation>Nome utente:</translation>
         </message>
     </context>
     <context>
@@ -7633,12 +7627,12 @@ Vai su Configura -&gt; Sistema -&gt; Rete e selezionane una.</translation>
         <message>
             <location filename="../../src/qt_common/game_list/model.cpp" line="194" />
             <source>Name</source>
-            <translation>Name</translation>
+            <translation>Nome</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/game_list/model.cpp" line="195" />
             <source>Add-ons</source>
-            <translation>Add-ons</translation>
+            <translation>Add-on</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/game_list/model.cpp" line="196" />
@@ -7648,7 +7642,7 @@ Vai su Configura -&gt; Sistema -&gt; Rete e selezionane una.</translation>
         <message>
             <location filename="../../src/qt_common/game_list/model.cpp" line="197" />
             <source>Size</source>
-            <translation>Size</translation>
+            <translation>Dimensioni</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/game_list/model.cpp" line="198" />
@@ -9399,7 +9393,7 @@ Vuoi uscire comunque?</translation>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.h" line="50" />
             <source>Lanczos</source>
-            <translation>Lanczos</translation>
+            <translation>Lanczos 3</translation>
         </message>
         <message>
             <location filename="../../src/qt_common/config/shared_translation.h" line="52" />
@@ -9950,7 +9944,7 @@ p, li { white-space: pre-wrap; }
         <message>
             <location filename="../../src/yuzu/render/performance_overlay.ui" line="14" />
             <source>Form</source>
-            <translation>Form</translation>
+            <translation>Modulo</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/render/performance_overlay.ui" line="32" />
@@ -10070,13 +10064,6 @@ p, li { white-space: pre-wrap; }
             <location filename="../../src/yuzu/user_data_migration.cpp" line="68" />
             <source>Link Old Directory</source>
             <translation>Link Old Directory</translation>
-        </message>
-        <message>
-            <location filename="../../src/yuzu/user_data_migration.cpp" line="98" />
-            <source>
-      </source>
-            <translation>
-      </translation>
         </message>
         <message>
             <location filename="../../src/yuzu/user_data_migration.cpp" line="102" />
@@ -10358,7 +10345,7 @@ p, li { white-space: pre-wrap; }
         <message>
             <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="130" />
             <source>Touch</source>
-            <translation>Touch</translation>
+            <translation>Tocco</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="132" />
@@ -11851,7 +11838,7 @@ Selezionando "Da Eden", i dati di salvataggio pre-esistenti in Ryujinx verranno 
         <message>
             <location filename="../../src/yuzu/updater/update_dialog.ui" line="14" />
             <source>Update Available</source>
-            <translation>Update Available</translation>
+            <translation>Aggiornamento disponibile</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/updater/update_dialog.ui" line="20" />
@@ -11896,7 +11883,7 @@ Selezionando "Da Eden", i dati di salvataggio pre-esistenti in Ryujinx verranno 
         <message>
             <location filename="../../src/yuzu/updater/update_dialog.cpp" line="112" />
             <source>Downloading...</source>
-            <translation>Downloading...</translation>
+            <translation>Download…</translation>
         </message>
         <message>
             <location filename="../../src/yuzu/updater/update_dialog.cpp" line="112" />
@@ -12080,7 +12067,7 @@ Error code: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>Ripristina impostazioni predefinite</translation>
         </message>
         </context>
     <context>
@@ -12227,7 +12214,7 @@ Error code: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>Ripristina impostazioni predefinite</translation>
         </message>
         </context>
     <context>
@@ -12374,7 +12361,7 @@ Error code: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>Ripristina impostazioni predefinite</translation>
         </message>
         </context>
     <context>
@@ -12521,7 +12508,7 @@ Error code: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>Ripristina impostazioni predefinite</translation>
         </message>
         </context>
     <context>
@@ -12668,7 +12655,7 @@ Error code: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>Ripristina impostazioni predefinite</translation>
         </message>
     </context>
     <context>
@@ -12815,7 +12802,7 @@ Error code: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>Ripristina impostazioni predefinite</translation>
         </message>
     </context>
     <context>
@@ -12962,7 +12949,7 @@ Error code: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>Ripristina impostazioni predefinite</translation>
         </message>
     </context>
     <context>
@@ -13109,7 +13096,7 @@ Error code: %3</translation>
         </message>
         <message>
             <source>Reset to Defaults</source>
-            <translation>Reset to Defaults</translation>
+            <translation>Ripristina impostazioni predefinite</translation>
         </message>
     </context>
     <context>

@@ -53,7 +53,7 @@ if (WIN32 AND NOT TARGET LLVM::Demangle)
     add_library(demangle demangle/ItaniumDemangle.cpp)
     target_include_directories(demangle PUBLIC ./demangle)
     if (NOT MSVC)
-        target_compile_options(demangle PRIVATE -Wno-deprecated-declarations) # std::is_pod
+        target_compile_options(demangle PRIVATE /wd4996) # std::is_pod
     endif()
     add_library(LLVM::Demangle ALIAS demangle)
 endif()

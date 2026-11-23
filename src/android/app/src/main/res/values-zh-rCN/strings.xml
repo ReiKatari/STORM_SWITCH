@@ -497,7 +497,7 @@
     <string name="use_optimized_vertex_buffers">优化顶点缓冲区</string>
     <string name="use_optimized_vertex_buffers_description">启用经过优化的顶点缓冲区绑定以提升性能。需要 Mesa 26.0 及以上版本的 Turnip 或 QCOM 驱动程序。若使用较旧版本的 Turnip 驱动 (25.3 及以下版本) 则会导致崩溃。</string>
 
-    <string name="hacks">Hacks</string>
+    <string name="hacks">Hack</string>
 
     <string name="fast_gpu_time">快速 GPU 时间</string>
     <string name="fast_gpu_time_description">强制大多数游戏以其最高原生分辨率运行。设置为 256 可获得最佳性能，设置为 512 可获得最佳画面保真度。</string>
@@ -989,7 +989,7 @@
     <string name="memory_byte_shorthand">B</string>
     <string name="memory_kilobyte">KB</string>
     <string name="memory_megabyte">MB</string>
-    <string name="memory_gigabyte">GB</string>
+    <string name="memory_gigabyte">英国</string>
     <string name="memory_terabyte">TB</string>
     <string name="memory_petabyte">PB</string>
     <string name="memory_exabyte">EB</string>
@@ -1019,7 +1019,7 @@
     <string name="renderer_vsync_immediate">即时 (关闭)</string>
     <string name="renderer_vsync_mailbox">Mailbox</string>
     <string name="renderer_vsync_fifo">FIFO (开启)</string>
-    <string name="renderer_vsync_fifo_relaxed">FIFO Relaxed</string>
+    <string name="renderer_vsync_fifo_relaxed">FIFO Relaxed (自适应垂直同步)</string>
 
     <!-- Anti-Aliasing -->
     <string name="anti_aliasing_none">无</string>
@@ -1498,7 +1498,7 @@
     <string name="online_tools_extracting">正在解压并安装组件到系统中...</string>
     <string name="online_firmware_installed_success">固件 %1$s 在线安装成功！</string>
     <string name="online_keys_installed_success">密钥 %1$s 在线安装成功！</string>
-    <string name="unit_gb">GB</string>
+    <string name="unit_gb">英国</string>
     <string name="unit_mb">MB</string>
     <string name="unit_kb">KB</string>
     <string name="unit_b">B</string>
@@ -1524,7 +1524,7 @@
     <string name="ratio_48_9">48:9 (三联屏 16:9)</string>
     <string name="ratio_auto_window">按屏幕比例自动适配 (3D 原生无拉伸)</string>
 
-    <string name="nvdec_emulation_hybrid">Hybrid</string>
+    <string name="nvdec_emulation_hybrid">混合</string>
     <string name="auto_correction_title">Auto-correction</string>
     <string name="auto_correction_description">Dynamic thermal cooling and FPS boost for overheating and frame drops</string>
     <string name="auto_correction_dialog_title">Thermal cooling and FPS boost</string>
@@ -1546,7 +1546,7 @@
     <string name="online_install_keys_description">Download and install prod.keys and title.keys directly without saving archives to storage</string>
     <string name="resolution_change_warning">Changing resolution in-game may cause visual artifacts. Restarting the game is recommended.</string>
     <string name="quick_settings_gesture_hint">Quick settings: 3-finger swipe up</string>
-    <string name="accelerate_astc_hybrid">Hybrid</string>
+    <string name="accelerate_astc_hybrid">混合</string>
     <string name="gamebanana_install_manual">Install mod manually</string>
     <string name="gamebanana_install_manual_description">Select a ZIP archive containing the mod to unpack and structure in load</string>
     <string name="gamebanana_installing_manual">Extracting and organizing mod structure…</string>
@@ -1555,7 +1555,7 @@
     <string name="gamebanana_manual_source_zip">Select ZIP archive</string>
     <string name="gamebanana_manual_source_folder">Select mod folder</string>
     <string name="amiibo_tab_catalog">Catalog</string>
-    <string name="amiibo_tab_installed">Installed</string>
+    <string name="amiibo_tab_installed">已安装</string>
     <string name="no_installed_amiibo_found">No installed Amiibos found</string>
     <string name="overlay_ctrl_button_a">Button A</string>
     <string name="overlay_ctrl_button_a_desc">Primary action and confirm</string>
@@ -1565,11 +1565,11 @@
     <string name="overlay_ctrl_button_x_desc">Secondary action and menu</string>
     <string name="overlay_ctrl_button_y">Button Y</string>
     <string name="overlay_ctrl_button_y_desc">Attack and interaction</string>
-    <string name="overlay_ctrl_dpad">D-Pad</string>
+    <string name="overlay_ctrl_dpad">十字方向键</string>
     <string name="overlay_ctrl_dpad_desc">Directional pad and quick select</string>
-    <string name="overlay_ctrl_stick_l">Left stick</string>
+    <string name="overlay_ctrl_stick_l">左摇杆</string>
     <string name="overlay_ctrl_stick_l_desc">Character movement</string>
-    <string name="overlay_ctrl_stick_r">Right stick</string>
+    <string name="overlay_ctrl_stick_r">右摇杆</string>
     <string name="overlay_ctrl_stick_r_desc">Camera control</string>
     <string name="overlay_ctrl_stick_l3">L-stick click (L3)</string>
     <string name="overlay_ctrl_stick_l3_desc">Run and secondary action</string>
@@ -1595,11 +1595,11 @@
     <string name="anisotropic_filtering_4x">4x</string>
     <string name="anisotropic_filtering_8x">8x</string>
     <string name="anisotropic_filtering_16x">16x</string>
-    <string name="anisotropic_filtering_default">Default</string>
-    <string name="anisotropic_filtering_automatic">Automatic</string>
+    <string name="anisotropic_filtering_default">默认</string>
+    <string name="anisotropic_filtering_automatic">自动</string>
     <string name="oboe">Oboe</string>
     <string name="apply_driver_current_game">For the current game</string>
-    <string name="storm_tier2_compiler">STORM Tier-2 JIT Compiler</string>
+    <string name="storm_tier2_compiler">STORM Tier-2 JIT 编译器</string>
     <string name="storm_tier2_compiler_description">Zero-overhead instruction pre-optimizer and superblock JIT tuner (canonicalizes ARMv8.3 PAC/BTI hints and accelerates CNTVCT_EL0 counter reads)</string>
     <string name="storm_notif_channel_name">STORM SWITCH 游戏下载</string>
     <string name="storm_notif_channel_desc">从 STORM GAMES WORLD 目录后台下载游戏</string>
@@ -1668,8 +1668,8 @@
     <string name="storm_sync_badge_local_only">Local only</string>
     <string name="storm_sync_btn_send">Send</string>
     <string name="storm_sync_badge_remote_only">Remote only</string>
-    <string name="storm_sync_btn_download">Download</string>
-    <string name="storm_sync_badge_unknown">Unknown</string>
+    <string name="storm_sync_btn_download">下载</string>
+    <string name="storm_sync_badge_unknown">未知</string>
     <string name="storm_world_subtitle">Nintendo Switch 官方云端游戏库</string>
     <string name="storm_world_search_hint">按名称或 ID 搜索游戏…</string>
     <string name="storm_world_filter_all_langs">All languages</string>
@@ -1695,15 +1695,15 @@
     <string name="storm_world_dlc_subtitle">Official add-ons and content included with the game</string>
     <string name="storm_world_dlc_empty">Add-ons list is empty</string>
     <string name="storm_world_btn_got_it">Got it</string>
-    <string name="storm_world_badge_recommended">Recommended</string>
-    <string name="storm_world_folder_default_name">Folder</string>
+    <string name="storm_world_badge_recommended">推荐</string>
+    <string name="storm_world_folder_default_name">文件夹</string>
     <string name="storm_world_folder_label_fmt">Folder: %1$s</string>
     <string name="storm_world_toast_download_folder_fmt">Download folder: %1$s</string>
     <string name="storm_world_toast_bg_download">Game download continues in the background</string>
     <string name="storm_world_status_available_fmt">云端可用游戏：%1$d</string>
     <string name="storm_world_status_syncing">正在与云端目录同步…</string>
     <string name="storm_world_empty_cloud">No games available in cloud</string>
-    <string name="storm_world_error_network_default">Network error</string>
+    <string name="storm_world_error_network_default">网络错误</string>
     <string name="storm_world_error_connection_fmt">Connection error: %1$s</string>
     <string name="storm_world_toast_catalog_failed">Failed to load catalog</string>
     <string name="storm_world_pagination_fmt">Page %1$d of %2$d (%3$d)</string>
@@ -1718,7 +1718,7 @@
     <string name="storm_world_dialog_folder_title">Game download folder</string>
     <string name="storm_world_bg_download_status_fmt">Background download: %1$s (%2$d%%)</string>
     <string name="storm_dl_error_default">Download error</string>
-    <string name="storm_dl_stats_error_fmt">Error: %1$s</string>
+    <string name="storm_dl_stats_error_fmt">错误：%1$s</string>
     <string name="storm_dl_connecting">Connecting to download server...</string>
     <string name="storm_dl_paused">Download paused</string>
     <string name="storm_dl_paused_pct_fmt">Download paused (%1$d%%)</string>
@@ -1739,7 +1739,7 @@
     <string name="storm_dl_interrupted_resume">Download interrupted. Tap \"Resume\".</string>
     <string name="storm_dl_subtext_speed_eta_fmt">%1$s MB/s • ETA: %2$d min</string>
     <string name="storm_dl_progress_pct_fmt">Downloading: %1$d%%</string>
-    <string name="storm_dl_game_fallback">Game</string>
+    <string name="storm_dl_game_fallback">游戏</string>
     <string name="auto_opt_detected_hw">Detected Hardware</string>
     <string name="auto_opt_form_tablet">Tablet</string>
     <string name="auto_opt_form_phone">Smartphone</string>
@@ -1754,8 +1754,8 @@
     <string name="auto_opt_tier_label_fmt">Device Tier: %1$s</string>
     <string name="cheats_search_hint">Search...</string>
     <string name="cheats_summary_zero">Total cheats: 0 | Enabled: 0</string>
-    <string name="cheat_item_desc_placeholder">Description</string>
-    <string name="cheat_btn_edit_qty">Value</string>
+    <string name="cheat_item_desc_placeholder">描述</string>
+    <string name="cheat_btn_edit_qty">数值</string>
     <string name="cheat_header_version_prefix"> | Version: </string>
     <string name="cheat_header_in_game"> | In Game</string>
     <string name="cheat_header_offline">| Offline</string>
@@ -1814,12 +1814,12 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="cheat_desc_custom">Custom Atmosphere Cheat Code</string>
     <string name="log_viewer_title">事件日志 (LOG)</string>
     <string name="log_viewer_save_file">Save to file</string>
-    <string name="log_viewer_share">Share</string>
+    <string name="log_viewer_share">分享</string>
     <string name="log_viewer_search_hint">Search logs (Error, Warning, Vulkan, NSO...)</string>
-    <string name="log_viewer_chip_all">All</string>
-    <string name="log_viewer_chip_errors">Errors</string>
-    <string name="log_viewer_chip_warnings">Warnings</string>
-    <string name="log_viewer_chip_info">Info</string>
+    <string name="log_viewer_chip_all">全部</string>
+    <string name="log_viewer_chip_errors">错误</string>
+    <string name="log_viewer_chip_warnings">警告</string>
+    <string name="log_viewer_chip_info">信息</string>
     <string name="log_viewer_status_ingame">In Game</string>
     <string name="log_viewer_status_offline">Offline</string>
     <string name="log_viewer_toast_refreshing">Refreshing log...</string>
@@ -1846,21 +1846,21 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="log_viewer_share_tg_title">Send log to Telegram / MAX</string>
     <string name="mapping_press_prompt">Press a button or move a stick on the controller</string>
     <string name="overlay_toggle_subtitle">Configure visibility of touch controls</string>
-    <string name="online_tools_badge_active">ACTIVE</string>
+    <string name="online_tools_badge_active">当前启用</string>
     <string name="online_tools_badge_not_installed">NOT INSTALLED</string>
     <string name="online_tools_select_prompt">Select a version from the list above</string>
     <string name="online_tools_btn_download_install">Download &amp; Install</string>
     <string name="online_tools_btn_reinstall">Reinstall</string>
-    <string name="online_tools_btn_update">Update</string>
+    <string name="online_tools_btn_update">更新</string>
     <string name="online_tools_badge_installed">INSTALLED</string>
     <string name="online_tools_badge_top">TOP</string>
     <string name="online_tools_badge_selected">SELECTED</string>
-    <string name="online_tools_status_unknown">Unknown</string>
+    <string name="online_tools_status_unknown">未知</string>
     <string name="online_tools_installed_ver_fmt">Installed version: %1$s</string>
     <string name="online_tools_fw_installed">Switch firmware installed</string>
-    <string name="online_tools_fw_not_installed">Firmware not installed</string>
+    <string name="online_tools_fw_not_installed">未安装固件</string>
     <string name="online_tools_keys_installed">Keys installed (prod.keys)</string>
-    <string name="online_tools_keys_not_installed">Keys not installed</string>
+    <string name="online_tools_keys_not_installed">未安装密钥</string>
     <string name="online_tools_fw_title_fmt">Firmware %1$s</string>
     <string name="online_tools_keys_title_fmt">Decryption Keys %1$s</string>
     <string name="online_tools_checking_github">Checking GitHub catalog for updates...</string>
@@ -1920,8 +1920,8 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="translator_engine_custom_ai">Neural / Custom AI (OpenAI / Claude / Gemini / DeepSeek)</string>
     <string name="translator_lang_auto">Auto-detect</string>
     <string name="translator_lang_ja">Japanese</string>
-    <string name="translator_lang_en">English</string>
-    <string name="translator_lang_zh">Chinese</string>
+    <string name="translator_lang_en">英语</string>
+    <string name="translator_lang_zh">中文</string>
     <string name="translator_lang_ko">Korean</string>
     <string name="translator_lang_es">Spanish</string>
     <string name="translator_lang_fr">French</string>
@@ -1943,9 +1943,9 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="translator_toast_no_text_screen">No text detected on screen</string>
     <string name="translator_overlay_region_fmt">Region %1$d</string>
     <string name="translator_overlay_btn_add">+ Add region</string>
-    <string name="translator_overlay_btn_clear">Clear</string>
-    <string name="translator_overlay_btn_save">Save</string>
-    <string name="translator_overlay_btn_close">Close</string>
+    <string name="translator_overlay_btn_clear">清除</string>
+    <string name="translator_overlay_btn_save">保存</string>
+    <string name="translator_overlay_btn_close">关闭</string>
     <string name="translator_snack_auto_on">Auto-translation enabled</string>
     <string name="translator_snack_auto_off">Auto-translation disabled</string>
     <string name="translator_snack_tts_on">TTS voice readout enabled</string>
@@ -1971,7 +1971,7 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="sysinfo_lbl_gpu_model">• GPU Model: </string>
     <string name="sysinfo_lbl_driver_ver">• Driver Version: </string>
     <string name="sysinfo_lbl_frame_gen">• Frame Generation: </string>
-    <string name="sysinfo_val_supported">Supported</string>
+    <string name="sysinfo_val_supported">支持</string>
     <string name="sysinfo_val_not_supported">Not supported</string>
     <string name="sysinfo_lbl_status">• Status: </string>
     <string name="sysinfo_lbl_total_ram">• Total RAM: </string>
@@ -1994,11 +1994,11 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="release_dl_mirror_fmt">Downloading via mirror %1$d...</string>
     <string name="release_dl_progress_mb_fmt">Downloading: %1$s / %2$s MB</string>
     <string name="release_dl_done_mb_fmt">Downloaded: %1$s MB</string>
-    <string name="profile_default_balanced_name">Balanced</string>
+    <string name="profile_default_balanced_name">平衡</string>
     <string name="profile_default_balanced_desc">Optimal balance of performance, thermals, and visual quality</string>
     <string name="profile_default_perf_name">Maximum Performance</string>
     <string name="profile_default_perf_desc">Priority on maximum framerate and reduced power consumption</string>
-    <string name="profile_default_quality_name">Maximum Quality</string>
+    <string name="profile_default_quality_name">极高质量</string>
     <string name="profile_default_quality_desc">Priority on high resolution, rendering accuracy, and visual effects</string>
     <string name="profile_default_eco_name">Battery Saver (2D &amp; Indie)</string>
     <string name="profile_default_eco_desc">Maximum battery life and minimum heat for 2D and indie games</string>
@@ -2038,7 +2038,7 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="cheat_desc_timer">Freezes In-Game Timer / Infinite Time</string>
     <string name="cheat_desc_master">Master Code (required for other cheats)</string>
     <string name="cheat_desc_qty_fmt" formatted="false">%1$s (Value: %2$d)</string>
-    <string name="storm_world_unit_gb">GB</string>
+    <string name="storm_world_unit_gb">英国</string>
     <string name="storm_world_unit_mb">MB</string>
     <string name="storm_world_unit_kb">KB</string>
     <string name="storm_world_unit_b">B</string>
@@ -2055,10 +2055,10 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="translator_engine_opt_libre">LibreTranslate (Open-source API)</string>
     <string name="translator_engine_opt_mymemory">MyMemory (Translation memory archive)</string>
     <string name="translator_engine_opt_custom_ai">OpenAI / DeepSeek / Gemini (Smart AI Context)</string>
-    <string name="log_viewer_filter_all_label">All</string>
-    <string name="log_viewer_filter_errors_label">Errors</string>
-    <string name="log_viewer_filter_info_label">Info</string>
-    <string name="log_viewer_filter_warnings_label">Warnings</string>
+    <string name="log_viewer_filter_all_label">全部</string>
+    <string name="log_viewer_filter_errors_label">错误</string>
+    <string name="log_viewer_filter_info_label">信息</string>
+    <string name="log_viewer_filter_warnings_label">警告</string>
     <string name="post_processing_shader">后期处理着色器 (RetroArch)</string>
     <string name="post_processing_shader_description">实时应用 RetroArch 后期处理着色器（CRT、LCD、掌机、放大滤镜、锐化、色彩分级）。</string>
     <string name="post_shader_1">CRT-Royale（Sony Trinitron 栅极光栅 + 荧光粉光晕）</string>
@@ -2370,4 +2370,27 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="tier_high_midrange">高端级</string>
     <string name="tier_midrange">中端级</string>
     <string name="update">更新</string>
+    <string name="storm_use_device_sensors">设备运动传感器（陀螺仪）</string>
+    <string name="storm_use_device_sensors_desc">启用手机内置陀螺仪与加速度计以支持游戏体感操控。</string>
+    <string name="storm_gyro_on">陀螺仪：已开启</string>
+    <string name="storm_gyro_off">陀螺仪：已关闭</string>
+    <string name="storm_touchscreen_on">触摸屏输入：已开启</string>
+    <string name="storm_touchscreen_off">触摸屏输入：已关闭</string>
+    <string name="storm_cheat_active_in_game">游戏中已激活</string>
+    <string name="storm_cheat_value_btn">数值</string>
+    <string name="storm_prof_ram_placeholder">内存：4 GB</string>
+    <string name="storm_error_fmt">错误：%1$s</string>
+    <string name="storm_invalid_request_missing_tid">无效请求：缺少 Title ID</string>
+    <string name="storm_qlaunch_failed_fmt">无法启动 HOME 菜单：%1$s</string>
+    <string name="storm_sync_tooltip_refresh">刷新列表</string>
+    <string name="storm_world_tooltip_download">下载游戏</string>
+    <string name="storm_sync_tooltip_close">关闭窗口</string>
+    <string name="storm_sync_tooltip_copy_key">复制连接密钥</string>
+    <string name="storm_sync_tooltip_connect">连接到远程设备</string>
+    <string name="storm_sync_tooltip_search_devices">搜索局域网设备</string>
+    <string name="storm_sync_tooltip_sync_all">同步全部存档</string>
+    <string name="storm_world_tooltip_refresh">刷新目录</string>
+    <string name="storm_world_tooltip_close">关闭窗口</string>
+    <string name="storm_world_tooltip_pause">暂停下载</string>
+    <string name="storm_world_tooltip_cancel">取消下载</string>
 </resources>

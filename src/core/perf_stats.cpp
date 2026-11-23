@@ -152,6 +152,7 @@ void SpeedLimiter::DoSpeedLimiting(microseconds current_system_time_us) {
     const bool eco_thermal = Settings::values.eco_thermal_mode.GetValue();
     if (Settings::values.use_multi_core.GetValue() ||
         (!Settings::values.use_speed_limit.GetValue() && !eco_thermal)) {
+        frame_pacer.Reset();
         return;
     }
 
@@ -164,14 +165,13 @@ void SpeedLimiter::DoSpeedLimiting(microseconds current_system_time_us) {
     // speed percent or it will clamp too much and prevent this from properly limiting to that
     // percent. High values means it'll take longer after a slow frame to recover and start
     // limiting
-    const microseconds max_lag_time_us = duration_cast<microseconds>(
-        std::chrono::duration<double, std::chrono::microseconds::period>(25ms / sleep_scale));
-    speed_limiting_delta_err += duration_cast<microseconds>(
+    const auto frame_period_ns = duration_cast<std::chrono::nanoseconds>(
         std::chrono::duration<double, std::chrono::microseconds::period>(
             (current_system_time_us - previous_system_time_us) / sleep_scale));
-    speed_limiting_delta_err -= duration_cast<microseconds>(now - previous_walltime);
-    speed_limiting_delta_err =
-        std::clamp(speed_limiting_delta_err, -max_lag_time_us, max_lag_time_us);
+    // Monotonic FramePacer: preserves phase on minor jitter, resets cadence on >=1 frame lag
+    // so stutters never trigger fast-forward catch-up bursts.
+    const auto pace_wait = frame_pacer.ComputeWait(now, frame_period_ns);
+    speed_limiting_delta_err = duration_cast<microseconds>(pace_wait);
 
     if (speed_limiting_delta_err > microseconds::zero()) {
         const bool eco_cool = Settings::values.eco_frame_pacing.GetValue() ||

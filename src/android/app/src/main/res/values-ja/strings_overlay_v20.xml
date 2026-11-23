@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="storm_ov20_ctrl_quick_save">クイックセーブ</string>
+    <string name="storm_ov20_ctrl_quick_load">クイックロード</string>
+</resources>

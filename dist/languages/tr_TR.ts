@@ -2156,7 +2156,23 @@ When a program attempts to open the controller applet, it is immediately closed.
       <source>Grid View</source>
       <translation>Grid View</translation>
     </message>
-  </context>
+      <message>
+        <source>Theme:</source>
+        <translation>Tema:</translation>
+    </message>
+    <message>
+        <source>Interface language:</source>
+        <translation>Arayüz dili:</translation>
+    </message>
+    <message>
+        <source>Reset All Settings</source>
+        <translation>Tüm Ayarları Sıfırla</translation>
+    </message>
+    <message>
+        <source>Console Mode</source>
+        <translation>Konsol Modu</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureApplets</name>
     <message>
@@ -2522,7 +2538,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="235" />
       <source>Off</source>
-      <translation>Off</translation>
+      <translation>Kapalı</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="240" />
@@ -3292,7 +3308,11 @@ Eski kayıt verilerini silmek ister misiniz?</translation>
       <source>VSync On</source>
       <translation>Vsync Açık</translation>
     </message>
-  </context>
+      <message>
+        <source>VSync Mode:</source>
+        <translation>VSync Modu:</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureGraphicsAdvanced</name>
     <message>
@@ -3310,7 +3330,27 @@ Eski kayıt verilerini silmek ister misiniz?</translation>
       <source>Advanced Graphics Settings</source>
       <translation>Gelişmiş Grafik Ayarları:</translation>
     </message>
-  </context>
+      <message>
+        <source>VRAM Usage Mode:</source>
+        <translation>VRAM Kullanım Modu</translation>
+    </message>
+    <message>
+        <source>ASTC Decoding Method:</source>
+        <translation>ASTC Kod Çözme Yöntemi</translation>
+    </message>
+    <message>
+        <source>Sync Memory Operations</source>
+        <translation>Bellek İşlemlerini Senkronize Et</translation>
+    </message>
+    <message>
+        <source>Force maximum clocks (Vulkan only)</source>
+        <translation>En yüksek hızı zorla (Yalnızca Vulkan için)</translation>
+    </message>
+    <message>
+        <source>Use Vulkan pipeline cache</source>
+        <translation>Vulkan pipeline önbelleği kullan</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureGraphicsExtensions</name>
     <message>
@@ -4255,7 +4295,7 @@ Eksenleri ters çevirmek için, önce joystickinizi dikey sonra yatay olarak har
     <message>
       <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="1114" />
       <source>Handheld</source>
-      <translation>Handheld</translation>
+      <translation>Taşınabilir</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="1118" />
@@ -4537,7 +4577,11 @@ Eksenleri ters çevirmek için, önce joystickinizi dikey sonra yatay olarak har
       <source>UDP Test or calibration configuration is in progress.&lt;br&gt;Please wait for them to finish.</source>
       <translation>UDP testi ya da yapılandırılması devrede.&lt;br&gt;Lütfen bitmesini bekleyin.</translation>
     </message>
-  </context>
+      <message>
+        <source>Motion / Touch</source>
+        <translation>Hareket / Dokunmatik</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureMousePanning</name>
     <message>
@@ -4765,7 +4809,7 @@ Mevcut değerler sırasıyla %1 ve %2'dir.</translation>
     <message>
       <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="87" />
       <source>Applets</source>
-      <translation>Applets</translation>
+      <translation>Aplikasyonlar</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="90" />
@@ -5171,7 +5215,19 @@ UUID: %2</translation>
       <source>Warning: "%1" is not a valid language for region "%2"</source>
       <translation>Hata: "%1" bölgesi için "%2" geçerli bir dil değil</translation>
     </message>
-  </context>
+      <message>
+        <source>Console Mode</source>
+        <translation>Konsol Modu</translation>
+    </message>
+    <message>
+        <source>Limit Speed Percent</source>
+        <translation>Hız Yüzdesini Sınırlandır</translation>
+    </message>
+    <message>
+        <source>Language:</source>
+        <translation>Dil:</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureTas</name>
     <message>
@@ -5545,7 +5601,15 @@ Noktanın konumunu değiştirmek için sürükleyin ya da sayıların üstüne �
       <comment>Screenshot width value</comment>
       <translation>Otomatik (%1 x %2, %3 x %4)</translation>
     </message>
-  </context>
+      <message>
+        <source>Language:</source>
+        <translation>Dil:</translation>
+    </message>
+    <message>
+        <source>Screenshots Path:</source>
+        <translation>Ekran Görüntülerinin Konumu:</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureVibration</name>
     <message>
@@ -5692,7 +5756,11 @@ Noktanın konumunu değiştirmek için sürükleyin ya da sayıların üstüne �
       <comment>Tooltip</comment>
       <translation>48 karakter olmalı ve a-z arası küçük harf içermelidir</translation>
     </message>
-  </context>
+      <message>
+        <source>Username:</source>
+        <translation>Kullanıcı Adı:</translation>
+    </message>
+</context>
   <context>
     <name>ControllerDialog</name>
     <message>
@@ -6270,7 +6338,7 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="194" />
       <source>Name</source>
-      <translation>Name</translation>
+      <translation>İsim</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="195" />
@@ -6285,7 +6353,7 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="197" />
       <source>Size</source>
-      <translation>Size</translation>
+      <translation>Boyut</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="198" />
@@ -6482,7 +6550,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="41" />
       <source>Configure</source>
-      <translation>Configure</translation>
+      <translation>Yapılandır</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="42" />
@@ -6527,7 +6595,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="50" />
       <source>Create Room</source>
-      <translation>Create Room</translation>
+      <translation>Oda Oluştur</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="51" />
@@ -6537,7 +6605,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="52" />
       <source>Leave Room</source>
-      <translation>Leave Room</translation>
+      <translation>Odadan Ayrıl</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="53" />
@@ -7363,7 +7431,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2261" />
       <source>Save Data</source>
-      <translation>Save Data</translation>
+      <translation>Kayıt Verisi</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2292" />
@@ -7511,7 +7579,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2676" />
       <source>Properties</source>
-      <translation>Properties</translation>
+      <translation>Özellikler</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2677" />
@@ -7527,7 +7595,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2743" />
       <source>Load File</source>
-      <translation>Load File</translation>
+      <translation>Dosya Aç</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2756" />
@@ -7744,7 +7812,7 @@ Please, only use this feature to install updates and DLC.</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3704" />
       <source>Error</source>
-      <translation>Error</translation>
+      <translation>Hata</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3704" />
@@ -7815,7 +7883,7 @@ Please, only use this feature to install updates and DLC.</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3975" />
       <source>Capture Screenshot</source>
-      <translation>Capture Screenshot</translation>
+      <translation>Ekran Görüntüsü Al</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3976" />
@@ -8052,7 +8120,7 @@ Would you like to bypass this and exit anyway?</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="49" />
       <source>Gaussian</source>
-      <translation>Gaussian</translation>
+      <translation>Gausyen</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="50" />
@@ -8092,22 +8160,22 @@ Would you like to bypass this and exit anyway?</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="61" />
       <source>Docked</source>
-      <translation>Docked</translation>
+      <translation>Dock Modu Aktif</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="62" />
       <source>Handheld</source>
-      <translation>Handheld</translation>
+      <translation>Taşınabilir</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="66" />
       <source>Fast</source>
-      <translation>Fast</translation>
+      <translation>Hızlı</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="67" />
       <source>Accurate</source>
-      <translation>Accurate</translation>
+      <translation>Doğru</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="71" />
@@ -8132,9 +8200,25 @@ Would you like to bypass this and exit anyway?</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="78" />
       <source>Null</source>
-      <translation>Null</translation>
+      <translation>Boş</translation>
     </message>
-  </context>
+      <message>
+        <source>Fullscreen</source>
+        <translation>Tam Ekran</translation>
+    </message>
+    <message>
+        <source>Mii Edit</source>
+        <translation>Mii Düzenleme</translation>
+    </message>
+    <message>
+        <source>Create Shortcut</source>
+        <translation>Kısayol Oluştur</translation>
+    </message>
+    <message>
+        <source>Install Files to NAND</source>
+        <translation>NAND'e Dosya Kur</translation>
+    </message>
+</context>
   <context>
     <name>MigrationWorker</name>
     <message>
@@ -8342,7 +8426,7 @@ Devam etmek istiyor musunuz?</translation>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="70" />
       <source>Username</source>
-      <translation>Username</translation>
+      <translation>Kullanıcı Adı</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="82" />
@@ -8425,7 +8509,7 @@ Devam etmek istiyor musunuz?</translation>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.cpp" line="346" />
       <source>All Good</source>
       <comment>Tooltip</comment>
-      <translation>All Good</translation>
+      <translation>Her Şey Yolunda</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.cpp" line="341" />
@@ -8606,13 +8690,6 @@ p, li { white-space: pre-wrap; }
       <location filename="../../src/yuzu/user_data_migration.cpp" line="68" />
       <source>Link Old Directory</source>
       <translation>Link Old Directory</translation>
-    </message>
-    <message>
-      <location filename="../../src/yuzu/user_data_migration.cpp" line="98" />
-      <source>
-      </source>
-      <translation>
-      </translation>
     </message>
     <message>
       <location filename="../../src/yuzu/user_data_migration.cpp" line="102" />
@@ -9701,7 +9778,7 @@ Would you like to manually select a portable folder to use?</translation>
     <message>
       <location filename="../../src/qt_common/util/game.cpp" line="347" />
       <source>Reset Metadata Cache</source>
-      <translation>Reset Metadata Cache</translation>
+      <translation>Üstveri Cache'ini Sıfırla</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/game.cpp" line="353" />
@@ -9721,7 +9798,7 @@ Would you like to manually select a portable folder to use?</translation>
     <message>
       <location filename="../../src/qt_common/util/game.cpp" line="381" />
       <source>Create Shortcut</source>
-      <translation>Create Shortcut</translation>
+      <translation>Kısayol Oluştur</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/game.cpp" line="381" />
@@ -10126,7 +10203,7 @@ This is recommended if you want to share data between emulators.</translation>
       <location filename="../../src/yuzu/applets/qt_controller.ui" line="2303" />
       <location filename="../../src/yuzu/applets/qt_controller.cpp" line="486" />
       <source>Handheld</source>
-      <translation>Handheld</translation>
+      <translation>Taşınabilir</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/applets/qt_controller.ui" line="1126" />
@@ -10608,4 +10685,231 @@ Error code: %3</translation>
       <translation>Successfully downloaded %1. Would you like to open it?</translation>
     </message>
   </context>
+<context>
+    <name>QPlatformTheme</name>
+    <message>
+        <source>Cancel</source>
+        <translation>İptal Et</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Yardım</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Tamam</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Varsayılana Döndür</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Sıfırla</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Kaydet</translation>
+    </message>
+</context>
+<context>
+    <name>QDialogButtonBox</name>
+    <message>
+        <source>Cancel</source>
+        <translation>İptal Et</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Yardım</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Tamam</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Varsayılana Döndür</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Sıfırla</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Kaydet</translation>
+    </message>
+</context>
+<context>
+    <name>QMessageBox</name>
+    <message>
+        <source>Cancel</source>
+        <translation>İptal Et</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Yardım</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Tamam</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Varsayılana Döndür</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Sıfırla</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Kaydet</translation>
+    </message>
+</context>
+<context>
+    <name>QGuiApplication</name>
+    <message>
+        <source>Cancel</source>
+        <translation>İptal Et</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Yardım</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Tamam</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Varsayılana Döndür</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Sıfırla</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Kaydet</translation>
+    </message>
+</context>
+<context>
+    <name>QAbstractButton</name>
+    <message>
+        <source>Cancel</source>
+        <translation>İptal Et</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Yardım</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Tamam</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Varsayılana Döndür</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Sıfırla</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Kaydet</translation>
+    </message>
+</context>
+<context>
+    <name>QColorDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>İptal Et</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Yardım</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Tamam</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Varsayılana Döndür</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Sıfırla</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Kaydet</translation>
+    </message>
+</context>
+<context>
+    <name>QFileDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>İptal Et</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Yardım</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Tamam</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Varsayılana Döndür</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Sıfırla</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Kaydet</translation>
+    </message>
+</context>
+<context>
+    <name>QFontDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>İptal Et</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Yardım</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Tamam</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Varsayılana Döndür</translation>
+    </message>
+    <message>
+        <source>&amp;Reset</source>
+        <translation>&amp;Sıfırla</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Kaydet</translation>
+    </message>
+</context>
+<context>
+    <name>QtController</name>
+    <message>
+        <source>Console Mode</source>
+        <translation>Konsol Modu</translation>
+    </message>
+    <message>
+        <source>Vibration</source>
+        <translation>Titreşim</translation>
+    </message>
+</context>
 </TS>

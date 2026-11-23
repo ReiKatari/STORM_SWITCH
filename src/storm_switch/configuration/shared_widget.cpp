@@ -180,7 +180,7 @@ QWidget* Widget::CreateCheckBox(Settings::BasicSetting* bool_setting, const QStr
                                 std::function<void()>& restore_func,
                                 const std::function<void()>& touch) {
     checkbox = new QCheckBox(label, this);
-    checkbox->setMinimumHeight(26);
+    checkbox->setMinimumHeight(22);
     checkbox->setAttribute(Qt::WA_TranslucentBackground, true);
     checkbox->setStyleSheet(QStringLiteral("background: transparent; background-color: transparent;"));
     checkbox->setCheckState(RelevantCurrentValue(*bool_setting) == "true" ? Qt::CheckState::Checked
@@ -231,7 +231,7 @@ QWidget* Widget::CreateCombobox(std::function<std::string()>& serializer,
     combobox->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
     combobox->setMinimumContentsLength(8);
     combobox->setMinimumWidth(0);
-    combobox->setMinimumHeight(32);
+    combobox->setMinimumHeight(26);
 
     if (combobox_enumerations.contains(type)) {
         const auto& enumeration = combobox_enumerations.at(type);
@@ -380,7 +380,7 @@ QWidget* Widget::CreateLineEdit(std::function<std::string()>& serializer,
     const QString text = QString::fromStdString(RelevantCurrentValue(setting));
     line_edit = new QLineEdit(this);
     line_edit->setText(text);
-    line_edit->setMinimumHeight(32);
+    line_edit->setMinimumHeight(26);
     line_edit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
     serializer = [this]() { return line_edit->text().toStdString(); };
@@ -511,14 +511,22 @@ QWidget* Widget::CreateSlider(bool reversed, float multiplier, const QString& gi
     slider = new QSlider(Qt::Horizontal, this);
     QLabel* feedback = new QLabel(this);
 
-    layout->addWidget(slider);
-    layout->addWidget(feedback);
+    container->setObjectName(QStringLiteral("StormSliderContainer"));
+    container->setStyleSheet(QStringLiteral(
+        "QWidget#StormSliderContainer, QWidget#StormSliderContainer:disabled { background: transparent; background-color: transparent; border: none; }"));
+    slider->setProperty("stormReversed", reversed);
+    feedback->setMinimumWidth(44);
+    feedback->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    feedback->setStyleSheet(QStringLiteral("QLabel, QLabel:disabled { background: transparent; background-color: transparent; }"));
+    layout->setSpacing(10);
+    layout->addWidget(slider, 1);
+    layout->addWidget(feedback, 0);
 
     container->setMinimumHeight(28);
     container->setMinimumWidth(0);
     container->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
 
-    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setContentsMargins(0, 0, 4, 0);
 
     QString suffix = given_suffix == default_suffix ? DefaultSuffix(this, setting) : given_suffix;
 
@@ -631,7 +639,7 @@ QWidget* Widget::CreateSpinBox(const QString& given_suffix,
     spinbox->setRange(min_val, max_val);
     spinbox->setValue(default_val);
     spinbox->setSuffix(suffix);
-    spinbox->setMinimumHeight(32);
+    spinbox->setMinimumHeight(26);
     spinbox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
     serializer = [this]() { return std::to_string(spinbox->value()); };
@@ -680,7 +688,7 @@ QWidget* Widget::CreateDoubleSpinBox(const QString& given_suffix,
     double_spinbox->setRange(min_val, max_val);
     double_spinbox->setValue(default_val);
     double_spinbox->setSuffix(suffix);
-    double_spinbox->setMinimumHeight(32);
+    double_spinbox->setMinimumHeight(26);
     double_spinbox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
     serializer = [this]() { return fmt::format("{:f}", double_spinbox->value()); };

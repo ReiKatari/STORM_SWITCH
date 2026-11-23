@@ -167,33 +167,27 @@ DerivedTokens ComputeTokens(const StormTheme::Palette& pal, Preset preset) {
 
     // 3D Volumetric tactile buttons with top specular highlight, subtle bottom bevel, hover glow, pressed state
     const QColor btnBevel = pal.is_light ? t.border.darker(110) : t.deepShadow;
-    const QColor btnBorderCol = pal.is_light ? t.border : MixColors(t.border, t.accent, 0.15);
+    const QColor btnBorderCol = pal.is_light ? t.border : MixColors(t.border, t.accent, 0.34);
+    const QColor btnBotRich = pal.is_light ? btnBot : MixColors(btnTop, btnBot, 0.52);
 
     t.btnNormal = QStringLiteral(
         "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %1, stop:1 %2);"
         "border: 1px solid %3;"
-        "border-top: 1px solid %4;"
-        "border-bottom: 2px solid %5;"
-        "border-radius: %6;"
-        "padding: 5px 15px 6px 15px;"
+        "border-radius: %4;"
+        "padding: 5px 14px;"
         "outline: none;")
-        .arg(btnTop.name(), btnBot.name(), btnBorderCol.name(),
-             (pal.is_light ? QStringLiteral("#FFFFFF") : specSoft),
-             btnBevel.name(), t.btnRadius);
+        .arg(btnTop.name(), btnBotRich.name(), btnBorderCol.name(), t.btnRadius);
 
     t.btnHover = QStringLiteral(
         "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %1, stop:1 %2);"
-        "border: 1px solid %3;"
-        "border-bottom: 2px solid %4;")
-        .arg(hoverTop.name(), hoverBot.name(), t.accent.name(), t.accentDark.name());
+        "border: 1px solid %3;")
+        .arg(hoverTop.name(), hoverBot.name(), t.accent.name());
 
     t.btnPressed = QStringLiteral(
-        "background-color: %1;"
+        "background: %1;"
         "border: 1px solid %2;"
-        "border-top: 2px solid %3;"
-        "border-bottom: 1px solid %2;"
-        "padding: 7px 15px 4px 15px;")
-        .arg(btnBot.name(), btnBorderCol.name(), btnBevel.name());
+        "padding: 6px 14px 4px 14px;")
+        .arg(btnBotRich.darker(110).name(), t.accent.name());
 
     // 3D Recessed input fields with top inner shadow and focus accent border
     const QColor inputTopBorder = pal.is_light ? t.border.darker(112) : t.bg.darker(150);
@@ -235,30 +229,24 @@ DerivedTokens ComputeTokens(const StormTheme::Palette& pal, Preset preset) {
         "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %1, stop:1 %2);"
         "color: #FFFFFF;"
         "border: 1px solid %3;"
-        "border-top: 1px solid %4;"
-        "border-bottom: 2px solid %5;"
-        "border-radius: %6;"
-        "padding: 5px 17px 6px 17px;"
+        "border-radius: %4;"
+        "padding: 5px 16px;"
         "font-weight: 700;"
         "outline: none;")
-        .arg(t.accentLight.name(), t.accent.name(), t.accent.name(),
-             specBright, t.accentDark.darker(120).name(), t.btnRadius);
+        .arg(t.accentLight.name(), t.accent.name(), t.accentLight.name(), t.btnRadius);
 
     t.btnPrimaryHover = QStringLiteral(
         "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %1, stop:1 %2);"
         "color: #FFFFFF;"
-        "border: 1px solid %3;"
-        "border-bottom: 2px solid %4;")
-        .arg(t.accentLight.lighter(112).name(), t.accent.name(), t.accentLight.name(), t.accentDark.name());
+        "border: 1px solid #FFFFFF;")
+        .arg(t.accentLight.lighter(112).name(), t.accent.name());
 
     t.btnPrimaryPressed = QStringLiteral(
-        "background-color: %1;"
+        "background: %1;"
         "color: #FFFFFF;"
         "border: 1px solid %2;"
-        "border-top: 2px solid %3;"
-        "border-bottom: 1px solid %2;"
-        "padding: 7px 17px 4px 17px;")
-        .arg(t.accentDark.name(), t.accentDark.name(), t.accentDark.darker(140).name());
+        "padding: 6px 16px 4px 16px;")
+        .arg(t.accentDark.name(), t.accentLight.name());
 
     t.tabPaneRule = QStringLiteral(
         "border: none; border-radius: %1; background-color: %2; top: 0px;")
@@ -302,8 +290,15 @@ QString BuildCoreControlsQss(const StormTheme::Palette& pal, const DerivedTokens
     QString qss;
     qss.reserve(8192);
 
+    QString active_font = QString::fromStdString(UISettings::values.ui_font.GetValue());
+    active_font.replace(QLatin1Char('"'), QString());
+    if (active_font.isEmpty()) {
+        active_font = QStringLiteral("Segoe UI");
+    }
     qss += QStringLiteral(
+        "QWidget { font-family: \"%4\", \"Segoe UI\", \"Outfit\", sans-serif; }"
         "QLabel, QCheckBox, QRadioButton { color: %1; background: transparent; background-color: transparent; outline: none; }"
+        "QLabel:disabled, QCheckBox:disabled, QRadioButton:disabled { color: %3; }"
         "QWidget#StormSettingRow, QGroupBox QLabel, QGroupBox QCheckBox, QGroupBox QRadioButton { background: transparent; background-color: transparent; }"
         "QTabWidget, QTabWidget > QStackedWidget, QTabWidget QStackedWidget, QStackedWidget {"
         "  background: %2; background-color: %2; color: %1;"
@@ -312,7 +307,7 @@ QString BuildCoreControlsQss(const StormTheme::Palette& pal, const DerivedTokens
         "QWidget#qt_scrollarea_viewport, QWidget#scrollAreaWidgetContents {"
         "  background: %2; background-color: %2; color: %1; border: none;"
         "}"
-    ).arg(pal.textPrimary, pal.bg);
+    ).arg(pal.textPrimary, pal.bg, pal.textSecondary, active_font);
 
     qss += QStringLiteral("QGroupBox { %1 color: %2; font-weight: bold; }")
                .arg(t.groupBoxRule, pal.textPrimary);
@@ -350,7 +345,7 @@ QString BuildCoreControlsQss(const StormTheme::Palette& pal, const DerivedTokens
         "  border-top-right-radius: %7; border-bottom-right-radius: %7;"
         "  background-color: transparent;"
         "}"
-        "QComboBox::down-arrow { image: url(:/icons/down_arrow.svg); width: 12px; height: 12px; }"
+        "QComboBox::down-arrow { image: url(:/icons/down_arrow.png); width: 12px; height: 12px; }"
         "QComboBoxPrivateContainer, QComboBox QListView, QComboBox QAbstractItemView {"
         "  background-color: %8; color: %2; border: 1px solid %6; border-radius: %7;"
         "  selection-background-color: %3; selection-color: #FFFFFF; outline: none; padding: 4px;"
@@ -366,22 +361,78 @@ QString BuildCoreControlsQss(const StormTheme::Palette& pal, const DerivedTokens
 
     // Clean Sliders & Indicators (Zero harsh border glow)
     qss += QStringLiteral(
+        "QGroupBox QWidget:disabled, QScrollArea QWidget:disabled, QWidget#unsafe_widget, QWidget#unsafe_widget:disabled {"
+        "  background: transparent; background-color: transparent;"
+        "}"
+        "QWidget#StormSliderContainer, QWidget#StormSliderContainer:disabled, QSlider, QSlider:disabled {"
+        "  background: transparent; background-color: transparent; border: none; min-height: 24px;"
+        "}"
         "QSlider::groove:horizontal {"
-        "  border: none; height: 6px; background: %3; border-radius: 3px;"
+        "  border: 1px solid %1; height: 6px; background: %3; border-radius: 3px;"
+        "}"
+        "QSlider::groove:horizontal:disabled {"
+        "  border: 1px solid rgba(148, 163, 184, 0.20); height: 6px; background: rgba(148, 163, 184, 0.14); border-radius: 3px;"
         "}"
         "QSlider::sub-page:horizontal {"
         "  background: %4; border-radius: 3px;"
         "}"
-        "QSlider::thumb:horizontal {"
-        "  background: #FFFFFF;"
-        "  border: none; width: 16px; margin-top: -5px; margin-bottom: -5px; border-radius: 8px;"
+        "QSlider::add-page:horizontal {"
+        "  background: %3; border-radius: 3px;"
         "}"
-        "QSlider::thumb:horizontal:hover { background: %5; border: none; }"
-        "QCheckBox::indicator:unchecked, QGroupBox::indicator:unchecked, QTreeView::indicator:unchecked, QListView::indicator:unchecked, QTableView::indicator:unchecked {"
-        "  width: 16px; height: 16px; border: none; border-radius: 4px; background: %3; image: none;"
+        "QSlider[stormReversed=\"true\"]::sub-page:horizontal {"
+        "  background: %3; border-radius: 3px;"
+        "}"
+        "QSlider[stormReversed=\"true\"]::add-page:horizontal {"
+        "  background: %4; border-radius: 3px;"
+        "}"
+        "QSlider::sub-page:horizontal:disabled, QSlider[stormReversed=\"true\"]::add-page:horizontal:disabled {"
+        "  background: rgba(148, 163, 184, 0.38); border-radius: 3px;"
+        "}"
+        "QSlider::add-page:horizontal:disabled, QSlider[stormReversed=\"true\"]::sub-page:horizontal:disabled {"
+        "  background: rgba(148, 163, 184, 0.14); border-radius: 3px;"
+        "}"
+        "QSlider::handle:horizontal {"
+        "  background: #FFFFFF;"
+        "  border: 2px solid %4; width: 14px; height: 14px; margin: -6px 0px; border-radius: 9px;"
+        "}"
+        "QSlider::handle:horizontal:hover { background: %5; border: 2px solid #FFFFFF; }"
+        "QSlider::handle:horizontal:pressed { background: %4; border: 2px solid #FFFFFF; }"
+        "QSlider::handle:horizontal:disabled { background: #64748B; border: 2px solid #475569; }"
+        "QCheckBox::indicator, QGroupBox::indicator, QTreeView::indicator, QListView::indicator, QTableView::indicator {"
+        "  width: 16px; height: 16px; border-radius: 4px; border: 1px solid #EF4444; background: rgba(239, 68, 68, 0.18); image: none;"
+        "}"
+        "QCheckBox::indicator:unchecked:hover, QGroupBox::indicator:unchecked:hover, QTreeView::indicator:unchecked:hover, QListView::indicator:unchecked:hover, QTableView::indicator:unchecked:hover {"
+        "  border: 1px solid #F87171; background: rgba(239, 68, 68, 0.28); image: none;"
         "}"
         "QCheckBox::indicator:checked, QGroupBox::indicator:checked, QTreeView::indicator:checked, QListView::indicator:checked, QTableView::indicator:checked {"
-        "  width: 16px; height: 16px; background: %4; border: none; border-radius: 4px; image: none;"
+        "  width: 16px; height: 16px; background: #10B981; border: 1px solid #10B981; border-radius: 4px; image: url(:/icons/check_white.png);"
+        "}"
+        "QCheckBox::indicator:checked:hover, QGroupBox::indicator:checked:hover, QTreeView::indicator:checked:hover, QListView::indicator:checked:hover, QTableView::indicator:checked:hover {"
+        "  background: #34D399; border: 1px solid #34D399; image: url(:/icons/check_white.png);"
+        "}"
+        "QCheckBox::indicator:disabled, QGroupBox::indicator:disabled, QTreeView::indicator:disabled, QListView::indicator:disabled, QTableView::indicator:disabled {"
+        "  border: 1px solid #64748B; background: rgba(100, 116, 139, 0.20); image: none;"
+        "}"
+        "QCheckBox::indicator:checked:disabled, QGroupBox::indicator:checked:disabled, QTreeView::indicator:checked:disabled, QListView::indicator:checked:disabled, QTableView::indicator:checked:disabled {"
+        "  background: #065F46; border: 1px solid #065F46; image: url(:/icons/check_white.png);"
+        "}"
+        "QRadioButton::indicator {"
+        "  width: 16px; height: 16px; border-radius: 8px; border: 1px solid #EF4444; background: rgba(239, 68, 68, 0.18); image: none;"
+        "}"
+        "QRadioButton::indicator:unchecked:hover {"
+        "  border: 1px solid #F87171; background: rgba(239, 68, 68, 0.28); image: none;"
+        "}"
+        "QRadioButton::indicator:checked {"
+        "  width: 16px; height: 16px; border-radius: 8px; background: #10B981; border: 1px solid #10B981; image: none;"
+        "}"
+        "QRadioButton::indicator:checked:hover {"
+        "  background: #34D399; border: 1px solid #34D399; image: none;"
+        "}"
+        "QRadioButton::indicator:disabled {"
+        "  border: 1px solid #64748B; background: rgba(100, 116, 139, 0.20); image: none;"
+        "}"
+        "QRadioButton::indicator:checked:disabled {"
+        "  background: #065F46; border: 1px solid #065F46; image: none;"
         "}")
         .arg(pal.border, t.deepShadow.name(), pal.inputBg, pal.accent, t.accentLight.name());
 
@@ -479,6 +530,20 @@ QString BuildCoreControlsQss(const StormTheme::Palette& pal, const DerivedTokens
              pal.inputBg, pal.textSecondary, pal.border, t.btnRadius,
              t.btnPrimaryHover, t.btnPrimaryPressed);
 
+    // Themed Progress Bars & ComboBox Dropdown Popups
+    qss += QStringLiteral(
+        "QProgressBar {"
+        "  background-color: %1; color: %2; border: 1px solid %3; border-radius: %4;"
+        "  text-align: center; min-height: 18px; font-weight: 600;"
+        "}"
+        "QProgressBar::chunk {"
+        "  background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 %5, stop:1 %6);"
+        "  border-radius: %4;"
+        "}"
+        "")
+        .arg(pal.inputBg, pal.textPrimary, pal.border, t.btnRadius,
+             pal.accent, RgbaCss(t.accent, 210));
+
     return qss;
 }
 
@@ -498,9 +563,10 @@ protected:
             if (auto* themed_w = qobject_cast<QWidget*>(watched)) {
                 if (themed_w->property("_stormDialogThemed").toBool()) {
                     const auto pal = StormTheme::GetThemePalette();
-                    const QString sig = QStringLiteral("%1|%2|%3|%4|%5").arg(
+                    const QString sig = QStringLiteral("%1|%2|%3|%4|%5|%6").arg(
                         QString::fromStdString(GetActiveDesignId()),
-                        pal.bg, pal.surface, pal.accent, pal.textPrimary);
+                        pal.bg, pal.surface, pal.accent, pal.textPrimary,
+                        QString::fromStdString(UISettings::values.ui_font.GetValue()));
                     if (themed_w->property("_stormThemeSig").toString().isEmpty()) {
                         themed_w->setProperty("_stormThemeSig", sig);
                         themed_w->setProperty("_stormLastBaseQss", BuildDialogStylesheet(pal));
@@ -623,15 +689,17 @@ protected:
                 }
             }
         } else if (type == QEvent::PaletteChange || type == QEvent::ThemeChange ||
-                   type == QEvent::ApplicationPaletteChange) {
+                   type == QEvent::ApplicationPaletteChange || type == QEvent::ApplicationFontChange ||
+                   type == QEvent::FontChange) {
             // Live Theme & Palette Refresh for dialogs (re-entrancy safe for Qt 6.11+)
             if (auto* w = qobject_cast<QWidget*>(watched)) {
                 if (w->property("_stormDialogThemed").toBool() && w->isVisible() &&
                     !w->property("_stormRefreshingStylesheet").toBool()) {
                     const auto pal = StormTheme::GetThemePalette();
-                    const QString sig = QStringLiteral("%1|%2|%3|%4|%5").arg(
+                    const QString sig = QStringLiteral("%1|%2|%3|%4|%5|%6").arg(
                         QString::fromStdString(GetActiveDesignId()),
-                        pal.bg, pal.surface, pal.accent, pal.textPrimary);
+                        pal.bg, pal.surface, pal.accent, pal.textPrimary,
+                        QString::fromStdString(UISettings::values.ui_font.GetValue()));
                     const QString prev_sig = w->property("_stormThemeSig").toString();
                     if (prev_sig.isEmpty()) {
                         w->setProperty("_stormThemeSig", sig);
@@ -848,7 +916,7 @@ QString BuildDialogStylesheet(const StormTheme::Palette& pal, const std::string&
         "  background: %7; border: 1px solid %4; color: %4;"
         "}"
         "QGroupBox[stormCard=\"true\"], QGroupBox#groupBox[stormHeroCard=\"true\"], QGroupBox#BentoGameHeaderCard {"
-        "  background-color: %8; border: 1px solid %2; border-radius: 10px; margin-top: 14px; padding: 24px 14px 14px 14px;"
+        "  background-color: %8; border: 1px solid %2; border-radius: 9px; margin-top: 10px; padding: 18px 10px 10px 10px;"
         "}"
         "QGroupBox[stormCard=\"true\"]::title, QGroupBox#groupBox[stormHeroCard=\"true\"]::title, QGroupBox#BentoGameHeaderCard::title {"
         "  subcontrol-origin: margin; subcontrol-position: top left; left: 14px; padding: 2px 10px;"
@@ -878,26 +946,30 @@ QString BuildConfigDialogStylesheet(const StormTheme::Palette& pal, bool is_per_
         "}")
         .arg(t.windowBackdrop, pal.bg, pal.textPrimary);
 
+    qss += BuildCoreControlsQss(pal, t);
+
     if (is_per_game) {
+        const bool is_light = QColor(pal.bg).lightness() > 140;
+        const QString titleIdColor = is_light
+            ? QColor(pal.accent).darker(125).name()
+            : QColor(t.accentLight).lighter(135).name();
         qss += QStringLiteral(
             "QFrame#gameInfoCard {"
-            "  background-color: %1; border: none; border-radius: %5;"
+            "  background-color: %1; border: none; border-radius: %2;"
             "}"
-            "QLineEdit#display_name, QTextEdit#display_filename {"
-            "  background-color: %6; border: none; border-radius: %7; padding: 4px 8px; color: %8; font-size: 12px;"
+            "QLineEdit#display_name, QTextEdit#display_name, QTextEdit#display_filename {"
+            "  background-color: %3; border: 1px solid %4; border-radius: %5; padding: 5px 8px; color: %6; font-size: 12px;"
             "}"
             "QLineEdit#display_developer, QLineEdit#display_version, QLineEdit#display_format, QLineEdit#display_size {"
-            "  background-color: %6; border: none; border-radius: %7; padding: 3px 8px; color: %8; font-size: 11.5px;"
+            "  background-color: %3; border: 1px solid %4; border-radius: %5; padding: 4px 8px; color: %6; font-size: 11.5px;"
             "}"
             "QLineEdit#display_title_id {"
-            "  background-color: %6; border: none; border-radius: %7; padding: 3px 8px; color: %9;"
-            "  font-family: 'Consolas', 'Courier New', monospace; font-size: 11.5px; font-weight: 700;"
+            "  background-color: %3; border: 1px solid %4; border-radius: %5; padding: 4px 8px; color: %7;"
+            "  font-family: 'Consolas', 'Courier New', monospace; font-size: 12px; font-weight: 700;"
             "}")
-            .arg(pal.surface, RgbaCss(t.accentLight, 120), pal.border, t.deepShadow.name(), t.cardRadius,
-                 pal.inputBg, t.inputRadius, pal.textPrimary, pal.accent);
+            .arg(pal.surface, t.cardRadius, pal.inputBg, pal.border, t.inputRadius,
+                 pal.textPrimary, titleIdColor);
     }
-
-    qss += BuildCoreControlsQss(pal, t);
     return qss;
 }
 
@@ -968,10 +1040,33 @@ QString BuildMainWindowDesignOverlay(const StormTheme::Palette& pal, const std::
         "  border: none;"
         "  border-right: 1px solid %5;"
         "  border-bottom: 1px solid %5;"
+        "}"
+        "QMenu::item:disabled {"
+        "  color: rgba(155, 162, 190, 0.42);"
+        "  background-color: transparent;"
+        "}"
+        "QComboBox::down-arrow {"
+        "  image: url(:/icons/down_arrow.png);"
+        "  width: 12px;"
+        "  height: 12px;"
+        "}"
+        "QCheckBox::indicator:checked {"
+        "  image: url(:/icons/check_white.png);"
+        "}"
+        "QGroupBox {"
+        "  margin-top: 14px;"
+        "  padding-top: 10px;"
+        "}"
+        "QGroupBox::title {"
+        "  subcontrol-origin: margin;"
+        "  subcontrol-position: top left;"
+        "  left: 10px;"
+        "  top: 2px;"
+        "  padding: 0px 6px;"
         "}\n")
         .arg(t.windowBackdrop, pal.bg, pal.textPrimary, pal.surface, pal.border,
              t.btnRadius, RgbaCss(t.accent, 145), t.deepShadow.name(),
-             t.btnNormal, t.btnHover, t.btnPressed, pal.card, pal.accent);
+             t.btnNormal, t.btnHover, t.btnPressed, pal.card);
 }
 
 void InstallGlobalAnimator() {

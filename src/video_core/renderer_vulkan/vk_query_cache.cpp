@@ -22,6 +22,7 @@
 #include "video_core/rasterizer_interface.h"
 #include "video_core/renderer_vulkan/vk_buffer_cache.h"
 #include "video_core/renderer_vulkan/vk_compute_pass.h"
+#include "video_core/nx2.h"
 #include "video_core/renderer_vulkan/vk_query_cache.h"
 #include "video_core/renderer_vulkan/vk_resource_pool.h"
 #include "video_core/renderer_vulkan/vk_scheduler.h"
@@ -1720,6 +1721,9 @@ void QueryCacheRuntime::SyncValues(std::span<SyncValuesType> values, VkBuffer ba
             const auto post_op = VideoCommon::ObtainBufferOperation::DoNothing;
             const auto [buffer, offset] = impl->buffer_cache.ObtainCPUBuffer(
                 pair.first, static_cast<u32>(pair.second - pair.first), sync_info, post_op);
+            if (VideoCore::Nx2IsActive()) {
+                Tegra::Nx2MarkGpuWritten(pair.first, pair.second - pair.first);
+            }
             VkBuffer handle = (buffer != nullptr) ? buffer->Handle() : VkBuffer{};
             impl->buffers_to_upload_to.emplace_back(handle, offset);
         }

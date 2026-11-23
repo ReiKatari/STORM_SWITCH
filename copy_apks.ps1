@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
 $baseDir = Split-Path -Parent $PSScriptRoot
-$version = '18.1.0'
+$version = '18.4.2'
 if (Test-Path "$PSScriptRoot\GIT-RELEASE") {
     $v = (Get-Content "$PSScriptRoot\GIT-RELEASE" -Raw).Trim()
     if ($v) { $version = $v }
@@ -117,4 +117,4 @@ Get-ChildItem -Path $filesDir -Filter "*.idsig" | Remove-Item -Force -ErrorActio
 Get-ChildItem -Path $filesDir | Unblock-File -ErrorAction SilentlyContinue
 Get-ChildItem -Path $assemblingDir | Unblock-File -ErrorAction SilentlyContinue
 
-Write-Host "Canonical $version APKs signed with V3 Key Rotation and copied to $filesDir and $assemblingDir successfully!"
+Write-Host "Canonical $version APKs signed with STORM SERTIFICATE (V1+V2+V3) and copied to $filesDir and $assemblingDir successfully!"

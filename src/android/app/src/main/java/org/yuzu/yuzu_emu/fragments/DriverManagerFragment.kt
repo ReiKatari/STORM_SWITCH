@@ -458,7 +458,7 @@ class DriverManagerFragment : Fragment() {
             if (meta.name != null) {
                 val currentPath = StringSetting.DRIVER_PATH.getString()
                 if (currentPath.equals(storagePath, ignoreCase = true)) {
-                    android.widget.Toast.makeText(requireContext(), "STORM DRIVER 12.0.0 уже активен!", android.widget.Toast.LENGTH_SHORT).show()
+                    android.widget.Toast.makeText(requireContext(), getString(R.string.storm_driver_already_active), android.widget.Toast.LENGTH_SHORT).show()
                     return
                 }
                 promptDriverApplication(storagePath, 1)

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="storm_prof_btn_save">Zapisz</string>
+    <string name="storm_prof_btn_import">Importuj</string>
+    <string name="storm_prof_btn_apply">Zastosuj</string>
+    <string name="storm_prof_btn_share">Udostępnij</string>
+    <string name="storm_prof_btn_rename">Zmień nazwę</string>
+    <string name="storm_prof_btn_delete">Usuń</string>
+    <string name="storm_prof_preset_balanced_name">Zrównoważony (Zalecane)</string>
+    <string name="storm_prof_save_btn">Zapisz</string>
+    <string name="storm_prof_rename_title">Zmień nazwę profilu</string>
+    <string name="storm_prof_delete_title">Usuń profil</string>
+    <string name="storm_auto_btn_reset">Resetuj</string>
+    <string name="storm_auto_param_cpu_backend">Backend CPU</string>
+</resources>

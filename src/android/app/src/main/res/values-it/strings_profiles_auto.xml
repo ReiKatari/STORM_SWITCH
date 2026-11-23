@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="storm_prof_filter_all">Tutti</string>
+    <string name="storm_prof_btn_save">Salva</string>
+    <string name="storm_prof_btn_import">Importa</string>
+    <string name="storm_prof_btn_apply">Applica</string>
+    <string name="storm_prof_btn_share">Condividi</string>
+    <string name="storm_prof_btn_rename">Rinomina</string>
+    <string name="storm_prof_btn_delete">Elimina</string>
+    <string name="storm_prof_preset_balanced_name">Bilanciato (Consigliato)</string>
+    <string name="storm_prof_save_btn">Salva</string>
+    <string name="storm_prof_rename_title">Rinomina profilo</string>
+    <string name="storm_prof_delete_title">Elimina profilo</string>
+    <string name="storm_auto_btn_reset">Ripristina</string>
+    <string name="storm_auto_hw_soc_title">Processore / SoC</string>
+    <string name="storm_auto_param_cpu_backend">Back-end CPU</string>
+    <string name="storm_auto_btn_apply">Applica ottimizzazione</string>
+</resources>

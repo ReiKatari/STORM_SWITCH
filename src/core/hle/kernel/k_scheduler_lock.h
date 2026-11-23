@@ -21,12 +21,27 @@ class KAbstractSchedulerLock {
 public:
     explicit KAbstractSchedulerLock(KernelCore& kernel) : m_kernel{kernel} {}
 
+    static uintptr_t CurrentHostThreadToken() noexcept {
+        static std::atomic<uintptr_t> s_next_host_token{1};
+        thread_local const uintptr_t t_host_token =
+            (s_next_host_token.fetch_add(1, std::memory_order_relaxed) << 1) | uintptr_t{1};
+        return t_host_token;
+    }
+
+    uintptr_t CurrentOwnerToken() const noexcept {
+        if (KThread* cur = GetCurrentThreadPointer(m_kernel); cur != nullptr) {
+            return reinterpret_cast<uintptr_t>(cur);
+        }
+        return CurrentHostThreadToken();
+    }
+
     bool IsLockedByCurrentThread() const {
-        return m_owner_thread == GetCurrentThreadPointer(m_kernel);
+        return m_owner_token.load(std::memory_order_relaxed) == CurrentOwnerToken();
     }
 
     void Lock() {
-        if (this->IsLockedByCurrentThread()) {
+        const uintptr_t token = CurrentOwnerToken();
+        if (m_owner_token.load(std::memory_order_relaxed) == token) {
             // If we already own the lock, the lock count should be > 0.
             // For debug, ensure this is true.
             ASSERT(m_lock_count > 0);
@@ -36,10 +51,10 @@ public:
             m_spin_lock.Lock();
 
             ASSERT(m_lock_count == 0);
-            ASSERT(m_owner_thread == nullptr);
+            ASSERT(m_owner_token.load(std::memory_order_relaxed) == 0);
 
-            // Take ownership of the lock.
-            m_owner_thread = GetCurrentThreadPointer(m_kernel);
+            // Take ownership of the lock (non-zero token even for non-KThread host threads).
+            m_owner_token.store(token, std::memory_order_relaxed);
         }
 
         // Increment the lock count.
@@ -60,7 +75,7 @@ public:
                 SchedulerType::UpdateHighestPriorityThreads(m_kernel);
 
             // Note that we no longer hold the lock, and unlock the spinlock.
-            m_owner_thread = nullptr;
+            m_owner_token.store(0, std::memory_order_relaxed);
             m_spin_lock.Unlock();
 
             // Enable scheduling, and perform a rescheduling operation.
@@ -74,7 +89,7 @@ private:
     KernelCore& m_kernel;
     KAlignedSpinLock m_spin_lock{};
     s32 m_lock_count{};
-    std::atomic<KThread*> m_owner_thread{};
+    std::atomic<uintptr_t> m_owner_token{0};
 };
 
 } // namespace Kernel

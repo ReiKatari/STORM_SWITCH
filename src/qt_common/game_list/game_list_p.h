@@ -9,7 +9,9 @@
 #include <array>
 #include <map>
 #include <mutex>
+#include <cctype>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <utility>
 
@@ -821,6 +823,65 @@ inline QString FormatGameName(const std::string& physical_name) {
         return file_info.dir().path();
     }
     return physical_name_as_qstring;
+}
+
+inline std::string ExtractGameListModVariant(std::string_view file_path) {
+    const std::size_t slash_pos = file_path.find_last_of("/\\");
+    const std::string_view fname = (slash_pos == std::string_view::npos)
+                                       ? file_path
+                                       : file_path.substr(slash_pos + 1);
+    std::string upper;
+    upper.reserve(fname.size());
+    for (unsigned char c : fname) {
+        upper.push_back(static_cast<char>(std::toupper(c)));
+    }
+
+    // 1. Check bracketed mod/translation/patch tags, e.g. [MOD - M. RUS], [MOD - RUS], [MOD]
+    std::size_t pos = 0;
+    while (pos < upper.size()) {
+        const std::size_t open = upper.find('[', pos);
+        if (open == std::string::npos) {
+            break;
+        }
+        const std::size_t close = upper.find(']', open + 1);
+        if (close == std::string::npos) {
+            break;
+        }
+        std::string_view inner(upper.data() + open + 1, close - open - 1);
+        while (!inner.empty() && inner.front() == ' ') inner.remove_prefix(1);
+        while (!inner.empty() && inner.back() == ' ') inner.remove_suffix(1);
+        if (inner.starts_with("MOD") || inner.starts_with("PATCH") ||
+            inner.starts_with("RUS PATCH") || inner.starts_with("TRANSLAT") ||
+            inner.starts_with("HACK") || inner.starts_with("CUSTOM") ||
+            inner.starts_with("UNOFFICIAL")) {
+            return std::string(inner);
+        }
+        pos = close + 1;
+    }
+
+    // 2. Fallback: check bundle suffix like (1G+1U+1M) or (1G+2M)
+    for (std::size_t i = 0; i + 2 < upper.size(); ++i) {
+        if (upper[i] == '+' && std::isdigit(static_cast<unsigned char>(upper[i + 1]))) {
+            std::size_t j = i + 1;
+            while (j < upper.size() && std::isdigit(static_cast<unsigned char>(upper[j]))) {
+                ++j;
+            }
+            if (j < upper.size() && upper[j] == 'M' &&
+                (j + 1 == upper.size() || !std::isalnum(static_cast<unsigned char>(upper[j + 1])))) {
+                return std::string("BUNDLE_") + upper.substr(i + 1, j - i);
+            }
+        }
+    }
+    return {};
+}
+
+inline std::string BuildGameListDedupKey(u64 program_id, std::string_view file_type,
+                                         std::string_view file_path) {
+    const std::string variant = ExtractGameListModVariant(file_path);
+    if (variant.empty()) {
+        return fmt::format("{:016X}_{}", program_id & 0xFFFFFFFFFFFFE000ULL, file_type);
+    }
+    return fmt::format("{:016X}_{}_{}", program_id & 0xFFFFFFFFFFFFE000ULL, file_type, variant);
 }
 
 inline QList<QStandardItem*> MakeCachedGameListEntry(

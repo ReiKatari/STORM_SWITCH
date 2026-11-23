@@ -1257,6 +1257,7 @@ class SettingsFragmentPresenter(
                 )
 
             )
+            add(BooleanSetting.USE_DEVICE_SENSORS.key)
 
         }
 

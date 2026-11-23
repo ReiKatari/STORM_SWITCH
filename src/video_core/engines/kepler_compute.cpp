@@ -41,7 +41,8 @@ KeplerCompute::KeplerCompute(MemoryManager& memory_manager_)
                              static_cast<u32>(KEPLER_COMPUTE_REG_INDEX(data_upload))}) {
         native_plain_methods[method] = false;
     }
-    if (std::getenv("EDEN_NATIVE_DRAW_DIAGNOSTICS") != nullptr) {
+    static const bool native_draw_diag_ctor = std::getenv("EDEN_NATIVE_DRAW_DIAGNOSTICS") != nullptr;
+    if (native_draw_diag_ctor) {
         native_plain_methods[0x5a] = false;
         for (u32 method = 0xc6; method <= 0x108; ++method) {
             native_plain_methods[method] = false;
@@ -88,8 +89,9 @@ bool KeplerCompute::ProcessNativeMethod(Core::System& system, u32 method, u32 ar
         const auto emit = [&](u32 address, u32 value) {
             static u32 diagnostic_writes{};
             if (diagnostic_writes++ < 4096) LOG_DEBUG(HW_GPU, "Native compute MME emit method={:#x}, value={:#x}", address, value);
-            if (native_macro->HandleNativeDmaMethod(memory_manager, rasterizer, address, value,
-                                                    &native_parameters)) {
+            if (((address >= 0x154 && address <= 0x15d) || address == 0x37b) &&
+                native_macro->HandleNativeDmaMethod(memory_manager, rasterizer, address, value,
+                                                    &native_parameters)) [[unlikely]] {
                 return true;
             }
             if (address >= 0xe00) return false;
@@ -126,7 +128,8 @@ bool KeplerCompute::ProcessNativeMethod(Core::System& system, u32 method, u32 ar
             [&](u32 address) { return address < native_registers.size() ? native_registers[address] : 0U; },
             emit);
         if (!result.success) {
-            if (std::getenv("EDEN_NATIVE_DRAW_DIAGNOSTICS")) {
+            static const bool native_draw_diag_mme = std::getenv("EDEN_NATIVE_DRAW_DIAGNOSTICS") != nullptr;
+            if (native_draw_diag_mme) {
                 std::ofstream dump("native-compute-mme.bin", std::ios::binary);
                 dump.write(reinterpret_cast<const char*>(native_macro->native_code.data()), sizeof(native_macro->native_code));
             }
@@ -138,7 +141,8 @@ bool KeplerCompute::ProcessNativeMethod(Core::System& system, u32 method, u32 ar
         return true;
     }
     native_registers[method] = argument;
-    if (native_macro->HandleNativeDmaMethod(memory_manager, rasterizer, method, argument, nullptr)) {
+    if (((method >= 0x154 && method <= 0x15d) || method == 0x37b) &&
+        native_macro->HandleNativeDmaMethod(memory_manager, rasterizer, method, argument, nullptr)) [[unlikely]] {
         return true;
     }
     if (method == 0x5a || (method >= 0xc6 && method <= 0x108)) {
@@ -153,7 +157,8 @@ bool KeplerCompute::ProcessNativeMethod(Core::System& system, u32 method, u32 ar
         LOG_DEBUG(HW_GPU, "Native inline QMD: address={:#x}, program={:#x}, control={:#x}, grid={}/{}/{}",
             address, program, control, native_registers[0xc8 + 12],
             native_registers[0xc8 + 13] & 0xffff, native_registers[0xc8 + 14] & 0xffff);
-        if (std::getenv("EDEN_NATIVE_DRAW_DIAGNOSTICS")) {
+        static const bool native_draw_diag_iqmd = std::getenv("EDEN_NATIVE_DRAW_DIAGNOSTICS") != nullptr;
+        if (native_draw_diag_iqmd) [[unlikely]] {
             std::ofstream dump("native-inline-qmd.bin", std::ios::binary);
             dump.write(reinterpret_cast<const char*>(native_registers.data() + 0xc8), 256);
             std::ofstream registers("native-inline-compute-registers.bin", std::ios::binary);
@@ -194,7 +199,8 @@ bool KeplerCompute::ProcessNativeMethod(Core::System& system, u32 method, u32 ar
             memory_manager.GpuToCpuAddress(qmd_address).value_or(0), method, argument, 0);
         if (method == 0xae || (method == 0xaf && !(argument & 2)) ||
             (method == 0xb0 && ((argument & 15) == 0 || (argument & 15) == 1))) return true;
-        if ((argument & 15) == 12 && std::getenv("EDEN_NATIVE_DRAW_DIAGNOSTICS")) {
+        static const bool native_draw_diag_inc = std::getenv("EDEN_NATIVE_DRAW_DIAGNOSTICS") != nullptr;
+        if (native_draw_diag_inc && (argument & 15) == 12) [[unlikely]] {
             static u32 captured{};
             if (captured++ == 0 && memory_manager.IsFullyMappedRange(qmd_address, 256)) {
                 std::array<u32, 64> descriptor{};
@@ -213,13 +219,15 @@ bool KeplerCompute::ProcessNativeMethod(Core::System& system, u32 method, u32 ar
                     memory_manager.FlushRegion(address, sizeof(descriptor), VideoCommon::CacheType::BufferCache);
                 }
                 memory_manager.ReadBlockUnsafe(address, descriptor.data(), sizeof(descriptor));
+                static constexpr std::array<u32, 2> ReleaseSlotBases{24U, 52U};
                 for (u32 slot = 0; slot < 2; ++slot) {
-                    const u32 flags = descriptor[25 + slot * 4];
+                    const u32 base = ReleaseSlotBases[slot];
+                    const u32 flags = descriptor[base + 1];
                     if (!(flags & (1U << 23))) continue;
-                    const GPUVAddr destination = (GPUVAddr{flags & 0x1ffff} << 32) | descriptor[24 + slot * 4];
+                    const GPUVAddr destination = (GPUVAddr{flags & 0x1ffff} << 32) | descriptor[base];
                     VideoCommon::TraceNativeQuery(7 + slot, memory_manager.GetID(), destination,
                         memory_manager.GpuToCpuAddress(destination).value_or(0),
-                        descriptor[4], descriptor[26 + slot * 4], flags);
+                        descriptor[4], descriptor[base + 2], flags);
                 }
                 return true;
             },
@@ -229,8 +237,13 @@ bool KeplerCompute::ProcessNativeMethod(Core::System& system, u32 method, u32 ar
                     rasterizer->SignalFence([this, address, payload] {
                         const u32 value = memory_manager.Read<u32>(address) + payload;
                         memory_manager.Write<u32>(address, value);
+                        const auto cpu_addr = memory_manager.GpuToCpuAddress(address);
+                        if (cpu_addr) {
+                            Tegra::Nx2SemaphoreWaiters::Get().OnWrite(*cpu_addr, value);
+                        }
+
                         VideoCommon::TraceNativeQuery(1, memory_manager.GetID(), address,
-                            memory_manager.GpuToCpuAddress(address).value_or(0), 0, value, 1U << 26);
+                            cpu_addr.value_or(0), 0, value, 1U << 26);
                     });
                 } else {
                     VideoCommon::QueryPropertiesFlags query_flags = VideoCommon::QueryPropertiesFlags::IsAFence;
@@ -247,7 +260,8 @@ bool KeplerCompute::ProcessNativeMethod(Core::System& system, u32 method, u32 ar
             return true;
         }
         LOG_WARNING(HW_GPU, "Native QMD skipped: {}", error);
-        if (std::getenv("EDEN_NATIVE_DRAW_DIAGNOSTICS")) {
+        static const bool native_draw_diag_skip = std::getenv("EDEN_NATIVE_DRAW_DIAGNOSTICS") != nullptr;
+        if (native_draw_diag_skip) [[unlikely]] {
             std::array<u32, 128> qmd{};
             if (memory_manager.IsFullyMappedRange(qmd_address, sizeof(qmd))) {
                 memory_manager.ReadBlockUnsafe(qmd_address, qmd.data(), sizeof(qmd));

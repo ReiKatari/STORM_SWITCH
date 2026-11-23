@@ -354,19 +354,98 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
         ui->buttonSLRight,  ui->buttonSRRight,
     };
 
-    const QString dpad_btn_style = QStringLiteral("QPushButton { text-align: left; padding-left: 8px; min-width: 78px; }");
-    ui->buttonDpadLeft->setStyleSheet(dpad_btn_style);
-    ui->buttonDpadRight->setStyleSheet(dpad_btn_style);
-    ui->buttonDpadUp->setStyleSheet(dpad_btn_style);
-    ui->buttonDpadDown->setStyleSheet(dpad_btn_style);
-    ui->buttonDpadLeft->setMinimumWidth(78);
-    ui->buttonDpadRight->setMinimumWidth(78);
-    ui->buttonDpadUp->setMinimumWidth(78);
-    ui->buttonDpadDown->setMinimumWidth(78);
-    ui->buttonDpadLeftGroup->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-    ui->buttonDpadRightGroup->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-    ui->buttonDpadUpGroup->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-    ui->buttonDpadDownGroup->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    // Ultra-compact, non-overlapping QGroupBox margins for button cells so label -> button -> next label gaps are minimal!
+    this->setStyleSheet(this->styleSheet() + QStringLiteral(
+        "ConfigureInputPlayer QGroupBox {"
+        "  margin-top: 7px; padding: 10px 4px 4px 4px; border-radius: 6px;"
+        "}"
+        "ConfigureInputPlayer QGroupBox::title {"
+        "  subcontrol-origin: margin; subcontrol-position: top left; top: 0px; left: 6px;"
+        "  padding: 0px 5px; font-size: 7.8pt; font-weight: 700;"
+        "}"
+        "ConfigureInputPlayer QGroupBox QGroupBox {"
+        "  margin-top: 5px; padding: 8px 2px 2px 2px; border-radius: 5px; border: 1px solid rgba(255, 255, 255, 0.08);"
+        "}"
+        "ConfigureInputPlayer QGroupBox QGroupBox::title {"
+        "  font-size: 7.4pt; padding: 0px 4px; left: 4px;"
+        "}"));
+
+    // Tighten every inner grid/box layout in Controls so nothing is bloated or overlapping
+    for (auto* lay : findChildren<QLayout*>()) {
+        lay->setSpacing(3);
+        lay->setContentsMargins(3, 2, 3, 2);
+    }
+    if (ui->main) {
+        ui->main->setSpacing(5);
+        ui->main->setContentsMargins(4, 3, 4, 3);
+    }
+
+    const QString storm_input_btn_style = QStringLiteral(
+        "QPushButton { text-align: center; padding: 1px 6px; min-height: 22px; max-height: 25px; "
+        "min-width: 78px; max-width: 104px; font-weight: 600; font-size: 8pt; border-radius: 5px; }");
+    for (auto* btn : button_map) {
+        if (btn) {
+            btn->setStyleSheet(storm_input_btn_style);
+            btn->setMinimumSize(78, 22);
+            btn->setMaximumSize(104, 25);
+            btn->setCursor(Qt::PointingHandCursor);
+        }
+    }
+    ui->buttonDpadLeftGroup->setAlignment(Qt::AlignHCenter);
+    ui->buttonDpadRightGroup->setAlignment(Qt::AlignHCenter);
+    ui->buttonDpadUpGroup->setAlignment(Qt::AlignHCenter);
+    ui->buttonDpadDownGroup->setAlignment(Qt::AlignHCenter);
+
+    // Clean, perfectly-proportioned top shoulder/misc row (ZL, L, Minus, Plus, ZR, R) with ZERO clipping or overflow!
+    const QString shoulder_btn_style = QStringLiteral(
+        "QPushButton { text-align: center; padding: 1px 4px; min-height: 22px; max-height: 25px; "
+        "min-width: 68px; max-width: 90px; font-weight: 600; font-size: 7.8pt; border-radius: 5px; }");
+    for (auto* grp : {ui->buttonShoulderButtonsButtonZLGroup, ui->buttonShoulderButtonsButtonLGroup,
+                      ui->buttonMiscButtonsMinusGroup, ui->buttonMiscButtonsPlusGroup,
+                      ui->buttonShoulderButtonsZRGroup, ui->buttonShoulderButtonsRGroup}) {
+        if (grp) {
+            grp->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+            grp->setMinimumWidth(82);
+            grp->setMaximumWidth(112);
+            grp->setAlignment(Qt::AlignHCenter);
+        }
+    }
+    for (auto* btn : {ui->buttonZL, ui->buttonL, ui->buttonMinus, ui->buttonPlus, ui->buttonZR, ui->buttonR}) {
+        if (btn) {
+            btn->setStyleSheet(shoulder_btn_style);
+            btn->setMinimumSize(68, 22);
+            btn->setMaximumSize(92, 25);
+            btn->setCursor(Qt::PointingHandCursor);
+        }
+    }
+    if (ui->controllerFrame) {
+        ui->controllerFrame->setMinimumSize(360, 240);
+        ui->controllerFrame->setMaximumHeight(320);
+    }
+
+    // Compact, narrow, centered Motion 1/2, Capture, and Home boxes
+    for (auto* grp : {ui->buttonMotionLeftGroup, ui->buttonMotionRightGroup,
+                      ui->buttonMiscButtonsScreenshotGroup, ui->buttonMiscButtonsHomeGroup}) {
+        if (grp) {
+            grp->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
+            grp->setMinimumWidth(92);
+            grp->setMaximumWidth(112);
+            grp->setAlignment(Qt::AlignHCenter);
+        }
+    }
+    for (auto* btn : {ui->buttonMotionLeft, ui->buttonMotionRight, ui->buttonScreenshot, ui->buttonHome}) {
+        if (btn) {
+            btn->setStyleSheet(storm_input_btn_style);
+            btn->setMinimumSize(78, 22);
+            btn->setMaximumSize(98, 25);
+            btn->setCursor(Qt::PointingHandCursor);
+        }
+    }
+    if (ui->miscButtons) {
+        ui->miscButtons->setAlignment(Qt::AlignHCenter);
+        ui->miscButtons->setSpacing(8);
+        ui->miscButtons->setContentsMargins(0, 2, 0, 2);
+    }
 
     analog_map_buttons = {{
         {
@@ -382,6 +461,17 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
             ui->buttonRStickRight,
         },
     }};
+
+    for (const auto& stick_group : analog_map_buttons) {
+        for (auto* btn : stick_group) {
+            if (btn) {
+                btn->setStyleSheet(storm_input_btn_style);
+                btn->setMinimumSize(78, 22);
+                btn->setMaximumSize(104, 25);
+                btn->setCursor(Qt::PointingHandCursor);
+            }
+        }
+    }
 
     motion_map = {
         ui->buttonMotionLeft,
@@ -436,9 +526,9 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
         skin_label->setStyleSheet(QStringLiteral("background: transparent; font-weight: bold; font-size: 11px;"));
 
         auto* const combo_skin = new QComboBox(this);
-        combo_skin->setMinimumWidth(140);
+        combo_skin->setMinimumWidth(220);
         combo_skin->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
-        combo_skin->setMinimumContentsLength(14);
+        combo_skin->setMinimumContentsLength(24);
         combo_skin->addItem(ctrl_lang(
                                 QStringLiteral("Классический полупрозрачный"),
                                 QStringLiteral("Classic Translucent Black"),
@@ -462,7 +552,7 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
                             static_cast<int>(PlayerControlPreview::ControllerSkin::MonsterHunterRise));
         combo_skin->addItem(QStringLiteral("Pokémon Scarlet and Violet"),
                             static_cast<int>(PlayerControlPreview::ControllerSkin::PokemonScarletViolet));
-        combo_skin->addItem(QStringLiteral("STORM Cyberpunk OLED"),
+        combo_skin->addItem(QStringLiteral("Splatoon 2 Edition (Neon Green / Pink)"),
                             static_cast<int>(PlayerControlPreview::ControllerSkin::CyberStorm));
 
         const u32 cur_skin_idx = std::min(UISettings::values.controller_skin.GetValue(),
@@ -1057,8 +1147,9 @@ ConfigureInputPlayer::ConfigureInputPlayer(QWidget* parent, std::size_t player_i
         if (box->title().size() > 3) {
             const int title_w =
                 title_fm.horizontalAdvance(box->title()) + (box->isCheckable() ? 64 : 40);
-            if (box->minimumWidth() < title_w) {
-                box->setMinimumWidth(title_w);
+            const int capped_w = std::min(title_w, box->maximumWidth());
+            if (box->minimumWidth() < capped_w) {
+                box->setMinimumWidth(capped_w);
             }
         }
     }
@@ -1124,8 +1215,9 @@ void ConfigureInputPlayer::RetranslateUI() {
         if (box->title().size() > 3) {
             const int title_w =
                 title_fm.horizontalAdvance(box->title()) + (box->isCheckable() ? 64 : 40);
-            if (box->minimumWidth() < title_w) {
-                box->setMinimumWidth(title_w);
+            const int capped_w = std::min(title_w, box->maximumWidth());
+            if (box->minimumWidth() < capped_w) {
+                box->setMinimumWidth(capped_w);
             }
         }
     }

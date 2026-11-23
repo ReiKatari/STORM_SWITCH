@@ -42,9 +42,8 @@ ConfigureGeneral::ConfigureGeneral(const Core::System& system_,
             !ui->external_content_list->selectedItems().isEmpty());
     });
 
-    if (!Settings::IsConfiguringGlobal()) {
-        ui->button_reset_defaults->setVisible(false);
-    }
+    // Unified single Reset Defaults button lives in ConfigureDialog footer buttonBox
+    ui->button_reset_defaults->setVisible(false);
 }
 
 ConfigureGeneral::~ConfigureGeneral() = default;

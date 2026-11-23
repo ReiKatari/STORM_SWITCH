@@ -177,7 +177,7 @@
                 android:background="@drawable/bg_storm_badge_capsule"
                 android:paddingHorizontal="8dp"
                 android:paddingVertical="3dp"
-                android:text="ОЗУ: 4 ГБ"
+                android:text="@string/storm_prof_ram_placeholder"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="10.5sp"
                 android:textStyle="bold"

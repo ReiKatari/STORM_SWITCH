@@ -37,6 +37,10 @@ public:
         }
     }
 
+    [[nodiscard]] bool Empty() const noexcept {
+        return start_address == 0;
+    }
+
     template <typename F>
     [[nodiscard]] bool InvalidateAll(F&& f) noexcept {
         if (start_address > 0) {

@@ -6,6 +6,8 @@
 
 #ifdef _WIN32
 
+#include <array>
+#include <atomic>
 #include <iterator>
 #include "common/container/unordered_map.h"
 #include <boost/icl/separate_interval_set.hpp>
@@ -155,9 +157,10 @@ public:
         if (backing_handle) {
             backing_block_committed.assign((backing_size + 0xFFFFULL) >> 16, 1U);
         } else {
-            LOG_WARNING(HW_Memory, "Failed to commit {} MiB of backing memory, falling back to sparse SEC_RESERVE", backing_size >> 20);
+            LOG_WARNING(HW_Memory, "Failed to commit {} MiB of backing memory, falling back to sparse SEC_RESERVE with demand-commit VEH", backing_size >> 20);
             backing_handle = pfn_CreateFileMapping2(INVALID_HANDLE_VALUE, nullptr, FILE_MAP_WRITE | FILE_MAP_READ, PAGE_READWRITE, SEC_RESERVE, backing_size, nullptr, nullptr, 0);
             backing_block_committed.assign((backing_size + 0xFFFFULL) >> 16, 0U);
+            sparse_backing = true;
         }
         if (!backing_handle) {
             LOG_CRITICAL(HW_Memory, "Failed to allocate {} MiB of backing memory", backing_size >> 20);
@@ -176,6 +179,9 @@ public:
             Release();
             LOG_CRITICAL(HW_Memory, "Failed to map {} MiB of virtual memory", backing_size >> 20);
             return false;
+        }
+        if (sparse_backing) {
+            RegisterSparseBackingVeh();
         }
         // Allocate virtual address placeholder
         virtual_base = static_cast<u8*>(pfn_VirtualAlloc2(process, nullptr, virtual_size, MEM_RESERVE | MEM_RESERVE_PLACEHOLDER, PAGE_NOACCESS, nullptr, 0));
@@ -310,29 +316,97 @@ public:
     u8* virtual_base{};
 
 private:
+    struct SparseBackingSlot {
+        std::atomic<uintptr_t> base{0};
+        size_t size{0};
+        u8* committed_bitmap{nullptr};
+        size_t committed_count{0};
+    };
+
+    static inline std::array<SparseBackingSlot, 8> g_sparse_slots{};
+    static inline std::mutex g_sparse_veh_mutex{};
+    static inline PVOID g_sparse_veh_handle{nullptr};
+    static inline size_t g_sparse_veh_refcount{0};
+
+    static LONG CALLBACK SparseBackingVeh(PEXCEPTION_POINTERS ep) {
+        if (ep == nullptr || ep->ExceptionRecord == nullptr ||
+            ep->ExceptionRecord->ExceptionCode != STATUS_ACCESS_VIOLATION ||
+            ep->ExceptionRecord->NumberParameters < 2) {
+            return EXCEPTION_CONTINUE_SEARCH;
+        }
+        const uintptr_t fault = static_cast<uintptr_t>(ep->ExceptionRecord->ExceptionInformation[1]);
+        for (auto& slot : g_sparse_slots) {
+            const uintptr_t base = slot.base.load(std::memory_order_acquire);
+            if (base == 0 || fault < base || fault >= base + slot.size) {
+                continue;
+            }
+            const size_t offset = static_cast<size_t>(fault - base);
+            const size_t blk = offset >> 16;
+            const size_t blk_off = blk << 16;
+            const size_t sz = (std::min)(size_t{0x10000}, slot.size - blk_off);
+            if (VirtualAlloc(reinterpret_cast<void*>(base + blk_off), sz, MEM_COMMIT,
+                             PAGE_READWRITE) != nullptr) {
+                if (slot.committed_bitmap != nullptr && blk < slot.committed_count) {
+                    slot.committed_bitmap[blk] = 1U;
+                }
+                return EXCEPTION_CONTINUE_EXECUTION;
+            }
+            return EXCEPTION_CONTINUE_SEARCH;
+        }
+        return EXCEPTION_CONTINUE_SEARCH;
+    }
+
+    void RegisterSparseBackingVeh() {
+        std::scoped_lock lk{g_sparse_veh_mutex};
+        if (g_sparse_veh_handle == nullptr) {
+            g_sparse_veh_handle = AddVectoredExceptionHandler(1, SparseBackingVeh);
+        }
+        for (size_t i = 0; i < g_sparse_slots.size(); ++i) {
+            if (g_sparse_slots[i].base.load(std::memory_order_relaxed) == 0) {
+                g_sparse_slots[i].size = backing_size;
+                g_sparse_slots[i].committed_bitmap = backing_block_committed.data();
+                g_sparse_slots[i].committed_count = backing_block_committed.size();
+                g_sparse_slots[i].base.store(reinterpret_cast<uintptr_t>(backing_base),
+                                             std::memory_order_release);
+                sparse_veh_slot = static_cast<int>(i);
+                ++g_sparse_veh_refcount;
+                break;
+            }
+        }
+    }
+
+    void UnregisterSparseBackingVeh() {
+        if (sparse_veh_slot < 0) {
+            return;
+        }
+        std::scoped_lock lk{g_sparse_veh_mutex};
+        g_sparse_slots[static_cast<size_t>(sparse_veh_slot)].base.store(0, std::memory_order_release);
+        sparse_veh_slot = -1;
+        if (g_sparse_veh_refcount > 0 && --g_sparse_veh_refcount == 0 && g_sparse_veh_handle != nullptr) {
+            RemoveVectoredExceptionHandler(g_sparse_veh_handle);
+            g_sparse_veh_handle = nullptr;
+        }
+    }
+
     /// Release all resources in the object
     void Release() {
+        UnregisterSparseBackingVeh();
         if (!placeholders.empty()) {
             for (const auto& placeholder : placeholders) {
-                if (!pfn_UnmapViewOfFile2(process, virtual_base + placeholder.lower(),
-                                          MEM_PRESERVE_PLACEHOLDER)) {
+                if (!pfn_UnmapViewOfFile2(process, virtual_base + placeholder.lower(), 0)) {
                     LOG_CRITICAL(HW_Memory, "Failed to unmap virtual memory placeholder");
                 }
             }
-            if (!VirtualFreeEx(process, reinterpret_cast<LPVOID>(virtual_base), virtual_size,
-                               MEM_RELEASE | MEM_COALESCE_PLACEHOLDERS)) {
-                LOG_WARNING(HW_Memory, "Failed to coalesce placeholders, freeing split placeholder regions individually");
-                MEMORY_BASIC_INFORMATION mbi;
-                u8* current = virtual_base;
-                u8* const end = virtual_base + virtual_size;
-                while (current < end && VirtualQuery(current, &mbi, sizeof(mbi))) {
-                    if (mbi.State != MEM_FREE) {
-                        VirtualFree(mbi.BaseAddress, 0, MEM_RELEASE);
-                    }
-                    current = static_cast<u8*>(mbi.BaseAddress) + mbi.RegionSize;
+            MEMORY_BASIC_INFORMATION mbi;
+            u8* current = virtual_base;
+            u8* const end = virtual_base + virtual_size;
+            while (current < end && VirtualQuery(current, &mbi, sizeof(mbi))) {
+                if (mbi.State != MEM_FREE) {
+                    VirtualFree(mbi.BaseAddress, 0, MEM_RELEASE);
                 }
-                virtual_base = nullptr;
+                current = static_cast<u8*>(mbi.BaseAddress) + mbi.RegionSize;
             }
+            virtual_base = nullptr;
         }
         if (virtual_base) {
             if (!VirtualFree(virtual_base, 0, MEM_RELEASE)) {
@@ -482,6 +556,8 @@ private:
     boost::icl::separate_interval_set<size_t> placeholders;       ///< Mapped placeholders
     ::Common::unordered_map<size_t, size_t> placeholder_host_pointers; ///< Placeholder backing offset
     std::vector<u8> backing_block_committed; ///< 64 KiB physical backing block commit state
+    bool sparse_backing{false};
+    int sparse_veh_slot{-1};
 };
 
 #elif defined(__OPENORBIS__) || defined(__managarm__)

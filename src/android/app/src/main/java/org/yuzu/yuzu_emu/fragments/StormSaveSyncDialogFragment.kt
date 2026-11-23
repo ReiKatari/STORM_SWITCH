@@ -485,7 +485,7 @@ class StormSaveSyncDialogFragment : DialogFragment() {
 
         for (k in currentKeys) {
             val name = discoveredDevices[k] ?: ""
-            list.add("$name — $k")
+            list.add("$name - $k")
             keys.add(k)
         }
 

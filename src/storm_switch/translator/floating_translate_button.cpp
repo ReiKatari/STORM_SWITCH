@@ -188,11 +188,11 @@ void FloatingTranslateButton::contextMenuEvent(QContextMenuEvent* event) {
         "QMenu::separator { height: 1px; background: %4; margin: 4px 8px; }"
     ).arg(ftb_pal.surface, ftb_pal.textPrimary, ftb_pal.accent, ftb_pal.border));
 
-    auto* act_translate = menu.addAction(tr("⚡ Перевести экран сейчас"));
-    auto* act_settings = menu.addAction(tr("⚙️ Настройки переводчика..."));
-    auto* act_hud = menu.addAction(tr("📺 Показать / Скрыть HUD субтитры"));
+    auto* act_translate = menu.addAction(tr("Перевести экран сейчас"));
+    auto* act_settings = menu.addAction(tr("Настройки переводчика..."));
+    auto* act_hud = menu.addAction(tr("Показать / Скрыть HUD субтитры"));
     menu.addSeparator();
-    auto* act_hide = menu.addAction(tr("❌ Скрыть плавающую кнопку"));
+    auto* act_hide = menu.addAction(tr("Скрыть плавающую кнопку"));
 
     connect(act_translate, &QAction::triggered, this, &FloatingTranslateButton::TranslateRequested);
     connect(act_settings, &QAction::triggered, this, &FloatingTranslateButton::OpenSettingsRequested);

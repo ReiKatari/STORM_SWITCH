@@ -301,7 +301,9 @@ template <typename Traits>
 void DeviceMemoryManager<Traits>::Unmap(DAddr address, size_t size) {
     size_t start_page_d = address >> Memory::YUZU_PAGEBITS;
     size_t num_pages = Common::AlignUp(size, Memory::YUZU_PAGESIZE) >> Memory::YUZU_PAGEBITS;
-    device_inter->InvalidateRegion(address, size);
+    if (device_inter != nullptr) {
+        device_inter->InvalidateRegion(address, size);
+    }
     std::scoped_lock lk(mapping_guard);
     const size_t total_virtual_pages = tracked_entries.size();
     if (start_page_d >= total_virtual_pages) [[unlikely]] {

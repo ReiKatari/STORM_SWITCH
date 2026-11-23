@@ -425,7 +425,7 @@ class AmiiboDialogFragment : DialogFragment() {
                         withContext(Dispatchers.Main) {
                             Toast.makeText(
                                 requireContext(),
-                                "Error: ${e.message}",
+                                getString(R.string.storm_error_fmt, e.message ?: ""),
                                 Toast.LENGTH_SHORT
                             ).show()
                         }

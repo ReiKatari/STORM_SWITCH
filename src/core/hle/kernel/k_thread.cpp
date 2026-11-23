@@ -379,6 +379,9 @@ namespace Kernel {
             }
         }
 
+        // Clear wait queue pointer before finalization.
+        this->ClearWaitQueue();
+
         // Release host emulation members.
         m_host_context.reset();
 
@@ -394,7 +397,7 @@ namespace Kernel {
         ASSERT(KScheduler::IsSchedulerLockedByCurrentThread(kernel));
 
         // If we're waiting, cancel the wait.
-        if (this->GetState() == ThreadState::Waiting) {
+        if (this->GetState() == ThreadState::Waiting && m_wait_queue != nullptr) {
             m_wait_queue->CancelWait(kernel, this, ResultTimedOut, false);
         }
     }
@@ -409,6 +412,9 @@ namespace Kernel {
                 m_parent->UnpinCurrentThread(kernel);
             }
         }
+
+        // Clear any wait queue before marking terminated.
+        this->ClearWaitQueue();
 
         // Set state to terminated.
         this->SetState(kernel, ThreadState::Terminated);
@@ -787,7 +793,9 @@ namespace Kernel {
         // Check if we're waiting and cancellable.
         if (this->GetState() == ThreadState::Waiting && m_cancellable) {
             m_wait_cancelled = false;
-            m_wait_queue->CancelWait(kernel, this, ResultCancelled, true);
+            if (m_wait_queue != nullptr) {
+                m_wait_queue->CancelWait(kernel, this, ResultCancelled, true);
+            }
         } else {
             // Otherwise, note that we cancelled a wait.
             m_wait_cancelled = true;
@@ -1280,7 +1288,7 @@ namespace Kernel {
             }
 
             // Wake up the thread.
-            if (this->GetState() == ThreadState::Waiting) {
+            if (this->GetState() == ThreadState::Waiting && m_wait_queue != nullptr) {
                 m_wait_queue->CancelWait(kernel, this, ResultTerminationRequested, true);
             }
         }
@@ -1346,19 +1354,36 @@ namespace Kernel {
         m_dummy_thread_cv.notify_one();
     }
 
+    void KThread::ClearWaitQueue() {
+        if (m_wait_queue != nullptr) {
+            m_wait_queue->ClearBoundThread(this);
+            m_wait_queue = nullptr;
+        }
+    }
+
     void KThread::BeginWait(KernelCore& kernel, KThreadQueue* queue) {
+        if (kernel.IsShuttingDown() && this->IsDummyThread()) {
+            this->ClearWaitQueue();
+            return;
+        }
         // Set our state as waiting.
         this->SetState(kernel, ThreadState::Waiting);
 
-        // Set our wait queue.
+        // Set our wait queue and bind back-pointer so ~KThreadQueue can never leave it dangling.
+        if (m_wait_queue != nullptr && m_wait_queue != queue) {
+            m_wait_queue->ClearBoundThread(this);
+        }
         m_wait_queue = queue;
+        if (queue != nullptr) {
+            queue->SetBoundThread(this);
+        }
     }
 
     void KThread::NotifyAvailable(KernelCore& kernel, KSynchronizationObject* signaled_object, Result wait_result) {
         // Lock the scheduler.
         KScopedSchedulerLock sl(kernel);
         // If we're waiting, notify our queue that we're available.
-        if (this->GetState() == ThreadState::Waiting) {
+        if (this->GetState() == ThreadState::Waiting && m_wait_queue != nullptr) {
             m_wait_queue->NotifyAvailable(kernel, this, signaled_object, wait_result);
         }
     }
@@ -1369,8 +1394,9 @@ namespace Kernel {
         // If we're waiting, notify our queue that we're available.
         if (this->GetState() == ThreadState::Waiting) {
             if (m_wait_queue == nullptr) {
-                // This should never happen, but avoid a hard crash below to get this logged.
-                ASSERT_MSG(false, "wait_queue is nullptr!");
+                if (!kernel.IsShuttingDown()) {
+                    ASSERT_MSG(false, "wait_queue is nullptr!");
+                }
                 return;
             }
 
@@ -1382,7 +1408,7 @@ namespace Kernel {
         // Lock the scheduler.
         KScopedSchedulerLock sl(kernel);
         // If we're waiting, notify our queue that we're available.
-        if (this->GetState() == ThreadState::Waiting) {
+        if (this->GetState() == ThreadState::Waiting && m_wait_queue != nullptr) {
             m_wait_queue->CancelWait(kernel, this, wait_result, cancel_timer_task);
         }
     }
@@ -1391,6 +1417,9 @@ namespace Kernel {
         KScopedSchedulerLock sl{kernel};
         // Clear debugging state
         this->SetWaitReasonForDebugging({});
+        if ((state & ThreadState::Mask) != ThreadState::Waiting) {
+            this->ClearWaitQueue();
+        }
         const ThreadState old_state = m_thread_state.load(std::memory_order_relaxed);
         m_thread_state.store(
             static_cast<ThreadState>((old_state & ~ThreadState::Mask) | (state & ThreadState::Mask)),

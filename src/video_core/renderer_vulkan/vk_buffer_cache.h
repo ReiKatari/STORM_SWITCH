@@ -77,6 +77,7 @@ private:
     VkDeviceAddress device_address{};
     u64 last_usage_tick{};
     bool is_null{};
+    bool track_usage{true};
 };
 
 class QuadArrayIndexBuffer;
@@ -148,6 +149,31 @@ public:
 
     void BindTransformFeedbackBuffer(u32 index, VkBuffer buffer, u32 offset, u32 size);
 
+    // Deferred inline UBO updates inside an open VkRenderPass (zero-alloc flat arena)
+    struct DeferredInlineCopy {
+        DAddr device_addr;
+        u32 size;
+        u32 arena_offset;
+        VkBuffer dst_buffer;
+        u64 dst_offset;
+        VkBuffer src_buffer;
+        u64 src_offset;
+    };
+
+    [[nodiscard]] bool HasDeferredInlineCopies() const noexcept {
+        return deferred_inline_count != 0;
+    }
+
+    [[nodiscard]] bool TryDeferInlineCopy(DAddr device_addr, size_t size, VkBuffer dst_buffer,
+                                          u64 dst_offset, VkBuffer src_buffer, u64 src_offset,
+                                          std::span<const u8> inlined_data);
+
+    [[nodiscard]] bool HasDeferredInlineOverlap(DAddr device_addr, u64 size) const noexcept;
+
+    void PatchDeferredInlineBytes(DAddr device_addr, std::span<u8> dst) const noexcept;
+
+    void FlushDeferredInlineCopies();
+
     void BindTransformFeedbackBuffers(VideoCommon::HostBindings<Buffer>& bindings);
 
     std::span<u8> BindMappedUniformBuffer([[maybe_unused]] size_t stage,
@@ -215,6 +241,15 @@ private:
 
     std::shared_ptr<QuadArrayIndexBuffer> quad_array_index_buffer;
     std::shared_ptr<QuadStripIndexBuffer> quad_strip_index_buffer;
+
+    static constexpr size_t MAX_DEFERRED_INLINE_COPIES = 32;
+    static constexpr size_t DEFERRED_INLINE_ARENA_SIZE = 16384;
+    std::array<DeferredInlineCopy, MAX_DEFERRED_INLINE_COPIES> deferred_inline_entries{};
+    std::array<u8, DEFERRED_INLINE_ARENA_SIZE> deferred_inline_arena{};
+    size_t deferred_inline_count{0};
+    size_t deferred_arena_used{0};
+    DAddr deferred_min_addr{(std::numeric_limits<DAddr>::max)()};
+    DAddr deferred_max_addr{0};
 
     vk::Buffer null_buffer;
     vk::Buffer gs_scratch_buffer;

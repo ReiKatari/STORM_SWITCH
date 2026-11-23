@@ -133,7 +133,7 @@ bool GameListModel::LoadFromCache(const QVector<UISettings::GameDir>& game_dirs)
         }
 
         const QString file_type = obj.value(QStringLiteral("type")).toString();
-        const std::string dedup_key = fmt::format("{:016X}_{}", program_id & 0xFFFFFFFFFFFFE000ULL, file_type.toStdString());
+        const std::string dedup_key = BuildGameListDedupKey(program_id, file_type.toStdString(), qpath.toStdString());
         if (seen_keys.contains(dedup_key)) {
             continue;
         }

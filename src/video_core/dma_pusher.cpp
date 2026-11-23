@@ -107,14 +107,17 @@ bool DmaPusher::Step() {
         } else if (Settings::IsDMALevelNormal()) {
             use_safe = memory_manager.IsMemoryDirty(dma_state.dma_get, header.size * sizeof(u32));
         }
-        const bool submitted = dma_pushbuffer_subindex < command_list.submitted_offsets.size() &&
+        const bool safe_dirty =
+            use_safe && (Settings::IsDMALevelNormal() ||
+                         memory_manager.IsMemoryDirty(dma_state.dma_get,
+                                                      header.size * sizeof(u32)));
+        const bool submitted = !safe_dirty &&
+                               dma_pushbuffer_subindex < command_list.submitted_offsets.size() &&
                                command_list.submitted_offsets[dma_pushbuffer_subindex] +
                                        size_t{header.size} <=
                                    command_list.submitted_words.size() &&
                                !IsGpuWrittenCommands(dma_state.dma_get,
-                                                     size_t{header.size} * sizeof(u32)) &&
-                               !(use_safe && memory_manager.IsMemoryDirty(dma_state.dma_get,
-                                                                          header.size * sizeof(u32)));
+                                                     size_t{header.size} * sizeof(u32));
         if (submitted) {
             const std::span<const CommandHeader> commands{
                 command_list.submitted_words.data() +
@@ -215,7 +218,9 @@ size_t DmaPusher::ProcessCommands(std::span<const CommandHeader> commands, size_
             }
             index++;
         }
-        if (puller.HasPendingNativeAcquire() || HasFailedNativeWork()) return index;
+        if (puller.HasPendingNativeAcquire() || HasFailedNativeWork()) [[unlikely]] {
+            return index;
+        }
     }
     return commands.size();
 }
@@ -236,20 +241,23 @@ void DmaPusher::CallMethod(u32 argument) {
         });
     } else {
         auto subchannel = subchannels[dma_state.subchannel];
-        const auto engine_type = subchannel_type[dma_state.subchannel];
-        const bool writer = engine_type == Engines::EngineTypes::KeplerCompute ||
-                            engine_type == Engines::EngineTypes::MaxwellDMA;
-        SCOPE_EXIT {
-            if (writer && VideoCommon::GpuSplit::Get().Active()) {
-                VideoCommon::GpuSplit::Get().NoteWriter();
-            }
-        };
         if (!subchannel->execution_mask[dma_state.method]) {
-            subchannel->method_sink.emplace_back(dma_state.method, argument);
+            if (subchannel_type[dma_state.subchannel] != Engines::EngineTypes::Maxwell3D ||
+                !static_cast<Engines::Maxwell3D*>(subchannel)
+                     ->TryFastStateWrite(dma_state.method, argument)) {
+                subchannel->method_sink.emplace_back(dma_state.method, argument);
+            }
         } else {
             subchannel->ConsumeSink(system);
             subchannel->current_dma_segment = dma_state.dma_get + dma_state.dma_word_offset;
             subchannel->CallMethod(system, dma_state.method, argument, dma_state.is_last_call);
+        }
+        if (VideoCommon::GpuSplit::Get().Active()) [[unlikely]] {
+            const auto engine_type = subchannel_type[dma_state.subchannel];
+            if (engine_type == Engines::EngineTypes::KeplerCompute ||
+                engine_type == Engines::EngineTypes::MaxwellDMA) {
+                VideoCommon::GpuSplit::Get().NoteWriter();
+            }
         }
     }
 }
@@ -259,17 +267,16 @@ void DmaPusher::CallMultiMethod(const u32* base_start, u32 num_methods) {
         puller.CallMultiMethod(*this, dma_state.method, dma_state.subchannel, base_start, num_methods, dma_state.method_count);
     } else {
         auto subchannel = subchannels[dma_state.subchannel];
-        const auto engine_type = subchannel_type[dma_state.subchannel];
-        const bool writer = engine_type == Engines::EngineTypes::KeplerCompute ||
-                            engine_type == Engines::EngineTypes::MaxwellDMA;
-        SCOPE_EXIT {
-            if (writer && VideoCommon::GpuSplit::Get().Active()) {
-                VideoCommon::GpuSplit::Get().NoteWriter();
-            }
-        };
         subchannel->ConsumeSink(system);
         subchannel->current_dma_segment = dma_state.dma_get + dma_state.dma_word_offset;
         subchannel->CallMultiMethod(system, dma_state.method, base_start, num_methods, dma_state.method_count);
+        if (VideoCommon::GpuSplit::Get().Active()) [[unlikely]] {
+            const auto engine_type = subchannel_type[dma_state.subchannel];
+            if (engine_type == Engines::EngineTypes::KeplerCompute ||
+                engine_type == Engines::EngineTypes::MaxwellDMA) {
+                VideoCommon::GpuSplit::Get().NoteWriter();
+            }
+        }
     }
 }
 

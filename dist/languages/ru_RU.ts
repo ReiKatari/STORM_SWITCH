@@ -1324,7 +1324,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="426" />
       <source>Null</source>
-      <translation>Null</translation>
+      <translation>Нет</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="429" />
@@ -1630,7 +1630,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="525" />
       <source>4x</source>
-      <translation>4x</translation>
+      <translation>4x (Учетверение кадров)</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="526" />
@@ -1843,7 +1843,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="584" />
       <source>GB</source>
-      <translation>GB</translation>
+      <translation>ГБ</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="585" />
@@ -5021,7 +5021,7 @@ Would you like to delete the old save data?</source>
       <location filename="../../src/yuzu/configuration/configure_input_player.ui" line="1997" />
       <location filename="../../src/yuzu/configuration/configure_input_player.ui" line="2036" />
       <source>Home</source>
-      <translation>Home</translation>
+      <translation>Домой</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_input_player.ui" line="2075" />
@@ -6569,7 +6569,7 @@ Drag points to change position, or double-click table cells to edit values.</sou
     <message>
       <location filename="../../src/yuzu/configuration/configure_ui.cpp" line="228" />
       <source>English</source>
-      <translation>English</translation>
+      <translation>Английский (English)</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_ui.cpp" line="311" />
@@ -8834,7 +8834,7 @@ Please, only use this feature to install updates and DLC.</source>
       <location filename="../../src/yuzu/main_window.cpp" line="3699" />
       <location filename="../../src/yuzu/main_window.cpp" line="3750" />
       <source>Amiibo</source>
-      <translation>Amiibo</translation>
+      <translation>Браузер Amiibo</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3699" />
@@ -9159,7 +9159,7 @@ Would you like to bypass this and exit anyway?</source>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="50" />
       <source>Lanczos</source>
-      <translation>Lanczos</translation>
+      <translation>Ланцош</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="52" />
@@ -9234,7 +9234,7 @@ Would you like to bypass this and exit anyway?</source>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="78" />
       <source>Null</source>
-      <translation>Null</translation>
+      <translation>Нет</translation>
     </message>
     <message>
       <source>F&amp;amp;ullscreen</source>
@@ -9720,7 +9720,7 @@ p, li { white-space: pre-wrap; }
     <message>
       <location filename="../../src/yuzu/render/performance_overlay.ui" line="14" />
       <source>Form</source>
-      <translation>Form</translation>
+      <translation>Форма</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/render/performance_overlay.ui" line="32" />
@@ -9848,14 +9848,6 @@ p, li { white-space: pre-wrap; }
       <location filename="../../src/yuzu/user_data_migration.cpp" line="68" />
       <source>Link Old Directory</source>
       <translation>Связать со старой директорией</translation>
-    </message>
-    <message>
-      <location filename="../../src/yuzu/user_data_migration.cpp" line="98" />
-      <source>
-      </source>
-      <translation>
-тест
-</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/user_data_migration.cpp" line="102" />
@@ -10018,7 +10010,7 @@ p, li { white-space: pre-wrap; }
       <location filename="../../src/yuzu/configuration/configure_ringcon.cpp" line="72" />
       <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="94" />
       <source>Start</source>
-      <translation>Start</translation>
+      <translation>Запуск</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_ringcon.cpp" line="74" />
@@ -10084,7 +10076,7 @@ p, li { white-space: pre-wrap; }
       <location filename="../../src/yuzu/configuration/configure_ringcon.cpp" line="94" />
       <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="124" />
       <source>Share</source>
-      <translation>Share</translation>
+      <translation>Поделиться</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_ringcon.cpp" line="96" />
@@ -10191,7 +10183,7 @@ p, li { white-space: pre-wrap; }
       <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="100" />
       <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="128" />
       <source>Home</source>
-      <translation>Home</translation>
+      <translation>Домой</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="102" />

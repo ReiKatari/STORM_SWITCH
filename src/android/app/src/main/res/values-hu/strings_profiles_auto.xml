@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="storm_prof_btn_save">Mentés</string>
+    <string name="storm_prof_btn_import">Importálás</string>
+    <string name="storm_prof_btn_share">Megosztás</string>
+    <string name="storm_prof_btn_rename">Átnevezés</string>
+    <string name="storm_prof_btn_delete">Törlés</string>
+    <string name="storm_prof_preset_balanced_name">Kiegyensúlyozott (Ajánlott)</string>
+    <string name="storm_prof_save_btn">Mentés</string>
+    <string name="storm_prof_rename_title">Profil átnevezése</string>
+    <string name="storm_prof_delete_title">Profil törlése</string>
+</resources>

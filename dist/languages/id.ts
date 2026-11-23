@@ -1012,7 +1012,7 @@ Legacy behavior workaround that fixes line artifacts on AMD and Intel GPUs, and 
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="282" />
       <source>Extended Dynamic State</source>
-      <translation>Extended Dynamic State</translation>
+      <translation>Status Dinamis Ekstensi</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="283" />
@@ -1233,7 +1233,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="389" />
       <source>On Load</source>
-      <translation>On Load</translation>
+      <translation>Saat Memuat</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="390" />
@@ -1388,7 +1388,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="453" />
       <source>Debugging</source>
-      <translation>Debugging</translation>
+      <translation>Pengawakutuan</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="457" />
@@ -1750,7 +1750,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="559" />
       <source>USA</source>
-      <translation>USA</translation>
+      <translation>Amerika Serikat</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="560" />
@@ -1832,7 +1832,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="584" />
       <source>GB</source>
-      <translation>GB</translation>
+      <translation>Britania Raya</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="585" />
@@ -2058,7 +2058,7 @@ When a program attempts to open the controller applet, it is immediately closed.
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="642" />
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="655" />
       <source>Off</source>
-      <translation>Off</translation>
+      <translation>Mati</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="643" />
@@ -2165,7 +2165,7 @@ When a program attempts to open the controller applet, it is immediately closed.
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="686" />
       <source>Disabled</source>
-      <translation>Disabled</translation>
+      <translation>Dinonaktifkan</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.cpp" line="687" />
@@ -2192,7 +2192,51 @@ When a program attempts to open the controller applet, it is immediately closed.
       <source>Grid View</source>
       <translation>Grid View</translation>
     </message>
-  </context>
+      <message>
+        <source>Theme:</source>
+        <translation>Tema:</translation>
+    </message>
+    <message>
+        <source>Theme</source>
+        <translation>Mengubah Tema</translation>
+    </message>
+    <message>
+        <source>Interface language:</source>
+        <translation>Bahasa antarmuka:</translation>
+    </message>
+    <message>
+        <source>Reset All Settings</source>
+        <translation>Atur Ulang Semua Pengaturan</translation>
+    </message>
+    <message>
+        <source>Console Mode</source>
+        <translation>Mode Konsol</translation>
+    </message>
+    <message>
+        <source>VRAM Usage Mode</source>
+        <translation>Mode Penggunaan VRAM</translation>
+    </message>
+    <message>
+        <source>ASTC Decoding Method</source>
+        <translation>Metode Dekoding ASTC</translation>
+    </message>
+    <message>
+        <source>Cabinet</source>
+        <translation>Kabinet</translation>
+    </message>
+    <message>
+        <source>Custom RTC</source>
+        <translation>RTC Kustom</translation>
+    </message>
+    <message>
+        <source>Boost</source>
+        <translation>Boost (1700MHz)</translation>
+    </message>
+    <message>
+        <source>Overclock</source>
+        <translation>Cepat (2000MHz)</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureApplets</name>
     <message>
@@ -2210,7 +2254,11 @@ When a program attempts to open the controller applet, it is immediately closed.
       <source>Applet mode preference</source>
       <translation>Preferensi mode Applet</translation>
     </message>
-  </context>
+      <message>
+        <source>Cabinet</source>
+        <translation>Kabinet</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureAudio</name>
     <message>
@@ -2559,7 +2607,7 @@ Memungkinkan berbagai macam optimasi IR.</translation>
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="235" />
       <source>Off</source>
-      <translation>Off</translation>
+      <translation>Mati</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_debug.ui" line="240" />
@@ -3329,7 +3377,11 @@ Would you like to delete the old save data?</translation>
       <source>VSync On</source>
       <translation>VSync Aktif</translation>
     </message>
-  </context>
+      <message>
+        <source>VSync Mode:</source>
+        <translation>Mode Sinkronisasi Vertikal</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureGraphicsAdvanced</name>
     <message>
@@ -3347,13 +3399,45 @@ Would you like to delete the old save data?</translation>
       <source>Advanced Graphics Settings</source>
       <translation>Pengaturan Grafis Lanjutan</translation>
     </message>
-  </context>
+      <message>
+        <source>VRAM Usage Mode:</source>
+        <translation>Mode Penggunaan VRAM:</translation>
+    </message>
+    <message>
+        <source>VRAM Usage Mode</source>
+        <translation>Mode Penggunaan VRAM</translation>
+    </message>
+    <message>
+        <source>ASTC Decoding Method:</source>
+        <translation>ASTC Metode Dekoding:</translation>
+    </message>
+    <message>
+        <source>ASTC Decoding Method</source>
+        <translation>Metode Dekoding ASTC</translation>
+    </message>
+    <message>
+        <source>Sync Memory Operations</source>
+        <translation>Sinkronisasi Operasi Memori</translation>
+    </message>
+    <message>
+        <source>Force maximum clocks (Vulkan only)</source>
+        <translation>Paksa jam maximum (Vulkan only)</translation>
+    </message>
+    <message>
+        <source>Fix bloom effects</source>
+        <translation>Perbaiki efek bloom</translation>
+    </message>
+    <message>
+        <source>Use Vulkan pipeline cache</source>
+        <translation>Gunakan pipeline cache Vulkan</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureGraphicsExtensions</name>
     <message>
       <location filename="../../src/yuzu/configuration/configure_graphics_extensions.ui" line="14" />
       <source>Form</source>
-      <translation>Form</translation>
+      <translation>Bentuk</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_graphics_extensions.ui" line="17" />
@@ -3907,7 +3991,7 @@ Would you like to delete the old save data?</translation>
     <message>
       <location filename="../../src/yuzu/configuration/configure_input_per_game.cpp" line="35" />
       <source>Use global input configuration</source>
-      <translation>Use global input configuration</translation>
+      <translation>Gunakan konfigurasi input global</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_input_per_game.cpp" line="47" />
@@ -4227,7 +4311,7 @@ Would you like to delete the old save data?</translation>
     <message>
       <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="440" />
       <source>Toggle axis</source>
-      <translation>Toggle axis</translation>
+      <translation>Aktif/nonaktifkan axis</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_input_player.cpp" line="477" />
@@ -4410,7 +4494,11 @@ Untuk membalikkan sumbu, pertama gerakkan joystik secara tegak lurus, lalu menda
       <source>Failed to save the input profile "%1"</source>
       <translation>Gagal menyimpan profil masukan "%1"</translation>
     </message>
-  </context>
+      <message>
+        <source>Unknown</source>
+        <translation>Tidak diketahui</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureInputProfileDialog</name>
     <message>
@@ -4574,7 +4662,11 @@ Untuk membalikkan sumbu, pertama gerakkan joystik secara tegak lurus, lalu menda
       <source>UDP Test or calibration configuration is in progress.&lt;br&gt;Please wait for them to finish.</source>
       <translation>Uji coba UDP atau kalibrasi konfigurasi sedang berjalan.&lt;br&gt;Mohon tunggu hingga selesai.</translation>
     </message>
-  </context>
+      <message>
+        <source>Motion / Touch</source>
+        <translation>Gerakan / Sentuhan</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureMousePanning</name>
     <message>
@@ -4629,7 +4721,7 @@ Untuk membalikkan sumbu, pertama gerakkan joystik secara tegak lurus, lalu menda
     <message>
       <location filename="../../src/yuzu/configuration/configure_mouse_panning.ui" line="94" />
       <source>Deadzone</source>
-      <translation>Deadzone</translation>
+      <translation>Zona mati</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_mouse_panning.ui" line="123" />
@@ -4797,12 +4889,12 @@ Current values are %1% and %2% respectively.</translation>
     <message>
       <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="86" />
       <source>Network</source>
-      <translation>Network</translation>
+      <translation>Jaringan</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="87" />
       <source>Applets</source>
-      <translation>Applets</translation>
+      <translation>Applet</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_per_game.cpp" line="90" />
@@ -5208,7 +5300,19 @@ UUID: %2</translation>
       <source>Warning: "%1" is not a valid language for region "%2"</source>
       <translation>Warning: "%1" is not a valid language for region "%2"</translation>
     </message>
-  </context>
+      <message>
+        <source>Console Mode</source>
+        <translation>Mode Konsol</translation>
+    </message>
+    <message>
+        <source>Limit Speed Percent</source>
+        <translation>Persen Batas Kecepatan</translation>
+    </message>
+    <message>
+        <source>Language:</source>
+        <translation>Bahasa</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureTas</name>
     <message>
@@ -5582,7 +5686,19 @@ Drag points to change position, or double-click table cells to edit values.</tra
       <comment>Screenshot width value</comment>
       <translation>Otomatis (%1 x %2, %3 x %4)</translation>
     </message>
-  </context>
+      <message>
+        <source>Theme</source>
+        <translation>Mengubah Tema</translation>
+    </message>
+    <message>
+        <source>Language:</source>
+        <translation>Bahasa</translation>
+    </message>
+    <message>
+        <source>Screenshots Path:</source>
+        <translation>Jalur Screenshot:</translation>
+    </message>
+</context>
   <context>
     <name>ConfigureVibration</name>
     <message>
@@ -5693,7 +5809,7 @@ Drag points to change position, or double-click table cells to edit values.</tra
     <message>
       <location filename="../../src/yuzu/configuration/configure_web.ui" line="105" />
       <source>Generate</source>
-      <translation>Generate</translation>
+      <translation>Hasilkan</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/configure_web.ui" line="130" />
@@ -5729,7 +5845,11 @@ Drag points to change position, or double-click table cells to edit values.</tra
       <comment>Tooltip</comment>
       <translation>Must be 48 characters, and lowercase a-z</translation>
     </message>
-  </context>
+      <message>
+        <source>Username:</source>
+        <translation>Nama Pengguna:</translation>
+    </message>
+</context>
   <context>
     <name>ControllerDialog</name>
     <message>
@@ -5786,7 +5906,7 @@ Drag points to change position, or double-click table cells to edit values.</tra
     <message>
       <location filename="../../src/yuzu/data_widget.ui" line="14" />
       <source>Form</source>
-      <translation>Form</translation>
+      <translation>Bentuk</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/data_widget.ui" line="22" />
@@ -6308,12 +6428,12 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="194" />
       <source>Name</source>
-      <translation>Name</translation>
+      <translation>Nama</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="195" />
       <source>Add-ons</source>
-      <translation>Add-ons</translation>
+      <translation>Pengaya</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="196" />
@@ -6323,7 +6443,7 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="197" />
       <source>Size</source>
-      <translation>Size</translation>
+      <translation>Ukuran</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/game_list/model.cpp" line="198" />
@@ -6374,7 +6494,7 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
     <message>
       <location filename="../../src/yuzu/multiplayer/host_room.ui" line="51" />
       <source>Preferred Game</source>
-      <translation>Preferred Game</translation>
+      <translation>Game Pilihan</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/multiplayer/host_room.ui" line="61" />
@@ -6414,12 +6534,12 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</transla
     <message>
       <location filename="../../src/yuzu/multiplayer/host_room.ui" line="184" />
       <source>Public</source>
-      <translation>Public</translation>
+      <translation>Publik</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/multiplayer/host_room.ui" line="189" />
       <source>Unlisted</source>
-      <translation>Unlisted</translation>
+      <translation>Tidak Terdaftar</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/multiplayer/host_room.ui" line="197" />
@@ -6519,7 +6639,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="41" />
       <source>Configure</source>
-      <translation>Configure</translation>
+      <translation>Konfigurasi</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/uisettings.cpp" line="42" />
@@ -6662,7 +6782,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/yuzu/install_dialog.cpp" line="39" />
       <source>Install</source>
-      <translation>Install</translation>
+      <translation>Instal</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/install_dialog.cpp" line="52" />
@@ -6749,12 +6869,12 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/yuzu/multiplayer/lobby.ui" line="83" />
       <source>Hide Empty Rooms</source>
-      <translation>Hide Empty Rooms</translation>
+      <translation>Sembunyikan Ruang Kosong</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/multiplayer/lobby.ui" line="90" />
       <source>Hide Full Rooms</source>
-      <translation>Hide Full Rooms</translation>
+      <translation>Sembunyikan Ruang Penuh</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/multiplayer/lobby.ui" line="110" />
@@ -6784,7 +6904,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/yuzu/multiplayer/lobby.cpp" line="231" />
       <source>Preferred Game</source>
-      <translation>Preferred Game</translation>
+      <translation>Game Pilihan</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/multiplayer/lobby.cpp" line="232" />
@@ -7269,7 +7389,7 @@ Debug Message:</translation>
       <location filename="../../src/yuzu/main_window.cpp" line="876" />
       <location filename="../../src/yuzu/main_window.cpp" line="879" />
       <source>Disable Web Applet</source>
-      <translation>Disable Web Applet</translation>
+      <translation>Matikan Applet Web</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="880" />
@@ -7306,12 +7426,12 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="1067" />
       <source>Unmute</source>
-      <translation>Unmute</translation>
+      <translation>Membunyikan</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="1067" />
       <source>Mute</source>
-      <translation>Mute</translation>
+      <translation>Bisukan</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="1072" />
@@ -7400,7 +7520,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2261" />
       <source>Save Data</source>
-      <translation>Save Data</translation>
+      <translation>Simpanan Data</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2292" />
@@ -7471,7 +7591,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2475" />
       <source>Remove Play Time Data</source>
-      <translation>Remove Play Time Data</translation>
+      <translation>Hapus data waktu bermain</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2475" />
@@ -7548,7 +7668,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2676" />
       <source>Properties</source>
-      <translation>Properties</translation>
+      <translation>Properti</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2677" />
@@ -7564,7 +7684,7 @@ Debug Message:</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2743" />
       <source>Load File</source>
-      <translation>Load File</translation>
+      <translation>Muat Berkas</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="2756" />
@@ -7777,7 +7897,7 @@ Please, only use this feature to install updates and DLC.</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3704" />
       <source>Error</source>
-      <translation>Error</translation>
+      <translation>Kesalahan</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3704" />
@@ -7848,7 +7968,7 @@ Please, only use this feature to install updates and DLC.</translation>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3975" />
       <source>Capture Screenshot</source>
-      <translation>Capture Screenshot</translation>
+      <translation>Tangkapan Layar</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/main_window.cpp" line="3976" />
@@ -8054,12 +8174,12 @@ Would you like to bypass this and exit anyway?</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="40" />
       <source>Bilinear</source>
-      <translation>Bilinear</translation>
+      <translation>Biliner</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="41" />
       <source>Bicubic</source>
-      <translation>Bicubic</translation>
+      <translation>Bikubik</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="43" />
@@ -8124,22 +8244,22 @@ Would you like to bypass this and exit anyway?</translation>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="61" />
       <source>Docked</source>
-      <translation>Docked</translation>
+      <translation>Terpasang</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="62" />
       <source>Handheld</source>
-      <translation>Handheld</translation>
+      <translation>Jinjing</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="66" />
       <source>Fast</source>
-      <translation>Fast</translation>
+      <translation>Cepat</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="67" />
       <source>Accurate</source>
-      <translation>Accurate</translation>
+      <translation>Akurat</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/config/shared_translation.h" line="71" />
@@ -8166,7 +8286,27 @@ Would you like to bypass this and exit anyway?</translation>
       <source>Null</source>
       <translation>Null</translation>
     </message>
-  </context>
+      <message>
+        <source>Fullscreen</source>
+        <translation>Layar penuh</translation>
+    </message>
+    <message>
+        <source>Mii Edit</source>
+        <translation>Ubah Mii</translation>
+    </message>
+    <message>
+        <source>Cabinet</source>
+        <translation>Kabinet</translation>
+    </message>
+    <message>
+        <source>Create Shortcut</source>
+        <translation>Buat pintasan</translation>
+    </message>
+    <message>
+        <source>Install Files to NAND</source>
+        <translation>Install File ke NAND</translation>
+    </message>
+</context>
   <context>
     <name>MigrationWorker</name>
     <message>
@@ -8224,12 +8364,12 @@ If you wish to clean up the files which were left in the old data location, you 
     <message>
       <location filename="../../src/yuzu/multiplayer/moderation_dialog.ui" line="6" />
       <source>Moderation</source>
-      <translation>Moderation</translation>
+      <translation>Moderasi</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/multiplayer/moderation_dialog.ui" line="20" />
       <source>Ban List</source>
-      <translation>Ban List</translation>
+      <translation>Daftar Blokir</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/multiplayer/moderation_dialog.ui" line="41" />
@@ -8240,7 +8380,7 @@ If you wish to clean up the files which were left in the old data location, you 
     <message>
       <location filename="../../src/yuzu/multiplayer/moderation_dialog.ui" line="51" />
       <source>Unban</source>
-      <translation>Unban</translation>
+      <translation>Buka Blokir</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/multiplayer/moderation_dialog.cpp" line="42" />
@@ -8265,7 +8405,7 @@ If you wish to clean up the files which were left in the old data location, you 
     <message>
       <location filename="../../src/yuzu/multiplayer/moderation_dialog.cpp" line="97" />
       <source>Refresh</source>
-      <translation>Refresh</translation>
+      <translation>Segarkan</translation>
     </message>
   </context>
   <context>
@@ -8374,7 +8514,7 @@ Proceed anyway?</translation>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="70" />
       <source>Username</source>
-      <translation>Username</translation>
+      <translation>Nama Pengguna</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="82" />
@@ -8384,7 +8524,7 @@ Proceed anyway?</translation>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.ui" line="89" />
       <source>Generate</source>
-      <translation>Generate</translation>
+      <translation>Hasilkan</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/configuration/system/new_user_dialog.cpp" line="138" />
@@ -8510,7 +8650,7 @@ p, li { white-space: pre-wrap; }
     <message>
       <location filename="../../src/yuzu/render/performance_overlay.ui" line="14" />
       <source>Form</source>
-      <translation>Form</translation>
+      <translation>Bentuk</translation>
     </message>
     <message>
       <location filename="../../src/yuzu/render/performance_overlay.ui" line="32" />
@@ -8638,13 +8778,6 @@ p, li { white-space: pre-wrap; }
       <location filename="../../src/yuzu/user_data_migration.cpp" line="68" />
       <source>Link Old Directory</source>
       <translation>Link Old Directory</translation>
-    </message>
-    <message>
-      <location filename="../../src/yuzu/user_data_migration.cpp" line="98" />
-      <source>
-      </source>
-      <translation>
-      </translation>
     </message>
     <message>
       <location filename="../../src/yuzu/user_data_migration.cpp" line="102" />
@@ -9220,7 +9353,7 @@ p, li { white-space: pre-wrap; }
     <message>
       <location filename="../../src/qt_common/util/content.cpp" line="30" />
       <source>Game Requires Firmware</source>
-      <translation>Game Requires Firmware</translation>
+      <translation>Game memerlukan firmware</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/content.cpp" line="31" />
@@ -9276,7 +9409,7 @@ p, li { white-space: pre-wrap; }
       <location filename="../../src/qt_common/util/content.cpp" line="223" />
       <location filename="../../src/qt_common/util/content.cpp" line="282" />
       <source>Integrity verification succeeded!</source>
-      <translation>Integrity verification succeeded!</translation>
+      <translation>Berhasil</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/content.cpp" line="224" />
@@ -9288,7 +9421,7 @@ p, li { white-space: pre-wrap; }
       <location filename="../../src/qt_common/util/content.cpp" line="227" />
       <location filename="../../src/qt_common/util/content.cpp" line="288" />
       <source>Integrity verification failed!</source>
-      <translation>Integrity verification failed!</translation>
+      <translation>Gagal</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/content.cpp" line="228" />
@@ -9298,7 +9431,7 @@ p, li { white-space: pre-wrap; }
     <message>
       <location filename="../../src/qt_common/util/content.cpp" line="232" />
       <source>Integrity verification couldn't be performed</source>
-      <translation>Integrity verification couldn't be performed</translation>
+      <translation>Tidak Ada Hasil</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/content.cpp" line="233" />
@@ -9733,7 +9866,7 @@ Would you like to manually select a portable folder to use?</translation>
     <message>
       <location filename="../../src/qt_common/util/game.cpp" line="347" />
       <source>Reset Metadata Cache</source>
-      <translation>Reset Metadata Cache</translation>
+      <translation>Atur Ulang Cache Metadata</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/game.cpp" line="353" />
@@ -9753,7 +9886,7 @@ Would you like to manually select a portable folder to use?</translation>
     <message>
       <location filename="../../src/qt_common/util/game.cpp" line="381" />
       <source>Create Shortcut</source>
-      <translation>Create Shortcut</translation>
+      <translation>Buat pintasan</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/util/game.cpp" line="381" />
@@ -9932,12 +10065,12 @@ Most mods are RomFS mods, but patches (.pchtxt) are typically ExeFS mods.</trans
     <message>
       <location filename="../../src/qt_common/qt_string_lookup.h" line="81" />
       <source>One or more keys failed to copy.</source>
-      <translation>One or more keys failed to copy.</translation>
+      <translation>Satu atau lebih kunci gagal disalin.</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/qt_string_lookup.h" line="83" />
       <source>Verify your keys file has a .keys extension and try again.</source>
-      <translation>Verify your keys file has a .keys extension and try again.</translation>
+      <translation>Pastikan file kunci Anda memiliki ekstensi .keys dan coba lagi.</translation>
     </message>
     <message>
       <location filename="../../src/qt_common/qt_string_lookup.h" line="85" />
@@ -10640,4 +10773,231 @@ Error code: %3</translation>
       <translation>Successfully downloaded %1. Would you like to open it?</translation>
     </message>
   </context>
+<context>
+    <name>QPlatformTheme</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Batalkan</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Tutup</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Kembalikan ke Semula</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Bantuan</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Batalkan</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Simpan</translation>
+    </message>
+</context>
+<context>
+    <name>QDialogButtonBox</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Batalkan</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Tutup</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Kembalikan ke Semula</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Bantuan</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Batalkan</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Simpan</translation>
+    </message>
+</context>
+<context>
+    <name>QMessageBox</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Batalkan</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Tutup</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Kembalikan ke Semula</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Bantuan</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Batalkan</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Simpan</translation>
+    </message>
+</context>
+<context>
+    <name>QGuiApplication</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Batalkan</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Tutup</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Kembalikan ke Semula</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Bantuan</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Batalkan</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Simpan</translation>
+    </message>
+</context>
+<context>
+    <name>QAbstractButton</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Batalkan</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Tutup</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Kembalikan ke Semula</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Bantuan</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Batalkan</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Simpan</translation>
+    </message>
+</context>
+<context>
+    <name>QColorDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Batalkan</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Tutup</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Kembalikan ke Semula</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Bantuan</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Batalkan</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Simpan</translation>
+    </message>
+</context>
+<context>
+    <name>QFileDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Batalkan</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Tutup</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Kembalikan ke Semula</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Bantuan</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Batalkan</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Simpan</translation>
+    </message>
+</context>
+<context>
+    <name>QFontDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Batalkan</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Tutup</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Kembalikan ke Semula</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Bantuan</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Batalkan</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Simpan</translation>
+    </message>
+</context>
+<context>
+    <name>QtController</name>
+    <message>
+        <source>Console Mode</source>
+        <translation>Mode Konsol</translation>
+    </message>
+    <message>
+        <source>Vibration</source>
+        <translation>Getaran</translation>
+    </message>
+</context>
 </TS>

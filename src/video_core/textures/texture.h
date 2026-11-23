@@ -165,6 +165,15 @@ static_assert(sizeof(TextureHandle) == 4, "TextureHandle has wrong size");
     }
 }
 
+/// Some Switch 2 bindless handles store the texture header byte offset (index * 32)
+/// instead of the plain TIC index. Convert when on Switch 2 and index > limit.
+[[nodiscard]] constexpr u32 TextureHeaderIndex(u32 index, u32 limit, bool switch2) {
+    if (switch2 && index > limit && index % 32 == 0 && index / 32 <= limit) {
+        return index / 32;
+    }
+    return index;
+}
+
 struct TICEntry {
     union {
         struct {

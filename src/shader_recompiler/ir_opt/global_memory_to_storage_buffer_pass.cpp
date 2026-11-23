@@ -638,6 +638,10 @@ void CollectStorageBuffers(IR::Block& block, IR::Inst& inst, StorageInfo& info) 
                     return found ? ResolveResult{ResolveStatus::Resolved, *found} : ResolveResult{};
                 }
                 if (vec_inst->GetOpcode() == IR::Opcode::CompositeConstructU32x2) {
+                    const IR::Value hi_val{vec_inst->Arg(1)};
+                    if (!allow_u32_ptr && hi_val.IsImmediate() && hi_val.U32() == 0U) {
+                        return {};
+                    }
                     const auto found = cached_track(IR::U32{vec_inst->Arg(0)}, bias, cache);
                     return found ? ResolveResult{ResolveStatus::Resolved, *found} : ResolveResult{};
                 }

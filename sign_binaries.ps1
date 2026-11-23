@@ -17,7 +17,7 @@ if (-not $sha1) {
     if ($cert) { $sha1 = $cert.Thumbprint }
 }
 
-$version = '18.1.0'
+$version = '18.4.2'
 if (Test-Path "$PSScriptRoot\GIT-RELEASE") {
     $v = (Get-Content "$PSScriptRoot\GIT-RELEASE" -Raw).Trim()
     if ($v) { $version = $v }
@@ -69,7 +69,7 @@ function Prepare-Staging($targetDir, $includeCrt) {
 $mTargetDir = "M:\CONSOLES\Nintendo Switch\STORM SWITCH"
 if (Test-Path $mTargetDir) {
     Write-Host "Syncing signed executables and CRT DLLs to $mTargetDir..."
-    Copy-Item "$assemblingDir\*.dll" $mTargetDir -Force -ErrorAction SilentlyContinue
+    Get-ChildItem "$assemblingDir\*.dll" | Where-Object { $_.Name -ne '7z.dll' } | Copy-Item -Destination $mTargetDir -Force -ErrorAction SilentlyContinue
     foreach ($exe in @("STORM_SWITCH.exe", "STORM_SWITCH-cli.exe", "STORM_SWITCH-room.exe")) {
         $srcExe = Join-Path $assemblingDir $exe
         $dstExe = Join-Path $mTargetDir $exe

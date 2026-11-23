@@ -775,16 +775,48 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
         Copy,
         Sparkle,
         Shield,
+        FolderMod,
+        Shortcut,
+        Reset,
     };
 
-    const auto make_vector_icon = [](ContextVectorIcon type) -> QIcon {
+    const auto make_vector_icon = [](ContextVectorIcon type, const QColor& override_color = QColor()) -> QIcon {
         QPixmap pixmap(18, 18);
         pixmap.fill(Qt::transparent);
         QPainter painter(&pixmap);
         painter.setRenderHint(QPainter::Antialiasing);
 
-        const QColor accent(0, 240, 255);
-        QPen pen(accent, 1.4, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+        // Vibrant standalone vector color palette matching the top menu bar
+        QColor accent = override_color;
+        if (!accent.isValid()) {
+            switch (type) {
+            case ContextVectorIcon::Star:    accent = QColor(255, 193, 7);   break; // Amber Gold
+            case ContextVectorIcon::Play:    accent = QColor(102, 187, 106); break; // Emerald Green
+            case ContextVectorIcon::Fast:    accent = QColor(38, 198, 218);  break; // Teal
+            case ContextVectorIcon::Save:    accent = QColor(66, 165, 245);  break; // Sky Blue
+            case ContextVectorIcon::Sync:    accent = QColor(0, 229, 255);   break; // Cyan
+            case ContextVectorIcon::Puzzle:  accent = QColor(171, 71, 188);  break; // Purple
+            case ContextVectorIcon::Bolt:    accent = QColor(255, 193, 7);   break; // Yellow
+            case ContextVectorIcon::Link:    accent = QColor(121, 134, 203); break; // Indigo
+            case ContextVectorIcon::Trash:   accent = QColor(239, 83, 80);   break; // Coral Red
+            case ContextVectorIcon::Clock:   accent = QColor(38, 198, 218);  break; // Cyan Teal
+            case ContextVectorIcon::Package: accent = QColor(255, 167, 38);  break; // Amber Orange
+            case ContextVectorIcon::Search:  accent = QColor(156, 204, 101); break; // Lime Green
+            case ContextVectorIcon::Copy:    accent = QColor(66, 165, 245);  break; // Blue
+            case ContextVectorIcon::Sparkle: accent = QColor(236, 64, 122);  break; // Pink Magenta
+            case ContextVectorIcon::Shield:    accent = QColor(102, 187, 106); break; // Shield Green
+            case ContextVectorIcon::FolderMod: accent = QColor(186, 104, 200); break; // Lavender Folder
+            case ContextVectorIcon::Shortcut:  accent = QColor(38, 198, 218);  break; // Teal Launch
+            case ContextVectorIcon::Reset:     accent = QColor(255, 167, 38);  break; // Amber Reset
+            }
+        }
+        const auto fill_alpha = [&](int alpha) {
+            QColor c = accent;
+            c.setAlpha(alpha);
+            return c;
+        };
+
+        QPen pen(accent, 1.5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
         painter.setPen(pen);
         painter.setBrush(Qt::NoBrush);
 
@@ -802,7 +834,7 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
                 else path.lineTo(x, y);
             }
             path.closeSubpath();
-            painter.setBrush(QColor(0, 240, 255, 60));
+            painter.setBrush(fill_alpha(120));
             painter.drawPath(path);
             break;
         }
@@ -812,7 +844,7 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
             path.lineTo(13.5, 9.0);
             path.lineTo(6.0, 14.0);
             path.closeSubpath();
-            painter.setBrush(QColor(0, 240, 255, 120));
+            painter.setBrush(fill_alpha(150));
             painter.drawPath(path);
             break;
         }
@@ -820,15 +852,16 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
             QPainterPath p1, p2;
             p1.moveTo(4.5, 5.0); p1.lineTo(9.5, 9.0); p1.lineTo(4.5, 13.0); p1.closeSubpath();
             p2.moveTo(9.5, 5.0); p2.lineTo(14.5, 9.0); p2.lineTo(9.5, 13.0); p2.closeSubpath();
-            painter.setBrush(QColor(0, 240, 255, 120));
+            painter.setBrush(fill_alpha(140));
             painter.drawPath(p1);
             painter.drawPath(p2);
             break;
         }
         case ContextVectorIcon::Save: {
+            painter.setBrush(fill_alpha(45));
             painter.drawRoundedRect(QRectF(3.5, 3.5, 11.0, 11.0), 1.5, 1.5);
             painter.fillRect(QRectF(5.5, 3.5, 7.0, 3.5), accent);
-            painter.fillRect(QRectF(6.0, 9.5, 6.0, 4.5), QColor(0, 240, 255, 80));
+            painter.fillRect(QRectF(6.0, 9.5, 6.0, 4.5), fill_alpha(110));
             break;
         }
         case ContextVectorIcon::Sync: {
@@ -843,6 +876,7 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
             break;
         }
         case ContextVectorIcon::Puzzle: {
+            painter.setBrush(fill_alpha(55));
             painter.drawRoundedRect(QRectF(4.0, 4.0, 10.0, 10.0), 2.0, 2.0);
             painter.drawEllipse(QPointF(9.0, 4.0), 2.0, 2.0);
             painter.drawEllipse(QPointF(14.0, 9.0), 2.0, 2.0);
@@ -857,7 +891,7 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
             path.lineTo(13.0, 8.0);
             path.lineTo(9.8, 8.0);
             path.closeSubpath();
-            painter.setBrush(QColor(0, 240, 255, 120));
+            painter.setBrush(fill_alpha(150));
             painter.drawPath(path);
             break;
         }
@@ -868,6 +902,7 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
             break;
         }
         case ContextVectorIcon::Trash: {
+            painter.setBrush(fill_alpha(45));
             painter.drawLine(QPointF(4.0, 5.5), QPointF(14.0, 5.5));
             painter.drawRoundedRect(QRectF(5.0, 5.5, 8.0, 9.0), 1.0, 1.0);
             painter.drawLine(QPointF(7.5, 7.5), QPointF(7.5, 12.5));
@@ -876,23 +911,27 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
             break;
         }
         case ContextVectorIcon::Clock: {
+            painter.setBrush(fill_alpha(40));
             painter.drawEllipse(QPointF(9.0, 9.0), 5.5, 5.5);
             painter.drawLine(QPointF(9.0, 9.0), QPointF(9.0, 5.5));
             painter.drawLine(QPointF(9.0, 9.0), QPointF(12.0, 9.0));
             break;
         }
         case ContextVectorIcon::Package: {
+            painter.setBrush(fill_alpha(45));
             painter.drawRect(QRectF(4.0, 4.0, 10.0, 10.0));
             painter.drawLine(QPointF(4.0, 9.0), QPointF(14.0, 9.0));
             painter.drawLine(QPointF(9.0, 4.0), QPointF(9.0, 14.0));
             break;
         }
         case ContextVectorIcon::Search: {
+            painter.setBrush(fill_alpha(40));
             painter.drawEllipse(QPointF(7.5, 7.5), 4.0, 4.0);
             painter.drawLine(QPointF(10.5, 10.5), QPointF(14.5, 14.5));
             break;
         }
         case ContextVectorIcon::Copy: {
+            painter.setBrush(fill_alpha(40));
             painter.drawRoundedRect(QRectF(6.0, 3.5, 8.0, 9.5), 1.0, 1.0);
             painter.drawRoundedRect(QRectF(4.0, 5.5, 8.0, 9.5), 1.0, 1.0);
             break;
@@ -905,7 +944,7 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
             path.quadTo(cx, cy, cx, cy + 6.5);
             path.quadTo(cx, cy, cx - 6.5, cy);
             path.quadTo(cx, cy, cx, cy - 6.5);
-            painter.setBrush(QColor(0, 240, 255, 120));
+            painter.setBrush(fill_alpha(150));
             painter.drawPath(path);
             break;
         }
@@ -918,8 +957,39 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
             path.quadTo(4.0, 14.0, 4.0, 9.5);
             path.lineTo(4.0, 5.5);
             path.closeSubpath();
-            painter.setBrush(QColor(0, 240, 255, 70));
+            painter.setBrush(fill_alpha(95));
             painter.drawPath(path);
+            break;
+        }
+        case ContextVectorIcon::FolderMod: {
+            QPainterPath path;
+            path.moveTo(2.5, 4.5); path.lineTo(6.8, 4.5); path.lineTo(8.2, 6.2);
+            path.lineTo(15.5, 6.2); path.lineTo(15.5, 14.5); path.lineTo(2.5, 14.5);
+            path.closeSubpath();
+            painter.setBrush(fill_alpha(50));
+            painter.drawPath(path);
+            QPolygonF dia;
+            dia << QPointF(9.0, 8.2) << QPointF(11.3, 10.5) << QPointF(9.0, 12.8) << QPointF(6.7, 10.5);
+            painter.setBrush(accent);
+            painter.drawPolygon(dia);
+            break;
+        }
+        case ContextVectorIcon::Shortcut: {
+            painter.drawLine(QPointF(9.5, 3.5), QPointF(3.5, 3.5));
+            painter.drawLine(QPointF(3.5, 3.5), QPointF(3.5, 14.5));
+            painter.drawLine(QPointF(3.5, 14.5), QPointF(14.5, 14.5));
+            painter.drawLine(QPointF(14.5, 14.5), QPointF(14.5, 8.5));
+            painter.drawLine(QPointF(8.2, 9.8), QPointF(14.8, 3.2));
+            painter.drawLine(QPointF(11.0, 3.2), QPointF(14.8, 3.2));
+            painter.drawLine(QPointF(14.8, 3.2), QPointF(14.8, 7.0));
+            break;
+        }
+        case ContextVectorIcon::Reset: {
+            painter.drawArc(QRectF(3.2, 3.2, 11.6, 11.6), 140 * 16, -260 * 16);
+            painter.drawLine(QPointF(4.6, 4.8), QPointF(3.2, 8.4));
+            painter.drawLine(QPointF(6.8, 7.8), QPointF(3.2, 8.4));
+            painter.setBrush(accent);
+            painter.drawEllipse(QPointF(9.0, 9.0), 1.5, 1.5);
             break;
         }
         }
@@ -933,14 +1003,17 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
         pixmap.fill(Qt::transparent);
         QPainter painter(&pixmap);
         painter.setRenderHint(QPainter::Antialiasing);
-        QPen pen(QColor(0, 240, 255), 1.6, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+        const QColor gear_col(255, 193, 7); // Gold gear matching top menu Settings
+        QPen pen(gear_col, 1.6, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
         painter.setPen(pen);
-        painter.drawEllipse(QPointF(9, 9), 5.5, 5.5);
-        painter.drawEllipse(QPointF(9, 9), 2.5, 2.5);
+        painter.setBrush(QColor(255, 193, 7, 55));
+        painter.drawEllipse(QPointF(9, 9), 5.2, 5.2);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawEllipse(QPointF(9, 9), 2.3, 2.3);
         for (int i = 0; i < 8; ++i) {
             qreal a = i * 3.14159265 / 4.0;
-            painter.drawLine(QPointF(9 + 5.5 * cos(a), 9 + 5.5 * sin(a)),
-                             QPointF(9 + 8.0 * cos(a), 9 + 8.0 * sin(a)));
+            painter.drawLine(QPointF(9 + 5.2 * cos(a), 9 + 5.2 * sin(a)),
+                             QPointF(9 + 7.8 * cos(a), 9 + 7.8 * sin(a)));
         }
         properties->setIcon(QIcon(pixmap));
     }
@@ -959,7 +1032,7 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
     QAction* open_save_location = context_menu.addAction(item_tr(QString(), "Open Save Data Location", QStringLiteral("Открыть папку сохранений")));
     open_save_location->setIcon(make_vector_icon(ContextVectorIcon::Save));
     QAction* sync_save = context_menu.addAction(storm_tr(
-        QStringLiteral("Синхронизация сохранения (STORM SAVE SYNC)..."),
+        QStringLiteral("Синхронизация сохранений (STORM SAVE SYNC)..."),
         QStringLiteral("Save Data Sync (STORM SAVE SYNC)..."),
         QStringLiteral("存档同步 (STORM SAVE SYNC)..."),
         QStringLiteral("セーブデータ同期 (STORM SAVE SYNC)..."),
@@ -970,7 +1043,7 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
         QStringLiteral("مزامنة بيانات الحفظ (STORM SAVE SYNC)...")));
     sync_save->setIcon(make_vector_icon(ContextVectorIcon::Sync));
     QAction* open_mod_location = context_menu.addAction(item_tr(QString(), "Open Mod Data Location", QStringLiteral("Открыть папку модов")));
-    open_mod_location->setIcon(make_vector_icon(ContextVectorIcon::Puzzle));
+    open_mod_location->setIcon(make_vector_icon(ContextVectorIcon::FolderMod));
     QAction* open_transferable_shader_cache =
         context_menu.addAction(item_tr(QString(), "Open Transferable Pipeline Cache", QStringLiteral("Открыть кэш шейдеров")));
     open_transferable_shader_cache->setIcon(make_vector_icon(ContextVectorIcon::Bolt));
@@ -1002,7 +1075,7 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
     copy_tid->setIcon(make_vector_icon(ContextVectorIcon::Copy));
 #if !defined(__APPLE__)
     QMenu* shortcut_menu = context_menu.addMenu(item_tr(QString(), "Create Shortcut", QStringLiteral("Создать ярлык")));
-    shortcut_menu->setIcon(make_vector_icon(ContextVectorIcon::Link));
+    shortcut_menu->setIcon(make_vector_icon(ContextVectorIcon::Shortcut));
     QAction* create_desktop_shortcut = shortcut_menu->addAction(item_tr(QString(), "Add to Desktop", QStringLiteral("На рабочий стол")));
     QAction* create_applications_menu_shortcut =
         shortcut_menu->addAction(item_tr(QString(), "Add to Applications Menu", QStringLiteral("В меню приложений")));
@@ -1055,7 +1128,7 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id, const std::stri
         QStringLiteral("Réinitialiser les paramètres du jeu par défaut"),
         QStringLiteral("Restablecer configuración del juego a valores predeterminados"),
         QStringLiteral("إعادة تعيين إعدادات اللعبة إلى الافتراضية")));
-    reset_game_settings->setIcon(make_vector_icon(ContextVectorIcon::Sync));
+    reset_game_settings->setIcon(make_vector_icon(ContextVectorIcon::Reset));
 
     favorite->setVisible(program_id != 0);
     reset_game_settings->setVisible(program_id != 0);

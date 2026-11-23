@@ -1078,6 +1078,7 @@ void Device::LoadStaticPipelineCache() {
         StaticCacheFingerprint fp{};
         constexpr size_t prefix_size = magic.size() + sizeof(version) + sizeof(fp);
         if (total < prefix_size + sizeof(VkPipelineCacheHeaderVersionOne)) {
+            file.close();
             Common::FS::RemoveFile(filename);
             create(0, nullptr);
             return;
@@ -1092,6 +1093,7 @@ void Device::LoadStaticPipelineCache() {
             std::memcmp(fp.uuid.data(), properties.properties.pipelineCacheUUID, VK_UUID_SIZE) == 0;
         if (magic != STATIC_CACHE_MAGIC_NUMBER || version != STATIC_CACHE_VERSION ||
             !fingerprint_matches) {
+            file.close();
             Common::FS::RemoveFile(filename);
             create(0, nullptr);
             return;
@@ -1099,6 +1101,7 @@ void Device::LoadStaticPipelineCache() {
         data.resize(total - prefix_size);
         file.read(data.data(), static_cast<std::streamsize>(data.size()));
         if (data.size() < sizeof(VkPipelineCacheHeaderVersionOne)) {
+            file.close();
             Common::FS::RemoveFile(filename);
             create(0, nullptr);
             return;
@@ -1113,6 +1116,7 @@ void Device::LoadStaticPipelineCache() {
             std::memcmp(vk_hdr.pipelineCacheUUID, properties.properties.pipelineCacheUUID,
                         VK_UUID_SIZE) == 0;
         if (!vk_hdr_valid) {
+            file.close();
             Common::FS::RemoveFile(filename);
             create(0, nullptr);
             return;
