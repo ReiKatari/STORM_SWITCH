@@ -221,6 +221,11 @@ struct KernelCore::Impl {
                 mgr->RequestStop();
             }
         }
+        for (u32 i = 0; i < Core::Hardware::NUM_CPU_CORES; ++i) {
+            if (cores[i]) {
+                cores[i]->Interrupt();
+            }
+        }
         for (auto& mgr : managers_to_close) {
             if (!mgr) {
                 continue;

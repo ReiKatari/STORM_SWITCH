@@ -776,6 +776,7 @@ struct System::Impl {
         Network::CancelPendingSocketOperations();
         LOG_DEBUG(Core, "ShutdownMainProcess: [1/10] kernel.SuspendEmulation");
         kernel.SuspendEmulation(true);
+        core_timing.SyncPause(true);
         LOG_DEBUG(Core, "ShutdownMainProcess: [2/10] kernel.CloseServices");
         kernel.CloseServices();
         if (was_powered_on) {

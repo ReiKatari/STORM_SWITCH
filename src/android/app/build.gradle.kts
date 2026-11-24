@@ -57,7 +57,7 @@ plugins {
 
  */
 
-val autoVersion = maxOf((((System.currentTimeMillis() / 1000) - 1451606400) / 10).toInt(), 34300240)
+val autoVersion = maxOf((((System.currentTimeMillis() / 1000) - 1451606400) / 10).toInt(), 34300250)
 
 
 
@@ -149,7 +149,7 @@ android {
 
         targetSdk = 35
 
-        versionName = "18.4.4"
+        versionName = "18.4.5"
 
         versionCode = autoVersion
 
@@ -935,7 +935,7 @@ fun getGitVersion(): String {
 
     }
 
-    return "18.4.4"
+    return "18.4.5"
 
 }
 

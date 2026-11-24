@@ -364,8 +364,13 @@ struct Values {
                                                         "resolution_setup", Category::Renderer,
                                                         Specialization::Default, true, true};
 
+#ifdef __ANDROID__
     SwitchableSetting<VSyncMode, true> vsync_mode{linkage,
                                                   VSyncMode::Fifo,
+#else
+    SwitchableSetting<VSyncMode, true> vsync_mode{linkage,
+                                                  VSyncMode::Mailbox,
+#endif
                                                   "use_vsync",
                                                   Category::Renderer,
                                                   Specialization::RuntimeList,

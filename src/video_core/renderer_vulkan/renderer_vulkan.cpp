@@ -405,18 +405,34 @@ vk::Buffer RendererVulkan::RenderToBuffer(std::span<const Tegra::FramebufferConf
 }
 
 void RendererVulkan::RenderScreenshot(std::span<const Tegra::FramebufferConfig> framebuffers) {
-    if (!renderer_settings.screenshot_requested) {
-        return;
+    Layout::FramebufferLayout layout{};
+    void* bits = nullptr;
+    std::function<void(bool)> callback;
+    {
+        std::scoped_lock lk{screenshot_mutex};
+        if (!renderer_settings.screenshot_requested) {
+            return;
+        }
+        layout = renderer_settings.screenshot_framebuffer_layout;
+        bits = renderer_settings.screenshot_bits;
+        callback = renderer_settings.screenshot_complete_callback;
     }
 
-    const auto& layout{renderer_settings.screenshot_framebuffer_layout};
     const auto dst_buffer = RenderToBuffer(framebuffers, layout, VK_FORMAT_B8G8R8A8_UNORM,
                                            layout.width * layout.height * 4);
 
-    std::memcpy(renderer_settings.screenshot_bits, dst_buffer.Mapped().data(),
-                dst_buffer.Mapped().size());
-    renderer_settings.screenshot_complete_callback(false);
-    renderer_settings.screenshot_requested = false;
+    if (bits != nullptr) {
+        std::memcpy(bits, dst_buffer.Mapped().data(), dst_buffer.Mapped().size());
+    }
+    {
+        std::scoped_lock lk{screenshot_mutex};
+        renderer_settings.screenshot_requested = false;
+        renderer_settings.screenshot_bits = nullptr;
+        renderer_settings.screenshot_complete_callback = {};
+    }
+    if (callback) {
+        callback(false);
+    }
 }
 
 std::vector<u8> RendererVulkan::GetAppletCaptureBuffer() {

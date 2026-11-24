@@ -396,9 +396,11 @@ QtControllerSelectorDialog::QtControllerSelectorDialog(
     }
 
     // Enhancement: Check if the parameters have already been met before disconnecting controllers.
-    // If all the parameters are met AND only allows a single player,
-    // stop the constructor here as we do not need to continue.
-    if (CheckIfParametersMet() && parameters.enable_single_mode) {
+    // If all the parameters are met and a single-player or keep-connected controller setup already satisfies
+    // min_players, stop the constructor here so games do not stall on an unrequested controller dialog.
+    if (CheckIfParametersMet() &&
+        (parameters.enable_single_mode || parameters.keep_controllers_connected ||
+         parameters.min_players <= 1)) {
         return;
     }
 
@@ -428,7 +430,9 @@ QtControllerSelectorDialog::~QtControllerSelectorDialog() {
 }
 
 int QtControllerSelectorDialog::exec() {
-    if (parameters_met && parameters.enable_single_mode) {
+    if (parameters_met &&
+        (parameters.enable_single_mode || parameters.keep_controllers_connected ||
+         parameters.min_players <= 1)) {
         return QDialog::Accepted;
     }
     return QDialog::exec();

@@ -2391,14 +2391,13 @@ void MainWindow::AmiiboSettingsShowDialog(const Core::Frontend::CabinetParameter
 
 
     if (cabinet_applet->exec() == QDialog::Rejected) {
-
         emit AmiiboSettingsFinished(false, {});
-
         return;
-
     }
-
-
+    if (!QtCommon::system || QtCommon::system->IsShuttingDown() || m_is_closing_window) {
+        emit AmiiboSettingsFinished(false, {});
+        return;
+    }
 
     emit AmiiboSettingsFinished(true, cabinet_applet->GetName());
 
@@ -2460,7 +2459,10 @@ void MainWindow::ControllerSelectorReconfigureControllers(
 
     bool is_success = controller_applet->exec() != QDialog::Rejected;
 
-
+    if (!QtCommon::system || QtCommon::system->IsShuttingDown() || m_is_closing_window) {
+        emit ControllerSelectorReconfigureFinished(false);
+        return;
+    }
 
     // Don't forget to apply settings.
 
@@ -2533,14 +2535,13 @@ void MainWindow::ProfileSelectorSelectProfile(
     profile_select_applet->setWindowModality(Qt::WindowModal);
 
     if (profile_select_applet->exec() == QDialog::Rejected) {
-
         emit ProfileSelectorFinishedSelection(std::nullopt);
-
         return;
-
     }
-
-
+    if (!QtCommon::system || QtCommon::system->IsShuttingDown() || m_is_closing_window) {
+        emit ProfileSelectorFinishedSelection(std::nullopt);
+        return;
+    }
 
     const auto uuid = QtCommon::system->GetProfileManager().GetUser(
 
@@ -13476,7 +13477,9 @@ void MainWindow::ErrorDisplayDisplayError(QString error_code, QString error_text
 
     error_applet->exec();
 
-
+    if (!QtCommon::system || QtCommon::system->IsShuttingDown() || m_is_closing_window) {
+        return;
+    }
 
     emit ErrorDisplayFinished();
 
@@ -27151,8 +27154,44 @@ bool MainWindow::ConfirmClose() {
 
 
 
+#ifdef _WIN32
+bool MainWindow::nativeEvent(const QByteArray& eventType, void* message, qintptr* result) {
+    if (message != nullptr) {
+        const auto* msg = static_cast<const MSG*>(message);
+        if (msg->message == WM_CLOSE) {
+            const bool has_modal_applet =
+                controller_applet || profile_select_applet || cabinet_applet || error_applet;
+            if (has_modal_applet) {
+                m_is_closing_window = true;
+                if (controller_applet) {
+                    controller_applet->reject();
+                }
+                if (profile_select_applet) {
+                    profile_select_applet->reject();
+                }
+                if (cabinet_applet) {
+                    cabinet_applet->reject();
+                }
+                if (error_applet) {
+                    error_applet->reject();
+                }
+                QMetaObject::invokeMethod(
+                    this, [this]() { close(); }, Qt::QueuedConnection);
+                if (result != nullptr) {
+                    *result = 0;
+                }
+                return true;
+            }
+        }
+    }
+    return QMainWindow::nativeEvent(eventType, message, result);
+}
+#endif
+
 void MainWindow::closeEvent(QCloseEvent* event) {
+    m_is_closing_window = true;
     if (!(qGuiApp && qGuiApp->isSavingSession()) && !ConfirmClose()) {
+        m_is_closing_window = false;
 
         is_exiting_from_tray = false;
 
@@ -27215,6 +27254,19 @@ void MainWindow::closeEvent(QCloseEvent* event) {
     game_list->UnloadController();
 
 
+
+    if (controller_applet) {
+        controller_applet->reject();
+    }
+    if (profile_select_applet) {
+        profile_select_applet->reject();
+    }
+    if (cabinet_applet) {
+        cabinet_applet->reject();
+    }
+    if (error_applet) {
+        error_applet->reject();
+    }
 
     // Shutdown session if the emu thread is active...
 

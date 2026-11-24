@@ -174,12 +174,19 @@ public:
 
     /// Whether the recording thread submitted `tick` within 20 ms.
     [[nodiscard]] bool WaitForSubmission(u64 tick) const {
-        const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds{20};
+        const auto start = std::chrono::steady_clock::now();
+        const auto spin_until = start + std::chrono::microseconds{300};
+        const auto deadline = start + std::chrono::milliseconds{20};
         while (tick >= master_semaphore->CurrentTick()) {
-            if (std::chrono::steady_clock::now() >= deadline) {
+            const auto now = std::chrono::steady_clock::now();
+            if (now >= deadline) {
                 return false;
             }
-            std::this_thread::sleep_for(std::chrono::microseconds{100});
+            if (now < spin_until) {
+                std::this_thread::yield();
+            } else {
+                std::this_thread::sleep_for(std::chrono::microseconds{200});
+            }
         }
         return true;
     }
@@ -191,12 +198,14 @@ public:
     /// be waiting for them).
     void Wait(u64 tick, [[maybe_unused]] double target_fps = 0.0, bool may_flush = true) {
         if (tick > 0) {
-            if (may_flush || WaitForSubmission(tick)) {
+            if (may_flush) {
                 if (tick >= master_semaphore->CurrentTick()) {
                     Flush();
                 }
+                master_semaphore->Wait(tick);
+            } else if (WaitForSubmission(tick)) {
+                master_semaphore->Wait(tick);
             }
-            master_semaphore->Wait(tick);
         }
     }
 

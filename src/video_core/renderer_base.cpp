@@ -32,11 +32,13 @@ void RendererBase::UpdateCurrentFramebufferLayout() {
 }
 
 bool RendererBase::IsScreenshotPending() const {
+    std::scoped_lock lk{screenshot_mutex};
     return renderer_settings.screenshot_requested;
 }
 
 void RendererBase::RequestScreenshot(void* data, std::function<void(bool)> callback,
                                      const Layout::FramebufferLayout& layout) {
+    std::scoped_lock lk{screenshot_mutex};
     if (renderer_settings.screenshot_requested) {
         LOG_ERROR(Render, "A screenshot is already requested or in progress, ignoring the request");
         return;

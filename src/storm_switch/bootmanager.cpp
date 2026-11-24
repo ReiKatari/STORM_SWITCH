@@ -900,6 +900,8 @@ void GRenderWindow::CaptureScreenshot(const QString& screenshot_path) {
         QtCommon::system->GPU().RefreshPresent();
         std::unique_lock lk{sync_state->mtx};
         sync_state->cv.wait_for(lk, std::chrono::milliseconds(250), [&] { return sync_state->done; });
+    } else if (QtCommon::system->IsPaused()) {
+        QtCommon::system->GPU().RefreshPresent();
     }
 }
 

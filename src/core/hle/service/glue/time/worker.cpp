@@ -47,14 +47,22 @@ TimeWorker::TimeWorker(Core::System& system, StandardSteadyClockResource& steady
 }
 
 TimeWorker::~TimeWorker() {
-    m_local_clock_event->Signal(m_system.Kernel());
-    m_network_clock_event->Signal(m_system.Kernel());
-    m_ephemeral_clock_event->Signal(m_system.Kernel());
-    std::this_thread::sleep_for(std::chrono::milliseconds(16));
-
     m_thread.request_stop();
-    m_event->Signal(m_system.Kernel());
-    m_thread.join();
+    if (m_local_clock_event) {
+        m_local_clock_event->Signal(m_system.Kernel());
+    }
+    if (m_network_clock_event) {
+        m_network_clock_event->Signal(m_system.Kernel());
+    }
+    if (m_ephemeral_clock_event) {
+        m_ephemeral_clock_event->Signal(m_system.Kernel());
+    }
+    if (m_event) {
+        m_event->Signal(m_system.Kernel());
+    }
+    if (m_thread.joinable()) {
+        m_thread.join();
+    }
 
     m_ctx.CloseEvent(m_event);
     m_system.CoreTiming().UnscheduleEvent(m_timer_steady_clock_timing_event);
@@ -164,6 +172,10 @@ void TimeWorker::ThreadFunc(std::stop_token stop_token) {
                             &m_timer_file_system->GetReadableEvent(),           // 7
                             m_standard_user_auto_correct_clock_event            // 8
             );
+        }
+
+        if (index < 0 || stop_token.stop_requested() || m_system.Kernel().IsShuttingDown()) {
+            return;
         }
 
         switch (static_cast<EventType>(index)) {

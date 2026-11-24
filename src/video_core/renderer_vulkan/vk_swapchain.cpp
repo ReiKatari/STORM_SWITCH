@@ -246,7 +246,8 @@ bool Swapchain::AcquireNextImage(bool may_flush) {
 
     scheduler.Wait(resource_ticks[image_index], 0.0, may_flush);
 
-    resource_ticks[image_index] = scheduler.CurrentTick();
+    const u64 cur_tick = scheduler.CurrentTick();
+    resource_ticks[image_index] = may_flush ? cur_tick : (cur_tick > 1 ? cur_tick - 1 : 0);
 
     return is_suboptimal || is_outdated;
 }

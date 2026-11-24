@@ -6,6 +6,7 @@
 #include <atomic>
 #include <functional>
 #include <memory>
+#include <mutex>
 
 #include "common/common_funcs.h"
 #include "common/common_types.h"
@@ -102,6 +103,7 @@ protected:
     int m_current_frame = 0;  ///< Current frame, should be set by the renderer
 
     RendererSettings renderer_settings;
+    mutable std::mutex screenshot_mutex;
 
 private:
     /// Updates the framebuffer layout of the contained render window handle.

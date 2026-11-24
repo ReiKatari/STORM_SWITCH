@@ -104,6 +104,9 @@ private:
     std::size_t image_count{};
     bool last_frame_gen_enabled{};
     bool surface_was_lost{};
+    u32 consecutive_skips{};
+    u32 last_requested_w{0};
+    u32 last_requested_h{0};
 };
 
 } // namespace Vulkan

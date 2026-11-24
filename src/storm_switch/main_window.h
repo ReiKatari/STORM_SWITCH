@@ -345,6 +345,9 @@ private:
     void showEvent(QShowEvent* event) override;
     void hideEvent(QHideEvent* event) override;
     void closeEvent(QCloseEvent* event) override;
+#ifdef _WIN32
+    bool nativeEvent(const QByteArray& eventType, void* message, qintptr* result) override;
+#endif
     void resizeEvent(QResizeEvent* event) override;
     void moveEvent(QMoveEvent* event) override;
     void CheckFirstRunWizard();
@@ -766,6 +769,7 @@ private:
 
     // True if TAS recording dialog is visible
     bool is_tas_recording_dialog_active{};
+    bool m_is_closing_window{false};
 
 #ifdef __unix__
     QSocketNotifier* sig_interrupt_notifier;

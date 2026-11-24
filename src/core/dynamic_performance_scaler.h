@@ -102,6 +102,9 @@ private:
     u32 consecutive_overbudget{0};
     u32 consecutive_underbudget{0};
     u32 startup_frames{0};
+    u32 steady_30fps_frames{0};
+    u32 steady_60fps_frames{0};
+    double base_target_frame_time_ms{16.6667};
 
     // Thresholds (tunable)
     static constexpr u32 kStartupGraceFrames = 600;  // 10 seconds of 60 FPS gameplay warmup

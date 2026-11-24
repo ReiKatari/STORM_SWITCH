@@ -60,6 +60,7 @@ void DynamicPerformanceScaler::Initialize(Settings::ResolutionSetup user_resolut
         target_fps = 60.0f;
     }
     const double frame_time = 1000.0 / static_cast<double>(target_fps);
+    base_target_frame_time_ms = frame_time;
     target_frame_time_ms.store(frame_time, std::memory_order_relaxed);
 
     const int max_lvl = LevelToIndex(user_resolution);
@@ -77,6 +78,8 @@ void DynamicPerformanceScaler::Initialize(Settings::ResolutionSetup user_resolut
     consecutive_overbudget = 0;
     consecutive_underbudget = 0;
     startup_frames = 0;
+    steady_30fps_frames = 0;
+    steady_60fps_frames = 0;
     s_effective_scale.store(LevelToScaleMultiplier(kLevelOrder[max_lvl]),
                             std::memory_order_relaxed);
 
@@ -89,7 +92,7 @@ void DynamicPerformanceScaler::Initialize(Settings::ResolutionSetup user_resolut
 }
 
 bool DynamicPerformanceScaler::ReportFrameTime(double frame_time_ms) {
-    const double target_time = target_frame_time_ms.load(std::memory_order_relaxed);
+    double target_time = target_frame_time_ms.load(std::memory_order_relaxed);
 
     // Startup grace period: ignore warmup frames to allow disk loading / pipeline creation
     if (startup_frames < kStartupGraceFrames) {
@@ -101,6 +104,35 @@ bool DynamicPerformanceScaler::ReportFrameTime(double frame_time_ms) {
     // Ignore single extreme hitches (> 100 ms) such as pipeline compiling or asset disk load
     if (frame_time_ms > 100.0) {
         return false;
+    }
+
+    // Auto-adapt 60 FPS target to native 30 FPS cadence so 30-FPS titles are not flagged over-budget
+    if (base_target_frame_time_ms < 20.0) {
+        if (frame_time_ms >= 30.0 && frame_time_ms <= 36.5) {
+            ++steady_30fps_frames;
+            steady_60fps_frames = 0;
+            if (steady_30fps_frames >= 15 && target_time < 25.0) {
+                target_time = 33.3333;
+                target_frame_time_ms.store(target_time, std::memory_order_relaxed);
+                smoothed_frametime.store(target_time, std::memory_order_relaxed);
+                consecutive_overbudget = 0;
+                consecutive_underbudget = 0;
+                LOG_INFO(Core, "DynamicPerformanceScaler: Detected native 30 FPS cadence, adapting target to 33.33 ms");
+            }
+        } else if (frame_time_ms < 22.0) {
+            ++steady_60fps_frames;
+            steady_30fps_frames = 0;
+            if (steady_60fps_frames >= 15 && target_time > 25.0) {
+                target_time = base_target_frame_time_ms;
+                target_frame_time_ms.store(target_time, std::memory_order_relaxed);
+                smoothed_frametime.store(target_time, std::memory_order_relaxed);
+                consecutive_overbudget = 0;
+                consecutive_underbudget = 0;
+            }
+        } else {
+            steady_30fps_frames = 0;
+            steady_60fps_frames = 0;
+        }
     }
 
     // EMA smoothing (alpha = 0.1)
@@ -202,6 +234,9 @@ void DynamicPerformanceScaler::Reset() {
     consecutive_overbudget = 0;
     consecutive_underbudget = 0;
     startup_frames = 0;
+    steady_30fps_frames = 0;
+    steady_60fps_frames = 0;
+    target_frame_time_ms.store(base_target_frame_time_ms, std::memory_order_relaxed);
     const double target_time = target_frame_time_ms.load(std::memory_order_relaxed);
     smoothed_frametime.store(target_time, std::memory_order_relaxed);
 

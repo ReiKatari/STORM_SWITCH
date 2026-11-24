@@ -367,14 +367,14 @@ void PresentManager::RecreateSwapchain(Frame* frame) {
     const auto& layout = render_window.GetFramebufferLayout();
     const u32 target_w = (layout.width > 0) ? layout.width : (frame ? frame->width : 0);
     const u32 target_h = (layout.height > 0) ? layout.height : (frame ? frame->height : 0);
+    last_requested_w = target_w;
+    last_requested_h = target_h;
     swapchain.Create(*surface, target_w, target_h); // Pass raw pointer
-#ifdef __ANDROID__
     const auto actual_extent = swapchain.GetExtent();
     if (actual_extent.width > 0 && actual_extent.height > 0 &&
         (actual_extent.width != layout.width || actual_extent.height != layout.height)) {
         render_window.UpdateCurrentFramebufferLayout(actual_extent.width, actual_extent.height);
     }
-#endif
     if (swapchain.GetImageViewFormat() != VK_FORMAT_UNDEFINED) {
         blit_supported = CanBlitToSwapchain(device.GetPhysical(), swapchain.GetImageViewFormat());
     }
@@ -470,33 +470,19 @@ void PresentManager::DrainSkippedFrame(Frame* frame) {
 
 void PresentManager::CopyToSwapchain(Frame* frame) {
     if (Settings::values.enable_frame_skipping.GetValue()) {
-        static u32 skip_counter = 0;
-        if ((++skip_counter % 2) != 0) {
-            vk::CommandBuffer cmdbuf{frame->cmdbuf};
-            cmdbuf.Begin({
-                .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-                .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
-            });
-            cmdbuf.End();
-            const VkSemaphore wait_sem = *frame->render_ready;
-            static constexpr VkPipelineStageFlags wait_stage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-            const VkSubmitInfo submit_info{
-                .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-                .waitSemaphoreCount = 1U,
-                .pWaitSemaphores = &wait_sem,
-                .pWaitDstStageMask = &wait_stage,
-                .commandBufferCount = 1U,
-                .pCommandBuffers = cmdbuf.address(),
-            };
-            {
-                std::scoped_lock submit_lock{scheduler.submit_mutex};
-                if (device.GetGraphicsQueue().Submit(submit_info, *frame->present_done) == VK_SUCCESS) {
-                    frame->is_submitted = true;
-                    return;
-                }
-            }
+        bool queue_backed_up = false;
+        if (use_present_thread) {
+            std::scoped_lock lock{queue_mutex};
+            queue_backed_up = present_queue.size() >= 2;
+        }
+        // Only skip when the presentation queue actually backs up, never twice in a row.
+        if (queue_backed_up && consecutive_skips == 0) {
+            ++consecutive_skips;
+            DrainSkippedFrame(frame);
+            return;
         }
     }
+    consecutive_skips = 0;
 
     const bool current_fg = Settings::values.frame_gen.GetValue() || Settings::values.enable_frame_interpolation.GetValue();
     bool requires_recreation = (current_fg != last_frame_gen_enabled) || surface_was_lost || !surface;
@@ -580,7 +566,9 @@ void PresentManager::CopyToSwapchainImpl(Frame* frame) {
     const auto& fb_layout = render_window.GetFramebufferLayout();
     const u32 target_w = (fb_layout.width > 0) ? fb_layout.width : frame->width;
     const u32 target_h = (fb_layout.height > 0) ? fb_layout.height : frame->height;
-    const bool size_changed = swapchain.GetWidth() != target_w || swapchain.GetHeight() != target_h;
+    const bool size_changed =
+        (swapchain.GetWidth() != target_w || swapchain.GetHeight() != target_h) &&
+        (target_w != last_requested_w || target_h != last_requested_h);
     if (is_suboptimal || size_changed) {
         RecreateSwapchain(frame);
     }

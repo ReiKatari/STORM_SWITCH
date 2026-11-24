@@ -10,6 +10,7 @@
 #include "core/hle/service/am/applet.h"
 #include "core/hle/service/am/applet_manager.h"
 #include "core/hle/service/am/event_observer.h"
+#include "core/hle/service/am/frontend/applets.h"
 #include "core/hle/service/am/process_creation.h"
 #include "core/hle/service/am/window_system.h"
 
@@ -162,11 +163,35 @@ void WindowSystem::OnOperationModeChanged() {
 }
 
 void WindowSystem::OnExitRequested() {
-    std::scoped_lock lk{m_lock};
+    std::vector<std::shared_ptr<Applet>> collected_applets;
+    {
+        std::scoped_lock lk{m_lock};
 
-    for (const auto& [aruid, applet] : m_applets) {
-        std::scoped_lock lk2{applet->lock};
-        applet->lifecycle_manager.RequestExit(m_system.Kernel());
+        const auto collect_recursive = [&](auto& self, const std::shared_ptr<Applet>& applet) -> void {
+            if (!applet) {
+                return;
+            }
+            collected_applets.push_back(applet);
+            std::vector<std::shared_ptr<Applet>> children;
+            {
+                std::scoped_lock lk2{applet->lock};
+                applet->lifecycle_manager.RequestExit(m_system.Kernel());
+                children.assign(applet->child_applets.begin(), applet->child_applets.end());
+            }
+            for (const auto& child : children) {
+                self(self, child);
+            }
+        };
+
+        for (const auto& [aruid, applet] : m_applets) {
+            collect_recursive(collect_recursive, applet);
+        }
+    }
+
+    for (const auto& applet : collected_applets) {
+        if (applet && applet->frontend) {
+            applet->frontend->RequestExit();
+        }
     }
 }
 
