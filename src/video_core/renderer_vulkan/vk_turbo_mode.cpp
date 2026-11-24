@@ -22,6 +22,8 @@
 
 #include "common/literals.h"
 #include "common/logging.h"
+#include "common/scope_exit.h"
+#include "common/settings.h"
 #include "video_core/renderer_vulkan/renderer_vulkan.h"
 #include "video_core/renderer_vulkan/vk_turbo_mode.h"
 #include "video_core/host_shaders/vulkan_turbo_mode_comp_spv.h"
@@ -41,11 +43,8 @@ TurboMode::TurboMode(const vk::Instance& instance, const vk::InstanceDispatch& d
 }
 
 TurboMode::~TurboMode() {
-#ifdef _WIN32
-    timeEndPeriod(1);
-    SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
-    SetThreadExecutionState(ES_CONTINUOUS);
-#endif
+    m_thread.request_stop();
+    m_submission_cv.notify_all();
 #if defined(__ANDROID__) && defined(ARCHITECTURE_arm64)
     adrenotools_set_turbo(false);
 #endif
@@ -58,21 +57,34 @@ void TurboMode::QueueSubmitted() {
 
 void TurboMode::Run(std::stop_token stop_token, const vk::Instance& instance,
                     const vk::InstanceDispatch& dld) {
+    const bool eco_mode = Settings::values.eco_thermal_mode.GetValue();
 #ifdef _WIN32
-    SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
+    bool timer_period_active = false;
+    if (!eco_mode) {
+        SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
 
-    PROCESS_POWER_THROTTLING_STATE throttling{};
-    throttling.Version = PROCESS_POWER_THROTTLING_CURRENT_VERSION;
-    throttling.ControlMask = PROCESS_POWER_THROTTLING_EXECUTION_SPEED |
-                             PROCESS_POWER_THROTTLING_IGNORE_TIMER_RESOLUTION;
-    throttling.StateMask = 0;
-    SetProcessInformation(GetCurrentProcess(), ProcessPowerThrottling, &throttling,
-                          sizeof(throttling));
+        PROCESS_POWER_THROTTLING_STATE throttling{};
+        throttling.Version = PROCESS_POWER_THROTTLING_CURRENT_VERSION;
+        throttling.ControlMask = PROCESS_POWER_THROTTLING_EXECUTION_SPEED |
+                                 PROCESS_POWER_THROTTLING_IGNORE_TIMER_RESOLUTION;
+        throttling.StateMask = 0;
+        SetProcessInformation(GetCurrentProcess(), ProcessPowerThrottling, &throttling,
+                              sizeof(throttling));
 
-    timeBeginPeriod(1);
-    SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED);
+        timer_period_active = (timeBeginPeriod(1) == TIMERR_NOERROR);
+        SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED);
 
-    LOG_INFO(Render_Vulkan, "STORM Turbo Mode enabled: Desktop GPU clock keep-alive and unthrottled scheduling active");
+        LOG_INFO(Render_Vulkan, "STORM Turbo Mode enabled: Desktop GPU clock keep-alive and unthrottled scheduling active");
+    } else {
+        LOG_INFO(Render_Vulkan, "STORM Eco Thermal Mode active: 1ms timer boost and priority elevation skipped");
+    }
+    SCOPE_EXIT {
+        if (timer_period_active) {
+            timeEndPeriod(1);
+        }
+        SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
+        SetThreadExecutionState(ES_CONTINUOUS);
+    };
 #elif defined(__ANDROID__)
 #if defined(ARCHITECTURE_arm64)
     adrenotools_set_turbo(true);
@@ -117,7 +129,7 @@ void TurboMode::Run(std::stop_token stop_token, const vk::Instance& instance,
     // Linux Handheld PC (ROG Ally AMD RDNA3, Steam Deck, Legion Go):
     // Keep a lightweight Vulkan auxiliary command queue alive to prevent aggressive RDNA3/Arc
     // power-saving downclocks (800 MHz drop) between CPU-limited frames.
-    try {
+    if (!eco_mode) try {
         Device turbo_device = CreateDevice(instance, dld, VK_NULL_HANDLE);
         MemoryAllocator alloc(turbo_device);
 
@@ -214,8 +226,8 @@ void TurboMode::Run(std::stop_token stop_token, const vk::Instance& instance,
                     int c = raw;
                     if (std::strstr(tpath, "battery") != nullptr) {
                         c = (raw > 1000) ? (raw / 1000) : (raw / 10);
-                        if (c >= 45) {
-                            max_c = std::max(max_c, 84);
+                        if (c >= 43) {
+                            max_c = std::max(max_c, 78);
                         }
                     } else {
                         if (raw > 1000) c = raw / 1000;
@@ -239,7 +251,7 @@ void TurboMode::Run(std::stop_token stop_token, const vk::Instance& instance,
 #if defined(__ANDROID__)
         if (!stop_token.stop_requested()) {
             const int temp_c = read_max_thermal_celsius();
-            if (turbo_currently_enabled && temp_c >= 82) {
+            if (turbo_currently_enabled && temp_c >= 76) {
 #if defined(ARCHITECTURE_arm64)
                 adrenotools_set_turbo(false);
 #endif
@@ -248,7 +260,7 @@ void TurboMode::Run(std::stop_token stop_token, const vk::Instance& instance,
                 write_node("/sys/class/kgsl/kgsl-3d0/force_rail_on", "0\n");
                 turbo_currently_enabled = false;
                 LOG_INFO(Render_Vulkan, "STORM Thermal Guard: Mobile GPU turbo stepped down ({}C) to prevent overheating", temp_c);
-            } else if (!turbo_currently_enabled && temp_c > 0 && temp_c <= 64) {
+            } else if (!turbo_currently_enabled && temp_c > 0 && temp_c <= 62) {
 #if defined(ARCHITECTURE_arm64)
                 adrenotools_set_turbo(true);
 #endif

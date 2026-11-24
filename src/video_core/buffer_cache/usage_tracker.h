@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <algorithm>
+
 #include "common/alignment.h"
 #include "common/common_types.h"
 
@@ -24,36 +26,52 @@ public:
     }
 
     void Track(u64 offset, u64 size) noexcept {
-        if (size == 0) {
+        if (size == 0 || pages.empty()) {
             return;
         }
         const size_t page = offset >> PAGE_SHIFT;
-        const size_t page_end = (offset + size - 1) >> PAGE_SHIFT;
-        if (page_end < page || page_end >= pages.size()) {
+        if (page >= pages.size()) {
             return;
         }
-        TrackPage(page, offset, size);
+        const u64 max_bytes = static_cast<u64>(pages.size()) << PAGE_SHIFT;
+        const u64 clamped_size = (std::min)(size, max_bytes - offset);
+        if (clamped_size == 0) {
+            return;
+        }
+        const size_t page_end = (offset + clamped_size - 1) >> PAGE_SHIFT;
+        if (page_end < page) {
+            return;
+        }
+        TrackPage(page, offset, clamped_size);
         if (page == page_end) {
             return;
         }
         for (size_t i = page + 1; i < page_end; i++) {
             pages[i] = ~u64{0};
         }
-        const size_t offset_end = offset + size;
-        const size_t offset_end_page_aligned = Common::AlignDown(offset_end, PAGE_BYTES);
+        const u64 offset_end = offset + clamped_size;
+        const u64 offset_end_page_aligned = Common::AlignDown(offset_end, PAGE_BYTES);
         TrackPage(page_end, offset_end_page_aligned, offset_end - offset_end_page_aligned);
     }
 
     [[nodiscard]] bool IsUsed(u64 offset, u64 size) const noexcept {
-        if (size == 0) {
+        if (size == 0 || pages.empty()) {
             return false;
         }
         const size_t page = offset >> PAGE_SHIFT;
-        const size_t page_end = (offset + size - 1) >> PAGE_SHIFT;
-        if (page_end < page || page_end >= pages.size()) {
+        if (page >= pages.size()) {
             return false;
         }
-        if (IsPageUsed(page, offset, size)) {
+        const u64 max_bytes = static_cast<u64>(pages.size()) << PAGE_SHIFT;
+        const u64 clamped_size = (std::min)(size, max_bytes - offset);
+        if (clamped_size == 0) {
+            return false;
+        }
+        const size_t page_end = (offset + clamped_size - 1) >> PAGE_SHIFT;
+        if (page_end < page) {
+            return false;
+        }
+        if (IsPageUsed(page, offset, clamped_size)) {
             return true;
         }
         if (page == page_end) {
@@ -64,8 +82,8 @@ public:
                 return true;
             }
         }
-        const size_t offset_end = offset + size;
-        const size_t offset_end_page_aligned = Common::AlignDown(offset_end, PAGE_BYTES);
+        const u64 offset_end = offset + clamped_size;
+        const u64 offset_end_page_aligned = Common::AlignDown(offset_end, PAGE_BYTES);
         return IsPageUsed(page_end, offset_end_page_aligned, offset_end - offset_end_page_aligned);
     }
 

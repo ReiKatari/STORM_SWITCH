@@ -237,6 +237,10 @@ void LoadOverrides(std::uint64_t program_id, const VideoCore::RendererBase& rend
         Settings::values.vram_garbage_collection.SetValue(false);
         Settings::values.smart_shader_throttle.SetGlobal(false);
         Settings::values.smart_shader_throttle.SetValue(false);
+        Settings::values.sync_memory_operations.SetGlobal(false);
+        Settings::values.sync_memory_operations.SetValue(false);
+        Settings::values.enable_gpu_buffer_readback.SetGlobal(false);
+        Settings::values.enable_gpu_buffer_readback.SetValue(false);
         Settings::values.gpu_fence_behavior.SetGlobal(false);
         Settings::values.gpu_fence_behavior.SetValue(Settings::GpuFenceBehavior::Default);
     }

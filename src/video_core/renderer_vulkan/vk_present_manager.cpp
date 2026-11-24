@@ -325,7 +325,7 @@ void PresentManager::WaitPresent() {
     // Wait for the present queue to be empty
     {
         std::unique_lock queue_lock{queue_mutex};
-        frame_cv.wait(queue_lock, [this] { return present_queue.empty(); });
+        frame_cv.wait_for(queue_lock, std::chrono::seconds(3), [this] { return present_queue.empty(); });
     }
 
     // The above condition will be satisfied when the last frame is taken from the queue.

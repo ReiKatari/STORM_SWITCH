@@ -561,9 +561,9 @@ object GpuDriverHelper {
 
     // Per-TID Turnip driver hints (verified real TU_DEBUG flags only: nolrz, sysmem, gmem, nobin, noubwc, flushall, syncdraw)
     val PER_TID_TURNIP_DEBUG_HINTS: Map<String, List<String>> = mapOf(
-        "0100726014352000" to listOf("nolrz", "noubwc"), // Diablo II: Resurrected
-        "01002A801458A000" to listOf("nolrz", "noubwc"), // Diablo II: Resurrected (US)
-        "0100916014D8C000" to listOf("nolrz", "noubwc"), // Diablo II: Resurrected (EU)
+        "0100726014352000" to listOf("nolrz"), // Diablo II: Resurrected (UBWC preserved for FPS/thermal)
+        "01002A801458A000" to listOf("nolrz"), // Diablo II: Resurrected (US)
+        "0100916014D8C000" to listOf("nolrz"), // Diablo II: Resurrected (EU)
         "0100A83022A22000" to listOf("nolrz"), // Absolum (nolrz fixes Gen8 coarse LRZ cutouts; GMEM preserved)
         "010067300059A000" to listOf("nolrz", "noubwc"), // Mario + Rabbids: Kingdom Battle
         "010067300B762000" to listOf("nolrz", "noubwc")  // Mario + Rabbids: Kingdom Battle (EU)

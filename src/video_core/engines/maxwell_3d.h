@@ -3293,7 +3293,7 @@ public:
     [[nodiscard]] bool TryFastStateWrite(u32 method, u32 argument) noexcept {
         const auto control = shadow_state.shadow_ram_control;
         if (!cached_native_turing || !cached_skip_same_writes ||
-            control == Regs::ShadowRamControl::Replay ||
+            executing_macro != 0 || control == Regs::ShadowRamControl::Replay ||
             !method_sink.empty() || method >= Regs::NUM_REGS) [[unlikely]] {
             return false;
         }

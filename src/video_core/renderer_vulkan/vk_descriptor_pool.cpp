@@ -9,6 +9,8 @@
 #include <span>
 #include <vector>
 
+#include <boost/container/small_vector.hpp>
+
 #include "common/common_types.h"
 #include <ranges>
 #include "video_core/renderer_vulkan/vk_descriptor_pool.h"
@@ -19,8 +21,8 @@
 
 namespace Vulkan {
 
-// Prefer small grow rates to avoid saturating the descriptor pool with barely used pipelines
-constexpr size_t SETS_GROW_RATE = 16;
+// Grow descriptor allocator sets in 64-set batches to cut heap/Vulkan alloc overhead
+constexpr size_t SETS_GROW_RATE = 64;
 constexpr s32 SCORE_THRESHOLD = 3;
 
 struct DescriptorBank {
@@ -104,7 +106,7 @@ void DescriptorAllocator::Allocate(size_t begin, size_t end) {
 }
 
 vk::DescriptorSets DescriptorAllocator::AllocateDescriptors(size_t count) {
-    const std::vector<VkDescriptorSetLayout> layouts(count, layout);
+    const boost::container::small_vector<VkDescriptorSetLayout, 64> layouts(count, layout);
     VkDescriptorSetAllocateInfo allocate_info{
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
         .pNext = nullptr,

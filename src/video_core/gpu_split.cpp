@@ -112,8 +112,8 @@ void GpuSplit::MaybeStart(Core::System& system_) {
     system = &system_;
     check_owner = std::getenv("EDEN_NX2_SPLIT_CHECK") != nullptr;
     ring = std::make_unique<u64[]>(RingWords);
+    active.store(true, std::memory_order_release);
     back_thread = std::jthread([this](std::stop_token stop_token) { BackLoop(stop_token); });
-    active = true;
 #ifdef ARCHITECTURE_x86_64
     // Front macros run compiled (macro_turing_jit.h) only.
     const char* jit = std::getenv("EDEN_NX2_MME_JIT");
@@ -124,14 +124,15 @@ void GpuSplit::MaybeStart(Core::System& system_) {
 }
 
 void GpuSplit::Stop() {
-    if (!back_thread.joinable()) {
-        return;
+    active.store(false, std::memory_order_seq_cst);
+    if (back_thread.joinable()) {
+        back_thread.request_stop();
+        wake.fetch_add(1, std::memory_order_seq_cst);
+        wake.notify_all();
+        front_wake.fetch_add(1, std::memory_order_seq_cst);
+        front_wake.notify_all();
+        back_thread.join();
     }
-    back_thread.request_stop();
-    wake.fetch_add(1, std::memory_order_seq_cst);
-    wake.notify_one();
-    back_thread.join();
-    active = false;
     // The split is static and outlives the emulation session. The next session's back thread
     // starts reading at 0: with the old positions kept it skipped through the new, empty ring a
     // wrap at a time and never reached the old write position (the next game's first GPU work
@@ -141,13 +142,16 @@ void GpuSplit::Stop() {
     last_writer_position = 0;
     published_local = 0;
     consumed_cache = 0;
-    publish_every = PublishEvery;
+    publish_every = 8;
     front_engine = nullptr;
     back_engine = nullptr;
     front_macros = false;
     published.store(0, std::memory_order_relaxed);
     consumed.store(0, std::memory_order_relaxed);
     back_waiting.store(false, std::memory_order_relaxed);
+    front_waiting.store(false, std::memory_order_relaxed);
+    front_wake.fetch_add(1, std::memory_order_seq_cst);
+    front_wake.notify_all();
 }
 
 u64* GpuSplit::ReserveSlow(size_t words) {
@@ -170,15 +174,27 @@ void GpuSplit::WaitForSpace(size_t words) {
     }
     Publish();
     Nx2Profile::Scope scope{Nx2Profile::Zone::SplitDrain};
-    for (u32 spins = 0;; ++spins) {
+    const u32 max_spins = Settings::values.eco_thermal_mode.GetValue() ? 0U : 256U;
+    for (u32 spins = 0; spins < max_spins; ++spins) {
+        Pause();
         consumed_cache = consumed.load(std::memory_order_acquire);
         if (write_position + words - consumed_cache <= RingWords) {
             return;
         }
-        if (spins < 4096) {
-            Pause();
-        } else {
-            std::this_thread::yield();
+    }
+    for (;;) {
+        front_waiting.store(true, std::memory_order_seq_cst);
+        const u32 seen = front_wake.load(std::memory_order_seq_cst);
+        consumed_cache = consumed.load(std::memory_order_seq_cst);
+        if (write_position + words - consumed_cache <= RingWords || !active.load(std::memory_order_seq_cst)) {
+            front_waiting.store(false, std::memory_order_relaxed);
+            return;
+        }
+        front_wake.wait(seen, std::memory_order_seq_cst);
+        front_waiting.store(false, std::memory_order_relaxed);
+        consumed_cache = consumed.load(std::memory_order_acquire);
+        if (write_position + words - consumed_cache <= RingWords) {
+            return;
         }
     }
 }
@@ -223,16 +239,30 @@ void GpuSplit::Drain() {
     }
     Publish();
     Nx2Profile::Scope scope{Nx2Profile::Zone::SplitDrain};
-    for (u32 spins = 0;; ++spins) {
+    const u32 max_spins = Settings::values.eco_thermal_mode.GetValue() ? 0U : 256U;
+    for (u32 spins = 0; spins < max_spins; ++spins) {
+        Pause();
         consumed_cache = consumed.load(std::memory_order_acquire);
         if (consumed_cache == write_position) {
             publish_every = 8;
             return;
         }
-        if (spins < 16384) {
-            Pause();
-        } else {
-            std::this_thread::yield();
+    }
+    for (;;) {
+        front_waiting.store(true, std::memory_order_seq_cst);
+        const u32 seen = front_wake.load(std::memory_order_seq_cst);
+        consumed_cache = consumed.load(std::memory_order_seq_cst);
+        if (consumed_cache == write_position || !active.load(std::memory_order_seq_cst)) {
+            front_waiting.store(false, std::memory_order_relaxed);
+            publish_every = 8;
+            return;
+        }
+        front_wake.wait(seen, std::memory_order_seq_cst);
+        front_waiting.store(false, std::memory_order_relaxed);
+        consumed_cache = consumed.load(std::memory_order_acquire);
+        if (consumed_cache == write_position) {
+            publish_every = 8;
+            return;
         }
     }
 }
@@ -245,16 +275,30 @@ void GpuSplit::WaitForWriters() {
     }
     wait_target.store(target, std::memory_order_seq_cst);
     Publish();
-    for (u32 spins = 0;; ++spins) {
+    const u32 max_spins = Settings::values.eco_thermal_mode.GetValue() ? 0U : 256U;
+    for (u32 spins = 0; spins < max_spins; ++spins) {
+        Pause();
         consumed_cache = consumed.load(std::memory_order_acquire);
         if (consumed_cache >= target) {
             wait_target.store(~u64{0}, std::memory_order_relaxed);
             return;
         }
-        if (spins < 16384) {
-            Pause();
-        } else {
-            std::this_thread::yield();
+    }
+    for (;;) {
+        front_waiting.store(true, std::memory_order_seq_cst);
+        const u32 seen = front_wake.load(std::memory_order_seq_cst);
+        consumed_cache = consumed.load(std::memory_order_seq_cst);
+        if (consumed_cache >= target || !active.load(std::memory_order_seq_cst)) {
+            front_waiting.store(false, std::memory_order_relaxed);
+            wait_target.store(~u64{0}, std::memory_order_relaxed);
+            return;
+        }
+        front_wake.wait(seen, std::memory_order_seq_cst);
+        front_waiting.store(false, std::memory_order_relaxed);
+        consumed_cache = consumed.load(std::memory_order_acquire);
+        if (consumed_cache >= target) {
+            wait_target.store(~u64{0}, std::memory_order_relaxed);
+            return;
         }
     }
 }
@@ -366,7 +410,8 @@ void GpuSplit::BackLoop(std::stop_token stop_token) {
         if (available == read_position) {
             Nx2Profile::Scope scope{Nx2Profile::Zone::SplitWait};
             // The front usually sends more within microseconds: spin briefly before sleeping.
-            for (u32 spins = 0; spins < 8192 && available == read_position; ++spins) {
+            const u32 max_back_spins = Settings::values.eco_thermal_mode.GetValue() ? 0U : 256U;
+            for (u32 spins = 0; spins < max_back_spins && available == read_position; ++spins) {
                 Pause();
                 available = published.load(std::memory_order_acquire);
             }
@@ -394,13 +439,16 @@ void GpuSplit::BackLoop(std::stop_token stop_token) {
             if ((read_position - last_store >= 4096 ||
                  read_position >= wait_target.load(std::memory_order_relaxed)) &&
                 read_position != available) {
-                consumed.store(read_position, std::memory_order_release);
+                consumed.store(read_position, std::memory_order_seq_cst);
+                WakeFront();
                 last_store = read_position;
             }
         }
         g_back_busy.store(false, std::memory_order_release);
-        consumed.store(read_position, std::memory_order_release);
+        consumed.store(read_position, std::memory_order_seq_cst);
+        WakeFront();
     }
+    WakeFront();
 }
 
 } // namespace VideoCommon

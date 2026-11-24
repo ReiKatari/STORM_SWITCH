@@ -326,6 +326,10 @@ void Scheduler::InvalidateIndexBuffer() noexcept {
     state.index_type = VK_INDEX_TYPE_MAX_ENUM;
 }
 
+void Scheduler::InvalidateVertexBuffers() noexcept {
+    state.vertex_buffer_valid_mask = 0;
+}
+
 bool Scheduler::UpdateVertexBuffer(u32 index, VkBuffer buffer, VkDeviceSize offset,
                                    VkDeviceSize size, VkDeviceSize stride) noexcept {
     if (index >= state.vertex_buffers.size()) {

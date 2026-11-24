@@ -889,10 +889,10 @@ FN_MAX_LIMIT_LIST
         return features.attachment_feedback_loop_layout.attachmentFeedbackLoopLayout != VK_FALSE;
     }
 
-    /// Returns true when in-pass feedback-loop barriers should be used (tile GPUs only, keeping
-    /// desktop GPUs on full cross-pixel barriers and full lossless color compression).
+    /// Returns true when in-pass feedback-loop barriers should be used (disabled globally to preserve
+    /// mobile UBWC/AFBC tile compression and ensure full cross-pixel barriers for self-reading passes).
     bool UseInPassFeedbackLoopBarrier() const noexcept {
-        return IsTileBasedGpu() && IsExtAttachmentFeedbackLoopLayoutSupported();
+        return false;
     }
 
     /// Returns true if VK_EXT_rasterization_order_attachment_access is supported for color attachments.

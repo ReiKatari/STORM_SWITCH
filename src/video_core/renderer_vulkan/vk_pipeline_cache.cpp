@@ -25,6 +25,7 @@
 #include "shader_recompiler/frontend/maxwell/control_flow.h"
 #include "shader_recompiler/frontend/maxwell/translate_program.h"
 #include "shader_recompiler/program_header.h"
+#include "video_core/dirty_flags.h"
 #include "video_core/engines/kepler_compute.h"
 #include "video_core/engines/maxwell_3d.h"
 #include "video_core/memory_manager.h"
@@ -37,6 +38,7 @@
 #include "video_core/renderer_vulkan/vk_pipeline_cache.h"
 #include "video_core/renderer_vulkan/vk_scheduler.h"
 #include "video_core/renderer_vulkan/vk_shader_util.h"
+#include "video_core/renderer_vulkan/vk_state_tracker.h"
 #include "video_core/renderer_vulkan/vk_update_descriptor.h"
 #include "video_core/shader_cache.h"
 #include "video_core/shader_environment.h"
@@ -354,8 +356,15 @@ size_t GetTotalPipelineWorkers(const Device& device) {
 #ifdef __ANDROID__
     num_workers = std::min<size_t>(num_workers, 4ULL);
 #endif
+    if (Settings::values.smart_shader_throttle.GetValue()) {
+#ifdef __ANDROID__
+        num_workers = std::min<size_t>(num_workers, 2ULL);
+#else
+        num_workers = std::min<size_t>(num_workers, 4ULL);
+#endif
+    }
 
-    return num_workers;
+    return std::max<size_t>(num_workers, 1ULL);
 }
 
 } // Anonymous namespace
@@ -671,6 +680,56 @@ ComputePipeline* PipelineCache::CurrentComputePipeline() {
         }
     }
     return raw_pipeline;
+}
+
+void PipelineCache::HandleLiveResolutionChange() {
+    const u32 new_up = Settings::values.resolution_info.up_scale;
+    const u32 new_down = Settings::values.resolution_info.down_shift;
+    if (new_up == last_res_up_scale && new_down == last_res_down_shift) {
+        return;
+    }
+    LOG_INFO(Render_Vulkan, "Live resolution scale changed ({}/{} -> {}/{}); rebuilding shader pipelines",
+             last_res_up_scale, 1U << last_res_down_shift, new_up, 1U << new_down);
+    last_res_up_scale = new_up;
+    last_res_down_shift = new_down;
+
+    workers.WaitForRequests();
+    scheduler.Finish();
+    scheduler.InvalidateState();
+
+    current_pipeline = nullptr;
+    graphics_key.unique_hashes = {};
+    last_shaders_valid = false;
+    shader_infos.fill(nullptr);
+    const auto mark_dirty = [](auto& dirty) {
+        dirty.flags[VideoCommon::Dirty::Shaders] = true;
+        dirty.flags[Dirty::VertexInput] = true;
+        dirty.flags[Dirty::ViewportSwizzles] = true;
+        dirty.flags[Dirty::Blending] = true;
+    };
+    for (size_t c : active_channel_ids) {
+        mark_dirty(channel_storage[c].maxwell3d.dirty);
+    }
+    if (maxwell3d) {
+        mark_dirty(maxwell3d->dirty);
+    }
+    {
+        std::scoped_lock lock{cache_mutex};
+        serialized_graphics_keys.reserve(serialized_graphics_keys.size() + graphics_cache.size());
+        for (const auto& [k, _] : graphics_cache) {
+            serialized_graphics_keys.insert(k);
+        }
+        graphics_cache.clear();
+        failed_graphics_keys.clear();
+    }
+    {
+        std::scoped_lock lock{compute_cache_mutex};
+        serialized_compute_keys.reserve(serialized_compute_keys.size() + compute_cache.size());
+        for (const auto& [k, _] : compute_cache) {
+            serialized_compute_keys.insert(k);
+        }
+        compute_cache.clear();
+    }
 }
 
 void PipelineCache::LoadDiskResources(u64 title_id, std::stop_token stop_loading,
@@ -1165,17 +1224,24 @@ std::unique_ptr<GraphicsPipeline> PipelineCache::CreateGraphicsPipeline(bool* sh
     if (!pipeline || pipeline_cache_filename.empty()) {
         return pipeline;
     }
-    serialization_thread.QueueWork([this, key = graphics_key, envs = std::move(environments.envs)] {
-        boost::container::static_vector<const GenericEnvironment*, Maxwell::MaxShaderProgram>
-            env_ptrs;
-        for (size_t index = 0; index < Maxwell::MaxShaderProgram; ++index) {
-            if (key.unique_hashes[index] != 0) {
-                env_ptrs.push_back(&envs[index]);
+    bool already_serialized = false;
+    {
+        std::scoped_lock lock{cache_mutex};
+        already_serialized = serialized_graphics_keys.contains(graphics_key);
+    }
+    if (!already_serialized) {
+        serialization_thread.QueueWork([this, key = graphics_key, envs = std::move(environments.envs)] {
+            boost::container::static_vector<const GenericEnvironment*, Maxwell::MaxShaderProgram>
+                env_ptrs;
+            for (size_t index = 0; index < Maxwell::MaxShaderProgram; ++index) {
+                if (key.unique_hashes[index] != 0) {
+                    env_ptrs.push_back(&envs[index]);
+                }
             }
-        }
-        SerializePipeline(key, env_ptrs, pipeline_cache_filename, CACHE_VERSION);
-    });
-    QueueVulkanPipelineCacheFlush();
+            SerializePipeline(key, env_ptrs, pipeline_cache_filename, CACHE_VERSION);
+        });
+        QueueVulkanPipelineCacheFlush();
+    }
     return pipeline;
 }
 
@@ -1191,11 +1257,18 @@ std::unique_ptr<ComputePipeline> PipelineCache::CreateComputePipeline(
     if (!pipeline || pipeline_cache_filename.empty()) {
         return pipeline;
     }
-    serialization_thread.QueueWork([this, key, env_ = std::move(env)] {
-        SerializePipeline(key, std::array<const GenericEnvironment*, 1>{&env_},
-                          pipeline_cache_filename, CACHE_VERSION);
-    });
-    QueueVulkanPipelineCacheFlush();
+    bool already_serialized = false;
+    {
+        std::scoped_lock lock{compute_cache_mutex};
+        already_serialized = serialized_compute_keys.contains(key);
+    }
+    if (!already_serialized) {
+        serialization_thread.QueueWork([this, key, env_ = std::move(env)] {
+            SerializePipeline(key, std::array<const GenericEnvironment*, 1>{&env_},
+                              pipeline_cache_filename, CACHE_VERSION);
+        });
+        QueueVulkanPipelineCacheFlush();
+    }
     return pipeline;
 }
 

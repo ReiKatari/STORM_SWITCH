@@ -116,7 +116,7 @@ object SettingsFile {
                 if (rDyna != text) { text = rDyna; modified = true }
                 val rBloom = text.replace(Regex("(?m)^\\s*fix_bloom_effects\\s*=\\s*true\\s*$", RegexOption.IGNORE_CASE), "fix_bloom_effects=false")
                 if (rBloom != text) { text = rBloom; modified = true }
-                val rAsyncSh = text.replace(Regex("(?m)^\\s*use_asynchronous_shaders\\s*=\\s*false\\s*$", RegexOption.IGNORE_CASE), "use_asynchronous_shaders=true")
+                val rAsyncSh = text.replace(Regex("(?m)^\\s*use_asynchronous_shaders\\s*=\\s*true\\s*$", RegexOption.IGNORE_CASE), "use_asynchronous_shaders=false")
                 if (rAsyncSh != text) { text = rAsyncSh; modified = true }
                 val rAsyncP = text.replace(Regex("(?m)^\\s*async_presentation\\s*=\\s*false\\s*$", RegexOption.IGNORE_CASE), "async_presentation=true")
                 if (rAsyncP != text) { text = rAsyncP; modified = true }
@@ -124,24 +124,26 @@ object SettingsFile {
                 if (rSync != text) { text = rSync; modified = true }
                 val rReadback = text.replace(Regex("(?m)^\\s*enable_gpu_buffer_readback\\s*=\\s*true\\s*$", RegexOption.IGNORE_CASE), "enable_gpu_buffer_readback=false")
                 if (rReadback != text) { text = rReadback; modified = true }
-                val rDma = text.replace(Regex("(?m)^\\s*dma_accuracy\\s*=\\s*[012]\\s*$"), "dma_accuracy=3")
+                val rDma = text.replace(Regex("(?m)^\\s*dma_accuracy\\s*=\\s*[023]\\s*$"), "dma_accuracy=1")
                 if (rDma != text) { text = rDma; modified = true }
-                val rBfl = text.replace(Regex("(?m)^\\s*barrier_feedback_loops\\s*=\\s*true\\s*$", RegexOption.IGNORE_CASE), "barrier_feedback_loops=false")
+                val rBfl = text.replace(Regex("(?m)^\\s*barrier_feedback_loops\\s*=\\s*false\\s*$", RegexOption.IGNORE_CASE), "barrier_feedback_loops=true")
                 if (rBfl != text) { text = rBfl; modified = true }
-                val rFlush = text.replace(Regex("(?m)^\\s*use_reactive_flushing\\s*=\\s*true\\s*$", RegexOption.IGNORE_CASE), "use_reactive_flushing=false")
+                val rFlush = text.replace(Regex("(?m)^\\s*use_reactive_flushing\\s*=\\s*false\\s*$", RegexOption.IGNORE_CASE), "use_reactive_flushing=true")
                 if (rFlush != text) { text = rFlush; modified = true }
-                val rFast = text.replace(Regex("(?m)^\\s*use_fast_gpu_time\\s*=\\s*true\\s*$", RegexOption.IGNORE_CASE), "use_fast_gpu_time=false")
+                val rFast = text.replace(Regex("(?m)^\\s*use_fast_gpu_time\\s*=\\s*false\\s*$", RegexOption.IGNORE_CASE), "use_fast_gpu_time=true")
                 if (rFast != text) { text = rFast; modified = true }
-                val rVkCache = text.replace(Regex("(?m)^\\s*use_vulkan_driver_pipeline_cache\\s*=\\s*true\\s*$", RegexOption.IGNORE_CASE), "use_vulkan_driver_pipeline_cache=false")
+                val rVkCache = text.replace(Regex("(?m)^\\s*use_vulkan_driver_pipeline_cache\\s*=\\s*false\\s*$", RegexOption.IGNORE_CASE), "use_vulkan_driver_pipeline_cache=true")
                 if (rVkCache != text) { text = rVkCache; modified = true }
-                val r3 = text.replace(Regex("(?m)^\\s*vram_budget_governor\\s*=\\s*false\\s*$", RegexOption.IGNORE_CASE), "vram_budget_governor=true")
+                val r3 = text.replace(Regex("(?m)^\\s*vram_budget_governor\\s*=\\s*true\\s*$", RegexOption.IGNORE_CASE), "vram_budget_governor=false")
                 if (r3 != text) { text = r3; modified = true }
-                val rGc = text.replace(Regex("(?m)^\\s*vram_garbage_collection\\s*=\\s*false\\s*$", RegexOption.IGNORE_CASE), "vram_garbage_collection=true")
+                val rGc = text.replace(Regex("(?m)^\\s*vram_garbage_collection\\s*=\\s*true\\s*$", RegexOption.IGNORE_CASE), "vram_garbage_collection=false")
                 if (rGc != text) { text = rGc; modified = true }
                 val r4 = text.replace(Regex("(?m)^\\s*early_release_fences\\s*=\\s*true\\s*$", RegexOption.IGNORE_CASE), "early_release_fences=false")
                 if (r4 != text) { text = r4; modified = true }
                 val r5 = text.replace(Regex("(?m)^\\s*enable_frame_skipping\\s*=\\s*true\\s*$", RegexOption.IGNORE_CASE), "enable_frame_skipping=false")
                 if (r5 != text) { text = r5; modified = true }
+                val rReorder = text.replace(Regex("(?m)^\\s*disable_buffer_reorder\\s*=\\s*false\\s*$", RegexOption.IGNORE_CASE), "disable_buffer_reorder=true")
+                if (rReorder != text) { text = rReorder; modified = true }
             }
 
             // Absolum (0100A83022A22*)

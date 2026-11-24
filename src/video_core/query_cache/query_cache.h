@@ -256,7 +256,11 @@ void QueryCacheBase<Traits>::CounterReport(GPUVAddr addr, QueryType counter_type
     u8* pointer = impl->device_memory.template GetPointer<u8>(cpu_addr);
     u8* pointer_timestamp = impl->device_memory.template GetPointer<u8>(cpu_addr + 8);
 
-    if (!is_fence && !Settings::IsGPULevelHigh() && counter_type == QueryType::Payload) {
+    const u64 cur_pid = Settings::GetCurrentProgramID() & ~0x1FFFULL;
+    const bool is_d2r_game = (cur_pid == 0x0100726014352000ULL ||
+                              cur_pid == 0x01002A801458A000ULL ||
+                              cur_pid == 0x0100916014D8C000ULL);
+    if (!is_fence && !Settings::IsGPULevelHigh() && !is_d2r_game && counter_type == QueryType::Payload) {
         if (has_timestamp) {
             u64 timestamp = impl->gpu.GetTicks();
             u64 value = static_cast<u64>(payload);

@@ -24,6 +24,13 @@
 
 namespace Vulkan {
 namespace {
+bool IsDiablo2ResurrectedProgram() noexcept {
+    const u64 base_tid = Settings::GetCurrentProgramID() & ~0x1FFFULL;
+    return base_tid == 0x0100726014352000ULL ||
+           base_tid == 0x01002A801458A000ULL ||
+           base_tid == 0x0100916014D8C000ULL;
+}
+
 VkBufferCopy MakeBufferCopy(const VideoCommon::BufferCopy& copy) {
     return VkBufferCopy{
         .srcOffset = copy.src_offset,
@@ -100,7 +107,7 @@ Buffer::Buffer(BufferCacheRuntime& runtime, DAddr cpu_addr_, u64 size_bytes_)
     : VideoCommon::BufferBase(cpu_addr_, size_bytes_), device{&runtime.device},
       scheduler{&runtime.scheduler},
       buffer{CreateBuffer(*device, runtime.memory_allocator, SizeBytes())}, tracker{SizeBytes()},
-      track_usage{!Settings::values.disable_buffer_reorder && !Settings::IsCurrentProgramSwitch2()} {
+      track_usage{!Settings::values.disable_buffer_reorder && !Settings::IsCurrentProgramSwitch2() && !IsDiablo2ResurrectedProgram()} {
     if (runtime.device.HasDebuggingToolAttached()) {
         buffer.SetObjectNameEXT(fmt::format("Buffer {:#x}", CpuAddr()).c_str());
     }
@@ -396,6 +403,52 @@ bool BufferCacheRuntime::TryDeferInlineCopy(DAddr device_addr, size_t size, VkBu
     return true;
 }
 
+bool BufferCacheRuntime::HasDeferredInlineFullCoverage(DAddr device_addr,
+                                                         u64 size) const noexcept {
+    if (deferred_inline_count == 0 || size == 0) {
+        return false;
+    }
+    const DAddr end = device_addr + size;
+    if (end <= deferred_min_addr || device_addr >= deferred_max_addr) {
+        return false;
+    }
+    boost::container::small_vector<std::pair<DAddr, DAddr>, 8> intervals;
+    for (size_t i = 0; i < deferred_inline_count; ++i) {
+        const auto& entry = deferred_inline_entries[i];
+        const DAddr entry_end = entry.device_addr + entry.size;
+        if (entry.device_addr <= device_addr && end <= entry_end) {
+            return true;
+        }
+        if (entry.device_addr < end && device_addr < entry_end) {
+            intervals.emplace_back((std::max)(device_addr, entry.device_addr),
+                                   (std::min)(end, entry_end));
+        }
+    }
+    if (intervals.empty()) {
+        return false;
+    }
+    std::sort(intervals.begin(), intervals.end(),
+              [](const auto& a, const auto& b) { return a.first < b.first; });
+    DAddr covered = device_addr;
+    for (const auto& [s, e] : intervals) {
+        if (s > covered) {
+            return false;
+        }
+        if (e > covered) {
+            covered = e;
+            if (covered >= end) {
+                return true;
+            }
+        }
+    }
+    return covered >= end;
+}
+
+void BufferCacheRuntime::InvalidateBoundBufferCache() noexcept {
+    scheduler.InvalidateIndexBuffer();
+    scheduler.InvalidateVertexBuffers();
+}
+
 bool BufferCacheRuntime::HasDeferredInlineOverlap(DAddr device_addr, u64 size) const noexcept {
     if (deferred_inline_count == 0 || size == 0) {
         return false;
@@ -480,12 +533,44 @@ void BufferCacheRuntime::FlushDeferredInlineCopies() {
         .srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
         .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT,
     };
+    static constexpr VkMemoryBarrier WAW_BARRIER{
+        .sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER,
+        .pNext = nullptr,
+        .srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
+        .dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT,
+    };
     scheduler.RequestOutsideRenderPassOperationContext();
     scheduler.Record([pending = std::move(pending)](vk::CommandBuffer cmdbuf) {
         cmdbuf.PipelineBarrier(vk::PIPELINE_STAGE_GRAPHICS_COMPUTE_TRANSFER,
                                VK_PIPELINE_STAGE_TRANSFER_BIT, 0, READ_BARRIER);
-        for (const auto& item : pending) {
-            cmdbuf.CopyBuffer(item.src_buffer, item.dst_buffer, item.copy);
+        size_t batch_start = 0;
+        for (size_t i = 0; i < pending.size(); ++i) {
+            const auto& cur = pending[i];
+            const u64 cur_begin = cur.copy.dstOffset;
+            const u64 cur_end = cur_begin + cur.copy.size;
+            bool need_waw = false;
+            for (size_t j = batch_start; j < i; ++j) {
+                const auto& prev = pending[j];
+                if (prev.dst_buffer == cur.dst_buffer) {
+                    const u64 prev_begin = prev.copy.dstOffset;
+                    const u64 prev_end = prev_begin + prev.copy.size;
+                    if (prev_begin < cur_end && cur_begin < prev_end) {
+                        need_waw = true;
+                        break;
+                    }
+                }
+                if (cur.src_buffer == prev.dst_buffer && prev.copy.dstOffset < cur.copy.srcOffset + cur.copy.size &&
+                    cur.copy.srcOffset < prev.copy.dstOffset + prev.copy.size) {
+                    need_waw = true;
+                    break;
+                }
+            }
+            if (need_waw) {
+                cmdbuf.PipelineBarrier(VK_PIPELINE_STAGE_TRANSFER_BIT,
+                                       VK_PIPELINE_STAGE_TRANSFER_BIT, 0, WAW_BARRIER);
+                batch_start = i;
+            }
+            cmdbuf.CopyBuffer(cur.src_buffer, cur.dst_buffer, cur.copy);
         }
         cmdbuf.PipelineBarrier(VK_PIPELINE_STAGE_TRANSFER_BIT,
                                vk::PIPELINE_STAGE_GRAPHICS_COMPUTE, 0, WRITE_BARRIER);
@@ -565,7 +650,8 @@ void BufferCacheRuntime::Finish() {
 
 bool BufferCacheRuntime::CanReorderUpload(const Buffer& buffer,
                                           std::span<const VideoCommon::BufferCopy> copies) {
-    if (Settings::values.disable_buffer_reorder || Settings::IsCurrentProgramSwitch2()) {
+    if (Settings::values.disable_buffer_reorder || Settings::IsCurrentProgramSwitch2() ||
+        IsDiablo2ResurrectedProgram()) {
         return false;
     }
     const bool can_use_upload_cmdbuf =

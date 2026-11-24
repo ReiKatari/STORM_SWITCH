@@ -100,6 +100,7 @@ public:
     /// Deduplicates index/vertex buffer binds within a command buffer.
     bool UpdateIndexBuffer(VkBuffer buffer, VkDeviceSize offset, VkIndexType type) noexcept;
     void InvalidateIndexBuffer() noexcept;
+    void InvalidateVertexBuffers() noexcept;
     bool UpdateVertexBuffer(u32 index, VkBuffer buffer, VkDeviceSize offset, VkDeviceSize size,
                             VkDeviceSize stride) noexcept;
     bool UpdateVertexBuffers(u32 min_binding, u32 count, const VkBuffer* buffers,

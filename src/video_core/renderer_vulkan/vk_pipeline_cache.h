@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "common/common_types.h"
+#include "common/settings.h"
 #include "common/thread_worker.h"
 #include "shader_recompiler/frontend/ir/basic_block.h"
 #include "shader_recompiler/frontend/ir/value.h"
@@ -119,6 +120,8 @@ public:
     void LoadDiskResources(u64 title_id, std::stop_token stop_loading,
                            const VideoCore::DiskResourceLoadCallback& callback);
 
+    void HandleLiveResolutionChange();
+
 private:
     [[nodiscard]] GraphicsPipeline* CurrentGraphicsPipelineSlowPath();
 
@@ -168,6 +171,8 @@ private:
     ankerl::unordered_dense::map<ComputePipelineCacheKey, std::unique_ptr<ComputePipeline>> compute_cache;
     ankerl::unordered_dense::map<GraphicsPipelineCacheKey, std::unique_ptr<GraphicsPipeline>> graphics_cache;
     ankerl::unordered_dense::set<GraphicsPipelineCacheKey> failed_graphics_keys;
+    ankerl::unordered_dense::set<GraphicsPipelineCacheKey> serialized_graphics_keys;
+    ankerl::unordered_dense::set<ComputePipelineCacheKey> serialized_compute_keys;
 
     ShaderPools main_pools;
 
@@ -187,6 +192,8 @@ private:
     Common::ThreadWorker workers;
     Common::ThreadWorker serialization_thread;
     DynamicFeatures dynamic_features;
+    u32 last_res_up_scale{Settings::values.resolution_info.up_scale};
+    u32 last_res_down_shift{Settings::values.resolution_info.down_shift};
 };
 
 } // namespace Vulkan

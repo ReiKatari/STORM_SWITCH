@@ -36,7 +36,7 @@ constexpr VkDeviceSize MAX_ALIGNMENT = 256;
 // - GTX 960 on Windows will not OOM with 256mib
 // - GT 1030 on ^NIX will OOM with 256mib
 #if defined(__ANDROID__)
-constexpr VkDeviceSize MAX_STREAM_BUFFER_SIZE = 64_MiB;
+constexpr VkDeviceSize MAX_STREAM_BUFFER_SIZE = 32_MiB;
 #elif defined(_WIN32)
 constexpr VkDeviceSize MAX_STREAM_BUFFER_SIZE = 64_MiB;
 #else
@@ -310,13 +310,15 @@ void StagingBufferPool::ReleaseCache(MemoryUsage usage) {
 
 void StagingBufferPool::TrimUnusedBuffers() {
     for (size_t i = 0; i < NUM_LEVELS; ++i) {
-        ReleaseLevel(device_local_cache, i, true);
-        ReleaseLevel(upload_cache, i, true);
-        ReleaseLevel(download_cache, i, true);
+        const bool keep_one_warm = (i <= 22);
+        ReleaseLevel(device_local_cache, i, true, keep_one_warm);
+        ReleaseLevel(upload_cache, i, true, keep_one_warm);
+        ReleaseLevel(download_cache, i, true, keep_one_warm);
     }
 }
 
-void StagingBufferPool::ReleaseLevel(StagingBuffersCache& cache, size_t log2, bool force_all) {
+void StagingBufferPool::ReleaseLevel(StagingBuffersCache& cache, size_t log2, bool force_all,
+                                     bool keep_one_warm) {
     if (log2 >= NUM_LEVELS) {
         return;
     }
@@ -331,7 +333,24 @@ void StagingBufferPool::ReleaseLevel(StagingBuffersCache& cache, size_t log2, bo
     };
 
     if (force_all) {
-        entries.erase(std::remove_if(entries.begin(), entries.end(), is_deletable), entries.end());
+        if (keep_one_warm) {
+            bool kept_one = false;
+            entries.erase(std::remove_if(entries.begin(), entries.end(),
+                                         [&](const StagingBuffer& entry) {
+                                             if (!is_deletable(entry)) {
+                                                 return false;
+                                             }
+                                             if (!kept_one) {
+                                                 kept_one = true;
+                                                 return false;
+                                             }
+                                             return true;
+                                         }),
+                          entries.end());
+        } else {
+            entries.erase(std::remove_if(entries.begin(), entries.end(), is_deletable),
+                          entries.end());
+        }
         staging.delete_index = 0;
         staging.iterate_index = 0;
     } else {

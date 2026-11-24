@@ -161,8 +161,8 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
                         thermalLevel = 1
                         isThermalThrottled = false
                         NativeLibrary.setThermalThrottle(false)
-                        updateSustainedPerformance(false)
-                        Log.info("[ThermalMonitor] Graduated thermal throttle: MODERATE (status=$status). Full speed preserved, sustained perf OFF")
+                        updateSustainedPerformance(true)
+                        Log.info("[ThermalMonitor] Graduated thermal throttle: MODERATE (status=$status). Sustained perf ON to stabilize clocks/heat")
                     }
                 }
                 else -> {
@@ -170,8 +170,8 @@ class EmulationActivity : AppCompatActivity(), SensorEventListener, InputManager
                         thermalLevel = 0
                         isThermalThrottled = false
                         NativeLibrary.setThermalThrottle(false)
-                        updateSustainedPerformance(true)
-                        Log.info("[ThermalMonitor] Thermal back-off: Normal performance restored (status=$status)")
+                        updateSustainedPerformance(false)
+                        Log.info("[ThermalMonitor] Thermal back-off: Cool state restored (status=$status). Sustained perf OFF")
                     }
                 }
             }

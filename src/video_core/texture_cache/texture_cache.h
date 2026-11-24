@@ -153,7 +153,7 @@ void TextureCache<P>::RunGarbageCollector() {
     size_t sync_downloads = 0;
     const auto EffectiveUsedMemory = [this]() -> u64 {
 #ifdef __ANDROID__
-        return (total_used_memory > static_cast<u64>(1920_MiB)) ? total_used_memory : image_bytes;
+        return (total_used_memory > expected_memory) ? total_used_memory : image_bytes;
 #else
         return total_used_memory;
 #endif
@@ -190,7 +190,10 @@ void TextureCache<P>::RunGarbageCollector() {
         const bool is_d2r_game = (cur_pid == 0x0100726014352000ULL ||
                                   cur_pid == 0x01002A801458A000ULL ||
                                   cur_pid == 0x0100916014D8C000ULL);
-        if (!aggressive_mode && is_color_2d && is_d2r_game &&
+        const u64 d2r_max_age = aggressive_mode ? 1800ULL : 3600ULL;
+        if (is_d2r_game && is_color_2d &&
+            image.guest_size_bytes <= static_cast<u64>(16_MiB) &&
+            frame_tick < image.last_frame_tick + d2r_max_age &&
             True(image.flags & (ImageFlagBits::RenderTarget | ImageFlagBits::GpuModified | ImageFlagBits::CpuModified))) {
             lru_cache.Touch(image.lru_index, frame_tick);
             return false;
@@ -298,7 +301,29 @@ void TextureCache<P>::HandleLiveResolutionChange() {
         slot_framebuffers.erase(fb_id);
     }
     framebuffers.clear();
+    last_framebuffer_id = {};
+    last_framebuffer_serial = 0;
+    render_targets = {};
+    rt_active_mask = 0;
+    rt_image_id = {};
+    rt_depth_image_id = {};
+    ++render_targets_serial;
     is_rescaling = false;
+    for (size_t c : active_channel_ids) {
+        auto& channel_info = channel_storage[c];
+        if constexpr (ENABLE_VALIDATION) {
+            std::ranges::fill(channel_info.graphics_image_view_ids, CORRUPT_ID);
+            std::ranges::fill(channel_info.compute_image_view_ids, CORRUPT_ID);
+        }
+        channel_info.graphics_image_table.Invalidate();
+        channel_info.compute_image_table.Invalidate();
+    }
+    if (maxwell3d) {
+        maxwell3d->dirty.flags[Dirty::RenderTargets] = true;
+        maxwell3d->dirty.flags[Dirty::RenderTargetControl] = true;
+        maxwell3d->dirty.flags[Dirty::RescaleViewports] = true;
+        maxwell3d->dirty.flags[Dirty::RescaleScissors] = true;
+    }
     last_res_up_scale = new_up;
     last_res_down_shift = new_down;
 }
@@ -312,7 +337,7 @@ void TextureCache<P>::TickFrame() {
     }
 #ifdef __ANDROID__
     const u64 used_memory =
-        (total_used_memory > static_cast<u64>(1920_MiB)) ? total_used_memory : image_bytes;
+        (total_used_memory > expected_memory) ? total_used_memory : image_bytes;
 #else
     const u64 used_memory = total_used_memory;
 #endif
@@ -1750,15 +1775,6 @@ bool TextureCache<P>::ImageCanRescale(ImageBase& image) {
     if (!image.info.rescaleable) {
         return false;
     }
-    if constexpr (requires {
-                      runtime.CanScaleExtent(image.info.size.width, image.info.size.height,
-                                             image.info.type == ImageType::e2D);
-                  }) {
-        if (!runtime.CanScaleExtent(image.info.size.width, image.info.size.height,
-                                    image.info.type == ImageType::e2D)) {
-            return false;
-        }
-    }
     if (image.info.num_samples > 1 &&
         GetFormatType(image.info.format) != VideoCore::Surface::SurfaceType::ColorTexture) {
         return false;
@@ -1768,6 +1784,15 @@ bool TextureCache<P>::ImageCanRescale(ImageBase& image) {
     }
     if (True(image.flags & (ImageFlagBits::Rescaled | ImageFlagBits::CheckingRescalable))) {
         return true;
+    }
+    if constexpr (requires {
+                      runtime.CanScaleExtent(image.info.size.width, image.info.size.height,
+                                             image.info.type == ImageType::e2D);
+                  }) {
+        if (!runtime.CanScaleExtent(image.info.size.width, image.info.size.height,
+                                    image.info.type == ImageType::e2D)) {
+            return false;
+        }
     }
     if (True(image.flags & ImageFlagBits::IsRescalable)) {
         return true;

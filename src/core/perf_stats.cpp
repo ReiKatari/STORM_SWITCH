@@ -178,7 +178,7 @@ void SpeedLimiter::DoSpeedLimiting(microseconds current_system_time_us) {
                               Settings::values.eco_thermal_mode.GetValue() ||
                               Settings::values.storm_thermal_governor.GetValue();
 #ifdef _WIN32
-        const auto spin_margin = eco_cool ? microseconds(0) : microseconds(250);
+        const auto spin_margin = eco_cool ? microseconds(0) : microseconds(50);
         const auto target_time = now + speed_limiting_delta_err;
         if (speed_limiting_delta_err > spin_margin) {
             const auto sleep_dur = speed_limiting_delta_err - spin_margin;
@@ -217,7 +217,11 @@ void SpeedLimiter::DoSpeedLimiting(microseconds current_system_time_us) {
 #endif
         }
 #else
-        const auto spin_margin = eco_cool ? microseconds(0) : microseconds(50);
+#ifdef __ANDROID__
+        const auto spin_margin = microseconds(0);
+#else
+        const auto spin_margin = eco_cool ? microseconds(0) : microseconds(25);
+#endif
         const auto target_time = now + speed_limiting_delta_err;
         if (speed_limiting_delta_err > spin_margin) {
             const auto sleep_dur = speed_limiting_delta_err - spin_margin;

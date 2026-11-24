@@ -150,7 +150,8 @@ void BufferCache<P>::TickFrame() {
         }
 #else
         const u64 gc_threshold = vram_gc ? minimum_memory : critical_memory;
-        if (buffer_bytes >= gc_threshold || total_used_memory >= critical_memory) {
+        if (buffer_bytes >= gc_threshold ||
+            (total_used_memory >= critical_memory && buffer_bytes >= minimum_memory)) {
             RunGarbageCollector(total_used_memory >= critical_memory);
         }
 #endif
@@ -386,6 +387,11 @@ bool BufferCache<P>::DMAClear(GPUVAddr dst_address, u64 amount, u32 value) {
     if (!dest_dirty) {
         return false;
     }
+    if constexpr (requires { runtime.HasDeferredInlineOverlap(*cpu_dst_address, size); }) {
+        if (runtime.HasDeferredInlineOverlap(*cpu_dst_address, size)) {
+            runtime.FlushDeferredInlineCopies();
+        }
+    }
     ClearDownload(*cpu_dst_address, size);
     gpu_modified_ranges.Subtract(*cpu_dst_address, size);
 
@@ -439,7 +445,9 @@ std::pair<typename P::Buffer*, u32> BufferCache<P>::ObtainCPUBuffer(
         break;
     }
 
-    return {&buffer, buffer.Offset(device_addr)};
+    const u32 offset = buffer.Offset(device_addr);
+    buffer.MarkUsage(offset, size);
+    return {&buffer, offset};
 }
 
 template <class P>
@@ -500,6 +508,14 @@ void BufferCache<P>::BindHostGeometryBuffers(bool is_indexed) {
                         overlap = true;
                         break;
                     }
+                }
+            }
+            if (!overlap && current_draw_indirect) {
+                const auto& cb = channel_state->count_buffer_binding;
+                const auto& ib_ind = channel_state->indirect_buffer_binding;
+                if ((cb.size > 0 && runtime.HasDeferredInlineOverlap(cb.device_addr, cb.size)) ||
+                    (ib_ind.size > 0 && runtime.HasDeferredInlineOverlap(ib_ind.device_addr, ib_ind.size))) {
+                    overlap = true;
                 }
             }
             if (overlap) {
@@ -1137,10 +1153,19 @@ void BufferCache<P>::BindHostGraphicsUniformBuffer(size_t stage, u32 index, u32 
     }();
     bool has_deferred_inline = false;
     if constexpr (requires { runtime.HasDeferredInlineOverlap(device_addr, size); }) {
-        has_deferred_inline = runtime.HasDeferredInlineOverlap(device_addr, size);
-        if (has_deferred_inline && (!has_host_buffer || memory_tracker.IsRegionGpuModified(device_addr, size))) {
-            runtime.FlushDeferredInlineCopies();
-            has_deferred_inline = false;
+        if (runtime.HasDeferredInlineOverlap(device_addr, size)) {
+            bool can_patch_full = has_host_buffer &&
+                                  size <= channel_state->uniform_buffer_skip_cache_size &&
+                                  !memory_tracker.IsRegionGpuModified(device_addr, size);
+            if constexpr (requires { runtime.HasDeferredInlineFullCoverage(device_addr, size); }) {
+                can_patch_full = can_patch_full &&
+                                 runtime.HasDeferredInlineFullCoverage(device_addr, size);
+            }
+            if (can_patch_full) {
+                has_deferred_inline = true;
+            } else {
+                runtime.FlushDeferredInlineCopies();
+            }
         }
     }
     const bool use_fast_buffer = has_deferred_inline || needs_alignment_stream ||
@@ -2024,6 +2049,9 @@ void BufferCache<P>::MappedUploadMemory([[maybe_unused]] Buffer& buffer,
         }
         const bool can_reorder = runtime.CanReorderUpload(buffer, copies);
         runtime.CopyBuffer(buffer, upload_staging.buffer, copies, true, can_reorder);
+        for (const BufferCopy& copy : copies) {
+            buffer.MarkUsage(copy.dst_offset, copy.size);
+        }
     }
 }
 
@@ -2117,11 +2145,13 @@ void BufferCache<P>::InlineMemoryImplementation(DAddr dest_address, size_t copy_
                             }
                         });
                     }
+                    buffer.MarkUsage(buffer.Offset(dest_address), copy_size);
                     return;
                 }
             }
         }
         runtime.CopyBuffer(buffer, upload_staging.buffer, copies, true, can_reorder);
+        buffer.MarkUsage(copies[0].dst_offset, copies[0].size);
     } else {
         buffer.ImmediateUpload(buffer.Offset(dest_address), inlined_buffer.first(copy_size));
     }
@@ -2185,6 +2215,11 @@ void BufferCache<P>::DownloadBuffersMemory(std::span<const BufferId> buffer_ids)
 
 template <class P>
 void BufferCache<P>::DownloadBufferMemory(Buffer& buffer, DAddr device_addr, u64 size) {
+    if constexpr (requires { runtime.FlushDeferredInlineCopies(); }) {
+        if (runtime.HasDeferredInlineCopies()) {
+            runtime.FlushDeferredInlineCopies();
+        }
+    }
     boost::container::small_vector<BufferCopy, 1> copies;
     u64 total_size_bytes = 0;
     u64 largest_copy = 0;
@@ -2293,6 +2328,9 @@ void BufferCache<P>::DeleteBuffer(BufferId buffer_id, bool do_not_mark) {
         delayed_destruction_ring.Push(std::move(slot_buffers[buffer_id]));
 
     slot_buffers.erase(buffer_id);
+    if constexpr (requires { runtime.InvalidateBoundBufferCache(); }) {
+        runtime.InvalidateBoundBufferCache();
+    }
 
     if constexpr (HAS_PERSISTENT_UNIFORM_BUFFER_BINDINGS) {
         channel_state->dirty_uniform_buffers.fill(~u32{0});

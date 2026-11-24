@@ -1396,6 +1396,7 @@ void RasterizerVulkan::TickFrame() {
         std::scoped_lock lock{texture_cache.mutex};
         texture_cache.TickFrame();
     }
+    pipeline_cache.HandleLiveResolutionChange();
     {
         std::scoped_lock lock{buffer_cache.mutex};
         buffer_cache.TickFrame();

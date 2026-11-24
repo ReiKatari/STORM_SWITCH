@@ -748,21 +748,22 @@ static void ApplyGameSpecificSafetyOverrides(u64 title_id, u64 host_ram_bytes,
         force_d2r(Settings::values.gpu_accuracy, Settings::GpuAccuracy::Normal);
         force_d2r(Settings::values.dyna_state, Settings::ExtendedDynamicState::EDS1);
         force_d2r(Settings::values.fix_bloom_effects, false);
-        force_d2r(Settings::values.use_asynchronous_shaders, true);
+        force_d2r(Settings::values.use_asynchronous_shaders, false);
         force_d2r(Settings::values.async_presentation, true);
-        force_d2r(Settings::values.use_vulkan_driver_pipeline_cache, false);
-        force_d2r(Settings::values.use_reactive_flushing, false);
-        force_d2r(Settings::values.use_fast_gpu_time, false);
-        force_d2r(Settings::values.vram_budget_governor, true);
-        force_d2r(Settings::values.vram_garbage_collection, true);
+        force_d2r(Settings::values.use_vulkan_driver_pipeline_cache, true);
+        force_d2r(Settings::values.use_reactive_flushing, true);
+        force_d2r(Settings::values.use_fast_gpu_time, true);
+        force_d2r(Settings::values.vram_budget_governor, false);
+        force_d2r(Settings::values.vram_garbage_collection, false);
         force_d2r(Settings::values.early_release_fences, false);
         force_d2r(Settings::values.enable_frame_skipping, false);
-        force_d2r(Settings::values.barrier_feedback_loops, false);
+        force_d2r(Settings::values.barrier_feedback_loops, true);
         force_d2r(Settings::values.airplane_mode, true);
         force_d2r(Settings::values.sync_memory_operations, true);
         force_d2r(Settings::values.enable_gpu_buffer_readback, false);
-        force_d2r(Settings::values.dma_accuracy, Settings::DmaAccuracy::Safe);
-        LOG_INFO(Frontend, "Guaranteed Diablo II: Resurrected overrides (6GB DRAM, GPU Normal, EDS1, DMA Safe, SyncMem ON, FixBloom OFF, AsyncShaders/AsyncPresent ON, FastGpuTime/FeedbackLoops/ReactiveFlush/Readback/VkPipelineCache OFF)");
+        force_d2r(Settings::values.disable_buffer_reorder, true);
+        force_d2r(Settings::values.dma_accuracy, Settings::DmaAccuracy::Normal);
+        LOG_INFO(Frontend, "Guaranteed Diablo II: Resurrected fast & glyph-safe overrides (6GB DRAM, GPU Normal, EDS1, DMA Normal, SyncMem/ReactiveFlush/VkPipelineCache/FastGpuTime/FeedbackLoops ON, AsyncShaders/EarlyFences/VRAM_GC/Readback OFF)");
     }
 
     // 3) Unravel Two

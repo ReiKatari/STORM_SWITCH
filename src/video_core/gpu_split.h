@@ -38,9 +38,13 @@ public:
         return instance;
     }
 
+    ~GpuSplit() {
+        Stop();
+    }
+
     /// Whether the front sends work to the back (front thread only).
     [[nodiscard]] bool Active() const {
-        return active;
+        return active.load(std::memory_order_relaxed);
     }
     /// Whether the front runs the engines' macros (EDEN_NX2_SPLIT=2).
     [[nodiscard]] bool FrontMacros() const {
@@ -166,7 +170,7 @@ private:
     size_t Execute(const u64* entry);
 
     Core::System* system{};
-    bool active{};
+    std::atomic<bool> active{};
     bool front_macros{};
     std::unique_ptr<u64[]> ring;
 
@@ -190,8 +194,17 @@ private:
     alignas(64) std::atomic<u64> consumed{};
     /// A position the front waits for (WaitForWriters): the back stores consumed once past it.
     alignas(64) std::atomic<u64> wait_target{~u64{0}};
+    void WakeFront() noexcept {
+        if (front_waiting.load(std::memory_order_seq_cst)) {
+            front_wake.fetch_add(1, std::memory_order_seq_cst);
+            front_wake.notify_all();
+        }
+    }
+
     alignas(64) std::atomic<bool> back_waiting{};
     std::atomic<u32> wake{};
+    alignas(64) std::atomic<bool> front_waiting{};
+    std::atomic<u32> front_wake{};
     std::jthread back_thread;
 };
 

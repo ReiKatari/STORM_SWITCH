@@ -170,9 +170,13 @@ public:
 
     [[nodiscard]] bool HasDeferredInlineOverlap(DAddr device_addr, u64 size) const noexcept;
 
+    [[nodiscard]] bool HasDeferredInlineFullCoverage(DAddr device_addr, u64 size) const noexcept;
+
     void PatchDeferredInlineBytes(DAddr device_addr, std::span<u8> dst) const noexcept;
 
     void FlushDeferredInlineCopies();
+
+    void InvalidateBoundBufferCache() noexcept;
 
     void BindTransformFeedbackBuffers(VideoCommon::HostBindings<Buffer>& bindings);
 

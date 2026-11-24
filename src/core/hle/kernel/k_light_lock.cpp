@@ -4,6 +4,9 @@
 // SPDX-FileCopyrightText: Copyright 2021 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include <chrono>
+#include <thread>
+
 #include "core/hle/kernel/k_light_lock.h"
 #include "core/hle/kernel/k_scheduler.h"
 #include "core/hle/kernel/k_thread.h"
@@ -33,8 +36,19 @@ public:
 
 void KLightLock::Lock() {
     const uintptr_t cur_thread = uintptr_t(GetCurrentThreadPointer(m_kernel));
+    KThread* cur_thread_ptr = reinterpret_cast<KThread*>(cur_thread);
+    int shutdown_retries = 0;
     while (true) {
         uintptr_t old_tag = m_tag.load(std::memory_order_relaxed);
+        if (m_kernel.IsShuttingDown() && cur_thread_ptr != nullptr &&
+            cur_thread_ptr->IsDummyThread() && old_tag != 0) {
+            if (shutdown_retries >= 100) {
+                break;
+            }
+            ++shutdown_retries;
+            std::this_thread::sleep_for(std::chrono::microseconds(200));
+            continue;
+        }
         while (!m_tag.compare_exchange_weak(old_tag, (old_tag == 0) ? cur_thread : (old_tag | 1), std::memory_order_acquire))
             ;
         if (old_tag == 0 || this->LockSlowPath(old_tag | 1, cur_thread)) {
@@ -64,6 +78,13 @@ bool KLightLock::LockSlowPath(uintptr_t _owner, uintptr_t _cur_thread) {
         if (m_tag.load(std::memory_order_relaxed) != _owner) {
             return false;
         }
+        if (m_kernel.IsShuttingDown() && cur_thread->IsDummyThread()) {
+            KThread* owner_thread = reinterpret_cast<KThread*>(_owner & ~1ULL);
+            if (owner_thread->IsSuspended()) {
+                owner_thread->ContinueIfHasKernelWaiters(m_kernel);
+            }
+            return false;
+        }
 
         // Add the current thread as a waiter on the owner.
         KThread* owner_thread = reinterpret_cast<KThread*>(_owner & ~1ULL);
@@ -87,6 +108,10 @@ void KLightLock::UnlockSlowPath(uintptr_t _cur_thread) {
     // Unlock.
     {
         KScopedSchedulerLock sl(m_kernel);
+        if (m_kernel.IsShuttingDown() &&
+            (m_tag.load(std::memory_order_relaxed) & ~1ULL) != _cur_thread) {
+            return;
+        }
 
         // Get the next owner.
         bool has_waiters;

@@ -65,6 +65,8 @@
 
 #include <QDesktopServices>
 
+#include <QCoreApplication>
+#include <QElapsedTimer>
 #include <QDateTime>
 
 #include <QFile>
@@ -10455,24 +10457,29 @@ void MainWindow::BootGame(const QString& filename, Service::AM::FrontendAppletPa
                     Settings::values.memory_layout_mode.SetGlobal(false);
                     Settings::values.memory_layout_mode.SetValue(Settings::MemoryLayout::Memory_8Gb);
                 }
-                auto apply_desktop_safe = [](auto& setting, auto val) {
-                    if (setting.UsingGlobal()) {
-                        setting.SetGlobal(false);
-                        setting.SetValue(val);
-                    }
+                auto force_d2r_desktop = [](auto& setting, auto val) {
+                    setting.SetGlobal(false);
+                    setting.SetValue(val);
                 };
-                apply_desktop_safe(Settings::values.gpu_accuracy, Settings::GpuAccuracy::High);
-                apply_desktop_safe(Settings::values.use_reactive_flushing, true);
-                apply_desktop_safe(Settings::values.use_fast_gpu_time, false);
-                apply_desktop_safe(Settings::values.vram_budget_governor, false);
-                apply_desktop_safe(Settings::values.vram_garbage_collection, false);
-                apply_desktop_safe(Settings::values.early_release_fences, false);
-                apply_desktop_safe(Settings::values.enable_frame_skipping, false);
-                apply_desktop_safe(Settings::values.barrier_feedback_loops, true);
-                apply_desktop_safe(Settings::values.airplane_mode, true);
-                apply_desktop_safe(Settings::values.sync_memory_operations, true);
-                apply_desktop_safe(Settings::values.enable_gpu_buffer_readback, true);
-                LOG_INFO(Frontend, "Guaranteed Diablo II: Resurrected safety overrides on Desktop");
+                force_d2r_desktop(Settings::values.gpu_accuracy, Settings::GpuAccuracy::Normal);
+                force_d2r_desktop(Settings::values.dma_accuracy, Settings::DmaAccuracy::Normal);
+                force_d2r_desktop(Settings::values.dyna_state, Settings::ExtendedDynamicState::EDS1);
+                force_d2r_desktop(Settings::values.fix_bloom_effects, false);
+                force_d2r_desktop(Settings::values.use_asynchronous_shaders, false);
+                force_d2r_desktop(Settings::values.async_presentation, true);
+                force_d2r_desktop(Settings::values.use_vulkan_driver_pipeline_cache, true);
+                force_d2r_desktop(Settings::values.use_reactive_flushing, true);
+                force_d2r_desktop(Settings::values.use_fast_gpu_time, true);
+                force_d2r_desktop(Settings::values.vram_budget_governor, false);
+                force_d2r_desktop(Settings::values.vram_garbage_collection, false);
+                force_d2r_desktop(Settings::values.early_release_fences, false);
+                force_d2r_desktop(Settings::values.enable_frame_skipping, false);
+                force_d2r_desktop(Settings::values.barrier_feedback_loops, true);
+                force_d2r_desktop(Settings::values.airplane_mode, true);
+                force_d2r_desktop(Settings::values.sync_memory_operations, true);
+                force_d2r_desktop(Settings::values.enable_gpu_buffer_readback, false);
+                force_d2r_desktop(Settings::values.disable_buffer_reorder, true);
+                LOG_INFO(Frontend, "Guaranteed Diablo II: Resurrected fast & glyph-safe overrides on Desktop");
             }
 
             if (title_id == 0x01008C3005A32000ULL || title_id == 0x0100E5D00CC0C000ULL || title_id == 0x010099900B22E000ULL ||
@@ -11281,13 +11288,24 @@ void MainWindow::OnEmulationStopped() {
 
             QtCommon::emu_thread->ForceStop();
 
-            // Wait synchronously for EmuThread to exit cleanly without re-entrant event pumping
+            // Pump non-user-input Win32/Qt WSI events in short slices so swapchain/PresentThread never deadlock on our HWND
+            const auto wait_with_wsi_pump = [](int timeout_ms) {
+                QElapsedTimer timer;
+                timer.start();
+                while (QtCommon::emu_thread->isRunning() && timer.elapsed() < timeout_ms) {
+                    if (QtCommon::emu_thread->wait(25)) {
+                        return true;
+                    }
+                    QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 10);
+                }
+                return !QtCommon::emu_thread->isRunning();
+            };
 
-            if (!QtCommon::emu_thread->wait(5000)) {
+            if (!wait_with_wsi_pump(5000)) {
 
                 LOG_WARNING(Frontend, "EmuThread did not exit within 5s; waiting an additional 5s");
 
-                if (!QtCommon::emu_thread->wait(5000)) {
+                if (!wait_with_wsi_pump(5000)) {
 
                     LOG_CRITICAL(Frontend, "EmuThread hung during shutdown, forcefully terminating before context cleanup");
 
@@ -11514,8 +11532,6 @@ void MainWindow::ShutdownGame() {
     play_time_manager->Stop();
 
     OnShutdownBegin();
-
-    OnEmulationStopTimeExpired();
 
     OnEmulationStopped();
 

@@ -32,6 +32,7 @@
 #include "video_core/engines/maxwell_3d.h"
 #include "video_core/engines/maxwell_dma.h"
 #include "video_core/gpu.h"
+#include "video_core/gpu_split.h"
 #include "video_core/gpu_thread.h"
 #include "video_core/host1x/host1x.h"
 #include "video_core/host1x/syncpoint_manager.h"
@@ -233,6 +234,7 @@ struct GPU::Impl {
             sync_request_cv.notify_all();
         }
         gpu_thread.NotifyShutdown();
+        VideoCommon::GpuSplit::Get().Stop();
         {
             std::scoped_lock lk{sync_mutex};
             sync_cv.notify_all();

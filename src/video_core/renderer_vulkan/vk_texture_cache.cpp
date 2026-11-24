@@ -2484,17 +2484,17 @@ bool TextureCacheRuntime::CanScaleExtent(u32 width, u32 height, bool is_2d) cons
         return false;
     }
     // Guard against extreme 6X..8X VRAM / WDDM shared-RAM exhaustion:
-    // require a single 8-byte/px scaled target to stay within 2.5% of device-local VRAM
-    // and ensure live GPU memory usage remains below 75% of physical VRAM.
+    // require a single 8-byte/px scaled target to stay within 12.5% of device-local VRAM
+    // and ensure live GPU memory usage remains below 90% of physical VRAM.
     const u64 est_bytes = static_cast<u64>(scaled_w) * static_cast<u64>(scaled_h) * 8ULL;
     const u64 vram_bytes = device.GetDeviceLocalMemory();
     if (vram_bytes > 0) {
-        if (est_bytes > (vram_bytes / 40ULL)) {
+        if (est_bytes > (vram_bytes / 8ULL)) {
             return false;
         }
         if (CanReportMemoryUsage()) {
             const u64 used = GetDeviceMemoryUsage();
-            if (used + est_bytes > (vram_bytes * 75ULL) / 100ULL) {
+            if (used + est_bytes > (vram_bytes * 90ULL) / 100ULL) {
                 return false;
             }
         }
@@ -2609,11 +2609,8 @@ bool Image::ScaleDown(bool ignore) {
         aspect_mask = ImageAspectMask(info.format);
     }
     if (NeedsScaleHelper()) {
-        const bool success = BlitScaleHelper(false);
-        if (!success) {
-            current_image = &Image::original_image;
-            return false;
-        }
+        (void)BlitScaleHelper(false);
+        current_image = &Image::original_image;
         return true;
     } else {
         BlitScale(*scheduler, *scaled_image, *original_image, info, aspect_mask, scaled_extent, false);
