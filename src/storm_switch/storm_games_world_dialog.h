@@ -99,6 +99,7 @@ public:
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
+    void showEvent(QShowEvent* event) override;
     void closeEvent(QCloseEvent* event) override;
 
 signals:
@@ -122,7 +123,9 @@ private slots:
 
 private:
     void SetupUI();
+    void CenterOnParentWindow();
     void ApplyStormStyles();
+    bool m_initial_positioned{false};
     void LoadCachedCatalog();
     void ParseCatalogData(const QByteArray bitand raw_data);
     void ParseCatalogArray(const QJsonArray bitand arr);

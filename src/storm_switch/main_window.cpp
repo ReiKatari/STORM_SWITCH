@@ -108,7 +108,9 @@
 #include "qt_common/game_list/game_list_p.h"
 
 #include <QMouseEvent>
+#include <QFontDatabase>
 #include <QSignalBlocker>
+#include <QStyle>
 #include "core/memory/dmnt_cheat_types.h"
 #include "ui_main.h"
 
@@ -3382,29 +3384,8 @@ void MainWindow::InitializeWidgets() {
 
     pop_layout->setSpacing(6);
 
-    volume_popup->setStyleSheet(QStringLiteral(
-
-        "QWidget { background-color: #090a10; color: #e0e6ed; font-family: 'Segoe UI', sans-serif; border: 2px solid #00f0ff; border-radius: 6px; }"
-
-        "QSlider::groove:horizontal { height: 6px; background: #121624; border-radius: 3px; border: 1px solid #00f0ff; }"
-
-        "QSlider::sub-page:horizontal { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #ff0055, stop:1 #ffee00); border-radius: 3px; }"
-
-        "QSlider::handle:horizontal { background: #ffee00; border: 1px solid #000000; width: 14px; margin-top: -5px; margin-bottom: -5px; border-radius: 7px; }"
-
-        "QSlider::handle:horizontal:hover { background: #00f0ff; }"
-
-        "QPushButton { background-color: #121624; color: #00f0ff; border: 1px solid #00f0ff; border-radius: 3px; padding: 2px 6px; font-size: 8pt; font-weight: bold; }"
-
-        "QPushButton:hover { background-color: #ffee00; color: #000000; }"
-
-    ));
-
-
-
     volume_val_label = new QLabel(tr("Volume: 100%"), volume_popup);
-
-    volume_val_label->setStyleSheet(QStringLiteral("font-weight: bold; color: #ffee00; font-size: 9.5pt; border: none; background: transparent;"));
+    UpdateVolumePopupStyle();
 
     volume_val_label->setAlignment(Qt::AlignCenter);
 
@@ -11287,6 +11268,10 @@ void MainWindow::OnEmulationStopped() {
 
         if (QtCommon::emu_thread->isRunning()) {
 
+            if (QtCommon::system && QtCommon::system->IsPoweredOn()) {
+                QtCommon::system->SetShuttingDown(true);
+                QtCommon::system->GetAppletManager().RequestExit();
+            }
             QtCommon::emu_thread->ForceStop();
 
             // Pump non-user-input Win32/Qt WSI events in short slices so swapchain/PresentThread never deadlock on our HWND
@@ -11519,8 +11504,7 @@ void MainWindow::OnEmulationStopped() {
 
 
 void MainWindow::ShutdownGame() {
-
-    if (!emulation_running) {
+    if (m_is_stopping_emulation || !emulation_running) {
 
         return;
 
@@ -14114,39 +14098,34 @@ void MainWindow::OnConfigure() {
 
     EnsureVkDeviceRecordsPopulated(vk_device_records, this->window()->windowHandle());
 
-    ConfigureDialog configure_dialog(this, hotkey_registry, input_subsystem.get(),
+    auto configure_dialog = std::make_unique<ConfigureDialog>(
+        this, hotkey_registry, input_subsystem.get(), vk_device_records, *QtCommon::system,
+        !multiplayer_state->IsHostingPublicRoom());
 
-                                     vk_device_records, *QtCommon::system,
-
-                                     !multiplayer_state->IsHostingPublicRoom());
-
-    connect(&configure_dialog, &ConfigureDialog::LanguageChanged, this,
+    connect(configure_dialog.get(), &ConfigureDialog::LanguageChanged, this,
 
             &MainWindow::OnLanguageChanged);
 
     // Defer UpdateUITheme until ConfigureDialog closes (<15ms live preview in modal dialog)
 
-    connect(&configure_dialog, &ConfigureDialog::ExternalContentDirsChanged, this,
+    connect(configure_dialog.get(), &ConfigureDialog::ExternalContentDirsChanged, this,
 
             &MainWindow::OnGameListRefresh);
 
-    connect(&configure_dialog, &ConfigureDialog::ConfigurationApplied, this,
-
-            [this]() {
-
-                if (config) {
-
-                    config->SaveAllValues();
-
-                }
-
-                UpdateStatusButtons();
-
-            });
+    connect(configure_dialog.get(), &ConfigureDialog::ConfigurationApplied, this, [this]() {
+        if (config) {
+            config->SaveAllValues();
+        }
+        UpdateUITheme();
+        UpdateStatusButtons();
+        if (QtCommon::system && QtCommon::system->IsPoweredOn()) {
+            QtCommon::system->GPU().RefreshPresent();
+        }
+    });
 
 
 
-    const auto result = configure_dialog.exec();
+    const auto result = configure_dialog->exec();
 
     if (result != QDialog::Accepted && !UISettings::values.configuration_applied &&
 
@@ -14186,6 +14165,8 @@ void MainWindow::OnConfigure() {
 
         }
 
+        configure_dialog.reset();
+
         if (theme_changed) {
 
             UpdateUITheme();
@@ -14204,22 +14185,21 @@ void MainWindow::OnConfigure() {
 
         // Cancel
 
-        configure_dialog.ApplyConfiguration();
+        configure_dialog->ApplyConfiguration();
+        configure_dialog.reset();
 
         config->SaveAllValues();
+        if (QtCommon::system && QtCommon::system->IsPoweredOn()) {
+            QtCommon::system->GPU().RefreshPresent();
+        }
 
         reapply_running_session_overrides();
 
         UpdateStatusButtons();
 
-        if (UISettings::values.theme != old_theme ||
-            UISettings::values.ui_design.GetValue() != old_ui_design ||
-            UISettings::values.accent_color.GetValue() != old_accent ||
-            UISettings::values.ui_font.GetValue() != old_ui_font) {
-            UpdateUITheme();
-        }
-
     } else if (UISettings::values.configuration_applied) {
+
+        configure_dialog.reset();
 
         // Configuration was already saved during ConfigurationApplied
 
@@ -14227,14 +14207,9 @@ void MainWindow::OnConfigure() {
 
         UpdateStatusButtons();
 
-        if (UISettings::values.theme != old_theme ||
-            UISettings::values.ui_design.GetValue() != old_ui_design ||
-            UISettings::values.accent_color.GetValue() != old_accent ||
-            UISettings::values.ui_font.GetValue() != old_ui_font) {
-            UpdateUITheme();
-        }
-
     } else if (UISettings::values.reset_to_defaults) {
+
+        configure_dialog.reset();
 
         LOG_INFO(Frontend, "Resetting all settings to defaults");
 
@@ -21518,11 +21493,16 @@ void MainWindow::UpdateStatusBar() {
 
     }
 
-    emu_speed_label->setStyleSheet(QStringLiteral(
-
-        "QLabel { background-color: rgba(0, 230, 118, 0.10); color: #00e676; border: 1px solid rgba(0, 230, 118, 0.30); "
-
-        "border-radius: 4px; padding: 2px 6px; font-size: 7.2pt; font-weight: 700; }"));
+    const auto status_pal = StormTheme::GetThemePalette();
+    const QString status_font = StormDesign::ResolveActiveUiFontFamily();
+    const QString status_style_key = status_pal.accent + QLatin1Char('|') + status_font;
+    const bool update_status_styles = (m_last_status_style_key != status_style_key);
+    if (update_status_styles) {
+        m_last_status_style_key = status_style_key;
+        emu_speed_label->setStyleSheet(QStringLiteral(
+            "QLabel { background-color: rgba(0, 230, 118, 0.10); color: #00e676; border: 1px solid rgba(0, 230, 118, 0.30); "
+            "border-radius: 4px; padding: 2px 6px; font-family: \"%1\", \"Segoe UI\", sans-serif; font-size: 7.2pt; font-weight: 700; }").arg(status_font));
+    }
 
 
 
@@ -21572,13 +21552,12 @@ void MainWindow::UpdateStatusBar() {
 
     game_fps_label->setText(fpsText);
 
-    {
-        const auto fps_pal = StormTheme::GetThemePalette();
-        const QColor fps_acc(fps_pal.accent);
+    if (update_status_styles) {
+        const QColor fps_acc(status_pal.accent);
         game_fps_label->setStyleSheet(QStringLiteral(
             "QLabel { background-color: rgba(%1, %2, %3, 0.12); color: %4; border: 1px solid rgba(%1, %2, %3, 0.30); "
-            "border-radius: 4px; padding: 2px 6px; font-size: 7.2pt; font-weight: 700; }")
-            .arg(fps_acc.red()).arg(fps_acc.green()).arg(fps_acc.blue()).arg(fps_pal.accent));
+            "border-radius: 4px; padding: 2px 6px; font-family: \"%5\", \"Segoe UI\", sans-serif; font-size: 7.2pt; font-weight: 700; }")
+            .arg(fps_acc.red()).arg(fps_acc.green()).arg(fps_acc.blue()).arg(status_pal.accent, status_font));
     }
 
 
@@ -21607,11 +21586,11 @@ void MainWindow::UpdateStatusBar() {
 
     ));
 
-    emu_frametime_label->setStyleSheet(QStringLiteral(
-
-        "QLabel { background-color: rgba(255, 202, 40, 0.10); color: #ffca28; border: 1px solid rgba(255, 202, 40, 0.30); "
-
-        "border-radius: 4px; padding: 2px 6px; font-size: 7.2pt; font-weight: 700; }"));
+    if (update_status_styles) {
+        emu_frametime_label->setStyleSheet(QStringLiteral(
+            "QLabel { background-color: rgba(255, 202, 40, 0.10); color: #ffca28; border: 1px solid rgba(255, 202, 40, 0.30); "
+            "border-radius: 4px; padding: 2px 6px; font-family: \"%1\", \"Segoe UI\", sans-serif; font-size: 7.2pt; font-weight: 700; }").arg(status_font));
+    }
 
 
 
@@ -21649,9 +21628,11 @@ void MainWindow::UpdateStatusBar() {
             QStringLiteral("RAM: %1 GB (%2/%3)").arg(p_gb, u_gb, t_gb),
             QStringLiteral("RAM: %1 GB (%2/%3)").arg(p_gb, u_gb, t_gb),
             QStringLiteral("RAM: %1 GB (%2/%3)").arg(p_gb, u_gb, t_gb)));
-        emu_ram_label->setStyleSheet(QStringLiteral(
-            "QLabel { background-color: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.32); "
-            "border-radius: 4px; padding: 2px 6px; font-size: 7.2pt; font-weight: 700; }"));
+        if (update_status_styles) {
+            emu_ram_label->setStyleSheet(QStringLiteral(
+                "QLabel { background-color: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.32); "
+                "border-radius: 4px; padding: 2px 6px; font-family: \"%1\", \"Segoe UI\", sans-serif; font-size: 7.2pt; font-weight: 700; }").arg(status_font));
+        }
         emu_ram_label->setVisible(true);
     }
 
@@ -21799,13 +21780,15 @@ void MainWindow::UpdateStatusBar() {
 
 void MainWindow::ApplyDynamicSettingChange() {
     Settings::UpdateGPUAccuracy();
-    Settings::UpdateRescalingInfo();
     const bool is_running = QtCommon::system && QtCommon::system->IsPoweredOn();
     if (is_running) {
+        Settings::RequestResolutionUpdate();
         QtCommon::system->ApplySettings();
         if (render_window) {
             render_window->OnFramebufferSizeChanged();
         }
+    } else {
+        Settings::UpdateRescalingInfo();
     }
     UpdateStatusButtons();
     ConfigurationShared::ReloadAllActiveWidgets();
@@ -29463,26 +29446,13 @@ void MainWindow::UpdateUITheme() {
             "QPushButton#FooterCustomizeButton:hover { background-color: %1 !important; color: #FFFFFF !important; border-color: %1 !important; }\n"
         ).arg(accent_color);
 
-        // Apply active font dynamically to QApplication, QSS stylesheet, menubar & tray (Law 6)
-        QString font_family = QString::fromStdString(UISettings::values.ui_font.GetValue());
-        font_family.replace(QLatin1Char('"'), QString());
-        if (!font_family.isEmpty()) {
-            QFont app_font(font_family, 9);
-            app_font.setStyleHint(QFont::SansSerif);
-            qApp->setFont(app_font);
-            if (ui && ui->menubar) {
-                QFont menu_fnt(font_family, 9);
-                menu_fnt.setWeight(QFont::DemiBold);
-                ui->menubar->setFont(menu_fnt);
-            }
-            if (m_tray_menu) {
-                m_tray_menu->setFont(app_font);
-            }
-            stylesheet.replace(
-                QStringLiteral("font-family: \"Segoe UI\", \"Outfit\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;"),
-                QStringLiteral("font-family: \"%1\", \"Segoe UI\", \"Outfit\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;").arg(font_family));
-            stylesheet += QStringLiteral("\nQWidget { font-family: \"%1\", \"Segoe UI\", \"Outfit\", sans-serif; }\n").arg(font_family);
-        }
+        // Apply active font dynamically across QApplication, all live widgets, menus, views & QSS
+        const QString font_family = StormDesign::ResolveActiveUiFontFamily();
+        QFont app_font(font_family, 9);
+        app_font.setStyleHint(QFont::SansSerif);
+        stylesheet.replace(
+            QStringLiteral("font-family: \"Segoe UI\", \"Outfit\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;"),
+            QStringLiteral("font-family: \"%1\", \"Segoe UI\", \"Outfit\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;").arg(font_family));
 
         // Apply matching QPalette so native Qt subwidgets never fall back to Windows white
         QPalette app_palette = qApp->palette();
@@ -29509,7 +29479,30 @@ void MainWindow::UpdateUITheme() {
         qApp->setPalette(app_palette);
 
         stylesheet.append(StormDesign::BuildMainWindowDesignOverlay(pal));
+        stylesheet.append(QStringLiteral("\n") + StormDesign::BuildUniversalFontQss(font_family));
+
+        // Flush Qt6 QStyleSheetStyle font cache only when the font family actually changes
+        static QString s_last_applied_font_family;
+        if (s_last_applied_font_family != font_family) {
+            s_last_applied_font_family = font_family;
+            qApp->setStyleSheet(QString());
+        }
+        qApp->setFont(app_font);
+        StormDesign::PropagateFontToWidgetTree(this, font_family, render_window);
+        if (ui && ui->menubar) {
+            QFont menu_fnt(font_family, 9);
+            menu_fnt.setWeight(QFont::DemiBold);
+            ui->menubar->setFont(menu_fnt);
+        }
+        if (m_tray_menu) {
+            m_tray_menu->setFont(app_font);
+        }
+        if (game_list) {
+            StormDesign::PropagateFontToWidgetTree(game_list, font_family);
+        }
         qApp->setStyleSheet(stylesheet);
+        update();
+        m_last_status_style_key.clear();
     } else {
         LOG_ERROR(Frontend, "Unable to set style \"{}\", stylesheet file not found",
                   UISettings::values.theme);
@@ -29534,7 +29527,7 @@ void MainWindow::UpdateUITheme() {
             "  color: %2;"
             "  border: 1px solid %3;"
             "  padding: 4px 0px;"
-            "  font-family: 'Segoe UI';"
+            "  font-family: \"%5\", \"Segoe UI\", sans-serif;"
             "  font-size: 9pt;"
             "  border-radius: 8px;"
             "}"
@@ -29562,11 +29555,39 @@ void MainWindow::UpdateUITheme() {
             "  padding: 0px;"
             "  margin: 0px;"
             "}"
-        ).arg(theme_bg, theme_fg, accent_color, hover_bg));
+        ).arg(theme_bg, theme_fg, accent_color, hover_bg, StormDesign::ResolveActiveUiFontFamily()));
     }
+    UpdateVolumePopupStyle();
 }
 
 
+
+
+
+void MainWindow::UpdateVolumePopupStyle() {
+    if (!volume_popup) {
+        return;
+    }
+    const auto pal = StormTheme::GetThemePalette();
+    const QString ui_font = StormDesign::ResolveActiveUiFontFamily();
+    const QString acc = pal.accent.isEmpty() ? QStringLiteral("#8B5CF6") : pal.accent;
+    const QString acc_hover = pal.accentHover.isEmpty() ? acc : pal.accentHover;
+    volume_popup->setStyleSheet(QStringLiteral(
+        "QWidget { background-color: %1; color: %2; font-family: \"%6\", \"Segoe UI\", sans-serif; border: 1.5px solid %3; border-radius: 8px; }"
+        "QSlider::groove:horizontal { height: 6px; background: %4; border-radius: 3px; border: 1px solid %5; }"
+        "QSlider::sub-page:horizontal { background: %3; border-radius: 3px; }"
+        "QSlider::handle:horizontal { background: %3; border: 1px solid %1; width: 14px; margin-top: -5px; margin-bottom: -5px; border-radius: 7px; }"
+        "QSlider::handle:horizontal:hover { background: %7; }"
+        "QPushButton { background-color: %4; color: %2; border: 1px solid %5; border-radius: 4px; padding: 2px 8px; font-size: 8pt; font-weight: bold; }"
+        "QPushButton:hover { background-color: %3; color: #FFFFFF; border-color: %3; }"
+    ).arg(pal.surface, pal.textPrimary, acc, pal.inputBg, pal.border, ui_font, acc_hover));
+    if (volume_val_label) {
+        volume_val_label->setStyleSheet(QStringLiteral(
+            "font-family: \"%2\", \"Segoe UI\", sans-serif; font-weight: bold; color: %1; font-size: 9.5pt; border: none; background: transparent;")
+            .arg(acc, ui_font));
+    }
+    StormDesign::PropagateFontToWidgetTree(volume_popup, ui_font);
+}
 
 #include "storm_switch/common/storm_i18n_dict.h"
 

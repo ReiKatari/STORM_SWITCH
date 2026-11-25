@@ -423,8 +423,11 @@ void Scheduler::WorkerThread(std::stop_token stop_token) {
                 LOG_CRITICAL(Render_Vulkan, "Vulkan worker thread caught exception: {} ({})",
                              ex.what(), static_cast<int>(ex.GetResult()));
                 if (ex.GetResult() == VK_ERROR_DEVICE_LOST) {
-                    is_lost.store(true, std::memory_order_relaxed);
+                    is_lost.store(true, std::memory_order_release);
                     device.ReportLoss("Scheduler::WorkerThread");
+                    if (master_semaphore) {
+                        master_semaphore->Refresh();
+                    }
                     {
                         std::scoped_lock ql{queue_mutex};
                         while (!work_queue.empty()) {
@@ -504,7 +507,11 @@ u64 Scheduler::SubmitExecution(VkSemaphore signal_semaphore, VkSemaphore wait_se
             }
             break;
         case VK_ERROR_DEVICE_LOST:
+            is_lost.store(true, std::memory_order_release);
             device.ReportLoss("Scheduler::SubmitExecution");
+            if (master_semaphore) {
+                master_semaphore->Refresh();
+            }
             [[fallthrough]];
         default:
             vk::Check(result);

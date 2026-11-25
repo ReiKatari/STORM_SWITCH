@@ -806,6 +806,8 @@ private:
     void SetupTrayIcon() {
         InitializeSystemTray();
     }
+    void UpdateVolumePopupStyle();
+    QString m_last_status_style_key;
     void InitializeSystemTray();
     void UpdateSystemTrayStrings();
     class QSystemTrayIcon* m_tray_icon{nullptr};

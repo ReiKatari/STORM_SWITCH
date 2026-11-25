@@ -252,6 +252,10 @@ void RendererVulkan::Composite(std::span<const Tegra::FramebufferConfig> framebu
 
     last_framebuffers.assign(framebuffers.begin(), framebuffers.end());
 
+    // Synchronize any live resolution multiplier switch on the GPU thread BEFORE Present/BlitScreen
+    // touches swapchain layers or scaled render targets.
+    rasterizer.ApplyPendingResolutionChange();
+
     if (!render_window.IsShown()) {
         return;
     }

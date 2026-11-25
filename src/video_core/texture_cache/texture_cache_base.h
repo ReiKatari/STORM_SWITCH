@@ -200,6 +200,9 @@ public:
     /// @retval True if the Render Targets have been rescaled.
     bool RescaleRenderTargets();
 
+    /// Rescale cached images and invalidate pipelines synchronously on live resolution changes
+    void HandleLiveResolutionChange();
+
     /// Update bound render targets and upload memory if necessary
     /// @param is_clear True when the render targets are being used for clears
     void UpdateRenderTargets(bool is_clear);
@@ -430,7 +433,6 @@ private:
     [[nodiscard]] std::pair<u32, u32> PrepareDmaImage(ImageId dst_id, GPUVAddr base_addr,
                                                       bool mark_as_modified);
 
-    void HandleLiveResolutionChange();
     bool ImageCanRescale(ImageBase& image);
     void InvalidateScale(Image& image);
     bool ScaleUp(Image& image);
@@ -542,7 +544,7 @@ private:
     std::vector<std::unique_ptr<AsyncDecodeContext>> async_decodes;
 
     std::deque<PendingUnswizzle> unswizzle_queue;
-    u8 current_unswizzle_frame;
+    u8 current_unswizzle_frame{};
 
     // Join caching
     boost::container::small_vector<ImageId, 4> join_overlap_ids;

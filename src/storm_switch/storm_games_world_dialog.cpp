@@ -24,6 +24,7 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QGroupBox>
+#include <QGuiApplication>
 #include <QMouseEvent>
 #include <QHBoxLayout>
 #include <QHeaderView>
@@ -38,7 +39,9 @@
 #include <QProgressBar>
 #include <QPushButton>
 #include <QRegularExpression>
+#include <QScreen>
 #include <QSettings>
+#include <QShowEvent>
 #include <QSplitter>
 #include <QSslConfiguration>
 #include <QSslSocket>
@@ -536,11 +539,15 @@ public:
         setMinimumSize(620, 380);
 
         const StormTheme::Palette pal = StormTheme::GetThemePalette();
+        const QString ui_font = StormDesign::ResolveActiveUiFontFamily();
+        QFont dlg_font = font();
+        dlg_font.setFamily(ui_font);
+        setFont(dlg_font);
         setStyleSheet(QStringLiteral(
             "QDialog {"
             "    background-color: %1;"
             "    color: %2;"
-            "    font-family: 'Segoe UI', sans-serif;"
+            "    font-family: \"%11\", \"Segoe UI\", sans-serif;"
             "}"
             "QFrame#HeaderBox {"
             "    background: %3;"
@@ -606,7 +613,8 @@ public:
             pal.itemSelected,
             pal.accent,
             pal.is_light ? QStringLiteral("#FFFFFF") : QStringLiteral("#000000"),
-            pal.accentHover
+            pal.accentHover,
+            ui_font
         ));
 
         auto* layout = new QVBoxLayout(this);
@@ -1205,6 +1213,8 @@ StormGamesWorldDialog::StormGamesWorldDialog(QWidget* parent)
 
     SetupUI();
     ApplyStormStyles();
+    StormUI::StructureEngine::ModernizeForm(this);
+    StormUI::StructureEngine::InstallEscDismiss(this);
     LoadCachedCatalog();
     OnFetchCatalog();
 
@@ -1248,8 +1258,6 @@ void StormGamesWorldDialog::CancelAllNetworkRequests() {
     if (output_file && output_file->isOpen()) {
         output_file->close();
     }
-    StormUI::StructureEngine::ModernizeForm(this);
-    StormUI::StructureEngine::InstallEscDismiss(this);
 }
 
 StormGamesWorldDialog::~StormGamesWorldDialog() {
@@ -1262,10 +1270,16 @@ StormGamesWorldDialog::~StormGamesWorldDialog() {
     CancelAllNetworkRequests();
 }
 
+void StormGamesWorldDialog::showEvent(QShowEvent* event) {
+    QDialog::showEvent(event);
+    if (!m_initial_positioned) {
+        m_initial_positioned = true;
+        CenterOnParentWindow();
+    }
+}
+
 void StormGamesWorldDialog::closeEvent(QCloseEvent* event) {
     CancelAllNetworkRequests();
-    QSettings settings;
-    settings.setValue(QStringLiteral("StormGamesWorld/geometry"), saveGeometry());
     QDialog::closeEvent(event);
 }
 
@@ -1820,22 +1834,35 @@ bool StormGamesWorldDialog::IsGameDownloaded(const StormWorldGame bitand game, c
     return false;
 }
 
+void StormGamesWorldDialog::CenterOnParentWindow() {
+    QWidget* host_widget = parentWidget() ? parentWidget()->window() : nullptr;
+    QRect avail(0, 0, 1920, 1080);
+    if (QScreen* primary = QGuiApplication::primaryScreen()) {
+        avail = primary->availableGeometry();
+    }
+    const QRect host = host_widget ? host_widget->geometry() : avail;
+    if (QScreen* scr = (host_widget && host_widget->screen())
+                           ? host_widget->screen()
+                           : QGuiApplication::screenAt(host.center())) {
+        avail = scr->availableGeometry();
+    }
+
+    const int target_w = std::min(avail.width(), std::max(minimumWidth(), host.width() - 200));
+    const int target_h = std::min(avail.height(), std::max(minimumHeight(), host.height() - 200));
+    int x = host.x() + (host.width() - target_w) / 2;
+    int y = host.y() + (host.height() - target_h) / 2;
+    x = std::clamp(x, avail.left(), std::max(avail.left(), avail.right() - target_w + 1));
+    y = std::clamp(y, avail.top(), std::max(avail.top(), avail.bottom() - target_h + 1));
+    setGeometry(x, y, target_w, target_h);
+}
+
 void StormGamesWorldDialog::SetupUI() {
     setWindowTitle(tr("STORM SWITCH - Каталог и менеджер игр STORM GAMES WORLD"));
 
     const auto pal = StormTheme::GetThemePalette();
 
-    QSettings settings;
-    const QByteArray saved_geo = settings.value(QStringLiteral("StormGamesWorld/geometry")).toByteArray();
-    if (!saved_geo.isEmpty()) {
-        restoreGeometry(saved_geo);
-    } else if (parentWidget()) {
-        const QRect parent_geom = parentWidget()->geometry();
-        setGeometry(parent_geom);
-    } else {
-        resize(1200, 740);
-    }
-    setMinimumSize(960, 620);
+    setMinimumSize(760, 480);
+    CenterOnParentWindow();
 
     auto* root_layout = new QVBoxLayout(this);
     root_layout->setContentsMargins(14, 14, 14, 14);
@@ -2133,11 +2160,12 @@ void StormGamesWorldDialog::ApplyStormStyles() {
     const QString acc_25 = QStringLiteral("rgba(%1, %2, %3, 0.25)").arg(acc.red()).arg(acc.green()).arg(acc.blue());
     const QString acc_35 = QStringLiteral("rgba(%1, %2, %3, 0.35)").arg(acc.red()).arg(acc.green()).arg(acc.blue());
 
+    const QString ui_font = StormDesign::ResolveActiveUiFontFamily();
     const QString custom_style = QStringLiteral(
         "QDialog {"
         "    background-color: %1;"
         "    color: %2;"
-        "    font-family: 'Segoe UI', sans-serif;"
+        "    font-family: \"%19\", \"Segoe UI\", sans-serif;"
         "}"
         "QFrame#details_panel {"
         "    background: %3;"
@@ -2299,11 +2327,16 @@ void StormGamesWorldDialog::ApplyStormStyles() {
         pal.buttonBorder,
         pal.itemHover,
         pal.textSecondary,
-        pal.accentHover
+        pal.accentHover,
+        ui_font
     );
 
     setProperty("_stormDialogThemed", true);
+    QFont dlg_font = font();
+    dlg_font.setFamily(ui_font);
+    setFont(dlg_font);
     setStyleSheet(StormDesign::BuildDialogStylesheet(pal) + QStringLiteral("\n") + custom_style);
+    StormDesign::PropagateFontToWidgetTree(this, ui_font);
 }
 
 void StormGamesWorldDialog::OnFetchCatalog() {

@@ -89,6 +89,7 @@ private:
 
     // Applet map by aruid.
     std::map<u64, std::shared_ptr<Applet>> m_applets{};
+    bool m_exit_sent{};
 };
 
 } // namespace Service::AM

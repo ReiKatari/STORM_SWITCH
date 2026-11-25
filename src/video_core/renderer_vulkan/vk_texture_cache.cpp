@@ -75,7 +75,7 @@ constexpr VkBorderColor ConvertBorderColor(const std::array<float, 4>& color) {
     } else if (color == std::array<float, 4>{1, 1, 1, 1}) {
         return VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
     }
-    if (color[0] >= 0.5f && color[1] < 0.05f && color[2] < 0.05f) {
+    if (color[0] >= 0.99f && color[1] < 0.01f && color[2] < 0.01f) {
         // Depth/red-channel samplers (shadow maps) store far-plane border 1.0f in R only.
         return VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
     }

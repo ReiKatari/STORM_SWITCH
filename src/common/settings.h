@@ -1173,6 +1173,8 @@ void LogSettings();
 
 void TranslateResolutionInfo(ResolutionSetup setup, ResolutionScalingInfo& info);
 void UpdateRescalingInfo();
+void RequestResolutionUpdate() noexcept;
+[[nodiscard]] bool ConsumeResolutionUpdate() noexcept;
 
 // Restore the global state of all applicable settings in the Values struct
 void RestoreGlobalState(bool is_powered_on);

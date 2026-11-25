@@ -11,6 +11,8 @@
 #include <QComboBox>
 #include <QEasingCurve>
 #include <QEvent>
+#include <QFont>
+#include <QFontDatabase>
 #include <QGraphicsDropShadowEffect>
 #include <QGraphicsOpacityEffect>
 #include <QLineEdit>
@@ -19,7 +21,9 @@
 #include <QPushButton>
 #include <QTabWidget>
 #include <QTimer>
+#include <QSet>
 #include <QStackedWidget>
+#include <QStyle>
 #include <QDialog>
 #include <QVariantAnimation>
 #include <QWidget>
@@ -290,13 +294,9 @@ QString BuildCoreControlsQss(const StormTheme::Palette& pal, const DerivedTokens
     QString qss;
     qss.reserve(8192);
 
-    QString active_font = QString::fromStdString(UISettings::values.ui_font.GetValue());
-    active_font.replace(QLatin1Char('"'), QString());
-    if (active_font.isEmpty()) {
-        active_font = QStringLiteral("Segoe UI");
-    }
+    const QString active_font = ResolveActiveUiFontFamily();
+    qss += BuildUniversalFontQss(active_font);
     qss += QStringLiteral(
-        "QWidget { font-family: \"%4\", \"Segoe UI\", \"Outfit\", sans-serif; }"
         "QLabel, QCheckBox, QRadioButton { color: %1; background: transparent; background-color: transparent; outline: none; }"
         "QLabel:disabled, QCheckBox:disabled, QRadioButton:disabled { color: %3; }"
         "QWidget#StormSettingRow, QGroupBox QLabel, QGroupBox QCheckBox, QGroupBox QRadioButton { background: transparent; background-color: transparent; }"
@@ -307,7 +307,7 @@ QString BuildCoreControlsQss(const StormTheme::Palette& pal, const DerivedTokens
         "QWidget#qt_scrollarea_viewport, QWidget#scrollAreaWidgetContents {"
         "  background: %2; background-color: %2; color: %1; border: none;"
         "}"
-    ).arg(pal.textPrimary, pal.bg, pal.textSecondary, active_font);
+    ).arg(pal.textPrimary, pal.bg, pal.textSecondary);
 
     qss += QStringLiteral("QGroupBox { %1 color: %2; font-weight: bold; }")
                .arg(t.groupBoxRule, pal.textPrimary);
@@ -693,7 +693,9 @@ protected:
                    type == QEvent::FontChange) {
             // Live Theme & Palette Refresh for dialogs (re-entrancy safe for Qt 6.11+)
             if (auto* w = qobject_cast<QWidget*>(watched)) {
-                if (w->property("_stormDialogThemed").toBool() && w->isVisible() &&
+                if (w->property("_stormDialogThemed").toBool() &&
+                    !w->property("_stormCustomConfigDialog").toBool() &&
+                    w->isVisible() &&
                     !w->property("_stormRefreshingStylesheet").toBool()) {
                     const auto pal = StormTheme::GetThemePalette();
                     const QString sig = QStringLiteral("%1|%2|%3|%4|%5|%6").arg(
@@ -1078,6 +1080,123 @@ void InstallGlobalAnimator() {
     }
     qApp->setProperty("_stormDesignAnimatorInstalled", true);
     qApp->installEventFilter(new GlobalDesignAnimator(qApp));
+}
+
+QString ResolveActiveUiFontFamily() {
+    QString desired = QString::fromStdString(UISettings::values.ui_font.GetValue());
+    desired.replace(QLatin1Char('"'), QString());
+    desired = desired.trimmed();
+
+    const QStringList installed = QFontDatabase::families();
+    if (!desired.isEmpty()) {
+        if (installed.contains(desired, Qt::CaseSensitive)) {
+            return desired;
+        }
+        for (const QString& fam : installed) {
+            if (fam.compare(desired, Qt::CaseInsensitive) == 0) {
+                return fam;
+            }
+        }
+    }
+
+    for (const QString& fb : {QStringLiteral("Segoe UI"), QStringLiteral("Segoe UI Variable"),
+                              QStringLiteral("Roboto"), QStringLiteral("Noto Sans"),
+                              QStringLiteral("Arial"), QStringLiteral("Tahoma")}) {
+        if (installed.contains(fb, Qt::CaseInsensitive)) {
+            return fb;
+        }
+    }
+
+    if (qApp) {
+        const QString app_fam = qApp->font().family();
+        if (!app_fam.isEmpty()) {
+            return app_fam;
+        }
+    }
+    return QStringLiteral("Sans Serif");
+}
+
+QString BuildUniversalFontQss(const QString& family) {
+    QString fam = family.isEmpty() ? ResolveActiveUiFontFamily() : family;
+    fam.replace(QLatin1Char('"'), QString());
+    fam.replace(QLatin1Char('\''), QString());
+    return QStringLiteral(
+        "QWidget, QDialog, QMainWindow, QMenuBar, QMenu, QStatusBar, QToolBar, "
+        "QLabel, QPushButton, QToolButton, QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox, "
+        "QCheckBox, QRadioButton, QTabWidget, QTabBar, QTreeView, QListView, QTableView, "
+        "QHeaderView, QGroupBox, QToolTip, QScrollArea, QPlainTextEdit, QTextEdit, QTextBrowser {"
+        "  font-family: \"%1\", \"Segoe UI\", sans-serif;"
+        "}"
+    ).arg(fam);
+}
+
+void PropagateFontToWidgetTree(QWidget* root, const QString& family, const QWidget* skip_widget) {
+    if (family.isEmpty()) {
+        return;
+    }
+
+    const auto is_font_combo_popup = [](const QWidget* w) {
+        for (const QObject* cur = w; cur != nullptr; cur = cur->parent()) {
+            if (cur->property("_stormFontCombo").toBool() && cur != w) {
+                // Do not clobber Qt::FontRole previews inside the font selector popup
+                if (qobject_cast<const QAbstractItemView*>(w) != nullptr ||
+                    QString::fromLatin1(w->metaObject()->className()).contains(QStringLiteral("ComboBox"))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+
+    const auto apply_to_widget = [&](QWidget* w) {
+        if (!w || w == skip_widget || w->property("_stormSkipFontPropagate").toBool() ||
+            is_font_combo_popup(w)) {
+            return;
+        }
+        QFont f = w->font();
+        if (f.family() != family) {
+            f.setFamily(family);
+            w->setFont(f);
+        }
+        if (auto* view = qobject_cast<QAbstractItemView*>(w)) {
+            if (view->viewport()) {
+                QFont vf = view->viewport()->font();
+                if (vf.family() != family) {
+                    vf.setFamily(family);
+                    view->viewport()->setFont(vf);
+                }
+                if (view->isVisible()) {
+                    view->viewport()->update();
+                }
+            }
+            if (view->isVisible()) {
+                view->doItemsLayout();
+            }
+        }
+    };
+
+    if (!root) {
+        if (!qApp) {
+            return;
+        }
+        for (QWidget* top_w : QApplication::topLevelWidgets()) {
+            if (!top_w || (qobject_cast<QDialog*>(top_w) && !top_w->isVisible())) {
+                continue;
+            }
+            apply_to_widget(top_w);
+            const QList<QWidget*> children = top_w->findChildren<QWidget*>();
+            for (QWidget* w : children) {
+                apply_to_widget(w);
+            }
+        }
+        return;
+    }
+
+    apply_to_widget(root);
+    const QList<QWidget*> children = root->findChildren<QWidget*>();
+    for (QWidget* w : children) {
+        apply_to_widget(w);
+    }
 }
 
 } // namespace StormDesign

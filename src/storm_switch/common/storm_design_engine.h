@@ -12,6 +12,8 @@
 #include "common/common_types.h"
 #include "qt_common/config/uisettings.h"
 
+class QWidget;
+
 namespace StormTheme {
 struct Palette;
 }
@@ -53,6 +55,15 @@ QString BuildMainWindowDesignOverlay(const StormTheme::Palette& pal, const std::
 
 /// Installs the lightweight 60/120 FPS interactive 3D hover/press/tab-transition animator on qApp (idempotent)
 void InstallGlobalAnimator();
+
+/// Resolves the configured UI font family against actually installed system fonts
+QString ResolveActiveUiFontFamily();
+
+/// Universal QSS rule applying the active UI font across all widget classes
+QString BuildUniversalFontQss(const QString& family = {});
+
+/// Recursively updates font family across root and descendants while preserving size/weight/italic
+void PropagateFontToWidgetTree(QWidget* root, const QString& family, const QWidget* skip_widget = nullptr);
 
 } // namespace StormDesign
 

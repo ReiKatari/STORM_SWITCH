@@ -37,6 +37,8 @@ namespace ConfigurationShared {
 
 using SettingChangeCallback = std::function<void()>;
 void SetGlobalSettingChangeCallback(SettingChangeCallback cb);
+void RegisterGlobalSettingChangeCallback(uintptr_t id, SettingChangeCallback cb);
+void UnregisterGlobalSettingChangeCallback(uintptr_t id);
 void NotifyGlobalSettingChanged();
 void ReloadAllActiveWidgets();
 void RetranslateAllActiveWidgets();

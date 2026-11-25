@@ -131,6 +131,7 @@ public:
     void TiledCacheBarrier() override;
     void FlushCommands() override;
     void TickFrame() override;
+    bool ApplyPendingResolutionChange();
     bool AccelerateConditionalRendering() override;
     bool HasDrawTransformFeedback() override;
     bool AccelerateSurfaceCopy(const Tegra::Engines::Fermi2D::Surface& src,
@@ -172,7 +173,9 @@ private:
     static constexpr const u64 NEEDS_D24[] = {
         0x01007EF00011E000ULL, // The Legend of Zelda: Breath of the Wild
         0x01006A800016E000ULL, // SSBU
+        0x0100FF500E34A000ULL, // Xenoblade Chronicles: Definitive Edition
         0x0100E95004038000ULL, // XC2
+        0x010074F013262000ULL, // Xenoblade Chronicles 3
         0x0100A6301214E000ULL, // FE:Engage
         0x0100F2C0115B6000ULL, // Zelda: Tears of the Kingdom
         0x01008CF01BAAC000ULL, // Zelda: Echoes of Wisdom

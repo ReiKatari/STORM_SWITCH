@@ -68,8 +68,11 @@ template <class P>
 BufferCache<P>::~BufferCache() = default;
 
 template <class P>
-void BufferCache<P>::RunGarbageCollector(bool aggressive_gc) {
-    const u64 ticks_to_destroy = aggressive_gc ? 60 : 120;
+void BufferCache<P>::RunGarbageCollector(bool aggressive_gc, u64 idle_frames) {
+    const u64 ticks_to_destroy = idle_frames != 0 ? idle_frames : aggressive_gc ? 60 : 120;
+    if (frame_tick <= ticks_to_destroy) {
+        return;
+    }
     int num_iterations = aggressive_gc ? 64 : 32;
     // Their GPU-written data is downloaded first, all with one wait for the GPU: one wait per
     // buffer stalled the GPU thread every frame on title 1 (an 8 GB GPU near its budget, no
@@ -140,6 +143,8 @@ void BufferCache<P>::TickFrame() {
         // Collect when the buffers themselves are large.
         if (buffer_bytes >= 1_GiB) {
             RunGarbageCollector(buffer_bytes >= 2_GiB);
+        } else {
+            RunGarbageCollector(false, 3600);
         }
     } else {
         const bool vram_gc = Settings::values.vram_garbage_collection.GetValue();
@@ -147,12 +152,16 @@ void BufferCache<P>::TickFrame() {
         const u64 gc_threshold = vram_gc ? minimum_memory : critical_memory;
         if (buffer_bytes >= gc_threshold) {
             RunGarbageCollector(buffer_bytes >= critical_memory);
+        } else if (vram_gc) {
+            RunGarbageCollector(false, 3600);
         }
 #else
         const u64 gc_threshold = vram_gc ? minimum_memory : critical_memory;
         if (buffer_bytes >= gc_threshold ||
             (total_used_memory >= critical_memory && buffer_bytes >= minimum_memory)) {
             RunGarbageCollector(total_used_memory >= critical_memory);
+        } else {
+            RunGarbageCollector(false, 3600);
         }
 #endif
     }

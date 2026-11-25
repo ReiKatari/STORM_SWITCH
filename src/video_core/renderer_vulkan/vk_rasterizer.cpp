@@ -699,6 +699,7 @@ void RasterizerVulkan::Clear(u32 layer_count) {
     }
 
     auto& regs = maxwell3d->regs;
+
     const bool use_color = regs.clear_surface.R || regs.clear_surface.G || regs.clear_surface.B ||
                            regs.clear_surface.A;
     const bool use_depth = regs.clear_surface.Z;
@@ -1385,7 +1386,24 @@ void RasterizerVulkan::FlushCommands() {
     scheduler.Flush();
 }
 
+bool RasterizerVulkan::ApplyPendingResolutionChange() {
+    if (!Settings::ConsumeResolutionUpdate()) {
+        return false;
+    }
+    // Drain all prior command buffers and deferred clears BEFORE mutating global resolution_info,
+    // rescaling TextureCache images, and tearing down compiled pipelines.
+    scheduler.Finish();
+    Settings::UpdateRescalingInfo();
+    {
+        std::scoped_lock lock{texture_cache.mutex};
+        texture_cache.HandleLiveResolutionChange();
+    }
+    pipeline_cache.HandleLiveResolutionChange();
+    return true;
+}
+
 void RasterizerVulkan::TickFrame() {
+    ApplyPendingResolutionChange();
     draw_counter = 0;
     guest_descriptor_queue.TickFrame();
     compute_pass_descriptor_queue.TickFrame();

@@ -98,10 +98,12 @@ public:
                         Vec Vt) override;
 
     // Loads and stores - advanced SIMD Load/Store multiple structures
-    // _1: No offset variant
+    // _1: No offset variant, _2: Post-index variant
     bool STx_mult_1(bool Q, Imm<4> opcode, Imm<2> size, Reg Rn, Vec Vt) override;
+    bool STx_mult_2(bool Q, Reg Rm, Imm<4> opcode, Imm<2> size, Reg Rn, Vec Vt) override;
 
 private:
+    size_t StoreMultipleStructures(bool Q, Imm<4> opcode, Imm<2> size, Reg Rn, Vec Vt);
     Core::Memory::Memory& m_memory;
     std::span<u64, 31> m_regs;
     std::span<u128, 32> m_fpsimd_regs;

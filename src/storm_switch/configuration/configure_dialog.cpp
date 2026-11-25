@@ -25,6 +25,7 @@
 #include <QKeyEvent>
 #include <QTimer>
 #include <QScrollBar>
+#include <QStyle>
 #include "common/cpu_features.h"
 #include "common/memory_detect.h"
 #ifdef _WIN32
@@ -145,6 +146,7 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
     setUpdatesEnabled(false);
 
     ui->setupUi(this);
+    setProperty("_stormCustomConfigDialog", true);
 
     ui->tabWidget->addTab(applets_tab.get(), tr("Applets"));
     ui->tabWidget->addTab(audio_tab.get(), tr("Audio"));
@@ -202,13 +204,15 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
     qa_lay->addWidget(m_search_edit, 1);
 
     const QString top_btn_qss = QStringLiteral(
-        "QPushButton { background: %1; color: %2; border: 1px solid %5; border-radius: 6px; padding: 5px 12px; min-height: 20px; font-weight: 600; font-size: 11px; }"
+        "QPushButton { background: %1; color: %2; border: 1px solid %5; border-radius: 6px; padding: 5px 14px; min-height: 20px; font-weight: 600; font-size: 11px; }"
         "QPushButton:hover { background: %3; color: %4; border: 1px solid %4; }"
     ).arg(cd_pal.card, cd_pal.textPrimary, cd_pal.cardAlt, cd_pal.accent, cd_pal.border);
 
     auto* open_profiles_btn = new QPushButton(StormLang(
         QStringLiteral("Профили настроек"),
         QStringLiteral("Settings Profiles")), top_toolbar);
+    open_profiles_btn->setObjectName(QStringLiteral("StormQuickProfilesBtn"));
+    open_profiles_btn->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
     open_profiles_btn->setCursor(Qt::PointingHandCursor);
     open_profiles_btn->setStyleSheet(top_btn_qss);
     connect(open_profiles_btn, &QPushButton::clicked, this, [this]() {
@@ -223,6 +227,8 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
     auto* open_autoconfig_btn = new QPushButton(StormLang(
         QStringLiteral("Авто-настройка"),
         QStringLiteral("Auto-Config")), top_toolbar);
+    open_autoconfig_btn->setObjectName(QStringLiteral("StormQuickAutoConfigBtn"));
+    open_autoconfig_btn->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
     open_autoconfig_btn->setCursor(Qt::PointingHandCursor);
     open_autoconfig_btn->setStyleSheet(top_btn_qss);
     connect(open_autoconfig_btn, &QPushButton::clicked, this, [this]() {
@@ -381,13 +387,14 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry_,
     StormUI::StructureEngine::InstallEscDismiss(this);
 
     SetupConflictBanner();
-    ConfigurationShared::SetGlobalSettingChangeCallback([this]() {
+    ConfigurationShared::RegisterGlobalSettingChangeCallback(reinterpret_cast<uintptr_t>(this), [this]() {
         CheckConflicts();
     });
     CheckConflicts();
 }
 
 ConfigureDialog::~ConfigureDialog() {
+    ConfigurationShared::UnregisterGlobalSettingChangeCallback(reinterpret_cast<uintptr_t>(this));
     ConfigurationShared::UnregisterReloadCallback(reinterpret_cast<uintptr_t>(this));
 }
 
@@ -611,17 +618,17 @@ void ConfigureDialog::PopulateSelectionList() {
     input_subtabs.append(hotkeys_tab.get());
 
     const std::array<std::pair<QString, QList<QWidget*>>, 6> items{
-        {{StormLang(QStringLiteral("Общие"), QStringLiteral("General"), QStringLiteral("Allgemein"), QStringLiteral("Général"), QStringLiteral("通用"), QStringLiteral("全般")),
+        {{StormLangStorm11(QStringLiteral("Общие"), QStringLiteral("General"), QStringLiteral("Allgemein"), QStringLiteral("Général"), QStringLiteral("通用"), QStringLiteral("일반"), QStringLiteral("全般"), QStringLiteral("General"), QStringLiteral("Generale"), QStringLiteral("Geral"), QStringLiteral("सामान्य")),
           {general_tab.get(), ui_tab.get(), debug_tab_tab.get()}},
-         {StormLang(QStringLiteral("Система"), QStringLiteral("System"), QStringLiteral("System"), QStringLiteral("Système"), QStringLiteral("系统"), QStringLiteral("システム")),
+         {StormLangStorm11(QStringLiteral("Система"), QStringLiteral("System"), QStringLiteral("System"), QStringLiteral("Système"), QStringLiteral("系统"), QStringLiteral("시스템"), QStringLiteral("システム"), QStringLiteral("Sistema"), QStringLiteral("Sistema"), QStringLiteral("Sistema"), QStringLiteral("सिस्टम")),
           {system_tab.get(), cpu_tab.get(), filesystem_tab.get(), profile_tab.get(), applets_tab.get()}},
-         {StormLang(QStringLiteral("Графика"), QStringLiteral("Graphics"), QStringLiteral("Grafik"), QStringLiteral("Graphismes"), QStringLiteral("图形"), QStringLiteral("グラフィックス")),
+         {StormLangStorm11(QStringLiteral("Графика"), QStringLiteral("Graphics"), QStringLiteral("Grafik"), QStringLiteral("Graphismes"), QStringLiteral("图形"), QStringLiteral("그래픽"), QStringLiteral("グラフィックス"), QStringLiteral("Gráficos"), QStringLiteral("Grafica"), QStringLiteral("Gráficos"), QStringLiteral("ग्राफिक्स")),
           {graphics_tab.get(), graphics_advanced_tab.get(), graphics_extensions_tab.get()}},
-         {StormLang(QStringLiteral("Звук"), QStringLiteral("Audio"), QStringLiteral("Audio"), QStringLiteral("Audio"), QStringLiteral("音频"), QStringLiteral("オーディオ")),
+         {StormLangStorm11(QStringLiteral("Звук"), QStringLiteral("Audio"), QStringLiteral("Audio"), QStringLiteral("Audio"), QStringLiteral("音频"), QStringLiteral("오디오"), QStringLiteral("オーディオ"), QStringLiteral("Audio"), QStringLiteral("Audio"), QStringLiteral("Áudio"), QStringLiteral("ऑडियो")),
           {audio_tab.get()}},
-         {StormLang(QStringLiteral("Управление"), QStringLiteral("Controls"), QStringLiteral("Steuerung"), QStringLiteral("Commandes"), QStringLiteral("控制"), QStringLiteral("操作")),
+         {StormLangStorm11(QStringLiteral("Управление"), QStringLiteral("Controls"), QStringLiteral("Steuerung"), QStringLiteral("Commandes"), QStringLiteral("控制"), QStringLiteral("컨트롤"), QStringLiteral("操作"), QStringLiteral("Controles"), QStringLiteral("Controlli"), QStringLiteral("Controles"), QStringLiteral("नियंत्रण")),
           input_subtabs},
-         {StormLang(QStringLiteral("Сеть и веб"), QStringLiteral("Network & Web"), QStringLiteral("Netzwerk & Web"), QStringLiteral("Réseau et Web"), QStringLiteral("网络与 Web"), QStringLiteral("ネットワーク & Web")),
+         {StormLangStorm11(QStringLiteral("Сеть и веб"), QStringLiteral("Network & Web"), QStringLiteral("Netzwerk & Web"), QStringLiteral("Réseau et Web"), QStringLiteral("网络与 Web"), QStringLiteral("네트워크 및 웹"), QStringLiteral("ネットワーク & Web"), QStringLiteral("Red y Web"), QStringLiteral("Rete e Web"), QStringLiteral("Rede e Web"), QStringLiteral("नेटवर्क और वेब")),
           {network_tab.get(), web_tab.get()}}},
     };
 
@@ -681,9 +688,7 @@ void ConfigureDialog::ApplyDesignTheme() {
 
 void ConfigureDialog::DoApplyDesignTheme() {
     setUpdatesEnabled(false);
-    const QString active_fnt = UISettings::values.ui_font.GetValue().empty()
-                                   ? QStringLiteral("Segoe UI")
-                                   : QString::fromStdString(UISettings::values.ui_font.GetValue());
+    const QString active_fnt = StormDesign::ResolveActiveUiFontFamily();
     QFont base_fnt(active_fnt, 9);
     setFont(base_fnt);
     if (ui->tabWidget && ui->tabWidget->tabBar()) {
@@ -707,7 +712,21 @@ void ConfigureDialog::DoApplyDesignTheme() {
         }
     }
     const auto pal = StormTheme::GetThemePalette();
+    if (style()) {
+        style()->unpolish(this);
+    }
+    setStyleSheet(QString());
+    StormDesign::PropagateFontToWidgetTree(this, active_fnt);
     setStyleSheet(StormDesign::BuildConfigDialogStylesheet(pal, false) + StormCancelButtonQssRule());
+    if (style()) {
+        style()->polish(this);
+    }
+    for (const QString& btn_name : {QStringLiteral("StormQuickProfilesBtn"), QStringLiteral("StormQuickAutoConfigBtn")}) {
+        if (auto* qb = findChild<QPushButton*>(btn_name)) {
+            qb->adjustSize();
+            qb->updateGeometry();
+        }
+    }
 
     if (m_restore_defaults_btn) {
         m_restore_defaults_btn->setStyleSheet(QStringLiteral(
@@ -922,7 +941,11 @@ void ConfigureDialog::OnRestoreDefaultsClicked() {
     }
 
     Settings::UpdateGPUAccuracy();
-    Settings::UpdateRescalingInfo();
+    if (system.IsPoweredOn()) {
+        Settings::RequestResolutionUpdate();
+    } else {
+        Settings::UpdateRescalingInfo();
+    }
 
     ReloadAllTabs();
 

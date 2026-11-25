@@ -355,7 +355,8 @@ void WindowSystem::PruneTerminatedAppletsLocked() {
     }
 
     // If the last applet has exited, exit the system.
-    if (m_applets.empty()) {
+    if (m_applets.empty() && !m_exit_sent) {
+        m_exit_sent = true;
         m_system.Exit();
     }
 }

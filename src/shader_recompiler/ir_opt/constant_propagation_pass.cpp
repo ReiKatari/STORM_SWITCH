@@ -724,6 +724,9 @@ bool FindGradient3DDerivatives(std::array<IR::Value, 3>& results, IR::Value coor
     }
     const auto check_through_shuffle = [](IR::Value input, IR::Value& result) {
         const IR::Value value_1{GetThroughCast(input.Resolve(), IR::Opcode::BitCastF32U32)};
+        if (value_1.IsImmediate()) {
+            return false;
+        }
         IR::Inst* const inst2{value_1.InstRecursive()};
         if (inst2->GetOpcode() == IR::Opcode::QuadBroadcast) {
             if (!inst2->Arg(1).Resolve().IsImmediate()) {
@@ -755,6 +758,9 @@ bool FindGradient3DDerivatives(std::array<IR::Value, 3>& results, IR::Value coor
     IR::Value value_1 = inst->Arg(0).Resolve();
     IR::Value value_2 = inst->Arg(1).Resolve();
     IR::Value value_3 = inst->Arg(2).Resolve();
+    if (value_1.IsImmediate() || value_2.IsImmediate() || !value_3.IsImmediate()) {
+        return false;
+    }
     std::array<u32, 4> swizzles_mask_a{};
     std::array<u32, 4> swizzles_mask_b{};
     const auto resolve_mask = [](std::array<u32, 4>& mask_results, IR::Value mask) {
@@ -766,8 +772,15 @@ bool FindGradient3DDerivatives(std::array<IR::Value, 3>& results, IR::Value coor
     resolve_mask(swizzles_mask_a, value_3);
     size_t coordinate_index = 0;
     const auto resolve_pending = [&](IR::Value resolve_v) {
+        if (resolve_v.IsImmediate()) {
+            return false;
+        }
         IR::Inst* const inst_r = resolve_v.InstRecursive();
         if (inst_r->GetOpcode() != IR::Opcode::FSwizzleAdd) {
+            return false;
+        }
+        const IR::Value mask_b = inst_r->Arg(2).Resolve();
+        if (!mask_b.IsImmediate()) {
             return false;
         }
         if (!check_through_shuffle(inst_r->Arg(0).Resolve(), temporary_values[1])) {
@@ -776,12 +789,9 @@ bool FindGradient3DDerivatives(std::array<IR::Value, 3>& results, IR::Value coor
         if (!check_through_shuffle(inst_r->Arg(1).Resolve(), temporary_values[2])) {
             return false;
         }
-        resolve_mask(swizzles_mask_b, inst_r->Arg(2).Resolve());
+        resolve_mask(swizzles_mask_b, mask_b);
         return true;
     };
-    if (value_1.IsImmediate() || value_2.IsImmediate()) {
-        return false;
-    }
     bool should_continue = false;
     if (resolve_pending(value_1)) {
         should_continue = check_through_shuffle(value_2, temporary_values[0]);

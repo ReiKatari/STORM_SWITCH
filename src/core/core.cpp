@@ -1485,7 +1485,11 @@ void System::Exit() {
 
 void System::ApplySettings() {
     Settings::UpdateGPUAccuracy();
-    Settings::UpdateRescalingInfo();
+    if (IsPoweredOn()) {
+        Settings::RequestResolutionUpdate();
+    } else {
+        Settings::UpdateRescalingInfo();
+    }
     impl->RefreshTime(*this);
 
     if (IsPoweredOn()) {

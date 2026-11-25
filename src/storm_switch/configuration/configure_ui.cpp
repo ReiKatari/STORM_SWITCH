@@ -32,6 +32,9 @@
 #include <QDirIterator>
 
 #include <QFileDialog>
+#include <QFont>
+#include <QFontDatabase>
+#include <QSet>
 
 #include <QString>
 
@@ -268,10 +271,64 @@ ConfigureUi::ConfigureUi(Core::System& system_, QWidget* parent)
 
 
 
+        ui->font_combobox->setProperty("_stormFontCombo", true);
+    const QStringList all_families = QFontDatabase::families();
+    QSet<QString> seen_fonts;
+    const auto add_font_entry = [&](const QString& fam) {
+        const QString key = fam.toLower();
+        if (fam.isEmpty() || seen_fonts.contains(key)) {
+            return;
+        }
+        seen_fonts.insert(key);
+        const int row = ui->font_combobox->count();
+        ui->font_combobox->addItem(fam, fam);
+        QFont preview_font(fam, 10);
+        ui->font_combobox->setItemData(row, preview_font, Qt::FontRole);
+    };
+    // Curated UI fonts that are actually installed on this system go first
     for (const auto* fnt : UISettings::canonical_fonts) {
-
-        ui->font_combobox->addItem(QString::fromUtf8(fnt), QString::fromUtf8(fnt));
-
+        const QString fam = QString::fromUtf8(fnt);
+        if (all_families.contains(fam, Qt::CaseInsensitive)) {
+            for (const QString& real_fam : all_families) {
+                if (real_fam.compare(fam, Qt::CaseInsensitive) == 0) {
+                    add_font_entry(real_fam);
+                    break;
+                }
+            }
+        }
+    }
+    for (const char* rec : {"Segoe UI", "Segoe UI Variable", "Cascadia Code", "Cascadia Mono",
+                            "Bahnschrift", "Calibri", "Consolas", "Trebuchet MS", "Verdana",
+                            "Tahoma", "Arial", "Georgia", "Cambria", "Candara", "Corbel",
+                            "Roboto", "Noto Sans", "Ubuntu"}) {
+        const QString fam = QString::fromUtf8(rec);
+        for (const QString& real_fam : all_families) {
+            if (real_fam.compare(fam, Qt::CaseInsensitive) == 0) {
+                add_font_entry(real_fam);
+                break;
+            }
+        }
+    }
+    QStringList remaining_fonts;
+    for (const QString& fam : all_families) {
+        if (seen_fonts.contains(fam.toLower())) {
+            continue;
+        }
+        if (fam.startsWith(QLatin1Char('@'))) {
+            continue;
+        }
+        const auto ws = QFontDatabase::writingSystems(fam);
+        if (!ws.contains(QFontDatabase::Cyrillic) && !ws.contains(QFontDatabase::Latin)) {
+            continue;
+        }
+        if (QFontDatabase::isBitmapScalable(fam) && !QFontDatabase::isSmoothlyScalable(fam)) {
+            continue;
+        }
+        remaining_fonts.append(fam);
+    }
+    remaining_fonts.sort(Qt::CaseInsensitive);
+    for (const QString& fam : remaining_fonts) {
+        add_font_entry(fam);
     }
 
     connect(ui->font_combobox, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
@@ -396,9 +453,10 @@ void ConfigureUi::ApplyConfiguration() {
 
         ui->accent_combobox->itemData(ui->accent_combobox->currentIndex()).toString().toStdString();
 
-    UISettings::values.ui_font =
-
-        ui->font_combobox->itemData(ui->font_combobox->currentIndex()).toString().toStdString();
+    if (ui->font_combobox && ui->font_combobox->currentIndex() >= 0) {
+        UISettings::values.ui_font =
+            ui->font_combobox->itemData(ui->font_combobox->currentIndex()).toString().toStdString();
+    }
 
     UISettings::values.show_add_ons = ui->show_add_ons->isChecked();
 
@@ -485,15 +543,13 @@ void ConfigureUi::SetConfiguration() {
     }
 
     {
-
         const QSignalBlocker blocker(ui->font_combobox);
-
-        const auto cur_fnt = QString::fromStdString(UISettings::values.ui_font.GetValue());
-
-        const int idx = ui->font_combobox->findData(cur_fnt);
-
+        const QString resolved_fnt = StormDesign::ResolveActiveUiFontFamily();
+        int idx = ui->font_combobox->findData(resolved_fnt, Qt::UserRole, Qt::MatchFixedString);
+        if (idx < 0) {
+            idx = ui->font_combobox->findText(resolved_fnt, Qt::MatchFixedString);
+        }
         ui->font_combobox->setCurrentIndex(idx >= 0 ? idx : 0);
-
     }
 
     {
@@ -633,9 +689,18 @@ void ConfigureUi::RetranslateUI() {
 
 
     if (ui->theme_label) {
-
-        ui->theme_label->setText(tr("Theme:"));
-
+        ui->theme_label->setText(StormLangStorm11(
+            QStringLiteral("Тема оформления:"),
+            QStringLiteral("Theme:"),
+            QStringLiteral("Design:"),
+            QStringLiteral("Thème :"),
+            QStringLiteral("主题:"),
+            QStringLiteral("테마:"),
+            QStringLiteral("テーマ:"),
+            QStringLiteral("Tema:"),
+            QStringLiteral("Tema:"),
+            QStringLiteral("Tema:"),
+            QStringLiteral("थीम:")));
     }
 
     if (ui->accent_label) {
@@ -944,25 +1009,14 @@ void ConfigureUi::OnAccentChanged(int index) {
 
 
 void ConfigureUi::OnFontChanged(int index) {
-
-    if (index < 0 || index >= ui->font_combobox->count())
-
+    if (index < 0 || index >= ui->font_combobox->count()) {
         return;
-
-
-
-    const auto fnt_name = ui->font_combobox->itemData(index).toString();
-
-    if (!fnt_name.isEmpty()) {
-
-        UISettings::values.ui_font = fnt_name.toStdString();
-
-        emit FontChanged(fnt_name);
-
-        emit ThemeChanged(ui->theme_combobox->currentData().toString());
-
     }
-
+    const auto fnt_name = ui->font_combobox->itemData(index).toString();
+    if (!fnt_name.isEmpty()) {
+        UISettings::values.ui_font = fnt_name.toStdString();
+        emit FontChanged(fnt_name);
+    }
 }
 
 

@@ -57,6 +57,7 @@
 namespace ConfigurationShared {
 
 static SettingChangeCallback s_setting_change_cb = nullptr;
+static std::unordered_map<uintptr_t, SettingChangeCallback> s_setting_change_listeners;
 static std::vector<Widget*> s_active_widgets;
 static std::unordered_map<uintptr_t, std::function<void()>> s_reload_callbacks;
 
@@ -64,9 +65,23 @@ void SetGlobalSettingChangeCallback(SettingChangeCallback cb) {
     s_setting_change_cb = std::move(cb);
 }
 
+void RegisterGlobalSettingChangeCallback(uintptr_t id, SettingChangeCallback cb) {
+    s_setting_change_listeners[id] = std::move(cb);
+}
+
+void UnregisterGlobalSettingChangeCallback(uintptr_t id) {
+    s_setting_change_listeners.erase(id);
+}
+
 void NotifyGlobalSettingChanged() {
     if (s_setting_change_cb) {
         s_setting_change_cb();
+    }
+    auto listeners = s_setting_change_listeners;
+    for (auto& [id, cb] : listeners) {
+        if (cb && s_setting_change_listeners.contains(id)) {
+            cb();
+        }
     }
 }
 

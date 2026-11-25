@@ -487,7 +487,11 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
         connect(btn, &QPushButton::clicked, this, [this, apply_fn]() {
             apply_fn();
             Settings::UpdateGPUAccuracy();
-            Settings::UpdateRescalingInfo();
+            if (system.IsPoweredOn()) {
+                Settings::RequestResolutionUpdate();
+            } else {
+                Settings::UpdateRescalingInfo();
+            }
             SetConfiguration();
             ConfigurationShared::ReloadAllActiveWidgets();
             ConfigurationShared::NotifyGlobalSettingChanged();

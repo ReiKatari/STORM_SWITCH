@@ -186,6 +186,26 @@ void InterpreterVisitor::SetSp(u64 value) {
 }
 
 bool InterpreterVisitor::STx_mult_1(bool Q, Imm<4> opcode, Imm<2> size, Reg Rn, Vec Vt) {
+    return StoreMultipleStructures(Q, opcode, size, Rn, Vt) != 0;
+}
+
+bool InterpreterVisitor::STx_mult_2(bool Q, Reg Rm, Imm<4> opcode, Imm<2> size, Reg Rn, Vec Vt) {
+    const u64 address = Rn == Reg::SP ? this->GetSp() : this->GetReg(Rn);
+    const u64 increment = Rm == Reg::SP ? 0 : this->GetReg(Rm);
+    const size_t written = StoreMultipleStructures(Q, opcode, size, Rn, Vt);
+    if (written == 0) {
+        return false;
+    }
+    const u64 next_address = address + (Rm == Reg::SP ? written : increment);
+    if (Rn == Reg::SP) {
+        this->SetSp(next_address);
+    } else {
+        this->SetReg(Rn, next_address);
+    }
+    return true;
+}
+
+size_t InterpreterVisitor::StoreMultipleStructures(bool Q, Imm<4> opcode, Imm<2> size, Reg Rn, Vec Vt) {
     static constexpr std::array<u8, 16> register_counts{4, 0, 4, 0, 3, 0, 3, 1,
                                                         2, 0, 2, 0, 0, 0, 0, 0};
     static constexpr std::array<u8, 16> structure_counts{4, 0, 1, 0, 3, 0, 1, 1,
@@ -193,7 +213,7 @@ bool InterpreterVisitor::STx_mult_1(bool Q, Imm<4> opcode, Imm<2> size, Reg Rn, 
     const size_t registers = register_counts[opcode.ZeroExtend()];
     const size_t structures = structure_counts[opcode.ZeroExtend()];
     if (registers == 0 || (size == 0b11 && !Q && structures != 1)) {
-        return false;
+        return 0;
     }
     const size_t vector_bytes = Q ? 16 : 8;
     const size_t element_bytes = size_t{1} << size.ZeroExtend();
@@ -212,7 +232,7 @@ bool InterpreterVisitor::STx_mult_1(bool Q, Imm<4> opcode, Imm<2> size, Reg Rn, 
     }
     const u64 address = Rn == Reg::SP ? this->GetSp() : this->GetReg(Rn);
     m_memory.WriteBlock(address, data.data(), offset);
-    return true;
+    return offset;
 }
 
 bool InterpreterVisitor::Ordered(size_t size, bool L, bool o0, Reg Rn, Reg Rt) {

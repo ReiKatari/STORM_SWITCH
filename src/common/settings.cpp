@@ -10,6 +10,7 @@
 #include <exception>
 #include <stdexcept>
 #endif
+#include <atomic>
 #include <compare>
 #include <cstddef>
 #include <filesystem>
@@ -546,10 +547,24 @@ void TranslateResolutionInfo(ResolutionSetup setup, ResolutionScalingInfo& info)
     info.active = info.up_scale != 1 || info.down_shift != 0;
 }
 
+namespace {
+
+std::atomic<bool> s_resolution_update_pending{false};
+
+} // namespace
+
 void UpdateRescalingInfo() {
     const auto setup = values.resolution_setup.GetValue();
     auto& info = values.resolution_info;
     TranslateResolutionInfo(setup, info);
+}
+
+void RequestResolutionUpdate() noexcept {
+    s_resolution_update_pending.store(true, std::memory_order_release);
+}
+
+bool ConsumeResolutionUpdate() noexcept {
+    return s_resolution_update_pending.exchange(false, std::memory_order_acq_rel);
 }
 
 u32 FrameGenMultiplier() {
