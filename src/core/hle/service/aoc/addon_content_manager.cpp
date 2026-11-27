@@ -437,7 +437,7 @@ Result IAddOnContentManager::PrepareAddOnContent(s32 addon_index, ClientProcessI
 
 Result IAddOnContentManager::GetAddOnContentListChangedEvent(
     OutCopyHandle<Kernel::KReadableEvent> out_event) {
-    LOG_INFO(Service_AOC, "GetAddOnContentListChangedEvent called");
+    LOG_DEBUG(Service_AOC, "GetAddOnContentListChangedEvent called");
 
     *out_event = &aoc_change_event->GetReadableEvent();
 
@@ -446,7 +446,7 @@ Result IAddOnContentManager::GetAddOnContentListChangedEvent(
 
 Result IAddOnContentManager::GetAddOnContentListChangedEventWithProcessId(
     OutCopyHandle<Kernel::KReadableEvent> out_event, ClientProcessId process_id) {
-    LOG_INFO(Service_AOC, "GetAddOnContentListChangedEventWithProcessId called (process_id={})", process_id.pid);
+    LOG_DEBUG(Service_AOC, "GetAddOnContentListChangedEventWithProcessId called (process_id={})", process_id.pid);
 
     *out_event = &aoc_change_event->GetReadableEvent();
 

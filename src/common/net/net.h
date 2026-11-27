@@ -11,12 +11,13 @@
 
 namespace Common::Net {
 
-typedef struct {
+struct Asset {
     std::string name;
     std::string url;
     std::string path;
     std::string filename;
-} Asset;
+    u64 size{0};
+};
 
 typedef struct Release {
     std::string title;
@@ -27,6 +28,7 @@ typedef struct Release {
     std::string host;
 
     std::vector<std::string> assets;
+    std::vector<u64> asset_sizes;
 
     u64 id;
     u64 published;

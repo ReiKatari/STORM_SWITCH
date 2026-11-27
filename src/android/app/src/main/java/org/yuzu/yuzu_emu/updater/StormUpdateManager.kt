@@ -10,27 +10,37 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.preference.PreferenceManager
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
 import org.yuzu.yuzu_emu.BuildConfig
 import org.yuzu.yuzu_emu.NativeLibrary
 import org.yuzu.yuzu_emu.R
-import org.yuzu.yuzu_emu.databinding.DialogDownloadProgressBinding
 import org.yuzu.yuzu_emu.features.settings.model.BooleanSetting
 import org.yuzu.yuzu_emu.utils.Log
 import org.yuzu.yuzu_emu.utils.NativeConfig
 import org.yuzu.yuzu_emu.utils.SmartDns
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
 object StormUpdateManager {
+    private const val PREFS_NAME = "storm_switch_updater"
+    private const val PREF_SKIPPED_VERSION = "skipped_version"
     private const val PREF_HEALED_UPDATE_CHECK_VER = "storm_healed_update_check_ver"
     private const val AUTO_CHECK_COOLDOWN_MS = 120_000L
+    private const val FALLBACK_RELEASE_URL = "https://github.com/ReiKatari/STORM_SWITCH/releases/latest"
+
+    private data class ReleaseCandidate(
+        val release: NativeLibrary.UpdateResult,
+        val sourceMirror: String,
+        val assetSizeBytes: Long,
+        val publishedDateFormatted: String
+    )
 
     private val isChecking = AtomicBoolean(false)
 
@@ -41,7 +51,7 @@ object StormUpdateManager {
     private var dismissedTagInSession: String? = null
 
     fun parseVersionParts(versionStr: String): List<Int> {
-        val clean = versionStr.trim().removePrefix("v").removePrefix("V").trim()
+        val clean = StormUpdateDialogs.cleanVersionName(versionStr)
         val parts = Regex("\\d+").findAll(clean).map { it.value.toIntOrNull() ?: 0 }.toMutableList()
         while (parts.size < 3) {
             parts.add(0)
@@ -59,18 +69,92 @@ object StormUpdateManager {
     }
 
     fun isRemoteVersionNewer(remoteTag: String, currentVer: String): Boolean {
-        val cleanRemote = remoteTag.trim().removePrefix("v").removePrefix("V").trim()
-        val cleanLocal = currentVer.trim().removePrefix("v").removePrefix("V").trim()
+        val cleanRemote = StormUpdateDialogs.cleanVersionName(remoteTag)
+        val cleanLocal = StormUpdateDialogs.cleanVersionName(currentVer)
         if (cleanRemote.isEmpty() || cleanRemote.equals(cleanLocal, ignoreCase = true)) {
             return false
         }
         return compareVersions(cleanRemote, cleanLocal) > 0
     }
 
+    private fun getSkippedVersion(context: Context): String {
+        return try {
+            val prefs = context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            StormUpdateDialogs.cleanVersionName(prefs.getString(PREF_SKIPPED_VERSION, "").orEmpty())
+        } catch (_: Throwable) {
+            ""
+        }
+    }
+
+    private fun setSkippedVersion(context: Context, version: String) {
+        try {
+            val prefs = context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            prefs.edit().putString(PREF_SKIPPED_VERSION, StormUpdateDialogs.cleanVersionName(version)).apply()
+        } catch (_: Throwable) {}
+    }
+
+    private fun clearSkippedVersion(context: Context) {
+        try {
+            val prefs = context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            prefs.edit().remove(PREF_SKIPPED_VERSION).apply()
+        } catch (_: Throwable) {}
+    }
+
+    private fun formatIsoDateToRu(iso: String): String {
+        val trimmed = iso.trim()
+        if (trimmed.isEmpty()) return ""
+        val patterns = listOf(
+            "yyyy-MM-dd'T'HH:mm:ss'Z'",
+            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+            "yyyy-MM-dd'T'HH:mm:ssXXX",
+            "yyyy-MM-dd"
+        )
+        val outFmt = SimpleDateFormat("dd.MM.yyyy", Locale.US)
+        for (pattern in patterns) {
+            try {
+                val parser = SimpleDateFormat(pattern, Locale.US).apply {
+                    timeZone = TimeZone.getTimeZone("UTC")
+                }
+                val date = parser.parse(trimmed)
+                if (date != null) {
+                    return outFmt.format(date)
+                }
+            } catch (_: Throwable) {}
+        }
+        if (trimmed.length >= 10) {
+            val datePart = trimmed.substring(0, 10)
+            val m = Regex("^(\\d{4})-(\\d{2})-(\\d{2})$").matchEntire(datePart)
+            if (m != null) {
+                return "${m.groupValues[3]}.${m.groupValues[2]}.${m.groupValues[1]}"
+            }
+        }
+        return ""
+    }
+
+    private fun expectedVariantSuffix(context: Context): String {
+        val pkg = context.packageName.lowercase(Locale.US)
+        return when {
+            pkg.contains("legacy") -> "_LEGACY.apk"
+            pkg.contains("sdk27") -> "_SDK27.apk"
+            else -> ".apk"
+        }
+    }
+
+    private fun isMatchingVariantNameOrUrl(context: Context, nameOrUrl: String): Boolean {
+        val lower = nameOrUrl.lowercase(Locale.US)
+        if (!lower.endsWith(".apk")) return false
+        val pkg = context.packageName.lowercase(Locale.US)
+        return when {
+            pkg.contains("legacy") -> lower.endsWith("_legacy.apk")
+            pkg.contains("sdk27") -> lower.endsWith("_sdk27.apk")
+            else -> !lower.endsWith("_legacy.apk") && !lower.endsWith("_sdk27.apk")
+        }
+    }
+
     private fun ensureUpdateChecksDefaultEnabled(activity: Activity) {
         try {
             val prefs = PreferenceManager.getDefaultSharedPreferences(activity.applicationContext)
-            val currentVer = BuildConfig.VERSION_NAME.trim()
+            val currentVer = StormUpdateDialogs.cleanVersionName(BuildConfig.VERSION_NAME)
             val healedVer = prefs.getString(PREF_HEALED_UPDATE_CHECK_VER, "")
             if (healedVer != currentVer) {
                 prefs.edit().putString(PREF_HEALED_UPDATE_CHECK_VER, currentVer).apply()
@@ -98,63 +182,111 @@ object StormUpdateManager {
                 return
             }
             lastAutoCheckMs = now
-        } else {
-            Toast.makeText(
-                activity,
-                activity.getString(R.string.storm_checking_updates),
-                Toast.LENGTH_SHORT
-            ).show()
         }
 
         if (!isChecking.compareAndSet(false, true)) return
 
+        val checkCancelled = AtomicBoolean(false)
+        val checkingDialog = if (manual) {
+            StormUpdateDialogs.showCheckingDialog(activity) {
+                checkCancelled.set(true)
+            }
+        } else {
+            null
+        }
+
+        val appContext = activity.applicationContext
+
         Thread {
             try {
-                val candidates = fetchAllRemoteReleases()
-                val currentVersion = BuildConfig.VERSION_NAME.trim()
-                val bestRelease = candidates.maxWithOrNull { a, b -> compareVersions(a.tag, b.tag) }
+                val candidates = fetchAllRemoteReleases(appContext)
+                val currentVersion = StormUpdateDialogs.cleanVersionName(BuildConfig.VERSION_NAME)
+                val bestCandidate = pickBestCandidate(candidates)
 
                 activity.runOnUiThread {
-                    if (activity.isFinishing || activity.isDestroyed) return@runOnUiThread
-                    if (bestRelease == null) {
+                    runCatching { checkingDialog?.dismiss() }
+                    if (activity.isFinishing || activity.isDestroyed || checkCancelled.get()) {
+                        return@runOnUiThread
+                    }
+
+                    if (bestCandidate == null) {
                         if (manual) {
-                            Toast.makeText(
-                                activity,
-                                activity.getString(R.string.update_download_failed),
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            StormUpdateDialogs.showInfoDialog(
+                                activity = activity,
+                                isError = true,
+                                title = activity.getString(R.string.storm_update_error_title),
+                                message = activity.getString(R.string.storm_update_error_unreachable),
+                                onRetry = { checkForUpdates(activity, manual = true) },
+                                onOpenReleasePage = { openUrlSafe(activity, FALLBACK_RELEASE_URL) }
+                            )
                         }
                         return@runOnUiThread
                     }
 
-                    val cleanRemote = bestRelease.tag.trim().removePrefix("v").removePrefix("V").trim()
+                    val bestRel = bestCandidate.release
+                    val cleanRemote = StormUpdateDialogs.cleanVersionName(bestRel.tag)
                     if (!isRemoteVersionNewer(cleanRemote, currentVersion)) {
                         if (manual) {
-                            Toast.makeText(
-                                activity,
-                                activity.getString(R.string.storm_up_to_date_fmt, currentVersion),
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            StormUpdateDialogs.showInfoDialog(
+                                activity = activity,
+                                isError = false,
+                                title = activity.getString(R.string.storm_update_uptodate_title),
+                                message = activity.getString(R.string.storm_update_uptodate_desc),
+                                versionBadge = "STORM SWITCH $currentVersion",
+                                sourceMirror = bestCandidate.sourceMirror
+                            )
                         }
                         return@runOnUiThread
                     }
 
-                    if (!manual && dismissedTagInSession == cleanRemote) {
-                        return@runOnUiThread
+                    if (!manual) {
+                        val skipped = getSkippedVersion(appContext)
+                        if (dismissedTagInSession == cleanRemote || (skipped.isNotEmpty() && skipped == cleanRemote)) {
+                            return@runOnUiThread
+                        }
                     }
 
-                    showUpdateDialog(activity, bestRelease)
+                    val displayInfo = StormUpdateDisplayInfo(
+                        currentVersion = currentVersion,
+                        newVersion = cleanRemote,
+                        releaseNotes = bestRel.body,
+                        sourceMirror = bestCandidate.sourceMirror,
+                        assetSizeBytes = bestCandidate.assetSizeBytes,
+                        publishedDateFormatted = bestCandidate.publishedDateFormatted,
+                        releasePageUrl = bestRel.url.ifBlank { FALLBACK_RELEASE_URL }
+                    )
+
+                    StormUpdateDialogs.showUpdateAvailableDialog(
+                        activity = activity,
+                        info = displayInfo,
+                        onUpdateNow = {
+                            clearSkippedVersion(appContext)
+                            downloadAndInstallUpdate(activity, bestCandidate)
+                        },
+                        onRemindLater = {
+                            dismissedTagInSession = cleanRemote
+                        },
+                        onSkipVersion = {
+                            setSkippedVersion(appContext, cleanRemote)
+                            dismissedTagInSession = cleanRemote
+                        },
+                        onOpenReleasePage = {
+                            openUrlSafe(activity, displayInfo.releasePageUrl)
+                        }
+                    )
                 }
             } catch (_: Throwable) {
-                if (manual) {
-                    activity.runOnUiThread {
-                        if (!activity.isFinishing && !activity.isDestroyed) {
-                            Toast.makeText(
-                                activity,
-                                activity.getString(R.string.update_download_failed),
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
+                activity.runOnUiThread {
+                    runCatching { checkingDialog?.dismiss() }
+                    if (manual && !activity.isFinishing && !activity.isDestroyed && !checkCancelled.get()) {
+                        StormUpdateDialogs.showInfoDialog(
+                            activity = activity,
+                            isError = true,
+                            title = activity.getString(R.string.storm_update_error_title),
+                            message = activity.getString(R.string.storm_update_error_unreachable),
+                            onRetry = { checkForUpdates(activity, manual = true) },
+                            onOpenReleasePage = { openUrlSafe(activity, FALLBACK_RELEASE_URL) }
+                        )
                     }
                 }
             } finally {
@@ -163,8 +295,65 @@ object StormUpdateManager {
         }.start()
     }
 
-    private fun fetchAllRemoteReleases(): List<NativeLibrary.UpdateResult> {
-        val candidates = mutableListOf<NativeLibrary.UpdateResult>()
+    private fun pickBestCandidate(candidates: List<ReleaseCandidate>): ReleaseCandidate? {
+        if (candidates.isEmpty()) return null
+        val sorted = candidates.sortedWith { a, b ->
+            val cmp = compareVersions(b.release.tag, a.release.tag)
+            if (cmp != 0) {
+                cmp
+            } else {
+                val aSgw = a.sourceMirror == "STORM GAMES WORLD"
+                val bSgw = b.sourceMirror == "STORM GAMES WORLD"
+                when {
+                    aSgw && !bSgw -> -1
+                    bSgw && !aSgw -> 1
+                    else -> 0
+                }
+            }
+        }
+        val primary = sorted.first()
+        var mergedBody = primary.release.body
+        var mergedSize = primary.assetSizeBytes
+        var mergedDate = primary.publishedDateFormatted
+        val mergedAssets = primary.release.assets.toMutableList()
+        var mergedUrl = primary.release.url
+
+        for (other in sorted.drop(1)) {
+            if (compareVersions(other.release.tag, primary.release.tag) == 0) {
+                if (mergedBody.isBlank() && other.release.body.isNotBlank()) {
+                    mergedBody = other.release.body
+                }
+                if (mergedSize <= 0L && other.assetSizeBytes > 0L) {
+                    mergedSize = other.assetSizeBytes
+                }
+                if (mergedDate.isBlank() && other.publishedDateFormatted.isNotBlank()) {
+                    mergedDate = other.publishedDateFormatted
+                }
+                if (mergedUrl.isBlank() && other.release.url.isNotBlank()) {
+                    mergedUrl = other.release.url
+                }
+                for (u in other.release.assets) {
+                    if (!mergedAssets.contains(u)) {
+                        mergedAssets.add(u)
+                    }
+                }
+            }
+        }
+
+        val finalRelease = primary.release.copy(
+            body = mergedBody,
+            url = mergedUrl,
+            assets = mergedAssets
+        )
+        return primary.copy(
+            release = finalRelease,
+            assetSizeBytes = mergedSize,
+            publishedDateFormatted = mergedDate
+        )
+    }
+
+    private fun fetchAllRemoteReleases(context: Context): List<ReleaseCandidate> {
+        val candidates = mutableListOf<ReleaseCandidate>()
         val client = OkHttpClient.Builder()
             .dns(SmartDns)
             .connectTimeout(8, TimeUnit.SECONDS)
@@ -173,7 +362,7 @@ object StormUpdateManager {
             .followSslRedirects(true)
             .build()
 
-        // Source 1: Official STORM GAMES WORLD API (fast direct endpoint in RU and Worldwide)
+        // Source 1: Official STORM GAMES WORLD API
         try {
             val sgwReq = Request.Builder()
                 .url("https://stormgamesworld.ru/api/programs?repo=STORM_SWITCH")
@@ -188,16 +377,31 @@ object StormUpdateManager {
                     if (rels != null && rels.length() > 0) {
                         for (idx in 0 until minOf(5, rels.length())) {
                             val rel = rels.getJSONObject(idx)
-                            val ver = rel.optString("version", "").trim().removePrefix("v").removePrefix("V")
+                            val ver = StormUpdateDialogs.cleanVersionName(rel.optString("version", ""))
                             if (ver.isNotEmpty()) {
                                 val title = rel.optString("title", "STORM SWITCH $ver")
                                 val notes = rel.optString("notes", rel.optString("body", ""))
+                                val pubDate = formatIsoDateToRu(
+                                    rel.optString("publishedAt", rel.optString("createdAt", ""))
+                                )
+                                var matchingSize = 0L
                                 val assets = mutableListOf<String>()
                                 val assetsArr = rel.optJSONArray("assets")
                                 if (assetsArr != null) {
                                     for (j in 0 until assetsArr.length()) {
-                                        val dlUrl = assetsArr.getJSONObject(j).optString("downloadUrl", "")
-                                        if (dlUrl.isNotEmpty()) assets.add(dlUrl)
+                                        val aObj = assetsArr.getJSONObject(j)
+                                        val aName = aObj.optString("name", "")
+                                        val dlUrl = aObj.optString("downloadUrl", "")
+                                        val sz = aObj.optLong("size", 0L)
+                                        if (dlUrl.isNotEmpty()) {
+                                            assets.add(dlUrl)
+                                            if (matchingSize == 0L && sz > 0L &&
+                                                (isMatchingVariantNameOrUrl(context, aName) ||
+                                                    isMatchingVariantNameOrUrl(context, dlUrl))
+                                            ) {
+                                                matchingSize = sz
+                                            }
+                                        }
                                     }
                                 }
                                 val ghBase = "https://github.com/ReiKatari/STORM_SWITCH/releases/download/$ver"
@@ -213,12 +417,17 @@ object StormUpdateManager {
                                     )
                                 )
                                 candidates.add(
-                                    NativeLibrary.UpdateResult(
-                                        tag = ver,
-                                        title = title,
-                                        body = notes,
-                                        url = "https://github.com/ReiKatari/STORM_SWITCH/releases/tag/$ver",
-                                        assets = assets.distinct().toMutableList()
+                                    ReleaseCandidate(
+                                        release = NativeLibrary.UpdateResult(
+                                            tag = ver,
+                                            title = title,
+                                            body = notes,
+                                            url = "https://stormgamesworld.ru/programs?repo=STORM_SWITCH",
+                                            assets = assets.distinct().toMutableList()
+                                        ),
+                                        sourceMirror = "STORM GAMES WORLD",
+                                        assetSizeBytes = matchingSize,
+                                        publishedDateFormatted = pubDate
                                     )
                                 )
                                 break
@@ -240,16 +449,29 @@ object StormUpdateManager {
                 if (resp.isSuccessful) {
                     val bodyStr = resp.body?.string().orEmpty()
                     val json = JSONObject(bodyStr)
-                    val tag = json.optString("tag_name", "").trim().removePrefix("v").removePrefix("V")
+                    val tag = StormUpdateDialogs.cleanVersionName(json.optString("tag_name", ""))
                     if (tag.isNotEmpty()) {
                         val title = json.optString("name", "STORM SWITCH $tag")
                         val htmlUrl = json.optString("html_url", "https://github.com/ReiKatari/STORM_SWITCH/releases/tag/$tag")
+                        val pubDate = formatIsoDateToRu(json.optString("published_at", ""))
                         val assetsArr = json.optJSONArray("assets")
                         val assetList = mutableListOf<String>()
+                        var matchingSize = 0L
                         if (assetsArr != null) {
                             for (i in 0 until assetsArr.length()) {
-                                val u = assetsArr.getJSONObject(i).optString("browser_download_url", "")
-                                if (u.isNotEmpty()) assetList.add(u)
+                                val aObj = assetsArr.getJSONObject(i)
+                                val u = aObj.optString("browser_download_url", "")
+                                val aName = aObj.optString("name", "")
+                                val sz = aObj.optLong("size", 0L)
+                                if (u.isNotEmpty()) {
+                                    assetList.add(u)
+                                    if (matchingSize == 0L && sz > 0L &&
+                                        (isMatchingVariantNameOrUrl(context, aName) ||
+                                            isMatchingVariantNameOrUrl(context, u))
+                                    ) {
+                                        matchingSize = sz
+                                    }
+                                }
                             }
                         }
                         val sgwBase = "https://stormgamesworld.ru/uploads/programs/STORM_SWITCH"
@@ -265,12 +487,17 @@ object StormUpdateManager {
                             )
                         )
                         candidates.add(
-                            NativeLibrary.UpdateResult(
-                                tag = tag,
-                                title = title,
-                                body = json.optString("body", ""),
-                                url = htmlUrl,
-                                assets = assetList.distinct().toMutableList()
+                            ReleaseCandidate(
+                                release = NativeLibrary.UpdateResult(
+                                    tag = tag,
+                                    title = title,
+                                    body = json.optString("body", ""),
+                                    url = htmlUrl,
+                                    assets = assetList.distinct().toMutableList()
+                                ),
+                                sourceMirror = "GitHub",
+                                assetSizeBytes = matchingSize,
+                                publishedDateFormatted = pubDate
                             )
                         )
                     }
@@ -282,15 +509,15 @@ object StormUpdateManager {
         if (candidates.isEmpty()) {
             try {
                 val webReq = Request.Builder()
-                    .url("https://github.com/ReiKatari/STORM_SWITCH/releases/latest")
+                    .url(FALLBACK_RELEASE_URL)
                     .header("User-Agent", "Mozilla/5.0")
                     .build()
                 client.newCall(webReq).execute().use { resp ->
                     val finalUrl = resp.request.url.toString()
-                    val match = Regex("/releases/tag/(v?[0-9]+\\\\.[0-9]+(?:\\\\.[0-9]+)*)").find(finalUrl)
+                    val match = Regex("/releases/tag/(v?[0-9]+\\.[0-9]+(?:\\.[0-9]+)*)").find(finalUrl)
                     if (match != null) {
                         val rawTag = match.groupValues[1]
-                        val cleanVer = rawTag.removePrefix("v").removePrefix("V")
+                        val cleanVer = StormUpdateDialogs.cleanVersionName(rawTag)
                         val baseDl = "https://github.com/ReiKatari/STORM_SWITCH/releases/download/$rawTag"
                         val sgwDl = "https://stormgamesworld.ru/uploads/programs/STORM_SWITCH"
                         val assets = mutableListOf(
@@ -302,12 +529,17 @@ object StormUpdateManager {
                             "$baseDl/STORM_SWITCH_${cleanVer}_SDK27.apk"
                         )
                         candidates.add(
-                            NativeLibrary.UpdateResult(
-                                tag = cleanVer,
-                                title = "STORM SWITCH $cleanVer",
-                                body = "",
-                                url = finalUrl,
-                                assets = assets
+                            ReleaseCandidate(
+                                release = NativeLibrary.UpdateResult(
+                                    tag = cleanVer,
+                                    title = "STORM SWITCH $cleanVer",
+                                    body = "",
+                                    url = finalUrl,
+                                    assets = assets
+                                ),
+                                sourceMirror = "GitHub",
+                                assetSizeBytes = 0L,
+                                publishedDateFormatted = ""
                             )
                         )
                     }
@@ -318,46 +550,9 @@ object StormUpdateManager {
         return candidates
     }
 
-    private fun extractCleanSummary(body: String): String {
-        if (body.isBlank()) return ""
-        val beforeDetails = body.substringBefore("<details>").trim()
-        val cleaned = beforeDetails
-            .lines()
-            .map { it.trim() }
-            .filter { it.isNotEmpty() && it != "---" }
-            .joinToString("\\n") { line ->
-                line.removePrefix("> ")
-                    .replace("**", "")
-                    .replace("*", "")
-                    .replace("`", "")
-                    .replace("\u2014", "-")
-                    .replace("\u2013", "-")
-            }
-        return if (cleaned.length > 650) cleaned.take(650) + "..." else cleaned
-    }
-
-    private fun showUpdateDialog(activity: Activity, release: NativeLibrary.UpdateResult) {
-        val cleanTag = release.tag.trim().removePrefix("v").removePrefix("V").trim()
-        val summary = extractCleanSummary(release.body)
-        val baseMsg = activity.getString(R.string.update_available_description, release.title.ifBlank { "STORM SWITCH $cleanTag" })
-        val fullMsg = if (summary.isNotBlank()) "$baseMsg\\n\\n$summary" else baseMsg
-
-        MaterialAlertDialogBuilder(activity)
-            .setTitle(R.string.update_available)
-            .setMessage(fullMsg)
-            .setPositiveButton(R.string.update) { _, _ ->
-                downloadAndInstallUpdate(activity, release)
-            }
-            .setNegativeButton(R.string.cancel) { dialog, _ ->
-                dismissedTagInSession = cleanTag
-                dialog.dismiss()
-            }
-            .show()
-    }
-
     private fun selectMatchingApkUrls(context: Context, release: NativeLibrary.UpdateResult): List<String> {
-        val pkg = context.packageName.lowercase()
-        val cleanVer = release.tag.trim().removePrefix("v").removePrefix("V").trim()
+        val pkg = context.packageName.lowercase(Locale.US)
+        val cleanVer = StormUpdateDialogs.cleanVersionName(release.tag)
 
         val expectedFileName = when {
             pkg.contains("legacy") -> "STORM_SWITCH_${cleanVer}_LEGACY.apk"
@@ -378,14 +573,12 @@ object StormUpdateManager {
         }
 
         val result = mutableListOf<String>()
-        // 1. Primary fast mirror first
         result.add(primaryMirror)
         for (u in matchedFromAssets) {
-            if (u.contains("stormgamesworld.ru", ignoreCase = true)) {
-                if (!result.contains(u)) result.add(u)
+            if (u.contains("stormgamesworld.ru", ignoreCase = true) && !result.contains(u)) {
+                result.add(u)
             }
         }
-        // 2. Secondary GitHub Release mirror
         if (!result.contains(secondaryMirror)) {
             result.add(secondaryMirror)
         }
@@ -396,17 +589,19 @@ object StormUpdateManager {
         return result.distinct()
     }
 
-    private fun downloadAndInstallUpdate(activity: Activity, release: NativeLibrary.UpdateResult) {
+    private fun downloadAndInstallUpdate(activity: Activity, candidate: ReleaseCandidate) {
+        val release = candidate.release
         val matchingUrls = selectMatchingApkUrls(activity, release)
+        val fallbackPage = release.url.ifBlank { FALLBACK_RELEASE_URL }
         if (matchingUrls.isEmpty()) {
-            MaterialAlertDialogBuilder(activity)
-                .setTitle(R.string.update_download_failed)
-                .setMessage(R.string.online_tools_err_all_sources)
-                .setPositiveButton(R.string.retry) { _, _ ->
-                    downloadAndInstallUpdate(activity, release)
-                }
-                .setNegativeButton(R.string.cancel, null)
-                .show()
+            StormUpdateDialogs.showInfoDialog(
+                activity = activity,
+                isError = true,
+                title = activity.getString(R.string.update_download_failed),
+                message = activity.getString(R.string.online_tools_err_all_sources),
+                onRetry = { downloadAndInstallUpdate(activity, candidate) },
+                onOpenReleasePage = { openUrlSafe(activity, fallbackPage) }
+            )
             return
         }
 
@@ -414,56 +609,78 @@ object StormUpdateManager {
         if (!updatesDir.exists()) updatesDir.mkdirs()
         val targetApk = File(updatesDir, "storm_switch_update.apk")
 
-        val dialogBinding = DialogDownloadProgressBinding.inflate(activity.layoutInflater)
-        dialogBinding.downloadProgressBar.isIndeterminate = false
-        dialogBinding.downloadProgressBar.progress = 0
-        dialogBinding.downloadProgressMessage.text = "0% (0.0 MB / 0.0 MB)"
-
         var downloader: APKDownloader? = null
+        val movedToBackground = AtomicBoolean(false)
+        val userCancelled = AtomicBoolean(false)
 
-        val progressDialog = MaterialAlertDialogBuilder(activity)
-            .setTitle(R.string.downloading_update)
-            .setView(dialogBinding.root)
-            .setNegativeButton(R.string.cancel) { dialog, _ ->
+        val progressController = StormUpdateDialogs.showProgressDialog(
+            activity = activity,
+            versionName = release.tag,
+            onMoveToBackground = {
+                movedToBackground.set(true)
+                Toast.makeText(
+                    activity,
+                    activity.getString(R.string.storm_update_background_toast),
+                    Toast.LENGTH_SHORT
+                ).show()
+            },
+            onCancel = {
+                userCancelled.set(true)
                 downloader?.cancel()
                 try { if (targetApk.exists()) targetApk.delete() } catch (_: Throwable) {}
-                dialog.dismiss()
             }
-            .setCancelable(false)
-            .create()
+        )
 
-        progressDialog.show()
+        var lastUiUpdateMs = 0L
+        var lastSpeedSampleMs = System.currentTimeMillis()
+        var lastSpeedSampleBytes = 0L
+        var smoothedSpeedBps = 0.0
 
         downloader = APKDownloader(matchingUrls, targetApk)
         downloader.download(
             onProgress = { percent, currentBytes, totalBytes ->
-                activity.runOnUiThread {
-                    if (activity.isFinishing || activity.isDestroyed) return@runOnUiThread
-                    dialogBinding.downloadProgressBar.progress = percent
-                    val curMb = currentBytes / (1024.0 * 1024.0)
-                    if (totalBytes > 0) {
-                        val totalMb = totalBytes / (1024.0 * 1024.0)
-                        dialogBinding.downloadProgressMessage.text = String.format(
-                            java.util.Locale.US,
-                            "%d%% (%.1f MB / %.1f MB)",
-                            percent,
-                            curMb,
-                            totalMb
-                        )
-                    } else {
-                        dialogBinding.downloadProgressMessage.text = String.format(
-                            java.util.Locale.US,
-                            "%d%% (%.1f MB)",
-                            percent,
-                            curMb
-                        )
+                val now = System.currentTimeMillis()
+                val dtSpeed = now - lastSpeedSampleMs
+                if (dtSpeed >= 180L) {
+                    val dBytes = currentBytes - lastSpeedSampleBytes
+                    if (dBytes >= 0L) {
+                        val instBps = (dBytes.toDouble() * 1000.0) / dtSpeed.toDouble()
+                        smoothedSpeedBps = if (smoothedSpeedBps <= 1.0) {
+                            instBps
+                        } else {
+                            smoothedSpeedBps * 0.65 + instBps * 0.35
+                        }
                     }
+                    lastSpeedSampleMs = now
+                    lastSpeedSampleBytes = currentBytes
+                }
+
+                if (now - lastUiUpdateMs < 120L && percent < 100) {
+                    return@download
+                }
+                lastUiUpdateMs = now
+                val effectiveTotal = if (totalBytes > 0L) totalBytes else candidate.assetSizeBytes
+
+                activity.runOnUiThread {
+                    if (activity.isFinishing || activity.isDestroyed ||
+                        movedToBackground.get() || userCancelled.get()
+                    ) {
+                        return@runOnUiThread
+                    }
+                    progressController.update(
+                        percent = percent,
+                        downloadedBytes = currentBytes,
+                        totalBytes = effectiveTotal,
+                        speedBytesPerSec = smoothedSpeedBps,
+                        statusText = null
+                    )
                 }
             },
             onComplete = { success ->
                 activity.runOnUiThread {
                     if (activity.isFinishing || activity.isDestroyed) return@runOnUiThread
-                    progressDialog.dismiss()
+                    progressController.dismissSafe()
+                    if (userCancelled.get()) return@runOnUiThread
 
                     val archiveInfo = runCatching {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -495,18 +712,28 @@ object StormUpdateManager {
                             }
                         )
                     } else {
-                        MaterialAlertDialogBuilder(activity)
-                            .setTitle(R.string.update_download_failed)
-                            .setMessage(R.string.online_tools_err_all_sources)
-                            .setPositiveButton(R.string.retry) { _, _ ->
-                                downloadAndInstallUpdate(activity, release)
-                            }
-                            .setNegativeButton(R.string.cancel, null)
-                            .setCancelable(false)
-                            .show()
+                        StormUpdateDialogs.showInfoDialog(
+                            activity = activity,
+                            isError = true,
+                            title = activity.getString(R.string.update_download_failed),
+                            message = activity.getString(R.string.online_tools_err_all_sources),
+                            onRetry = { downloadAndInstallUpdate(activity, candidate) },
+                            onOpenReleasePage = { openUrlSafe(activity, fallbackPage) }
+                        )
                     }
                 }
             }
         )
+    }
+
+    private fun openUrlSafe(context: Context, url: String) {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(intent)
+        } catch (e: Throwable) {
+            Log.warning("[StormUpdateManager] Failed to open release URL $url: ${e.message}")
+        }
     }
 }

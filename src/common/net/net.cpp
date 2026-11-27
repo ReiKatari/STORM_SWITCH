@@ -40,7 +40,9 @@ std::vector<Asset> Release::GetPlatformAssets() const {
     // Finds assets based on a hierarchy of regex search strings.
     const auto find_asset = [&found_assets, ref, this](const std::string& name,
                                                        const std::vector<std::string>& suffixes) {
-        for (const std::string& asset : assets) {
+        for (size_t idx = 0; idx < assets.size(); ++idx) {
+            const std::string& asset = assets[idx];
+            const u64 asset_size = idx < asset_sizes.size() ? asset_sizes[idx] : 0ULL;
             for (const auto& suffix : suffixes) {
                 if (asset.ends_with(suffix)) {
                     const std::string_view asset_sv = asset;
@@ -53,6 +55,7 @@ std::vector<Asset> Release::GetPlatformAssets() const {
                         .url = host,
                         .path = asset,
                         .filename = std::string{filename},
+                        .size = asset_size,
                     });
                     return;
                 }
@@ -61,7 +64,7 @@ std::vector<Asset> Release::GetPlatformAssets() const {
     };
 
 #ifdef _WIN32
-    find_asset("Standard", {"win-x64.zip", ".zip", ".7z", ".exe"});
+    find_asset("Standard", {"Windows11.zip", "Windows10.zip", "_Setup.exe", "win-x64.zip", ".zip", ".7z", ".exe"});
 #elif defined(__APPLE__)
 #ifdef ARCHITECTURE_arm64
     find_asset("Standard", {"standard.dmg", "standard.tar.gz", ".dmg", ".tar.gz"});
@@ -129,6 +132,7 @@ std::optional<Release> Release::FromJson(const nlohmann::json& json, const std::
 
         // Assets are easy :)
         rel.assets = json.value("assets", std::vector<std::string>{});
+        rel.asset_sizes.assign(rel.assets.size(), 0ULL);
     } else {
         const auto base_download_url = fmt::format("/{}/releases/download/{}", repo, rel.tag);
 
@@ -136,13 +140,17 @@ std::optional<Release> Release::FromJson(const nlohmann::json& json, const std::
 
         // assets are a bit more complex here. :(
         std::vector<std::string> assets;
+        std::vector<u64> asset_sizes;
         const nlohmann::json& arr = json["assets"];
         for (const auto &obj : arr) {
             const auto url = obj.value("browser_download_url", std::string{});
+            const u64 sz = obj.value("size", 0ULL);
             assets.emplace_back(url);
+            asset_sizes.emplace_back(sz);
         }
 
-        rel.assets = assets;
+        rel.assets = std::move(assets);
+        rel.asset_sizes = std::move(asset_sizes);
     }
 
     return rel;
@@ -308,8 +316,14 @@ static std::vector<Release> ParseStormGamesWorldReleases(const std::string& body
             if (rj.contains("assets") && rj["assets"].is_array()) {
                 for (const auto& aj : rj["assets"]) {
                     const auto name = aj.value("name", std::string{});
-                    if (!name.empty()) {
+                    const auto dl_url = aj.value("downloadUrl", std::string{});
+                    const u64 sz = aj.value("size", 0ULL);
+                    if (!dl_url.empty()) {
+                        rel.assets.emplace_back(dl_url);
+                        rel.asset_sizes.emplace_back(sz);
+                    } else if (!name.empty()) {
                         rel.assets.emplace_back("https://stormgamesworld.ru/uploads/programs/STORM_SWITCH/" + name);
+                        rel.asset_sizes.emplace_back(sz);
                     }
                 }
             }

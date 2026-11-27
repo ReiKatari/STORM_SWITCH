@@ -149,7 +149,7 @@ android {
 
         targetSdk = 35
 
-        versionName = "18.4.6"
+        versionName = "18.4.7"
 
         versionCode = autoVersion
 
@@ -935,7 +935,7 @@ fun getGitVersion(): String {
 
     }
 
-    return "18.4.6"
+    return "18.4.7"
 
 }
 
