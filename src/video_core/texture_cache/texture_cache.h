@@ -757,14 +757,27 @@ ImageViewId TextureCache<P>::VisitImageView(u32 index, bool compute) {
         if (index >= ids.size()) {
             ids.resize(static_cast<size_t>(table.current_limit) + 1, NULL_IMAGE_VIEW_ID);
         }
-        if (IsValidEntry(*gpu_memory, *descriptor)) {
-            // Is new (registered view) on the texture cache side?
-            const auto [pair, is_new_tc] = channel_state->image_views.try_emplace(*descriptor);
-            if (is_new_tc)
-                pair->second = CreateImageView(*descriptor);
+        const auto register_entry = [&](const auto& entry) -> ImageViewId {
+            const auto [pair, is_new_tc] = channel_state->image_views.try_emplace(entry);
+            if (is_new_tc) {
+                pair->second = CreateImageView(entry);
+            }
             PrepareImageView(pair->second, false, false);
             ids[index] = pair->second;
             return pair->second;
+        };
+        if (IsValidEntry(*gpu_memory, *descriptor)) {
+            return register_entry(*descriptor);
+        }
+        if (gpu_memory->UsesNativeTiling() && index > 0 && (index % 32) == 0) {
+            const u32 alt_index = index / 32;
+            typename decltype(table.descriptors)::value_type alt_entry{};
+            gpu_memory->ReadBlockUnsafe(
+                table.current_gpu_addr + static_cast<GPUVAddr>(alt_index) * sizeof(alt_entry),
+                std::addressof(alt_entry), sizeof(alt_entry));
+            if (IsValidEntry(*gpu_memory, alt_entry)) {
+                return register_entry(alt_entry);
+            }
         }
         ids[index] = NULL_IMAGE_VIEW_ID;
         return NULL_IMAGE_VIEW_ID;

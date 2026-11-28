@@ -1582,11 +1582,11 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                 R.array.rendererScalingFilterNames,
                 R.array.rendererScalingFilterValues
             ) {
-                if (IntSetting.RENDERER_SCALING_FILTER.getInt(needsGlobal = false) == 6) {
+                if (IntSetting.RENDERER_SCALING_FILTER.getInt(needsGlobal = false) in setOf(6, 17)) {
                     IntSetting.FSR_SHARPENING_SLIDER.setInt(85)
                 }
                 fsrSliderView?.visibility = if (isSharpnessScalingFilterSelected()) View.VISIBLE else View.GONE
-                fsr2QualityView?.visibility = if (IntSetting.RENDERER_SCALING_FILTER.getInt(needsGlobal = false) == 6) View.VISIBLE else View.GONE
+                fsr2QualityView?.visibility = if (IntSetting.RENDERER_SCALING_FILTER.getInt(needsGlobal = false) in setOf(6, 17)) View.VISIBLE else View.GONE
                 try {
                     NativeLibrary.applySettings()
                 } catch (_: Throwable) {}
@@ -1613,7 +1613,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
                     NativeLibrary.applySettings()
                 } catch (_: Throwable) {}
             }
-            fsr2QualityView.visibility = if (IntSetting.RENDERER_SCALING_FILTER.getInt(needsGlobal = false) == 6) View.VISIBLE else View.GONE
+            fsr2QualityView.visibility = if (IntSetting.RENDERER_SCALING_FILTER.getInt(needsGlobal = false) in setOf(6, 17)) View.VISIBLE else View.GONE
 
             quickSettings.addIntSetting(
                 R.string.renderer_anti_aliasing,
@@ -1819,7 +1819,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
 
     private fun isSharpnessScalingFilterSelected(): Boolean {
         val selectedFilter = IntSetting.RENDERER_SCALING_FILTER.getInt()
-        return selectedFilter == 6 || selectedFilter in resolveSharpnessScalingFilterValues()
+        return selectedFilter in setOf(6, 17) || selectedFilter in resolveSharpnessScalingFilterValues()
     }
 
     private fun resolveSharpnessScalingFilterValues(): Set<Int> {
@@ -1827,6 +1827,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
         val values = resources.getIntArray(R.array.rendererScalingFilterValues)
         val sharpnessFilterNames = setOf(
             getString(R.string.scaling_filter_fsr),
+            getString(R.string.scaling_filter_fsr3),
         )
         return names.asSequence()
             .mapIndexedNotNull { index, name ->

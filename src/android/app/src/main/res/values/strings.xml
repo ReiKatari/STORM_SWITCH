@@ -1254,6 +1254,7 @@
     <string name="scaling_filter_lanczos" translatable="false">Lanczos</string>
     <string name="scaling_filter_scale_force" translatable="false">ScaleForce</string>
     <string name="scaling_filter_fsr" translatable="false">AMD FSR 2.0 (FidelityFX Super Resolution)</string>
+    <string name="scaling_filter_fsr3" translatable="false">AMD FSR 3 (Temporal Upscaling + RCAS)</string>
     <string name="scaling_filter_area" translatable="false">Area</string>
     <string name="scaling_filter_zero_tangent" translatable="false">Zero-Tangent</string>
     <string name="scaling_filter_bspline" translatable="false">B-Spline</string>
@@ -2859,12 +2860,12 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="save_state_load_failed">Slot %1$d is empty or corrupted</string>
     <string name="save_state_confirm_delete">Are you sure you want to delete save state for Slot %1$d?</string>
     <string name="update">Update</string>
-    <string name="fsr2_quality_mode">FSR 2.0 Quality Mode</string>
-    <string name="fsr2_quality_mode_description">Selects the quality preset for AMD FSR 2.0 Temporal Upscaling</string>
-    <string name="fsr2_quality_quality">Quality (1.5x)</string>
-    <string name="fsr2_quality_balanced">Balanced (1.7x)</string>
-    <string name="fsr2_quality_performance">Performance (2.0x)</string>
-    <string name="fsr2_quality_ultra_performance">Ultra Performance (3.0x)</string>
+    <string name="fsr2_quality_mode">FSR 2.0 / 3 Quality Mode</string>
+    <string name="fsr2_quality_mode_description">Selects the quality preset for AMD FSR 2.0 / 3 Temporal Upscaling</string>
+    <string name="fsr2_quality_quality">Quality (67% - 1.5x)</string>
+    <string name="fsr2_quality_balanced">Balanced (59% - 1.7x)</string>
+    <string name="fsr2_quality_performance">Performance (50% - 2.0x)</string>
+    <string name="fsr2_quality_ultra_performance">Ultra Performance (33% - 3.0x)</string>
     <string name="mali_driver_info">Arm Mali / Immortalis GPUs (v7-v12: G31/G52/G57/G78/G610/G710/G615/G715/G620/G720, Android 10+) can use the open-source malisx2 Vulkan 1.3 driver or the system Vulkan driver. Adreno Turnip drivers remain blocked on Mali/Xclipse to prevent crashes.</string>
     <string name="mali_turnip_incompatible_warning">Warning: Adreno Turnip drivers are designed specifically for Qualcomm Adreno GPUs. Installing this driver on a Mali or non-Adreno GPU may cause graphics instability or app crashes. Do you want to continue?</string>
 

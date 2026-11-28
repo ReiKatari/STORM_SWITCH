@@ -122,17 +122,17 @@ class GameInfoFragment : Fragment() {
             val bidText = getGameBuildId(args.game)
             buildIdField?.text = bidText
             buildIdField?.setOnClickListener {
-                if (bidText != "—") {
+                if (bidText != "-") {
                     copyToClipboard("Build ID (BID)", bidText)
                 }
             }
             cardBuildId?.setOnClickListener {
-                if (bidText != "—") {
+                if (bidText != "-") {
                     copyToClipboard("Build ID (BID)", bidText)
                 }
             }
             buttonCopyBuildId?.setOnClickListener {
-                if (bidText != "—") {
+                if (bidText != "-") {
                     copyToClipboard("Build ID (BID)", bidText)
                 }
             }
@@ -168,7 +168,7 @@ class GameInfoFragment : Fragment() {
             val formattedSize = if (fileSizeBytes > 0) {
                 android.text.format.Formatter.formatFileSize(requireContext(), fileSizeBytes)
             } else {
-                "—"
+                "-"
             }
             fileSizeField.text = formattedSize
             fileSizeField.setOnClickListener { copyToClipboard(getString(R.string.file_size), formattedSize) }
@@ -311,7 +311,7 @@ class GameInfoFragment : Fragment() {
             }
         } catch (_: Exception) {}
 
-        return "—"
+        return "-"
     }
 
     private fun copyToClipboard(label: String, body: String) {

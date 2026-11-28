@@ -2022,8 +2022,8 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="button_zr">ZR</string>
     <string name="enable_fast_gpu_time">Enable Fast GPU Time</string>
     <string name="enable_fast_gpu_time_description">Speeds up GPU timer queries to boost performance in games with heavy CPU-GPU synchronization, but may cause visual timing glitches in some titles.</string>
-    <string name="fsr2_quality_mode">FSR 2.0 Quality Mode</string>
-    <string name="fsr2_quality_mode_description">Selects the quality preset for AMD FSR 2.0 Temporal Upscaling</string>
+    <string name="fsr2_quality_mode">FSR 2.0 / 3 kvalitetsmodus</string>
+    <string name="fsr2_quality_mode_description">Velger kvalitetsprofil for AMD FSR 2.0 / 3 temporal oppskalering</string>
     <string name="scaling_filter_fsr">AMD FSR 2.0 (FidelityFX Super Resolution)</string>
     <string name="storm_check_updates_now">Check for Updates Now</string>
     <string name="storm_check_updates_now_desc">Check GitHub and STORM GAMES WORLD for a newer release and install it in place</string>
@@ -2190,10 +2190,10 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="save_state_load_failed">Spor %1$d er tomt eller skadet</string>
     <string name="save_state_confirm_delete">Er du sikker på at du vil slette den lagrede tilstanden for Spor %1$d?</string>
     <string name="update">Oppdater</string>
-    <string name="fsr2_quality_quality">Kvalitet (1.5x)</string>
-    <string name="fsr2_quality_balanced">Balansert (1.7x)</string>
-    <string name="fsr2_quality_performance">Ytelse (2.0x)</string>
-    <string name="fsr2_quality_ultra_performance">Ultraytelse (3.0x)</string>
+    <string name="fsr2_quality_quality">Kvalitet (67% - 1.5x)</string>
+    <string name="fsr2_quality_balanced">Balansert (59% - 1.7x)</string>
+    <string name="fsr2_quality_performance">Ytelse (50% - 2.0x)</string>
+    <string name="fsr2_quality_ultra_performance">Ultraytelse (33% - 3.0x)</string>
     <string name="mali_driver_info">GPU-ene Mali/Immortalis/Xclipse bruker produsentens systemdriver for Vulkan. Upstream Mesa PanVK er eksperimentell og støtter ennå ikke alle Vulkan-utvidelser for Switch. Installasjon av egendefinerte .zip-drivere er fortsatt tilgjengelig for eksperimentelle versjoner, mens Adreno Turnip-drivere filtreres bort for å hindre krasj.</string>
     <string name="mali_turnip_incompatible_warning">Advarsel: Adreno Turnip-drivere er utviklet spesielt for Qualcomm Adreno-GPU-er. Installasjon av denne driveren på Mali eller andre ikke-Adreno-GPU-er kan føre til grafisk ustabilitet eller appkrasj. Vil du fortsette?</string>
     <string name="auto_opt_dialog_subtitle">Intelligent maskinvareprofilering</string>

@@ -17,7 +17,7 @@ import org.yuzu.yuzu_emu.ui.main.MainActivity
  * Quick Settings Tile Service for STORM SWITCH (Ported from STORM DS).
  *
  * Allows Android users to pull down the notification shade and tap the
- * "STORM SWITCH — Quick Resume" tile to jump straight back into their
+ * "STORM SWITCH - Quick Resume" tile to jump straight back into their
  * last played Nintendo Switch game in 1 tap!
  */
 @RequiresApi(Build.VERSION_CODES.N)
@@ -25,7 +25,7 @@ class QuickResumeTileService : TileService() {
 
     companion object {
         private val isRu get() = java.util.Locale.getDefault().language == "ru"
-        val TILE_LABEL get() = if (isRu) "STORM SWITCH — Быстрый запуск" else "STORM SWITCH — Quick Resume"
+        val TILE_LABEL get() = if (isRu) "STORM SWITCH - Быстрый запуск" else "STORM SWITCH - Quick Resume"
 
         fun requestTileUpdate(context: Context) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {

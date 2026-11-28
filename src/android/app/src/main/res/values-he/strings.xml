@@ -2027,8 +2027,8 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="button_zr">ZR</string>
     <string name="enable_fast_gpu_time">Enable Fast GPU Time</string>
     <string name="enable_fast_gpu_time_description">Speeds up GPU timer queries to boost performance in games with heavy CPU-GPU synchronization, but may cause visual timing glitches in some titles.</string>
-    <string name="fsr2_quality_mode">FSR 2.0 Quality Mode</string>
-    <string name="fsr2_quality_mode_description">Selects the quality preset for AMD FSR 2.0 Temporal Upscaling</string>
+    <string name="fsr2_quality_mode">מצב איכות FSR 2.0 / 3</string>
+    <string name="fsr2_quality_mode_description">בוחר את הגדרת האיכות עבור שיפור קנה מידה זמני AMD FSR 2.0 / 3</string>
     <string name="scaling_filter_fsr">AMD FSR 2.0 (FidelityFX Super Resolution)</string>
     <string name="storm_check_updates_now">Check for Updates Now</string>
     <string name="storm_check_updates_now_desc">Check GitHub and STORM GAMES WORLD for a newer release and install it in place</string>
@@ -2194,10 +2194,10 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="save_state_load_failed">חריץ %1$d ריק או פגום</string>
     <string name="save_state_confirm_delete">האם אתה בטוח שברצונך למחוק את מצב השמירה עבור חריץ %1$d?</string>
     <string name="update">עדכן</string>
-    <string name="fsr2_quality_quality">איכות (1.5x)</string>
-    <string name="fsr2_quality_balanced">מאוזן (1.7x)</string>
-    <string name="fsr2_quality_performance">ביצועים (2.0x)</string>
-    <string name="fsr2_quality_ultra_performance">ביצועי אולטרה (3.0x)</string>
+    <string name="fsr2_quality_quality">איכות (67% - 1.5x)</string>
+    <string name="fsr2_quality_balanced">מאוזן (59% - 1.7x)</string>
+    <string name="fsr2_quality_performance">ביצועים (50% - 2.0x)</string>
+    <string name="fsr2_quality_ultra_performance">ביצועי אולטרה (33% - 3.0x)</string>
     <string name="mali_driver_info">מעבדי ה-GPU מסוג Mali/Immortalis/Xclipse משתמשים במנהל ההתקן המערכתי של Vulkan מהיצרן. Mesa PanVK ניסיוני ועדיין אינו תומך במלואו בהרחבות ה-Vulkan של Switch. התקנת מנהלי התקן מותאמים אישית בקובץ .zip נותרת זמינה לגרסאות ניסיוניות, בעוד שמנהלי התקן של Adreno Turnip מסוננים כדי למנוע קריסות.</string>
     <string name="mali_turnip_incompatible_warning">אזהרה: מנהלי ההתקן של Adreno Turnip מיועדים במיוחד למעבדי Qualcomm Adreno. התקנת מנהל התקן זה על Mali או על GPU שאינו Adreno עלולה לגרום לחוסר יציבות גרפית או לקריסת האפליקציה. האם ברצונך להמשיך?</string>
     <string name="auto_opt_dialog_subtitle">פרופיל חומרה חכם</string>

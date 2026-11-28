@@ -323,7 +323,7 @@ inline QString FormatLevelRu(ImpactLevel lvl) {
     case ImpactLevel::High: return QStringLiteral("Высокий");
     case ImpactLevel::Med:  return QStringLiteral("Средний");
     case ImpactLevel::Low:  return QStringLiteral("Низкий");
-    default: return QStringLiteral("—");
+    default: return QStringLiteral("-");
     }
 }
 
@@ -332,7 +332,7 @@ inline QString FormatLevelEn(ImpactLevel lvl) {
     case ImpactLevel::High: return QStringLiteral("High");
     case ImpactLevel::Med:  return QStringLiteral("Medium");
     case ImpactLevel::Low:  return QStringLiteral("Low");
-    default: return QStringLiteral("—");
+    default: return QStringLiteral("-");
     }
 }
 

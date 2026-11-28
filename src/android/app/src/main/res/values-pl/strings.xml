@@ -2069,8 +2069,8 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="button_zr">ZR</string>
     <string name="enable_fast_gpu_time">Enable Fast GPU Time</string>
     <string name="enable_fast_gpu_time_description">Speeds up GPU timer queries to boost performance in games with heavy CPU-GPU synchronization, but may cause visual timing glitches in some titles.</string>
-    <string name="fsr2_quality_mode">FSR 2.0 Quality Mode</string>
-    <string name="fsr2_quality_mode_description">Selects the quality preset for AMD FSR 2.0 Temporal Upscaling</string>
+    <string name="fsr2_quality_mode">Tryb jakości FSR 2.0 / 3</string>
+    <string name="fsr2_quality_mode_description">Wybiera profil jakości dla czasowego skalowania AMD FSR 2.0 / 3</string>
     <string name="scaling_filter_fsr">AMD FSR 2.0 (FidelityFX Super Resolution)</string>
     <string name="storm_check_updates_now">Check for Updates Now</string>
     <string name="storm_check_updates_now_desc">Check GitHub and STORM GAMES WORLD for a newer release and install it in place</string>
@@ -2242,10 +2242,10 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="save_state_load_failed">Slot %1$d jest pusty lub uszkodzony</string>
     <string name="save_state_confirm_delete">Czy na pewno chcesz usunąć stan zapisu dla Slotu %1$d?</string>
     <string name="update">Aktualizuj</string>
-    <string name="fsr2_quality_quality">Jakość (1.5x)</string>
-    <string name="fsr2_quality_balanced">Zrównoważony (1.7x)</string>
-    <string name="fsr2_quality_performance">Wydajność (2.0x)</string>
-    <string name="fsr2_quality_ultra_performance">Ultra wydajność (3.0x)</string>
+    <string name="fsr2_quality_quality">Jakość (67% - 1.5x)</string>
+    <string name="fsr2_quality_balanced">Zrównoważony (59% - 1.7x)</string>
+    <string name="fsr2_quality_performance">Wydajność (50% - 2.0x)</string>
+    <string name="fsr2_quality_ultra_performance">Ultra wydajność (33% - 3.0x)</string>
     <string name="mali_driver_info">Procesory graficzne Mali/Immortalis/Xclipse korzystają z systemowego sterownika Vulkan producenta. Eksperymentalny sterownik Mesa PanVK nie obsługuje jeszcze pełnego zestawu rozszerzeń Vulkan dla Switcha. Instalacja własnych sterowników .zip pozostaje dostępna dla kompilacji eksperymentalnych, a sterowniki Adreno Turnip są filtrowane, aby zapobiegać awariom.</string>
     <string name="mali_turnip_incompatible_warning">Uwaga: sterowniki Adreno Turnip są przeznaczone wyłącznie dla układów Qualcomm Adreno. Instalacja tego sterownika na Mali lub innym GPU może powodować niestabilność grafiki lub awarie aplikacji. Czy chcesz kontynuować?</string>
     <string name="auto_opt_dialog_subtitle">Inteligentne profilowanie sprzętu</string>

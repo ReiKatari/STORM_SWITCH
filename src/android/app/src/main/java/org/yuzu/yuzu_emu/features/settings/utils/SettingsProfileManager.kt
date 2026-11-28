@@ -244,7 +244,7 @@ object SettingsProfileManager {
 
                 name = runCatching { ctx.getString(R.string.storm_prof_preset_balanced_name) }.getOrDefault("Баланс (Рекомендуется)"),
 
-                description = runCatching { ctx.getString(R.string.storm_prof_preset_balanced_desc) }.getOrDefault("Оптимальное сочетание плавности 30–60 FPS, качества картинки 1.0X и стабильности."),
+                description = runCatching { ctx.getString(R.string.storm_prof_preset_balanced_desc) }.getOrDefault("Оптимальное сочетание плавности 30-60 FPS, качества картинки 1.0X и стабильности."),
 
                 isPreset = true,
 

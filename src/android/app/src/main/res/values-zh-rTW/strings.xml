@@ -2068,12 +2068,12 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="scaling_filter_mmpx">MMPX (像素藝術清晰縮放)</string>
     <string name="scaling_filter_cas">AMD FidelityFX CAS (對比度自適應銳化)</string>
     <string name="scaling_filter_omniscale">OmniScale HQ (高精解析度像素重構)</string>
-    <string name="fsr2_quality_mode">FSR 2.0 畫質預設模式</string>
-    <string name="fsr2_quality_mode_description">選擇 AMD FSR 2.0 時間超取樣升頻畫質預設</string>
-    <string name="fsr2_quality_quality">高品質 (1.5x)</string>
-    <string name="fsr2_quality_balanced">平衡 (1.7x)</string>
-    <string name="fsr2_quality_performance">效能優先 (2.0x)</string>
-    <string name="fsr2_quality_ultra_performance">極致效能 (3.0x)</string>
+    <string name="fsr2_quality_mode">FSR 2.0 / 3 畫質預設模式</string>
+    <string name="fsr2_quality_mode_description">選擇 AMD FSR 2.0 / 3 時間超取樣升頻畫質預設</string>
+    <string name="fsr2_quality_quality">高品質 (67% - 1.5x)</string>
+    <string name="fsr2_quality_balanced">平衡 (59% - 1.7x)</string>
+    <string name="fsr2_quality_performance">效能優先 (50% - 2.0x)</string>
+    <string name="fsr2_quality_ultra_performance">極致效能 (33% - 3.0x)</string>
     <string name="mali_driver_info">Mali/Immortalis/Xclipse GPU 使用廠商系統內建的 Vulkan 驅動程式。上游 Mesa PanVK 尚處於實驗階段，尚未完全支援 Switch 所需的 Vulkan 擴充指令集。自訂 .zip 驅動程式安裝仍對測試版本開放，同時已自動過濾 Adreno Turnip 驅動程式以防止當機。</string>
     <string name="mali_turnip_incompatible_warning">警告：Adreno Turnip 驅動程式專為高通驍龍 Adreno GPU 深度自訂。在 Mali、Immortalis 或非 Adreno GPU 上強行安裝此驅動程式可能導致嚴重圖形破圖或應用程式閃退當機。是否仍要繼續安裝？</string>
 

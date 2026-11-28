@@ -318,6 +318,7 @@ static void RefreshDashboardTexts(LoadingDashboardWidgets& dash) {
     case Settings::ScalingFilter::Lanczos: filter_str = QStringLiteral("Lanczos"); break;
     case Settings::ScalingFilter::ScaleForce: filter_str = QStringLiteral("ScaleForce"); break;
     case Settings::ScalingFilter::Fsr: filter_str = QStringLiteral("AMD FSR"); break;
+    case Settings::ScalingFilter::Fsr3: filter_str = QStringLiteral("AMD FSR 3"); break;
     case Settings::ScalingFilter::Area: filter_str = QStringLiteral("Area"); break;
     case Settings::ScalingFilter::Mmpx: filter_str = QStringLiteral("MMPX"); break;
     case Settings::ScalingFilter::ZeroTangent: filter_str = QStringLiteral("Zero-Tangent"); break;

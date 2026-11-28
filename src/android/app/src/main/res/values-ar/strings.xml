@@ -2173,8 +2173,8 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="button_zr">ZR</string>
     <string name="enable_fast_gpu_time">Enable Fast GPU Time</string>
     <string name="enable_fast_gpu_time_description">Speeds up GPU timer queries to boost performance in games with heavy CPU-GPU synchronization, but may cause visual timing glitches in some titles.</string>
-    <string name="fsr2_quality_mode">FSR 2.0 Quality Mode</string>
-    <string name="fsr2_quality_mode_description">Selects the quality preset for AMD FSR 2.0 Temporal Upscaling</string>
+    <string name="fsr2_quality_mode">وضع جودة FSR 2.0 / 3</string>
+    <string name="fsr2_quality_mode_description">يختار إعداد الجودة المسبق للترقية الزمنية AMD FSR 2.0 / 3</string>
     <string name="scaling_filter_fsr">AMD FSR 2.0 (FidelityFX Super Resolution)</string>
     <string name="storm_check_updates_now">Check for Updates Now</string>
     <string name="storm_check_updates_now_desc">Check GitHub and STORM GAMES WORLD for a newer release and install it in place</string>
@@ -2271,10 +2271,10 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="save_state_load_failed">الخانة %1$d فارغة أو تالفة</string>
     <string name="save_state_confirm_delete">هل أنت متأكد أنك تريد حذف حالة الحفظ للخانة %1$d؟</string>
     <string name="update">تحديث</string>
-    <string name="fsr2_quality_quality">الجودة (1.5x)</string>
-    <string name="fsr2_quality_balanced">متوازن (1.7x)</string>
-    <string name="fsr2_quality_performance">الأداء (2.0x)</string>
-    <string name="fsr2_quality_ultra_performance">أداء فائق (3.0x)</string>
+    <string name="fsr2_quality_quality">الجودة (67% - 1.5x)</string>
+    <string name="fsr2_quality_balanced">متوازن (59% - 1.7x)</string>
+    <string name="fsr2_quality_performance">الأداء (50% - 2.0x)</string>
+    <string name="fsr2_quality_ultra_performance">أداء فائق (33% - 3.0x)</string>
     <string name="mali_driver_info">تستخدم معالجات الرسوميات Mali/Immortalis/Xclipse برنامج تشغيل Vulkan النظامي من الشركة المصنعة. برنامج Mesa PanVK لا يزال تجريبياً ولا يدعم بعد جميع ملحقات Vulkan لجهاز Switch. يظل تثبيت برامج التشغيل المخصصة بصيغة .zip متاحاً للبناءات التجريبية، بينما تتم تصفية برامج تشغيل Adreno Turnip لمنع الانهيارات.</string>
     <string name="mali_turnip_incompatible_warning">تحذير: برامج تشغيل Adreno Turnip مصممة خصيصاً لمعالجات Qualcomm Adreno. قد يؤدي تثبيت هذا البرنامج على معالج Mali أو غيره إلى عدم استقرار الرسوميات أو تعطل التطبيق. هل تريد المتابعة؟</string>
     <string name="auto_opt_dialog_subtitle">توصيف ذكي للأجهزة</string>

@@ -324,6 +324,17 @@ Tegra::Texture::TICEntry GenericEnvironment::ReadTextureInfo(GPUVAddr tic_addr, 
     const GPUVAddr descriptor_addr{tic_addr + index * sizeof(Tegra::Texture::TICEntry)};
     Tegra::Texture::TICEntry entry{};
     gpu_memory->ReadBlock(descriptor_addr, &entry, sizeof(entry));
+    if (gpu_memory->UsesNativeTiling() && entry.Address() == 0 && index > 0 && (index % 32) == 0) {
+        const u32 alt_index = index / 32;
+        if (alt_index <= tic_limit) {
+            Tegra::Texture::TICEntry alt_entry{};
+            gpu_memory->ReadBlock(tic_addr + alt_index * sizeof(Tegra::Texture::TICEntry),
+                                  &alt_entry, sizeof(alt_entry));
+            if (alt_entry.Address() != 0) {
+                return alt_entry;
+            }
+        }
+    }
     return entry;
 }
 

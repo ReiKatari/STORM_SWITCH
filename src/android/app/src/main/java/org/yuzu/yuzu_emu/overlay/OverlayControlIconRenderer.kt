@@ -27,7 +27,7 @@ import org.yuzu.yuzu_emu.overlay.model.OverlayTheme
  * Ultra-high-performance procedural vector Canvas/Path renderer for all 28 overlay controls
  * across all 10 approved visual styles.
  *
- * Designed with preallocated Paint, Path, and RectF primitives for locked 60–120 FPS
+ * Designed with preallocated Paint, Path, and RectF primitives for locked 60-120 FPS
  * execution with ZERO heap allocations during onDraw rendering cycles.
  */
 object OverlayControlIconRenderer {

@@ -69,7 +69,8 @@ GLuint Layer::ConfigureDraw(std::array<GLfloat, 3 * 2>& out_matrix,
 
     glDisablei(GL_SCISSOR_TEST, 0);
 
-    if (filters.get_scaling_filter() == Settings::ScalingFilter::Fsr) {
+    const auto gl_scaling = filters.get_scaling_filter();
+    if (gl_scaling == Settings::ScalingFilter::Fsr || gl_scaling == Settings::ScalingFilter::Fsr3) {
         if (!fsr || fsr->NeedsRecreation(layout.screen)) {
             fsr.emplace(layout.screen.GetWidth(), layout.screen.GetHeight());
         }

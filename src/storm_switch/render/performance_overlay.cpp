@@ -1432,6 +1432,7 @@ void PerformanceOverlay::SetupSidebarUI() {
     m_sidebar_scaling_combo->addItem(QStringLiteral("Gaussian (Гауссов)"), static_cast<int>(Settings::ScalingFilter::Gaussian));
     m_sidebar_scaling_combo->addItem(QStringLiteral("ScaleForce"), static_cast<int>(Settings::ScalingFilter::ScaleForce));
     m_sidebar_scaling_combo->addItem(QStringLiteral("AMD FSR"), static_cast<int>(Settings::ScalingFilter::Fsr));
+    m_sidebar_scaling_combo->addItem(QStringLiteral("AMD FSR 3"), static_cast<int>(Settings::ScalingFilter::Fsr3));
     const auto cur_filter = Settings::values.scaling_filter.GetValue();
     const int cur_filter_idx = m_sidebar_scaling_combo->findData(static_cast<int>(cur_filter));
     if (cur_filter_idx >= 0) {

@@ -2034,8 +2034,8 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="button_zr">ZR</string>
     <string name="enable_fast_gpu_time">Enable Fast GPU Time</string>
     <string name="enable_fast_gpu_time_description">Speeds up GPU timer queries to boost performance in games with heavy CPU-GPU synchronization, but may cause visual timing glitches in some titles.</string>
-    <string name="fsr2_quality_mode">FSR 2.0 Quality Mode</string>
-    <string name="fsr2_quality_mode_description">Selects the quality preset for AMD FSR 2.0 Temporal Upscaling</string>
+    <string name="fsr2_quality_mode">Mode Kualitas FSR 2.0 / 3</string>
+    <string name="fsr2_quality_mode_description">Memilih prasetel kualitas untuk peningkatan skala temporal AMD FSR 2.0 / 3</string>
     <string name="scaling_filter_fsr">AMD FSR 2.0 (FidelityFX Super Resolution)</string>
     <string name="storm_check_updates_now">Check for Updates Now</string>
     <string name="storm_check_updates_now_desc">Check GitHub and STORM GAMES WORLD for a newer release and install it in place</string>
@@ -2202,10 +2202,10 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="save_state_load_failed">Slot %1$d kosong atau rusak</string>
     <string name="save_state_confirm_delete">Yakin ingin menghapus save state untuk Slot %1$d?</string>
     <string name="update">Perbarui</string>
-    <string name="fsr2_quality_quality">Kualitas (1.5x)</string>
-    <string name="fsr2_quality_balanced">Seimbang (1.7x)</string>
-    <string name="fsr2_quality_performance">Performa (2.0x)</string>
-    <string name="fsr2_quality_ultra_performance">Performa Ultra (3.0x)</string>
+    <string name="fsr2_quality_quality">Kualitas (67% - 1.5x)</string>
+    <string name="fsr2_quality_balanced">Seimbang (59% - 1.7x)</string>
+    <string name="fsr2_quality_performance">Performa (50% - 2.0x)</string>
+    <string name="fsr2_quality_ultra_performance">Performa Ultra (33% - 3.0x)</string>
     <string name="mali_driver_info">GPU Mali/Immortalis/Xclipse menggunakan driver Vulkan sistem bawaan pabrikan. Mesa PanVK upstream masih bersifat eksperimental dan belum mendukung penuh ekstensi Vulkan Switch. Instalasi driver .zip kustom tetap tersedia untuk build eksperimental, sedangkan driver Adreno Turnip difilter untuk mencegah crash.</string>
     <string name="mali_turnip_incompatible_warning">Peringatan: Driver Adreno Turnip dirancang khusus untuk GPU Qualcomm Adreno. Menginstal driver ini pada GPU Mali atau non-Adreno dapat menyebabkan ketidakstabilan grafis atau aplikasi crash. Apakah Anda ingin melanjutkan?</string>
     <string name="auto_opt_dialog_subtitle">Pemrofilan Perangkat Keras Cerdas</string>

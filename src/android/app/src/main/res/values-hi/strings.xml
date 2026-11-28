@@ -1165,7 +1165,7 @@
     <string name="renderer_accuracy_low">निम्न</string>
     <string name="renderer_accuracy_normal">सामान्य</string>
     <string name="renderer_accuracy_high">उच्च</string>
-    <string name="renderer_accuracy_extreme">Extreme</string>
+    <string name="renderer_accuracy_extreme">अत्यधिक</string>
     <string name="enable_fast_gpu_time">सक्षम करें तेज़ GPU Time</string>
     <string name="enable_fast_gpu_time_description">Speeds up GPU timer queries to boost प्रदर्शन in games with heavy CPU-GPU synchronization, but may cause visual timing glitches in some titles.</string>
 
@@ -2847,12 +2847,12 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="save_state_load_failed">स्लॉट %1$d खाली या दूषित है</string>
     <string name="save_state_confirm_delete">क्या आप वाकई स्लॉट %1$d के लिए सेव स्टेट हटाना चाहते हैं?</string>
     <string name="update">अपडेट करें</string>
-    <string name="fsr2_quality_mode">FSR 2.0 गुणवत्ता मोड</string>
-    <string name="fsr2_quality_mode_description">AMD FSR 2.0 टेम्पोरल अपस्केलिंग के लिए गुणवत्ता प्रीसेट चुनता है</string>
-    <string name="fsr2_quality_quality">गुणवत्ता (1.5x)</string>
-    <string name="fsr2_quality_balanced">संतुलित (1.7x)</string>
-    <string name="fsr2_quality_performance">प्रदर्शन (2.0x)</string>
-    <string name="fsr2_quality_ultra_performance">अल्ट्रा प्रदर्शन (3.0x)</string>
+    <string name="fsr2_quality_mode">FSR 2.0 / 3 गुणवत्ता मोड</string>
+    <string name="fsr2_quality_mode_description">AMD FSR 2.0 / 3 टेम्पोरल अपस्केलिंग के लिए गुणवत्ता प्रीसेट चुनता है</string>
+    <string name="fsr2_quality_quality">गुणवत्ता (67% - 1.5x)</string>
+    <string name="fsr2_quality_balanced">संतुलित (59% - 1.7x)</string>
+    <string name="fsr2_quality_performance">प्रदर्शन (50% - 2.0x)</string>
+    <string name="fsr2_quality_ultra_performance">अल्ट्रा प्रदर्शन (33% - 3.0x)</string>
     <string name="mali_driver_info">Mali/Immortalis/Xclipse GPU निर्माता के सिस्टम Vulkan ड्राइवर का उपयोग करते हैं। अपस्ट्रीम Mesa PanVK प्रायोगिक है और अभी तक पूर्ण Switch Vulkan एक्सटेंशन का समर्थन नहीं करता है। प्रायोगिक बिल्ड के लिए कस्टम .zip ड्राइवर इंस्टॉलेशन उपलब्ध है, जबकि क्रैश से बचने के लिए Adreno Turnip ड्राइवरों को फ़िल्टर किया जाता है।</string>
     <string name="mali_turnip_incompatible_warning">चेतावनी: Adreno Turnip ड्राइवर विशेष रूप से Qualcomm Adreno GPU के लिए डिज़ाइन किए गए हैं। Mali या गैर-Adreno GPU पर इस ड्राइवर को इंस्टॉल करने से ग्राफ़िक्स अस्थिरता या ऐप क्रैश हो सकता है। क्या आप जारी रखना चाहते हैं?</string>
 

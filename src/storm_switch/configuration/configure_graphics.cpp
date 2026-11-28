@@ -386,12 +386,12 @@ void ConfigureGraphics::UpdateFsrSliderState() {
         const QVariant item_data = scaling_filter_combobox->itemData(current);
         if (item_data.isValid()) {
             const auto filter = static_cast<Settings::ScalingFilter>(item_data.toUInt());
-            is_fsr = (filter == Settings::ScalingFilter::Fsr);
+            is_fsr = (filter == Settings::ScalingFilter::Fsr || filter == Settings::ScalingFilter::Fsr3);
         } else {
             const auto it = combobox_translations.find(Settings::EnumMetadata<Settings::ScalingFilter>::Index());
             if (it != combobox_translations.end() && static_cast<size_t>(current) < it->second.size()) {
                 const auto filter = static_cast<Settings::ScalingFilter>(it->second[current].first);
-                is_fsr = (filter == Settings::ScalingFilter::Fsr);
+                is_fsr = (filter == Settings::ScalingFilter::Fsr || filter == Settings::ScalingFilter::Fsr3);
             }
         }
     }

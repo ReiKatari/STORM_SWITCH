@@ -94,6 +94,7 @@ void BlitScreen::SetWindowAdaptPass(const Device& device) {
         window_adapt = MakeOmniScale(device, swapchain_view_format);
         break;
     case Settings::ScalingFilter::Fsr:
+    case Settings::ScalingFilter::Fsr3:
     case Settings::ScalingFilter::Sgsr:
     case Settings::ScalingFilter::SgsrEdge:
     case Settings::ScalingFilter::Bilinear:

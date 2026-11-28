@@ -106,6 +106,53 @@
 #include "qt_common/titledb.h"
 
 #include "qt_common/game_list/game_list_p.h"
+#include "qt_common/config/shared_translation.h"
+#include "storm_switch/common/storm_lang.h"
+
+namespace {
+template <typename EnumT>
+std::vector<std::pair<EnumT, QString>> GetSettingsEnumOptions(QObject* parent) {
+    std::vector<std::pair<EnumT, QString>> out;
+    const auto map = ConfigurationShared::ComboboxEnumeration(parent);
+    const auto it = map->find(Settings::EnumMetadata<EnumT>::Index());
+    if (it != map->end()) {
+        out.reserve(it->second.size());
+        for (const auto& [raw_val, label] : it->second) {
+            out.emplace_back(static_cast<EnumT>(raw_val), label);
+        }
+    }
+    return out;
+}
+
+template <typename EnumT>
+QString GetSettingsEnumLabel(QObject* parent, EnumT value) {
+    for (const auto& [opt_val, label] : GetSettingsEnumOptions<EnumT>(parent)) {
+        if (opt_val == value) {
+            return label;
+        }
+    }
+    return {};
+}
+
+std::vector<std::pair<Settings::VSyncMode, QString>> GetSettingsVSyncOptions() {
+    const auto backend = Settings::values.renderer_backend.GetValue();
+    const bool is_ogl = (backend == Settings::RendererBackend::OpenGL_GLSL ||
+                         backend == Settings::RendererBackend::OpenGL_GLASM ||
+                         backend == Settings::RendererBackend::OpenGL_SPIRV);
+    if (is_ogl) {
+        return {
+            {Settings::VSyncMode::Immediate, StormLang(QStringLiteral("Выключено"), QStringLiteral("Off"), QStringLiteral("Aus"), QStringLiteral("Désactivé"), QStringLiteral("关闭"), QStringLiteral("オフ"), QStringLiteral("إيقاف"), QStringLiteral("Desactivado"))},
+            {Settings::VSyncMode::Fifo, StormLang(QStringLiteral("Включено"), QStringLiteral("On"), QStringLiteral("Ein"), QStringLiteral("Activé"), QStringLiteral("开启"), QStringLiteral("オン"), QStringLiteral("تشغيل"), QStringLiteral("Activado"))},
+        };
+    }
+    return {
+        {Settings::VSyncMode::Immediate, StormLang(QStringLiteral("Immediate (VSync Выключено)"), QStringLiteral("Immediate (VSync Off)"), QStringLiteral("Immediate (VSync Aus)"), QStringLiteral("Immediate (VSync Désactivé)"), QStringLiteral("Immediate (垂直同步关闭)"), QStringLiteral("Immediate (VSync オフ)"), QStringLiteral("Immediate (إيقاف VSync)"), QStringLiteral("Immediate (VSync Desactivado)"))},
+        {Settings::VSyncMode::Mailbox, StormLang(QStringLiteral("Mailbox (Рекомендуется)"), QStringLiteral("Mailbox (Recommended)"), QStringLiteral("Mailbox (Empfohlen)"), QStringLiteral("Mailbox (Recommandé)"), QStringLiteral("Mailbox (推荐)"), QStringLiteral("Mailbox (推奨)"), QStringLiteral("Mailbox (موصى به)"), QStringLiteral("Mailbox (Recomendado)"))},
+        {Settings::VSyncMode::Fifo, StormLang(QStringLiteral("FIFO (VSync Включено)"), QStringLiteral("FIFO (VSync On)"), QStringLiteral("FIFO (VSync Ein)"), QStringLiteral("FIFO (VSync Activé)"), QStringLiteral("FIFO (垂直同步开启)"), QStringLiteral("FIFO (VSync オン)"), QStringLiteral("FIFO (تشغيل VSync)"), QStringLiteral("FIFO (VSync Activado)"))},
+        {Settings::VSyncMode::FifoRelaxed, StormLang(QStringLiteral("FIFO Relaxed (Адаптивный VSync)"), QStringLiteral("FIFO Relaxed"), QStringLiteral("FIFO Relaxed (Adaptives VSync)"), QStringLiteral("FIFO Relaxed (VSync adaptatif)"), QStringLiteral("FIFO Relaxed (自适应垂直同步)"), QStringLiteral("FIFO Relaxed (適応型 VSync)"), QStringLiteral("FIFO Relaxed (مزامنة متكيفة)"), QStringLiteral("FIFO Relaxed (VSync adaptativo)"))},
+    };
+}
+} // namespace
 
 #include <QMouseEvent>
 #include <QFontDatabase>
@@ -3635,15 +3682,7 @@ void MainWindow::InitializeWidgets() {
 
         const auto cur_aa = Settings::values.anti_aliasing.GetValue();
 
-        const std::vector<std::pair<Settings::AntiAliasing, QString>> aa_options = {
-
-            {Settings::AntiAliasing::None, StormLang(QStringLiteral("Отключено"), QStringLiteral("Disabled"), QStringLiteral("Deaktiviert"), QStringLiteral("Désactivé"), QStringLiteral("已禁用"), QStringLiteral("無効"))},
-
-            {Settings::AntiAliasing::Fxaa, QStringLiteral("FXAA")},
-
-            {Settings::AntiAliasing::Smaa, QStringLiteral("SMAA")},
-
-        };
+        const auto aa_options = GetSettingsEnumOptions<Settings::AntiAliasing>(this);
 
         for (const auto& opt : aa_options) {
 
@@ -3703,43 +3742,7 @@ void MainWindow::InitializeWidgets() {
 
         const auto cur_filter = Settings::values.scaling_filter.GetValue();
 
-        const std::vector<std::pair<Settings::ScalingFilter, QString>> filter_options = {
-
-            {Settings::ScalingFilter::NearestNeighbor, StormLang(QStringLiteral("Ближайший сосед"), QStringLiteral("Nearest Neighbor"), QStringLiteral("Nächster Nachbar"), QStringLiteral("Plus proche voisin"), QStringLiteral("最近邻"), QStringLiteral("最近傍"))},
-
-            {Settings::ScalingFilter::Bilinear, StormLang(QStringLiteral("Билинейный"), QStringLiteral("Bilinear"), QStringLiteral("Bilinear"), QStringLiteral("Bilinéaire"), QStringLiteral("双线性"), QStringLiteral("バイリニア"))},
-
-            {Settings::ScalingFilter::Bicubic, StormLang(QStringLiteral("Бикубический"), QStringLiteral("Bicubic"), QStringLiteral("Bikubisch"), QStringLiteral("Bicubique"), QStringLiteral("双三次"), QStringLiteral("バイキュービック"))},
-
-            {Settings::ScalingFilter::Gaussian, StormLang(QStringLiteral("Гаусс"), QStringLiteral("Gaussian"), QStringLiteral("Gauß"), QStringLiteral("Gauss"), QStringLiteral("高斯"), QStringLiteral("ガウス"))},
-
-            {Settings::ScalingFilter::Lanczos, StormLang(QStringLiteral("Ланцош"), QStringLiteral("Lanczos"), QStringLiteral("Lanczos"), QStringLiteral("Lanczos"), QStringLiteral("兰索斯"), QStringLiteral("ランツォシュ"))},
-
-            {Settings::ScalingFilter::ScaleForce, QStringLiteral("ScaleForce")},
-
-            {Settings::ScalingFilter::Fsr, StormLang(QStringLiteral("AMD FSR 2.0 (Temporal Upscaling)"), QStringLiteral("AMD FSR 2.0 (Temporal Upscaling)"))},
-
-            {Settings::ScalingFilter::Area, QStringLiteral("Area")},
-
-            {Settings::ScalingFilter::ZeroTangent, QStringLiteral("Zero-Tangent")},
-
-            {Settings::ScalingFilter::BSpline, QStringLiteral("B-Spline")},
-
-            {Settings::ScalingFilter::Mitchell, QStringLiteral("Mitchell")},
-
-            {Settings::ScalingFilter::Spline1, QStringLiteral("Spline-1")},
-
-            {Settings::ScalingFilter::Mmpx, QStringLiteral("MMPX")},
-
-            {Settings::ScalingFilter::Sgsr, QStringLiteral("SGSR")},
-
-            {Settings::ScalingFilter::SgsrEdge, QStringLiteral("SGSR EdgeDir")},
-
-            {Settings::ScalingFilter::Cas, StormLang(QStringLiteral("AMD FidelityFX CAS (Контрастно-адаптивный)"), QStringLiteral("AMD FidelityFX CAS (Contrast Adaptive)"))},
-
-            {Settings::ScalingFilter::OmniScale, StormLang(QStringLiteral("OmniScale HQ (Идеальный пиксель-арт и 2D/3D)"), QStringLiteral("OmniScale HQ (Pixel-Art & 2D/3D)"))},
-
-        };
+        const auto filter_options = GetSettingsEnumOptions<Settings::ScalingFilter>(this);
 
         for (const auto& opt : filter_options) {
 
@@ -3765,15 +3768,21 @@ void MainWindow::InitializeWidgets() {
 
         }
 
-        if (cur_filter == Settings::ScalingFilter::Fsr) {
-
+        if (cur_filter == Settings::ScalingFilter::Fsr || cur_filter == Settings::ScalingFilter::Fsr3) {
             context_menu.addSeparator();
-
-            auto* mode_header = context_menu.addAction(StormLang(
-
-                QStringLiteral("Режим качества AMD FSR 2.0:"),
-
-                QStringLiteral("AMD FSR 2.0 Quality Mode:")));
+            auto* mode_header = context_menu.addAction(StormLang11(
+                QStringLiteral("Режим качества FSR 2.0 / 3:"),
+                QStringLiteral("FSR 2.0 / 3 Quality Mode:"),
+                QStringLiteral("FSR 2.0 / 3 Qualitätsmodus:"),
+                QStringLiteral("Mode de qualité FSR 2.0 / 3 :"),
+                QStringLiteral("Modo de calidad FSR 2.0 / 3:"),
+                QStringLiteral("Modalità qualità FSR 2.0 / 3:"),
+                QStringLiteral("Modo de qualidade FSR 2.0 / 3:"),
+                QStringLiteral("FSR 2.0 / 3 质量模式:"),
+                QStringLiteral("FSR 2.0 / 3 品質モード:"),
+                QStringLiteral("FSR 2.0 / 3 품질 모드:"),
+                QStringLiteral("وضع جودة FSR 2.0 / 3:"),
+                QStringLiteral("FSR 2.0 / 3 गुणवत्ता मोड:")));
 
             mode_header->setEnabled(false);
 
@@ -3781,17 +3790,7 @@ void MainWindow::InitializeWidgets() {
 
             const auto cur_mode = Settings::values.fsr2_quality_mode.GetValue();
 
-            const std::vector<std::pair<Settings::Fsr2QualityMode, QString>> quality_options = {
-
-                {Settings::Fsr2QualityMode::Quality, StormLang(QStringLiteral("Качество (Quality - 1.5x)"), QStringLiteral("Quality (1.5x)"))},
-
-                {Settings::Fsr2QualityMode::Balanced, StormLang(QStringLiteral("Баланс (Balanced - 1.7x)"), QStringLiteral("Balanced (1.7x)"))},
-
-                {Settings::Fsr2QualityMode::Performance, StormLang(QStringLiteral("Производительность (Performance - 2.0x)"), QStringLiteral("Performance (2.0x)"))},
-
-                {Settings::Fsr2QualityMode::UltraPerformance, StormLang(QStringLiteral("Ультра-производительность (Ultra Performance - 3.0x)"), QStringLiteral("Ultra Performance (3.0x)"))},
-
-            };
+            const auto quality_options = GetSettingsEnumOptions<Settings::Fsr2QualityMode>(this);
 
             for (const auto& q_opt : quality_options) {
 
@@ -3961,13 +3960,7 @@ void MainWindow::InitializeWidgets() {
 
         const auto cur_dock = Settings::values.use_docked_mode.GetValue();
 
-        const std::vector<std::pair<Settings::ConsoleMode, QString>> dock_options = {
-
-            {Settings::ConsoleMode::Docked, StormLang(QStringLiteral("В док-станции"), QStringLiteral("Docked"), QStringLiteral("Im Dock"), QStringLiteral("En station d'accueil"), QStringLiteral("底座模式"), QStringLiteral("ドックモード"))},
-
-            {Settings::ConsoleMode::Handheld, StormLang(QStringLiteral("Портативный"), QStringLiteral("Handheld"), QStringLiteral("Handheld"), QStringLiteral("Portable"), QStringLiteral("掌机模式"), QStringLiteral("携帯モード"))},
-
-        };
+        const auto dock_options = GetSettingsEnumOptions<Settings::ConsoleMode>(this);
 
         for (const auto& opt : dock_options) {
 
@@ -4019,13 +4012,7 @@ void MainWindow::InitializeWidgets() {
 
         const auto cur_gpu = Settings::values.gpu_accuracy.GetValue();
 
-        const std::vector<std::pair<Settings::GpuAccuracy, QString>> gpu_options = {
-
-            {Settings::GpuAccuracy::Low, StormLang(QStringLiteral("Быстрый (низкая точность)"), QStringLiteral("Fast (low accuracy)"), QStringLiteral("Schnell (niedrige Genauigkeit)"), QStringLiteral("Rapide (faible précision)"), QStringLiteral("快速 (低精度)"), QStringLiteral("高速 (低精度)"))},
-
-            {Settings::GpuAccuracy::High, StormLang(QStringLiteral("Высокая точность"), QStringLiteral("High accuracy"), QStringLiteral("Hohe Genauigkeit"), QStringLiteral("Haute précision"), QStringLiteral("高精度"), QStringLiteral("高精度"))},
-
-        };
+        const auto gpu_options = GetSettingsEnumOptions<Settings::GpuAccuracy>(this);
 
         for (const auto& opt : gpu_options) {
 
@@ -4093,17 +4080,7 @@ void MainWindow::InitializeWidgets() {
 
         const auto cur_api = Settings::values.renderer_backend.GetValue();
 
-        const std::vector<std::pair<Settings::RendererBackend, QString>> api_options = {
-
-            {Settings::RendererBackend::Vulkan, QStringLiteral("Vulkan")},
-
-            {Settings::RendererBackend::OpenGL_GLSL, QStringLiteral("OpenGL GLSL")},
-
-            {Settings::RendererBackend::OpenGL_SPIRV, QStringLiteral("OpenGL SPIRV")},
-
-            {Settings::RendererBackend::OpenGL_GLASM, QStringLiteral("OpenGL GLASM")},
-
-        };
+        const auto api_options = GetSettingsEnumOptions<Settings::RendererBackend>(this);
 
         for (const auto& opt : api_options) {
 
@@ -4158,43 +4135,7 @@ void MainWindow::InitializeWidgets() {
 
         const auto cur_aspect = Settings::values.aspect_ratio.GetValue();
 
-        const std::vector<std::pair<Settings::AspectRatio, QString>> items = {
-
-            {Settings::AspectRatio::R16_9, StormLang(QStringLiteral("16:9 (Стандарт HD)"), QStringLiteral("16:9 (Standard HD)"), QStringLiteral("16:9 (Standard-HD)"), QStringLiteral("16:9 (Standard HD)"), QStringLiteral("16:9 (标准 HD)"), QStringLiteral("16:9 (標準 HD)"), QStringLiteral("16:9 (قياسي HD)"), QStringLiteral("16:9 (Estándar HD)"))},
-
-            {Settings::AspectRatio::R4_3, StormLang(QStringLiteral("4:3 (Классический)"), QStringLiteral("4:3 (Classic)"), QStringLiteral("4:3 (Klassisch)"), QStringLiteral("4:3 (Classique)"), QStringLiteral("4:3 (经典)"), QStringLiteral("4:3 (クラシック)"), QStringLiteral("4:3 (كلاسيكي)"), QStringLiteral("4:3 (Clásico)"))},
-
-            {Settings::AspectRatio::R21_9, StormLang(QStringLiteral("21:9 (Ультраширокий)"), QStringLiteral("21:9 (Ultrawide)"), QStringLiteral("21:9 (Ultrawide)"), QStringLiteral("21:9 (Ultra-large)"), QStringLiteral("21:9 (超宽屏)"), QStringLiteral("21:9 (ウルトラワイド)"), QStringLiteral("21:9 (عريض جداً)"), QStringLiteral("21:9 (Ultraancho)"))},
-
-            {Settings::AspectRatio::R16_10, StormLang(QStringLiteral("16:10 (Ноутбуки / Steam Deck)"), QStringLiteral("16:10 (Laptops / Steam Deck)"), QStringLiteral("16:10 (Laptops / Steam Deck)"), QStringLiteral("16:10 (PC portables / Steam Deck)"), QStringLiteral("16:10 (笔记本 / Steam Deck)"), QStringLiteral("16:10 (ノートPC / Steam Deck)"), QStringLiteral("16:10 (لابتوب / Steam Deck)"), QStringLiteral("16:10 (Portátiles / Steam Deck)"))},
-
-            {Settings::AspectRatio::Stretch, StormLang(QStringLiteral("Растянуть по окну"), QStringLiteral("Stretch to Window"), QStringLiteral("An Fenster anpassen"), QStringLiteral("Étirer à la fenêtre"), QStringLiteral("拉伸至窗口"), QStringLiteral("ウィンドウに合わせる"), QStringLiteral("تمديد للنافذة"), QStringLiteral("Estirar a la ventana"))},
-
-            {Settings::AspectRatio::R32_9, StormLang(QStringLiteral("32:9 (Супер-ультраширокий)"), QStringLiteral("32:9 (Super Ultrawide)"), QStringLiteral("32:9 (Super-Ultrawide)"), QStringLiteral("32:9 (Super ultra-large)"), QStringLiteral("32:9 (超级超宽屏)"), QStringLiteral("32:9 (スーパーウルトラワイド)"), QStringLiteral("32:9 (فائق العرض)"), QStringLiteral("32:9 (Súper ultraancho)"))},
-
-            {Settings::AspectRatio::R1_1, StormLang(QStringLiteral("1:1 (Квадратный)"), QStringLiteral("1:1 (Square)"), QStringLiteral("1:1 (Quadratisch)"), QStringLiteral("1:1 (Carré)"), QStringLiteral("1:1 (正方形)"), QStringLiteral("1:1 (正方形)"), QStringLiteral("1:1 (مربع)"), QStringLiteral("1:1 (Cuadrado)"))},
-
-            {Settings::AspectRatio::R3_2, StormLang(QStringLiteral("3:2 (Surface / Планшеты)"), QStringLiteral("3:2 (Surface / Tablets)"), QStringLiteral("3:2 (Surface / Tablets)"), QStringLiteral("3:2 (Surface / Tablettes)"), QStringLiteral("3:2 (Surface / 平板)"), QStringLiteral("3:2 (Surface / タブレット)"), QStringLiteral("3:2 (Surface / الأجهزة اللوحية)"), QStringLiteral("3:2 (Surface / Tabletas)"))},
-
-            {Settings::AspectRatio::R5_4, StormLang(QStringLiteral("5:4 (Мониторы SXGA)"), QStringLiteral("5:4 (SXGA Monitors)"), QStringLiteral("5:4 (SXGA-Monitore)"), QStringLiteral("5:4 (Moniteurs SXGA)"), QStringLiteral("5:4 (SXGA 显示器)"), QStringLiteral("5:4 (SXGA モニター)"), QStringLiteral("5:4 (شاشات SXGA)"), QStringLiteral("5:4 (Monitores SXGA)"))},
-
-            {Settings::AspectRatio::R18_9, StormLang(QStringLiteral("18:9 / 2:1 (Смартфоны Univisium)"), QStringLiteral("18:9 / 2:1 (Univisium Mobile)"), QStringLiteral("18:9 / 2:1 (Univisium Mobil)"), QStringLiteral("18:9 / 2:1 (Mobile Univisium)"), QStringLiteral("18:9 / 2:1 (Univisium 手机)"), QStringLiteral("18:9 / 2:1 (Univisium モバイル)"), QStringLiteral("18:9 / 2:1 (هواتف Univisium)"), QStringLiteral("18:9 / 2:1 (Móviles Univisium)"))},
-
-            {Settings::AspectRatio::R19_5_9, StormLang(QStringLiteral("19.5:9 (Современные смартфоны)"), QStringLiteral("19.5:9 (Modern Smartphones)"), QStringLiteral("19.5:9 (Moderne Smartphones)"), QStringLiteral("19.5:9 (Smartphones modernes)"), QStringLiteral("19.5:9 (现代智能手机)"), QStringLiteral("19.5:9 (最新スマートフォン)"), QStringLiteral("19.5:9 (الهواتف الذكية الحديثة)"), QStringLiteral("19.5:9 (Smartphones modernos)"))},
-
-            {Settings::AspectRatio::R20_9, StormLang(QStringLiteral("20:9 (Игровые смартфоны)"), QStringLiteral("20:9 (Gaming Smartphones)"), QStringLiteral("20:9 (Gaming-Smartphones)"), QStringLiteral("20:9 (Smartphones gaming)"), QStringLiteral("20:9 (游戏手机)"), QStringLiteral("20:9 (ゲーミングスマホ)"), QStringLiteral("20:9 (هواتف الألعاب)"), QStringLiteral("20:9 (Smartphones gaming)"))},
-
-            {Settings::AspectRatio::R21_10, StormLang(QStringLiteral("21:10 (Широкоформатный)"), QStringLiteral("21:10 (Widescreen)"), QStringLiteral("21:10 (Breitbild)"), QStringLiteral("21:10 (Écran large)"), QStringLiteral("21:10 (宽屏)"), QStringLiteral("21:10 (ワイドスクリーン)"), QStringLiteral("21:10 (شاشة عريضة)"), QStringLiteral("21:10 (Pantalla ancha)"))},
-
-            {Settings::AspectRatio::R24_10, StormLang(QStringLiteral("24:10 / 2.4:1 (Киноформат)"), QStringLiteral("24:10 / 2.4:1 (Cinema)"), QStringLiteral("24:10 / 2.4:1 (Kinoformat)"), QStringLiteral("24:10 / 2.4:1 (Cinéma)"), QStringLiteral("24:10 / 2.4:1 (电影宽银幕)"), QStringLiteral("24:10 / 2.4:1 (シネマ)"), QStringLiteral("24:10 / 2.4:1 (سينمائي)"), QStringLiteral("24:10 / 2.4:1 (Cine)"))},
-
-            {Settings::AspectRatio::R32_10, StormLang(QStringLiteral("32:10 (Двойной 16:10)"), QStringLiteral("32:10 (Dual 16:10)"), QStringLiteral("32:10 (Dual 16:10)"), QStringLiteral("32:10 (Double 16:10)"), QStringLiteral("32:10 (双 16:10)"), QStringLiteral("32:10 (デュアル 16:10)"), QStringLiteral("32:10 (مزدوج 16:10)"), QStringLiteral("32:10 (Doble 16:10)"))},
-
-            {Settings::AspectRatio::R48_9, StormLang(QStringLiteral("48:9 (Три монитора 16:9)"), QStringLiteral("48:9 (Triple 16:9 Surround)"), QStringLiteral("48:9 (Dreifach-16:9 Surround)"), QStringLiteral("48:9 (Triple écran 16:9)"), QStringLiteral("48:9 (三联屏 16:9)"), QStringLiteral("48:9 (トリプル 16:9)"), QStringLiteral("48:9 (ثلاث شاشات 16:9)"), QStringLiteral("48:9 (Triple monitor 16:9)"))},
-
-            {Settings::AspectRatio::Auto_Window, StormLang(QStringLiteral("Авто по пропорциям окна (3D без растяжения)"), QStringLiteral("Auto Window Aspect (3D Native)"), QStringLiteral("Automatisch nach Fenstergröße (3D Nativ)"), QStringLiteral("Auto selon la fenêtre (3D natif)"), QStringLiteral("按窗口比例自动适配 (3D 原生无拉伸)"), QStringLiteral("ウィンドウ比率に自動適応 (3D ネイティブ)"), QStringLiteral("تلقائي حسب أبعاد النافذة (3D أصلي)"), QStringLiteral("Auto según ventana (3D nativo)"))},
-
-        };
+        const auto items = GetSettingsEnumOptions<Settings::AspectRatio>(this);
 
         for (const auto& item : items) {
 
@@ -4248,17 +4189,7 @@ void MainWindow::InitializeWidgets() {
 
         const auto cur_dma = Settings::values.dma_accuracy.GetValue();
 
-        const std::vector<std::pair<Settings::DmaAccuracy, QString>> items = {
-
-            {Settings::DmaAccuracy::Default, StormLang(QStringLiteral("По умолчанию"), QStringLiteral("Default"), QStringLiteral("Standard"), QStringLiteral("Par défaut"), QStringLiteral("默认"), QStringLiteral("デフォルト"))},
-
-            {Settings::DmaAccuracy::Normal, StormLang(QStringLiteral("Нормально"), QStringLiteral("Normal"), QStringLiteral("Normal"), QStringLiteral("Normal"), QStringLiteral("正常"), QStringLiteral("通常"))},
-
-            {Settings::DmaAccuracy::Unsafe, StormLang(QStringLiteral("Небезопасно"), QStringLiteral("Unsafe"), QStringLiteral("Unsicher"), QStringLiteral("Non sécurisé"), QStringLiteral("不安全"), QStringLiteral("非安全"))},
-
-            {Settings::DmaAccuracy::Safe, StormLang(QStringLiteral("Безопасно"), QStringLiteral("Safe"), QStringLiteral("Sicher"), QStringLiteral("Sécurisé"), QStringLiteral("安全"), QStringLiteral("安全"))},
-
-        };
+        const auto items = GetSettingsEnumOptions<Settings::DmaAccuracy>(this);
 
         for (const auto& item : items) {
 
@@ -4312,19 +4243,7 @@ void MainWindow::InitializeWidgets() {
 
         const auto cur_fence = Settings::values.gpu_fence_behavior.GetValue();
 
-        const std::vector<std::pair<Settings::GpuFenceBehavior, QString>> items = {
-
-            {Settings::GpuFenceBehavior::Default, StormLang(QStringLiteral("По умолчанию"), QStringLiteral("Default"), QStringLiteral("Standard"), QStringLiteral("Par défaut"), QStringLiteral("默认"), QStringLiteral("デフォルト"))},
-
-            {Settings::GpuFenceBehavior::Immediate, StormLang(QStringLiteral("Мгновенно"), QStringLiteral("Immediate"), QStringLiteral("Sofort"), QStringLiteral("Immédiat"), QStringLiteral("立即"), QStringLiteral("即時"))},
-
-            {Settings::GpuFenceBehavior::Balanced, StormLang(QStringLiteral("Сбалансированно"), QStringLiteral("Balanced"), QStringLiteral("Ausgewogen"), QStringLiteral("Équilibré"), QStringLiteral("平衡"), QStringLiteral("バランス"))},
-
-            {Settings::GpuFenceBehavior::Accurate, StormLang(QStringLiteral("Точно"), QStringLiteral("Accurate"), QStringLiteral("Präzise"), QStringLiteral("Précis"), QStringLiteral("精确"), QStringLiteral("高精度"))},
-
-            {Settings::GpuFenceBehavior::Strict, StormLang(QStringLiteral("Строго"), QStringLiteral("Strict"), QStringLiteral("Strikt"), QStringLiteral("Strict"), QStringLiteral("严格"), QStringLiteral("厳格"))},
-
-        };
+        const auto items = GetSettingsEnumOptions<Settings::GpuFenceBehavior>(this);
 
         for (const auto& item : items) {
 
@@ -4378,15 +4297,7 @@ void MainWindow::InitializeWidgets() {
 
         const auto cur_vram = Settings::values.vram_usage_mode.GetValue();
 
-        const std::vector<std::pair<Settings::VramUsageMode, QString>> options = {
-
-            {Settings::VramUsageMode::Conservative, StormLang(QStringLiteral("Консервативный"), QStringLiteral("Conservative"), QStringLiteral("Konservativ"), QStringLiteral("Conservateur"), QStringLiteral("保守"), QStringLiteral("控えめ"))},
-
-            {Settings::VramUsageMode::Normal, StormLang(QStringLiteral("Нормальный"), QStringLiteral("Normal"), QStringLiteral("Normal"), QStringLiteral("Normal"), QStringLiteral("正常"), QStringLiteral("通常"))},
-
-            {Settings::VramUsageMode::Aggressive, StormLang(QStringLiteral("Агрессивный"), QStringLiteral("Aggressive"), QStringLiteral("Aggressiv"), QStringLiteral("Agressif"), QStringLiteral("激进"), QStringLiteral("積極的"))},
-
-        };
+        const auto options = GetSettingsEnumOptions<Settings::VramUsageMode>(this);
 
         for (const auto& opt : options) {
 
@@ -4460,27 +4371,7 @@ void MainWindow::InitializeWidgets() {
 
         const auto cur_aniso = Settings::values.max_anisotropy.GetValue();
 
-        const std::vector<std::pair<Settings::AnisotropyMode, QString>> options = {
-
-            {Settings::AnisotropyMode::Automatic, StormLang(QStringLiteral("Автоматически"), QStringLiteral("Automatic"), QStringLiteral("Automatisch"), QStringLiteral("Automatique"), QStringLiteral("自动"), QStringLiteral("自動"))},
-
-            {Settings::AnisotropyMode::Default, StormLang(QStringLiteral("По умолчанию"), QStringLiteral("Default"), QStringLiteral("Standard"), QStringLiteral("Par défaut"), QStringLiteral("默认"), QStringLiteral("デフォルト"))},
-
-            {Settings::AnisotropyMode::X2, QStringLiteral("2x")},
-
-            {Settings::AnisotropyMode::X4, QStringLiteral("4x")},
-
-            {Settings::AnisotropyMode::X8, QStringLiteral("8x")},
-
-            {Settings::AnisotropyMode::X16, QStringLiteral("16x")},
-
-            {Settings::AnisotropyMode::X32, QStringLiteral("32x")},
-
-            {Settings::AnisotropyMode::X64, QStringLiteral("64x")},
-
-            {Settings::AnisotropyMode::None, StormLang(QStringLiteral("Отключено"), QStringLiteral("Disabled"), QStringLiteral("Deaktiviert"), QStringLiteral("Désactivé"), QStringLiteral("已禁用"), QStringLiteral("無効"))},
-
-        };
+        const auto options = GetSettingsEnumOptions<Settings::AnisotropyMode>(this);
 
         for (const auto& opt : options) {
 
@@ -4540,17 +4431,7 @@ void MainWindow::InitializeWidgets() {
 
         const auto cur_dec = Settings::values.accelerate_astc.GetValue();
 
-        const std::vector<std::pair<Settings::AstcDecodeMode, QString>> options = {
-
-            {Settings::AstcDecodeMode::CpuAsynchronous, StormLang(QStringLiteral("ЦП асинхронно"), QStringLiteral("CPU asynchronous"), QStringLiteral("CPU asynchron"), QStringLiteral("CPU asynchrone"), QStringLiteral("CPU 异步"), QStringLiteral("CPU 非同期"))},
-
-            {Settings::AstcDecodeMode::Cpu, StormLang(QStringLiteral("ЦП"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"))},
-
-            {Settings::AstcDecodeMode::Gpu, StormLang(QStringLiteral("ГПУ"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"))},
-
-            {Settings::AstcDecodeMode::Hybrid, StormLang(QStringLiteral("Гибридный"), QStringLiteral("Hybrid"), QStringLiteral("Hybrid"), QStringLiteral("Hybride"), QStringLiteral("混合"), QStringLiteral("ハイブリッド"))},
-
-        };
+        const auto options = GetSettingsEnumOptions<Settings::AstcDecodeMode>(this);
 
         for (const auto& opt : options) {
 
@@ -4611,17 +4492,7 @@ void MainWindow::InitializeWidgets() {
 
         const auto cur_rec = Settings::values.astc_recompression.GetValue();
 
-        const std::vector<std::pair<Settings::AstcRecompression, QString>> options = {
-
-            {Settings::AstcRecompression::Uncompressed, StormLang(QStringLiteral("Без сжатия (лучшее качество)"), QStringLiteral("Uncompressed (best quality)"), QStringLiteral("Unkomprimiert (beste Qualität)"), QStringLiteral("Non compressé (meilleure qualité)"), QStringLiteral("未压缩 (最佳画质)"), QStringLiteral("非圧縮 (最高品質)"))},
-
-            {Settings::AstcRecompression::Bc1, StormLang(QStringLiteral("BC1 (низкое качество)"), QStringLiteral("BC1 (low quality)"), QStringLiteral("BC1 (niedrige Qualität)"), QStringLiteral("BC1 (faible qualité)"), QStringLiteral("BC1 (低画质)"), QStringLiteral("BC1 (低品質)"))},
-
-            {Settings::AstcRecompression::Bc3, StormLang(QStringLiteral("BC3 (среднее качество)"), QStringLiteral("BC3 (medium quality)"), QStringLiteral("BC3 (mittlere Qualität)"), QStringLiteral("BC3 (qualité moyenne)"), QStringLiteral("BC3 (中画质)"), QStringLiteral("BC3 (中品質)"))},
-
-            {Settings::AstcRecompression::Bc5, StormLang(QStringLiteral("BC5 (высокое качество)"), QStringLiteral("BC5 (high quality)"), QStringLiteral("BC5 (hohe Qualität)"), QStringLiteral("BC5 (haute qualité)"), QStringLiteral("BC5 (高画质)"), QStringLiteral("BC5 (高品質)"))},
-
-        };
+        const auto options = GetSettingsEnumOptions<Settings::AstcRecompression>(this);
 
         for (const auto& opt : options) {
 
@@ -5480,37 +5351,7 @@ void MainWindow::InitializeWidgets() {
 
         const auto cur_res = Settings::values.resolution_setup.GetValue();
 
-        const bool is_docked = Settings::values.use_docked_mode.GetValue() == Settings::ConsoleMode::Docked;
-
-        const std::vector<std::pair<Settings::ResolutionSetup, QString>> res_options = {
-
-            {Settings::ResolutionSetup::Res1_4X, is_docked ? QStringLiteral("0.25X (270p)") : QStringLiteral("0.25X (180p)")},
-
-            {Settings::ResolutionSetup::Res1_2X, is_docked ? QStringLiteral("0.5X (540p)") : QStringLiteral("0.5X (360p)")},
-
-            {Settings::ResolutionSetup::Res3_4X, is_docked ? QStringLiteral("0.75X (810p)") : QStringLiteral("0.75X (540p)")},
-
-            {Settings::ResolutionSetup::Res1X, is_docked ? QStringLiteral("1X (1080p)") : QStringLiteral("1X (720p)")},
-
-            {Settings::ResolutionSetup::Res5_4X, is_docked ? QStringLiteral("1.25X (1350p)") : QStringLiteral("1.25X (900p)")},
-
-            {Settings::ResolutionSetup::Res3_2X, is_docked ? QStringLiteral("1.5X (1620p)") : QStringLiteral("1.5X (1080p)")},
-
-            {Settings::ResolutionSetup::Res2X, is_docked ? QStringLiteral("2X (2160p / 4K)") : QStringLiteral("2X (1440p / 2K)")},
-
-            {Settings::ResolutionSetup::Res3X, is_docked ? QStringLiteral("3X (3240p / 6K)") : QStringLiteral("3X (2160p / 4K)")},
-
-            {Settings::ResolutionSetup::Res4X, is_docked ? QStringLiteral("4X (4320p / 8K)") : QStringLiteral("4X (2880p)")},
-
-            {Settings::ResolutionSetup::Res5X, is_docked ? QStringLiteral("5X (5400p)") : QStringLiteral("5X (3600p)")},
-
-            {Settings::ResolutionSetup::Res6X, is_docked ? QStringLiteral("6X (6480p)") : QStringLiteral("6X (4320p)")},
-
-            {Settings::ResolutionSetup::Res7X, is_docked ? QStringLiteral("7X (7560p)") : QStringLiteral("7X (5040p)")},
-
-            {Settings::ResolutionSetup::Res8X, is_docked ? QStringLiteral("8X (8640p)") : QStringLiteral("8X (5760p)")},
-
-        };
+        const auto res_options = GetSettingsEnumOptions<Settings::ResolutionSetup>(this);
 
         for (const auto& opt : res_options) {
 
@@ -5646,17 +5487,7 @@ void MainWindow::InitializeWidgets() {
 
         const auto cur_vsync = Settings::values.vsync_mode.GetValue();
 
-        const std::vector<std::pair<Settings::VSyncMode, QString>> vsync_options = {
-
-            {Settings::VSyncMode::Fifo, QStringLiteral("FIFO (VSync)")},
-
-            {Settings::VSyncMode::FifoRelaxed, QStringLiteral("FIFO Relaxed")},
-
-            {Settings::VSyncMode::Mailbox, QStringLiteral("Mailbox")},
-
-            {Settings::VSyncMode::Immediate, StormLang(QStringLiteral("Immediate (Без VSync)"), QStringLiteral("Immediate (No VSync)"), QStringLiteral("Immediate (Ohne VSync)"), QStringLiteral("Immediate (Sans VSync)"), QStringLiteral("Immediate (无垂直同步)"), QStringLiteral("Immediate (垂直同期なし)"))},
-
-        };
+        const auto vsync_options = GetSettingsVSyncOptions();
 
         for (const auto& opt : vsync_options) {
 
@@ -5846,17 +5677,7 @@ void MainWindow::InitializeWidgets() {
 
         const auto cur_nvdec = Settings::values.nvdec_emulation.GetValue();
 
-        const std::vector<std::pair<Settings::NvdecEmulation, QString>> nvdec_options = {
-
-            {Settings::NvdecEmulation::Gpu, StormLang(QStringLiteral("ГПУ"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"))},
-
-            {Settings::NvdecEmulation::Hybrid, StormLang(QStringLiteral("Гибридный"), QStringLiteral("Hybrid"), QStringLiteral("Hybrid"), QStringLiteral("Hybride"), QStringLiteral("混合"), QStringLiteral("ハイブリッド"))},
-
-            {Settings::NvdecEmulation::Cpu, StormLang(QStringLiteral("ЦП"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"))},
-
-            {Settings::NvdecEmulation::Off, StormLang(QStringLiteral("Отключено"), QStringLiteral("Disabled"), QStringLiteral("Deaktiviert"), QStringLiteral("Désactivé"), QStringLiteral("已禁用"), QStringLiteral("無効"))},
-
-        };
+        const auto nvdec_options = GetSettingsEnumOptions<Settings::NvdecEmulation>(this);
 
         for (const auto& opt : nvdec_options) {
 
@@ -5917,15 +5738,7 @@ void MainWindow::InitializeWidgets() {
 
         const auto cur_cpu = Settings::values.cpu_accuracy.GetValue();
 
-        const std::vector<std::pair<Settings::CpuAccuracy, QString>> cpu_options = {
-
-            {Settings::CpuAccuracy::Auto, StormLang(QStringLiteral("Авто"), QStringLiteral("Auto"), QStringLiteral("Automatisch"), QStringLiteral("Auto"), QStringLiteral("自动"), QStringLiteral("自動"))},
-
-            {Settings::CpuAccuracy::Accurate, StormLang(QStringLiteral("Точно"), QStringLiteral("Accurate"), QStringLiteral("Genau"), QStringLiteral("Précis"), QStringLiteral("准确"), QStringLiteral("正確"))},
-
-            {Settings::CpuAccuracy::Unsafe, StormLang(QStringLiteral("Небезопасно"), QStringLiteral("Unsafe"), QStringLiteral("Unsicher"), QStringLiteral("Non sécurisé"), QStringLiteral("不安全"), QStringLiteral("非安全"))},
-
-        };
+        const auto cpu_options = GetSettingsEnumOptions<Settings::CpuAccuracy>(this);
 
         for (const auto& opt : cpu_options) {
 
@@ -21273,12 +21086,10 @@ void MainWindow::UpdateGPUAccuracyButton() {
     if (!gpu_accuracy_button) return;
 
     const auto gpu_accuracy = Settings::values.gpu_accuracy.GetValue();
-
-    QString text = (gpu_accuracy == Settings::GpuAccuracy::Low)
-        ? StormLang(QStringLiteral("Быстрый"), QStringLiteral("Fast"), QStringLiteral("Schnell"), QStringLiteral("Rapide"), QStringLiteral("快速"), QStringLiteral("高速"))
-        : (gpu_accuracy == Settings::GpuAccuracy::Normal)
-              ? StormLang(QStringLiteral("Обычная"), QStringLiteral("Normal"), QStringLiteral("Normal"), QStringLiteral("Normale"), QStringLiteral("普通"), QStringLiteral("標準"))
-              : StormLang(QStringLiteral("Высокая"), QStringLiteral("High"), QStringLiteral("Hoch"), QStringLiteral("Élevée"), QStringLiteral("高"), QStringLiteral("高"));
+    QString text = GetSettingsEnumLabel(this, gpu_accuracy);
+    if (text.isEmpty()) {
+        text = StormLang(QStringLiteral("Нормальный"), QStringLiteral("Normal"));
+    }
 
     gpu_accuracy_button->setText(StormLang(
         QStringLiteral("ГПУ: %1"),
@@ -21362,6 +21173,12 @@ void MainWindow::UpdateAPIText() {
     case Settings::RendererBackend::OpenGL_GLASM:
 
         api_text = QStringLiteral("OPENGL GLASM");
+
+        break;
+
+    case Settings::RendererBackend::Null:
+
+        api_text = QStringLiteral("NULL");
 
         break;
 
@@ -21490,6 +21307,12 @@ void MainWindow::UpdateFilterText() {
     case Settings::ScalingFilter::Fsr:
 
         filter_text = QStringLiteral("FSR 2.0");
+
+        break;
+
+    case Settings::ScalingFilter::Fsr3:
+
+        filter_text = QStringLiteral("FSR 3");
 
         break;
 
@@ -23051,6 +22874,18 @@ void MainWindow::UpdateCpuAccuracyText() {
 
         break;
 
+    case Settings::CpuAccuracy::Paranoid:
+
+        val_text = StormLang(QStringLiteral("ПАРАНОИД"), QStringLiteral("PARANOID"), QStringLiteral("PARANOID"), QStringLiteral("PARANOÏAQUE"), QStringLiteral("偏执"), QStringLiteral("パラノイド"));
+
+        break;
+
+    case Settings::CpuAccuracy::Debugging:
+
+        val_text = StormLang(QStringLiteral("ОТЛАДКА"), QStringLiteral("DEBUGGING"), QStringLiteral("DEBUGGING"), QStringLiteral("DÉBOGAGE"), QStringLiteral("调试"), QStringLiteral("デバッグ"));
+
+        break;
+
     default:
 
         break;
@@ -23740,17 +23575,7 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         const auto cur_dec = Settings::values.accelerate_astc.GetValue();
 
-        const std::vector<std::pair<Settings::AstcDecodeMode, QString>> dec_options = {
-
-            {Settings::AstcDecodeMode::CpuAsynchronous, StormLang(QStringLiteral("ЦП асинхронно (рекомендуется)"), QStringLiteral("CPU Asynchronous (Recommended)"), QStringLiteral("CPU asynchron (empfohlen)"), QStringLiteral("CPU asynchrone (recommandé)"), QStringLiteral("CPU 异步 (推荐)"), QStringLiteral("CPU 非同期 (推奨)"))},
-
-            {Settings::AstcDecodeMode::Cpu, StormLang(QStringLiteral("ЦП (синхронно)"), QStringLiteral("CPU (Synchronous)"), QStringLiteral("CPU (synchron)"), QStringLiteral("CPU (synchrone)"), QStringLiteral("CPU (同步)"), QStringLiteral("CPU (同期)"))},
-
-            {Settings::AstcDecodeMode::Gpu, StormLang(QStringLiteral("ГПУ (аппаратное декодирование)"), QStringLiteral("GPU (Hardware Decoding)"), QStringLiteral("GPU (Hardware-Dekodierung)"), QStringLiteral("GPU (décodage matériel)"), QStringLiteral("GPU (硬件解码)"), QStringLiteral("GPU (ハードウェアデコード)"))},
-
-            {Settings::AstcDecodeMode::Hybrid, StormLang(QStringLiteral("Гибридный (ГПУ и ЦП)"), QStringLiteral("Hybrid (GPU and CPU)"), QStringLiteral("Hybrid (GPU und CPU)"), QStringLiteral("Hybride (GPU et CPU)"), QStringLiteral("混合 (GPU 和 CPU)"), QStringLiteral("ハイブリッド (GPU と CPU)"))},
-
-        };
+        const auto dec_options = GetSettingsEnumOptions<Settings::AstcDecodeMode>(this);
 
         for (const auto& opt : dec_options) {
 
@@ -23794,17 +23619,7 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         const auto cur_rec = Settings::values.astc_recompression.GetValue();
 
-        const std::vector<std::pair<Settings::AstcRecompression, QString>> rec_options = {
-
-            {Settings::AstcRecompression::Uncompressed, StormLang(QStringLiteral("Без сжатия (лучшее качество)"), QStringLiteral("Uncompressed (Best Quality)"), QStringLiteral("Unkomprimiert (beste Qualität)"), QStringLiteral("Non compressé (meilleure qualité)"), QStringLiteral("未压缩 (最高质量)"), QStringLiteral("非圧縮 (最高品質)"))},
-
-            {Settings::AstcRecompression::Bc1, StormLang(QStringLiteral("BC1 (низкое качество)"), QStringLiteral("BC1 (Low Quality)"), QStringLiteral("BC1 (niedrige Qualität)"), QStringLiteral("BC1 (basse qualité)"), QStringLiteral("BC1 (低质量)"), QStringLiteral("BC1 (低品質)"))},
-
-            {Settings::AstcRecompression::Bc3, StormLang(QStringLiteral("BC3 (среднее качество)"), QStringLiteral("BC3 (Medium Quality)"), QStringLiteral("BC3 (mittlere Qualität)"), QStringLiteral("BC3 (qualité moyenne)"), QStringLiteral("BC3 (中质量)"), QStringLiteral("BC3 (中品質)"))},
-
-            {Settings::AstcRecompression::Bc5, StormLang(QStringLiteral("BC5 (высокое качество)"), QStringLiteral("BC5 (High Quality)"), QStringLiteral("BC5 (hohe Qualität)"), QStringLiteral("BC5 (haute qualité)"), QStringLiteral("BC5 (高质量)"), QStringLiteral("BC5 (高品質)"))},
-
-        };
+        const auto rec_options = GetSettingsEnumOptions<Settings::AstcRecompression>(this);
 
         for (const auto& opt : rec_options) {
 
@@ -23870,17 +23685,7 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         const auto cur_api = Settings::values.renderer_backend.GetValue();
 
-        const std::vector<std::pair<Settings::RendererBackend, QString>> api_options = {
-
-            {Settings::RendererBackend::Vulkan, QStringLiteral("Vulkan")},
-
-            {Settings::RendererBackend::OpenGL_GLSL, QStringLiteral("OpenGL GLSL")},
-
-            {Settings::RendererBackend::OpenGL_SPIRV, QStringLiteral("OpenGL SPIRV")},
-
-            {Settings::RendererBackend::OpenGL_GLASM, QStringLiteral("OpenGL GLASM")},
-
-        };
+        const auto api_options = GetSettingsEnumOptions<Settings::RendererBackend>(this);
 
         for (const auto& pair : api_options) {
 
@@ -23922,13 +23727,7 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         const auto cur_gpu_acc = Settings::values.gpu_accuracy.GetValue();
 
-        const std::vector<std::pair<Settings::GpuAccuracy, QString>> gpu_acc_options = {
-
-            {Settings::GpuAccuracy::Low, StormLang(QStringLiteral("Быстрый (низкая точность)"), QStringLiteral("Fast (low accuracy)"), QStringLiteral("Schnell (niedrige Genauigkeit)"), QStringLiteral("Rapide (faible précision)"), QStringLiteral("快速 (低精度)"), QStringLiteral("高速 (低精度)"))},
-
-            {Settings::GpuAccuracy::High, StormLang(QStringLiteral("Высокая точность"), QStringLiteral("High accuracy"), QStringLiteral("Hohe Genauigkeit"), QStringLiteral("Haute précision"), QStringLiteral("高精度"), QStringLiteral("高精度"))},
-
-        };
+        const auto gpu_acc_options = GetSettingsEnumOptions<Settings::GpuAccuracy>(this);
 
         for (const auto& pair : gpu_acc_options) {
 
@@ -23972,15 +23771,7 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         const auto cur_cpu = Settings::values.cpu_accuracy.GetValue();
 
-        const std::vector<std::pair<Settings::CpuAccuracy, QString>> cpu_options = {
-
-            {Settings::CpuAccuracy::Auto, StormLang(QStringLiteral("Авто"), QStringLiteral("Auto"), QStringLiteral("Automatisch"), QStringLiteral("Auto"), QStringLiteral("自动"), QStringLiteral("自動"))},
-
-            {Settings::CpuAccuracy::Accurate, StormLang(QStringLiteral("Точно"), QStringLiteral("Accurate"), QStringLiteral("Genau"), QStringLiteral("Précis"), QStringLiteral("准确"), QStringLiteral("正確"))},
-
-            {Settings::CpuAccuracy::Unsafe, StormLang(QStringLiteral("Небезопасно"), QStringLiteral("Unsafe"), QStringLiteral("Unsicher"), QStringLiteral("Non sécurisé"), QStringLiteral("不安全"), QStringLiteral("非安全"))},
-
-        };
+        const auto cpu_options = GetSettingsEnumOptions<Settings::CpuAccuracy>(this);
 
         for (const auto& opt : cpu_options) {
 
@@ -24024,17 +23815,7 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         const auto cur_vsync = Settings::values.vsync_mode.GetValue();
 
-        const std::vector<std::pair<Settings::VSyncMode, QString>> vsync_options = {
-
-            {Settings::VSyncMode::Fifo, QStringLiteral("FIFO")},
-
-            {Settings::VSyncMode::FifoRelaxed, QStringLiteral("FIFO Relaxed")},
-
-            {Settings::VSyncMode::Mailbox, QStringLiteral("Mailbox")},
-
-            {Settings::VSyncMode::Immediate, StormLang(QStringLiteral("Выключено (Immediate)"), QStringLiteral("Immediate (Off)"), QStringLiteral("Aus (Immediate)"), QStringLiteral("Désactivé (Immediate)"), QStringLiteral("关闭 (Immediate)"), QStringLiteral("オフ (Immediate)"))},
-
-        };
+        const auto vsync_options = GetSettingsVSyncOptions();
 
         for (const auto& opt : vsync_options) {
 
@@ -24076,17 +23857,7 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         const auto cur_nvdec = Settings::values.nvdec_emulation.GetValue();
 
-        const std::vector<std::pair<Settings::NvdecEmulation, QString>> nvdec_options = {
-
-            {Settings::NvdecEmulation::Gpu, StormLang(QStringLiteral("ГПУ"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"), QStringLiteral("GPU"))},
-
-            {Settings::NvdecEmulation::Hybrid, StormLang(QStringLiteral("Гибридный"), QStringLiteral("Hybrid"), QStringLiteral("Hybrid"), QStringLiteral("Hybride"), QStringLiteral("混合"), QStringLiteral("ハイブリッド"))},
-
-            {Settings::NvdecEmulation::Cpu, StormLang(QStringLiteral("ЦП"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"), QStringLiteral("CPU"))},
-
-            {Settings::NvdecEmulation::Off, StormLang(QStringLiteral("Отключено"), QStringLiteral("Disabled"), QStringLiteral("Deaktiviert"), QStringLiteral("Désactivé"), QStringLiteral("已禁用"), QStringLiteral("無効"))},
-
-        };
+        const auto nvdec_options = GetSettingsEnumOptions<Settings::NvdecEmulation>(this);
 
         for (const auto& opt : nvdec_options) {
 
@@ -24130,17 +23901,7 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         const auto cur_dma = Settings::values.dma_accuracy.GetValue();
 
-        const std::vector<std::pair<Settings::DmaAccuracy, QString>> dma_options = {
-
-            {Settings::DmaAccuracy::Default, StormLang(QStringLiteral("По умолчанию"), QStringLiteral("Default"), QStringLiteral("Standard"), QStringLiteral("Par défaut"), QStringLiteral("默认"), QStringLiteral("デフォルト"))},
-
-            {Settings::DmaAccuracy::Normal, StormLang(QStringLiteral("Нормальная"), QStringLiteral("Normal"), QStringLiteral("Normal"), QStringLiteral("Normal"), QStringLiteral("正常"), QStringLiteral("通常"))},
-
-            {Settings::DmaAccuracy::Unsafe, StormLang(QStringLiteral("Небезопасная"), QStringLiteral("Unsafe"), QStringLiteral("Unsicher"), QStringLiteral("Non sécurisée"), QStringLiteral("不安全"), QStringLiteral("非安全"))},
-
-            {Settings::DmaAccuracy::Safe, StormLang(QStringLiteral("Безопасная"), QStringLiteral("Safe"), QStringLiteral("Sicher"), QStringLiteral("Sécurisée"), QStringLiteral("安全"), QStringLiteral("安全"))},
-
-        };
+        const auto dma_options = GetSettingsEnumOptions<Settings::DmaAccuracy>(this);
 
         for (const auto& item : dma_options) {
 
@@ -24184,19 +23945,7 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         const auto cur_fence = Settings::values.gpu_fence_behavior.GetValue();
 
-        const std::vector<std::pair<Settings::GpuFenceBehavior, QString>> fence_options = {
-
-            {Settings::GpuFenceBehavior::Default, StormLang(QStringLiteral("По умолчанию"), QStringLiteral("Default"), QStringLiteral("Standard"), QStringLiteral("Par défaut"), QStringLiteral("默认"), QStringLiteral("デフォルト"))},
-
-            {Settings::GpuFenceBehavior::Immediate, StormLang(QStringLiteral("Мгновенно"), QStringLiteral("Immediate"), QStringLiteral("Sofort"), QStringLiteral("Immédiat"), QStringLiteral("立即"), QStringLiteral("即時"))},
-
-            {Settings::GpuFenceBehavior::Balanced, StormLang(QStringLiteral("Сбалансированно"), QStringLiteral("Balanced"), QStringLiteral("Ausgeglichen"), QStringLiteral("Équilibré"), QStringLiteral("平衡"), QStringLiteral("バランス"))},
-
-            {Settings::GpuFenceBehavior::Accurate, StormLang(QStringLiteral("Точно"), QStringLiteral("Accurate"), QStringLiteral("Genau"), QStringLiteral("Précis"), QStringLiteral("准确"), QStringLiteral("正確"))},
-
-            {Settings::GpuFenceBehavior::Strict, StormLang(QStringLiteral("Строго"), QStringLiteral("Strict"), QStringLiteral("Strikt"), QStringLiteral("Strict"), QStringLiteral("严格"), QStringLiteral("厳格"))},
-
-        };
+        const auto fence_options = GetSettingsEnumOptions<Settings::GpuFenceBehavior>(this);
 
         for (const auto& item : fence_options) {
 
@@ -24240,19 +23989,7 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         const auto cur_pacing = Settings::values.frame_pacing_mode.GetValue();
 
-        const std::vector<std::pair<Settings::FramePacingMode, QString>> pacing_options = {
-
-            {Settings::FramePacingMode::Target_Auto, StormLang(QStringLiteral("Автоматически"), QStringLiteral("Auto"), QStringLiteral("Automatisch"), QStringLiteral("Automatique"), QStringLiteral("自动"), QStringLiteral("自動"))},
-
-            {Settings::FramePacingMode::Target_30, QStringLiteral("30 FPS")},
-
-            {Settings::FramePacingMode::Target_60, QStringLiteral("60 FPS")},
-
-            {Settings::FramePacingMode::Target_90, QStringLiteral("90 FPS")},
-
-            {Settings::FramePacingMode::Target_120, QStringLiteral("120 FPS")},
-
-        };
+        const auto pacing_options = GetSettingsEnumOptions<Settings::FramePacingMode>(this);
 
         for (const auto& item : pacing_options) {
 
@@ -24316,37 +24053,7 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         const auto cur_res = Settings::values.resolution_setup.GetValue();
 
-        const bool is_docked = Settings::values.use_docked_mode.GetValue() == Settings::ConsoleMode::Docked;
-
-        const std::vector<std::pair<Settings::ResolutionSetup, QString>> res_options = {
-
-            {Settings::ResolutionSetup::Res1_4X, is_docked ? QStringLiteral("0.25X (270p)") : QStringLiteral("0.25X (180p)")},
-
-            {Settings::ResolutionSetup::Res1_2X, is_docked ? QStringLiteral("0.5X (540p)") : QStringLiteral("0.5X (360p)")},
-
-            {Settings::ResolutionSetup::Res3_4X, is_docked ? QStringLiteral("0.75X (810p)") : QStringLiteral("0.75X (540p)")},
-
-            {Settings::ResolutionSetup::Res1X, is_docked ? QStringLiteral("1X (1080p)") : QStringLiteral("1X (720p)")},
-
-            {Settings::ResolutionSetup::Res5_4X, is_docked ? QStringLiteral("1.25X (1350p)") : QStringLiteral("1.25X (900p)")},
-
-            {Settings::ResolutionSetup::Res3_2X, is_docked ? QStringLiteral("1.5X (1620p)") : QStringLiteral("1.5X (1080p)")},
-
-            {Settings::ResolutionSetup::Res2X, is_docked ? QStringLiteral("2X (2160p / 4K)") : QStringLiteral("2X (1440p / 2K)")},
-
-            {Settings::ResolutionSetup::Res3X, is_docked ? QStringLiteral("3X (3240p / 6K)") : QStringLiteral("3X (2160p / 4K)")},
-
-            {Settings::ResolutionSetup::Res4X, is_docked ? QStringLiteral("4X (4320p / 8K)") : QStringLiteral("4X (2880p)")},
-
-            {Settings::ResolutionSetup::Res5X, is_docked ? QStringLiteral("5X (5400p)") : QStringLiteral("5X (3600p)")},
-
-            {Settings::ResolutionSetup::Res6X, is_docked ? QStringLiteral("6X (6480p)") : QStringLiteral("6X (4320p)")},
-
-            {Settings::ResolutionSetup::Res7X, is_docked ? QStringLiteral("7X (7560p)") : QStringLiteral("7X (5040p)")},
-
-            {Settings::ResolutionSetup::Res8X, is_docked ? QStringLiteral("8X (8640p)") : QStringLiteral("8X (5760p)")},
-
-        };
+        const auto res_options = GetSettingsEnumOptions<Settings::ResolutionSetup>(this);
 
         for (const auto& opt : res_options) {
 
@@ -24410,43 +24117,7 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         const auto cur_aspect = Settings::values.aspect_ratio.GetValue();
 
-        const std::vector<std::pair<Settings::AspectRatio, QString>> aspect_options = {
-
-            {Settings::AspectRatio::R16_9, StormLang(QStringLiteral("16:9 (Стандарт HD)"), QStringLiteral("16:9 (Standard HD)"), QStringLiteral("16:9 (Standard-HD)"), QStringLiteral("16:9 (Standard HD)"), QStringLiteral("16:9 (标准 HD)"), QStringLiteral("16:9 (標準 HD)"), QStringLiteral("16:9 (قياسي HD)"), QStringLiteral("16:9 (Estándar HD)"))},
-
-            {Settings::AspectRatio::R4_3, StormLang(QStringLiteral("4:3 (Классический)"), QStringLiteral("4:3 (Classic)"), QStringLiteral("4:3 (Klassisch)"), QStringLiteral("4:3 (Classique)"), QStringLiteral("4:3 (经典)"), QStringLiteral("4:3 (クラシック)"), QStringLiteral("4:3 (كلاسيكي)"), QStringLiteral("4:3 (Clásico)"))},
-
-            {Settings::AspectRatio::R21_9, StormLang(QStringLiteral("21:9 (Ультраширокий)"), QStringLiteral("21:9 (Ultrawide)"), QStringLiteral("21:9 (Ultrawide)"), QStringLiteral("21:9 (Ultra-large)"), QStringLiteral("21:9 (超宽屏)"), QStringLiteral("21:9 (ウルトラワイド)"), QStringLiteral("21:9 (عريض جداً)"), QStringLiteral("21:9 (Ultraancho)"))},
-
-            {Settings::AspectRatio::R16_10, StormLang(QStringLiteral("16:10 (Ноутбуки / Steam Deck)"), QStringLiteral("16:10 (Laptops / Steam Deck)"), QStringLiteral("16:10 (Laptops / Steam Deck)"), QStringLiteral("16:10 (PC portables / Steam Deck)"), QStringLiteral("16:10 (笔记本 / Steam Deck)"), QStringLiteral("16:10 (ノートPC / Steam Deck)"), QStringLiteral("16:10 (لابتوب / Steam Deck)"), QStringLiteral("16:10 (Portátiles / Steam Deck)"))},
-
-            {Settings::AspectRatio::Stretch, StormLang(QStringLiteral("Растянуть по окну"), QStringLiteral("Stretch to Window"), QStringLiteral("An Fenster anpassen"), QStringLiteral("Étirer à la fenêtre"), QStringLiteral("拉伸至窗口"), QStringLiteral("ウィンドウに合わせる"), QStringLiteral("تمديد للنافذة"), QStringLiteral("Estirar a la ventana"))},
-
-            {Settings::AspectRatio::R32_9, StormLang(QStringLiteral("32:9 (Супер-ультраширокий)"), QStringLiteral("32:9 (Super Ultrawide)"), QStringLiteral("32:9 (Super-Ultrawide)"), QStringLiteral("32:9 (Super ultra-large)"), QStringLiteral("32:9 (超级超宽屏)"), QStringLiteral("32:9 (スーパーウルトラワイド)"), QStringLiteral("32:9 (فائق العرض)"), QStringLiteral("32:9 (Súper ultraancho)"))},
-
-            {Settings::AspectRatio::R1_1, StormLang(QStringLiteral("1:1 (Квадратный)"), QStringLiteral("1:1 (Square)"), QStringLiteral("1:1 (Quadratisch)"), QStringLiteral("1:1 (Carré)"), QStringLiteral("1:1 (正方形)"), QStringLiteral("1:1 (正方形)"), QStringLiteral("1:1 (مربع)"), QStringLiteral("1:1 (Cuadrado)"))},
-
-            {Settings::AspectRatio::R3_2, StormLang(QStringLiteral("3:2 (Surface / Планшеты)"), QStringLiteral("3:2 (Surface / Tablets)"), QStringLiteral("3:2 (Surface / Tablets)"), QStringLiteral("3:2 (Surface / Tablettes)"), QStringLiteral("3:2 (Surface / 平板)"), QStringLiteral("3:2 (Surface / タブレット)"), QStringLiteral("3:2 (Surface / الأجهزة اللوحية)"), QStringLiteral("3:2 (Surface / Tabletas)"))},
-
-            {Settings::AspectRatio::R5_4, StormLang(QStringLiteral("5:4 (Мониторы SXGA)"), QStringLiteral("5:4 (SXGA Monitors)"), QStringLiteral("5:4 (SXGA-Monitore)"), QStringLiteral("5:4 (Moniteurs SXGA)"), QStringLiteral("5:4 (SXGA 显示器)"), QStringLiteral("5:4 (SXGA モニター)"), QStringLiteral("5:4 (شاشات SXGA)"), QStringLiteral("5:4 (Monitores SXGA)"))},
-
-            {Settings::AspectRatio::R18_9, StormLang(QStringLiteral("18:9 / 2:1 (Смартфоны Univisium)"), QStringLiteral("18:9 / 2:1 (Univisium Mobile)"), QStringLiteral("18:9 / 2:1 (Univisium Mobil)"), QStringLiteral("18:9 / 2:1 (Mobile Univisium)"), QStringLiteral("18:9 / 2:1 (Univisium 手机)"), QStringLiteral("18:9 / 2:1 (Univisium モバイル)"), QStringLiteral("18:9 / 2:1 (هواتف Univisium)"), QStringLiteral("18:9 / 2:1 (Móviles Univisium)"))},
-
-            {Settings::AspectRatio::R19_5_9, StormLang(QStringLiteral("19.5:9 (Современные смартфоны)"), QStringLiteral("19.5:9 (Modern Smartphones)"), QStringLiteral("19.5:9 (Moderne Smartphones)"), QStringLiteral("19.5:9 (Smartphones modernes)"), QStringLiteral("19.5:9 (现代智能手机)"), QStringLiteral("19.5:9 (最新スマートフォン)"), QStringLiteral("19.5:9 (الهواتف الذكية الحديثة)"), QStringLiteral("19.5:9 (Smartphones modernos)"))},
-
-            {Settings::AspectRatio::R20_9, StormLang(QStringLiteral("20:9 (Игровые смартфоны)"), QStringLiteral("20:9 (Gaming Smartphones)"), QStringLiteral("20:9 (Gaming-Smartphones)"), QStringLiteral("20:9 (Smartphones gaming)"), QStringLiteral("20:9 (游戏手机)"), QStringLiteral("20:9 (ゲーミングスマホ)"), QStringLiteral("20:9 (هواتف الألعاب)"), QStringLiteral("20:9 (Smartphones gaming)"))},
-
-            {Settings::AspectRatio::R21_10, StormLang(QStringLiteral("21:10 (Широкоформатный)"), QStringLiteral("21:10 (Widescreen)"), QStringLiteral("21:10 (Breitbild)"), QStringLiteral("21:10 (Écran large)"), QStringLiteral("21:10 (宽屏)"), QStringLiteral("21:10 (ワイドスクリーン)"), QStringLiteral("21:10 (شاشة عريضة)"), QStringLiteral("21:10 (Pantalla ancha)"))},
-
-            {Settings::AspectRatio::R24_10, StormLang(QStringLiteral("24:10 / 2.4:1 (Киноформат)"), QStringLiteral("24:10 / 2.4:1 (Cinema)"), QStringLiteral("24:10 / 2.4:1 (Kinoformat)"), QStringLiteral("24:10 / 2.4:1 (Cinéma)"), QStringLiteral("24:10 / 2.4:1 (电影宽银幕)"), QStringLiteral("24:10 / 2.4:1 (シネマ)"), QStringLiteral("24:10 / 2.4:1 (سينمائي)"), QStringLiteral("24:10 / 2.4:1 (Cine)"))},
-
-            {Settings::AspectRatio::R32_10, StormLang(QStringLiteral("32:10 (Двойной 16:10)"), QStringLiteral("32:10 (Dual 16:10)"), QStringLiteral("32:10 (Dual 16:10)"), QStringLiteral("32:10 (Double 16:10)"), QStringLiteral("32:10 (双 16:10)"), QStringLiteral("32:10 (デュアル 16:10)"), QStringLiteral("32:10 (مزدوج 16:10)"), QStringLiteral("32:10 (Doble 16:10)"))},
-
-            {Settings::AspectRatio::R48_9, StormLang(QStringLiteral("48:9 (Три монитора 16:9)"), QStringLiteral("48:9 (Triple 16:9 Surround)"), QStringLiteral("48:9 (Dreifach-16:9 Surround)"), QStringLiteral("48:9 (Triple écran 16:9)"), QStringLiteral("48:9 (三联屏 16:9)"), QStringLiteral("48:9 (トリプル 16:9)"), QStringLiteral("48:9 (ثلاث شاشات 16:9)"), QStringLiteral("48:9 (Triple monitor 16:9)"))},
-
-            {Settings::AspectRatio::Auto_Window, StormLang(QStringLiteral("Авто по пропорциям окна (3D без растяжения)"), QStringLiteral("Auto Window Aspect (3D Native)"), QStringLiteral("Automatisch nach Fenstergröße (3D Nativ)"), QStringLiteral("Auto selon la fenêtre (3D natif)"), QStringLiteral("按窗口比例自动适配 (3D 原生无拉伸)"), QStringLiteral("ウィンドウ比率に自動適応 (3D ネイティブ)"), QStringLiteral("تلقائي حسب أبعاد النافذة (3D أصلي)"), QStringLiteral("Auto según ventana (3D nativo)"))},
-
-        };
+        const auto aspect_options = GetSettingsEnumOptions<Settings::AspectRatio>(this);
 
         for (const auto& opt : aspect_options) {
 
@@ -24490,15 +24161,7 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         const auto cur_vram = Settings::values.vram_usage_mode.GetValue();
 
-        const std::vector<std::pair<Settings::VramUsageMode, QString>> vram_options = {
-
-            {Settings::VramUsageMode::Conservative, StormLang(QStringLiteral("Консервативный"), QStringLiteral("Conservative"), QStringLiteral("Konservativ"), QStringLiteral("Conservateur"), QStringLiteral("保守"), QStringLiteral("控えめ"))},
-
-            {Settings::VramUsageMode::Normal, StormLang(QStringLiteral("Нормальный"), QStringLiteral("Normal"), QStringLiteral("Normal"), QStringLiteral("Normal"), QStringLiteral("正常"), QStringLiteral("通常"))},
-
-            {Settings::VramUsageMode::Aggressive, StormLang(QStringLiteral("Агрессивный"), QStringLiteral("Aggressive"), QStringLiteral("Aggressiv"), QStringLiteral("Agressif"), QStringLiteral("激进"), QStringLiteral("積極的"))},
-
-        };
+        const auto vram_options = GetSettingsEnumOptions<Settings::VramUsageMode>(this);
 
         for (const auto& opt : vram_options) {
 
@@ -24562,27 +24225,7 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         const auto cur_aniso = Settings::values.max_anisotropy.GetValue();
 
-        const std::vector<std::pair<Settings::AnisotropyMode, QString>> aniso_options = {
-
-            {Settings::AnisotropyMode::Automatic, StormLang(QStringLiteral("Автоматически"), QStringLiteral("Automatic"), QStringLiteral("Automatisch"), QStringLiteral("Automatique"), QStringLiteral("自动"), QStringLiteral("自動"))},
-
-            {Settings::AnisotropyMode::Default, StormLang(QStringLiteral("По умолчанию"), QStringLiteral("Default"), QStringLiteral("Standard"), QStringLiteral("Par défaut"), QStringLiteral("默认"), QStringLiteral("デフォルト"))},
-
-            {Settings::AnisotropyMode::X2, QStringLiteral("2x")},
-
-            {Settings::AnisotropyMode::X4, QStringLiteral("4x")},
-
-            {Settings::AnisotropyMode::X8, QStringLiteral("8x")},
-
-            {Settings::AnisotropyMode::X16, QStringLiteral("16x")},
-
-            {Settings::AnisotropyMode::X32, QStringLiteral("32x")},
-
-            {Settings::AnisotropyMode::X64, QStringLiteral("64x")},
-
-            {Settings::AnisotropyMode::None, StormLang(QStringLiteral("Отключено"), QStringLiteral("Disabled"), QStringLiteral("Deaktiviert"), QStringLiteral("Désactivé"), QStringLiteral("已禁用"), QStringLiteral("無効"))},
-
-        };
+        const auto aniso_options = GetSettingsEnumOptions<Settings::AnisotropyMode>(this);
 
         for (const auto& opt : aniso_options) {
 
@@ -24626,15 +24269,7 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         const auto cur_aa = Settings::values.anti_aliasing.GetValue();
 
-        const std::vector<std::pair<Settings::AntiAliasing, QString>> aa_options = {
-
-            {Settings::AntiAliasing::None, StormLang(QStringLiteral("Отключено"), QStringLiteral("Disabled"), QStringLiteral("Deaktiviert"), QStringLiteral("Désactivé"), QStringLiteral("已禁用"), QStringLiteral("無効"))},
-
-            {Settings::AntiAliasing::Fxaa, QStringLiteral("FXAA")},
-
-            {Settings::AntiAliasing::Smaa, QStringLiteral("SMAA")},
-
-        };
+        const auto aa_options = GetSettingsEnumOptions<Settings::AntiAliasing>(this);
 
         for (const auto& pair : aa_options) {
 
@@ -24678,43 +24313,7 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         const auto cur_filter = Settings::values.scaling_filter.GetValue();
 
-        const std::vector<std::pair<Settings::ScalingFilter, QString>> filter_options = {
-
-            {Settings::ScalingFilter::NearestNeighbor, StormLang(QStringLiteral("Ближайший сосед"), QStringLiteral("Nearest Neighbor"), QStringLiteral("Nächster Nachbar"), QStringLiteral("Plus proche voisin"), QStringLiteral("最近邻"), QStringLiteral("最近傍"))},
-
-            {Settings::ScalingFilter::Bilinear, StormLang(QStringLiteral("Билинейный"), QStringLiteral("Bilinear"), QStringLiteral("Bilinear"), QStringLiteral("Bilinéaire"), QStringLiteral("双线性"), QStringLiteral("バイリニア"))},
-
-            {Settings::ScalingFilter::Bicubic, StormLang(QStringLiteral("Бикубический"), QStringLiteral("Bicubic"), QStringLiteral("Bikubisch"), QStringLiteral("Bicubique"), QStringLiteral("双三次"), QStringLiteral("バイキュービック"))},
-
-            {Settings::ScalingFilter::Gaussian, StormLang(QStringLiteral("Гаусс"), QStringLiteral("Gaussian"), QStringLiteral("Gauß"), QStringLiteral("Gauss"), QStringLiteral("高斯"), QStringLiteral("ガウス"))},
-
-            {Settings::ScalingFilter::Lanczos, StormLang(QStringLiteral("Ланцош"), QStringLiteral("Lanczos"), QStringLiteral("Lanczos"), QStringLiteral("Lanczos"), QStringLiteral("兰索斯"), QStringLiteral("ランツォシュ"))},
-
-            {Settings::ScalingFilter::ScaleForce, QStringLiteral("ScaleForce")},
-
-            {Settings::ScalingFilter::Fsr, StormLang(QStringLiteral("AMD FSR 2.0 (Temporal Upscaling)"), QStringLiteral("AMD FSR 2.0 (Temporal Upscaling)"))},
-
-            {Settings::ScalingFilter::Area, QStringLiteral("Area")},
-
-            {Settings::ScalingFilter::Mmpx, QStringLiteral("MMPX")},
-
-            {Settings::ScalingFilter::ZeroTangent, QStringLiteral("Zero-Tangent")},
-
-            {Settings::ScalingFilter::BSpline, QStringLiteral("B-Spline")},
-
-            {Settings::ScalingFilter::Mitchell, QStringLiteral("Mitchell")},
-
-            {Settings::ScalingFilter::Spline1, QStringLiteral("Spline-1")},
-
-            {Settings::ScalingFilter::Sgsr, QStringLiteral("SGSR")},
-
-            {Settings::ScalingFilter::SgsrEdge, QStringLiteral("SGSR EdgeDir")},
-
-            {Settings::ScalingFilter::Cas, StormLang(QStringLiteral("AMD FidelityFX CAS (Контрастно-адаптивный)"), QStringLiteral("AMD FidelityFX CAS (Contrast Adaptive)"))},
-
-            {Settings::ScalingFilter::OmniScale, StormLang(QStringLiteral("OmniScale HQ (Идеальный пиксель-арт и 2D/3D)"), QStringLiteral("OmniScale HQ (Pixel-Art & 2D/3D)"))},
-
-        };
+        const auto filter_options = GetSettingsEnumOptions<Settings::ScalingFilter>(this);
 
         for (const auto& pair : filter_options) {
 
@@ -24738,15 +24337,21 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         }
 
-        if (cur_filter == Settings::ScalingFilter::Fsr) {
-
+        if (cur_filter == Settings::ScalingFilter::Fsr || cur_filter == Settings::ScalingFilter::Fsr3) {
             filter_menu->addSeparator();
-
-            auto* mode_header = filter_menu->addAction(StormLang(
-
-                QStringLiteral("Режим качества AMD FSR 2.0:"),
-
-                QStringLiteral("AMD FSR 2.0 Quality Mode:")));
+            auto* mode_header = filter_menu->addAction(StormLang11(
+                QStringLiteral("Режим качества FSR 2.0 / 3:"),
+                QStringLiteral("FSR 2.0 / 3 Quality Mode:"),
+                QStringLiteral("FSR 2.0 / 3 Qualitätsmodus:"),
+                QStringLiteral("Mode de qualité FSR 2.0 / 3 :"),
+                QStringLiteral("Modo de calidad FSR 2.0 / 3:"),
+                QStringLiteral("Modalità qualità FSR 2.0 / 3:"),
+                QStringLiteral("Modo de qualidade FSR 2.0 / 3:"),
+                QStringLiteral("FSR 2.0 / 3 质量模式:"),
+                QStringLiteral("FSR 2.0 / 3 品質モード:"),
+                QStringLiteral("FSR 2.0 / 3 품질 모드:"),
+                QStringLiteral("وضع جودة FSR 2.0 / 3:"),
+                QStringLiteral("FSR 2.0 / 3 गुणवत्ता मोड:")));
 
             mode_header->setEnabled(false);
 
@@ -24754,17 +24359,7 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
             const auto cur_mode = Settings::values.fsr2_quality_mode.GetValue();
 
-            const std::vector<std::pair<Settings::Fsr2QualityMode, QString>> quality_options = {
-
-                {Settings::Fsr2QualityMode::Quality, StormLang(QStringLiteral("Качество (Quality - 1.5x)"), QStringLiteral("Quality (1.5x)"))},
-
-                {Settings::Fsr2QualityMode::Balanced, StormLang(QStringLiteral("Баланс (Balanced - 1.7x)"), QStringLiteral("Balanced (1.7x)"))},
-
-                {Settings::Fsr2QualityMode::Performance, StormLang(QStringLiteral("Производительность (Performance - 2.0x)"), QStringLiteral("Performance (2.0x)"))},
-
-                {Settings::Fsr2QualityMode::UltraPerformance, StormLang(QStringLiteral("Ультра-производительность (Ultra Performance - 3.0x)"), QStringLiteral("Ultra Performance (3.0x)"))},
-
-            };
+            const auto quality_options = GetSettingsEnumOptions<Settings::Fsr2QualityMode>(this);
 
             for (const auto& q_opt : quality_options) {
 
@@ -24890,13 +24485,7 @@ void MainWindow::ShowGroupMenu(int group_index, QWidget* group_widget) {
 
         const auto cur_dock = Settings::values.use_docked_mode.GetValue();
 
-        const std::vector<std::pair<Settings::ConsoleMode, QString>> dock_options = {
-
-            {Settings::ConsoleMode::Docked, StormLang(QStringLiteral("В док-станции"), QStringLiteral("Docked"), QStringLiteral("Im Dock"), QStringLiteral("En station d'accueil"), QStringLiteral("底座模式"), QStringLiteral("ドックモード"))},
-
-            {Settings::ConsoleMode::Handheld, StormLang(QStringLiteral("Портативный"), QStringLiteral("Handheld"), QStringLiteral("Handheld"), QStringLiteral("Portable"), QStringLiteral("掌机模式"), QStringLiteral("携帯モード"))},
-
-        };
+        const auto dock_options = GetSettingsEnumOptions<Settings::ConsoleMode>(this);
 
         for (const auto& pair : dock_options) {
 

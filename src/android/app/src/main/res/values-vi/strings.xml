@@ -2016,8 +2016,8 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="button_zr">ZR</string>
     <string name="enable_fast_gpu_time">Enable Fast GPU Time</string>
     <string name="enable_fast_gpu_time_description">Speeds up GPU timer queries to boost performance in games with heavy CPU-GPU synchronization, but may cause visual timing glitches in some titles.</string>
-    <string name="fsr2_quality_mode">FSR 2.0 Quality Mode</string>
-    <string name="fsr2_quality_mode_description">Selects the quality preset for AMD FSR 2.0 Temporal Upscaling</string>
+    <string name="fsr2_quality_mode">Chế độ chất lượng FSR 2.0 / 3</string>
+    <string name="fsr2_quality_mode_description">Chọn mức chất lượng cho nâng cấp thời gian thực AMD FSR 2.0 / 3</string>
     <string name="scaling_filter_fsr">AMD FSR 2.0 (FidelityFX Super Resolution)</string>
     <string name="storm_check_updates_now">Check for Updates Now</string>
     <string name="storm_check_updates_now_desc">Check GitHub and STORM GAMES WORLD for a newer release and install it in place</string>
@@ -2184,10 +2184,10 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="save_state_load_failed">Ô %1$d trống hoặc bị hỏng</string>
     <string name="save_state_confirm_delete">Bạn có chắc chắn muốn xóa trạng thái lưu cho Ô %1$d không?</string>
     <string name="update">Cập nhật</string>
-    <string name="fsr2_quality_quality">Chất lượng (1.5x)</string>
-    <string name="fsr2_quality_balanced">Cân bằng (1.7x)</string>
-    <string name="fsr2_quality_performance">Hiệu năng (2.0x)</string>
-    <string name="fsr2_quality_ultra_performance">Hiệu năng cực cao (3.0x)</string>
+    <string name="fsr2_quality_quality">Chất lượng (67% - 1.5x)</string>
+    <string name="fsr2_quality_balanced">Cân bằng (59% - 1.7x)</string>
+    <string name="fsr2_quality_performance">Hiệu năng (50% - 2.0x)</string>
+    <string name="fsr2_quality_ultra_performance">Hiệu năng cực cao (33% - 3.0x)</string>
     <string name="mali_driver_info">GPU Mali/Immortalis/Xclipse sử dụng trình điều khiển Vulkan hệ thống của nhà sản xuất. Mesa PanVK bản gốc đang ở giai đoạn thử nghiệm và chưa hỗ trợ đầy đủ các phần mở rộng Vulkan của Switch. Vẫn có thể cài đặt trình điều khiển .zip tùy chỉnh cho các bản dựng thử nghiệm, trong khi trình điều khiển Adreno Turnip bị lọc để tránh lỗi sập.</string>
     <string name="mali_turnip_incompatible_warning">Cảnh báo: Trình điều khiển Adreno Turnip được thiết kế riêng cho GPU Qualcomm Adreno. Việc cài đặt trình điều khiển này trên GPU Mali hoặc không phải Adreno có thể gây mất ổn định đồ họa hoặc sập ứng dụng. Bạn có muốn tiếp tục không?</string>
     <string name="auto_opt_dialog_subtitle">Phân tích cấu hình phần cứng thông minh</string>

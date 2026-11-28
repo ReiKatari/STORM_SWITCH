@@ -2095,8 +2095,8 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="button_zr">ZR</string>
     <string name="enable_fast_gpu_time">Enable Fast GPU Time</string>
     <string name="enable_fast_gpu_time_description">Speeds up GPU timer queries to boost performance in games with heavy CPU-GPU synchronization, but may cause visual timing glitches in some titles.</string>
-    <string name="fsr2_quality_mode">FSR 2.0 Quality Mode</string>
-    <string name="fsr2_quality_mode_description">Selects the quality preset for AMD FSR 2.0 Temporal Upscaling</string>
+    <string name="fsr2_quality_mode">Режим якості FSR 2.0 / 3</string>
+    <string name="fsr2_quality_mode_description">Вибирає профіль якості для часового масштабування AMD FSR 2.0 / 3</string>
     <string name="scaling_filter_fsr">AMD FSR 2.0 (FidelityFX Super Resolution)</string>
     <string name="storm_check_updates_now">Check for Updates Now</string>
     <string name="storm_check_updates_now_desc">Check GitHub and STORM GAMES WORLD for a newer release and install it in place</string>
@@ -2267,10 +2267,10 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="save_state_load_failed">Слот %1$d порожній або пошкоджений</string>
     <string name="save_state_confirm_delete">Ви впевнені, що хочете видалити швидке збереження для Слота %1$d?</string>
     <string name="update">Оновити</string>
-    <string name="fsr2_quality_quality">Якість (1.5x)</string>
-    <string name="fsr2_quality_balanced">Збалансовано (1.7x)</string>
-    <string name="fsr2_quality_performance">Продуктивність (2.0x)</string>
-    <string name="fsr2_quality_ultra_performance">Ультрапродуктивність (3.0x)</string>
+    <string name="fsr2_quality_quality">Якість (67% - 1.5x)</string>
+    <string name="fsr2_quality_balanced">Збалансовано (59% - 1.7x)</string>
+    <string name="fsr2_quality_performance">Продуктивність (50% - 2.0x)</string>
+    <string name="fsr2_quality_ultra_performance">Ультрапродуктивність (33% - 3.0x)</string>
     <string name="mali_driver_info">Графічні процесори Mali/Immortalis/Xclipse використовують системний драйвер Vulkan виробника. Офіційний Mesa PanVK є експериментальним і ще не підтримує всі розширення Vulkan для Switch. Установлення користувацьких .zip-драйверів доступне для експериментальних збірок, а драйвери Adreno Turnip відфільтровано для запобігання збоям.</string>
     <string name="mali_turnip_incompatible_warning">Увага: драйвери Adreno Turnip створено спеціально для Qualcomm Adreno. Установлення цього драйвера на Mali або інший GPU може спричинити нестабільність графіки чи збої додатка. Бажаєте продовжити?</string>
     <string name="auto_opt_dialog_subtitle">Інтелектуальне профілювання обладнання</string>

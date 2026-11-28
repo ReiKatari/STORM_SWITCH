@@ -361,6 +361,7 @@
         <item>@string/scaling_filter_lanczos</item>
         <item>@string/scaling_filter_scale_force</item>
         <item>@string/scaling_filter_fsr</item>
+        <item>@string/scaling_filter_fsr3</item>
         <item>@string/scaling_filter_area</item>
         <item>@string/scaling_filter_zero_tangent</item>
         <item>@string/scaling_filter_bspline</item>
@@ -381,6 +382,7 @@
         <item>4</item>
         <item>5</item>
         <item>6</item>
+        <item>17</item>
         <item>7</item>
         <item>8</item>
         <item>9</item>
@@ -401,6 +403,7 @@
         <item>@string/scaling_filter_lanczos</item>
         <item>@string/scaling_filter_scale_force</item>
         <item>@string/scaling_filter_fsr</item>
+        <item>@string/scaling_filter_fsr3</item>
         <item>@string/scaling_filter_area</item>
         <item>@string/scaling_filter_zero_tangent</item>
         <item>@string/scaling_filter_bspline</item>
@@ -421,6 +424,7 @@
         <item>4</item>
         <item>5</item>
         <item>6</item>
+        <item>17</item>
         <item>7</item>
         <item>8</item>
         <item>9</item>

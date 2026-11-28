@@ -2031,8 +2031,8 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="button_zr">ZR</string>
     <string name="enable_fast_gpu_time">Enable Fast GPU Time</string>
     <string name="enable_fast_gpu_time_description">Speeds up GPU timer queries to boost performance in games with heavy CPU-GPU synchronization, but may cause visual timing glitches in some titles.</string>
-    <string name="fsr2_quality_mode">FSR 2.0 Quality Mode</string>
-    <string name="fsr2_quality_mode_description">Selects the quality preset for AMD FSR 2.0 Temporal Upscaling</string>
+    <string name="fsr2_quality_mode">Режим квалитета FSR 2.0 / 3</string>
+    <string name="fsr2_quality_mode_description">Бира профил квалитета за временско скалирање AMD FSR 2.0 / 3</string>
     <string name="scaling_filter_fsr">AMD FSR 2.0 (FidelityFX Super Resolution)</string>
     <string name="storm_check_updates_now">Check for Updates Now</string>
     <string name="storm_check_updates_now_desc">Check GitHub and STORM GAMES WORLD for a newer release and install it in place</string>
@@ -2198,10 +2198,10 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="save_state_load_failed">Слот %1$d је празан или оштећен</string>
     <string name="save_state_confirm_delete">Да ли сте сигурни да желите да обришете брзо чување за Слот %1$d?</string>
     <string name="update">Ажурирај</string>
-    <string name="fsr2_quality_quality">Квалитет (1.5x)</string>
-    <string name="fsr2_quality_balanced">Балансирано (1.7x)</string>
-    <string name="fsr2_quality_performance">Перформансе (2.0x)</string>
-    <string name="fsr2_quality_ultra_performance">Ултра перформансе (3.0x)</string>
+    <string name="fsr2_quality_quality">Квалитет (67% - 1.5x)</string>
+    <string name="fsr2_quality_balanced">Балансирано (59% - 1.7x)</string>
+    <string name="fsr2_quality_performance">Перформансе (50% - 2.0x)</string>
+    <string name="fsr2_quality_ultra_performance">Ултра перформансе (33% - 3.0x)</string>
     <string name="mali_driver_info">Графички процесори Mali/Immortalis/Xclipse користе системски Vulkan драјвер произвођача. Експериментални Mesa PanVK још не подржава сва Switch Vulkan проширења. Инсталација прилагођених .zip драјвера је доступна за експерименталне верзије, док се Adreno Turnip драјвери филтрирају ради спречавања рушења.</string>
     <string name="mali_turnip_incompatible_warning">Упозорење: Adreno Turnip драјвери су направљени искључиво за Qualcomm Adreno графичке процесоре. Инсталација на Mali или друге не-Adreno чипове може изазвати графичку нестабилност или рушење апликације. Желите ли да наставите?</string>
     <string name="auto_opt_dialog_subtitle">Интелигентно профилисање хардвера</string>

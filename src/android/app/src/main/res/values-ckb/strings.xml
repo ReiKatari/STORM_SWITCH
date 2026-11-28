@@ -2020,8 +2020,8 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="button_zr">ZR</string>
     <string name="enable_fast_gpu_time">Enable Fast GPU Time</string>
     <string name="enable_fast_gpu_time_description">Speeds up GPU timer queries to boost performance in games with heavy CPU-GPU synchronization, but may cause visual timing glitches in some titles.</string>
-    <string name="fsr2_quality_mode">FSR 2.0 Quality Mode</string>
-    <string name="fsr2_quality_mode_description">Selects the quality preset for AMD FSR 2.0 Temporal Upscaling</string>
+    <string name="fsr2_quality_mode">دۆخی کوالیتی FSR 2.0 / 3</string>
+    <string name="fsr2_quality_mode_description">پێشوەختەی کوالیتی بۆ بەرزکردنەوەی کاتیی AMD FSR 2.0 / 3 هەڵدەبژێرێت</string>
     <string name="scaling_filter_fsr">AMD FSR 2.0 (FidelityFX Super Resolution)</string>
     <string name="storm_check_updates_now">Check for Updates Now</string>
     <string name="storm_check_updates_now_desc">Check GitHub and STORM GAMES WORLD for a newer release and install it in place</string>
@@ -2187,10 +2187,10 @@ Atmosphere DMNT VM Cheat Engine: Active (60Hz / I-Cache Sync)</string>
     <string name="save_state_load_failed">خانەی %1$d بەتاڵە یان تێکچووە</string>
     <string name="save_state_confirm_delete">دڵنیایت دەتەوێت دۆخی پاشەکەوتی خانەی %1$d بسڕیتەوە؟</string>
     <string name="update">نوێکردنەوە</string>
-    <string name="fsr2_quality_quality">کوالیتی (1.5x)</string>
-    <string name="fsr2_quality_balanced">هاوسەنگ (1.7x)</string>
-    <string name="fsr2_quality_performance">کارایی (2.0x)</string>
-    <string name="fsr2_quality_ultra_performance">کارایی ئۆلترا (3.0x)</string>
+    <string name="fsr2_quality_quality">کوالیتی (67% - 1.5x)</string>
+    <string name="fsr2_quality_balanced">هاوسەنگ (59% - 1.7x)</string>
+    <string name="fsr2_quality_performance">کارایی (50% - 2.0x)</string>
+    <string name="fsr2_quality_ultra_performance">کارایی ئۆلترا (33% - 3.0x)</string>
     <string name="mali_driver_info">پڕۆسێسەرە گرافیکییەکانی Mali/Immortalis/Xclipse درایڤەری Vulkanـی سیستەمی بەرهەمهێنەر بەکاردەهێنن. Mesa PanVK هێشتا ئەزموونییە و پشتگیری تەواوی درێژکراوەکانی Vulkanـی Switch ناکات. دامەزراندنی درایڤەری تایبەتی .zip بۆ وەشانە ئەزموونییەکان بەردەستە، لە کاتێکدا درایڤەرەکانی Adreno Turnip فلتەر دەکرێن بۆ ڕێگریکردن لە تێکچوون.</string>
     <string name="mali_turnip_incompatible_warning">ئاگاداری: درایڤەرەکانی Adreno Turnip تایبەتن بە پڕۆسێسەرە گرافیکییەکانی Qualcomm Adreno. دامەزراندنی ئەم درایڤەرە لەسەر Mali یان GPUـی نا-Adreno ڕەنگە ببێتە هۆی ناجێگیری گرافیک یان تێکچوونی ئەپەکە. دەتەوێت بەردەوام بیت؟</string>
     <string name="auto_opt_dialog_subtitle">پڕۆفایلکردنی زیرەکانەی ڕەقەکاڵا</string>

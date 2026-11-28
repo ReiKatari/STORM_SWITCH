@@ -29,12 +29,16 @@ struct TemporalPushConstants {
 
 using RcasPushConstants = std::array<u32, 4 * 4>;
 
-// Halton (2, 3) low-discrepancy 16-phase subpixel sequence
-constexpr std::array<std::pair<float, float>, 16> HALTON_16 = {{
+// Halton (2, 3) low-discrepancy 32-phase subpixel sequence
+constexpr std::array<std::pair<float, float>, 32> HALTON_32 = {{
     {0.0f, -0.333333f}, {-0.5f, 0.333333f}, {0.5f, -0.777778f}, {-0.75f, -0.111111f},
     {0.25f, 0.555556f}, {-0.25f, -0.555556f}, {0.75f, 0.111111f}, {-0.875f, 0.777778f},
     {0.125f, -0.925926f}, {-0.375f, -0.259259f}, {0.625f, 0.407407f}, {-0.625f, -0.703704f},
-    {0.375f, -0.037037f}, {-0.125f, 0.629630f}, {0.875f, -0.481481f}, {-0.9375f, 0.185185f}
+    {0.375f, -0.037037f}, {-0.125f, 0.629630f}, {0.875f, -0.481481f}, {-0.9375f, 0.185185f},
+    {0.0625f, 0.851852f}, {-0.4375f, -0.851852f}, {0.5625f, -0.185185f}, {-0.6875f, 0.481481f},
+    {0.3125f, -0.629630f}, {-0.1875f, 0.037037f}, {0.8125f, 0.703704f}, {-0.8125f, -0.407407f},
+    {0.1875f, 0.259259f}, {-0.3125f, 0.925926f}, {0.6875f, -0.975309f}, {-0.5625f, -0.308642f},
+    {0.4375f, 0.358025f}, {-0.0625f, -0.753086f}, {0.9375f, -0.086420f}, {-0.96875f, 0.580247f}
 }};
 
 } // anonymous namespace
@@ -237,8 +241,10 @@ VkImageView Pipeline::Draw(const Device& device, Scheduler& scheduler, size_t im
     VkRenderPass rcas_renderpass = *m_rcas_renderpass;
     VkExtent2D extent = m_extent;
 
-    // Subpixel Halton jitter phase calculation
-    const auto& jitter = HALTON_16[m_frame_index % 16];
+    // Quality preset & subpixel Halton jitter phase calculation
+    const auto fsr2_config = GetQualityConfig(Settings::values.fsr2_quality_mode.GetValue());
+    const u32 phase_count = std::clamp(fsr2_config.jitter_phase_count, 1u, static_cast<u32>(HALTON_32.size()));
+    const auto& jitter = HALTON_32[m_frame_index % phase_count];
     ++m_frame_index;
 
     const f32 inv_input_w = 1.0f / static_cast<f32>(input_image_extent.width);
@@ -255,7 +261,7 @@ VkImageView Pipeline::Draw(const Device& device, Scheduler& scheduler, size_t im
                                  inv_out_w, inv_out_h};
     temporal_con.jitter_params = {jitter.first * inv_input_w,
                                   jitter.second * inv_input_h,
-                                  0.88f, 1.25f};
+                                  m_history_valid ? 0.88f : 0.0f, 1.25f};
 
     const f32 crop_w = crop_rect.right - crop_rect.left;
     const f32 crop_h = crop_rect.bottom - crop_rect.top;
@@ -267,7 +273,6 @@ VkImageView Pipeline::Draw(const Device& device, Scheduler& scheduler, size_t im
     };
 
     // Calculate RCAS sharpening configuration
-    const auto fsr2_config = GetQualityConfig(Settings::values.fsr2_quality_mode.GetValue());
     const float raw_sharpening =
         (static_cast<float>(Settings::values.fsr_sharpening_slider.GetValue()) / 100.0f) + fsr2_config.sharpness_bias;
     const float sharpening = std::clamp(raw_sharpening, 0.0f, 1.0f);
@@ -296,10 +301,9 @@ VkImageView Pipeline::Draw(const Device& device, Scheduler& scheduler, size_t im
                               VK_IMAGE_LAYOUT_GENERAL);
 
         // 2. Ensure read history is in SHADER_READ_ONLY_OPTIMAL
-        if (history_valid) {
-            TransitionImageLayout(cmdbuf, history_read_image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                                  VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-        }
+        TransitionImageLayout(cmdbuf, history_read_image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                              history_valid ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+                                            : VK_IMAGE_LAYOUT_UNDEFINED);
 
         // 3. Transition write history image to COLOR_ATTACHMENT_OPTIMAL
         TransitionImageLayout(cmdbuf, history_write_image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,

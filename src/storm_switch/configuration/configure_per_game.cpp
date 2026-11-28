@@ -1016,12 +1016,13 @@ void ConfigurePerGame::UpdateVisibleTabs() {
 void ConfigurePerGame::SetupConflictBanner() {
     m_conflict_banner = new QWidget(this);
     m_conflict_banner->setObjectName(QStringLiteral("ConflictBanner"));
-    m_conflict_banner->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    m_conflict_banner->setMaximumHeight(36);
+    m_conflict_banner->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    m_conflict_banner->setMinimumHeight(40);
     auto* banner_layout = new QHBoxLayout(m_conflict_banner);
-    banner_layout->setContentsMargins(10, 4, 10, 4);
-    banner_layout->setSpacing(8);
+    banner_layout->setContentsMargins(12, 8, 12, 8);
+    banner_layout->setSpacing(10);
     m_conflict_label = new QLabel(m_conflict_banner);
+    m_conflict_label->setWordWrap(true);
     m_conflict_label->setStyleSheet(QStringLiteral("border: none; background: transparent; color: #fbbf24; font-weight: 600; font-size: 9pt; padding: 0px;"));
     m_conflict_fix_btn = new QPushButton(StormLang(QStringLiteral("Исправить"), QStringLiteral("Fix")), m_conflict_banner);
     m_conflict_fix_btn->setCursor(Qt::PointingHandCursor);
@@ -1034,11 +1035,11 @@ void ConfigurePerGame::SetupConflictBanner() {
     banner_layout->addWidget(m_conflict_fix_btn);
 
     m_conflict_banner->setStyleSheet(QStringLiteral(
-        "QWidget#ConflictBanner { background-color: rgba(245, 158, 11, 0.14); border: 1px solid rgba(245, 158, 11, 0.55); border-radius: 6px; }"));
+        "QWidget#ConflictBanner { background-color: rgba(245, 158, 11, 0.14); border: 1px solid rgba(245, 158, 11, 0.55); border-radius: 6px; margin-bottom: 10px; }"));
     m_conflict_banner->setVisible(false);
 
     if (ui->verticalLayout_3) {
-        ui->verticalLayout_3->addWidget(m_conflict_banner);
+        ui->verticalLayout_3->insertWidget(std::max(0, ui->verticalLayout_3->count() - 1), m_conflict_banner);
     }
 
     connect(m_conflict_fix_btn, &QPushButton::clicked, this, [this]() {

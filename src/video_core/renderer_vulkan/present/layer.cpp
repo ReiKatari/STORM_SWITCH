@@ -75,6 +75,8 @@ Layer::Layer(const Device& device, MemoryAllocator& memory_allocator_, Scheduler
     CreateDescriptorSets(device, layout);
     if (scaling_filter_setting == Settings::ScalingFilter::Fsr) {
         sr_filter.emplace<FSR>(device, memory_allocator, image_count, current_output_size);
+    } else if (scaling_filter_setting == Settings::ScalingFilter::Fsr3) {
+        sr_filter.emplace<FSR2::Pipeline>(device, memory_allocator, image_count, current_output_size);
     } else if (scaling_filter_setting == Settings::ScalingFilter::Sgsr) {
         sr_filter.emplace<SGSR>(device, memory_allocator, image_count, current_output_size, false);
     } else if (scaling_filter_setting == Settings::ScalingFilter::SgsrEdge) {
@@ -142,6 +144,12 @@ void Layer::ConfigureDraw(const Device& device, PresentPushConstants* out_push_c
     if (auto* fsr = std::get_if<FSR>(&sr_filter)) {
         source_image_view = fsr->Draw(device, scheduler, image_index, source_image, source_image_view, current_render_extent, crop_rect);
         crop_rect = {0, 0, 1, 1};
+    } else if (auto* fsr3 = std::get_if<FSR2::Pipeline>(&sr_filter)) {
+        if (!is_applet) {
+            source_image_view = fsr3->Draw(device, scheduler, image_index, source_image,
+                                           source_image_view, current_render_extent, crop_rect);
+            crop_rect = {0, 0, 1, 1};
+        }
     } else if (auto* sgsr = std::get_if<SGSR>(&sr_filter)) {
         if (!is_applet) {
             source_image_view = sgsr->Draw(device, scheduler, image_index, source_image,
@@ -302,6 +310,8 @@ void Layer::UpdateScalingFilter(const Device& device, VkExtent2D output_size) {
     try {
         if (scaling_filter_setting == Settings::ScalingFilter::Fsr) {
             sr_filter.emplace<FSR>(device, memory_allocator, image_count, current_output_size);
+        } else if (scaling_filter_setting == Settings::ScalingFilter::Fsr3) {
+            sr_filter.emplace<FSR2::Pipeline>(device, memory_allocator, image_count, current_output_size);
         } else if (scaling_filter_setting == Settings::ScalingFilter::Sgsr) {
             sr_filter.emplace<SGSR>(device, memory_allocator, image_count, current_output_size, false);
         } else if (scaling_filter_setting == Settings::ScalingFilter::SgsrEdge) {

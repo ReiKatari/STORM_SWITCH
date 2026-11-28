@@ -1974,7 +1974,7 @@ Image::Image(TextureCacheRuntime& runtime_, const ImageInfo& info_, GPUVAddr gpu
         case Settings::AstcDecodeMode::Hybrid: {
             if (WillUseAcceleratedAstcDecode(runtime->device, info)) {
                 flags |= VideoCommon::ImageFlagBits::AcceleratedUpload;
-            } else {
+            } else if (info.size.depth == 1 && !info.native_tiling) {
                 flags |= VideoCommon::ImageFlagBits::AsynchronousDecode;
             }
             break;
